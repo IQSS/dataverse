@@ -19,6 +19,8 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -83,8 +85,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
             // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
             s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
+            // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
+            s3CB.setPayloadSigningEnabled(s3payloadSigning);
+            // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
+            // Boolean is inverted, otherwise setting dataverse.files.s3-chunked-encoding=false would result in leaving Chunked Encoding enabled
+            s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
+
             // let's build the client :-)
             this.s3 = s3CB.build();
+
+            // building a TransferManager instance to support multipart uploading for files over 4gb.
+            this.tm = TransferManagerBuilder.standard()
+                    .withS3Client(this.s3)
+                    .build();
         } catch (Exception e) {
             throw new AmazonClientException(
                         "Cannot instantiate a S3 client; check your AWS credentials and region",
@@ -109,6 +122,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public static String S3_IDENTIFIER_PREFIX = "s3";
     
     private AmazonS3 s3 = null;
+    private TransferManager tm = null;
     /**
      * Pass in a URL pointing to your S3 compatible storage.
      * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
@@ -124,6 +138,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
      */
     private boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-path-style-access", "false"));
+    /**
+     * Pass in a boolean value if payload signing should be used within the S3 client.
+     * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+     */
+    private boolean s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-payload-signing","false"));
+    /**
+     * Pass in a boolean value if chunked encoding should not be used within the S3 client.
+     * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
+     */
+    private boolean s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-chunked-encoding","true"));
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 
@@ -261,14 +285,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             File inputFile = fileSystemPath.toFile();
             if (dvObject instanceof DataFile) {
-                s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
-                
+                tm.upload(new PutObjectRequest(bucketName, key, inputFile)).waitForCompletion();
                 newFileSize = inputFile.length();
             } else {
                 throw new IOException("DvObject type other than datafile is not yet supported");
             }
 
-        } catch (SdkClientException ioex) {
+        } catch (SdkClientException | InterruptedException ioex ) {
             String failureMsg = ioex.getMessage();
             if (failureMsg == null) {
                 failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object "+key;
@@ -276,6 +299,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             throw new IOException(failureMsg);
         }
+
 
         // if it has uploaded successfully, we can reset the size
         // of the object:
@@ -298,7 +322,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * Swift driver. 
      * 
      * @param inputStream InputStream we want to save
-     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @param filesize Long representing the filesize
      * @throws IOException if anything goes wrong.
     */
     @Override

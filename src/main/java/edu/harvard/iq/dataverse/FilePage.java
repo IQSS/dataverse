@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersion
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -22,6 +25,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
@@ -34,6 +38,8 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -71,6 +77,7 @@ public class FilePage implements java.io.Serializable {
     private String persistentId;
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
+    private List<ExternalTool> toolsWithPreviews;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -208,7 +215,11 @@ public class FilePage implements java.io.Serializable {
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-
+            Collections.sort(exploreTools, CompareExternalToolName);
+            toolsWithPreviews  = addMapLayerAndSortExternalTools();
+            if(!toolsWithPreviews.isEmpty()){
+                setSelectedTool(toolsWithPreviews.get(0));                
+            }
         } else {
 
             return permissionsWrapper.notFound();
@@ -225,6 +236,30 @@ public class FilePage implements java.io.Serializable {
     public FileMetadata getFileMetadata() {
         return fileMetadata;
     }
+    
+    private List<ExternalTool> addMapLayerAndSortExternalTools(){
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        if(!retList.isEmpty()){
+            retList.forEach((et) -> {
+                et.setWorldMapTool(false);
+            });
+        }
+        if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
+            ExternalTool wpTool = new ExternalTool();
+            wpTool.setDisplayName("World Map"); 
+            wpTool.setToolParameters("{}");
+            wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
+            wpTool.setWorldMapTool(true);
+            retList.add(wpTool);
+        }
+        Collections.sort(retList, CompareExternalToolName);
+        
+        return retList;
+    }
+    
+    /*
+    worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()
+    */
     
 
     public boolean isDownloadPopupRequired() {  
@@ -888,10 +923,45 @@ public class FilePage implements java.io.Serializable {
         return exploreTools;
     }
     
+    public List<ExternalTool> getToolsWithPreviews() {
+        return toolsWithPreviews;
+    }
+    
+    private ExternalTool selectedTool;
+
+    public ExternalTool getSelectedTool() {
+        return selectedTool;
+    }
+
+    public void setSelectedTool(ExternalTool selectedTool) {
+        this.selectedTool = selectedTool;
+    }
+    
+    public String preview(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        if(externalTool == null){
+            return "";
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, file.getFileMetadata(), session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        return toolUrl;
+    }
+    
     //Provenance fragment bean calls this to show error dialogs after popup failure
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
         JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
     }
+    
+    private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<ExternalTool>() {
+        @Override
+        public int compare(ExternalTool o1, ExternalTool o2) {
+            return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());
+        }
+    };
 
 }

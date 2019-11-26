@@ -506,7 +506,7 @@ public class IngestServiceBean {
                 }
             });
 
-            ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
+            ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO, user.getId());
             for (int i = 0; i < count; i++) {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
             }

@@ -28,17 +28,17 @@
                 <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
                 <!-- from email (not logged in) -->
                     <div class="form-group">
-                        <label for="userEmail" class="col-sm-3 control-label">#{bundle['contact.from']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                        <label jsf:for="userEmail" class="col-sm-3 control-label">#{bundle['contact.from']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                         <div class="col-sm-9">
                             <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
                                          validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['contact.from.invalid']}" requiredMessage="#{bundle['contact.from.required']}" required="#{param['DO_VALIDATION']}"/>
-                        <h:message for="userEmail" styleClass="bg-danger text-danger"/>
+                            <h:message for="userEmail" styleClass="bg-danger text-danger"/>
                         </div>
                     </div>
                 </ui:fragment>
                 <!-- subject -->
                 <div class="form-group">
-                    <label for="messageSubject" class="col-sm-3 control-label">#{bundle['contact.subject']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                    <label jsf:for="messageSubject" class="col-sm-3 control-label">#{bundle['contact.subject']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                     <div class="col-sm-9">
                         <p:inputText id="messageSubject" styleClass="form-control" value="#{sendFeedbackDialog.messageSubject}"
                                      requiredMessage="#{bundle['contact.subject.required']}" required="#{param['DO_VALIDATION']}"/>                        
@@ -47,7 +47,7 @@
                 </div>   
                 <!-- message -->
                 <div class="form-group">
-                    <label for="userMessage" class="col-sm-3 control-label">#{bundle['contact.msg']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
+                    <label jsf:for="userMessage" class="col-sm-3 control-label">#{bundle['contact.msg']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/></label>
                     <div class="col-sm-9">
                         <p:inputTextarea id="userMessage" styleClass="form-control" value="#{sendFeedbackDialog.userMessage}"
                             required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.msg.required']}" autoResize="false" rows="10"/>

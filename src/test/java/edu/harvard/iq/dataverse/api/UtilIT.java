@@ -278,7 +278,8 @@ public class UtilIT {
         /**
          * @todo stop assuming the last 22 characters are the doi/globalId
          */
-        return datasetSwordIdUrl.substring(datasetSwordIdUrl.length() - 22);
+        int doiPos = datasetSwordIdUrl.indexOf("doi");
+        return datasetSwordIdUrl.substring(doiPos, datasetSwordIdUrl.length());
     }
 
     public static Response getServiceDocument(String apiToken) {
@@ -654,6 +655,12 @@ public class UtilIT {
                  */
                 //.header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/access/datafile/" + fileId + "?key=" + apiToken);
+    }
+    
+    static Response downloadTabularFile(Integer fileId) {
+        return given()
+                // this downloads a tabular file, explicitly requesting the format by name
+                .get("/api/access/datafile/" + fileId + "?format=tab");
     }
 
     static Response downloadFileOriginal(Integer fileId) {
@@ -1984,6 +1991,27 @@ public class UtilIT {
     static Response sitemapDownload() {
         return given()
                 .get("/sitemap.xml");
+    }
+    
+    static Response deleteToken( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .delete("api/users/token");
+        return response;
+    }
+    
+    static Response getTokenExpiration( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .get("api/users/token");
+        return response;
+    }
+    
+    static Response recreateToken( String apiToken) {
+        Response response = given()
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .post("api/users/token/recreate");
+        return response;
     }
 
     @Test

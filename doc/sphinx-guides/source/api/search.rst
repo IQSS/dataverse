@@ -6,7 +6,7 @@ Search API
 
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
-Unlike the web interface, this new API is limited to *published* data.
+To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
@@ -221,6 +221,15 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
             "count_in_response":2
         }
     }
+
+.. _search-date-range:
+
+Date Range Search Example
+-------------------------
+
+Below is an example of searching across a date range of dataverses, datasets, and files that were published in 2018.
+
+`https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z] <https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z]>`_
 
 .. _iteration-example:
 

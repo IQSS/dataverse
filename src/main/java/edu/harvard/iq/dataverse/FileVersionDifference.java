@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
  *
  * @author skraffmi
  */
-public class FileVersionDifference {
+public final class FileVersionDifference {
     
     private  FileMetadata newFileMetadata;
     private  FileMetadata originalFileMetadata;   
@@ -43,21 +43,32 @@ public class FileVersionDifference {
     } 
     
     
-    private void compareMetadata(FileMetadata newFileMetadata, FileMetadata originalFileMetadata ){
+    public boolean compareMetadata(FileMetadata newFileMetadata, FileMetadata originalFileMetadata) {
+
+        /*
+        This  method both determines if there has been a change in file metadata between the two versions supplied 
+        and it updates the FileVersionDifference object which is used to display the differences on the dataset versions tab.
+        The return value is used by the index service bean tomark whether a file needs to be re-indexed in the context of a dataset update.
+        When there are changes (after v4.19)to the file metadata data model this method must be updated.
+        retVal of True means metadatas are equal.
+        */        
         
+        boolean retVal = true;
         if (newFileMetadata.getDataFile() == null && originalFileMetadata == null){
             //File in neither version
             //Don't add any groups
+            return true;
         }
         
         if (newFileMetadata.getDataFile() == null && originalFileMetadata != null){
             //File Deleted
             updateDifferenceSummary("", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"),  0, 0, 1, 0);
-            return;
+            return false;
         }
         
         if (this.originalFileMetadata == null && this.newFileMetadata.getDataFile() != null ){
             //File Added
+            retVal = false;
             updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 1, 0, 0, 0);
         }
         
@@ -65,6 +76,7 @@ public class FileVersionDifference {
         if (originalFileMetadata != null &&
                  newFileMetadata.getDataFile() != null && originalFileMetadata.getDataFile() != null &&!this.originalFileMetadata.getDataFile().equals(this.newFileMetadata.getDataFile())){
             updateDifferenceSummary( "", BundleUtil.getStringFromBundle("file.versionDifferences.fileGroupTitle"), 0, 0, 0, 1);
+            retVal = false;
         }
         
         if ( originalFileMetadata != null) {
@@ -74,6 +86,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.fileNameDetailTitle"), 0, 1, 0, 0);
+                retVal = false;
             }
         }
 
@@ -87,6 +100,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 0, 1, 0, 0);
+                retVal = false;
             }
             if (newFileMetadata.getDescription() != null
                     && originalFileMetadata.getDescription() == null
@@ -96,6 +110,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 1, 0, 0, 0);
+                retVal = false;
             }
             if (newFileMetadata.getDescription() == null
                     && originalFileMetadata.getDescription() != null
@@ -105,8 +120,9 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.descriptionDetailTitle"), 0, 0, 1, 0);
+                retVal = false;
             }
-        }  
+        } 
         //Provenance Description differences
         if ( originalFileMetadata != null) {
             if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
@@ -117,6 +133,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 0, 1, 0, 0);
+                retVal = false;
             }
             if ((newFileMetadata.getProvFreeForm() != null && !newFileMetadata.getProvFreeForm().isEmpty())
                     && (originalFileMetadata.getProvFreeForm() == null || originalFileMetadata.getProvFreeForm().isEmpty())
@@ -126,6 +143,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 1, 0, 0, 0);
+                retVal = false;
             }
             if ((newFileMetadata.getProvFreeForm() == null || newFileMetadata.getProvFreeForm().isEmpty())
                     && (originalFileMetadata.getProvFreeForm() != null && !originalFileMetadata.getProvFreeForm().isEmpty())
@@ -135,6 +153,7 @@ public class FileVersionDifference {
                 }
                 updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileMetadataGroupTitle"),
                         BundleUtil.getStringFromBundle("file.versionDifferences.provenanceDetailTitle"), 0, 0, 1, 0);
+                retVal = false;
             }
         }
         if (originalFileMetadata != null) {
@@ -184,7 +203,7 @@ public class FileVersionDifference {
                 if (deleted > 0){
                     updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileTagsGroupTitle"), "", 0, 0, deleted, 0, true);
                 }
-                
+                retVal = false;
             }
             
             /*
@@ -193,11 +212,11 @@ public class FileVersionDifference {
             value1 = originalFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
             value2 = newFileMetadata.isRestricted() ? BundleUtil.getStringFromBundle("file.versionDifferences.fileRestricted") : BundleUtil.getStringFromBundle("file.versionDifferences.fileUnrestricted");
             if (!value1.equals(value2)) {
-                if (!value1.equals(value2)) {
                     updateDifferenceSummary(BundleUtil.getStringFromBundle("file.versionDifferences.fileAccessTitle"), value2, 0, 0, 0, 0);
-                }
+                    retVal = false;
             }
         }
+        return retVal;
     }
     
      private void updateDifferenceSummary(String groupLabel, String itemLabel, int added, int changed, int deleted, int replaced) {
