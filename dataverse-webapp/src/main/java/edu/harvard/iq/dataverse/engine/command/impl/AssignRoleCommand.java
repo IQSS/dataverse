@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,7 @@ import java.util.Set;
  * @author michael
  */
 // no annotations here, since permissions are dynamically decided
-public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
+public class AssignRoleCommand extends AbstractCommand<RoleAssignment> implements Serializable {
 
     private final DataverseRole role;
     private final RoleAssignee grantee;
