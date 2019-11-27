@@ -758,8 +758,18 @@ public class DataFile extends DvObject implements Comparable {
     
     @Override
     public int compareTo(Object o) {
+        /*
+         * The primary intent here is to provide ordering by displayName. However, the
+         * secondary comparison by id is needed to insure that two DataFiles with the
+         * same displayName aren't considered equal, e.g. in structures that require
+         * unique keys. See Issues #4287 and #6401.
+         */
         DataFile other = (DataFile) o;
-        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        int comparison = this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        if (comparison == 0) {
+            comparison = this.getId().compareTo(other.getId());
+        }
+        return comparison;
     }
     
     /**

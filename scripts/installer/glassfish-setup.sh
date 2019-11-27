@@ -28,6 +28,8 @@
 # DOI_USERNAME
 # DOI_PASSWORD
 # DOI_BASEURL
+#
+# Base URL the Make Data Count: 
 # DOI_MDCBASEURL
 #
 # other local configuration:
@@ -91,7 +93,7 @@ function preliminary_setup()
 
   # jvm-options use colons as separators, escape as literal
   DOI_MDCBASEURL_ESC=`echo $DOI_MDCBASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.basemdcurlstring=$DOI_MDCBASEURL_ESC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support

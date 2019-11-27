@@ -6,16 +6,15 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
@@ -27,6 +26,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -40,12 +40,12 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,8 +58,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
-import javax.ws.rs.core.Response;
-
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -86,6 +84,7 @@ public class FilePage implements java.io.Serializable {
     private String persistentId;
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
+    private List<ExternalTool> toolsWithPreviews;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -141,53 +140,52 @@ public class FilePage implements java.io.Serializable {
     public String init() {
      
         
-         if ( fileId != null || persistentId != null ) { 
-           
+        if (fileId != null || persistentId != null) {
+
             // ---------------------------------------
             // Set the file and datasetVersion 
             // ---------------------------------------           
             if (fileId != null) {
-               file = datafileService.find(fileId);   
+                file = datafileService.find(fileId);
 
-            }  else if (persistentId != null){
-               file = datafileService.findByGlobalId(persistentId);
-               if (file != null){
-                                  fileId = file.getId();
-               }
+            } else if (persistentId != null) {
+                file = datafileService.findByGlobalId(persistentId);
+                if (file != null) {
+                    fileId = file.getId();
+                }
 
             }
-            
-            if (file == null || fileId == null){
-               return permissionsWrapper.notFound();
+
+            if (file == null || fileId == null) {
+                return permissionsWrapper.notFound();
             }
-            
+
             // Is the Dataset harvested?
             if (file.getOwner().isHarvested()) {
                 // if so, we'll simply forward to the remote URL for the original
                 // source of this harvested dataset:
                 String originalSourceURL = file.getOwner().getRemoteArchiveURL();
                 if (originalSourceURL != null && !originalSourceURL.equals("")) {
-                    logger.fine("redirecting to "+originalSourceURL);
+                    logger.fine("redirecting to " + originalSourceURL);
                     try {
                         FacesContext.getCurrentInstance().getExternalContext().redirect(originalSourceURL);
                     } catch (IOException ioex) {
                         // must be a bad URL...
                         // we don't need to do anything special here - we'll redirect
                         // to the local 404 page, below.
-                        logger.warning("failed to issue a redirect to "+originalSourceURL);
+                        logger.warning("failed to issue a redirect to " + originalSourceURL);
                     }
                 }
 
                 return permissionsWrapper.notFound();
             }
 
-                RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-                Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
-                fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
+            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
-          
-            if (fileMetadata == null){
+            if (fileMetadata == null) {
                 logger.fine("fileMetadata is null! Checking finding most recent version file was in.");
                 fileMetadata = datafileService.findMostRecentVersionFileIsIn(file);
                 if (fileMetadata == null) {
@@ -195,19 +193,19 @@ public class FilePage implements java.io.Serializable {
                 }
             }
 
-           // If this DatasetVersion is unpublished and permission is doesn't have permissions:
-           //  > Go to the Login page
-           //
+            // If this DatasetVersion is unpublished and permission is doesn't have permissions:
+            //  > Go to the Login page
+            //
             // Check permissions       
             Boolean authorized = (fileMetadata.getDatasetVersion().isReleased())
                     || (!fileMetadata.getDatasetVersion().isReleased() && this.canViewUnpublishedDataset());
-            
-            if (!authorized ) {
+
+            if (!authorized) {
                 return permissionsWrapper.notAuthorized();
-            }         
-           
+            }
+
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
-           
+
             if(fileMetadata.getDatasetVersion().isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, fileMetadata.getDatasetVersion());
                 mdcLogService.logEntry(entry);
@@ -221,12 +219,16 @@ public class FilePage implements java.io.Serializable {
             // created and false for other mimetypes
             String contentType = file.getContentType();
             //For tabular data, indicate successful ingest by returning a contentType for the derived .tab file
-            if(file.isTabularData()) {
+            if (file.isTabularData()) {
                 contentType=DataFileServiceBean.MIME_TYPE_TSV_ALT;
             }
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
-
+            Collections.sort(exploreTools, CompareExternalToolName);
+            toolsWithPreviews  = addMapLayerAndSortExternalTools();
+            if(!toolsWithPreviews.isEmpty()){
+                setSelectedTool(toolsWithPreviews.get(0));                
+            }
             if(null == dataset) {
                 dataset = file.getOwner();
             }
@@ -250,6 +252,30 @@ public class FilePage implements java.io.Serializable {
     public FileMetadata getFileMetadata() {
         return fileMetadata;
     }
+    
+    private List<ExternalTool> addMapLayerAndSortExternalTools(){
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        if(!retList.isEmpty()){
+            retList.forEach((et) -> {
+                et.setWorldMapTool(false);
+            });
+        }
+        if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
+            ExternalTool wpTool = new ExternalTool();
+            wpTool.setDisplayName("World Map"); 
+            wpTool.setToolParameters("{}");
+            wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
+            wpTool.setWorldMapTool(true);
+            retList.add(wpTool);
+        }
+        Collections.sort(retList, CompareExternalToolName);
+        
+        return retList;
+    }
+    
+    /*
+    worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()
+    */
     
 
     public boolean isDownloadPopupRequired() {  
@@ -476,43 +502,41 @@ public class FilePage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFile() {
-        
+
         String fileNames = this.getFileMetadata().getLabel();
 
         editDataset = this.getFileMetadata().getDataFile().getOwner();
-        
+
         FileMetadata markedForDelete = null;
-        
-        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas() ){
-            
+
+        for (FileMetadata fmd : editDataset.getEditVersion().getFileMetadatas()) {
+
             if (fmd.getDataFile().getId().equals(fileId)) {
                 markedForDelete = fmd;
             }
         }
 
-            if (markedForDelete.getId() != null) {
-                // the file already exists as part of this dataset
-                // so all we remove is the file from the fileMetadatas (for display)
-                // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
-                editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                filesToBeDeleted.add(markedForDelete);
-                
-            } else {
-                 List<FileMetadata> filesToKeep = new ArrayList<>();
-                 for (FileMetadata fmo: editDataset.getEditVersion().getFileMetadatas()){
-                      if (!fmo.getDataFile().getId().equals(this.getFile().getId())){
-                          filesToKeep.add(fmo);
-                      }
-                 }
-                 editDataset.getEditVersion().setFileMetadatas(filesToKeep);
-            }
+        if (markedForDelete.getId() != null) {
+            // the file already exists as part of this dataset
+            // so all we remove is the file from the fileMetadatas (for display)
+            // and let the delete be handled in the command (by adding it to the filesToBeDeleted list
+            editDataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+            filesToBeDeleted.add(markedForDelete);
 
-    
+        } else {
+            List<FileMetadata> filesToKeep = new ArrayList<>();
+            for (FileMetadata fmo : editDataset.getEditVersion().getFileMetadatas()) {
+                if (!fmo.getDataFile().getId().equals(this.getFile().getId())) {
+                    filesToKeep.add(fmo);
+                }
+            }
+            editDataset.getEditVersion().setFileMetadatas(filesToKeep);
+        }
 
         fileDeleteInProgress = true;
         save();
         return returnToDatasetOnly();
-        
+
     }
     
     private int activeTabIndex;
@@ -1136,6 +1160,34 @@ public class FilePage implements java.io.Serializable {
         return exploreTools;
     }
     
+    public List<ExternalTool> getToolsWithPreviews() {
+        return toolsWithPreviews;
+    }
+    
+    private ExternalTool selectedTool;
+
+    public ExternalTool getSelectedTool() {
+        return selectedTool;
+    }
+
+    public void setSelectedTool(ExternalTool selectedTool) {
+        this.selectedTool = selectedTool;
+    }
+    
+    public String preview(ExternalTool externalTool) {
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        }
+        if(externalTool == null){
+            return "";
+        }
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, file, apiToken, getFileMetadata(), session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlForPreviewMode();
+        return toolUrl;
+    }
+    
     //Provenance fragment bean calls this to show error dialogs after popup failure
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
@@ -1150,5 +1202,12 @@ public class FilePage implements java.io.Serializable {
         // empty method, so that we can use DatasetPage.stateChanged in a hidden 
         // input on the page. 
     }
+    
+    private static final Comparator<ExternalTool> CompareExternalToolName = new Comparator<ExternalTool>() {
+        @Override
+        public int compare(ExternalTool o1, ExternalTool o2) {
+            return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());
+        }
+    };
 
 }

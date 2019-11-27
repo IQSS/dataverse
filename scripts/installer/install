@@ -142,7 +142,7 @@ my %CONFIG_PROMPTS = (
 
     'DOI_USERNAME',    'Datacite username',
     'DOI_PASSWORD',    'Datacite password',
-    'DOI_BASEURL',    'Datacite URL'
+    'DOI_BASEURL',    'Datacite URL',
     'DOI_MDCBASEURL', 'Datacite MakeDataCount URL'
 
 );
@@ -171,7 +171,7 @@ my %CONFIG_COMMENTS = (
 
     'DOI_USERNAME',    'DataCite or EZID username. Only necessary for publishing / minting DOIs.',
     'DOI_PASSWORD',    'DataCite or EZID account password.',
-    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org'
+    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org',
     'DOI_MDCBASEURL',    'DataCite Make Data Count API base URL. Probably https://api.datacite.org'
 
 );
@@ -1101,7 +1101,11 @@ sub run_asadmin_script {
     $ENV{'RSERVE_PORT'} = $CONFIG_DEFAULTS{'RSERVE_PORT'};
     $ENV{'RSERVE_USER'} = $CONFIG_DEFAULTS{'RSERVE_USER'};
     $ENV{'RSERVE_PASS'} = $CONFIG_DEFAULTS{'RSERVE_PASSWORD'};
-
+    $ENV{'DOI_BASEURL'} = $CONFIG_DEFAULTS{'DOI_BASEURL'};
+    $ENV{'DOI_USERNAME'} = $CONFIG_DEFAULTS{'DOI_USERNAME'};
+    $ENV{'DOI_PASSWORD'} = $CONFIG_DEFAULTS{'DOI_PASSWORD'};
+    $ENV{'DOI_MDCBASEURL'} = $CONFIG_DEFAULTS{'DOI_MDCBASEURL'};
+    
     $ENV{'HOST_ADDRESS'} = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 
     my ($mail_server_host, $mail_server_port) = split (":", $CONFIG_DEFAULTS{'MAIL_SERVER'});

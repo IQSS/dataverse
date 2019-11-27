@@ -88,10 +88,10 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-            	InternetAddress fromAddress=getSystemAddress();
-            	fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
+                InternetAddress fromAddress=getSystemAddress();
+                fromAddress.setPersonal(BundleUtil.getStringFromBundle("contact.delegation", Arrays.asList(
                         fromAddress.getPersonal(), reply)), charset);
-            	msg.setFrom(fromAddress);
+                msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
                     recipients[i] = new InternetAddress(recipientStrings[i], "", charset);
@@ -114,16 +114,21 @@ public class MailServiceBean implements java.io.Serializable {
     private Session session;
 
     public boolean sendSystemEmail(String to, String subject, String messageText) {
+        return sendSystemEmail(to, subject, messageText, false);
+    }
+
+    public boolean sendSystemEmail(String to, String subject, String messageText, boolean isHtmlContent) {
+
 
         boolean sent = false;
 
-		// QDR - uses the institution name rather than a dataverse/collection name in
-		// email subject
+        // QDR - uses the institution name rather than a dataverse/collection name in
+        // email subject
         InternetAddress systemAddress = getSystemAddress();
-		String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
-		String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
-				Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
-						BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
+        String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
+        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
+                Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
+                        BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -141,7 +146,12 @@ public class MailServiceBean implements java.io.Serializable {
                 }
                 msg.setRecipients(Message.RecipientType.TO, recipients);
                 msg.setSubject(subject, charset);
-                msg.setText(body, charset);
+                if (isHtmlContent) {
+                    msg.setText(body, charset, "html");
+                } else {
+                    msg.setText(body, charset);
+                }
+
                 try {
                     Transport.send(msg, recipients);
                     sent = true;
@@ -185,7 +195,7 @@ public class MailServiceBean implements java.io.Serializable {
             }
             msg.setFrom(fromAddress);
             if (EMailValidator.isEmailValid(reply, null)) {
-            	//But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address	
+                //But set the reply-to address to direct replies to the requested 'from' party if it is a valid email address
                 msg.setReplyTo(new Address[] {new InternetAddress(reply)});
             } else {
                 //Otherwise include the invalid 'from' address in the message
@@ -214,7 +224,21 @@ public class MailServiceBean implements java.io.Serializable {
         }
     }
     
-    public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor){  
+    public Boolean sendNotificationEmail(UserNotification notification){  
+        return sendNotificationEmail(notification, "");
+    }
+    
+    
+    public Boolean sendNotificationEmail(UserNotification notification, String comment) {
+        return sendNotificationEmail(notification, comment, null, false);
+    }
+
+    public Boolean sendNotificationEmail(UserNotification notification, String comment, boolean isHtmlContent) {
+        return sendNotificationEmail(notification, comment, null, isHtmlContent);
+    }
+
+
+    public Boolean sendNotificationEmail(UserNotification notification, String comment, AuthenticatedUser requestor, boolean isHtmlContent){
 
         boolean retval = false;
         String emailAddress = getUserEmailAddress(notification);
@@ -229,7 +253,7 @@ public class MailServiceBean implements java.io.Serializable {
                 String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
                         objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
-                    retval = sendSystemEmail(emailAddress, subjectText, messageText); 
+                   retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
                    logger.warning("Skipping " + notification.getType() +  " notification, because couldn't get valid message");
                }
@@ -317,7 +341,6 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-
     public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor) {      
         
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting");
@@ -519,6 +542,29 @@ public class MailServiceBean implements java.io.Serializable {
                 String message = BundleUtil.getStringFromBundle("notification.email.apiTokenGenerated", Arrays.asList(
                         userNotification.getUser().getFirstName(), userNotification.getUser().getFirstName() ));
                 return message;
+
+            case INGESTCOMPLETED:
+                dataset = (Dataset) targetObject;
+
+                String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalIdString(),
+                        dataset.getDisplayName(),
+                        comment
+                ));
+
+                return ingestedCompletedMessage;
+            case INGESTCOMPLETEDWITHERRORS:
+                dataset = (Dataset) targetObject;
+
+                String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalIdString(),
+                        dataset.getDisplayName(),
+                        comment
+                ));
+
+                return ingestedCompletedWithErrorsMessage;
         }
         
         return "";
@@ -561,6 +607,9 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case APIGENERATED:
                 return userNotification.getUser();
+            case INGESTCOMPLETED:
+            case INGESTCOMPLETEDWITHERRORS:
+                return datasetService.find(userNotification.getObjectId());
 
         }
         return null;

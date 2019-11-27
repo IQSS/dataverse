@@ -19,14 +19,18 @@ Changing the Superuser Password
 
 The default password for the "dataverseAdmin" superuser account is "admin", as mentioned in the :doc:`installation-main` section, and you should change it, of course.
 
+.. _blocking-api-endpoints:
+
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoint lets people create a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`. The endpoint "test" is not used but is where testing code maybe be added (see https://github.com/IQSS/dataverse/issues/4137 ).
 
-By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
+By default, most APIs can be operated on remotely and a number of endpoints do not require authentication. The endpoints "admin" and "test" are limited to localhost out of the box by the settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy`.
 
-It's also possible to prevent file uploads via API by adjusting the ``:UploadMethods`` database setting.
+It is very important to keep the block in place for the "admin" endpoint (and at least consider blocking "builtin-users"). Please note that documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
+
+It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
 Forcing HTTPS
 +++++++++++++
@@ -190,7 +194,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within Dataverse. Out of the box, a single row with an id of "builtin" will be present. For each user in Dataverse, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`conf-blocked-api-endpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`conf-built-in-users-key`) per the :doc:`config` section.
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -299,6 +303,8 @@ For institutions and organizations looking to use some kind of S3-based object s
 this is entirely possible. You can either use Amazon Web Services or use some other, even on-site S3-compatible
 storage (like Minio, Ceph RADOS S3 Gateway and many more). 
 
+The Dataverse S3 driver supports multipart upload for files over 4 GB.
+
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
 First: Set Up Accounts and Access Credentials
@@ -368,6 +374,9 @@ Reported Working S3-Compatible Storage
   **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
 
+`Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
+  Set ``dataverse.files.s3-payload-signing=true`` and ``dataverse.files.s3-chunked-encoding=false`` to use Surf Object
+  Store.
 
 **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
@@ -460,6 +469,8 @@ dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloa
 dataverse.files.s3-custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
 dataverse.files.s3-custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
 dataverse.files.s3-path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
+dataverse.files.s3-payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
+dataverse.files.s3-chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
 =========================================  ==================  ==================================================================  =============
 
 .. _Branding Your Installation:
@@ -962,6 +973,8 @@ See also these related database settings below:
 doi.mdcbaseurlstring
 ++++++++++++++++++++
 
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
 Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
@@ -1062,18 +1075,24 @@ The most commonly used configuration options are listed first.
 
 The pattern you will observe in curl examples below is that an HTTP ``PUT`` is used to add or modify a setting. If you perform an HTTP ``GET`` (the default when using curl), the output will contain the value of the setting, if it has been set. You can also do a ``GET`` of all settings with ``curl http://localhost:8080/api/admin/settings`` which you may want to pretty-print by piping the output through a tool such as jq by appending ``| jq .``. If you want to remove a setting, use an HTTP ``DELETE`` such as ``curl -X DELETE http://localhost:8080/api/admin/settings/:GuidesBaseUrl`` .
 
+.. _:BlockedApiPolicy:
+
 :BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``:BlockedApiEndpoints``.
+``:BlockedApiPolicy`` affects access to the list of API endpoints defined in :ref:`:BlockedApiEndpoints`.
+
+Out of the box, ``localhost-only`` is the default policy, as mentioned in :ref:`blocking-api-endpoints`. The other valid options are the following.
 
 - localhost-only: Allow from localhost.
-- unblock-key: Require a key defined in ``:BlockedApiKey``.
+- unblock-key: Require a key defined in :ref:`:BlockedApiKey`.
 - drop: Disallow the blocked endpoints completely.
+
+Below is an example of setting ``localhost-only``.
 
 ``curl -X PUT -d localhost-only http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
 
-.. _conf-blocked-api-endpoints:
+.. _:BlockedApiEndpoints:
 
 :BlockedApiEndpoints
 ++++++++++++++++++++
@@ -1082,16 +1101,24 @@ A comma separated list of API endpoints to be blocked. For a production installa
 
 ``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
-See the :doc:`/api/index` for a list of API endpoints.
+See the :ref:`list-of-dataverse-apis` for lists of API endpoints.
+
+.. _:BlockedApiKey:
 
 :BlockedApiKey
 ++++++++++++++
 
-Used in conjunction with the ``:BlockedApiPolicy`` being set to ``unblock-key``. When calling blocked APIs, add a query parameter of ``unblock-key=theKeyYouChose`` to use the key.
+``:BlockedApiKey`` is used in conjunction with :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy` and will not be enabled unless the policy is set to ``unblock-key`` as demonstrated below. Please note that the order is significant. You should set ``:BlockedApiKey`` first to prevent locking yourself out.
 
 ``curl -X PUT -d s3kretKey http://localhost:8080/api/admin/settings/:BlockedApiKey``
 
-.. _conf-built-in-users-key:
+``curl -X PUT -d unblock-key http://localhost:8080/api/admin/settings/:BlockedApiPolicy``
+
+Now that ``:BlockedApiKey`` has been enabled, blocked APIs can be accessed using the query parameter ``unblock-key=theKeyYouChose`` as in the example below.
+
+``curl https://demo.dataverse.org/api/admin/settings?unblock-key=theKeyYouChose``
+
+.. _BuiltinUsers.KEY:
 
 BuiltinUsers.KEY
 ++++++++++++++++
@@ -1724,6 +1751,8 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 
 ``curl -X PUT -d 'https://rsal.example.edu' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
 
+.. _:UploadMethods:
+
 :UploadMethods
 ++++++++++++++
 
@@ -1796,7 +1825,7 @@ Sets the path where the raw Make Data Count logs are stored before being process
 :DisplayMDCMetrics
 ++++++++++++++++++
 
-``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide.
+``:DisplayMDCMetrics`` can be set to false to disable display of MDC metrics (e.g. to enable collection of MDC metrics for some period prior to completing the set-up of Counter and performing the other steps described in the :doc:`/admin/make-data-count` section of the Admin Guide).
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:DisplayMDCMetrics``
 

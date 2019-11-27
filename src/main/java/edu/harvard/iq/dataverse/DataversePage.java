@@ -108,6 +108,7 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     DataverseLinkingServiceBean linkingService;
     @Inject PermissionsWrapper permissionsWrapper;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment; 
 
     private Dataverse dataverse = new Dataverse();
     private EditMode editMode;
@@ -267,6 +268,18 @@ public class DataversePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
+    public void updateOwnerDataverse() {
+        if (dataverse.getOwner() != null && dataverse.getOwner().getId() != null) {
+            ownerId = dataverse.getOwner().getId();
+            logger.info("New host dataverse id: " + ownerId);
+            // discard the dataverse already created:
+            dataverse = new Dataverse();
+            // initialize a new new dataverse:
+            init();
+            dataverseHeaderFragment.initBreadcrumbs(dataverse);
+        }
+    }
+    
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
@@ -611,7 +624,9 @@ public class DataversePage implements java.io.Serializable {
         Boolean create;
         if (dataverse.getId() == null) {
             if (session.getUser().isAuthenticated()) {
-                dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+                if (dataverse.getOwner() == null || dataverse.getOwner().getId() == null) {
+                    dataverse.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+                }
                 create = Boolean.TRUE;
                 cmd = new CreateDataverseCommand(dataverse, dvRequestService.getDataverseRequest(), facets.getTarget(), listDFTIL);
             } else {
@@ -660,11 +675,12 @@ public class DataversePage implements java.io.Serializable {
         }
     }
 
-    public void cancel(ActionEvent e) {
+    public String cancel() {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
         ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         editMode = null;
+        return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
     public boolean isRootDataverse() {
@@ -1157,5 +1173,13 @@ public class DataversePage implements java.io.Serializable {
 
     public void setSearchFieldSubtree(String searchFieldSubtree) {
         this.searchFieldSubtree = searchFieldSubtree;
+    }
+    
+    public List<Dataverse> completeHostDataverseMenuList(String query) {
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());
+        } else {
+            return null;
+        }
     }
 }

@@ -155,15 +155,7 @@ public class BuiltinUsers extends AbstractApiBean {
                         UserNotification.Type.CREATEACC, null);
             }
 
-            ApiToken token = new ApiToken();
-
-            token.setTokenString(java.util.UUID.randomUUID().toString());
-            token.setAuthenticatedUser(au);
-
-            Calendar c = Calendar.getInstance();
-            token.setCreateTime(new Timestamp(c.getTimeInMillis()));
-            c.roll(Calendar.YEAR, 1);
-            token.setExpireTime(new Timestamp(c.getTimeInMillis()));
+            ApiToken token = authSvc.generateApiTokenForUser(au);
             authSvc.save(token);
 
             JsonObjectBuilder resp = Json.createObjectBuilder();

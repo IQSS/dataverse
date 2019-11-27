@@ -41,8 +41,8 @@ Each of these metadata exports contains the metadata of the most recently publis
 Adding a New Dataset
 ====================
 
-#. Navigate to the dataverse in which you want to add a dataset. 
-#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
+#. Navigate to the dataverse in which you want to add a dataset.
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root dataverse, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root dataverse. You can change this by selecting another dataverse you have proper permissions to create datasets in, from the Host Dataverse dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
@@ -51,7 +51,7 @@ Adding a New Dataset
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
 
 Supported HTML Fields
 ---------------------
@@ -69,7 +69,7 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
 
 
 HTTP Upload
@@ -143,8 +143,12 @@ DVUploader is a community-developed tool, and its creation was primarily support
 File Handling
 =============
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+File Previews
+-------------
+
+Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files.
 
 Tabular Data Files
 ------------------
@@ -204,8 +208,6 @@ If the uploaded .zip file contains a folder structure, Dataverse will keep track
 These folder names are subject to strict validation rules. Only the following characters are allowed: the alphanumerics, '_', '-', '.' and ' ' (white space). When a zip archive is uploaded, the folder names are automatically sanitized, with any invalid characters replaced by the '.' character. Any sequences of dots are further replaced with a single dot. For example, the folder name ``data&info/code=@137`` will be converted to ``data.info/code.137``. When uploading through the Web UI, the user can change the values further on the edit form presented, before clicking the 'Save' button. 
 
 .. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
-
-
 
 Other File Types
 ----------------
@@ -272,6 +274,7 @@ Dataset terms can be viewed and edited from the Terms tab of the dataset page, o
 
 CC0 Public Domain Dedication
 ----------------------------
+
 By default, all new datasets created through Dataverse's web UI are given a `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_.
 
 The `Creative Commons <https://creativecommons.org>`_ organization defines a number of `licenses <https://creativecommons.org/licenses/>`_ that allow copyright holders to release their intellectual property more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the IP must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate IP to the public domain. 
@@ -296,7 +299,7 @@ Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practi
 Restricted Files + Terms of Access 
 ----------------------------------
 
-If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc.
+If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc. If you restrict a file, it will not have a preview shown on the file page.
 
 **Note:** Some Dataverse installations do not allow for file restriction.
 
@@ -536,4 +539,3 @@ If you deaccession the most recently published version of the dataset but not al
    
 .. _Make Data Count: https://makedatacount.org
 .. _Crossref: https://crossref.org
-
