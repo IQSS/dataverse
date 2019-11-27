@@ -90,6 +90,24 @@
                         </div>
                     </ui:fragment>
                     <!-- END: Create/Save Dataset Button Panel -->
+                    <p:dialog id="selectFilesForRestrictEditFilesPage" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrictEditFilesPage" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('selectFilesForRestrictEditFilesPage').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="selectFilesForUnRestrictEditFilesPage" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrictEditFilesPage" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('selectFilesForUnRestrictEditFilesPage').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>

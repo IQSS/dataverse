@@ -734,6 +734,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     //This function is also not parallel with the DatasetPage.restrictFiles method in that it doesn't check for / report an error when
     //files won't be changed (restricted=true and file restricted or restricted false and file unrestricted).
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
+        
+        //First make sure they've even selected file(s) to restrict.... 
+        if (this.getSelectedFiles().isEmpty()) {
+            if (restricted) {
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrictEditFilesPage').show()");
+            } else {
+                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrictEditFilesPage').show()");
+            }
+            return;
+        }
 
         // since we are restricted files, first set the previously restricted file list, so we can compare for
         // determining whether to show the access popup

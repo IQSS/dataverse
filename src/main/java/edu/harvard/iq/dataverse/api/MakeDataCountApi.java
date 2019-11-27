@@ -143,7 +143,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             }
             // Request max page size and then loop to handle multiple pages
             URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
-            logger.fine("Getting " + url.toString());
+            logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
             do {
@@ -170,6 +170,7 @@ public class MakeDataCountApi extends AbstractApiBean {
             } while (nextPage == true);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
+
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);

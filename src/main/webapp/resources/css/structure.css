@@ -682,7 +682,7 @@ div.panel-group div.panel {margin-bottom:1em; border: none;}
 div.panel div.panel-body div.form-group {overflow: hidden;}
 div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;}
-.metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px 12px 12px;}
+.metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px;}
 .metadata-container table.metadata td {padding:6px 12px;}
 @media(max-width:767px){
     .metadata-container table.metadata th, .metadata-container table.metadata td {display:block;width:100%;}

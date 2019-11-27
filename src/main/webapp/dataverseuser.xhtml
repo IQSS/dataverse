@@ -40,10 +40,6 @@
 
                     <p:focus context="dataverseUserForm"/>
                     
-                    
-                    
-                    
-                    
                     <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
                         <h:outputText value="#{bundle['user.lostPasswdTip']}" />
                     </p:panel>
@@ -334,10 +330,33 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
+                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                <table class="metadata">
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">
+                                                <h:outputText value="#{bundle['apitoken.expirationDate.label']}"/>
+                                            </th>
+                                            <td>
+                                                <h:outputText value="#{ApiTokenPage.apiTokenExpiration}"/>
+                                            </td>
+                                            <td class="text-warning" jsf:rendered="#{ApiTokenPage.tokenIsExpired()}">
+                                                <span class="glyphicon glyphicon-warning-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.error']}"/>
+                                            </td>
+                                            <!-- leaving warning off for now -->
+                                            <td class="text-danger" jsf:rendered="#{false}">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                <h:outputText value=" #{bundle['apitoken.expired.warning']}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                             <div id="apiToken" class="highlight hidden">
-                                 <pre>
+                                <pre>
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
-                                 </pre>
+                                </pre>
                             </div>
                             <script src="#{resource['js/mydata.js']}?version=#{systemConfig.getVersion()}"></script>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
@@ -353,9 +372,12 @@
                                 });
                                 //]]>
                             </script>
-                            <div>
+                            <div class="btn-toolbar" role="toolbar">
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
+                                </button>
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                    #{bundle['apitoken.revokeBtn']}
                                 </button>
                             </div>
                         </p:tab>
@@ -538,6 +560,5 @@
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.18-qdr-dev</version>
+    <version>4.18.1-qdr-dev</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -28,9 +28,8 @@
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <junit.version>4.12</junit.version>
-        <junit.jupiter.version>5.3.1</junit.jupiter.version>
-        <junit.vintage.version>5.3.1</junit.vintage.version>
-        <junit.platform.version>1.3.1</junit.platform.version>
+        <junit.jupiter.version>5.5.2</junit.jupiter.version>
+        <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
         <mockito.version>2.28.2</mockito.version>
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
@@ -121,7 +120,7 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
@@ -132,21 +131,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit.vintage.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -382,7 +375,6 @@
             <artifactId>poi-scratchpad</artifactId>
             <version>4.1.1</version>
         </dependency>
-        
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
             <artifactId>jhove-core</artifactId>
@@ -771,7 +763,7 @@
             <plugin>
                 <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>2.22.2</version>
                 <configuration>
                     <!-- testsToExclude come from the profile-->
                     <excludedGroups>${testsToExclude}</excludedGroups>
@@ -805,47 +797,46 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-
-   <profile>
-     <id>Java8</id>
-          <activation>
-       <jdk>1.8</jdk>
-     </activation>
-         <build>
-            <plugins>
-              <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-compiler-plugin</artifactId>
-                                 <version>3.8.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
-                </configuration>
-                </plugin>
-            </plugins>
-         </build>
-   </profile>
       <profile>
-     <id>Java9Plus</id>
-               <activation>
-       <jdk>[1.9</jdk>
-     </activation>
-         <build>
-            <plugins>
-              <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-compiler-plugin</artifactId>
-                 <version>3.8.0</version>
-                <configuration>
-                    <release>8</release>
-                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                    <compilerArgument>${compilerArgument}</compilerArgument>
-                </configuration>
-                </plugin>
-            </plugins>
-         </build>
-   </profile>
- </profiles>
+        <id>Java8</id>
+        <activation>
+          <jdk>1.8</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+      <profile>
+        <id>Java9Plus</id>
+        <activation>
+          <jdk>[1.9</jdk>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.8.0</version>
+              <configuration>
+                <release>8</release>
+                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                <compilerArgument>${compilerArgument}</compilerArgument>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+    </profiles>
 </project>
