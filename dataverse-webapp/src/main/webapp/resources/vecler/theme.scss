@@ -153,6 +153,14 @@ body {
 	}
 }
 
+*, ui-widget-content  {
+	button, span {
+		&.ui-button.ui-state-default{
+			@include btn-access;
+		}
+	}
+}
+
 .alert {
 	color: #043e58;
 
@@ -357,6 +365,10 @@ input, textarea {
 	}
 }
 
+.ui-widget textarea[readonly="readonly"] {
+	font-family: $font-monospace;
+}
+
 .form-horizontal .control-label {
 	padding-top: 10px;
 	padding-bottom: 5px;
@@ -471,6 +483,24 @@ input, textarea {
 		}
 
 		
+	}
+}
+
+/* Tabs */
+
+.ui-tabs {
+	&.ui-tabs-top > .ui-tabs-nav {
+		padding: 0.2em 0 0 0;
+	}
+	
+	.ui-tabs-nav {
+		&.ui-widget-header li a {
+			padding: 10px 1.5em 7px 1.5em;
+		}
+
+		li.ui-tabs-selected a {
+			cursor: default;
+		}
 	}
 }
 

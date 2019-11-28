@@ -48,7 +48,7 @@
                                             <button type="button" class="btn btn-default" onclick="PF('confrmRemove').show()">#{bundle.remove}</button>
                                         </div>
                                     </div>
-                                    <div class="col-sm-8">
+                                    <div class="col-sm-8" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                         <div class="form-group" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                             <label for="selectThumbnail" class="control-label">
                                                 #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
@@ -109,6 +109,7 @@
                                         </p:outputPanel>
                                     </div>
                                 </div>
+                                <div class="clearfix"></div>
                                 <div class="button-block">
                                     <p:commandLink styleClass="btn btn-default" update="@all" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
                                     <!-- TODO WIRE THIS BUTTON UP -->
@@ -162,7 +163,7 @@
                                 <p class="help-block">#{bundle['dataset.widgets.citation.tip']}</p>
                             </div>
                             <div>
-                                <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
+                                <textarea rows="3" cols="54" class="form-control" readonly="readonly">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=citation&amp;amp;heightPx=150&quot;&gt;&lt;/script&gt;</textarea>
                             </div>
                             <div>
                                 <h5>
@@ -171,7 +172,7 @@
                                 <p class="help-block">#{bundle['dataset.widgets.datasetFull.tip']}</p>
                             </div>
                             <div>
-                                <textarea rows="3" cols="54" class="form-control">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
+                                <textarea rows="3" cols="54" class="form-control" readonly="readonly">&lt;script src=&quot;#{systemConfig.dataverseSiteUrl}/resources/js/widgets.js?persistentId=#{dataset.globalId}&amp;amp;dvUrl=#{systemConfig.dataverseSiteUrl}&amp;amp;widget=iframe&amp;amp;heightPx=500&quot;&gt;&lt;/script&gt;</textarea>
                             </div>
                         </ui:fragment>
                         <div class="button-block">
