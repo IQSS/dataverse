@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
@@ -66,7 +66,7 @@ public class DataverseTimerServiceBean implements Serializable {
     @EJB
     DataverseDao dataverseDao;
     @EJB
-    HarvestingClientServiceBean harvestingClientService;
+    HarvestingClientDao harvestingClientService;
     @EJB
     AuthenticationServiceBean authSvc;
     @EJB

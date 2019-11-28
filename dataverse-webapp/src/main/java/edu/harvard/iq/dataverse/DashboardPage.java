@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -34,7 +34,7 @@ public class DashboardPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DashboardPage.class.getCanonicalName());
 
     @EJB
-    HarvestingClientServiceBean harvestingClientService;
+    HarvestingClientDao harvestingClientService;
     @EJB
     OAISetServiceBean oaiSetService;
     @EJB

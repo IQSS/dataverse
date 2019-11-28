@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientComman
 import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
+import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -43,7 +43,7 @@ public class HarvestingClients extends AbstractApiBean {
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
-    HarvestingClientServiceBean harvestingClientService;
+    HarvestingClientDao harvestingClientService;
 
     private static final Logger logger = Logger.getLogger(HarvestingClients.class.getName());
 

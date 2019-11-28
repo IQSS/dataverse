@@ -3,22 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.harvest.client;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.NavigationWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
-import edu.harvard.iq.dataverse.harvest.client.HarvestingClientServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.oai.OaiHandler;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -53,32 +51,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
     @Inject
     DataverseSession session;
     @EJB
-    AuthenticationServiceBean authSvc;
-    @EJB
     DataverseDao dataverseDao;
     @EJB
-    HarvestingClientServiceBean harvestingClientService;
+    HarvestingClientDao harvestingClientService;
     @EJB
     HarvesterServiceBean harvesterService;
     @EJB
-    DatasetDao datasetDao;
-    @EJB
-    IndexServiceBean indexService;
-    @EJB
-    EjbDataverseEngine engineService;
-    @EJB
     DataverseTimerServiceBean dataverseTimerService;
     @Inject
-    DataverseRequestServiceBean dvRequestService;
-    @Inject
     NavigationWrapper navigationWrapper;
+    @Inject
+    private HarvestingClientsService harvestingClientsService;
 
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
 
-    //private static final String solrDocIdentifierDataset = "dataset_";
 
     public enum PageMode {
 
@@ -294,19 +283,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
     public void deleteClient() {
         if (selectedClient != null) {
 
-            //configuredHarvestingClients.remove(selectedClient);
-
             logger.info("proceeding to delete harvesting client " + selectedClient.getName());
             try {
                 harvestingClientService.setDeleteInProgress(selectedClient.getId());
-
-                //engineService.submit(new DeleteHarvestingClientCommand(dvRequestService.getDataverseRequest(), selectedClient));
-                harvestingClientService.deleteClient(selectedClient.getId());
+                harvestingClientsService.deleteClient(selectedClient);
                 JsfHelper.addFlashInfoMessage(BundleUtil.getStringFromBundle("harvestclients.tab.header.action.delete.infomessage"));
-
-                //} catch (CommandException ex) {
-                //    String failMessage = "Selected harvesting client cannot be deleted.";
-                //    JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             } catch (Exception ex) {
                 String failMessage = BundleUtil.getStringFromBundle("harvest.delete.error") + ex.getMessage();
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
@@ -372,39 +353,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // set default description - they can customize it as they see fit:
         newHarvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
 
+        Try.of(() -> harvestingClientsService.createHarvestingClient(newHarvestingClient))
+                .onSuccess(harvestingClient -> {
+                    configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvestclients.newClientDialog.success", harvestingClient.getName()));
+                })
+                .onFailure(this::handleCreateHarvestingClientFailure);
 
-        // will try to save it now:
-
-        try {
-            newHarvestingClient = engineService.submit(new CreateHarvestingClientCommand(dvRequestService.getDataverseRequest(), newHarvestingClient));
-
-            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-
-            // NO, we no longer create timers here. It is the job of the Mother Timer!
-            //dataverseTimerService.createHarvestTimer(newHarvestingClient);
-
-            String successMessage = BundleUtil.getStringFromBundle("harvestclients.newClientDialog.success");
-            successMessage = successMessage.replace("{0}", newHarvestingClient.getName());
-            JsfHelper.addFlashSuccessMessage(successMessage);
-
-        } /* TODO: (?) add a dedicated "NameAlreadyExists" exception for the 
-             create client command? 
-          catch ( CreateHarvestingClientCommand.NicknameAlreadyExistsException naee ) {
-            FacesContext.getCurrentInstance().addMessage(newHarvestingClient.getName(),
-                           new FacesMessage( FacesMessage.SEVERITY_ERROR, naee.getMessage(), null));
-
-        }*/ catch (CommandException ex) {
-            logger.log(Level.WARNING, "Harvesting client creation command failed", ex);
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    BundleUtil.getStringFromBundle("harvest.createCommand.error"),
-                                    ex.getMessage());
-        } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.create.fail"));
-            logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + ex.getMessage(), ex);
-        }
         setPageMode(PageMode.VIEW);
-
-
     }
 
     // this saves an existing client that the user has edited: 
@@ -451,30 +407,17 @@ public class HarvestingClientsPage implements java.io.Serializable {
             harvestingClient.setScheduled(false);
         }
 
-        // will try to save it now:
+        Try.of(() -> harvestingClientsService.updateHarvestingClient(harvestingClient))
+                .onSuccess(updatedClient -> {
+                    configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
+                    if (!updatedClient.isScheduled()) {
+                        dataverseTimerService.removeHarvestTimer(updatedClient);
+                    }
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.update.success", updatedClient.getName()));
+                })
+                .onFailure(this::handleUpdateHarvestingClientFailure);
 
-        try {
-            harvestingClient = engineService.submit(new UpdateHarvestingClientCommand(dvRequestService.getDataverseRequest(), harvestingClient));
-
-            configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
-
-            if (!harvestingClient.isScheduled()) {
-                dataverseTimerService.removeHarvestTimer(harvestingClient);
-            }
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.update.success") + harvestingClient.getName());
-
-        } catch (CommandException ex) {
-            logger.log(Level.WARNING, "Failed to save harvesting client", ex);
-            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                                    BundleUtil.getStringFromBundle("harvest.save.failure1"),
-                                    ex.getMessage());
-        } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.save.failure2"));
-            logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + ex.getMessage(), ex);
-        }
         setPageMode(PageMode.VIEW);
-
-
     }
 
     public void validateMetadataFormat(FacesContext context, UIComponent toValidate, Object rawValue) {
@@ -1051,5 +994,31 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public boolean isSuperUser() {
         return session.getUser().isSuperuser();
+    }
+
+    // -------------------- PRIVATE ---------------------
+
+    private void handleCreateHarvestingClientFailure(Throwable throwable) {
+        if(throwable instanceof CommandException) {
+            logger.log(Level.WARNING, "Harvesting client creation command failed", throwable);
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("harvest.createCommand.error"),
+                    throwable.getMessage());
+        } else if(throwable instanceof Exception) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.create.fail"));
+            logger.log(Level.SEVERE, "Harvesting client creation failed (reason unknown)." + throwable.getMessage(), throwable);
+        }
+    }
+
+    private void handleUpdateHarvestingClientFailure(Throwable throwable) {
+        if(throwable instanceof CommandException) {
+            logger.log(Level.WARNING, "Failed to save harvesting client", throwable);
+            JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("harvest.save.failure1"),
+                    throwable.getMessage());
+        } else if(throwable instanceof Exception) {
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.save.failure2"));
+            logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + throwable.getMessage(), throwable);
+        }
     }
 }

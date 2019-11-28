@@ -71,7 +71,7 @@ public class HarvesterServiceBean {
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
     @EJB
-    HarvestingClientServiceBean harvestingClientService;
+    HarvestingClientDao harvestingClientService;
     @EJB
     ImportServiceBean importService;
     @EJB
