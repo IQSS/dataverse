@@ -1,17 +1,19 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset;
 
+import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.Lazy;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
@@ -21,6 +23,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,14 +37,14 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     @EJB
     DatasetDao datasetDao;
 
-    @EJB
-    EjbDataverseEngine commandEngine;
-
     @Inject
     DataverseRequestServiceBean dvRequestService;
 
     @Inject
-    private PermissionServiceBean permissionService;
+    private PermissionsWrapper permissionsWrapper;
+
+    @Inject
+    private DatasetService datasetService;
 
     private Long datasetId;
     private Dataset dataset;
@@ -52,10 +55,8 @@ public class DatasetWidgetsPage implements java.io.Serializable {
      */
     private DatasetThumbnail datasetThumbnail;
     private DataFile datasetFileThumbnailToSwitchTo;
-    private UpdateDatasetThumbnailCommand updateDatasetThumbnailCommand;
+    private Option<Lazy<DatasetThumbnail>> thumbnailOperation = Option.none();
 
-    @Inject
-    PermissionsWrapper permissionsWrapper;
     private final boolean considerDatasetLogoAsCandidate = false;
 
     public String init() {
@@ -77,7 +78,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-
 
 
         datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, new DataAccess());
@@ -129,14 +129,17 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     public void setDataFileAsThumbnail() {
         logger.fine("setDataFileAsThumbnail clicked");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail, datasetFileThumbnailToSwitchTo.getId(), null);
+
+        thumbnailOperation = Option.of(Lazy.of(() -> datasetService.changeDatasetThumbnail(dataset, datasetFileThumbnailToSwitchTo)));
+
         String base64image = ImageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
     }
 
     public void flagDatasetThumbnailForRemoval() {
         logger.fine("flagDatasetThumbnailForRemoval");
-        updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail, null, null);
+        thumbnailOperation = Option.of(Lazy.of(() -> datasetService.removeDatasetThumbnail(dataset)));
+
         datasetFileThumbnailToSwitchTo = null;
         datasetThumbnail = null;
     }
@@ -145,11 +148,12 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
         try {
-            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputstream());
+            InputStream uploadedFileInputstream = uploadedFile.getInputstream();
+
+            thumbnailOperation = Option.of(Lazy.of(() -> datasetService.changeDatasetThumbnail(dataset, uploadedFileInputstream)));
         } catch (IOException ex) {
             String error = "Unexpected error while uploading file.";
             logger.warning("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
-            updateDatasetThumbnailCommand = null;
             return;
         }
         File file = null;
@@ -169,30 +173,32 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     }
 
     public String save() {
-        logger.fine("save clicked");
-        if (updateDatasetThumbnailCommand == null) {
+        if (thumbnailOperation.isEmpty()) {
             logger.fine("The user clicked saved without making any changes.");
-            return null;
+            return redirectToDatasetPage();
         }
-        try {
-            DatasetThumbnail datasetThumbnailFromCommand = commandEngine.submit(updateDatasetThumbnailCommand);
+
+        Lazy<DatasetThumbnail> lazyOperation = thumbnailOperation.get();
+
+        Try<DatasetThumbnail> executedOperation = Try.of(lazyOperation::get);
+
+        if (executedOperation.isSuccess()) {
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.success"));
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
-        } catch (CommandException ex) {
-            String error = ex.getLocalizedMessage();
-            /**
-             * @todo Should this go in the ActionLogRecord instead?
-             */
-            // Username @dataverseAdmin experienced a problem executing UpdateDatasetThumbnailCommand on a DVObject {=[Dataset id:1377 ]} and saw this error: Just testing what an error would look like in the GUI.
-            logger.info("Username " + updateDatasetThumbnailCommand.getRequest().getUser().getIdentifier() + " experienced a problem executing " + updateDatasetThumbnailCommand.getClass().getSimpleName() + " on a DVObject " + updateDatasetThumbnailCommand.getAffectedDvObjects() + " and saw this error: " + error);
-            JsfHelper.addFlashErrorMessage(error);
-            return null;
+            return redirectToDatasetPage();
         }
+
+        executedOperation.onFailure(this::handleThumbnailExceptions);
+        return "";
     }
 
-    public String cancel() {
-        logger.fine("cancel clicked");
+    public String redirectToDatasetPage() {
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
+    }
+
+    private void handleThumbnailExceptions(Throwable exception) {
+
+        logger.log(Level.SEVERE, "There was a problem with executing thumbnail command", exception);
+        JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.thumbnailsAndWidget.fail"));
     }
 
 }

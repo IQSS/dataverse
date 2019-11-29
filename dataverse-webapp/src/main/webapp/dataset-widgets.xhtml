@@ -75,7 +75,7 @@
                             </div>
                             <div class="button-block">
                                 <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
-                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
+                                <p:commandButton styleClass="btn btn-default" update="@all" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.redirectToDatasetPage()}"/>
                             </div>
 
                             <p:dialog header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">

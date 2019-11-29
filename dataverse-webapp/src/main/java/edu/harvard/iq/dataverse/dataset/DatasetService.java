@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,6 +133,30 @@ public class DatasetService {
                                                                       datasetForNewThumbnail,
                                                                       UpdateDatasetThumbnailCommand.UserIntent.setDatasetFileAsThumbnail,
                                                                       thumbnailFile.getId(),
+                                                                      null));
+
+    }
+
+    /**
+     * Replaces thumbnail (default if none is set) with the one provided.
+     *
+     * @param datasetForNewThumbnail dataset that will have new thumbnail
+     * @param fileStream             thumbnail that will be set for dataset
+     */
+    public DatasetThumbnail changeDatasetThumbnail(Dataset datasetForNewThumbnail, InputStream fileStream) {
+        return commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(),
+                                                                      datasetForNewThumbnail,
+                                                                      UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail,
+                                                                      null,
+                                                                      fileStream));
+
+    }
+
+    public DatasetThumbnail removeDatasetThumbnail(Dataset datasetWithThumbnail) {
+        return commandEngine.submit(new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(),
+                                                                      datasetWithThumbnail,
+                                                                      UpdateDatasetThumbnailCommand.UserIntent.removeThumbnail,
+                                                                      null,
                                                                       null));
 
     }
