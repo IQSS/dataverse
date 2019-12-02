@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Utility class with common operations on dataset fields
@@ -45,7 +47,7 @@ public class DatasetFieldUtil {
     }
     
     public static Map<MetadataBlock, List<DatasetField>> groupByBlock(List<DatasetField> datasetFields) {
-        Map<MetadataBlock, List<DatasetField>> metadataBlocks = new HashMap<>();
+        Map<MetadataBlock, List<DatasetField>> metadataBlocks = new TreeMap<>(Comparator.comparingLong(mb -> mb.getId()));
         
         for (DatasetField dsf: datasetFields) {
             MetadataBlock metadataBlockOfField = dsf.getDatasetFieldType().getMetadataBlock();
