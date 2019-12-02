@@ -559,7 +559,8 @@
                                                              style="display:none"
                                                              process="@this :datasetForm:hostDataverseContent"
                                                              update="@form,:breadCrumbPanel"
-                                                             action="#{DatasetPage.updateOwnerDataverse()}">
+                                                             action="#{DatasetPage.updateOwnerDataverse()}"
+                                                             oncomplete="bind_bsui_components();">
                                             </p:commandButton>
                                         </p:fragment>
                                     </div>

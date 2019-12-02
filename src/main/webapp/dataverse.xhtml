@@ -95,7 +95,8 @@
                                                      style="display:none"
                                                      process="@this :dataverseForm:selectHostDataverse"
                                                      update="@form,:breadCrumbPanel"
-                                                     action="#{DataversePage.updateOwnerDataverse()}">
+                                                     action="#{DataversePage.updateOwnerDataverse()}"
+                                                     oncomplete="bind_bsui_components();">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -369,6 +370,14 @@
                                 </div>
                             </div>
                         </p:panel>
+                        <!-- Save / Cancel Button Panel -->
+                        <div class="button-block">
+                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
+                                <f:ajax onerror="window.scrollTo(0, 0)" />
+                            </p:commandButton>
+                            <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
+                            <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                        </div>
                     </ui:fragment>
                     <!-- END Edit Mode -->
                     <!-- View Mode / Description Panel -->
@@ -569,14 +578,6 @@
                             <!-- END: Featured Dataverses Carousel -->
                         </ui:fragment>
                     </ui:fragment>
-                    <!-- Save / Cancel Button Panel -->
-                    <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
-                            <f:ajax onerror="window.scrollTo(0, 0)" />
-                        </p:commandButton>
-                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
-                        <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-                    </div>
                     <!-- POPUPS -->
                     <!-- Featured Dataverses Popup -->
                     <p:dialog id="browseOptsForm" header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
