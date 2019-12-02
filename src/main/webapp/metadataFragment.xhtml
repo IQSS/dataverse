@@ -166,7 +166,7 @@
                                                                 </p:outputPanel>
                                                                 -->
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="#{!empty dsf.controlledVocabularyValues}"
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
@@ -229,7 +229,7 @@
                                                                 </p:outputPanel>
 -->
                                                                     <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="#{!empty subdsf.controlledVocabularyValues }"  >
+                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"  >
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                     </p:selectCheckboxMenu>
 
