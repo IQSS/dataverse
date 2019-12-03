@@ -254,21 +254,25 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell solr to listen on localhost by default.
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy. 
 
-If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host setting, but solr must be protected by a firewall and only available to the Dataverse web application. Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html
+It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particulary serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
-We additionally recommend that the solr service account's shell be disabled, as it isn't necessary for daily operation:
+If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es). 
+
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
 
         # usermod -s /sbin/nologin solr
 
-For solr upgrades or further configuration you may temporarily re-enable the service account shell:
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
 
         # usermod -s /bin/bash solr
 
-or simply prepend each command you would run as the solr user with "sudo -u solr":
+or simply prepend each command you would run as the Solr user with "sudo -u solr":
 
         # sudo -u solr command
+
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised. 
 
 jq
 --
