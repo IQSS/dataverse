@@ -479,6 +479,16 @@
                                         <p class="form-control-static">#{DataverseUserPage.currentUser.position}</p>
                                     </div>
                                 </div>
+                                <!-- Notifications Language -->
+                                <div class="form-group">
+                                    <label for="notificationsLanguage" class="col-sm-3 control-label">
+                                        #{bundle['user.notificationsLanguage']}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <p class="form-control-static">
+                                        #{DataverseUserPage.getUserLocalizedNotificationsLanguageForDisplay()}</p>
+                                    </div>
+                                </div>
                             </div>
                         </p:tab>
                         <p:tab id="apiTokenTab" title="#{bundle['apitoken.title']}">

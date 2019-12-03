@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -127,13 +128,14 @@ public class UserServiceBean {
         user.setAffiliation(UserUtil.getStringOrNull(dbRowValues[5]));
         user.setSuperuser((Boolean) (dbRowValues[6]));
         user.setPosition(UserUtil.getStringOrNull(dbRowValues[7]));
+        user.setNotificationsLanguage(new Locale(dbRowValues[8].toString()));
 
-        user.setCreatedTime(UserUtil.getTimestampOrNull(dbRowValues[8]));
-        user.setLastLoginTime(UserUtil.getTimestampOrNull(dbRowValues[9]));
-        user.setLastApiUseTime(UserUtil.getTimestampOrNull(dbRowValues[10]));
+        user.setCreatedTime(UserUtil.getTimestampOrNull(dbRowValues[9]));
+        user.setLastLoginTime(UserUtil.getTimestampOrNull(dbRowValues[10]));
+        user.setLastApiUseTime(UserUtil.getTimestampOrNull(dbRowValues[11]));
 
-        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[11]));
-        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[12]));
+        user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[12]));
+        user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[13]));
 
         user.setRoles(roles);
         return user;
@@ -409,7 +411,7 @@ public class UserServiceBean {
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
-        qstr += " u.position,";
+        qstr += " u.position, u.notificationslanguage, ";
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
         qstr += " prov.id, prov.factoryalias";
         qstr += " FROM authenticateduser u,";

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.user;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.UserUtil;
+import edu.harvard.iq.dataverse.persistence.config.LocaleConverter;
 import edu.harvard.iq.dataverse.persistence.config.ValidateEmail;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +13,7 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,6 +27,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -103,6 +106,10 @@ public class AuthenticatedUser implements User, Serializable {
 
     @Column(nullable = true)
     private Timestamp lastApiUseTime;   // last API use with user's token
+
+    @Column(nullable = false)
+    @Convert(converter = LocaleConverter.class)
+    private Locale notificationsLanguage = Locale.ENGLISH;
 
     private boolean superuser;
 
@@ -265,6 +272,14 @@ public class AuthenticatedUser implements User, Serializable {
         this.emailConfirmed = emailConfirmed;
     }
 
+    public Locale getNotificationsLanguage() {
+        return notificationsLanguage;
+    }
+
+    public void setNotificationsLanguage(Locale notificationsLanguage) {
+        this.notificationsLanguage = notificationsLanguage;
+    }
+
     @Override
     public boolean isSuperuser() {
         return superuser;
@@ -322,6 +337,7 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("email", this.email);
         authenicatedUserJson.add("affiliation", UserUtil.getStringOrNull(this.affiliation));
         authenicatedUserJson.add("position", UserUtil.getStringOrNull(this.position));
+        authenicatedUserJson.add("notificationsLanguage", UserUtil.getStringOrNull(this.notificationsLanguage));
         authenicatedUserJson.add("isSuperuser", this.superuser);
 
         authenicatedUserJson.add("authenticationProvider", this.authProviderFactoryAlias);

@@ -569,6 +569,13 @@ public class DataverseUserPage implements java.io.Serializable {
         return userAuthProvider;
     }
 
+    public String getUserLocalizedNotificationsLanguageForDisplay() {
+        String displayLanguage = StringUtils.capitalize(currentUser.getNotificationsLanguage().getDisplayLanguage(session.getLocale()));
+
+        return isUserLanguageConfigured() ? displayLanguage : displayLanguage + " " + BundleUtil.getStringFromBundle("user.notificationsLanguage.notSupported");
+    }
+
+
     public boolean isPasswordEditable() {
         return getUserAuthProvider().isPasswordUpdateAllowed();
     }
@@ -714,5 +721,11 @@ public class DataverseUserPage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
         }
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+    }
+
+    // -------------------- PRIVATE ---------------------
+
+    private boolean isUserLanguageConfigured() {
+        return StringUtils.isNotEmpty(settingsWrapper.getConfiguredLocaleName(currentUser.getNotificationsLanguage().toLanguageTag()));
     }
 }
