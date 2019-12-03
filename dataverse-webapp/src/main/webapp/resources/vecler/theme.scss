@@ -288,6 +288,19 @@ a,
 	}
 }
 
+*, ui-widget-content  {
+	button, span {
+		&.ui-button.ui-state-default{
+			@include btn-access;
+		}
+	}
+}
+
+.ui-button.ui-state-default[id*="\:cancel"] {
+	border: none;
+	box-shadow: none;
+}
+
 /* Forms */
 
 .ui-selectonemenu {
@@ -370,7 +383,7 @@ input, textarea {
 }
 
 .form-horizontal .control-label {
-	padding-top: 10px;
+	padding-top: 4px;
 	padding-bottom: 5px;
 	color: $main-text-color;
 }
@@ -1149,14 +1162,22 @@ div.filesTable .ui-paginator {
 		padding-top: 27px;
 		padding-bottom: 31px;
 
-		button {
-			padding: 1px 0 2px 0;
+		button, a {
+			padding: 6px 12px;
 			color: $link-color;
 
 			&:last-child {
-				background: none;
-				border: none;
+				border: 1px solid transparent;
 				box-shadow: none;
+
+				&:active {
+					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+				}
+			}
+
+			span.ui-button-text {
+				line-height: 1.42857143;
+				padding: 0;
 			}
 		}
 	}
@@ -1191,9 +1212,17 @@ div.filesTable .ui-paginator {
 	}
 
 	.ui-message, .ui-messages {
-		&.ui-message-info, &.ui-message-error, &.ui-message-warn, &.ui-message-fatal {
+		&.ui-message-info, &.ui-message-warn, &.ui-message-fatal {
 			margin: 10px 0;
 			padding: 10px;
+		}
+		&.ui-message-error {
+			margin: 0;
+			padding: 5px 10px;
+		}
+
+		.ui-message-error-detail {
+			margin-left: 0;
 		}
 	}
 }
