@@ -114,12 +114,12 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <h:outputLabel for="affiliation" styleClass="control-label">
-                                    #{bundle.affiliation} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    #{bundle.affiliation}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.affiliation.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}" required="true"/>
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                     <p:message for="affiliation" display="text"/>
                                 </div>
                             </div>
