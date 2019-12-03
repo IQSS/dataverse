@@ -188,9 +188,7 @@
                                                         <div class="form-col-container #{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'col-sm-12' : 'col-sm-6'}">
                                                             <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue'}">
                                                                 <p class="help-block">
-                                                                    <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                                                                        <f:param value="#{bundle.htmlAllowedTags}"/>
-                                                                    </h:outputFormat>
+                                                                    <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                                                 </p>
                                                             </ui:fragment>
                                                             <label jsf:for="#{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
