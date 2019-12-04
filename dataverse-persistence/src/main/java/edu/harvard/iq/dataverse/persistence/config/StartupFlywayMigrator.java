@@ -20,6 +20,7 @@ public class StartupFlywayMigrator {
 
         Flyway flyway = Flyway.configure()
                 .dataSource(dataSource)
+                .sqlMigrationSuffixes(".sql, .psql")
                 .validateOnMigrate(false)
                 .baselineOnMigrate(true)
                 .load();
