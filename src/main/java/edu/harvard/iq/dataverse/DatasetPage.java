@@ -4285,9 +4285,12 @@ public class DatasetPage implements java.io.Serializable {
             selectedTags = selectedTags.clone();
         }
     }
-        
-
     
+    public void handleCVVSelection(final AjaxBehaviorEvent event) {
+        //Dummy method for AJAX update of items selected
+    }
+        
+   
     private void refreshTabFileTagsByName(){
         
         tabFileTagsByName= new ArrayList<>();

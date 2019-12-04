@@ -876,6 +876,8 @@ The password reset feature requires ``dataverse.fqdn`` to be configured.
 | ``https://{dataverse.fqdn}/``
 | If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
 
+.. _dataverse.siteUrl:
+
 dataverse.siteUrl
 +++++++++++++++++
 

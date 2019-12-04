@@ -86,6 +86,9 @@ Glassfish does not provide up to date documentation but Payara (a fork of Glassf
 - exporting to DDI format
 - which Dataverse installation an "external tool" should return to
 - which Dataverse installation Geoconnect should return to
+- URLs embedded in SWORD API responses
+
+The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl`.
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 

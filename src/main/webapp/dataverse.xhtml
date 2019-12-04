@@ -95,7 +95,8 @@
                                                      style="display:none"
                                                      process="@this :dataverseForm:selectHostDataverse"
                                                      update="@form,:breadCrumbPanel"
-                                                     action="#{DataversePage.updateOwnerDataverse()}">
+                                                     action="#{DataversePage.updateOwnerDataverse()}"
+                                                     oncomplete="bind_bsui_components();">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -113,12 +114,12 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <h:outputLabel for="affiliation" styleClass="control-label">
-                                    #{bundle.affiliation} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    #{bundle.affiliation}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.affiliation.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}" required="true"/>
+                                    <p:inputText id="affiliation" styleClass="form-control" value="#{DataversePage.dataverse.affiliation}"/>
                                     <p:message for="affiliation" display="text"/>
                                 </div>
                             </div>
@@ -212,9 +213,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                     <p class="help-block">
-                                        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                                            <f:param value="#{bundle.htmlAllowedTags}"/>
-                                        </h:outputFormat>
+                                        <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                     </p>
                                     <p:inputTextarea id="description" styleClass="form-control" value="#{DataversePage.dataverse.description}"
                                                     rows="6" cols="50"
@@ -369,6 +368,14 @@
                                 </div>
                             </div>
                         </p:panel>
+                        <!-- Save / Cancel Button Panel -->
+                        <div class="button-block">
+                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
+                                <f:ajax onerror="window.scrollTo(0, 0)" />
+                            </p:commandButton>
+                            <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
+                            <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
+                        </div>
                     </ui:fragment>
                     <!-- END Edit Mode -->
                     <!-- View Mode / Description Panel -->
@@ -569,14 +576,6 @@
                             <!-- END: Featured Dataverses Carousel -->
                         </ui:fragment>
                     </ui:fragment>
-                    <!-- Save / Cancel Button Panel -->
-                    <div class="button-block" jsf:rendered="#{!empty DataversePage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
-                            <f:ajax onerror="window.scrollTo(0, 0)" />
-                        </p:commandButton>
-                        <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
-                        <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DataversePage.dataverse.owner.alias}" rendered="#{DataversePage.dataverse.id == null and DataversePage.ownerId != null}"/>
-                    </div>
                     <!-- POPUPS -->
                     <!-- Featured Dataverses Popup -->
                     <p:dialog id="browseOptsForm" header="#{bundle['dataverse.option.featuredDataverse']}" widgetVar="browseOptsForm" modal="true">
@@ -776,7 +775,7 @@
                     var scrollPos=0;
                     $(document).ready(function () {
                         initCarousel();
-                        popoverHTML('#{bundle.htmlAllowedTitle}');
+                        popoverHTML('#{bundle.htmlAllowedTitle}','#{bundle.htmlAllowedTags}');
                     });
                     function initCarousel() {
                         var owl1 = $("#featuredDataversesList");

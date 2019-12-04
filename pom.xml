@@ -356,17 +356,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
-            <artifactId>poi-examples</artifactId>
-            <version>4.0.0</version>
+            <artifactId>poi-scratchpad</artifactId>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
