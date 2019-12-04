@@ -53,7 +53,7 @@
                         #{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
                     <div class="col-sm-10 form-group">
-                        <div class="col-sm-4">
+                        <div class="col-md-4">
                             <p:fragment id="availableRoles">
                                 <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
                                                   value="#{managePermissionsPage.selectedRoleId}"
@@ -65,7 +65,7 @@
                                 <p:message for="assignRoleRadios" display="text"/>
                             </p:fragment>
                         </div>
-                        <div class="col-sm-8 bg-muted">
+                        <div class="col-md-8 bg-muted">
                             <p:fragment id="roleDetails">
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>

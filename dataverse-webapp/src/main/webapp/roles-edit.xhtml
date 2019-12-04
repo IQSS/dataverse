@@ -8,14 +8,14 @@
         <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole">
             <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
                 <div class="row form-horizontal">
-                    <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label" for="roleName">
+                    <div class="col-sm-6 form-group">
+                        <label class="control-label" for="roleName">
                             #{bundle['dataverse.permissions.roles.name']}
                             <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                   data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}"></span>
                         </label>
-                        <div class="col-sm-9">
+                        <div>
                             <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleName" value="#{managePermissionsPage.role.name}"
                                              required="#{param['DO_VALIDATION']}"
@@ -26,14 +26,14 @@
                             <p:message for="roleName" display="text"/>
                         </div>
                     </div>
-                    <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label" for="roleName">
+                    <div class="col-sm-6 form-group">
+                        <label class="control-label" for="roleName">
                             #{bundle['dataverse.permissions.roles.id']}
                             <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                   data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}"></span>
                         </label>
-                        <div class="col-sm-9">
+                        <div>
                             <p:panelGrid columns="2" styleClass="noBorders">
                                 <p:inputText id="roleAlias" value="#{managePermissionsPage.role.alias}"
                                              required="#{param['DO_VALIDATION']}"
@@ -44,13 +44,15 @@
                             <p:message for="roleAlias" display="text"/>
                         </div>
                     </div>
-                    <div class="col-xs-6 form-group">
-                        <label class="col-sm-3 control-label" for="roleName">
+                </div>
+                <div class="row form-horizontal">
+                    <div class="col-sm-12 form-group">
+                        <label class="control-label" for="roleName">
                            #{bundle.description}
                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                   data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}"></span>
                         </label>
-                        <div class="col-sm-9">
+                        <div>
                             <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
                                 <h:panelGroup>
                                     <p:inputText id="roleDescription" styleClass="form-control" value="#{managePermissionsPage.role.description}"/>

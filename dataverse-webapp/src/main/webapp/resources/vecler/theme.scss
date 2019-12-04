@@ -174,6 +174,12 @@ body {
 	}
 }
 
+.bg-warning {
+	padding: 15px 20px;
+	border-radius: $border-radius;
+	margin-bottom: 20px;
+}
+
 .ui-message, .ui-messages {
 	box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 1px 1px rgba(0,0,0,.075);
 
@@ -439,6 +445,7 @@ input, textarea {
 		border: 1px solid $main-color;
 	
 		color: #4a4a4a;
+		text-transform: none;
 	}
 }
 
@@ -988,10 +995,6 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 	padding-right: 18px;
 
 	div.emptyResults.bg-warning {
-		padding: 15px 20px;
-		border-radius: $border-radius;
-		margin-bottom: 20px;
-
 		p {
 			margin: 0;
 
@@ -1169,6 +1172,9 @@ div.filesTable .ui-paginator {
 		width: 100% !important;
 		height: calc(100% - 67px) !important;
 
+		/* Missing scrollbars fix */
+		max-height: calc(80vh - 67px);
+
 		/* Null height fix */
 		.form-group::after {
 			content: " ";
@@ -1247,6 +1253,14 @@ div.filesTable .ui-paginator {
 			margin-left: 0;
 		}
 	}
+
+	div[class^="col-"] + div[class^="col-"].bg-muted {
+		margin-top: 15px;
+	}
+
+	.form-horizontal .form-group {
+		margin-right: -14px;
+	}
 }
 
 div.ui-widget-overlay {
@@ -1286,6 +1300,20 @@ div.ui-widget-overlay {
 			font-size: 26px;
 		}
 	}
+}
+
+.panelLayoutBlock > .ui-widget-content {
+	border-bottom: none;
+}
+
+#rolesPermissionsForm\:rolesPermissionsDialog {
+	input[type=text], table {
+		width: 100%;
+	}
+}
+
+#rolesPermissionsForm\:userGroupDialog[style*="width: auto"] {
+	width: 100% !important;
 }
 
 /* Fix for the unnecessary scrollbar in some modals */
