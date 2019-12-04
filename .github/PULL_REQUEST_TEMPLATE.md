@@ -8,8 +8,8 @@ Closes #
 
 **Suggestions on how to test this**:
 
-**Does this PR introduce a user-facing change?**:
+**Does this PR introduce a user interface change?**:
 
-**Is there a release notes update needed for this change?**
+**Is there a release notes update needed for this change?**:
 
 **Additional documentation**:
