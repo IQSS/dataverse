@@ -48,8 +48,9 @@
                                          update=":editMetadataForm"
                                          onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="$(document).scrollTop(0);"
-                                         action="#{editDatasetMetadataPage.save}" />
-                        <p:commandButton id="cancelTop" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
+                                         action="#{editDatasetMetadataPage.save}"
+                                         class="btn-access" />
+                        <p:commandButton id="cancelTop" class="btn-access" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
                         </p:commandButton>
                     </div>
                     
@@ -71,8 +72,9 @@
                                          update=":editMetadataForm"
                                          onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="$(document).scrollTop(0);"
-                                         action="#{editDatasetMetadataPage.save}" />
-                        <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
+                                         action="#{editDatasetMetadataPage.save}"
+                                         class="btn-access" />
+                        <p:commandButton id="cancel" class="btn-access" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}" />
 
                     </div>
 
