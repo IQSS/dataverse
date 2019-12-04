@@ -56,10 +56,10 @@ public class FileAccessIOTest {
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
-
-        datasetAccess = new FileAccessIO<>(dataset);
-        dataFileAccess = new FileAccessIO<>(dataFile);
-        dataverseAccess = new FileAccessIO<>(dataverse);
+        String dummyDriverId = "dummmy";
+        datasetAccess = new FileAccessIO<>(dataset,null, dummyDriverId);
+        dataFileAccess = new FileAccessIO<>(dataFile, null, dummyDriverId);
+        dataverseAccess = new FileAccessIO<>(dataverse, null, dummyDriverId);
 
         File file = new File("/tmp/files/tmp/dataset/Dataset");
         file.getParentFile().mkdirs();

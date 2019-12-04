@@ -43,8 +43,8 @@ public class S3AccessIOTest {
         dataFile.setOwner(dataSet);
         dataFileId = UtilIT.getRandomIdentifier();
         dataFile.setStorageIdentifier("s3://bucket:"+dataFileId);
-        dataSetAccess = new S3AccessIO<>(dataSet, null, s3client);
-        dataFileAccess = new S3AccessIO<>(dataFile, null, s3client);
+        dataSetAccess = new S3AccessIO<>(dataSet, null, s3client, "s3");
+        dataFileAccess = new S3AccessIO<>(dataFile, null, s3client, "s3");
     }
     
     /*
