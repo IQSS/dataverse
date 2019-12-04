@@ -175,12 +175,14 @@ public class IngestServiceBean {
 					dataFile.setOwner(dataset);
 				}
 				logger.info("SI: " + dataFile.getStorageIdentifier());
-				if (!dataFile.getStorageIdentifier().startsWith("s3://")) {
-					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
+				
+				String[] storageInfo = DataAccess.getDriverIdAndStorageId(dataFile.getStorageIdentifier());
+				String driverType = DataAccess.getDriverType(storageInfo[0]);
+				String storageId = storageInfo[1];
+				if (driverType.equals("tmp")|| driverType.contentEquals("file")) {  //"file" is the default if no prefix
+					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageId;
 
 					// Try to save the file in its permanent location:
-					String storageId = dataFile.getStorageIdentifier().replaceFirst("^tmp://", "");
-
 					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
 					WritableByteChannel writeChannel = null;
 					FileChannel readChannel = null;
