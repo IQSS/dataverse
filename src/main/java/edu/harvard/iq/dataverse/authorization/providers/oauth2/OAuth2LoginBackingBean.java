@@ -109,9 +109,11 @@ public class OAuth2LoginBackingBean implements Serializable {
                     session.setUser(dvUser);
                     session.configureSessionTimeout();
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
-                    tokenData.setUser(dvUser);
-                    tokenData.setOauthProviderId(idp.getId());
-                    oauth2Tokens.store(tokenData);
+                    if (tokenData != null) {
+                        tokenData.setUser(dvUser);
+                        tokenData.setOauthProviderId(idp.getId());
+                        oauth2Tokens.store(tokenData);
+                    }
                     
                     Faces.redirect(redirectPage.orElse("/"));
                 }
