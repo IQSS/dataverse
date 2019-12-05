@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetRelPublication;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -437,7 +439,7 @@ public class SolrSearchResult {
                         .add("parentName", this.getParent().get("name"));
             }
         }
-
+        
         return myDataJson;
     } //getJsonForMydata
 
@@ -457,6 +459,8 @@ public class SolrSearchResult {
         String filePersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
+        String publisherName = null;
+        
 
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
@@ -466,6 +470,8 @@ public class SolrSearchResult {
             displayName = this.title;
             identifierLabel = "global_id";
             preferredUrl = getPersistentUrl();
+            publisherName = this.parent.get("name");
+           // if
             /**
              * @todo Should we show the name of the parent dataverse?
              */
@@ -534,6 +540,7 @@ public class SolrSearchResult {
                 .add("file_persistent_id", this.filePersistentId)
                 .add("dataset_name", datasetName)
                 .add("dataset_id", datasetId)
+                .add("publisher", publisherName)
                 .add("dataset_persistent_id", datasetPersistentId)
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
@@ -552,6 +559,96 @@ public class SolrSearchResult {
             }
         }
         
+        if (this.entity == null) {
+            
+        } else {
+            if (this.entity.isInstanceofDataset()) {
+                System.out.print("Instance of Dataset: " + this.entity.getStorageIdentifier());
+                nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
+                Dataset ds = (Dataset) this.entity;
+                DatasetVersion dv;
+                if (this.isDraftState()) {
+                    dv = ds.getLatestVersion();
+                } else {
+                    dv = ds.getReleasedVersion();
+                }
+
+                if (!dv.getKeywords().isEmpty()) {
+                    JsonArrayBuilder keyWords = Json.createArrayBuilder();
+                    for (String keyword : dv.getKeywords()) {
+                        keyWords.add(keyword);
+                    }
+                    nullSafeJsonBuilder.add("keywords", keyWords);
+                }
+                JsonArrayBuilder subjects = Json.createArrayBuilder();
+                for (String subject : dv.getDatasetSubjects()) {
+                    subjects.add(subject);
+                }
+                nullSafeJsonBuilder.add("subjects", subjects);
+                nullSafeJsonBuilder.add("versionId", dv.getId());
+                nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
+                nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
+                nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
+                
+                if (!dv.getDatasetContacts().isEmpty()) {
+                    JsonArrayBuilder contacts = Json.createArrayBuilder();
+                    NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
+                    for (String contact[] : dv.getDatasetContacts()) {                       
+                        nullSafeJsonBuilderInner.add("name", contact[0]);
+                        nullSafeJsonBuilderInner.add("affiliation", contact[1]);
+                        contacts.add(nullSafeJsonBuilderInner);
+                    }
+                    nullSafeJsonBuilder.add("contacts", contacts);
+                }
+                if(!dv.getRelatedPublications().isEmpty()){
+                    JsonArrayBuilder relPub = Json.createArrayBuilder();
+                    NullSafeJsonBuilder inner = jsonObjectBuilder();
+                    for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
+                        inner.add("title", dsRelPub.getTitle());
+                        inner.add("citation", dsRelPub.getText());
+                        inner.add("url", dsRelPub.getUrl());
+                        relPub.add(inner);
+                    }
+                    nullSafeJsonBuilder.add("publications", relPub);                   
+                }
+                
+                if (!dv.getDatasetProducers().isEmpty()) {
+                    JsonArrayBuilder producers = Json.createArrayBuilder();
+                    for (String[] producer : dv.getDatasetProducers()) {
+                        producers.add(producer[0]);
+                    }
+                    nullSafeJsonBuilder.add("producers", producers);
+                }
+                 if (!dv.getRelatedMaterial().isEmpty()) {
+                    JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
+                    for (String relatedMaterial : dv.getRelatedMaterial()) {
+                        relatedMaterials.add(relatedMaterial);
+                    }
+                    nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
+                }
+                
+                if (!dv.getGeographicCoverage().isEmpty()) {
+                    JsonArrayBuilder geoCov = Json.createArrayBuilder();
+                    NullSafeJsonBuilder inner = jsonObjectBuilder();
+                    for (String ind[] : dv.getGeographicCoverage()) {
+                        inner.add("country", ind[0]);
+                        inner.add("state", ind[1]);
+                        inner.add("city", ind[2]);
+                        inner.add("other", ind[3]);
+                        geoCov.add(inner);
+                    }
+                    nullSafeJsonBuilder.add("geographicCoverage", geoCov);
+                }  
+                if (!dv.getDataSource().isEmpty()) {
+                    JsonArrayBuilder dataSources = Json.createArrayBuilder();
+                    for (String dsource : dv.getDataSource()) {
+                        dataSources.add(dsource);
+                    }
+                    nullSafeJsonBuilder.add("dataSources", dataSources);
+                }
+            }
+        }
+                
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept
