@@ -1447,7 +1447,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
             logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
         }
         if (!canUpdateDataset) {
-            return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
         }
         
 		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
