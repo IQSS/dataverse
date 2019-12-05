@@ -1440,6 +1440,16 @@ public class Datasets extends AbstractApiBean {
 public Response getUploadUrl(@PathParam("id") String idSupplied) {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
+        boolean canUpdateDataset = false;
+        try {
+            canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
+        } catch (WrappedResponse ex) {
+            logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+        }
+        if (!canUpdateDataset) {
+            return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+        }
+        
 		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
 		String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
 		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
