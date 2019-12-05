@@ -1,3 +1,40 @@
+var fileList = [];
+var observer2=null;
+
+function setupDirectUpload() {
+
+var fileInput=document.getElementById('datasetForm:fileUpload_input');
+fileInput.addEventListener('change', function(event) {
+fileList=[];
+for(var i=0;i<fileInput.files.length;i++) {
+fileList.push(fileInput.files[i]);
+console.log('Found: ' + fileInput.files[i].name);
+}
+}, {once:false});
+        var config={childList: true};
+var callback = function(mutations) {
+        mutations.forEach(function(mutation) {
+        for(i=0; i<mutation.addedNodes.length;i++) {
+console.log('node ' + mutation.addedNodes[i].id);
+if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
+fileInput=mutation.addedNodes[i];
+mutation.addedNodes[i].addEventListener('change', function(event) {
+for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
+fileList.push(mutation.addedNodes[i].files[j]);
+console.log('Found: ' + mutation.addedNodes[j].files[i].name);
+}
+}, {once:false});
+}
+        }
+                });
+        };
+        if(observer2 !=null) {
+          observer2.disconnect();
+        }
+        observer2 = new MutationObserver(callback);
+        observer2.observe(fileInput.parentElement,config);
+
+}
 
 function removeErrors() {
                        	  var errors = document.getElementsByClassName("ui-fileupload-error");
