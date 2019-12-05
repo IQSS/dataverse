@@ -1438,19 +1438,29 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
 
-	String bucket = System.getProperty("dataverse.files.s3-bucket-name") + "/";
-	String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
-	S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid);
-	String url = null;
-	try {
-		url = s3io.generateTemporaryS3UploadUrl();
-	} catch (IOException e) {
-		logger.warning("Identifier Collision");
-		e.printStackTrace();
-	}
-	return ok(url);
+		boolean canUpdateDataset = false;
+		try {
+			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
+		} catch (WrappedResponse ex) {
+			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+		}
+		if (!canUpdateDataset) {
+			return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+		}
+		String bucket = System.getProperty("dataverse.files.s3-bucket-name") + "/";
+		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
+		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid);
+		String url = null;
+		try {
+			url = s3io.generateTemporaryS3UploadUrl();
+		} catch (IOException e) {
+			logger.warning("Identifier Collision");
+			e.printStackTrace();
+		}
+		return ok(url);
+
 	} catch (WrappedResponse wr) {
-        return wr.getResponse();
+		return wr.getResponse();
 	}
 }
     /**
