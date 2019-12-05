@@ -1451,6 +1451,10 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
         }
         
 		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+		boolean directEnabled = Boolean.getBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect", "false"));
+		if(!directEnabled) {
+			return error(Response.Status.NOT_FOUND, "Direct upload not supported for files in this dataset.");
+		}
 		String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
 		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
 		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, driverId);
