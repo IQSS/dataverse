@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.dataset.file;
+package edu.harvard.iq.dataverse.datafile.file;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -8,9 +8,9 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
+import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
-import edu.harvard.iq.dataverse.dataset.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;

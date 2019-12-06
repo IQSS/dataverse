@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.dataset.file;
+package edu.harvard.iq.dataverse.datafile.file;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;

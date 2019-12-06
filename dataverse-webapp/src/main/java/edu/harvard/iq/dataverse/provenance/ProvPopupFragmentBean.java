@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Option;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
@@ -154,19 +155,19 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         storedSelectedEntityName = popupDataFile.getProvEntityName();
 
         if (provenanceUpdates.containsKey(popupDataFile.getChecksumValue())) { //If there is already staged provenance info
-            provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson;
-            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provFreeform) {
-                freeformTextState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provFreeform;
+            provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).getProvJson().getOrNull();
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).getProvFreeform()) {
+                freeformTextState = provenanceUpdates.get(popupDataFile.getChecksumValue()).getProvFreeform();
             }
 
-            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson) {
-                provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).provJson;
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).getProvJson()) {
+                provJsonState = provenanceUpdates.get(popupDataFile.getChecksumValue()).getProvJson().getOrNull();
                 generateProvJsonParsedEntities(); //calling this each time is somewhat inefficient, but storing the state is a lot of lifting.
             }
 
-            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile
-                    && provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName() != null
-                    && !provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName().isEmpty()) {
+            if (null != provenanceUpdates.get(popupDataFile.getChecksumValue()).getDataFile()
+                    && provenanceUpdates.get(popupDataFile.getChecksumValue()).getDataFile().getProvEntityName() != null
+                    && !provenanceUpdates.get(popupDataFile.getChecksumValue()).getDataFile().getProvEntityName().isEmpty()) {
                 if (null == provJsonState) { //If the prov json hasn't been updated but other values for the datafile have
 
                     JsonObject provJsonObject = execCommand(new GetProvJsonCommand(dvRequestService.getDataverseRequest(), popupDataFile));
@@ -175,7 +176,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                     }
                 }
                 generateProvJsonParsedEntities();
-                storedSelectedEntityName = provenanceUpdates.get(popupDataFile.getChecksumValue()).dataFile.getProvEntityName();
+                storedSelectedEntityName = provenanceUpdates.get(popupDataFile.getChecksumValue()).getDataFile().getProvEntityName();
                 setDropdownSelectedEntity(provJsonParsedEntities.get(storedSelectedEntityName));
 
             }
@@ -199,34 +200,34 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public String stagePopupChanges(boolean saveInPopup) throws IOException {
         UpdatesEntry stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue());
         if (stagingEntry == null) {
-            stagingEntry = new UpdatesEntry(popupDataFile, null, false, null);// (DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) { 
+            stagingEntry = new UpdatesEntry(popupDataFile, Option.none(), false, null);// (DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) {
         }
         if (null == freeformTextInput && null != freeformTextState) {
             freeformTextInput = "";
         }
         if (null != freeformTextInput && !freeformTextInput.equals(freeformTextState)) {
-            stagingEntry.provFreeform = freeformTextInput;
+            stagingEntry.setProvFreeform(freeformTextInput);
         }
         if (deleteStoredJson) {
-            stagingEntry.deleteJson = true;
-            stagingEntry.provJson = null;
+            stagingEntry.setDeleteJson(true);
+            stagingEntry.setProvJson(Option.none());
             popupDataFile.setProvEntityName(null);
         }
         if (null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
-            stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputstream());
-            stagingEntry.deleteJson = false;
+            stagingEntry.setProvJson(Option.of(IOUtils.toString(jsonUploadedTempFile.getInputstream())));
+            stagingEntry.setDeleteJson(false);
 
             jsonUploadedTempFile = null;
         }
 
         if (null != dropdownSelectedEntity && !(null != storedSelectedEntityName && storedSelectedEntityName.equals(dropdownSelectedEntity.getEntityName()))) {
-            if (null == stagingEntry.provJson) {
-                stagingEntry.provJson = provJsonState; //this will trigger the prov json save command to save the entity if it was set without a json update
-            }
+            stagingEntry.getProvJson()
+                    .peek(provJson -> provJson = provJsonState); //this will trigger the prov json save command to save the entity if it was set without a json update
+
             popupDataFile.setProvEntityName(dropdownSelectedEntity.getEntityName());
         }
 
-        if (stagingEntry.provJson != null || stagingEntry.deleteJson != false || stagingEntry.provFreeform != null) { //if the entry isn't empty by our standards
+        if (stagingEntry.getProvJson().isDefined() || stagingEntry.getDeleteJson() || stagingEntry.getProvFreeform() != null) { //if the entry isn't empty by our standards
             provenanceUpdates.put(popupDataFile.getChecksumValue(), stagingEntry);
         }
 
@@ -235,8 +236,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             try {
                 saveStagedProvJson(true);
                 stagingEntry = provenanceUpdates.get(popupDataFile.getChecksumValue()); //reloading as it can be set in saveStagedProvJson
-                if (null != stagingEntry && null != stagingEntry.provFreeform) {
-                    String theReturn = filePage.saveProvFreeform(stagingEntry.provFreeform, stagingEntry.dataFile);
+                if (null != stagingEntry && null != stagingEntry.getProvFreeform()) {
+                    String theReturn = filePage.saveProvFreeform(stagingEntry.getProvFreeform(), stagingEntry.getDataFile());
                     addSuccessMessageToPage(saveInPopup); //we have to call this again here otherwise the file page overrides it
                     return theReturn;
                 }
@@ -308,21 +309,21 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         for (Map.Entry<String, UpdatesEntry> m : provenanceUpdates.entrySet()) {
             String checksumValue = m.getKey();
             UpdatesEntry mapEntry = m.getValue();
-            DataFile df = mapEntry.dataFile;
-            String provString = mapEntry.provJson;
+            DataFile df = mapEntry.getDataFile();
+            Option<String> provString = mapEntry.getProvJson();
 
             if (finalChecksums == null || finalChecksums.contains(checksumValue)) {
                 boolean entrySaved = false;
-                if (mapEntry.deleteJson) {
+                if (mapEntry.getDeleteJson()) {
                     df = execCommand(new DeleteProvJsonCommand(dvRequestService.getDataverseRequest(), df, saveContext));
                     entrySaved = true;
-                } else if (null != provString) {
-                    df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString, df.getProvEntityName(), saveContext));
+                } else if (provString.isDefined()) {
+                    df = execCommand(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(), df, provString.get(), df.getProvEntityName(), saveContext));
                     entrySaved = true;
                 }
 
                 if (entrySaved) {
-                    mapEntry.dataFile = df;
+                    mapEntry.setDataFile(df);
                     provenanceUpdates.put(checksumValue, mapEntry); //Updates the datafile to the latest.
                     commandsCalled = true;
                 }
@@ -334,8 +335,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
     public void saveStageProvFreeformToLatestVersion() {
         for (Map.Entry<String, UpdatesEntry> mapEntry : provenanceUpdates.entrySet()) {
-            String freeformText = mapEntry.getValue().provFreeform;
-            FileMetadata fm = mapEntry.getValue().dataFile.getFileMetadata();
+            String freeformText = mapEntry.getValue().getProvFreeform();
+            FileMetadata fm = mapEntry.getValue().getDataFile().getFileMetadata();
             fm.setProvFreeForm(freeformText);
         }
     }
@@ -345,8 +346,8 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         Boolean changes = false;
         for (FileMetadata fm : fileMetadatas) {
             UpdatesEntry ue = provenanceUpdates.get(fm.getDataFile().getChecksumValue());
-            if (null != ue && null != ue.provFreeform) {
-                fm.setProvFreeForm(ue.provFreeform);
+            if (null != ue && null != ue.getProvFreeform()) {
+                fm.setProvFreeForm(ue.getProvFreeform());
                 changes = true;
             }
         }
@@ -470,21 +471,6 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
 
     public void clearProvenanceUpdates() {
         provenanceUpdates = new HashMap<>();
-    }
-
-    //for storing datafile and provjson in a map value
-    public class UpdatesEntry {
-        public String provJson;
-        public DataFile dataFile;
-        public String provFreeform;
-        public Boolean deleteJson;
-
-        UpdatesEntry(DataFile dataFile, String provJson, Boolean deleteJson, String provFreeform) {
-            this.provJson = provJson;
-            this.dataFile = dataFile;
-            this.provFreeform = provFreeform;
-            this.deleteJson = deleteJson;
-        }
     }
 
     public void showJsonPreviewNewWindow() throws IOException, WrappedResponse {

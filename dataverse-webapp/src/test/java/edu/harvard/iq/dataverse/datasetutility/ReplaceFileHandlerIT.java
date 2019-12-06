@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDe
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.file.ReplaceFileHandler;
+import edu.harvard.iq.dataverse.datafile.file.ReplaceFileHandler;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;

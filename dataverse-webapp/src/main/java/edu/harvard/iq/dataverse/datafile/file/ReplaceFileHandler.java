@@ -1,11 +1,11 @@
-package edu.harvard.iq.dataverse.dataset.file;
+package edu.harvard.iq.dataverse.datafile.file;
 
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataset.file.exception.FileReplaceException;
+import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
