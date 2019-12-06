@@ -136,7 +136,7 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        queryEntities
+                        true //SEK get query entities always for search API 12/6/2019
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;

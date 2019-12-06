@@ -563,7 +563,6 @@ public class SolrSearchResult {
             
         } else {
             if (this.entity.isInstanceofDataset()) {
-                System.out.print("Instance of Dataset: " + this.entity.getStorageIdentifier());
                 nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
                 Dataset ds = (Dataset) this.entity;
                 DatasetVersion dv;
@@ -587,6 +586,10 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("subjects", subjects);
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
+                if(this.isPublishedState()){
+                    nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
+                    nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
+                }
                 nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
                 nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
                 
