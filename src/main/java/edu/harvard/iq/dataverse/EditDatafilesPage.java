@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -348,6 +349,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // return true/false
         return hasPermission;
+    }
+    
+    public boolean directUploadEnabled() {
+    	return Boolean.getBoolean(System.getProperty("dataverse.file." + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()) + ".upload-redirect", "false"));
     }
     
     public void reset() {

@@ -124,7 +124,7 @@
 
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
-                                  auto="true"
+                                  auto="#{EditDatafilesPage.directUploadEnabled()}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
