@@ -10,6 +10,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Map;
+import java.util.HashMap;
 import javax.faces.context.FacesContext;
 
 public class BundleUtil {
@@ -17,6 +19,8 @@ public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class.getCanonicalName());
 
     private static final String defaultBundleFile = "Bundle";
+
+    private static final Map<String, ClassLoader> classLoaderCache = new HashMap<String, ClassLoader>();
 
     public static String getStringFromBundle(String key) {
         return getStringFromBundle(key, null);
@@ -87,20 +91,30 @@ public class BundleUtil {
         if (filesRootDirectory == null || filesRootDirectory.isEmpty()) {
             bundle = ResourceBundle.getBundle("propertyFiles/" +propertyFileName, currentLocale);
         } else {
-            File bundleFileDir  = new File(filesRootDirectory);
-            URL[] urls = null;
-            try {
-                urls = new URL[]{bundleFileDir.toURI().toURL()};
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            ClassLoader loader = new URLClassLoader(urls);
+            ClassLoader loader = getClassLoader(filesRootDirectory);
             bundle = ResourceBundle.getBundle(propertyFileName, currentLocale, loader);
         }
 
         return bundle ;
+    }
+
+    private static ClassLoader getClassLoader(String filesRootDirectory) {
+        if (classLoaderCache.containsKey(filesRootDirectory)){
+            return classLoaderCache.get(filesRootDirectory);
+        }
+
+        File bundleFileDir  = new File(filesRootDirectory);
+        URL[] urls = null;
+        try {
+            urls = new URL[]{bundleFileDir.toURI().toURL()};
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        ClassLoader loader = new URLClassLoader(urls);
+        classLoaderCache.put(filesRootDirectory, loader);
+        return loader;
     }
 
     public static Locale getCurrentLocale() {
