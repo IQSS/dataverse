@@ -137,6 +137,8 @@ hr {border-color: #ddd;}
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
 span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
+a.tooltip-icon {color: #99bcdb !important;}
+a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none; color: #337AB7 !important;}
 
 /* Dropdown submenu */
 .dropdown-submenu {
@@ -710,8 +712,8 @@ div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 #dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
 
-div.popover.fade.top.in {max-width: none;}
-div.popover.fade.top.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
+div.popover.thumb-preview.fade.top.in, div.popover.thumb-preview.fade.bottom.in {max-width: none;}
+div.popover.thumb-preview.fade.top.in div.popover-content, div.popover.thumb-preview.fade.bottom.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
 a.popoverHTML {display:inline-block;}
 
 /*div[id$="filesTable"] .ui-datatable-tablewrapper thead {display:none;}*/
