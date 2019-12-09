@@ -24,11 +24,13 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -1665,6 +1667,34 @@ public class FileUtil implements java.io.Serializable  {
     
     public static boolean isPackageFile(DataFile dataFile) {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
+    }
+    
+    public static String getDirectUploadUrl(Dataset dataset) {
+		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+		boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
+		//Should only be requested when it is allowed, but we'll log a warning otherwise
+		if(!directEnabled) {
+			logger.warning("Direct upload not supported for files in this dataset: " + dataset.getId());
+			return null;
+		}
+		String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
+		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
+		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, driverId);
+		String url = null;
+		try {
+			url = s3io.generateTemporaryS3UploadUrl();
+		} catch (IOException e) {
+			logger.warning("Identifier Collision");
+			e.printStackTrace();
+		}
+		String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
+		
+		String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url"
+				+ "");
+		if(proxy!=null) {
+			url.replace(endpoint, proxy);
+		}
+		return url;
     }
 
 }
