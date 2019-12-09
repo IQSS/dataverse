@@ -1450,21 +1450,10 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
             return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
         }
         
-		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
-		boolean directEnabled = Boolean.getBoolean(System.getProperty("dataverse.files." + driverId + ".upload-redirect", "false"));
-		if(!directEnabled) {
-			return error(Response.Status.NOT_FOUND, "Direct upload not supported for files in this dataset.");
-		}
-		String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
-		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
-		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, driverId);
-		String url = null;
-		try {
-			url = s3io.generateTemporaryS3UploadUrl();
-		} catch (IOException e) {
-			logger.warning("Identifier Collision");
-			e.printStackTrace();
-		}
+        String url = FileUtil.getDirectUploadUrl(dataset);
+        if(url==null) {
+        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
+        }
 		return ok(url);
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
