@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -84,6 +85,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
@@ -352,7 +355,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean directUploadEnabled() {
-    	return Boolean.getBoolean(System.getProperty("dataverse.file." + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()) + ".upload-redirect", "false"));
+    	logger.info(this.dataset.getDataverseContext().getAlias() + " " + this.dataset.getDataverseContext().getAffiliation() + " " + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()));
+    	logger.info("denabled: " + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()) + " " + Boolean.getBoolean("dataverse.files." + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()) + ".upload-redirect"));
+    	return Boolean.getBoolean("dataverse.files." + DataAccess.getStorageDriverId(this.dataset.getDataverseContext()) + ".upload-redirect");
     }
     
     public void reset() {
@@ -1722,6 +1727,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         return rsyncScriptFilename;
     }
 
+    public void requestDirectUploadUrl() {
+    	PrimeFaces.current().executeScript("uploadFileDirectly('" + FileUtil.getDirectUploadUrl(dataset) + "')");
+    }
     
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...

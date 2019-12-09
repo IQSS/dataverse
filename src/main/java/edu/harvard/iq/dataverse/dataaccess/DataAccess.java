@@ -29,9 +29,15 @@ import java.util.Properties;
  *
  * @author Leonid Andreev
  */
+import java.util.logging.Logger;
+
+
+
 
 public class DataAccess {
 
+	private static final Logger logger = Logger.getLogger(DataAccess.class.getCanonicalName());
+	
     public DataAccess() {
 
     };
@@ -168,6 +174,7 @@ public class DataAccess {
     			if(property.startsWith("dataverse.files.") && property.endsWith(".affiliation")) {
     				String driverId = property.substring(16);
     				driverId=driverId.substring(0,driverId.indexOf('.'));
+    				logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
     				drivers.put(p.get(property).toString(), driverId);
     			}
 

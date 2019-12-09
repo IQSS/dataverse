@@ -90,9 +90,10 @@
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
                         }
+                        
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
-                            setupDirectUpload();
+                            setupDirectUpload(#{EditDatafilesPage.directUploadEnabled()}, #{EditDatafilesPage.workingVersion.dataset.id});
                         });
                         //]]>
                     </script>
@@ -124,7 +125,7 @@
 
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
-                                  auto="#{EditDatafilesPage.directUploadEnabled()}"
+                                  auto="#{!(EditDatafilesPage.directUploadEnabled())}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
@@ -518,6 +519,7 @@
     </div>
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
+    <p:remoteCommand  name="requestDirectUploadUrl" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.requestDirectUploadUrl()}"  />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->

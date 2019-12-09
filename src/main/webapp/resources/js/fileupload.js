@@ -1,39 +1,91 @@
 var fileList = [];
 var observer2=null;
+var datasetId=null;
 
-function setupDirectUpload() {
-
-var fileInput=document.getElementById('datasetForm:fileUpload_input');
-fileInput.addEventListener('change', function(event) {
-fileList=[];
-for(var i=0;i<fileInput.files.length;i++) {
-fileList.push(fileInput.files[i]);
-console.log('Found: ' + fileInput.files[i].name);
-}
-}, {once:false});
-        var config={childList: true};
-var callback = function(mutations) {
-        mutations.forEach(function(mutation) {
+function setupDirectUpload(enabled, theDatasetId) {
+  if(enabled) {
+    datasetId=theDatasetId;
+    $('.ui-fileupload-upload').hide();
+    $('.ui-fileupload-cancel').hide();
+    var fileInput=document.getElementById('datasetForm:fileUpload_input');
+    fileInput.addEventListener('change', function(event) {
+      fileList=[];
+      for(var i=0;i<fileInput.files.length;i++) {
+        queueFileForDirectUpload(fileInput.files[i]);
+        console.log('Found: ' + fileInput.files[i].name);
+      }
+    }, {once:false});
+    var config={childList: true};
+    var callback = function(mutations) {
+      mutations.forEach(function(mutation) {
         for(i=0; i<mutation.addedNodes.length;i++) {
-console.log('node ' + mutation.addedNodes[i].id);
-if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
-fileInput=mutation.addedNodes[i];
-mutation.addedNodes[i].addEventListener('change', function(event) {
-for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
-fileList.push(mutation.addedNodes[i].files[j]);
-console.log('Found: ' + mutation.addedNodes[j].files[i].name);
-}
-}, {once:false});
-}
+          console.log('node ' + mutation.addedNodes[i].id);
+          if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
+            fileInput=mutation.addedNodes[i];
+            mutation.addedNodes[i].addEventListener('change', function(event) {
+              for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
+                queueFileForDirectUpload(mutation.addedNodes[i].files[j], dataset);
+                console.log('Found: ' + mutation.addedNodes[j].files[i].name);
+                
+              }
+            }, {once:false});
+          }
         }
-                });
-        };
-        if(observer2 !=null) {
-          observer2.disconnect();
-        }
-        observer2 = new MutationObserver(callback);
-        observer2.observe(fileInput.parentElement,config);
+      });
+    };
+    if(observer2 !=null) {
+      observer2.disconnect();
+    }
+    observer2 = new MutationObserver(callback);
+    observer2.observe(fileInput.parentElement,config);
+  } //else ?
+}
 
+function queueFileForDirectUpload(file, dataset) {
+  fileList.push(file);
+  
+  //calc md5
+  //check for dupes
+  //check size
+  requestDirectUploadUrl();
+  console.log('URL Requested');
+  
+}
+
+function uploadFileDirectly(url) {
+  console.log("Retreieved " + url);
+  var data = new FormData();
+  data.append('file',fileList[0]);
+  $('ui-fileupload-progress').append($('<progress/>'));
+  $.ajax({
+    url: url,
+    type: 'POST',
+    data: data,
+    cache: false,
+    processData: false,
+    success: reportUpload,
+    xhr: function() {
+      var myXhr = $.ajaxSettings.xhr();
+      if(myXhr.upload) {
+        myXhr.upload.addEventListener('progress', function(e) {
+          if(e.lengthComputable) {
+            $('progress').attr({
+              value:e.loaded,
+              max:e.total
+            })
+          }
+        })
+      }
+      }
+  });
+  //perform post - check cors issues
+  //trigger gui swap/server file add
+  //handle cancel buttons?
+  
+}
+
+function reportUpload(data){
+  console.log('Done ' + data );
 }
 
 function removeErrors() {
