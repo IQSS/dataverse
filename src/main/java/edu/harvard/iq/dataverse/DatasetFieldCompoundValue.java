@@ -8,12 +8,10 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = Logger.getLogger(DatasetFieldCompoundValue.class.getName());
 
     public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
         @Override
@@ -132,10 +131,40 @@ public class DatasetFieldCompoundValue implements Serializable {
         return compoundValue;
     }
 
+    final private static String REGEX_FIELD_NAME = "(#[a-z]+\\w*)";
+    static private Map<String, String> referencesMap = new LinkedHashMap<>();
+
+
     public Map<DatasetField,String> getDisplayValueMap() {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
+
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
+        Pattern pattern = Pattern.compile(REGEX_FIELD_NAME);
+        String fieldName = new String();
+        String fieldValue = new String();
+
+        for (DatasetField childDatasetField : childDatasetFields){
+            Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
+            while (matcher.find()){
+                referencesMap.putIfAbsent(matcher.group(0), null);
+            }
+        }
+
+        for (DatasetField childDatasetField : childDatasetFields) {
+            if (referencesMap.containsKey("#"+childDatasetField.getDatasetFieldType().getName())){
+                // temporary, this gets the CVV Identifier instead of the Value if there is an Identifier.
+                // need a better solution for getting a CVV Identifier instead of normal value
+                if (childDatasetField.getSingleControlledVocabularyValue() != null){
+                    if (!StringUtils.isBlank(childDatasetField.getSingleControlledVocabularyValue().getIdentifier())){
+                        referencesMap.putIfAbsent("#"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getIdentifier());
+                    }
+                } else{
+                    referencesMap.putIfAbsent("#"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
+                }
+
+            }
+        }
 
         for (DatasetField childDatasetField : childDatasetFields) {
             // skip the value if it is empty or N/A
@@ -148,9 +177,18 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
+                Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
+                while (matcher.find()) {
+                    if (referencesMap.containsKey(matcher.group(0)) && referencesMap.get(matcher.group(0)) != null) {
+                        fieldName = matcher.group(0);
+                        fieldValue = referencesMap.get(fieldName);
+                    }
+                }
+
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
                 String displayValue = format
+                        .replaceAll(fieldName+"\\b", fieldValue)
                         .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
@@ -158,6 +196,7 @@ public class DatasetFieldCompoundValue implements Serializable {
                         .replace("#VALUE",  sanitizedValue );
 
                 fieldMap.put(childDatasetField,displayValue);
+
             }
         }
 
