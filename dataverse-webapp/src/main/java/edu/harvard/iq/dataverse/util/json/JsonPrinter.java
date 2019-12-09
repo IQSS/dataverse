@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetDistributor;
@@ -40,6 +41,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -56,6 +58,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -301,7 +304,8 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", getRootDataverseNameforCitation(ds))
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier());
+                .add("storageIdentifier", ds.getStorageIdentifier())
+                .add("hasActiveGuestbook", ds.getGuestbook() != null);
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean excludeEmailFields) {
@@ -536,6 +540,9 @@ public class JsonPrinter {
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
                 .add("restricted", fmd.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED)
+                .add("termsOfUseType", fmd.getTermsOfUse().getTermsOfUseType().toString())
+                .add("licenseName", getLicenseName(fmd))
+                .add("licenseUrl", getLicenseUrl(fmd))
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
@@ -847,5 +854,14 @@ public class JsonPrinter {
         JsonObjectBuilder b = jsonObjectBuilder();
         in.keySet().forEach(k -> b.add(k, in.get(k)));
         return b;
+    }
+
+
+    private static String getLicenseName(FileMetadata fmd) {
+        return Optional.ofNullable(fmd.getTermsOfUse().getLicense()).map(License::getName).orElse(StringUtils.EMPTY);
+    }
+
+    private static String getLicenseUrl(FileMetadata fmd) {
+        return Optional.ofNullable(fmd.getTermsOfUse().getLicense()).map(License::getUrl).orElse(StringUtils.EMPTY);
     }
 }

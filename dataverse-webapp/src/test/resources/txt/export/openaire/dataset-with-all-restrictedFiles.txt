@@ -1498,9 +1498,9 @@
     {
         "label": "File1",
         "restricted": false,
-        "termsOfUseType": "LICENSE_BASED",
-        "licenseName": "CC0 Creative Commons Zero 1.0 Waiver",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+        "termsOfUseType": "RESTRICTED",
+        "licenseName": "",
+        "licenseUrl": "",
         "dataFile":
         {
             "id": 1,
@@ -1513,9 +1513,9 @@
     {
         "label": "File2",
         "restricted": true,
-        "termsOfUseType": "LICENSE_BASED",
-        "licenseName": "CC0 Creative Commons Zero 1.0 Waiver",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+        "termsOfUseType": "RESTRICTED",
+        "licenseName": "",
+        "licenseUrl": "",
         "dataFile":
         {
             "id": 2,

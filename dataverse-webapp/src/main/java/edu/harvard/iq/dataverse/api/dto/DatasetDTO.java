@@ -17,6 +17,7 @@ public class DatasetDTO implements java.io.Serializable {
     private String globalIdCreateTime;
     private String publisher;
     private String publicationDate;
+    private boolean hasActiveGuestbook;
     private DatasetVersionDTO datasetVersion;
     private List<DataFileDTO> dataFiles;
     public static final String DOI_PROTOCOL = "doi";
@@ -70,6 +71,17 @@ public class DatasetDTO implements java.io.Serializable {
         this.datasetVersion = datasetVersion;
     }
 
+    /**
+     * Flags whether there is an active guestbook on dataset.
+     * Need for OpenAire exporter <rightsList> element specification.
+     */
+    public boolean hasActiveGuestbook() {
+        return hasActiveGuestbook;
+    }
+
+    public void setHasActiveGuestbook(boolean hasActiveGuestbook) {
+        this.hasActiveGuestbook = hasActiveGuestbook;
+    }
 
     public List<DataFileDTO> getDataFiles() {
         return dataFiles;

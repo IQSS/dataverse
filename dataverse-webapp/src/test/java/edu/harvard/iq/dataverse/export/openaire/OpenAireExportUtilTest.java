@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import org.junit.*;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -913,7 +914,7 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteAccessRightElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+    public void testWriteAccessRightElement_openAccess_sameLicenses() throws XMLStreamException, FileNotFoundException, URISyntaxException {
         System.out.println("writeAccessRightElement");
         XMLOutputFactory f = XMLOutputFactory.newInstance();
         StringWriter sw = new StringWriter();
@@ -925,84 +926,12 @@ public class OpenAireExportUtilTest {
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
         xmlw.close();
         Assert.assertEquals("<rightsList>"
-                        + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
-                        + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
-                        + "CC0 Waiver</rights></rightsList>",
-                sw.toString());
-    }
-
-    /**
-     * Test: 16 Rights (O)
-     *
-     * rights
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
-     */
-    @Test
-    public void testWriteRestrictedAccessRightElementWithRequestAccessEnabled()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeRestrictedAccessRightElementWithRequestAccessEnabled");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            dto.setLicense(null);
-            dto.setTermsOfUse(null);
-            dto.setFileAccessRequest(true);
-        }
-
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<rightsList>"
-                        + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
-                        + "<rights /></rightsList>",
-                sw.toString());
-    }
-
-    /**
-     * Test: 16 Rights (O)
-     *
-     * rights
-     *
-     * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
-     */
-    @Test
-    public void testWriteRestrictedAccessRightElementWithRequestAccessDisabled()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeWriteRestrictedAccessRightElementWithRequestAccessDisabled");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            dto.setLicense(null);
-            dto.setTermsOfUse(null);
-            dto.setFileAccessRequest(false);
-        }
-
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<rightsList>"
-                        + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
-                        + "<rights /></rightsList>",
+                        + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                        + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
+                        + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
                 sw.toString());
     }
 
@@ -1228,6 +1157,163 @@ public class OpenAireExportUtilTest {
                         + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH1231245154</awardNumber></fundingReference>"
                         + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
                         + "</fundingReferences>",
+                sw.toString());
+    }
+
+
+    @Test
+    public void testWriteAccessRightElement_restrictedAccess_withGuestbook() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, true);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                        + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
+                        + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_restrictedAccess_withoutGuestbook() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-with-one-restrictedFile.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                        + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_restrictedAccess_allFilesRestricted() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-with-all-restrictedFiles.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                        + "<rights>Access to all files in the dataset is restricted.</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_openAccess_allFilesAllRightsReserved() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-with-all-allRightsReservedFiles.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                        + "<rights>All rights reserved.</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_openAccess_differentLicenses() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        dto.getFiles().get(1).setLicenseName("\"Apache Software License 2.0\"");
+        dto.getFiles().get(1).setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0");
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                        + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_openAccess_licenseAndAllRightsReserved() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        dto.getFiles().get(1).setTermsOfUseType(FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED.toString());
+        dto.getFiles().get(1).setLicenseName("");
+        dto.getFiles().get(1).setLicenseUrl("");
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
+                        + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
+                sw.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_restrictedAccess_withRestrictedFile() throws XMLStreamException, FileNotFoundException, URISyntaxException {
+        System.out.println("writeAccessRightElement");
+        XMLOutputFactory f = XMLOutputFactory.newInstance();
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
+        String text = new Scanner(file).useDelimiter("\\Z").next();
+        Gson gson = new Gson();
+        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
+        dto.getFiles().get(1).setTermsOfUseType(FileTermsOfUse.TermsOfUseType.RESTRICTED.toString());
+        dto.getFiles().get(1).setLicenseName("");
+        dto.getFiles().get(1).setLicenseUrl("");
+        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
+        xmlw.close();
+        Assert.assertEquals("<rightsList>"
+                        + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
+                        + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
                 sw.toString());
     }
 }

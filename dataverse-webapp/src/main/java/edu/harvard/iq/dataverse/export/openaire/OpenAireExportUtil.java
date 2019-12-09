@@ -1,36 +1,42 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
+import com.google.gson.Gson;
+import com.rometools.utils.Lists;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
+import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
+import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.api.dto.FileDTO;
+import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.json.JsonObject;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import javax.json.JsonObject;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
-import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FieldDTO;
-import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
-import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.persistence.GlobalId;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 
 public class OpenAireExportUtil {
 
     private static final Logger logger = Logger.getLogger(OpenAireExportUtil.class.getCanonicalName());
+
+    private static final String RIGHTS_URI_CLOSED_ACCESS = "info:eu-repo/semantics/closedAccess";
+    private static final String RIGHTS_URI_RESTRICTED_ACCESS = "info:eu-repo/semantics/restrictedAccess";
+    private static final String RIGHTS_URI_OPEN_ACCESS = "info:eu-repo/semantics/openAccess";
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
     public static String SCHEMA_VERSION = "4.1";
@@ -132,7 +138,7 @@ public class OpenAireExportUtil {
         writeVersionElement(xmlw, version, language);
 
         // 16 Rights (O), rights
-        writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language);
+        writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language, datasetDto.hasActiveGuestbook());
 
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
@@ -1091,62 +1097,19 @@ public class OpenAireExportUtil {
      * @param xmlw The Steam writer
      * @param datasetVersionDTO
      * @param language current language
+     * @param hasActiveGuestbook is there active guestbook on dataset
      * @throws XMLStreamException
      */
-    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language,
+                                                boolean hasActiveGuestbook) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
 
+        List<FileDTO> files = datasetVersionDTO.getFiles();
         // set terms from the info:eu-repo-Access-Terms vocabulary
-        writeRightsHeader(xmlw, language);
-        boolean restrict = false;
-        boolean closed = false;
+        writeRightsUriInfoAttribute(xmlw, files, language, hasActiveGuestbook);
+        writeRightsUriLicenseInfoAttribute(xmlw, files, language);
 
-        if (datasetVersionDTO.isFileAccessRequest()) {
-            restrict = true;
-        }
-        if (datasetVersionDTO.getFiles() != null) {
-            for (int i = 0; i < datasetVersionDTO.getFiles().size(); i++) {
-                if (datasetVersionDTO.getFiles().get(i).isRestricted()) {
-                    closed = true;
-                    break;
-                }
-            }
-        }
-
-        if (restrict && closed) {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/restrictedAccess");
-        } else if (!restrict && closed) {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/closedAccess");
-        } else {
-            xmlw.writeAttribute("rightsURI", "info:eu-repo/semantics/openAccess");
-        }
-        xmlw.writeEndElement(); // </rights>
-
-        // check if getLicense() method contains CC0
-        // check if getTermsOfUse() method starts with http://
-        writeRightsHeader(xmlw, language);
-        if (StringUtils.isNotBlank(datasetVersionDTO.getLicense())) {
-            if (StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense(), "cc0")) {
-                xmlw.writeAttribute("rightsURI", "https://creativecommons.org/publicdomain/zero/1.0/");
-                if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                    xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-                } else {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            }
-        } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-            if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-            } else {
-                xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-            }
-        }
-        xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>
     }
 
@@ -1576,5 +1539,73 @@ public class OpenAireExportUtil {
             result = false;
         }
         return result;
+    }
+
+    private static void writeRightsUriLicenseInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, String language) throws XMLStreamException {
+        if(!Lists.isEmpty(files)) {
+            writeRightsHeader(xmlw, language);
+
+            if(areAllFilesRestricted(files)) {
+                xmlw.writeCharacters("Access to all files in the dataset is restricted.");
+            } else if(areAllFilesAllRightsReserved(files)) {
+                xmlw.writeCharacters("All rights reserved.");
+            } else if(areAllFilesUnderSameLincese(files)) {
+                xmlw.writeAttribute("rightsURI", files.get(0).getLicenseUrl());
+                xmlw.writeCharacters(files.get(0).getLicenseName());
+            } else if(hasRestrictedFile(files)) {
+                xmlw.writeCharacters("Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.");
+            } else {
+                xmlw.writeCharacters("Different licenses and/or terms apply to individual files in the dataset.");
+            }
+
+            xmlw.writeEndElement();
+        }
+    }
+
+    private static boolean areAllFilesUnderSameLincese(List<FileDTO> files) {
+        final String firstFileLicense = files.get(0).getLicenseName();
+        if(StringUtils.isNotEmpty(firstFileLicense)) {
+            return files
+                    .stream()
+                    .allMatch(fileDTO -> fileDTO.getLicenseName().equals(firstFileLicense));
+        }
+        return false;
+    }
+
+    private static boolean areAllFilesAllRightsReserved(List<FileDTO> files) {
+        return files
+                .stream()
+                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED));
+    }
+
+    private static boolean isOfTermsOfUseType(FileDTO fileDTO, FileTermsOfUse.TermsOfUseType allRightsReserved) {
+        return fileDTO.getTermsOfUseType().equals(allRightsReserved.toString());
+    }
+
+    private static boolean areAllFilesRestricted(List<FileDTO> files) {
+        return files
+                .stream()
+                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
+    }
+
+    private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, String language, boolean hasActiveGuestbook) throws XMLStreamException {
+        writeRightsHeader(xmlw, language);
+
+        if(Lists.isEmpty(files)) {
+            xmlw.writeAttribute("rightsURI", RIGHTS_URI_CLOSED_ACCESS);
+        } else if(hasActiveGuestbook || hasRestrictedFile(files)) {
+            xmlw.writeAttribute("rightsURI", RIGHTS_URI_RESTRICTED_ACCESS);
+        } else {
+            xmlw.writeAttribute("rightsURI", RIGHTS_URI_OPEN_ACCESS);
+        }
+
+
+        xmlw.writeEndElement(); // </rights>
+    }
+
+    private static boolean hasRestrictedFile(List<FileDTO> files) {
+        return files
+                .stream()
+                .anyMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
     }
 }
