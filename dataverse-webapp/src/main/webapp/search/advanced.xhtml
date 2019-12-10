@@ -44,10 +44,10 @@
                                        var="searchField">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right"
-                                              class="tooltiplabel text-info"
+                                        #{searchField.displayName}
+                                        <span data-toggle="tooltip" data-placement="top" 
+                                              class="glyphicon glyphicon-question-sign text-primary" 
                                               data-original-title="#{searchField.description}">
-                                            #{searchField.displayName}
                                         </span>
                                     </label>
                                     <div class="col-sm-6">
@@ -89,11 +89,11 @@
 
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">
-                                                <span data-toggle="tooltip" data-placement="auto right"
-                                                      class="tooltiplabel text-info"
-                                                      data-original-title="#{item.description}">
-                                                    #{item.displayName}
-                                                </span>
+                                            #{item.displayName}
+                                            <span data-toggle="tooltip" data-placement="top" 
+                                                  class="glyphicon glyphicon-question-sign text-primary" 
+                                                  data-original-title="#{item.description}">
+                                            </span>
                                         </label>
 
                                         <div class="col-sm-6">
@@ -140,10 +140,10 @@
                                        var="fileSearchFields">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">
-                                        <span data-toggle="tooltip" data-placement="auto right"
-                                              class="tooltiplabel text-info"
-                                              data-original-title="#{fileSearchFields.description}">
-                                            #{fileSearchFields.displayName}
+                                        #{fileSearchFields.displayName}
+                                        <span data-toggle="tooltip" data-placement="top" 
+                                                class="glyphicon glyphicon-question-sign text-primary" 
+                                                data-original-title="#{fileSearchFields.description}">
                                         </span>
                                     </label>
                                     <div class="col-sm-6">
