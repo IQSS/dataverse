@@ -36,7 +36,7 @@
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- BEGIN: file replace original -->
-                    <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
+                    <div class="row" jsf:rendered="#{EditDatafilesPage.fileReplaceOperation}">
                         <div id="file-replace-original-block" class="col-sm-12">
                             <label class="col-sm-2 control-label">
                                 <span>#{bundle['file.replace.original']}</span>
@@ -49,7 +49,7 @@
                                 </ui:include>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </div>
                     <!-- END: file replace original -->
 
                     <ui:fragment id="uploadFilesOnCreateTab" rendered="#{EditDatafilesPage.mode == 'SINGLE' or                          
