@@ -93,6 +93,13 @@ Archivematica is an integrated suite of open-source tools for processing digital
 
 https://github.com/artefactual/archivematica/tree/v1.9.2/src/MCPClient/lib/clientScripts
 
+repo2docker
+~~~~~~~~~~~
+
+repo2docker is a command line tool that allows you to spin up a Docker container from a Dataverse DOI.
+
+https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/dataverse.py
+
 Java
 ----
 
