@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
@@ -32,6 +33,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
     private PermissionsWrapper permissionsWrapper;
     private DataverseRequestServiceBean dvRequestService;
     private DatasetVersionServiceBean versionService;
+    private SelectGuestBookService selectGuestBookService;
 
     private String persistentId;
     private Long datasetId;
@@ -39,6 +41,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
     private Dataset dataset;
     private DatasetVersion workingVersion;
     private Guestbook selectedGuestbook;
+    private Guestbook guestbookBeforeChanges;
     private List<Guestbook> availableGuestbooks;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -48,11 +51,13 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     @Inject
     public SelectGuestbookPage(DatasetDao datasetDao, PermissionsWrapper permissionsWrapper,
-                               DataverseRequestServiceBean dvRequestService, DatasetVersionServiceBean versionService) {
+                               DataverseRequestServiceBean dvRequestService, DatasetVersionServiceBean versionService,
+                               SelectGuestBookService selectGuestBookService) {
         this.datasetDao = datasetDao;
         this.permissionsWrapper = permissionsWrapper;
         this.dvRequestService = dvRequestService;
         this.versionService = versionService;
+        this.selectGuestBookService = selectGuestBookService;
     }
 
     // -------------------- GETTERS --------------------
@@ -96,25 +101,30 @@ public class SelectGuestbookPage implements java.io.Serializable {
         if (!permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(),
+                                                                                             dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 
         workingVersion = dataset.getEditVersion();
+        guestbookBeforeChanges = dataset.getGuestbook();
+        selectedGuestbook = dataset.getGuestbook();
         availableGuestbooks = dataset.getDataverseContext().getAvailableGuestbooks();
 
         JH.addMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle("dataset.message.editTerms.label"),
-                BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
+                      BundleUtil.getStringFromBundle("dataset.message.editTerms.label"),
+                      BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
 
         return StringUtils.EMPTY;
     }
 
     public String save() {
 
-        Try<Dataset> selectGuestbookOperation = Try.of(() -> versionService.updateDatasetVersion(workingVersion, true));
+        Try<Dataset> selectGuestbookOperation = Try.of(() -> selectGuestBookService.saveGuestbookChanges(workingVersion,
+                                                                                                         Option.of(selectedGuestbook),
+                                                                                                         Option.of(guestbookBeforeChanges)));
 
-        if(selectGuestbookOperation.isFailure()) {
+        if (selectGuestbookOperation.isFailure()) {
             Throwable ex = selectGuestbookOperation.getCause();
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.guestbookFailure"));
@@ -132,7 +142,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
     }
 
     public void reset() {
-        dataset.setGuestbook(null);
+        selectedGuestbook = null;
     }
 
     public void viewSelectedGuestbook(Guestbook selectedGuestbook) {

@@ -30,7 +30,7 @@ public class TemplateService {
     private DataverseRequestServiceBean dvRequestService;
     private TemplateDao templateDao;
 
-    private Clock clock = Clock.systemUTC();
+    private Clock clock = Clock.systemDefaultZone();
 
     // -------------------- CONSTRUCTORS --------------------
 

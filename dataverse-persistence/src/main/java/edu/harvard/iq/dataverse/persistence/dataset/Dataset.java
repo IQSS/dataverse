@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock.Reason;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -15,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
+import io.vavr.control.Option;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -118,6 +116,9 @@ public class Dataset extends DvObjectContainer {
     @JoinColumn(name = "guestbook_id", unique = false, nullable = true, insertable = true, updatable = true)
     private Guestbook guestbook;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date guestbookChangeTime;
+
     @OneToMany(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
 
@@ -219,6 +220,19 @@ public class Dataset extends DvObjectContainer {
 
     public void setGuestbook(Guestbook guestbook) {
         this.guestbook = guestbook;
+    }
+
+    /**
+     * Timer used mainly for OAI exporters to determinate whether metadata was changed or not,
+     *  since license in exporters could be changed based on guestbook.
+     *
+     */
+    public Option<Date> getGuestbookChangeTime() {
+        return Option.of(guestbookChangeTime);
+    }
+
+    public void setGuestbookChangeTime(Date guestbookChangeTime) {
+        this.guestbookChangeTime = guestbookChangeTime;
     }
 
     public String getPersistentURL() {

@@ -4,10 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:o="http://omnifaces.org/ui"
-      xmlns:dv="http://dataverse.org/facelets"
 >
 <f:view locale="#{dataverseSession.localeCode}"/>
 
@@ -73,7 +70,7 @@
                                                              value="#{selectGuestbookPage.availableGuestbooks}"
                                                              var="guestbook"
                                                              widgetVar="guestbookTable"
-                                                             rowIndexVar="rowNum" selection="#{selectGuestbookPage.dataset.guestbook}"
+                                                             rowIndexVar="rowNum" selection="#{selectGuestbookPage.selectedGuestbook}"
                                                              rowKey="#{guestbook}">
                                                     <p:column  selectionMode="single" class="col-select-width text-center" rendered="true"  />
                                                     <p:column>

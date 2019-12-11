@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +20,7 @@ public class UserDataFieldFiller {
 
     private DatasetFieldServiceBean fieldService;
     
-    private Clock clock = Clock.systemUTC();
+    private Clock clock = Clock.systemDefaultZone();
     
     @Inject
     public UserDataFieldFiller(DatasetFieldServiceBean fieldService) {

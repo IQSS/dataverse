@@ -16,6 +16,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +41,8 @@ public class OAIRecordServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
+
+    private Clock systemClock = Clock.systemDefaultZone();
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
 
@@ -89,26 +93,26 @@ public class OAIRecordServiceBean implements java.io.Serializable {
      * record at a time. It does so inside its own transaction, to ensure that
      * the changes take place immediately.
      */
-    public void updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap, Logger setUpdateLogger) {
+    public OAIRecord updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap, Logger setUpdateLogger) {
 
         OAIRecord record = recordMap.get(dataset.getGlobalIdString());
         if (record == null) {
             setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
-            record = new OAIRecord(setName, dataset.getGlobalIdString(), new Date());
+            record = new OAIRecord(setName, dataset.getGlobalIdString(), Date.from(Instant.now(systemClock)));
             em.persist(record);
         } else {
             if (record.isRemoved()) {
                 setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
                 record.setRemoved(false);
-                record.setLastUpdateTime(new Date());
-            } else if (dataset.getReleasedVersion().getReleaseTime().after(record.getLastUpdateTime())) {
+                record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
+            } else if (isDatasetUpdated(dataset, record)) {
                 setUpdateLogger.info("updating the timestamp on an existing record.");
-                record.setLastUpdateTime(new Date());
+                record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
             }
 
             recordMap.remove(record.getGlobalId());
         }
-
+        return record;
     }
 
     public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
@@ -275,4 +279,17 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         }
     }
 
+    private boolean isDatasetUpdated(Dataset dataset, OAIRecord record) {
+        Date publishTime = dataset.getReleasedVersion().getReleaseTime();
+
+        boolean isGuestbookTimeAfterOaiTime = dataset.getGuestbookChangeTime()
+                .map(guestbookChangeTime -> guestbookChangeTime.after(record.getLastUpdateTime()))
+                .getOrElse(false);
+
+        return publishTime.after(record.getLastUpdateTime()) || isGuestbookTimeAfterOaiTime;
+    }
+
+    public void setSystemClock(Clock systemClock) {
+        this.systemClock = systemClock;
+    }
 }
