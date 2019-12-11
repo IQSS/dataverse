@@ -6,9 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs"
 >
-
-    <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
     <h:head>
     </h:head>
@@ -39,7 +38,7 @@
                                 </div>
                                 <div id="metrics-content" class="col-xs-8 small text-center">
                                     <h:outputFormat styleClass="metrics-downloads" value="{0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
+                                        <f:param value="#{guestbookResponseService.getCountGuestbookResponsesByDataFileId(FilePage.fileId)}"/>
                                     </h:outputFormat>
                                 </div>
                             </div>
@@ -76,10 +75,20 @@
                                 <!-- END: Email/Share Button Group -->
                                 
                                 <div class="button-container btn-group" jsf:rendered="#{!widgetWrapper.widgetView}">
+                                
+                                    <ui:fragment rendered="#{FilePage.file.ingestProblem and FilePage.canUpdateDataset()}">
+                                        <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
+                                        <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true"
+                                                    data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;"
+                                                    data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{FilePage.file.ingestReportMessage}&lt;/span&gt;">
+                                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                        </span>
+                                    </ui:fragment>
+                                
                                     <!-- Map Data/Set Up Button Block -->
                                     
                                     
-                                    <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
+                                    <ui:fragment rendered="#{FilePage.canUpdateDataset()
                                                              and (FilePage.getConfigureTools().size() > 0
                                                              or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
                                         <ui:include src="file-configure-dropdown-fragment.xhtml">
@@ -93,17 +102,14 @@
                                     
                                     <!-- END: Map Data/Set Up Button Block -->
                                     
-                                    
                                     <!-- Edit Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
-                                                             and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
+                                    <div class="btn-group" jsf:rendered="#{FilePage.canUpdateDataset()
                                                              and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                         <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
                                         </p:commandLink>
                                     </div>
-                                    <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
-                                                             and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
+                                    <div class="btn-group" jsf:rendered="#{FilePage.canUpdateDataset()
                                                              and !FilePage.lockedFromEdits
                                                              and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}"
                                           >
@@ -116,7 +122,7 @@
                                                     <p:commandLink id="fileProvenanceButton"
                                                                update="editProvenancePopup"
                                                                oncomplete="PF('editProvenancePopup').show();">
-                                                               <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
+                                                               <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(FilePage.fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
                                                                 #{bundle['file.provenance']} 
                                                     </p:commandLink>
                                                 </li> 
@@ -157,22 +163,20 @@
                                     <!-- END: Edit Button Group -->
                                 </div>
                                 
+                                
                                 <!-- Explore/Download/Request Button Block -->
                                 <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
                                                                                              and (!FilePage.fileMetadata.dataFile.filePackage or
                                                                                                    FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
-                                    <ui:include src="file-download-button-fragment.xhtml">
-                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                        <ui:param name="requestAccessPopupRequired" value="#{FilePage.requestAccessPopupRequired}"/>
-                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                                        <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
-                                    </ui:include>
+                                    <iqbs:fileDownloadButtons
+                                        fileMetadata="#{FilePage.fileMetadata}"
+                                        lockedFromDownload="#{FilePage.isLockedFromDownload()}"
+                                        exploreTools="#{FilePage.exploreTools}"
+                                        downloadRequestFunction="#{fileDownloadHelper.requestDownload}"
+                                        updateOnDownloadRequest="@widgetVar(downloadPackagePopup) @widgetVar(downloadDataSubsetPopup)"
+                                        updateOnRequestAccess="@widgetVar(requestAccessPopup)"
+                                    />
                                 </div>
                                 <!-- END: Explore/Download/Request Button Block -->
                             </div>
@@ -193,8 +197,8 @@
                             
                                 <div id="file-title-block" class="col-xs-12">
                                     <!-- Restricted File Icon -->
-                                    <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
-                                    <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
+                                    <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and !(fileDownloadHelper.canUserDownloadFile(FilePage.fileMetadata))}" />
+                                    <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED  and fileDownloadHelper.canUserDownloadFile(FilePage.fileMetadata) }" />
 
                                     <!-- Title/Label -->
                                     <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="file-title-label"/>
@@ -239,17 +243,17 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
+                                                            <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                            <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
                                                                 #{bundle['dataset.cite.downloadBtn.ris']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
+                                                            <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
                                                                 #{bundle['dataset.cite.downloadBtn.bib']}
                                                             </a>
                                                         </li>
@@ -284,17 +288,17 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                                         <li>
-                                                            <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
+                                                            <a jsf:id="endNoteLink-2" jsf:action="#{fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
+                                                            <a jsf:id="risLink-2" jsf:actionListener="#{fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
                                                                 #{bundle['dataset.cite.downloadBtn.ris']}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
+                                                            <a jsf:id="bibLink-2" jsf:actionListener="#{fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
                                                                 #{bundle['dataset.cite.downloadBtn.bib']}
                                                             </a>
                                                         </li>
@@ -375,9 +379,7 @@
                                    rendered="#{settingsWrapper.rsyncDownload and FilePage.fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload
                                         and !FilePage.fileMetadata.getDataFile().getOwner().getStorageIdentifier().startsWith('s3://') }">
                                 <ui:include src="file-data-access-fragment.xhtml">
-                                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                     <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                                    <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
@@ -551,34 +553,34 @@
                     </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                          <ui:include src="file-download-popup-fragment.xhtml">
-                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                         </ui:include>
                     </p:dialog>
+                    
+                    <o:importConstants type="edu.harvard.iq.dataverse.datafile.page.DownloadType" var="downloadType"/>
+                    
                     <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
                                modal="true">
-                        <div class="form-inline clearfix" jsf:rendered="#{!(empty FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.tabularData}">
+                        <div class="form-inline clearfix"
+                             jsf:rendered="#{RequestedDownloadType.fileFormat eq downloadType.SUBSET and RequestedDownloadType.isSingleFileRequested()}">>
                             <ui:include src="/subset/gui_subset.xhtml">
-                                <ui:param name="dataFile" value="#{FilePage.fileMetadata.dataFile}"/>
+                                <ui:param name="dataFile" value="#{RequestedDownloadType.singleFileMetadata.dataFile}"/>
                              </ui:include>
                         </div>
                     </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
-                         <ui:include src="package-download-popup-fragment.xhtml">
-                            <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                        </ui:include>
+                        <div jsf:rendered="#{RequestedDownloadType.fileFormat eq downloadType.PACKAGE and RequestedDownloadType.isSingleFileRequested()}">
+                            <ui:include src="package-download-popup-fragment.xhtml">
+                                <ui:param name="fileMetadata" value="#{RequestedDownloadType.singleFileMetadata}"/>
+                            </ui:include>
+                        </div>
                     </p:dialog>
                     
-                    <p:dialog header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                    <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}"
+                              widgetVar="requestAccessPopup" modal="true">
+                        <ui:include src="file-request-access-popup-fragment.xhtml" />
+                    </p:dialog>
+                    
+                    <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                         id="configureToolPopup" styleClass="smallPopUp" rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
@@ -601,7 +603,7 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();PF('blockDatasetForm').hide();"/>
+                            <p:commandButton value="#{bundle.close}" onclick="PF('accessSignUpLogIn_popup').hide();"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"

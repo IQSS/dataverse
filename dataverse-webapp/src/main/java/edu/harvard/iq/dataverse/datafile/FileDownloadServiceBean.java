@@ -1,14 +1,14 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.datafile;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.notification.NotificationObjectType;
-import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
@@ -18,11 +18,10 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.NotificationType;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
+import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import org.primefaces.PrimeFaces;
 
 import javax.ejb.EJB;
@@ -30,18 +29,12 @@ import javax.ejb.Stateless;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * @author skraffmi
@@ -49,22 +42,15 @@ import java.util.stream.Stream;
  * including Guestbook responses
  */
 @Stateless
-@Named
+@Named("fileDownloadService")
 public class FileDownloadServiceBean implements java.io.Serializable {
 
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
-    @EJB
-    GuestbookResponseServiceBean guestbookResponseService;
     @EJB
     DataFileServiceBean datafileService;
     @EJB
-    PermissionServiceBean permissionService;
-    @EJB
-    UserNotificationService userNotificationService;
-    @EJB
     AuthenticationServiceBean authService;
+    @EJB
+    ExternalToolHandler externalToolHandler;
 
     @Inject
     DataverseSession session;
@@ -78,89 +64,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject
     WorldMapPermissionHelper worldMapPermissionHelper;
 
-    @Inject
-    private SystemConfig systemConfig;
-
     private static final Logger logger = Logger.getLogger(FileDownloadServiceBean.class.getCanonicalName());
 
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse) {
-        writeGuestbookAndStartBatchDownload(guestbookResponse, false);
-    }
-
-    public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord) {
-        if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
-            return;
-        }
-
-        // Let's intercept the case where a multiple download method was called, 
-        // with only 1 file on the list. We'll treat it like a single file download 
-        // instead:
-        String[] fileIds = guestbookResponse.getSelectedFileIds().split(",");
-        if (fileIds.length == 1) {
-            Long fileId;
-            try {
-                fileId = Long.parseLong(fileIds[0]);
-            } catch (NumberFormatException nfe) {
-                logger.warning("A file id passed to the writeGuestbookAndStartBatchDownload method as a string could not be converted back to Long: " + fileIds[0]);
-                return;
-            }
-            // If we need to create a GuestBookResponse record, we have to 
-            // look up the DataFile object for this file: 
-            if (!doNotSaveGuestbookRecord) {
-                DataFile df = datafileService.findCheapAndEasy(Long.parseLong(fileIds[0]));
-                guestbookResponse.setDataFile(df);
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
-
-            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
-            return;
-        }
-
-        // OK, this is a real batch (multi-file) download. 
-        // Do we need to write GuestbookRecord entries for the files? 
-        if (!doNotSaveGuestbookRecord) {
-
-            List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
-
-            for (String idAsString : list) {
-                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
-                if (df != null) {
-                    guestbookResponse.setDataFile(df);
-                    writeGuestbookResponseRecord(guestbookResponse);
-                }
-            }
-        }
-
-
-        redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
-    }
-
-    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if (!fileMetadata.getDatasetVersion().isDraft()) {
-            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
-            writeGuestbookResponseRecord(guestbookResponse);
-        }
-        // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
-        logger.fine("issued file download redirect for filemetadata " + fileMetadata.getId() + ", datafile " + fileMetadata.getDataFile().getId());
-    }
-
-    public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse) {
-        if (guestbookResponse.getDataFile() == null) {
-            logger.warning("writeGuestbookAndStartFileDownload(GuestbookResponse) called without the DataFile in the GuestbookResponse.");
-            return;
-        }
-        writeGuestbookResponseRecord(guestbookResponse);
-        redirectToDownloadAPI(guestbookResponse.getFileFormat(), guestbookResponse.getDataFile().getId());
-        logger.fine("issued file download redirect for datafile " + guestbookResponse.getDataFile().getId());
-    }
-
-    public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
-        if (!fileMetadata.getDatasetVersion().isDraft()) {
-            guestbookResponse = guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, format);
-            writeGuestbookResponseRecord(guestbookResponse);
-        }
-    }
 
     public void writeGuestbookResponseRecord(GuestbookResponse guestbookResponse) {
         try {
@@ -171,6 +76,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
+
+    
     // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods 
     // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the 
     // multiple- and single-file downloads respectively) are passed to the 
@@ -187,26 +94,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // But note that this may change - there may be some future situations where it will 
     // become necessary again, to pass the job of creating the access record 
     // to the API.
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal) {
-
-        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
-        if (guestbookRecordsAlreadyWritten && !downloadOriginal) {
-            fileDownloadUrl += "?gbrecs=true";
-        } else if (guestbookRecordsAlreadyWritten && downloadOriginal) {
-            fileDownloadUrl += "?gbrecs=true&format=original";
-        } else if (!guestbookRecordsAlreadyWritten && downloadOriginal) {
-            fileDownloadUrl += "?format=original";
-        }
-
+    public void redirectToBatchDownloadAPI(List<Long> fileIds, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
+        String filesDownloadUrl = FileUtil.getBatchFilesDownloadUrlPath(fileIds, guestbookRecordsAlreadyWritten, downloadType);
         try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+            FacesContext.getCurrentInstance().getExternalContext().redirect(filesDownloadUrl);
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
-
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
+
+    public void redirectToDownloadAPI(ApiDownloadType downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
@@ -215,77 +113,33 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
         }
     }
-
-    private void redirectToDownloadAPI(String downloadType, Long fileId) {
-        redirectToDownloadAPI(downloadType, fileId, true);
-    }
-
-    private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal) {
-        redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
-    }
-
-
+    
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
      * TwoRavens or Data Explorer. This method may be invoked directly from the
      * xhtml if no popup is required (no terms of use, no guestbook, etc.).
      */
-    public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
+    public void explore(FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             apiToken = authService.findApiTokenByUser(authenticatedUser);
         }
-        DataFile dataFile = null;
-        if (fmd != null) {
-            dataFile = fmd.getDataFile();
-        } else {
-            if (guestbookResponse != null) {
-                dataFile = guestbookResponse.getDataFile();
-            }
-        }
+        DataFile dataFile = fmd.getDataFile();
         //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
         if (dataFile.getFileMetadata() == null) {
             dataFile = datafileService.find(dataFile.getId());
         }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
-        guestbookResponse.setDownloadtype(externalTool.getDisplayName());
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams(systemConfig.getDataverseSiteUrl());
+        String toolUrl = externalToolHandler.buildToolUrlWithQueryParams(externalTool, dataFile, apiToken);
         logger.fine("Exploring with " + toolUrl);
         PrimeFaces.current().executeScript("window.open('" + toolUrl + "', target='_blank');");
-        // This is the old logic from TwoRavens, null checks and all.
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse()
-                && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
-            if (guestbookResponse.getDataFile() == null && fmd != null) {
-                guestbookResponse.setDataFile(fmd.getDataFile());
-            }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()) {
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
-        }
     }
-
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd) {
-
-        if (guestbookResponse != null && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)) {
-            if (guestbookResponse.getDataFile() == null && fmd != null) {
-                guestbookResponse.setDataFile(fmd.getDataFile());
-            }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()) {
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
-        }
-        DataFile file = null;
-        if (fmd != null) {
-            file = fmd.getDataFile();
-        }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null) {
-            file = guestbookResponse.getDataFile();
-        }
-
-
+    
+    public String startWorldMapDownloadLink(FileMetadata fileMetadata) {
+        
+        DataFile file = fileMetadata.getDataFile();
         String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
 
         try {
@@ -295,15 +149,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url.");
         }
         return retVal;
-    }
-
-    public Boolean canSeeTwoRavensExploreButton() {
-        return false;
-    }
-
-
-    public Boolean canUserSeeExploreWorldMapButton() {
-        return false;
     }
 
     public void downloadDatasetCitationXML(Dataset dataset) {
@@ -442,32 +287,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } catch (IOException e) {
 
         }
-    }
-
-    public boolean requestAccess(Long fileId) {
-        if (dvRequestService.getDataverseRequest().getAuthenticatedUser() == null) {
-            return false;
-        }
-        DataFile file = datafileService.find(fileId);
-        if (!file.getFileAccessRequesters().contains(session.getUser())) {
-            try {
-                commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));
-                return true;
-            } catch (CommandException ex) {
-                logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
-            }
-        }
-
-        return false;
-    }
-
-    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
-        Stream<AuthenticatedUser> usersWithManageDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream();
-        Stream<AuthenticatedUser> usersWithManageMinorDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageMinorDatasetPermissions, dataset).stream();
-
-        Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm).distinct().forEach((au) ->
-                                                                                                    userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
-                                                                                                                                                      fileId, NotificationObjectType.DATAFILE, requestor));
     }
 
 

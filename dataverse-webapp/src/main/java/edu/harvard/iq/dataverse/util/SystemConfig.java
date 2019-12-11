@@ -215,6 +215,10 @@ public class SystemConfig {
 
         return guidesVersion.equals(StringUtils.EMPTY) ? getVersion() : guidesVersion;
     }
+    
+    public boolean isRserveConfigured() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.RserveConfigured);
+    }
 
     public long getUploadLogoSizeLimit() {
         return 500000;
@@ -316,10 +320,6 @@ public class SystemConfig {
     public boolean isTimerServer() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.TimerServer);
     }
-
-//    public String getNameOfInstallation() {
-//        return dataverseDao.findRootDataverse().getName();
-//    }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
         AbstractOAuth2AuthenticationProvider.DevOAuthAccountType saneDefault = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION;
@@ -525,7 +525,7 @@ public class SystemConfig {
 
     public boolean isHTTPDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        logger.warning("Download Methods:" + downloadMethods);
+        logger.fine("Download Methods:" + downloadMethods);
         return downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
 

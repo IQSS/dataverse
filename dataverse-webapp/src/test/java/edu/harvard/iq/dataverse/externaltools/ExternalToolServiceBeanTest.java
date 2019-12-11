@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
@@ -43,7 +42,6 @@ public class ExternalToolServiceBeanTest {
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         ExternalTool externalTool = new ExternalTool("displayName", "description", type, "http://foo.com", "{}", TextMimeType.TSV_ALT.getMimeValue());
-        ExternalToolHandler externalToolHandler4 = new ExternalToolHandler(externalTool, dataFile, apiToken);
         List<ExternalTool> externalTools = new ArrayList<>();
         externalTools.add(externalTool);
         List<ExternalTool> availableExternalTools = ExternalToolServiceBean.findExternalToolsByFile(externalTools, dataFile);
@@ -72,22 +70,11 @@ public class ExternalToolServiceBeanTest {
         System.out.println("tool: " + tool);
         ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(tool);
         assertEquals("AwesomeTool", externalTool.getDisplayName());
-        DataFile dataFile = new DataFile();
-        dataFile.setId(42l);
-        FileMetadata fmd = new FileMetadata();
-        DatasetVersion dv = new DatasetVersion();
-        Dataset ds = new Dataset();
-        dv.setDataset(ds);
-        fmd.setDatasetVersion(dv);
-        List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
-        fmdl.add(fmd);
-        dataFile.setFileMetadatas(fmdl);
-        ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
-        String toolUrl = externalToolHandler.getToolUrlWithQueryParams( "https://localhost:8080");
-        System.out.println("result: " + toolUrl);
-        assertEquals("http://awesometool.com?fileid=42&key=7196b5ce-f200-4286-8809-03ffdbc255d7", toolUrl);
+        assertEquals("This tool is awesome.", externalTool.getDescription());
+        assertEquals(ExternalTool.Type.EXPLORE, externalTool.getType());
+        assertEquals("http://awesometool.com", externalTool.getToolUrl());
+        assertEquals("{\"queryParameters\":[{\"fileid\":\"{fileId}\"},{\"key\":\"{apiToken}\"}]}", externalTool.getToolParameters());
+        assertEquals(TextMimeType.TSV_ALT.getMimeValue(), externalTool.getContentType());
     }
 
     @Test

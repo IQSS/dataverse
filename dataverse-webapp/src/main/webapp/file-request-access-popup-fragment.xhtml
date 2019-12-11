@@ -8,15 +8,12 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!--@elvariable id="workingVersion" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion"-->
-
-        <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker" />
         <p class="help-block">
             <h:outputText value="#{bundle['file.dataFilesTab.terms.list.description']}" />
         </p>
         
         <div>
-            <ui:repeat value="#{fileDownloadHelper.filesForRequestAccessByTermsOfUse.entrySet().toArray()}" var="restrictedTermsOfUse">
+            <ui:repeat value="#{FileDownloadRequestHelper.filesForRequestAccessByTermsOfUse.entrySet().toArray()}" var="restrictedTermsOfUse">
                 <div style="background-color: #eee; border-color: #777; padding: 5px; margin-bottom: 15px; margin-top: 5px;">
                     <p>
                         <h:outputText value="#{bundle['file.dataFilesTab.terms.list.filePrefix']}" />
@@ -35,10 +32,10 @@
         </div>
         <div class="button-block">
             <p:commandLink type="button" styleClass="btn btn-default"  
-                           action="#{fileDownloadHelper.requestAccessIndirect()}"    
+                           action="#{FileDownloadRequestHelper.requestAccessIndirect()}"
                            update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
                 #{bundle['acceptTerms']}
             </p:commandLink>
-            <button type="button" class="btn btn-default" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
+            <button type="button" class="btn btn-default" onclick="PF('requestAccessPopup').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

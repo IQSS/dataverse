@@ -7,8 +7,11 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
@@ -17,6 +20,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import io.vavr.Tuple2;
@@ -29,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Stateless
 public class FilePermissionsService {
@@ -39,6 +44,8 @@ public class FilePermissionsService {
 
     private DataverseRoleServiceBean roleService;
 
+    private PermissionServiceBean permissionService;
+    
     private RoleAssigneeServiceBean roleAssigneeService;
 
     private UserNotificationService userNotificationService;
@@ -56,7 +63,8 @@ public class FilePermissionsService {
     @Inject
     public FilePermissionsService(EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService,
             DataverseRoleServiceBean roleService, UserNotificationService userNotificationService,
-            DataFileServiceBean datafileService, RoleAssigneeServiceBean roleAssigneeService) {
+            DataFileServiceBean datafileService, RoleAssigneeServiceBean roleAssigneeService,
+            PermissionServiceBean permissionService) {
         
         this.commandEngine = commandEngine;
         this.dvRequestService = dvRequestService;
@@ -64,6 +72,7 @@ public class FilePermissionsService {
         this.userNotificationService = userNotificationService;
         this.datafileService = datafileService;
         this.roleAssigneeService = roleAssigneeService;
+        this.permissionService = permissionService;
     }
     
     
@@ -119,6 +128,23 @@ public class FilePermissionsService {
         return Lists.newArrayList(roleAssignments);
     }
     
+    
+    public void requestAccessToFiles(List<DataFile> files) {
+        Preconditions.checkArgument(!files.isEmpty());
+        Preconditions.checkArgument(isAllFilesFromSameDataset(files));
+        
+        Dataset dataset = files.get(0).getOwner();
+
+        for (DataFile file : files) {
+            //Not sending notification via request method so that
+            // we can bundle them up into one nofication at dataset level
+            requestAccessToFile(file);
+        }
+        
+        sendRequestFileAccessNotification(dataset, files.get(0).getId(),
+                dvRequestService.getDataverseRequest().getAuthenticatedUser());
+    }
+    
     /**
      * Rejects request to access files passed as argument for
      * the given user
@@ -139,6 +165,15 @@ public class FilePermissionsService {
         userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()),
                 NotificationType.REJECTFILEACCESS, dataset.getId(), NotificationObjectType.DATASET);
         
+    }
+
+    public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
+        Stream<AuthenticatedUser> usersWithManageDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream();
+        Stream<AuthenticatedUser> usersWithManageMinorDsPerm = permissionService.getUsersWithPermissionOn(Permission.ManageMinorDatasetPermissions, dataset).stream();
+
+        Stream.concat(usersWithManageDsPerm, usersWithManageMinorDsPerm).distinct().forEach((au) ->
+                                                                                                    userNotificationService.sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.REQUESTFILEACCESS,
+                                                                                                                                                      fileId, NotificationObjectType.DATAFILE, requestor));
     }
     
     
@@ -177,6 +212,12 @@ public class FilePermissionsService {
         }
         
         return roleAssignment;
+    }
+    
+    private void requestAccessToFile(DataFile file) {
+        if (!file.getFileAccessRequesters().contains(dvRequestService.getDataverseRequest().getAuthenticatedUser())) {
+            commandEngine.submit(new RequestAccessCommand(dvRequestService.getDataverseRequest(), file));
+        }
     }
     
     private boolean isAllFilesFromSameDataset(List<DataFile> files) {

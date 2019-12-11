@@ -1484,7 +1484,7 @@ public class IngestServiceBean {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
             logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
-        } catch (UnfException uex) {
+        } catch (Exception uex) {
             logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
         }
 

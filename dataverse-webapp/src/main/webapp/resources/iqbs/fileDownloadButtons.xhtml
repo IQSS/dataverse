@@ -1,0 +1,235 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:composite="http://xmlns.jcp.org/jsf/composite"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+        
+<composite:interface>
+    <composite:attribute name="fileMetadata" required="true" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"/>
+
+    <composite:attribute name="lockedFromDownload" />
+    <composite:attribute name="exploreTools" />
+    
+    <composite:attribute name="downloadRequestFunction" method-signature="java.lang.String downloadRequestFunction()"/>
+    <composite:attribute name="updateOnDownloadRequest" />
+    
+    <composite:attribute name="updateOnRequestAccess" />
+</composite:interface>
+
+
+<composite:implementation>
+    <c:set var="downloadsDisabled" value="#{cc.attrs.fileMetadata.dataFile.ingestInProgress or cc.attrs.lockedFromDownload}"/>
+    <c:set var="canDownloadFile" value="#{fileDownloadHelper.canUserDownloadFile(cc.attrs.fileMetadata)}" />
+    
+    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+        <button type="button" 
+                style="border-right:0;" 
+                class="btn btn-default btn-preview" 
+                data-target="#map-modal-#{fileMetadata.id}"
+                data-toggle="modal">
+            <span class="glyphicon glyphicon-map-marker"/> #{bundle['preview']}
+        </button>
+        <div class="modal fade" id="map-modal-#{cc.attrs.fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <!-- WorldMap Preview -->
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header text-left">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="#{bundle['close']}"><span aria-hidden="true">&#215;</span></button>
+                        <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">#{bundle['file.previewMap']}</span> #{cc.attrs.fileMetadata.label}</h4>
+                    </div>
+                    <div class="modal-body">
+                        <iframe id="id_iframe_map" height="300" width="100%" src="#{ worldMapPermissionHelper.getMapLayerMetadata(cc.attrs.fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
+                    </div>
+                    <div class="modal-footer clearfix">
+                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(cc.attrs.fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
+                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(cc.attrs.fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">#{bundle['close']}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ui:fragment>
+
+    <!--"Explore" button (dropdown of tools)-->
+    <!--exploreTools is set as a ui:param by the file and dataset pages-->
+    <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
+    <div class="btn-group" jsf:rendered="#{canDownloadFile and not empty cc.attrs.exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata))}">
+        <ui:fragment rendered="#{(cc.attrs.exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata))  or (cc.attrs.exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata))}">
+            <button type="button" class="btn btn-default btn-explore" 
+                    onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
+            </button>
+        </ui:fragment>
+        <ui:fragment rendered="#{cc.attrs.exploreTools.size()>1 or (cc.attrs.exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata))}">
+            <button type="button" class="btn btn-default btn-explore dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore} <span  class="caret"/>
+            </button>
+        </ui:fragment>
+        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+            <!--external tools-->
+            <ui:repeat var="tool" value="#{cc.attrs.exploreTools}">
+                <li>
+                    <p:commandLink id="externalToolDownloadPopupButton"
+                                   disabled="#{downloadsDisabled}"
+                                   process="@this"
+                                   actionListener="#{RequestedDownloadType.initDownloadTypeForTool(cc.attrs.fileMetadata, tool)}"
+                                   action="#{cc.attrs.downloadRequestFunction}"
+                                   update="#{cc.attrs.updateOnDownloadRequest}">
+                        #{tool.displayName}
+                    </p:commandLink>
+                </li>
+            </ui:repeat>
+            <!--WorldMap Explore-->
+            <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata)}">
+                <p:commandLink id="worldmapDownloadPopupButton"
+                               disabled="#{downloadsDisabled}"
+                               actionListener="#{RequestedDownloadType.initDownloadTypeForWorldMap(cc.attrs.fileMetadata)}"
+                               action="#{cc.attrs.downloadRequestFunction}"
+                               update="#{cc.attrs.updateOnDownloadRequest}">
+                    #{bundle['file.mapData.worldMap']}
+                </p:commandLink>
+            </li>                       
+        </ul>
+    </div>
+    
+    <ui:fragment rendered="#{canDownloadFile}">
+    
+    <ui:fragment rendered="#{cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
+
+    <p:commandLink id="packageDownloadPopupButton"
+                    type="button" styleClass="btn btn-default btn-download"
+                   process="@this"
+                   disabled="#{downloadsDisabled}"
+                   actionListener="#{RequestedDownloadType.initDownloadTypeForPackage(cc.attrs.fileMetadata)}"
+                   action="#{cc.attrs.downloadRequestFunction}"
+                   update="#{cc.attrs.updateOnDownloadRequest}">
+        <!-- package data file: -->
+        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+    </p:commandLink>
+    
+    </ui:fragment>
+
+    <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload) and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
+    
+    
+    <p:commandLink id="standardFileDownloadButton"
+                   type="button" styleClass="btn btn-default btn-download"
+                   process="@this"
+                   disabled="#{downloadsDisabled}"
+                   actionListener="#{RequestedDownloadType.initDownloadType(cc.attrs.fileMetadata)}"
+                   action="#{cc.attrs.downloadRequestFunction}"
+                   update="#{cc.attrs.updateOnDownloadRequest}">
+        <!-- non-tabular data file: -->
+        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+    </p:commandLink>
+    
+    </ui:fragment>
+
+    <div class="btn-group" jsf:rendered="#{cc.attrs.fileMetadata.dataFile.tabularData }">
+        <!-- Download Dropdown -->
+        <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">
+            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
+        </button>
+        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+            <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
+                <p:commandLink id="tabularOriginalDownloadPopupButton"
+                               disabled="#{downloadsDisabled}"
+                               actionListener="#{RequestedDownloadType.initDownloadTypeForOriginal(cc.attrs.fileMetadata)}"
+                               action="#{cc.attrs.downloadRequestFunction}"
+                               update="#{cc.attrs.updateOnDownloadRequest}">
+                    <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
+                        <f:param value="#{cc.attrs.fileMetadata.dataFile.originalFormatLabel}"/>
+                    </h:outputFormat>
+                </p:commandLink>
+            </li>
+            <li>
+                <p:commandLink id="tabularTabDownloadPopupButton"
+                               disabled="#{downloadsDisabled}"
+                               actionListener="#{RequestedDownloadType.initDownloadTypeForTab(cc.attrs.fileMetadata)}"
+                               action="#{cc.attrs.downloadRequestFunction}"
+                               update="#{cc.attrs.updateOnDownloadRequest}">
+                    #{bundle['file.downloadBtn.format.tab']}
+                </p:commandLink>
+            </li>
+            <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'RData')}">
+                <li>
+                    <p:commandLink id="tabularRdataDownloadPopupButton"
+                                   process="@this"
+                                   disabled="#{downloadsDisabled}"
+                                   actionListener="#{RequestedDownloadType.initDownloadTypeForRdata(cc.attrs.fileMetadata)}"
+                                   action="#{cc.attrs.downloadRequestFunction}"
+                                   update="#{cc.attrs.updateOnDownloadRequest}">
+                        #{bundle['file.downloadBtn.format.rdata']}
+                    </p:commandLink>
+                </li>
+            </ui:fragment>
+            <li>
+                <p:commandLink process="@this"
+                               disabled="#{downloadsDisabled}"
+                               actionListener="#{RequestedDownloadType.initDownloadTypeForVar(cc.attrs.fileMetadata)}"
+                               action="#{cc.attrs.downloadRequestFunction}"
+                               update="#{cc.attrs.updateOnDownloadRequest}">
+                    #{bundle['file.downloadBtn.format.var']}
+                </p:commandLink>
+            </li>
+            <li>
+                <p:commandLink id="tabularSubsetDownloadPopupButton" rendered="#{systemConfig.rserveConfigured}"
+                               process="@this"
+                               disabled="#{downloadsDisabled}"
+                               value="#{bundle['file.downloadBtn.format.datasubset']}"
+                               actionListener="#{RequestedDownloadType.initDownloadTypeForSubset(cc.attrs.fileMetadata)}"
+                               action="#{cc.attrs.downloadRequestFunction}"
+                               update="#{cc.attrs.updateOnDownloadRequest}"
+                               />
+            </li>
+            <li class="dropdown-submenu pull-left">
+                <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}">
+                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
+                        </h:commandLink>
+                    </li>
+                    <li>
+                        <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(cc.attrs.fileMetadata)}">
+                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
+                        </h:commandLink>
+                    </li>
+                    <li>
+                        <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(cc.attrs.fileMetadata)}">
+                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
+                        </h:commandLink>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    </ui:fragment>
+    
+    <ui:fragment rendered="#{!cc.attrs.fileMetadata.datasetVersion.deaccessioned and !canDownloadFile}">
+    
+    <p:commandLink type="button" styleClass="btn btn-default btn-request" rendered="#{dataverseSession.user.authenticated}"
+                   process="@this"
+                   action="#{FileDownloadRequestHelper.replaceRequestAccessWithSingleFile(cc.attrs.fileMetadata.dataFile)}"
+                   update="#{cc.attrs.updateOnRequestAccess}"
+                   oncomplete="PF('requestAccessPopup').show()"
+                   id="requestAccessPopupButton"
+                   disabled="#{cc.attrs.fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+        <span class="glyphicon glyphicon-bullhorn"/> #{cc.attrs.fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+    </p:commandLink>       
+    <p:commandLink type="button" 
+                   styleClass="btn btn-default btn-request"
+                   process="@this"
+                   rendered="#{!dataverseSession.user.authenticated}"
+                   onclick="PF('accessSignUpLogIn_popup').show()">
+        <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
+    </p:commandLink>
+    
+    </ui:fragment>
+    
+</composite:implementation>
+</html>

@@ -6,20 +6,21 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.FileDownloadHelper;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.datafile.page.FileDownloadHelper;
+import edu.harvard.iq.dataverse.datafile.page.FileDownloadRequestHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.guestbook.GuestbookResponseDialog;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -32,14 +33,13 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.primefaces.context.RequestContext;
 import org.primefaces.event.data.PageEvent;
 
 import javax.ejb.EJBException;
@@ -72,14 +72,23 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 public class DatasetFilesTab implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetFilesTab.class.getCanonicalName());
+    
+    public static final String DOWNLOAD_POPUP_DIALOG = "downloadPopup";
+    public static final String SELECT_FILES_FOR_DOWNLAOD_DIALOG = "selectFilesForDownload";
+    public static final String DOWNLOAD_MIXED_DIALOG = "downloadMixed";
+    public static final String DOWNLOAD_INVALID_DIALOG = "downloadInvalid";
+    
+    public static final String SELECT_FILES_FOR_REQUEST_ACCESS_DIALOG = "selectFilesForRequestAccess";
+    public static final String REQUEST_ACCESS_DIALOG = "requestAccessPopup";
+    
 
     private DatasetDao datasetDao;
     private DataFileServiceBean datafileService;
     private GuestbookResponseServiceBean guestbookResponseService;
     private ExternalToolServiceBean externalToolService;
     private EjbDataverseEngine commandEngine;
-    private FileDownloadServiceBean fileDownloadService;
     private FileDownloadHelper fileDownloadHelper;
+    private FileDownloadRequestHelper fileDownloadRequestHelper;
     private TermsOfUseFormMapper termsOfUseFormMapper;
 
     private PermissionServiceBean permissionService;
@@ -88,6 +97,8 @@ public class DatasetFilesTab implements Serializable {
 
     private DataverseSession session;
     private DataverseRequestServiceBean dvRequestService;
+    
+    private GuestbookResponseDialog guestbookResponseDialog;
 
 
     private Dataset dataset;
@@ -106,8 +117,6 @@ public class DatasetFilesTab implements Serializable {
     private List<FileMetadata> fileMetadatasSearch;
 
     private DatasetVersion clone;
-
-    private boolean removeUnusedTags;
 
     private boolean selectAllFiles;
 
@@ -128,21 +137,16 @@ public class DatasetFilesTab implements Serializable {
     private Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     private Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
 
-    private GuestbookResponse guestbookResponse;
-
     private List<FileMetadata> selectedDownloadableFiles;
 
     private List<FileMetadata> selectedNonDownloadableFiles;
+    
+    private boolean downloadOriginal = false;
 
     private Boolean downloadButtonAvailable = null;
 
-    private String[] selectedTags = {};
-
-    private String[] selectedTabFileTags = {};
-
     private List<String> categoriesByName;
 
-    private String newCategoryName = null;
     private boolean bulkFileDeleteInProgress = false;
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
@@ -163,9 +167,10 @@ public class DatasetFilesTab implements Serializable {
     public DatasetFilesTab(FileDownloadHelper fileDownloadHelper, DataFileServiceBean datafileService,
                            PermissionServiceBean permissionService, PermissionsWrapper permissionsWrapper,
                            DataverseRequestServiceBean dvRequestService, DatasetDao datasetDao, DataverseSession session,
-                           FileDownloadServiceBean fileDownloadService, GuestbookResponseServiceBean guestbookResponseService,
+                           GuestbookResponseServiceBean guestbookResponseService,
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
-                           ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper) {
+                           ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper,
+                           FileDownloadRequestHelper fileDownloadRequestHelper, GuestbookResponseDialog guestbookResponseDialog) {
         this.fileDownloadHelper = fileDownloadHelper;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
@@ -173,12 +178,13 @@ public class DatasetFilesTab implements Serializable {
         this.dvRequestService = dvRequestService;
         this.datasetDao = datasetDao;
         this.session = session;
-        this.fileDownloadService = fileDownloadService;
+        this.fileDownloadRequestHelper = fileDownloadRequestHelper;
         this.guestbookResponseService = guestbookResponseService;
         this.settingsService = settingsService;
         this.commandEngine = commandEngine;
         this.externalToolService = externalToolService;
         this.termsOfUseFormMapper = termsOfUseFormMapper;
+        this.guestbookResponseDialog = guestbookResponseDialog;
     }
 
 
@@ -187,11 +193,7 @@ public class DatasetFilesTab implements Serializable {
         this.workingVersion = workingVersion;
         rowsPerPage = 10;
 
-        guestbookResponse = new GuestbookResponse();
-
         fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-        this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
-        this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
 
 
         logger.fine("Checking if rsync support is enabled.");
@@ -223,6 +225,8 @@ public class DatasetFilesTab implements Serializable {
 
         configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
+        
+        guestbookResponseDialog.initForDatasetVersion(workingVersion);
     }
 
     // -------------------- GETTERS --------------------
@@ -259,25 +263,12 @@ public class DatasetFilesTab implements Serializable {
         return fileLabelSearchTerm;
     }
 
-
-    public GuestbookResponse getGuestbookResponse() {
-        return guestbookResponse;
-    }
-
     public List<FileMetadata> getSelectedNonDownloadableFiles() {
         return selectedNonDownloadableFiles;
     }
 
     public boolean isHasTabular() {
         return hasTabular;
-    }
-
-    public GuestbookResponseServiceBean getGuestbookResponseService() {
-        return guestbookResponseService;
-    }
-
-    public FileDownloadServiceBean getFileDownloadService() {
-        return fileDownloadService;
     }
 
     public FileDownloadHelper getFileDownloadHelper() {
@@ -353,7 +344,7 @@ public class DatasetFilesTab implements Serializable {
             return false;
         }
 
-        if (!this.fileDownloadHelper.canDownloadFile(fileMetadata)) {
+        if (!this.fileDownloadHelper.canUserDownloadFile(fileMetadata)) {
             datafileThumbnailsMap.put(dataFileId, "");
             return false;
         }
@@ -383,7 +374,7 @@ public class DatasetFilesTab implements Serializable {
 
         contentDispositionString = "attachment;filename=" + rsyncScriptFilename;
         response.setHeader("Content-Disposition", contentDispositionString);
-
+        
         try {
             ServletOutputStream out = response.getOutputStream();
             out.write(rsyncScript.getBytes());
@@ -420,10 +411,6 @@ public class DatasetFilesTab implements Serializable {
         return guestbookResponseService.getCountGuestbookResponsesByDataFileId(fileMetadata.getDataFile().getId());
     }
 
-    public boolean isDownloadPopupRequired() {
-        return FileUtil.isDownloadPopupRequired(workingVersion);
-    }
-
     public boolean isRequestAccessPopupRequired(FileMetadata fileMetadata) {
         return FileUtil.isRequestAccessPopupRequired(fileMetadata);
     }
@@ -442,73 +429,62 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public boolean isFileAccessRequestMultiButtonRequired() {
-        if (session.getUser().isAuthenticated()) {
-            return false;
-        }
-        if (workingVersion == null) {
-            return false;
-        }
+        
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                return true;
+            if (!this.fileDownloadHelper.canUserDownloadFile(fmd)) {
+                return session.getUser().isAuthenticated();
             }
         }
         return false;
     }
 
     public boolean isFileAccessRequestMultiSignUpButtonRequired() {
-        if (session.getUser().isAuthenticated()) {
-            return false;
-        }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
-                return true;
+            if (!this.fileDownloadHelper.canUserDownloadFile(fmd)) {
+                return !session.getUser().isAuthenticated();
             }
         }
         return false;
     }
 
     public String requestAccessMultipleFiles() {
-
+        
         if (selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForRequestAccess').show()");
+            PrimefacesUtil.showDialog(SELECT_FILES_FOR_REQUEST_ACCESS_DIALOG);
             return "";
-        } else {
-            boolean anyFileAccessPopupRequired = false;
+        }
+        
+        boolean anyFileAccessPopupRequired = false;
 
-            fileDownloadHelper.clearRequestAccessFiles();
-            for (FileMetadata fmd : selectedFiles) {
-                if (isRequestAccessPopupRequired(fmd)) {
-                    fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
-                    anyFileAccessPopupRequired = true;
-                }
-            }
-
-            if (anyFileAccessPopupRequired) {
-                RequestContext requestContext = RequestContext.getCurrentInstance();
-                requestContext.execute("PF('requestAccessPopup').show()");
-                return "";
-            } else {
-                //No popup required
-                fileDownloadHelper.requestAccessIndirect();
-                return "";
+        fileDownloadRequestHelper.clearRequestAccessFiles();
+        for (FileMetadata fmd : selectedFiles) {
+            if (isRequestAccessPopupRequired(fmd)) {
+                fileDownloadRequestHelper.addFileForRequestAccess(fmd.getDataFile());
+                anyFileAccessPopupRequired = true;
             }
         }
+
+        if (anyFileAccessPopupRequired) {
+            PrimefacesUtil.showDialog(REQUEST_ACCESS_DIALOG);
+            return "";
+        }
+        
+        //No popup required
+        fileDownloadRequestHelper.requestAccessIndirect();
+        return "";
     }
-
-
-    public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal) {
+    
+    public void validateFilesForDownload(boolean downloadOriginal) {
         selectedDownloadableFiles = new ArrayList<>();
         selectedNonDownloadableFiles = new ArrayList<>();
+        this.downloadOriginal = downloadOriginal;
 
         if (this.selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForDownload').show()");
+            PrimefacesUtil.showDialog(SELECT_FILES_FOR_DOWNLAOD_DIALOG);
             return;
         }
         for (FileMetadata fmd : this.selectedFiles) {
-            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
+            if (this.fileDownloadHelper.canUserDownloadFile(fmd)) {
                 selectedDownloadableFiles.add(fmd);
             } else {
                 selectedNonDownloadableFiles.add(fmd);
@@ -518,76 +494,33 @@ public class DatasetFilesTab implements Serializable {
         // If some of the files were restricted and we had to drop them off the 
         // list, and NONE of the files are left on the downloadable list
         // - we show them a "you're out of luck" popup: 
-        if (selectedDownloadableFiles.isEmpty() && !selectedNonDownloadableFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('downloadInvalid').show()");
+        if (selectedDownloadableFiles.isEmpty()) {
+            PrimefacesUtil.showDialog(DOWNLOAD_INVALID_DIALOG);
             return;
         }
-
-        // Note that the GuestbookResponse object may still have information from 
-        // the last download action performed by the user. For example, it may 
-        // still have the non-null Datafile in it, if the user has just downloaded
-        // a single file; or it may still have the format set to "original" - 
-        // even if that's not what they are trying to do now. 
-        // So make sure to reset these values:
-        guestbookResponse.setDataFile(null);
-        guestbookResponse.setSelectedFileIds(joinDataFileIdsFromFileMetadata());
-        if (downloadOriginal) {
-            guestbookResponse.setFileFormat("original");
-        } else {
-            guestbookResponse.setFileFormat("");
-        }
-        guestbookResponse.setDownloadtype("Download");
 
         // If we have a bunch of files that we can download, AND there were no files 
         // that we had to take off the list, because of permissions - we can 
         // either send the user directly to the download API (if no guestbook/terms
         // popup is required), or send them to the download popup:
-        if (!selectedDownloadableFiles.isEmpty() && selectedNonDownloadableFiles.isEmpty()) {
-            if (guestbookRequired) {
-                openDownloadPopupForMultipleFileDownload();
-            } else {
-                startMultipleFileDownload();
-            }
+        if (selectedNonDownloadableFiles.isEmpty()) {
+            fileDownloadHelper.requestDownloadWithFiles(selectedDownloadableFiles, downloadOriginal);
             return;
         }
 
         // ... and if some files were restricted, but some are downloadable, 
         // we are showing them this "you are somewhat in luck" popup; that will 
         // then direct them to the download, or popup, as needed:
-        if (!selectedDownloadableFiles.isEmpty() && !selectedNonDownloadableFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('downloadMixed').show()");
-        }
+        PrimefacesUtil.showDialog(DOWNLOAD_MIXED_DIALOG);
 
-    }
-
-
-    public void openDownloadPopupForMultipleFileDownload() {
-        if (this.selectedFiles.isEmpty()) {
-            RequestContext requestContext = RequestContext.getCurrentInstance();
-            requestContext.execute("PF('selectFilesForDownload').show()");
-            return;
-        }
-
-        // There's a chance that this is not really a batch download - i.e., 
-        // there may only be one file on the downloadable list. But the fileDownloadService 
-        // method below will check for that, and will redirect to the single download, if
-        // that's the case. -- L.A.
-
-        this.guestbookResponse.setDownloadtype("Download");
-        RequestContext requestContext = RequestContext.getCurrentInstance();
-        requestContext.execute("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
 
     public void startMultipleFileDownload() {
-
-        boolean doNotSaveGuestbookResponse = workingVersion.isDraft();
         // There's a chance that this is not really a batch download - i.e., 
-        // there may only be one file on the downloadable list. But the fileDownloadService 
+        // there may only be one file on the downloadable list. But the fileDownloadHelper 
         // method below will check for that, and will redirect to the single download, if
         // that's the case. -- L.A.
-        fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse, doNotSaveGuestbookResponse);
+        fileDownloadHelper.requestDownloadWithFiles(selectedDownloadableFiles, downloadOriginal);
     }
 
     public boolean isDownloadButtonAvailable() {
@@ -597,7 +530,7 @@ public class DatasetFilesTab implements Serializable {
         }
 
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
+            if (this.fileDownloadHelper.canUserDownloadFile(fmd)) {
                 downloadButtonAvailable = true;
                 return true;
             }
@@ -1012,10 +945,6 @@ public class DatasetFilesTab implements Serializable {
 
     // -------------------- SETTERS --------------------
 
-    public void setRemoveUnusedTags(boolean removeUnusedTags) {
-        this.removeUnusedTags = removeUnusedTags;
-    }
-
     public void setSelectedFiles(List<FileMetadata> selectedFiles) {
         this.selectedFiles = selectedFiles;
     }
@@ -1026,22 +955,6 @@ public class DatasetFilesTab implements Serializable {
 
     public void setFileLabelSearchTerm(String fileLabelSearchTerm) {
         this.fileLabelSearchTerm = StringUtils.trimToEmpty(fileLabelSearchTerm);
-    }
-
-    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
-        this.guestbookResponse = guestbookResponse;
-    }
-
-    public void setSelectedTabFileTags(String[] selectedTabFileTags) {
-        this.selectedTabFileTags = selectedTabFileTags;
-    }
-
-    public void setSelectedTags(String[] selectedTags) {
-        this.selectedTags = selectedTags;
-    }
-
-    public void setNewCategoryName(String newCategoryName) {
-        this.newCategoryName = newCategoryName;
     }
 
 

@@ -454,6 +454,11 @@ public class SettingsServiceBean {
 
         MinutesUntilPasswordResetTokenExpires,
 
+        /**
+         * Indicates if rserve is properly configured in this dataverse installation.
+         * If not, then any functionality using rserve should be switched off
+         */
+        RserveConfigured,
         RserveHost,
         RservePort,
         RserveUser,

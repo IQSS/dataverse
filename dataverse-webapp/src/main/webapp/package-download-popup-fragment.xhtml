@@ -9,9 +9,11 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!--The p:dialog for this lives in dataset & file -->
+    
     <div jsf:id="packagePopupDownloadInfo">
+            
         <div class="col-sm-12">
-            <p class="help-block no-margin-top">                                           
+            <p class="help-block no-margin-top">
                 <h:outputFormat value="#{bundle['packageDownload.instructions']}" escape="false">
                     <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                     <f:param value="#{settingsWrapper.guidesVersion}"/>
@@ -20,12 +22,12 @@
         </div>
         <div class="col-sm-12 margin-bottom">
             <ui:include src="file-info-fragment.xhtml">
-                <ui:param name="fileMetadata" value="#{packagePopupFragmentBean.fileMetadata}" />
+                <ui:param name="fileMetadata" value="#{fileMetadata}" />
             </ui:include>
         </div>
         <div class="col-sm-12">
-            <label>#{bundle['packageDownload.urlHeader']}</label> 
-            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{packagePopupFragmentBean.fileMetadata.dataFile.id}</code></p>
+            <label>#{bundle['packageDownload.urlHeader']}</label>
+            <p><code>#{systemConfig.getDataverseSiteUrl()}/api/access/datafile/#{fileMetadata.dataFile.id}</code></p>
         </div>
         <div class="col-sm-12 button-block margin-top">              
             <p:commandButton styleClass="btn btn-default" id="downloadPackagePopupCancelButton" value="#{bundle.close}" update="downloadPackagePopup" onclick="PF('downloadPackagePopup').hide();" immediate="true"/>

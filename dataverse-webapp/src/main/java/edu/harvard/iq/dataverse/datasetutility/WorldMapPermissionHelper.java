@@ -107,7 +107,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
 
-        return this.canUserSeeExploreWorldMapButton(fm, true);
+        return this.canUserSeeExploreWorldMapButton(fm);
     }
 
     /**
@@ -125,7 +125,16 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (fm == null) {
             return false;
         }
-        return this.canUserSeeExploreWorldMapButton(fm, true);
+        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())) {
+            // Yes, return previous answer
+            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
+            return this.fileMetadataWorldMapExplore.get(fm.getId());
+        }
+        
+        boolean canUserExploreWorldMap = this.canUserSeeExploreWorldMapButton(fm);
+        this.fileMetadataWorldMapExplore.put(fm.getId(), canUserExploreWorldMap);
+        
+        return canUserExploreWorldMap;
     }
 
     /**
@@ -141,19 +150,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
      * @param fm FileMetadata
      * @return boolean
      */
-    private boolean canUserSeeExploreWorldMapButton(FileMetadata fm, boolean permissionsChecked) {
-        if (fm == null) {
-            return false;
-        }
-        // This is only here to make the public method users think...
-        if (!permissionsChecked) {
-            return false;
-        }
-        if (this.fileMetadataWorldMapExplore.containsKey(fm.getId())) {
-            // Yes, return previous answer
-            //logger.info("using cached result for candownloadfile on filemetadata "+fid);
-            return this.fileMetadataWorldMapExplore.get(fm.getId());
-        }
+    private boolean canUserSeeExploreWorldMapButton(FileMetadata fm) {
         
         /* -----------------------------------------------------
            Does a Map Exist?
@@ -169,7 +166,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
                 mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
             } else {
                 // Nope: no button
-                this.fileMetadataWorldMapExplore.put(fm.getId(), false);
                 return false;
             }
         }
@@ -179,7 +175,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             Nope? no button
         */
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectViewMaps)) {
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }
         //----------------------------------------------------------------------
@@ -188,14 +183,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         //----------------------------------------------------------------------
 
         if (fm.getDatasetVersion().isDeaccessioned()) {
-            if (this.doesSessionUserHavePermission(Permission.EditDataset, fm)) {
-                // Yes, save answer and return true
-                this.fileMetadataWorldMapExplore.put(fm.getId(), true);
-                return true;
-            } else {
-                this.fileMetadataWorldMapExplore.put(fm.getId(), false);
-                return false;
-            }
+            return this.doesSessionUserHavePermission(Permission.EditDataset, fm);
         }
         //Check for restrictions
 
@@ -205,8 +193,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         //  Is the file Unrestricted ?        
         // --------------------------------------------------------------------
         if (!isRestrictedFile) {
-            // Yes, save answer and return true
-            this.fileMetadataWorldMapExplore.put(fm.getId(), true);
             return true;
         }
 
@@ -216,7 +202,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
 
         if (session.getUser() instanceof GuestUser) {
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }
 
@@ -227,15 +212,12 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
 
         if (!this.doesSessionUserHavePermission(Permission.DownloadFile, fm)) {
-            // Yes, save answer and return true
-            this.fileMetadataWorldMapExplore.put(fm.getId(), false);
             return false;
         }
         
         /* -----------------------------------------------------
              Yes: User can view button!
          ----------------------------------------------------- */
-        this.fileMetadataWorldMapExplore.put(fm.getId(), true);
         return true;
     }
 
@@ -360,7 +342,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
         }
 
-        return this.canSeeMapButtonReminderToPublish(fm, true);
+        return this.canSeeMapButtonReminderToPublish(fm);
 
     }
 
@@ -385,7 +367,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
 
-        return this.canSeeMapButtonReminderToPublish(fm, true);
+        return this.canSeeMapButtonReminderToPublish(fm);
 
     }
 
@@ -401,7 +383,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
      * (3) Is this DataFile released?  Yes, don't need reminder
      * (4) Does a map already exist?  Yes, don't need reminder
      */
-    private boolean canSeeMapButtonReminderToPublish(FileMetadata fm, boolean permissionsChecked) {
+    private boolean canSeeMapButtonReminderToPublish(FileMetadata fm) {
         if (fm == null) {
             return false;
         }
@@ -409,11 +391,6 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         // Is this user authenticated with EditDataset permission?
         //
         if (!(isUserAuthenticatedWithEditDatasetPermission(fm))) {
-            return false;
-        }
-
-        // This is only here as a reminder to the public method users 
-        if (!permissionsChecked) {
             return false;
         }
 
@@ -461,7 +438,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         if (mapLayerMetadataLookup == null) {
             loadMapLayerMetadataLookup(fm.getDatasetVersion().getDataset());
         }
-        return this.canUserSeeMapDataButton(fm, true);
+        return this.canUserSeeMapDataButton(fm);
     }
 
 
@@ -485,7 +462,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
 
-        return this.canUserSeeMapDataButton(fm, true);
+        return this.canUserSeeMapDataButton(fm);
 
     }
 
@@ -506,14 +483,8 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
      * @param fm FileMetadata
      * @return boolean
      */
-    private boolean canUserSeeMapDataButton(FileMetadata fm, boolean permissionsChecked) {
+    private boolean canUserSeeMapDataButton(FileMetadata fm) {
         if (fm == null) {
-            return false;
-        }
-
-        // This is only here as a reminder to the public method users 
-        if (!permissionsChecked) {
-
             return false;
         }
 
@@ -521,21 +492,18 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         //  TO DO:  EXPAND FOR TABULAR FILES TAGGED AS GEOSPATIAL!
         //
         if (!(this.isPotentiallyMappableFileType(fm))) {
-
             return false;
         }
 
 
         //  (2) Is the view GeoconnectViewMaps 
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.GeoconnectCreateEditMaps)) {
-
             return false;
         }
 
 
         // (3) Is File restricted? if Yes - no button.
         if (fm.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
-
             return false;
         }
 

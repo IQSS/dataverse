@@ -155,6 +155,10 @@ public class PermissionsWrapper implements java.io.Serializable {
     public boolean canUpdateDataset(DataverseRequest dr, Dataset dataset) {
         return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
     }
+    public boolean canCurrentUserUpdateDataset(Dataset dataset) {
+        DataverseRequest dataverseRequest = dvRequestService.getDataverseRequest();
+        return doesSessionUserHaveDataSetPermission(dataverseRequest, dataset, Permission.EditDataset);
+    }
 
     public boolean canUpdateAndPublishDataset(DataverseRequest dr, Dataset dataset) {
         return canUpdateDataset(dr, dataset) && canIssuePublishDatasetCommand(dataset);

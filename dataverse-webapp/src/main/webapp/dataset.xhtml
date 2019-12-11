@@ -344,7 +344,7 @@
                                     <h:outputFormat styleClass="metrics-downloads"
                                                     value="{0} #{bundle['metrics.downloads']}">
                                         <f:param
-                                                value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                                value="#{guestbookResponseService.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
                                     </h:outputFormat>
                                 </div>
                             </div>
@@ -623,8 +623,6 @@
                 </div>
                 <!-- END View/Tabs infoMode -->
 
-                <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
-
                 <!-- Popups -->
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}"
                           widgetVar="deleteConfirmation" modal="true">
@@ -634,7 +632,7 @@
                         <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()"
                                          action="#{DatasetPage.deleteDataset()}"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('deleteConfirmation').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('deleteConfirmation').hide();"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -646,7 +644,7 @@
                         <p:commandButton value="#{bundle.continue}" onclick="PF('deleteVersionConfirmation').hide()"
                                          action="#{DatasetPage.deleteDatasetVersion()}"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('deleteVersionConfirmation').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('deleteVersionConfirmation').hide();"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -689,7 +687,7 @@
                                              onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()"
                                              rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.close}"
-                                             onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();"
+                                             onclick="PF('privateUrlConfirmation').hide();"
                                              update="privateUrlPanel"/>
                         </div>
                     </p:fragment>
@@ -699,7 +697,7 @@
                         </p>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
-                                             onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();"
+                                             onclick="PF('privateUrlConfirmation').hide();"
                                              type="button"/>
                         </div>
                     </p:fragment>
@@ -783,7 +781,7 @@
                             <f:param name="DO_DS_LINK_VALIDATION" value="true"/>
                         </p:commandLink>
                         <button type="button" class="btn btn-default"
-                                onclick="PF('linkDatasetForm').hide();PF('blockDatasetForm').hide();">
+                                onclick="PF('linkDatasetForm').hide();">
                             #{bundle.cancel}
                         </button>
                     </div>
@@ -798,11 +796,11 @@
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.submitDataset}"
+                        <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();"
+                                         action="#{DatasetPage.submitDataset}"
                                          immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('inreview').hide();PF('blockDatasetForm').hide();" type="button"
+                                         onclick="PF('inreview').hide();" type="button"
                                          immediate="true"/>
                     </div>
                 </p:dialog>
@@ -818,11 +816,11 @@
                         <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
                     </div>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}"
+                        <p:commandButton value="#{bundle.continue}" onclick="PF('publishConfirm').hide();"
+                                         action="#{DatasetPage.releaseDataset}"
                                          immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('publishConfirm').hide();"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -849,11 +847,11 @@
                         #{bundle['dataset.publishBoth.tip']}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();
-                                    PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}"
+                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();"
+                                         action="#{DatasetPage.releaseParentDVAndDataset}"
                                          immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('publishParent').hide();"
                                          type="button" immediate="true"/>
                     </div>
                 </p:dialog>
@@ -893,15 +891,14 @@
                     </p>
                     <div class="button-block">
                         <p:commandButton value="#{bundle.continue}"
-                                         onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('releaseDraft').hide();"
                                          rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}"
                                          action="#{DatasetPage.releaseDraft}"/>
-                        <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();
-                                    PF('blockDatasetForm').hide();"
+                        <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();"
                                          rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}"
                                          action="#{DatasetPage.releaseMajor}" immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('releaseDraft').hide();"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -919,8 +916,8 @@
                         </h:outputFormat>
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.close}" onclick="PF('mayNotRelease').hide();
-                                    PF('blockDatasetForm').hide();" type="button"/>
+                        <p:commandButton value="#{bundle.close}" onclick="PF('mayNotRelease').hide();"
+                                         type="button"/>
                     </div>
                 </p:dialog>
 
@@ -943,8 +940,8 @@
                         </h:outputFormat>
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.close}" onclick="PF('maynotPublishParent').hide();
-                                    PF('blockDatasetForm').hide();" type="button"/>
+                        <p:commandButton value="#{bundle.close}" onclick="PF('maynotPublishParent').hide();"
+                                         type="button"/>
                     </div>
                 </p:dialog>
 
@@ -972,7 +969,7 @@
                             <p:commandButton value="#{bundle.continue}" onclick="testReturnReason();"/>
                         </ui:remove>
                         <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('sendBackToContributor').hide();PF('blockDatasetForm').hide();"
+                                         onclick="PF('sendBackToContributor').hide();"
                                          type="button"/>
                     </div>
                 </p:dialog>

@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -37,7 +38,6 @@ public class ConfigureFragmentBean implements java.io.Serializable {
 
     private ExternalTool tool = null;
     private Long fileId = null;
-    private ExternalToolHandler toolHandler = null;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -45,6 +45,8 @@ public class ConfigureFragmentBean implements java.io.Serializable {
     DataverseSession session;
     @EJB
     AuthenticationServiceBean authService;
+    @EJB
+    private ExternalToolHandler externalToolHandler;
 
     public String configureExternalAlert() {
         JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
@@ -65,26 +67,21 @@ public class ConfigureFragmentBean implements java.io.Serializable {
         return tool;
     }
 
-    public ExternalToolHandler getConfigurePopupToolHandler() {
+    public String getToolUrlWithQueryParams() {
         if (fileId == null) {
             //on first UI load, method is called before fileId is set. There may be a better way to handle this
             return null;
         }
-        if (toolHandler != null) {
-            return toolHandler;
-        }
 
-        //TODO: Pretty sure the below command is doing absolutely nothing --MAD
-        datafileService.find(fileId);
+        DataFile dataFile = datafileService.find(fileId);
 
         ApiToken apiToken = new ApiToken();
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
-
-        toolHandler = new ExternalToolHandler(tool, datafileService.find(fileId), apiToken);
-        return toolHandler;
+        
+        return externalToolHandler.buildToolUrlWithQueryParams(tool, dataFile, apiToken);
     }
 
     public void setConfigureFileId(Long setFileId) {

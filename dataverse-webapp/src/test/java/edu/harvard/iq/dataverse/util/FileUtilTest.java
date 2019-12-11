@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -9,15 +10,19 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
+import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
+import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileUtilTest {
@@ -150,15 +155,26 @@ public class FileUtilTest {
     @Test
     public void testgetFileDownloadUrl() {
         Long fileId = 42l;
-        assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(null, fileId, false));
-        assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath("", fileId, false));
-        assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath("bundle", fileId, false));
-        assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath("original", fileId, false));
-        assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath("RData", fileId, false));
-        assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath("var", fileId, false));
-        assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath("tab", fileId, false));
-        assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath("tab", fileId, true));
-        assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(null, fileId, true));
+        assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileId, false));
+        assertThrows(NullPointerException.class, () -> FileUtil.getFileDownloadUrlPath(null, fileId, false));
+        assertEquals("/api/access/datafile/bundle/42", FileUtil.getFileDownloadUrlPath(ApiDownloadType.BUNDLE, fileId, false));
+        assertEquals("/api/access/datafile/42?format=original", FileUtil.getFileDownloadUrlPath(ApiDownloadType.ORIGINAL, fileId, false));
+        assertEquals("/api/access/datafile/42?format=RData", FileUtil.getFileDownloadUrlPath(ApiDownloadType.RDATA, fileId, false));
+        assertEquals("/api/access/datafile/42/metadata", FileUtil.getFileDownloadUrlPath(ApiDownloadType.VAR, fileId, false));
+        assertEquals("/api/access/datafile/42?format=tab", FileUtil.getFileDownloadUrlPath(ApiDownloadType.TAB, fileId, false));
+        assertEquals("/api/access/datafile/42?format=tab&gbrecs=true", FileUtil.getFileDownloadUrlPath(ApiDownloadType.TAB, fileId, true));
+        assertEquals("/api/access/datafile/42?gbrecs=true", FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileId, true));
+    }
+    
+    @Test
+    public void testgetBatchFilesDownloadUrlPath() {
+        // given
+        List<Long> fileIds = Lists.newArrayList(11L, 12L);
+        // when & then
+        assertEquals("/api/access/datafiles/11,12", FileUtil.getBatchFilesDownloadUrlPath(fileIds, false, ApiBatchDownloadType.DEFAULT));
+        assertEquals("/api/access/datafiles/11,12?gbrecs=true", FileUtil.getBatchFilesDownloadUrlPath(fileIds, true, ApiBatchDownloadType.DEFAULT));
+        assertEquals("/api/access/datafiles/11,12?format=original", FileUtil.getBatchFilesDownloadUrlPath(fileIds, false, ApiBatchDownloadType.ORIGINAL));
+        assertEquals("/api/access/datafiles/11,12?gbrecs=true&format=original", FileUtil.getBatchFilesDownloadUrlPath(fileIds, true, ApiBatchDownloadType.ORIGINAL));
     }
 
     @Test

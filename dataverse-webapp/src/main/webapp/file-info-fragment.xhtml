@@ -25,11 +25,9 @@
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
                     </span>
                     <!-- Restricted File Icon -->
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                
-                        <span class="glyphicon glyphicon-lock text-danger"/>
-                    </div>
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED and fileDownloadHelper.canDownloadFile(fileMetadata) }">
-                        <span class="icon-unlock text-success"/>
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED}">
+                        <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{!fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
+                        <span class="icon-unlock text-success" jsf:rendered="#{fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
                     </div>
                 </div>
             </div>

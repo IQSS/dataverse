@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.json.Json;
@@ -278,8 +279,7 @@ public class JsonLdBuilder {
                     // no-op
                 } else {
                     if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
-                        String nullDownloadType = null;
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false));
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileMetadata.getDataFile().getId(), false));
                     }
                 }
                 fileArray.add(fileObject);

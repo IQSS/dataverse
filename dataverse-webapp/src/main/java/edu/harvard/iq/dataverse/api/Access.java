@@ -22,6 +22,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
+import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -99,13 +101,6 @@ import java.util.logging.Logger;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
-/*
-    Custom API exceptions [NOT YET IMPLEMENTED]
-import edu.harvard.iq.dataverse.api.exceptions.NotFoundException;
-import edu.harvard.iq.dataverse.api.exceptions.ServiceUnavailableException;
-import edu.harvard.iq.dataverse.api.exceptions.PermissionDeniedException;
-import edu.harvard.iq.dataverse.api.exceptions.AuthorizationRequiredException;
-*/
 
 /**
  * @author Leonid Andreev
@@ -150,6 +145,8 @@ public class Access extends AbstractApiBean {
     UserNotificationService userNotificationService;
     @Inject
     PermissionsWrapper permissionsWrapper;
+    @EJB
+    private FilePermissionsService filePermissionsService;
 
 
     private static final String API_KEY_HEADER = "X-Dataverse-key";
@@ -1000,7 +997,9 @@ public class Access extends AbstractApiBean {
         }
 
         try {
-            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile, true));
+            engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile));
+            
+            filePermissionsService.sendRequestFileAccessNotification(dataFile.getOwner(), dataFile.getId(), requestor);
         } catch (CommandException ex) {
             List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));

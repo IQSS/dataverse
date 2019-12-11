@@ -10,13 +10,12 @@ import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.FileDownloadHelper;
-import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
+import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -27,6 +26,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.guestbook.GuestbookResponseDialog;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
@@ -78,11 +78,8 @@ public class FilePage implements java.io.Serializable {
     private Long fileId;
     private String version;
     private DataFile file;
-    private GuestbookResponse guestbookResponse;
     private int selectedTabIndex;
-    private Dataset editDataset;
     private Dataset dataset;
-    private List<DatasetVersion> datasetVersionsForTab;
     private List<FileMetadata> fileMetadatasForTab;
     private String persistentId;
     private List<ExternalTool> configureTools;
@@ -99,12 +96,6 @@ public class FilePage implements java.io.Serializable {
     @EJB
     SettingsServiceBean settingsService;
     @EJB
-    FileDownloadServiceBean fileDownloadService;
-    @EJB
-    GuestbookResponseServiceBean guestbookResponseService;
-    @EJB
-    AuthenticationServiceBean authService;
-    @EJB
     SystemConfig systemConfig;
 
     @Inject
@@ -119,13 +110,14 @@ public class FilePage implements java.io.Serializable {
     @Inject
     FileDownloadHelper fileDownloadHelper;
     @Inject
-    WorldMapPermissionHelper worldMapPermissionHelper;
-    @Inject
     private ExportService exportService;
 
     @Inject
     private FileService fileService;
+    @Inject
+    private GuestbookResponseDialog guestbookResponseDialog;
 
+    
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     public String init() {
@@ -198,7 +190,7 @@ public class FilePage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized();
             }
 
-            this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
+            guestbookResponseDialog.initForDatasetVersion(fileMetadata.getDatasetVersion());
             this.dataset = fileMetadata.getDataFile().getOwner();
 
             // Find external tools based on their type, the file content type, and whether
@@ -305,8 +297,7 @@ public class FilePage implements java.io.Serializable {
         }
 
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.editSuccess"));
-        setVersion("DRAFT");
-        init();
+        
         return returnToDraftVersion();
     }
 
@@ -319,8 +310,7 @@ public class FilePage implements java.io.Serializable {
         }
 
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
-
-        setVersion("DRAFT");
+        
         return returnToDatasetOnly(fileMetadata.getDataFile().getOwner());
     }
 
@@ -502,7 +492,7 @@ public class FilePage implements java.io.Serializable {
             return thumbnailAvailable;
         }
 
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
+        if (!fileDownloadHelper.canUserDownloadFile(fileMetadata)) {
             thumbnailAvailable = false;
         } else {
             thumbnailAvailable = datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
@@ -534,32 +524,6 @@ public class FilePage implements java.io.Serializable {
     private String returnToDraftVersion() {
 
         return "/file.xhtml?fileId=" + fileId + "&version=DRAFT&faces-redirect=true";
-    }
-
-    public FileDownloadServiceBean getFileDownloadService() {
-        return fileDownloadService;
-    }
-
-    public void setFileDownloadService(FileDownloadServiceBean fileDownloadService) {
-        this.fileDownloadService = fileDownloadService;
-    }
-
-
-    public GuestbookResponseServiceBean getGuestbookResponseService() {
-        return guestbookResponseService;
-    }
-
-    public void setGuestbookResponseService(GuestbookResponseServiceBean guestbookResponseService) {
-        this.guestbookResponseService = guestbookResponseService;
-    }
-
-
-    public GuestbookResponse getGuestbookResponse() {
-        return guestbookResponse;
-    }
-
-    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
-        this.guestbookResponse = guestbookResponse;
     }
 
 

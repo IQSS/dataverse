@@ -12,11 +12,11 @@
             <p:commandLink type="button" styleClass="btn btn-default"
                 action="#{configureFragmentBean.configureExternalAlert()}" 
                 value="#{bundle['continue']}" 
-                onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.configurePopupToolHandler.toolUrlWithQueryParams}', '_blank')"
+                onclick="PF('configureToolPopup').hide();window.open('#{configureFragmentBean.getToolUrlWithQueryParams()}', '_blank')"
                 update=":messagePanel">
             </p:commandLink>
             <button type="button" class="btn btn-default"
-                    onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();"
+                    onclick="PF('configureToolPopup').hide();"
                     value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>

@@ -22,7 +22,6 @@ package edu.harvard.iq.dataverse.util;
 
 
 import com.google.common.base.Preconditions;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
@@ -38,6 +37,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.Term
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import io.vavr.control.Try;
+import org.apache.commons.lang.StringUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
@@ -61,6 +61,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.UUID;
@@ -734,34 +735,65 @@ public class FileUtil implements java.io.Serializable {
         return path;
     }
 
+    public enum ApiDownloadType {
+        DEFAULT,
+        BUNDLE,
+        ORIGINAL,
+        RDATA,
+        VAR,
+        TAB
+    }
+    
     /**
      * The FileDownloadServiceBean operates on file IDs, not DOIs.
      */
-    public static String getFileDownloadUrlPath(String downloadType, Long fileId, boolean gbRecordsWritten) {
+    public static String getFileDownloadUrlPath(ApiDownloadType downloadType, Long fileId, boolean gbRecordsWritten) {
+        Preconditions.checkNotNull(downloadType);
+        Preconditions.checkNotNull(fileId);
+        
         String fileDownloadUrl = "/api/access/datafile/" + fileId;
-        if (downloadType != null && downloadType.equals("bundle")) {
+        if (downloadType == ApiDownloadType.BUNDLE) {
             fileDownloadUrl = "/api/access/datafile/bundle/" + fileId;
         }
-        if (downloadType != null && downloadType.equals("original")) {
+        if (downloadType == ApiDownloadType.ORIGINAL) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=original";
         }
-        if (downloadType != null && downloadType.equals("RData")) {
+        if (downloadType == ApiDownloadType.RDATA) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=RData";
         }
-        if (downloadType != null && downloadType.equals("var")) {
+        if (downloadType == ApiDownloadType.VAR) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata";
         }
-        if (downloadType != null && downloadType.equals("tab")) {
+        if (downloadType == ApiDownloadType.TAB) {
             fileDownloadUrl = "/api/access/datafile/" + fileId + "?format=tab";
         }
         if (gbRecordsWritten) {
-            if (downloadType != null && (downloadType.equals("original") || downloadType.equals("RData") || downloadType.equals("tab"))) {
+            if (fileDownloadUrl.contains("?")) {
                 fileDownloadUrl += "&gbrecs=true";
             } else {
                 fileDownloadUrl += "?gbrecs=true";
             }
         }
         logger.fine("Returning file download url: " + fileDownloadUrl);
+        return fileDownloadUrl;
+    }
+    
+    public enum ApiBatchDownloadType {
+        DEFAULT,
+        ORIGINAL
+    }
+    
+    public static String getBatchFilesDownloadUrlPath(List<Long> fileIds, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
+        
+        String fileDownloadUrl = "/api/access/datafiles/" + StringUtils.join(fileIds, ',');
+        if (guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.DEFAULT) {
+            fileDownloadUrl += "?gbrecs=true";
+        } else if (guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.ORIGINAL) {
+            fileDownloadUrl += "?gbrecs=true&format=original";
+        } else if (!guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.ORIGINAL) {
+            fileDownloadUrl += "?format=original";
+        }
+        
         return fileDownloadUrl;
     }
 

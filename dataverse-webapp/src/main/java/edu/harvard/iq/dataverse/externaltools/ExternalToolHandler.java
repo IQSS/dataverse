@@ -1,104 +1,108 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import com.google.common.base.Preconditions;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.Tuple2;
+import org.apache.commons.lang.StringUtils;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
  * instantiated. Applies logic based on an {@link ExternalTool} specification,
  * such as constructing a URL to access that file.
  */
+@Stateless
 public class ExternalToolHandler {
 
     private static final Logger logger = Logger.getLogger(ExternalToolHandler.class.getCanonicalName());
 
-    private final ExternalTool externalTool;
-    private final DataFile dataFile;
-    private final Dataset dataset;
-
-    private final ApiToken apiToken;
-
-    /**
-     * @param externalTool The database entity.
-     * @param dataFile     Required.
-     * @param apiToken     The apiToken can be null because "explore" tools can be
-     *                     used anonymously.
-     */
-    public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
-        this.externalTool = externalTool;
-        if (dataFile == null) {
-            String error = "A DataFile is required.";
-            logger.warning("Error in ExternalToolHandler constructor: " + error);
-            throw new IllegalArgumentException(error);
-        }
-        this.dataFile = dataFile;
-        this.apiToken = apiToken;
-        dataset = getDataFile().getFileMetadata().getDatasetVersion().getDataset();
+    @Inject
+    private SystemConfig systemConfig;
+    
+    
+    
+    // -------------------- LOGIC --------------------
+    
+    public String buildToolUrlWithQueryParams(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken) {
+        Preconditions.checkNotNull(externalTool);
+        Preconditions.checkNotNull(dataFile);
+        
+        return externalTool.getToolUrl() + getQueryParametersForUrl(externalTool, dataFile, apiToken, systemConfig.getDataverseSiteUrl());
     }
 
-    public DataFile getDataFile() {
-        return dataFile;
-    }
-
-    public ApiToken getApiToken() {
-        return apiToken;
-    }
-
+    // -------------------- PRIVATE --------------------
+    
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
-    public String getQueryParametersForUrl(String dataverseUrl) {
+    private String getQueryParametersForUrl(ExternalTool externalTool, DataFile datafile, ApiToken apiToken, String dataverseUrl) {
+        Dataset dataset = datafile.getFileMetadata().getDatasetVersion().getDataset();
+        
+        String queryString = parseToolParameters(externalTool).entrySet().stream()
+                .map(keyValue -> new Tuple2<>(keyValue.getKey(), resolvePlaceholder(keyValue.getValue(),
+                        datafile, dataset, apiToken, dataverseUrl)))
+                .filter(keyValue -> StringUtils.isNotEmpty(keyValue._2()))
+                .map(keyValue -> keyValue._1() + "=" + keyValue._2())
+                .collect(Collectors.joining("&"));
+        
+        return "?" + queryString;
+    }
+    
+    private Map<String, String> parseToolParameters(ExternalTool externalTool) {
+        Map<String, String> toolParams = new HashMap<>();
+        
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
         JsonArray queryParams = obj.getJsonArray("queryParameters");
         if (queryParams == null || queryParams.isEmpty()) {
-            return "";
+            return toolParams;
         }
-        List<String> params = new ArrayList<>();
+        
         queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
             queryParam.keySet().forEach((key) -> {
-                String value = queryParam.getString(key);
-                String param = getQueryParam(key, value, dataverseUrl);
-                if (param != null && !param.isEmpty()) {
-                    params.add(param);
-                }
+                
+                toolParams.put(key, queryParam.getString(key));
             });
         });
-        return "?" + String.join("&", params);
+        
+        return toolParams;
     }
-
-    private String getQueryParam(String key, String value, String dataverseUrl) {
+    
+    private String resolvePlaceholder(String value, DataFile datafile, Dataset dataset, ApiToken apiToken, String dataverseUrl) {
         ReservedWord reservedWord = ReservedWord.fromString(value);
         switch (reservedWord) {
             case FILE_ID:
-                // getDataFile is never null because of the constructor
-                return key + "=" + getDataFile().getId();
+                return datafile.getId().toString();
             case SITE_URL:
-                return key + "=" + dataverseUrl;
+                return systemConfig.getDataverseSiteUrl();
             case API_TOKEN:
                 String apiTokenString = null;
-                ApiToken theApiToken = getApiToken();
-                if (theApiToken != null) {
-                    apiTokenString = theApiToken.getTokenString();
-                    return key + "=" + apiTokenString;
+                if (apiToken != null) {
+                    apiTokenString = apiToken.getTokenString();
+                    return apiTokenString;
                 }
                 break;
             case DATASET_ID:
-                return key + "=" + dataset.getId();
+                return dataset.getId().toString();
             case DATASET_VERSION:
                 String version = null;
-                if (getApiToken() != null) {
+                if (apiToken != null) {
                     version = dataset.getLatestVersion().getFriendlyVersionNumber();
                 } else {
                     version = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
@@ -107,19 +111,11 @@ public class ExternalToolHandler {
                     version = ":draft"; // send the token needed in api calls that can be substituted for a numeric
                     // version.
                 }
-                return key + "=" + version;
+                return version;
             default:
                 break;
         }
         return null;
-    }
-
-    public String getToolUrlWithQueryParams(String dataverseUrl) {
-        return externalTool.getToolUrl() + getQueryParametersForUrl(dataverseUrl);
-    }
-
-    public ExternalTool getExternalTool() {
-        return externalTool;
     }
 
 }

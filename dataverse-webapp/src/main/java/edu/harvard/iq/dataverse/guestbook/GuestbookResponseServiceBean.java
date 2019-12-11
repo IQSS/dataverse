@@ -6,9 +6,7 @@
 package edu.harvard.iq.dataverse.guestbook;
 
 import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -23,15 +21,13 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -39,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -48,7 +43,7 @@ import java.util.logging.Logger;
  * @author skraffmiller
  */
 @Stateless
-@Named
+@Named("guestbookResponseService")
 public class GuestbookResponseServiceBean {
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
 
@@ -515,30 +510,6 @@ public class GuestbookResponseServiceBean {
         return list;
     }
 
-    private String generateTempTableString(List<Long> datasetIds) {
-        // first step: create the temp table with the ids
-
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; DROP TABLE IF EXISTS tempid; END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; CREATE TEMPORARY TABLE tempid (tempid integer primary key, orderby integer); END;").executeUpdate();
-        em.createNativeQuery(" BEGIN; SET TRANSACTION READ WRITE; INSERT INTO tempid VALUES " + generateIDsforTempInsert(datasetIds) + "; END;").executeUpdate();
-        return "select tempid from tempid";
-    }
-
-    private String generateIDsforTempInsert(List<Long> idList) {
-        int count = 0;
-        StringBuilder sb = new StringBuilder();
-        Iterator<Long> iter = idList.iterator();
-        while (iter.hasNext()) {
-            Long id = iter.next();
-            sb.append("(").append(id).append(",").append(count++).append(")");
-            if (iter.hasNext()) {
-                sb.append(",");
-            }
-        }
-
-        return sb.toString();
-    }
-
 
     public List<Object[]> findCustomResponsePerGuestbookResponse(Long gbrId) {
 
@@ -565,7 +536,7 @@ public class GuestbookResponseServiceBean {
 
     }
 
-    public String getUserName(User user) {
+    private String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getName();
@@ -573,7 +544,7 @@ public class GuestbookResponseServiceBean {
         return "Guest";
     }
 
-    public String getUserEMail(User user) {
+    private String getUserEMail(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getEmail();
@@ -581,7 +552,7 @@ public class GuestbookResponseServiceBean {
         return "";
     }
 
-    public String getUserInstitution(User user) {
+    private String getUserInstitution(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getAffiliation();
@@ -589,7 +560,7 @@ public class GuestbookResponseServiceBean {
         return "";
     }
 
-    public String getUserPosition(User user) {
+    private String getUserPosition(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser.getPosition();
@@ -597,7 +568,7 @@ public class GuestbookResponseServiceBean {
         return "";
     }
 
-    public AuthenticatedUser getAuthenticatedUser(User user) {
+    private AuthenticatedUser getAuthenticatedUser(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
             return authUser;
@@ -611,10 +582,6 @@ public class GuestbookResponseServiceBean {
         Dataset dataset = workingVersion.getDataset();
 
         GuestbookResponse guestbookResponse = new GuestbookResponse();
-
-        if (workingVersion.isDraft()) {
-            guestbookResponse.setWriteResponse(false);
-        }
 
         // guestbookResponse.setDatasetVersion(workingVersion);
 
@@ -649,71 +616,6 @@ public class GuestbookResponseServiceBean {
     public GuestbookResponse initGuestbookResponseForFragment(FileMetadata fileMetadata, DataverseSession session) {
 
         return initGuestbookResponseForFragment(fileMetadata.getDatasetVersion(), fileMetadata, session);
-    }
-
-    public void initGuestbookResponse(FileMetadata fileMetadata, String downloadType, DataverseSession session) {
-        initGuestbookResponse(fileMetadata, downloadType, null, session);
-    }
-
-    public GuestbookResponse initGuestbookResponse(FileMetadata fileMetadata, String downloadFormat, String selectedFileIds, DataverseSession session) {
-        Dataset dataset;
-        DatasetVersion workingVersion = null;
-        if (fileMetadata != null) {
-            workingVersion = fileMetadata.getDatasetVersion();
-        }
-
-
-        GuestbookResponse guestbookResponse = new GuestbookResponse();
-
-        if (workingVersion != null && workingVersion.isDraft()) {
-            guestbookResponse.setWriteResponse(false);
-        }
-
-        dataset = workingVersion.getDataset();
-
-        if (fileMetadata != null) {
-            guestbookResponse.setDataFile(fileMetadata.getDataFile());
-        }
-
-        if (dataset.getGuestbook() != null) {
-            guestbookResponse.setGuestbook(workingVersion.getDataset().getGuestbook());
-            setUserDefaultResponses(guestbookResponse, session);
-            if (fileMetadata != null) {
-                guestbookResponse.setDataFile(fileMetadata.getDataFile());
-            }
-        } else {
-            if (fileMetadata != null) {
-                guestbookResponse = initDefaultGuestbookResponse(dataset, fileMetadata.getDataFile(), session);
-            } else {
-                guestbookResponse = initDefaultGuestbookResponse(dataset, null, session);
-            }
-        }
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            initCustomQuestions(guestbookResponse, dataset);
-        }
-        guestbookResponse.setDownloadtype("Download");
-        if (downloadFormat.toLowerCase().equals("subset")) {
-            guestbookResponse.setDownloadtype("Subset");
-        }
-        if (downloadFormat.toLowerCase().equals("explore")) {
-            /**
-             * TODO: Investigate this "if downloadFormat=explore" and think
-             * about deleting it. When is downloadFormat "explore"? When is this
-             * method called? Previously we were passing "explore" to
-             * modifyDatafileAndFormat for TwoRavens but now we pass
-             * "externalTool" for all external tools, including TwoRavens. When
-             * clicking "Explore" and then the name of the tool, we want the
-             * name of the exploration tool (i.e. "TwoRavens", "Data Explorer",
-             * etc.) to be persisted as the downloadType. We execute
-             * guestbookResponse.setDownloadtype(externalTool.getDisplayName())
-             * over in the "explore" method of FileDownloadServiceBean just
-             * before the guestbookResponse is written.
-             */
-            guestbookResponse.setDownloadtype("Explore");
-        }
-        guestbookResponse.setDataset(dataset);
-
-        return guestbookResponse;
     }
 
     private void initCustomQuestions(GuestbookResponse guestbookResponse, Dataset dataset) {
@@ -758,29 +660,12 @@ public class GuestbookResponseServiceBean {
     }
 
     private void setUserDefaultResponses(GuestbookResponse guestbookResponse, DataverseSession session) {
-        User user = session.getUser();
-        if (user != null) {
-            guestbookResponse.setEmail(getUserEMail(user));
-            guestbookResponse.setName(getUserName(user));
-            guestbookResponse.setInstitution(getUserInstitution(user));
-            guestbookResponse.setPosition(getUserPosition(user));
-            guestbookResponse.setAuthenticatedUser(getAuthenticatedUser(user));
-        } else {
-            guestbookResponse.setEmail("");
-            guestbookResponse.setName("");
-            guestbookResponse.setInstitution("");
-            guestbookResponse.setPosition("");
-            guestbookResponse.setAuthenticatedUser(null);
-        }
-        guestbookResponse.setSessionId(session.toString());
+        setUserDefaultResponses(guestbookResponse, session, session.getUser());
     }
-
+    
     public GuestbookResponse initDefaultGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         guestbookResponse.setGuestbook(findDefaultGuestbook());
-        if (dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()) {
-            guestbookResponse.setWriteResponse(false);
-        }
         if (dataFile != null) {
             guestbookResponse.setDataFile(dataFile);
         }
@@ -801,10 +686,6 @@ public class GuestbookResponseServiceBean {
         } else {
             guestbookResponse.setGuestbook(datasetGuestbook);
         }
-
-        if (dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()) {
-            guestbookResponse.setWriteResponse(false);
-        }
         if (dataFile != null) {
             guestbookResponse.setDataFile(dataFile);
         }
@@ -814,101 +695,6 @@ public class GuestbookResponseServiceBean {
         guestbookResponse.setDownloadtype("Download");
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
-    }
-
-    public boolean guestbookResponseValidator(UIInput toValidate, String value) {
-        if (value != null && value.length() > 255) {
-            (toValidate).setValid(false);
-            FacesContext.getCurrentInstance().addMessage((toValidate).getClientId(),
-                                                         new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-            return false;
-        }
-        return true;
-    }
-
-    public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
-        if (in != null && fm.getDataFile() != null) {
-            in.setDataFile(fm.getDataFile());
-        }
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft()) {
-            in.setWriteResponse(false);
-        }
-        return in;
-    }
-
-    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format) {
-        if (in != null && fm.getDataFile() != null) {
-            in.setFileFormat(format);
-            in.setDataFile(fm.getDataFile());
-        }
-        if (in != null && fm.getDatasetVersion() != null && fm.getDatasetVersion().isDraft()) {
-            in.setWriteResponse(false);
-        }
-
-        return in;
-    }
-
-    /**
-     * This method was added because on the dataset page when a popup is
-     * required, ExternalTool is null in the poup itself. We store ExternalTool
-     * in the GuestbookResponse as a transient variable so we have access to it
-     * later in the popup.
-     */
-    public GuestbookResponse modifyDatafileAndFormat(GuestbookResponse in, FileMetadata fm, String format, ExternalTool externalTool) {
-        if (in != null && externalTool != null) {
-            in.setExternalTool(externalTool);
-        }
-        return modifyDatafileAndFormat(in, fm, format);
-    }
-
-    public Boolean validateGuestbookResponse(GuestbookResponse guestbookResponse, String type) {
-
-        boolean valid = true;
-        Dataset dataset = guestbookResponse.getDataset();
-        if (dataset.getGuestbook() != null) {
-            if (dataset.getGuestbook().isNameRequired()) {
-                if (guestbookResponse.getName() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getName().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isEmailRequired()) {
-                if (guestbookResponse.getEmail() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getEmail().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isInstitutionRequired()) {
-                if (guestbookResponse.getInstitution() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getInstitution().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isPositionRequired()) {
-                if (guestbookResponse.getPosition() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getPosition().isEmpty();
-                }
-            }
-        }
-
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
-                        if (cqr.getCustomQuestion().equals(cq)) {
-                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                        }
-                    }
-                }
-            }
-        }
-
-        return valid;
     }
 
     private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
