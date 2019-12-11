@@ -75,7 +75,7 @@
                                 <p:ajax event="click" 
                                         oncomplete="PF('removeRolesConfirm').show();"
                                         process="@this" 
-                                        listener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"
+                                        listener="#{DashboardUsersPage.setSelectedUser(user)}"
                                         update=":dashboardUsersForm:removeRolesConfirm"/>
                             </p:commandButton>
                         </p:column>
@@ -84,18 +84,18 @@
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
                             <!-- The current user, the admin user viewing the dashboard, should not be allowed to toggle the superuser status on him- or herself: -->
-                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id}">
+                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setSelectedUser(user)}" disabled="#{user.id == dataverseSession.user.id}">
                                 <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
                         </p:column>
                     </p:dataTable>
                     <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUserDetached.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUser.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
                             </h:outputFormat>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUserDetached.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
+                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUser.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">

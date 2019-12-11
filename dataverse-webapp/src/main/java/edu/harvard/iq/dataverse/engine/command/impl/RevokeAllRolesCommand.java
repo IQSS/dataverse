@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
+import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
@@ -13,7 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+
+import java.io.Serializable;
 
 /**
  * Revokes all roles for a assignee.
@@ -25,30 +26,30 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 // the permission annotation is open, since this is a superuser-only command - 
 // and that's enforced in the command body:
 @RequiredPermissions({})
-public class RevokeAllRolesCommand extends AbstractVoidCommand {
+public class RevokeAllRolesCommand extends AbstractCommand<AuthenticatedUser> implements Serializable {
 
-    private final RoleAssignee assignee;
+    private final AuthenticatedUser assignee;
 
-    public RevokeAllRolesCommand(RoleAssignee assignee, DataverseRequest aRequest) {
+    public RevokeAllRolesCommand(AuthenticatedUser assignee, DataverseRequest aRequest) {
         super(aRequest, (Dataverse) null);
         this.assignee = assignee;
     }
 
     @Override
-    protected void executeImpl(CommandContext ctxt)  {
+    public AuthenticatedUser execute(CommandContext ctxt) {
         if (!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser()) {
             throw new PermissionException("Revoke Superuser status command can only be called by superusers.",
-                                          this, null, null);
+                    this, null, null);
         }
 
         try {
             ctxt.roles().revokeAll(assignee);
 
             ctxt.explicitGroups().revokeAllGroupsForAssignee(assignee);
+            return assignee;
 
         } catch (Exception ex) {
             throw new CommandException("Failed to revoke role assignments and/or group membership", this);
         }
     }
-
 }
