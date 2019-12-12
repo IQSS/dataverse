@@ -8,9 +8,11 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!--@elvariable id="metadataBlocks" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock>"-->
+    <!--@elvariable id="datasetField" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetField>"-->
+    <!--@elvariable id="datasetFieldType" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType>"-->
 
     <!-- Primitive datasetFields -->
-    <div class="col-sm-9" jsf:rendered="#{datasetField.datasetFieldType.primitive}">   
+    <div class="col-sm-9" jsf:rendered="#{datasetField.datasetFieldType.primitive}">
         <h:outputText value="#{datasetField.displayValue}" rendered="#{!datasetField.datasetFieldType.allowMultiples}"
                       escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
         <ui:repeat value="#{datasetField.values}" var="value" varStatus="loop" rendered="#{datasetField.datasetFieldType.allowMultiples}">

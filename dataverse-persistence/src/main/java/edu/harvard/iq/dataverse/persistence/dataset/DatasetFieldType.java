@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.faces.model.SelectItem;
 import javax.persistence.CascadeType;
@@ -27,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -520,7 +522,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-            return parentDatasetFieldType.getLocaleTitle() + " " + getLocaleTitle();
+            return Optional.ofNullable(getLocaleTitleWithParent()).filter(s -> !s.isEmpty()).orElse(parentDatasetFieldType.getLocaleTitle() + " " + getLocaleTitle());
         } else {
             return getLocaleTitle();
         }
@@ -533,6 +535,19 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             try {
                 return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title",
                                                             getMetadataBlock().getName());
+            } catch (MissingResourceException e) {
+                return title;
+            }
+        }
+    }
+
+    public String getLocaleTitleWithParent() {
+        if (getMetadataBlock() == null) {
+            return title;
+        } else {
+            try {
+                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".withParent.title",
+                        getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return title;
             }
