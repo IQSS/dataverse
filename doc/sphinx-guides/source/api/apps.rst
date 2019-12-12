@@ -96,7 +96,8 @@ https://github.com/artefactual/archivematica/tree/v1.9.2/src/MCPClient/lib/clien
 repo2docker
 ~~~~~~~~~~~
 
-repo2docker is a command line tool that allows you to spin up a Docker container from a Dataverse DOI.
+repo2docker is a command line tool that allows you to create and start a
+Docker image from a code repository that follows the [reproducible executable environment specification](https://repo2docker.readthedocs.io/en/latest/specification.html). repo2docker supports Dataverse DOIs to find and retrieve repositories.
 
 https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/dataverse.py
 
