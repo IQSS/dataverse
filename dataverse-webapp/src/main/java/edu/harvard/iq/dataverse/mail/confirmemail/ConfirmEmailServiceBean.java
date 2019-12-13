@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.mail.EmailContent;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -123,7 +124,9 @@ public class ConfirmEmailServiceBean {
                     userNotification.setType(NotificationType.CONFIRMEMAIL);
                     String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", Lists.newArrayList(rootDataverseName));
                     logger.fine("sending email to " + toAddress + " with this subject: " + subject);
-                    boolean emailSent = mailService.sendMail(toAddress, subject, messageBody);
+
+                    String footerMailMessage = mailService.getFooterMailMessage(userNotification.getUser().getNotificationsLanguage());
+                    boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
 
                     if (!emailSent) {
                         throw new ConfirmEmailException("Problem sending email confirmation link possibily due to mail server not being configured.");

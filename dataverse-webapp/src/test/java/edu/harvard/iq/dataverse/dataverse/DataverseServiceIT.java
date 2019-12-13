@@ -86,7 +86,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Assert.assertEquals("NICE DATAVERSE", dbDataverse.getName());
 
         await()
-                .atMost(Duration.ofSeconds(5L))
+                .atMost(Duration.ofSeconds(10L))
                 .until(() -> smtpServer.mailBox().stream()
                         .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
 

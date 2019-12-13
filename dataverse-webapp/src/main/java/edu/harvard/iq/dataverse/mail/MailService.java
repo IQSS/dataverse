@@ -24,6 +24,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -86,7 +87,9 @@ public class MailService implements java.io.Serializable {
             return false;
         }
 
-        return sendMail(userEmail, messageAndSubject._2(), messageAndSubject._1());
+        String footerMessage = getFooterMailMessage(notification.getNotificationReceiver().getNotificationsLanguage());
+
+        return sendMail(userEmail, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
     }
 
     /**
@@ -104,15 +107,19 @@ public class MailService implements java.io.Serializable {
             return false;
         }
 
-        return sendMail(userEmail, messageAndSubject._2(), messageAndSubject._1());
+        String footerMessage = getFooterMailMessage(notification.getNotificationReceiver().getNotificationsLanguage());
+
+        return sendMail(userEmail, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
     }
 
-    public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, String subject, String messageText) {
-        return CompletableFuture.supplyAsync(() -> sendMail(recipientsEmails, subject, messageText), executorService);
+    public CompletableFuture<Boolean> sendMailAsync(String recipientsEmails, EmailContent emailContent) {
+
+        return CompletableFuture.supplyAsync(() -> sendMail(recipientsEmails, emailContent), executorService);
     }
 
     public CompletableFuture<Boolean> sendMailAsync(String replyEmail, String recipientsEmails, String subject, String messageText) {
-        return CompletableFuture.supplyAsync(() -> sendMail(replyEmail, recipientsEmails, subject, messageText), executorService);
+        return CompletableFuture.supplyAsync(() -> sendMail(replyEmail, recipientsEmails, subject, messageText),
+                                             executorService);
     }
 
     /**
@@ -120,15 +127,13 @@ public class MailService implements java.io.Serializable {
      *
      * @param recipientsEmails - comma separated emails.
      */
-    public boolean sendMail(String recipientsEmails, String subject, String messageText) {
-
-        String message = mailMessageCreator.createMailFooterMessage(messageText, dataverseDao.findRootDataverse().getName(), getSystemAddress());
+    public boolean sendMail(String recipientsEmails, EmailContent emailContent) {
 
         Email email = EmailBuilder.startingBlank()
                 .from(getSystemAddress())
                 .withRecipients(mailMessageCreator.createRecipients(recipientsEmails, StringUtils.EMPTY))
-                .withSubject(subject)
-                .appendText(message)
+                .withSubject(emailContent.getSubject())
+                .appendText(emailContent.getMessageText() + emailContent.getFooter())
                 .buildEmail();
 
         return Try.run(() -> mailSender.sendMail(email))
@@ -158,13 +163,20 @@ public class MailService implements java.io.Serializable {
                 .getOrElse(false);
     }
 
+    public String getFooterMailMessage(Locale footerLocale) {
+        return mailMessageCreator.createMailFooterMessage(footerLocale,
+                                                          dataverseDao.findRootDataverse().getName(),
+                                                          getSystemAddress());
+    }
+
     // -------------------- PRIVATE --------------------
 
     private InternetAddress getSystemAddress() {
         String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
 
         return Try.of(() -> new InternetAddress(systemEmail))
-                .getOrElseThrow(throwable -> new IllegalArgumentException("Email will not be sent due to invalid email: " + systemEmail));
+                .getOrElseThrow(throwable -> new IllegalArgumentException(
+                        "Email will not be sent due to invalid email: " + systemEmail));
     }
 
     // -------------------- SETTERS --------------------

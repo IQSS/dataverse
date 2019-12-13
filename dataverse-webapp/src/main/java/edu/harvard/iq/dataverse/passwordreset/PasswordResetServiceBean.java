@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.mail.EmailContent;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
@@ -131,7 +132,9 @@ public class PasswordResetServiceBean {
 
         String toAddress = authUser.getEmail();
         String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
-        boolean emailSent = mailService.sendMail(toAddress, subject, messageBody);
+
+        String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
+        boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
 
         if (!emailSent) {
             throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
@@ -257,10 +260,13 @@ public class PasswordResetServiceBean {
             String toAddress = authUser.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
 
+
             String messageBody = "Hi " + authUser.getName() + ",\n\n"
                     + "Your Dataverse account password was successfully changed.\n\n"
                     + "Please contact us if you did not request this password reset or need further help.\n\n";
-            mailService.sendMailAsync(toAddress, subject, messageBody);
+
+            String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
+            mailService.sendMailAsync(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
             messageSummary = messageSummaryFail;

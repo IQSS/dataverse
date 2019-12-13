@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.mail;
 
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
@@ -30,6 +31,7 @@ import org.simplejavamail.email.Recipient;
 
 import javax.mail.internet.InternetAddress;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +55,9 @@ public class MailMessageCreatorTest {
     @Mock
     private GenericDao genericDao;
 
+    @Mock
+    private DataverseSession dataverseSession;
+
     private static String GUIDESBASEURL = "http://guides.dataverse.org";
     private static String GUIDESVERSION = "V8";
     private static String SITEURL = "http://localhost:8080";
@@ -68,14 +73,22 @@ public class MailMessageCreatorTest {
 
         RoleAssignment roleAssignment = createRoleAssignment();
 
-        Mockito.when(permissionService.getRolesOfUser(Mockito.any(), Mockito.any(Dataverse.class))).thenReturn(Sets.newHashSet(roleAssignment));
+        Mockito.when(permissionService.getRolesOfUser(Mockito.any(),
+                                                      Mockito.any(Dataverse.class))).thenReturn(Sets.newHashSet(
+                roleAssignment));
         Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
         Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
         Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
         Mockito.when(systemConfig.getGuidesBaseUrl()).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
+        Mockito.when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
 
-        mailMessageCreator = new MailMessageCreator(systemConfig, permissionService, dataverseDao, confirmEmailService, genericDao);
+        mailMessageCreator = new MailMessageCreator(systemConfig,
+                                                    permissionService,
+                                                    dataverseDao,
+                                                    confirmEmailService,
+                                                    genericDao,
+                                                    dataverseSession);
     }
 
     @Test
@@ -85,10 +98,10 @@ public class MailMessageCreatorTest {
         String messageText = "Nice message";
 
         //when
-        String footerMessage = mailMessageCreator.createMailFooterMessage(messageText, ROOTDVNAME, systemEmail);
+        String footerMessage = mailMessageCreator.createMailFooterMessage(Locale.ENGLISH, ROOTDVNAME, systemEmail);
 
         //then
-        Assert.assertEquals(messageText + getFooterMessage(), footerMessage);
+        Assert.assertEquals(getFooterMessage(), footerMessage);
 
     }
 
@@ -117,11 +130,34 @@ public class MailMessageCreatorTest {
         EmailNotificationDto testEmailNotificationDto = createDataverseEmailNotificationDto();
 
         //when
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "test@icm.pl");
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                                                                                           "test@icm.pl");
 
         //then
         Assert.assertEquals(getCreateDataverseMessage(), messageAndSubject._1);
         Assert.assertEquals(getCreateDataverseSubject(), messageAndSubject._2);
+    }
+
+    @Test
+    public void getMessageAndSubject_ForCreateDataverse_WithDifferentLocale() {
+        //given
+        AuthenticatedUser userFromDifferentCountry = new AuthenticatedUser();
+        userFromDifferentCountry.setNotificationsLanguage(Locale.forLanguageTag("pl"));
+
+        EmailNotificationDto testEmailNotificationDto = new EmailNotificationDto(1L,
+                                                                                 "useremail@test.com",
+                                                                                 NotificationType.CREATEDV,
+                                                                                 1L,
+                                                                                 NotificationObjectType.DATAVERSE,
+                                                                                 userFromDifferentCountry);
+
+        //when
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                                                                                           "test@icm.pl");
+
+        //then
+        Assert.assertEquals(getPolishCreateDataverseMessage(), messageAndSubject._1);
+        Assert.assertEquals(getPolishCreateDataverseSubject(), messageAndSubject._2);
     }
 
     @Test
@@ -130,7 +166,8 @@ public class MailMessageCreatorTest {
         EmailNotificationDto testEmailNotificationDto = createIncorrectNotificationDto();
 
         //when
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "test@icm.pl");
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                                                                                           "test@icm.pl");
 
         //then
         Assert.assertEquals(StringUtils.EMPTY, messageAndSubject._1);
@@ -143,7 +180,8 @@ public class MailMessageCreatorTest {
         EmailNotificationDto testEmailNotificationDto = createAssignRoleEmailNotificationDto();
 
         //when
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "test@icm.pl");
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                                                                                           "test@icm.pl");
 
         //then
         String ADMIN = "admin";
@@ -165,9 +203,17 @@ public class MailMessageCreatorTest {
     private String getCreateDataverseMessage() {
         return "Hello, \n" +
                 "Your new dataverse named " + testDataverse.getDisplayName() + " (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias()
-                + " ) was created in  (view at  )." +
+                + ") was created in  (view at )." +
                 " To learn more about what you can do with your dataverse, check out the Dataverse Management" +
                 " - User Guide at " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html .";
+    }
+
+    private String getPolishCreateDataverseMessage() {
+        return  "Witaj, \n" +
+                "Twoja nowa kolekcja o nazwie " + testDataverse.getDisplayName() + " (zobacz na stronie " + SITEURL +"/dataverse/"+ testDataverse.getAlias()+ ") została utworzona" +
+                " w  (zobacz na stronie ). Aby dowiedzieć się więcej, co można zrobić z kolekcją, zapoznaj się z" +
+                " rozdziałem Zarządzanie kolekcją w Poradniku użytkownika" +
+                " na stronie " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html.";
     }
 
     private String getAssignRoleSubject() {
@@ -176,6 +222,10 @@ public class MailMessageCreatorTest {
 
     private String getCreateDataverseSubject() {
         return "Root: Your dataverse has been created";
+    }
+
+    private String getPolishCreateDataverseSubject() {
+        return "Root: Twoja kolekcja została utworzona";
     }
 
     private Dataverse createTestDataverse() {

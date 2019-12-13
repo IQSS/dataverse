@@ -36,6 +36,12 @@ public class BundleUtil {
         return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, locale);
     }
 
+    public static String getStringFromBundle(String key, Locale locale, List<String> arguments) {
+        String message = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, locale);
+
+        return MessageFormat.format(message, arguments.toArray());
+    }
+
     public static String getStringFromBundle(String key, List<String> arguments) {
         String stringFromPropertyFile = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
 
