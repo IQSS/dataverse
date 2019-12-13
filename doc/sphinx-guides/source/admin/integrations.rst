@@ -80,7 +80,7 @@ Whole Tale
 Binder
 ++++++
 
-Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by inputting the DOI of a Dataverse dataset on https://mybinder.org
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a Dataverse dataset on https://mybinder.org
 
 Institutions can self host BinderHub. Dataverse is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
 
