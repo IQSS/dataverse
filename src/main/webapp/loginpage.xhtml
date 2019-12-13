@@ -79,6 +79,7 @@
                                     <div class="form-group" jsf:rendered="#{LoginPage.requireExtraValidation}">
                                         <div class="col-sm-offset-4 col-sm-8">
                                             <p>
+                                                Login Page validation Extra Validation
                                                 <h:outputText styleClass="highlightBold" value="#{bundle['contact.question']}"/> <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                             </p>
                                             <h:outputFormat value="#{LoginPage.op1} + #{LoginPage.op2} = "/>
@@ -113,13 +114,9 @@
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
                                         <h:outputFormat value="#{bundle['login.institution.support.blurbwithLink']}" escape="false">
-                                            <o:param>
-                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                                </p:commandLink>                               
+                                            <o:param>      
+                                                <p:commandLink value="Hello, #{settingsWrapper.supportTeamName}" onclick ="clickSupportLink();" >
+                                                </p:commandLink>
                                             </o:param>
                                         </h:outputFormat>
                                     </p>
