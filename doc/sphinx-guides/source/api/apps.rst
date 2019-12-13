@@ -97,7 +97,7 @@ repo2docker
 ~~~~~~~~~~~
 
 repo2docker is a command line tool that allows you to create and start a
-Docker image from a code repository that follows the [reproducible executable environment specification](https://repo2docker.readthedocs.io/en/latest/specification.html). repo2docker supports Dataverse DOIs to find and retrieve repositories.
+Docker image from a code repository that follows the [reproducible executable environment specification](https://repo2docker.readthedocs.io/en/latest/specification.html). repo2docker supports Dataverse DOIs to find and retrieve datasets.
 
 https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/dataverse.py
 
