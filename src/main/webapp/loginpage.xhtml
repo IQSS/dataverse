@@ -114,7 +114,7 @@
                                         </h:outputFormat>
                                         <h:outputFormat value="#{bundle['login.institution.support.blurbwithLink']}" escape="false">
                                             <o:param>      
-                                                <p:commandLink value="Hello, #{settingsWrapper.supportTeamName}" onclick ="clickSupportLink();" >
+                                                <p:commandLink value="#{bundle['notification.email.greeting']} #{settingsWrapper.supportTeamName}" onclick ="clickSupportLink();" >
                                                 </p:commandLink>
                                             </o:param>
                                         </h:outputFormat>
