@@ -1454,7 +1454,9 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
         if(url==null) {
         	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
         }
-		return ok(url);
+        String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+		String response = "{\"url\":\"" + url + "\",\"driverId\":\"" + driverId + "\"}";
+		return ok(response);
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
 	}
