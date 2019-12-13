@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse.search.dto;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Model for Advanced Search Page,
  * it is responsible for gathering different types of field values for search blocks (mainly Metadata blocks).
  */
-public class SearchBlock {
+public class SearchBlock implements Serializable {
 
     private String blockName;
     private String blockDisplayName;

@@ -2,10 +2,12 @@ package edu.harvard.iq.dataverse.search.dto;
 
 import edu.harvard.iq.dataverse.search.SearchFieldType;
 
+import java.io.Serializable;
+
 /**
  * Class that holds vital information regarding field.
  */
-public abstract class SearchField {
+public abstract class SearchField implements Serializable {
 
     private String name;
     private String displayName;

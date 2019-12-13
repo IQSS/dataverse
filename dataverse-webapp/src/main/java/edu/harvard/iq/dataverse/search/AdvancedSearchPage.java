@@ -19,6 +19,7 @@ import io.vavr.Tuple;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static java.util.stream.Collectors.toList;
@@ -65,7 +67,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
      * Initalizes all components required to view the the page correctly.
      */
     public void init() {
-
+        
         if (dataverseIdentifier != null) {
             dataverse = dataverseDao.findByAlias(dataverseIdentifier);
         }
@@ -92,7 +94,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
         allSearchBlocks.add(dataversesSearchBlock);
 
         String query = solrQueryCreator.constructQuery(allSearchBlocks);
-
+        
         String returnString = "/dataverse.xhtml?q=";
         returnString += URLEncoder.encode(query, "UTF-8");
         returnString += "&alias=" + dataverse.getAlias() + "&faces-redirect=true";

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -36,7 +37,7 @@ public class DataverseSession implements Serializable {
     ActionLogServiceBean logSvc;
 
     @Inject
-    SettingsWrapper settingsWrapper;
+    SystemConfig systemConfig;
 
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
 
@@ -79,13 +80,13 @@ public class DataverseSession implements Serializable {
 
             logger.fine("init: locale set to " + localeCode);
         }
-        return settingsWrapper.getConfiguredLocales().get(localeCode);
+        return systemConfig.getConfiguredLocales().get(localeCode);
     }
 
     // -------------------- LOGIC --------------------
 
     public String initLocale() {
-        Set<String> dataverseLanguages = settingsWrapper.getConfiguredLocales().keySet();
+        Set<String> dataverseLanguages = systemConfig.getConfiguredLocales().keySet();
 
         return dataverseLanguages.contains(getBrowserLanguage()) ? getBrowserLanguage() : "en";
     }

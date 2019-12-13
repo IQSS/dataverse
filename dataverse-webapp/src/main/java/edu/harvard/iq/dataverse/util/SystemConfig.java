@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -15,6 +17,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -546,4 +550,21 @@ public class SystemConfig {
             return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
         }
     }
+
+    public Map<String, String> getConfiguredLocales() {
+        Map<String, String> configuredLocales = new LinkedHashMap<>();
+
+        JSONArray entries = new JSONArray(settingsService.getValueForKey(SettingsServiceBean.Key.Languages));
+        for (Object obj : entries) {
+            JSONObject entry = (JSONObject) obj;
+            String locale = entry.getString("locale");
+            String title = entry.getString("title");
+
+            configuredLocales.put(locale, title);
+        }
+
+        return configuredLocales;
+    }
+
+
 }
