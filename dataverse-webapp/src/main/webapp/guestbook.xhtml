@@ -51,29 +51,29 @@
                         </label>
                         <div class="col-sm-9">
                             <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.dataCollected.description']}</p>
-                            <div class="checkbox">
-                                <label jsf:for="nameRequiredCb">
-                                    <input type="checkbox" jsf:id="nameRequiredCb"
-                                           jsf:value="#{GuestbookPage.guestbook.nameRequired}"/> #{bundle.name}
-                                </label>
+                            <div class="row">
+                                <div class="col-xs-9 checkbox">
+                                    <p:selectBooleanCheckbox id="nameRequiredCb" value="#{GuestbookPage.guestbook.nameRequired}"
+                                                             itemLabel="#{bundle.name}"/>
+                                </div>
                             </div>
-                            <div class="checkbox">
-                                <label jsf:for="emailRequiredCb">
-                                    <input type="checkbox" jsf:id="emailRequiredCb"
-                                           jsf:value="#{GuestbookPage.guestbook.emailRequired}"/> #{bundle.email}
-                                </label>
+                            <div class="row">
+                                <div class="col-xs-9 checkbox">
+                                    <p:selectBooleanCheckbox id="emailRequiredCb" value="#{GuestbookPage.guestbook.emailRequired}"
+                                                             itemLabel="#{bundle.email}"/>
+                                </div>
                             </div>
-                            <div class="checkbox">
-                                <label jsf:for="institutionRequiredCb">
-                                    <input type="checkbox" jsf:id="institutionRequiredCb"
-                                           jsf:value="#{GuestbookPage.guestbook.institutionRequired}"/> #{bundle.institution}
-                                </label>
+                            <div class="row">
+                                <div class="col-xs-9 checkbox">
+                                    <p:selectBooleanCheckbox id="institutionRequiredCb" value="#{GuestbookPage.guestbook.institutionRequired}"
+                                                             itemLabel="#{bundle.institution}"/>
+                                </div>
                             </div>
-                            <div class="checkbox">
-                                <label jsf:for="positionRequiredCb">
-                                    <input type="checkbox" jsf:id="positionRequiredCb"
-                                           jsf:value="#{GuestbookPage.guestbook.positionRequired}"/> #{bundle.position}
-                                </label>
+                            <div class="row">
+                                <div class="col-xs-9 checkbox">
+                                    <p:selectBooleanCheckbox id="positionRequiredCb" value="#{GuestbookPage.guestbook.positionRequired}"
+                                                             itemLabel="#{bundle.position}"/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -82,13 +82,21 @@
                         <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
                             #{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}
                         </label>
-
                         <!-- Compound fields -->
                         <div class="col-sm-9">
                             <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
+                            <div class="row">
+                                <div class="col-xs-9 checkbox">
+                                    <p:selectBooleanCheckbox value="#{GuestbookPage.customQuestions}"
+                                                             itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.toggle']}">
+                                        <p:ajax update="customQuestions"/>
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </div>
+                            <br/>
                             <p:fragment id="customQuestions">
                                 <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq"
-                                           varStatus="valCount">
+                                           varStatus="valCount" rendered="#{GuestbookPage.customQuestions}">
                                     <div class="form-group">
                                         <!-- Sub Fields -->
                                         <div class="col-9">
@@ -98,12 +106,6 @@
                                                         #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
                                                     </label>
                                                     </div>
-                                                <div class="col-xs-6 text-right">
-                                                    <input type="checkbox" jsf:id="cqRequiredCb" jsf:value="#{cq.required}"/>
-                                                    <label jsf:for="cqRequiredCb">
-                                                        #{bundle.requiredField}
-                                                    </label>
-                                                </div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-xs-9">
@@ -114,22 +116,20 @@
                                                         <f:selectItem
                                                                 itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType.multiple']}"
                                                                 itemValue="options"/>
-                                                        <p:ajax process="responseOptions" update="responseOptions" />
+                                                        <p:ajax process="questionOptions, responseOptions" update="responseOptions"/>
                                                     </p:selectOneMenu>
                                                 </div>
                                                 <div class="col-xs-3 field-add-delete">
                                                     <p:commandLink
                                                             styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
                                                             title="#{bundle.add}" update=":guestbookForm:customQuestions"
-        
-                                                            actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1 )}">
+                                                            actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1)}">
                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                     </p:commandLink>
                                                     <p:commandLink
                                                             styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
                                                             rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
                                                             title="#{bundle.delete}" update=":guestbookForm:customQuestions"
-        
                                                             actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                     </p:commandLink>
@@ -140,50 +140,60 @@
                                                     <label class="control-label" jsf:for="questionText">
                                                         #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionText']}
                                                     </label>
+                                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                                     <div>
                                                             <p:inputText id="questionText" styleClass="form-control"
-                                                                        value="#{cq.questionString}" />
+                                                                         value="#{cq.questionString}"/>
                                                             <p:message for="questionText" display="text"/>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <h:panelGroup id="responseOptions" styleClass="#{cq.questionType eq 'options' ? '' : 'hidden'}">
-                                                <div class="col-xs-offset-1 col-xs-8">
-                                                    <label class="control-label">
-                                                        #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
-                                                    </label>
-                                                </div>
-                                                <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount"
-                                                           var="value">
-                                                    <div class="form-group">
-                                                        <div class="col-xs-offset-1 col-xs-8">
-                                                            <p:inputText id="responseText" styleClass="form-control"
-                                                                         value="#{value.valueString}" >
-                                                            </p:inputText>
-                                                            <p:message for="responseText" display="text"/>
-                                                        </div>
-                                                        <div class="col-xs-3 field-add-delete">
-                                                            <p:commandLink
-                                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
-                                                                    title="#{bundle.add}"
-                                                                    update=":guestbookForm:customQuestions"
-
-                                                                    actionListener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}">
-                                                                <span class="glyphicon glyphicon-plus no-text"/>
-                                                            </p:commandLink>
-                                                            <p:commandLink
-                                                                    styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
-                                                                    title="#{bundle.delete}"
-                                                                    rendered="#{cq.customQuestionValues.size() > 1}"
-                                                                    update=":guestbookForm:customQuestions"
-
-                                                                    actionListener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}">
-                                                                <span class="glyphicon glyphicon-minus no-text"/>
-                                                            </p:commandLink>
-                                                        </div>
+                                            <p:fragment id="responseOptions">
+                                                <h:panelGroup rendered="#{cq.questionType eq 'options'}">
+                                                    <div class="col-xs-offset-1 col-xs-8">
+                                                        <label class="control-label">
+                                                            #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
+                                                        </label>
+                                                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                                     </div>
-                                                </ui:repeat>
-                                            </h:panelGroup>
+                                                    <ui:repeat value="#{cq.customQuestionValues}" varStatus="resCount"
+                                                               var="value">
+                                                        <div class="form-group">
+                                                            <div class="col-xs-offset-1 col-xs-8">
+                                                                <p:inputText id="responseText" styleClass="form-control"
+                                                                             value="#{value.valueString}" >
+                                                                </p:inputText>
+                                                                <p:message for="responseText" display="text"/>
+                                                            </div>
+                                                            <div class="col-xs-3 field-add-delete">
+                                                                <p:commandLink
+                                                                        styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                        title="#{bundle.add}"
+                                                                        update=":guestbookForm:customQuestions"
+
+                                                                        actionListener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}">
+                                                                    <span class="glyphicon glyphicon-plus no-text"/>
+                                                                </p:commandLink>
+                                                                <p:commandLink
+                                                                        styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
+                                                                        title="#{bundle.delete}"
+                                                                        rendered="#{cq.customQuestionValues.size() > 2}"
+                                                                        update=":guestbookForm:customQuestions"
+
+                                                                        actionListener="#{GuestbookPage.removeCustomQuestionValue(cq, resCount.index)}">
+                                                                    <span class="glyphicon glyphicon-minus no-text"/>
+                                                                </p:commandLink>
+                                                            </div>
+                                                        </div>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                            </p:fragment>
+                                            <div class="row">
+                                                <div class="col-xs-9 checkbox">
+                                                    <p:selectBooleanCheckbox id="cqRequiredCb" value="#{cq.required}"
+                                                                             itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.required']}"/>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </ui:repeat>
