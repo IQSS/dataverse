@@ -1688,12 +1688,13 @@ public class FileUtil implements java.io.Serializable  {
 			e.printStackTrace();
 		}
 		String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
-		
-		String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url"
-				+ "");
+		logger.info("endpoint: " + endpoint);
+		String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
+		logger.info("proxy: " + proxy);
 		if(proxy!=null) {
-			url.replace(endpoint, proxy);
+			url = url.replace(endpoint, proxy);
 		}
+		logger.info("url: " + url);
 		return url;
     }
 
