@@ -17,15 +17,6 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
-                <script>
-                    //<![CDATA[
-                    window.onpageshow = function(event) {
-                        if (event.persisted) {
-                            window.location.reload();
-                        }
-                    };
-                    //]]>
-                </script>
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
@@ -45,7 +36,7 @@
                     </p:panel>
 
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
-                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all" oncomplete="javascript:bind_bsui_components();" />
+                        <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"/>
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
                             <ui:include src="mydata_fragment.xhtml"></ui:include>
                         </p:tab>
@@ -341,13 +332,13 @@
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
                                                 <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
-                                                               actionListener="#{DataverseUserPage.edit}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                               actionListener="#{DataverseUserPage.edit}" update="@form">
                                                     <h:outputText value="#{bundle['account.info']}" />
                                                 </p:commandLink>
                                             </li>
                                             <li>
                                                 <p:commandLink id="changePassword" rendered="#{DataverseUserPage.passwordEditable}" 
-                                                               actionListener="#{DataverseUserPage.changePassword}" update="@form" oncomplete="javascript:bind_bsui_components();">
+                                                               actionListener="#{DataverseUserPage.changePassword}" update="@form">
                                                     <h:outputText value="#{bundle.passwd}" />
                                                 </p:commandLink>
                                             </li>
@@ -509,18 +500,6 @@
                                     <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
                                 </pre>
                             </div>
-                            <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
-                            <script>
-                                //<![CDATA[
-                                $(document).ready(function() {
-                                    $("div#apiToken").removeClass("hidden");
-                                });
-                                //Produces "Are you sure you want to leave this page?" alert to allow API token to hide again
-                                $(window).on("beforeunload", function() {
-                                    $("div#apiToken").addClass("hidden");
-                                });
-                                //]]>
-                            </script>
                             <div class="btn-toolbar" role="toolbar">
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
