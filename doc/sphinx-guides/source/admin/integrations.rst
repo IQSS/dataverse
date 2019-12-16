@@ -77,6 +77,13 @@ Whole Tale
 `import data from Dataverse
 <https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
+Binder
+++++++
+
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a Dataverse dataset on https://mybinder.org
+
+Institutions can self host BinderHub. Dataverse is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
 Discoverability
 ---------------
 
