@@ -62,6 +62,13 @@ INSERT INTO dataverserole (id, alias, description, name, permissionbits, owner_i
 
 INSERT INTO dataversefeatureddataverse (id, displayorder, dataverse_id, featureddataverse_id) VALUES (3, 1, 1, 19);
 
+--- ROOT -> simple Dataverse - without Data (no Datasets or child Dataverses) ---
+
+INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate, creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
+    VALUES (67, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, NULL, 1, '2019-06-06 08:27:17.531', '2019-06-06 08:27:43.217', '2019-06-06 08:27:17.588', '2019-09-19 14:37:05.558', '2019-09-19 14:37:05.731');
+INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
+    VALUES (67, 'withoutData', 'withoutData', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
+
 
 -------------------- DATASETS --------------------
 
