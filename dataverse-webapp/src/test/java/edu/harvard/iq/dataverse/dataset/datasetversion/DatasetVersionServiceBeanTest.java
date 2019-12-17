@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import javax.persistence.EntityManager;
 import javax.validation.ValidationException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +37,9 @@ class DatasetVersionServiceBeanTest {
     @Mock
     private DataverseRequestServiceBean dvRequestService;
 
+    @Mock
+    private EntityManager entityManager;
+
     private Dataset testDataset =  new Dataset();
 
     @BeforeEach
@@ -52,6 +56,7 @@ class DatasetVersionServiceBeanTest {
         DatasetVersion testDatasetVersion = prepareDataset();
 
         //when
+        when(entityManager.find(DatasetVersion.class, testDatasetVersion.getId())).thenReturn(testDatasetVersion);
         Dataset updatedDataset = Assertions.assertDoesNotThrow(() -> datasetVersionService.updateDatasetVersion(testDatasetVersion, true));
 
         //then
@@ -84,6 +89,7 @@ class DatasetVersionServiceBeanTest {
 
     private DatasetVersion prepareDataset(){
         DatasetVersion testDatasetVersion = new DatasetVersion();
+        testDatasetVersion.setId(1L);
         testDatasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset testDataset = new Dataset();
         testDataset.setId(1L);

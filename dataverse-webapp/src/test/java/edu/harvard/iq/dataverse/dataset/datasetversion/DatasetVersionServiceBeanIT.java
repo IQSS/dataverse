@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -43,17 +45,34 @@ public class DatasetVersionServiceBeanIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationServiceBean.getAdminUser());
     }
 
+    // -------------------- TESTS --------------------
+
     @Test
     public void shouldUpdateDatasetVersion() {
         // given
-        Dataset dataset = datasetDao.find(56L);
+        Dataset dataset = datasetDao.find(52L);
+        modifyFileLicense(dataset);
 
         // when
         dataset.setGuestbook(guestbookService.find(2L));
         datasetVersionService.updateDatasetVersion(dataset.getEditVersion(), true);
 
         // then
-        Dataset dbDataset = datasetDao.find(56L);
+        Dataset dbDataset = datasetDao.find(52L);
         assertEquals(2L, (long) dbDataset.getGuestbook().getId());
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void modifyFileLicense(Dataset dataset) {
+        FileTermsOfUse termsOfUse = new FileTermsOfUse();
+        License license = new License();
+        license.setName("");
+        license.setPosition(99L);
+        license.setUrl("");
+        termsOfUse.setAllRightsReserved(true);
+        termsOfUse.setLicense(license);
+
+        dataset.getLatestVersion().getFileMetadatas().get(0).setTermsOfUse(termsOfUse);
     }
 }

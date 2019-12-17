@@ -1171,12 +1171,12 @@ w
         }
 
         Dataset dataset = editVersion.getDataset();
-        DatasetVersion clonedDataset = dataset.getEditVersion().cloneDatasetVersion();
+        DatasetVersion datasetBeforeChanges = find(editVersion.getId());
 
 
         UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
                                                                               dvRequestService.getDataverseRequest(),
-                                                                              clonedDataset);
+                                                                              datasetBeforeChanges);
         command.setValidateLenient(validateLenient);
         return commandEngine.submit(command);
     }
