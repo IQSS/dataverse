@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -991,6 +992,8 @@ public class Datasets extends AbstractApiBean {
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (NoDatasetFilesException ex) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Unable to publish dataset, since there are no files in it.");
         }
     }
 

@@ -6,7 +6,7 @@
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:dv="http://dataverse.org/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
 >
 
 <!--@elvariable id="dataset" type="edu.harvard.iq.dataverse.persistence.dataset.Dataset"-->
@@ -58,17 +58,19 @@
         <ui:define name="body">
             <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
             <f:metadata>
-                <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType"
-                                   var="restrictTypeEnum"/>
-                <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
-                                   var="termsOfUseTypeEnum"/>
+                <o:importConstants
+                        type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType"
+                        var="restrictTypeEnum"/>
+                <o:importConstants
+                        type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
+                        var="termsOfUseTypeEnum"/>
                 <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                 <f:viewParam name="version" value="#{DatasetPage.version}"/>
                 <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                 <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                <f:viewAction action="#{DatasetPage.init}" />
-                <f:viewAction action="#{datasetFilesTab.init(DatasetPage.workingVersion)}" />
+                <f:viewAction action="#{DatasetPage.init}"/>
+                <f:viewAction action="#{datasetFilesTab.init(DatasetPage.workingVersion)}"/>
                 <f:viewAction action="#{DatasetMetadataTab.init(DatasetPage.workingVersion, DatasetPage.locked)}"/>
                 <f:viewAction action="#{DatasetGuestbookTab.init(DatasetPage.dataset)}"/>
                 <f:viewAction action="#{datasetVersionsTab.init(DatasetPage.dataset)}"/>
@@ -95,16 +97,31 @@
                                                    styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                    onclick="PF('publishConfirm').show()"
                                                    rendered="#{!DatasetPage.dataset.released
-                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                               and DatasetPage.dataset.owner.released
+                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                               and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
+                                        <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
+                                    </p:commandLink>
+
+                                    <p:commandLink type="button"
+                                                   styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                   onclick="PF('noFilesInDataset').show()"
+                                                   rendered="#{!DatasetPage.dataset.released
+                                                               and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                               and !DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
                                     <p:commandLink type="button"
                                                    styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                    onclick="PF('releaseDraft').show()"
-                                                   rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                   rendered="#{DatasetPage.dataset.released
+                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                    and DatasetPage.dataset.owner.released
+                                                    and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                    and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
@@ -112,9 +129,11 @@
                                     <p:commandLink type="button"
                                                    styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                    onclick="PF('mayNotRelease').show()"
-                                                   rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                   rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and
+                                                    !DatasetPage.dataset.owner.released
                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                               and !DatasetPage.canPublishDataverse()}">
+                                                               and !DatasetPage.canPublishDataverse()
+                                                               and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
@@ -125,7 +144,8 @@
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner == null
                                                                     or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
-                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                               and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
 
@@ -134,7 +154,8 @@
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                and DatasetPage.canPublishDataverse()
                                                                and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
-                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                               and DatasetPage.isLatestDatasetWithAnyFilesIncluded()}"
                                                    onclick="PF('maynotPublishParent').show()">
                                         <span class="glyphicon glyphicon-globe"/> #{bundle['dataset.publish.btn']}
                                     </p:commandLink>
@@ -430,15 +451,18 @@
                                                         value="#{DatasetPage.firstRelPublication.text}"
                                                         escape="false"/>
                                                 <b>#{DatasetPage.firstRelPublication.url}</b>
-                                                <ui:fragment rendered="#{not empty DatasetPage.firstRelPublication.url}">
+                                                <ui:fragment
+                                                        rendered="#{not empty DatasetPage.firstRelPublication.url}">
                                                     <a href="#{DatasetPage.firstRelPublication.url}"
                                                        title="#{DatasetPage.firstRelPublication.url}"
                                                        target="_blank">
-                                                        <h:outputText value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}" />
+                                                        <h:outputText
+                                                                value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}"/>
                                                     </a>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{empty DatasetPage.firstRelPublication.url}">
-                                                    <h:outputText value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}" />
+                                                    <h:outputText
+                                                            value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}"/>
                                                 </ui:fragment>
                                             </div>
                                         </div>
@@ -452,7 +476,7 @@
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
-                                            
+
                                             <ui:include src="viewMetadataField.xhtml">
                                                 <ui:param name="datasetField" value="#{dsf}"/>
                                             </ui:include>
@@ -526,7 +550,7 @@
                 </p:fragment>
                 <!-- END View editMode -->
                 <!-- END Header / Button Panel -->
-                
+
                 <!-- View/Tabs infoMode -->
                 <!-- Tabs -->
                 <div id="contentTabs">
@@ -595,17 +619,17 @@
                     </p:fragment>
 
                     <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-                                   dynamic="true">
+                               dynamic="true">
 
                         <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned or
                                                               (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}">
-                            <ui:include src="filesFragment.xhtml" />
+                            <ui:include src="filesFragment.xhtml"/>
                         </p:tab>
 
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                         <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
                         <p:tab id="metadataTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
-                                   rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
+                               rendered="#{(!DatasetPage.workingVersion.deaccessioned or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
                             <ui:include src="metadataTab.xhtml"/>
                         </p:tab>
 
@@ -807,7 +831,9 @@
 
                 <!-- Publish/Submit for Review Dialogs -->
                 <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm"
-                          modal="true">
+                          modal="true"
+                          rendered="#{DatasetPage.canPublishDataverse()}">
+
                     <p class="text-warning">
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
                     </p>
@@ -823,6 +849,22 @@
                                          onclick="PF('publishConfirm').hide();"
                                          type="button"/>
                     </div>
+
+                </p:dialog>
+
+                <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="noFilesInDataset"
+                          modal="true"
+                          rendered="#{DatasetPage.canPublishDataverse()}">
+
+                    <p class="text-danger">
+                        <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.publish.error.noFiles']}
+                    </p>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.ok}"
+                                         onclick="PF('noFilesInDataset').hide();"
+                                         type="button"/>
+                    </div>
+
                 </p:dialog>
 
                 <p:dialog width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishParent"
@@ -847,7 +889,8 @@
                         #{bundle['dataset.publishBoth.tip']}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}" onclick="PF('publishParent').hide();"
+                        <p:commandButton value="#{bundle['dataset.mayNotBePublished.both.button']}"
+                                         onclick="PF('publishParent').hide();"
                                          action="#{DatasetPage.releaseParentDVAndDataset}"
                                          immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"

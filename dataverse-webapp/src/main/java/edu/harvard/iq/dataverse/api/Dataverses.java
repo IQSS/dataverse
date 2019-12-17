@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -262,7 +263,9 @@ public class Dataverses extends AbstractApiBean {
 
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
-                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                    return badRequest(
+                            "PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle(
+                                    "pid.allowedCharacters"));
                 }
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
                 if (maybePid.isPresent()) {
@@ -274,7 +277,8 @@ public class Dataverses extends AbstractApiBean {
             }
 
             if (ds.getIdentifier() == null) {
-                return badRequest("Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
+                return badRequest(
+                        "Please provide a persistent identifier, either by including it in the JSON, or by using the pid query parameter.");
             }
             boolean shouldRelease = StringUtil.isTrue(releaseParam);
             DataverseRequest request = createDataverseRequest(u);
@@ -298,7 +302,10 @@ public class Dataverses extends AbstractApiBean {
                     .add("persistentId", managedDs.getGlobalIdString());
 
             if (shouldRelease) {
-                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs,
+                                                                                 request,
+                                                                                 false,
+                                                                                 shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
 
@@ -306,6 +313,8 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (NoDatasetFilesException ex) {
+            return error(Status.INTERNAL_SERVER_ERROR, "Unable to publish dataset, since there are no files in it.");
         }
     }
 
@@ -328,7 +337,9 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
                 if (!GlobalId.verifyImportCharacters(pidParam)) {
-                    return badRequest("PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle("pid.allowedCharacters"));
+                    return badRequest(
+                            "PID parameter contains characters that are not allowed by the Dataverse application. On import, the PID must only contain characters specified in this regex: " + BundleUtil.getStringFromBundle(
+                                    "pid.allowedCharacters"));
                 }
                 Optional<GlobalId> maybePid = GlobalId.parse(pidParam);
                 if (maybePid.isPresent()) {
@@ -364,7 +375,10 @@ public class Dataverses extends AbstractApiBean {
                 if (latestVersion.getLastUpdateTime() != null) {
                     latestVersion.setLastUpdateTime(new Date());
                 }
-                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
+                PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs,
+                                                                                 request,
+                                                                                 false,
+                                                                                 shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
 
@@ -372,6 +386,8 @@ public class Dataverses extends AbstractApiBean {
 
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (NoDatasetFilesException ex) {
+            return error(Status.INTERNAL_SERVER_ERROR, "Unable to publish dataset, since there are no files in it.");
         }
     }
 
@@ -405,7 +421,11 @@ public class Dataverses extends AbstractApiBean {
     public Response deleteDataverseLinkingDataverse(@PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
         return response(req -> {
-            execCommand(new DeleteDataverseLinkingDataverseCommand(req, findDataverseOrDie(linkingDataverseId), findDataverseLinkingDataverseOrDie(linkingDataverseId, linkedDataverseId), index));
+            execCommand(new DeleteDataverseLinkingDataverseCommand(req,
+                                                                   findDataverseOrDie(linkingDataverseId),
+                                                                   findDataverseLinkingDataverseOrDie(linkingDataverseId,
+                                                                                                      linkedDataverseId),
+                                                                   index));
             return ok("Link from Dataverse " + linkingDataverseId + " to linked Dataverse " + linkedDataverseId + " deleted");
         });
     }
@@ -415,7 +435,8 @@ public class Dataverses extends AbstractApiBean {
     public Response listMetadataBlocks(@PathParam("identifier") String dvIdtf) {
         try {
             JsonArrayBuilder arr = Json.createArrayBuilder();
-            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf)));
+            final List<MetadataBlock> blocks = execCommand(new ListMetadataBlocksCommand(createDataverseRequest(
+                    findUserOrDie()), findDataverseOrDie(dvIdtf)));
             for (MetadataBlock mdb : blocks) {
                 arr.add(brief.json(mdb));
             }
@@ -446,7 +467,9 @@ public class Dataverses extends AbstractApiBean {
         }
 
         try {
-            execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()), findDataverseOrDie(dvIdtf), blocks));
+            execCommand(new UpdateDataverseMetadataBlocksCommand.SetBlocks(createDataverseRequest(findUserOrDie()),
+                                                                           findDataverseOrDie(dvIdtf),
+                                                                           blocks));
             return ok("Metadata blocks of dataverse " + dvIdtf + " updated.");
 
         } catch (WrappedResponse ex) {
@@ -543,7 +566,11 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dataverse = findDataverseOrDie(dvIdtf);
             // by passing null for Featured Dataverses and DataverseFieldTypeInputLevel, those are not changed
-            execCommand(new UpdateDataverseCommand(dataverse, facets, null, createDataverseRequest(findUserOrDie()), null));
+            execCommand(new UpdateDataverseCommand(dataverse,
+                                                   facets,
+                                                   null,
+                                                   createDataverseRequest(findUserOrDie()),
+                                                   null));
             return ok("Facets of dataverse " + dvIdtf + " updated.");
 
         } catch (WrappedResponse ex) {
@@ -599,7 +626,9 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/roles")
     public Response createRole(RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
-        return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(), req, findDataverseOrDie(dvIdtf))))));
+        return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(),
+                                                                         req,
+                                                                         findDataverseOrDie(dvIdtf))))));
     }
 
     @GET
@@ -728,7 +757,8 @@ public class Dataverses extends AbstractApiBean {
                 dv = dv.getOwner();
             }
             if (theRole == null) {
-                return error(Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
+                return error(Status.BAD_REQUEST,
+                             "Can't find role named '" + ra.getRole() + "' in dataverse " + dataverse);
             }
             String privateUrlToken = null;
 
@@ -764,7 +794,8 @@ public class Dataverses extends AbstractApiBean {
     public Response publishDataverse(@PathParam("identifier") String dvIdtf) {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))));
+            return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()),
+                                                                   dv))));
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -811,7 +842,9 @@ public class Dataverses extends AbstractApiBean {
                                 @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> ok(json(execCommand(
                 new UpdateExplicitGroupCommand(req,
-                                               groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)))))));
+                                               groupDto.apply(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+                                                                                     req,
+                                                                                     grpAliasInOwner)))))));
     }
 
     @PUT
@@ -830,13 +863,17 @@ public class Dataverses extends AbstractApiBean {
                 defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
             } catch (Exception nre) {
                 List<String> args = Arrays.asList(roleAlias);
-                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.not.found", args);
+                String retStringError = BundleUtil.getStringFromBundle(
+                        "dataverses.api.update.default.contributor.role.failure.role.not.found",
+                        args);
                 return error(Status.NOT_FOUND, retStringError);
             }
 
             if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)) {
                 List<String> args = Arrays.asList(roleAlias);
-                String retStringError = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions", args);
+                String retStringError = BundleUtil.getStringFromBundle(
+                        "dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions",
+                        args);
                 return error(Status.BAD_REQUEST, retStringError);
             }
 
@@ -845,12 +882,16 @@ public class Dataverses extends AbstractApiBean {
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
 
-            String defaultRoleName = defaultRole == null ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : defaultRole.getName();
+            String defaultRoleName = defaultRole == null ?
+                    BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") :
+                    defaultRole.getName();
 
             return response(req -> {
                 execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
                 List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
-                String retString = BundleUtil.getStringFromBundle("dataverses.api.update.default.contributor.role.success", args);
+                String retString = BundleUtil.getStringFromBundle(
+                        "dataverses.api.update.default.contributor.role.success",
+                        args);
                 return ok(retString);
             });
 
@@ -866,7 +907,9 @@ public class Dataverses extends AbstractApiBean {
                                 @PathParam("aliasInOwner") String grpAliasInOwner) {
         return response(req -> {
             execCommand(new DeleteExplicitGroupCommand(req,
-                                                       findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner)));
+                                                       findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+                                                                              req,
+                                                                              grpAliasInOwner)));
             return ok("Group " + dvIdtf + "/" + grpAliasInOwner + " deleted");
         });
     }
@@ -881,7 +924,8 @@ public class Dataverses extends AbstractApiBean {
                 json(
                         execCommand(
                                 new AddRoleAssigneesToExplicitGroupCommand(req,
-                                                                           findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                                                                           findExplicitGroupOrDie(findDataverseOrDie(
+                                                                                   dvIdtf), req, grpAliasInOwner),
                                                                            new TreeSet<>(roleAssingeeIdentifiers))))));
     }
 
@@ -900,7 +944,9 @@ public class Dataverses extends AbstractApiBean {
                                        @PathParam("roleAssigneeIdentifier") String roleAssigneeIdentifier) {
         return response(req -> ok(json(execCommand(
                 new RemoveRoleAssigneesFromExplicitGroupCommand(req,
-                                                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf), req, grpAliasInOwner),
+                                                                findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
+                                                                                       req,
+                                                                                       grpAliasInOwner),
                                                                 Collections.singleton(roleAssigneeIdentifier))))));
     }
 
@@ -941,7 +987,8 @@ public class Dataverses extends AbstractApiBean {
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();
-            response.add("dataverses that the " + dv.getAlias() + " dataverse has linked to", dvsThisDvHasLinkedToBuilder);
+            response.add("dataverses that the " + dv.getAlias() + " dataverse has linked to",
+                         dvsThisDvHasLinkedToBuilder);
             response.add("dataverses that link to the " + dv.getAlias(), dvsThatLinkToThisDvBuilder);
             response.add("datasets that the " + dv.getAlias() + " has linked to", datasetsThisDvHasLinkedToBuilder);
             return ok(response);

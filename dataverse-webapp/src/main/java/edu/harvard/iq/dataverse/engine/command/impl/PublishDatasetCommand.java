@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -53,7 +53,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     }
 
     @Override
-    public PublishDatasetResult execute(CommandContext ctxt)  {
+    public PublishDatasetResult execute(CommandContext ctxt) {
 
         verifyCommandArguments();
 
@@ -85,7 +85,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
+            ctxt.workflows().start(prePubWf.get(),
+                                   buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
             return new PublishDatasetResult(theDataset, false);
 
         } else {
@@ -123,12 +124,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(),
+                                                                         ctxt,
+                                                                         request,
+                                                                         datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
 
             } else {
                 // Synchronous publishing (no workflow involved)
-                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(), datasetExternallyReleased));
+                theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset,
+                                                                                        getRequest(),
+                                                                                        datasetExternallyReleased));
                 return new PublishDatasetResult(theDataset, true);
             }
         }
@@ -142,28 +148,39 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      */
     private void verifyCommandArguments() throws IllegalCommandException {
         if (!getDataset().getOwner().isReleased()) {
-            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
+            throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.",
+                                              this);
         }
 
         if (!getUser().isAuthenticated()) {
-            throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
+            throw new IllegalCommandException(
+                    "Only authenticated users can release a Dataset. Please authenticate and try again.",
+                    this);
         }
 
         if (getDataset().isLockedFor(DatasetLock.Reason.Workflow)
                 || getDataset().isLockedFor(DatasetLock.Reason.Ingest)) {
             throw new IllegalCommandException("This dataset is locked. Reason: "
-                                                      + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect(joining(","))
-                                                      + ". Please try publishing later.", this);
+                                                      + getDataset().getLocks().stream()
+                    .map(DatasetLock::getReason)
+                    .map(DatasetLock.Reason::name)
+                    .collect(joining(","))+ ". Please try publishing later.", this);
+        }
+
+        if (getDataset().getLatestVersion().getFileMetadatas().isEmpty()) {
+            throw new NoDatasetFilesException("There was no files for dataset version with id: " + getDataset().getLatestVersion().getId());
         }
 
         if (datasetExternallyReleased) {
             if (!getDataset().getLatestVersion().isReleased()) {
-                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as releasd.", this);
+                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as releasd.",
+                                                  this);
             }
 
         } else {
             if (getDataset().getLatestVersion().isReleased()) {
-                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.", this);
+                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.",
+                                                  this);
             }
 
             // prevent publishing of 0.1 version
