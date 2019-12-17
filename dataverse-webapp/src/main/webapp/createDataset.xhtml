@@ -25,8 +25,9 @@
                 <f:viewAction action="#{EditDatafilesPage.initCreateMode(CreateDatasetPage.workingVersion, CreateDatasetPage.newFiles, CreateDatasetPage.selectedFiles)}"/>
             </f:metadata>
             <h:form id="datasetForm">
-                
+
                 <!-- Create editMode -->
+                <p:fragment id="formContent">
                 <ui:fragment>
                     <div class="form-group">
                         <label for="select_HostDataverse" class="col-sm-2 control-label">
@@ -55,11 +56,11 @@
                                              converter="templateConverter" id="select_DatasetTemplate"
                                              styleClass="form-control"
                                              style="width:auto !important; max-width:100%; min-width:200px;">
-                                
+
                                 <f:selectItem itemLabel="#{bundle['dataset.noTemplate.label']}" itemValue="#{null}"/>
                                 <f:selectItems value="#{CreateDatasetPage.dataverseTemplates}"
                                                var="template" itemLabel="#{template.name}" itemValue="#{template}"/>
-                                
+
                                 <p:ajax event="change" update="@form"
                                         listener="#{CreateDatasetPage.updateSelectedTemplate}"
                                         />
@@ -79,17 +80,16 @@
                         <ui:param name="showAllFields" value="#{false}"/>
                         <ui:param name="expandAllBlocks" value="#{true}"/>
                         <ui:param name="showAddReplicationForTitleButton" value="#{true}"/>
-
                         <ui:param name="metadataBlocks"
                                   value="#{CreateDatasetPage.metadataBlocksForEdit.entrySet().toArray()}"/>
                     </ui:include>
                 </ui:fragment>
                 <!-- END Create editMode -->
-                
+
                 <!-- View/Tabs infoMode -->
                 <!-- Tabs -->
                 <div id="contentTabs">
-                
+
                     <ui:fragment id="uploadFilesOnCreateTab">
 
                         <ui:include src="editFilesFragment.xhtml">
@@ -105,18 +105,19 @@
                     </ui:fragment>
                 </div>
                 <!-- END View/Tabs infoMode -->
-                
+
                 <!-- Create Metadata Tip -->
                 <div class="alert alert-info margin-top">
                     #{bundle['file.metadataTip']}
                 </div>
-                
+                </p:fragment>
+
                 <!-- Create/Save Dataset Button Panel -->
                 <div class="button-block">
                     <p:commandButton tabindex="1000" id="save"
                                      value="#{bundle['file.addBtn']}"
                                      action="#{CreateDatasetPage.save}"
-                                     update="@form,:messagePanel"
+                                     update="formContent,:messagePanel"
                                      oncomplete="$(document).scrollTop(0);"
                                      />
                     <p:button id="cancelCreate" value="#{bundle.cancel}"
@@ -126,7 +127,7 @@
 
                 <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
             </h:form>
-            
+
             <script type="text/javascript">
                 $(document).ready(function () {
                     popoverHTML('#{bundle.htmlAllowedTitle}');
