@@ -485,6 +485,7 @@ def runAsadminScript(config):
       os.environ['SMTP_SERVER_PORT'] = mailServerPort
    except:
       mailServerHost = config.get('system','MAIL_SERVER')
+      os.environ['SMTP_SERVER'] = mailServerHost
 
    os.environ['FILES_DIR'] = config.get('glassfish','GLASSFISH_DIRECTORY') + "/glassfish/domains/domain1/files"
 
@@ -495,9 +496,12 @@ def runAsadminScript(config):
 #   print glassfishSetupOutput
 
    try:
-      subprocess.call(["./glassfish-setup.sh"])
+      returncode = subprocess.call(["./glassfish-setup.sh"])
+      if returncode != 0:
+         return False
    except:
       return False
+
    return True
 
 
