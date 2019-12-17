@@ -29,7 +29,7 @@ R
 
 https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse APIs. The latest release can be installed from `CRAN <https://cran.r-project.org/package=dataverse>`_.
 
-It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose dataverse can be found at https://dataverse.harvard.edu/dataverse/leeper
+The package is currently maintained by `Will Beasley <https://github.com/wibeasley>`_. It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose dataverse can be found at https://dataverse.harvard.edu/dataverse/leeper
 
 Java
 ----
