@@ -675,6 +675,46 @@
                                         <p:message for="position" display="text" />
                                     </div>
                                 </div>
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
+                                    <!-- E-mail notifications language -->
+                                    <label for="position" class="col-sm-3 control-label">
+                                        #{bundle['user.notificationsLanguage']}
+                                        <span class="glyphicon glyphicon-asterisk text-danger"/>
+                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                              data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.notificationsLanguage.tip']}"></span>
+                                    </label>
+                                    <div class="col-sm-4">
+                                        <p:selectOneMenu styleClass="facet-category-default"
+                                                         disabled="#{false}"
+                                                         validator="#{DataverseUserPage.validatePreferredNotificationsLanguage}"
+                                                         value="#{DataverseUserPage.preferredNotificationsLanguage}"
+                                                         rendered="#{DataverseUserPage.editMode ne 'CREATE'}"
+                                        >
+                                            <f:selectItems value="#{DataverseUserPage.getSupportedLanguages()}"
+                                                           var="language"
+                                                           itemLabel="#{DataverseUserPage.getLocalizedDisplayNameForLanguage(language)}"
+                                                           itemValue="#{language}"/>
+                                        </p:selectOneMenu>
+                                        <p:selectOneMenu styleClass="facet-category-default"
+                                                         disabled="#{false}"
+                                                         validator="#{DataverseUserPage.validatePreferredNotificationsLanguage}"
+                                                         hideNoSelectionOption="true"
+                                                         rendered="#{DataverseUserPage.editMode eq 'CREATE'}"
+                                        >
+                                            <f:selectItem
+                                                    itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
+                                                    noSelectionOption="true"
+                                                    itemValue="#{null}"
+                                                    itemDisabled="true"
+                                                    aria-hidden="true"
+                                            />
+                                            <f:selectItems value="#{DataverseUserPage.getSupportedLanguages()}"
+                                                           var="language"
+                                                           itemLabel="#{DataverseUserPage.getLocalizedDisplayNameForLanguage(language)}"
+                                                           itemValue="#{language}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                                 <!-- Terms of Use -->
                                     <ui:include src="termsofuse.xhtml"/>

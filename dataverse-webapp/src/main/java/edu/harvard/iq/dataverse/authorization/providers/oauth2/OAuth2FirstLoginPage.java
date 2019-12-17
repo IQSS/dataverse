@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 import edu.harvard.iq.dataverse.settings.InstallationConfigService;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -38,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,6 +81,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @Inject
     DataverseSession session;
 
+    @Inject
+    private SettingsWrapper settingsWrapper;
+
     OAuth2UserRecord newUser;
 
     @NotBlank(message = "{oauth.username}")
@@ -94,6 +100,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     boolean authenticationFailed = false;
     private AuthenticationProvider authProvider;
     private PasswordValidatorServiceBean passwordValidatorService;
+    private Locale preferredNotificationsLanguage;
+
 
     /**
      * Attempts to init the page. Redirects the user to {@code /} in case the
@@ -178,6 +186,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             }
         }
         setSelectedEmail(emailToSuggest);
+        preferredNotificationsLanguage = session.getLocale();
 
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
 
@@ -191,7 +200,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                                                                                getSelectedEmail(),
                                                                                newUser.getDisplayInfo().getAffiliation(),
                                                                                newUser.getDisplayInfo().getPosition());
-        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(), newAud, true);
+        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(),
+                newAud, true, preferredNotificationsLanguage).getOrNull();
         session.setUser(user);
         /**
          * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
@@ -385,4 +395,39 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return emailsToPickFrom;
     }
 
+    public List<String> getSupportedLanguages() {
+        return new ArrayList<>(settingsWrapper.getConfiguredLocales().keySet());
+    }
+
+    public String getPreferredNotificationsLanguage() {
+        return preferredNotificationsLanguage.getLanguage();
+    }
+
+    public String getLocalizedPreferredNotificationsLanguage() {
+        return getLocalizedDisplayNameForLanguage(preferredNotificationsLanguage);
+    }
+
+    public String getLocalizedDisplayNameForLanguage(String language) {
+        return getLocalizedDisplayNameForLanguage(Locale.forLanguageTag(language));
+    }
+
+    public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {
+        if(Objects.isNull(value)) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.notificationsLanguage.requiredMessage"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
+    // -------------------- PRIVATE ---------------------
+
+    private String getLocalizedDisplayNameForLanguage(Locale language) {
+        return language.getDisplayName(session.getLocale());
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setPreferredNotificationsLanguage(String preferredNotificationsLanguage) {
+        this.preferredNotificationsLanguage = Locale.forLanguageTag(preferredNotificationsLanguage);
+    }
 }

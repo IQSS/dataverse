@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import io.vavr.control.Option;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -53,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -584,6 +586,17 @@ public class AuthenticationServiceBean {
         return authenticatedUser;
     }
 
+    public Option<AuthenticatedUser> createAuthenticatedUser(UserRecordIdentifier userRecordId,
+                                          String proposedAuthenticatedUserIdentifier,
+                                          AuthenticatedUserDisplayInfo userDisplayInfo,
+                                          boolean generateUniqueIdentifier,
+                                          Locale preferredNotificationsLanguage) {
+
+        return Option.of(createAuthenticatedUser(userRecordId, proposedAuthenticatedUserIdentifier,
+                userDisplayInfo, generateUniqueIdentifier))
+                .peek(au -> au.setNotificationsLanguage(preferredNotificationsLanguage));
+    }
+
     /**
      * Checks whether the {@code idtf} is already taken by another {@link AuthenticatedUser}.
      *
@@ -600,6 +613,12 @@ public class AuthenticationServiceBean {
         user.applyDisplayInfo(userDisplayInfo);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "updateUser")
                                  .setInfo(user.getIdentifier()));
+        return update(user);
+    }
+
+    public AuthenticatedUser updateAuthenticatedUser(AuthenticatedUser user, AuthenticatedUserDisplayInfo userDisplayInfo, Locale userNotificationsLanguage) {
+        updateAuthenticatedUser(user, userDisplayInfo);
+        user.setNotificationsLanguage(userNotificationsLanguage);
         return update(user);
     }
 

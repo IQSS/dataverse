@@ -131,6 +131,33 @@
                                     <p:inputText id="position" styleClass="form-control" value="#{OAuth2FirstLoginPage.newUser.displayInfo.position}"/>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <!-- E-mail notifications language -->
+                                <label for="position" class="col-sm-3 control-label">
+                                    #{bundle['user.notificationsLanguage']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.notificationsLanguage.tip']}"></span>
+                                </label>
+                                <div class="col-sm-4">
+                                    <p:selectOneMenu styleClass="facet-category-default"
+                                                     disabled="#{false}"
+                                                     validator="#{OAuth2FirstLoginPage.validatePreferredNotificationsLanguage}"
+                                                     hideNoSelectionOption="true"
+                                    >
+                                        <f:selectItem
+                                                itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
+                                                noSelectionOption="true"
+                                                itemValue="#{null}"
+                                                itemDisabled="true"
+                                                aria-hidden="true"
+                                        />
+                                        <f:selectItems value="#{OAuth2FirstLoginPage.getSupportedLanguages()}"
+                                                       var="language"
+                                                       itemLabel="#{OAuth2FirstLoginPage.getLocalizedDisplayNameForLanguage(language)}"
+                                                       itemValue="#{language}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
                             <ui:include src="../termsofuse.xhtml"/>
                             <div class="form-group">
                                 <div class="col-sm-12 button-block">

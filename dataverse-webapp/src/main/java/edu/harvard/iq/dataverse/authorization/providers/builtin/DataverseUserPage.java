@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -140,6 +141,8 @@ public class DataverseUserPage implements java.io.Serializable {
     private String selectTab = "somedata";
     UIInput usernameField;
 
+    private Locale preferredNotificationsLanguage = null;
+
 
     private String username;
     boolean nonLocalLoginEnabled;
@@ -170,6 +173,7 @@ public class DataverseUserPage implements java.io.Serializable {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationDao.findByUser(currentUser.getId());
+            preferredNotificationsLanguage = currentUser.getNotificationsLanguage();
 
             switch (selectTab) {
                 case "notifications":
@@ -230,6 +234,14 @@ public class DataverseUserPage implements java.io.Serializable {
         if (editMode == EditMode.CREATE && !userNameValid) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
+    public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {
+        if(Objects.isNull(value)) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.notificationsLanguage.requiredMessage"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -317,7 +329,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
-                    builtinUser.getUserName(), userDisplayInfo, false);
+                    builtinUser.getUserName(), userDisplayInfo, false, preferredNotificationsLanguage).getOrNull();
             if (au == null) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
@@ -374,7 +386,7 @@ public class DataverseUserPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         } else {
             String emailBeforeUpdate = currentUser.getEmail();
-            AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
+            AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo, preferredNotificationsLanguage);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
             StringBuilder msg = new StringBuilder(passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged")
@@ -723,9 +735,35 @@ public class DataverseUserPage implements java.io.Serializable {
         return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 
+    public List<String> getSupportedLanguages() {
+        return new ArrayList<>(settingsWrapper.getConfiguredLocales().keySet());
+    }
+
+    public String getPreferredNotificationsLanguage() {
+        return preferredNotificationsLanguage.getLanguage();
+    }
+
+    public String getLocalizedPreferredNotificationsLanguage() {
+        return getLocalizedDisplayNameForLanguage(preferredNotificationsLanguage);
+    }
+
+    public String getLocalizedDisplayNameForLanguage(String language) {
+        return getLocalizedDisplayNameForLanguage(Locale.forLanguageTag(language));
+    }
+
     // -------------------- PRIVATE ---------------------
 
     private boolean isUserLanguageConfigured() {
         return StringUtils.isNotEmpty(settingsWrapper.getConfiguredLocaleName(currentUser.getNotificationsLanguage().toLanguageTag()));
+    }
+
+    private String getLocalizedDisplayNameForLanguage(Locale language) {
+        return language.getDisplayName(session.getLocale());
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setPreferredNotificationsLanguage(String preferredNotificationsLanguage) {
+        this.preferredNotificationsLanguage = Locale.forLanguageTag(preferredNotificationsLanguage);
     }
 }

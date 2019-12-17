@@ -16,11 +16,14 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
@@ -33,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 @ViewScoped
@@ -54,6 +59,8 @@ public class Shib implements java.io.Serializable {
     GroupServiceBean groupService;
     @EJB
     UserNotificationService userNotificationService;
+    @Inject
+    private SettingsWrapper settingsWrapper;
 
     HttpServletRequest request;
 
@@ -106,6 +113,7 @@ public class Shib implements java.io.Serializable {
     private String redirectPage;
     //    private boolean debug = false;
     private String emailAddress;
+    private Locale preferredNotificationsLanguage;
 
     public enum State {
 
@@ -544,6 +552,42 @@ public class Shib implements java.io.Serializable {
 
     public void setRedirectPage(String redirectPage) {
         this.redirectPage = redirectPage;
+    }
+
+    public List<String> getSupportedLanguages() {
+        return new ArrayList<>(settingsWrapper.getConfiguredLocales().keySet());
+    }
+
+    public String getPreferredNotificationsLanguage() {
+        return preferredNotificationsLanguage.getLanguage();
+    }
+
+    public String getLocalizedPreferredNotificationsLanguage() {
+        return getLocalizedDisplayNameForLanguage(preferredNotificationsLanguage);
+    }
+
+    public String getLocalizedDisplayNameForLanguage(String language) {
+        return getLocalizedDisplayNameForLanguage(Locale.forLanguageTag(language));
+    }
+
+    public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {
+        if(Objects.isNull(value)) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.notificationsLanguage.requiredMessage"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
+    // -------------------- PRIVATE ---------------------
+
+    private String getLocalizedDisplayNameForLanguage(Locale language) {
+        return language.getDisplayName(session.getLocale());
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setPreferredNotificationsLanguage(String preferredNotificationsLanguage) {
+        this.preferredNotificationsLanguage = Locale.forLanguageTag(preferredNotificationsLanguage);
     }
 
 }
