@@ -449,15 +449,15 @@
                                                         </p:commandLink>
                                                     </li>
                                                     <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
-                                                        <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
+                                                        <p:commandLink onclick="linkSavedSearchCommand();"
                                                                        oncomplete="PF('linkDataverseForm').show()"
-                                                                       update=":linkDataverseForm"
-                                                                       disabled="#{SearchIncludeFragment.mode != 'search'}">
+                                                                       update=":linkDataverseForm">
                                                             #{bundle['dataverse.savedsearch.link']}
                                                         </p:commandLink>
                                                     </li>
                                                 </ul>
                                             </div>
+                                            <p:remoteCommand name="linkSavedSearchCommand" action="#{DataversePage.setupLinkingPopup('savedSearch')}"/> 
                                             <!-- Edit Button -->
                                             <div class="btn-group" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
@@ -802,7 +802,6 @@
                         $('#featuredDataversesList .item').matchHeight();
                     }
                     function callOnError(){
-                        alert("in js");
                         window.scrollTo(0, 0);
                     }
                     function updateInclude() {
@@ -811,6 +810,7 @@
                     function scrollAfterUpdate() {
                         document.getElementById('metadataFieldOptionsPanel-Body').scrollTop = scrollPos;
                     }
+                    
                     function updateMetadata(checkbox) {
                         var checked = checkbox.checked;
                         if (checked === false){
