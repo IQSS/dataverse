@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -10,8 +11,10 @@ import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestEntityManager;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -45,7 +48,8 @@ public class SubmitDatasetForReviewCommandTest {
         dataset = new Dataset();
 
         HttpServletRequest aHttpServletRequest = null;
-        dataverseRequest = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"), aHttpServletRequest);
+        dataverseRequest = new DataverseRequest(MocksFactory.makeAuthenticatedUser("First", "Last"),
+                                                aHttpServletRequest);
 
         testEngine = new TestDataverseEngine(new TestCommandContext() {
             @Override
@@ -159,7 +163,10 @@ public class SubmitDatasetForReviewCommandTest {
 
     @Test
     public void testDraftDataset() {
-        dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
+        DatasetVersion latestVersion = dataset.getLatestVersion();
+        latestVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        latestVersion.setFileMetadatas(Lists.newArrayList(new FileMetadata()));
+
         Dataset updatedDataset = null;
         try {
             updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
@@ -169,4 +176,16 @@ public class SubmitDatasetForReviewCommandTest {
         assertNotNull(updatedDataset);
     }
 
+    @Test(expected = NoDatasetFilesException.class)
+    public void testNoFilesInDatasetException() {
+        //given
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+        datasetVersion.setDataset(dataset);
+
+        dataset.setVersions(Lists.newArrayList(datasetVersion));
+
+        //when & then
+        testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+    }
 }

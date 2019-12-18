@@ -1381,7 +1381,10 @@ public class Datasets extends AbstractApiBean {
             return ok(result);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (NoDatasetFilesException ex) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Unable to submit dataset for review, since there are no files in it.");
         }
+
     }
 
     @POST

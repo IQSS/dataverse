@@ -816,17 +816,31 @@
                                  actionListener="#{DatasetPage.saveLinkingDataverses}"/>
 
                 <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview" modal="true">
-                    <p class="text-warning">
-                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
-                    </p>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();"
-                                         action="#{DatasetPage.submitDataset}"
-                                         immediate="true"/>
-                        <p:commandButton value="#{bundle.cancel}"
-                                         onclick="PF('inreview').hide();" type="button"
-                                         immediate="true"/>
-                    </div>
+
+                    <p:outputPanel rendered="#{DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
+                        <p class="text-warning">
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();"
+                                             action="#{DatasetPage.submitDataset}"
+                                             immediate="true"/>
+                            <p:commandButton value="#{bundle.cancel}"
+                                             onclick="PF('inreview').hide();" type="button"
+                                             immediate="true"/>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:outputPanel rendered="#{!DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
+                        <p class="text-danger">
+                            <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.submit.failure.noFiles']}
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.ok}"
+                                             onclick="PF('inreview').hide();"
+                                             type="button"/>
+                        </div>
+                    </p:outputPanel>
                 </p:dialog>
 
                 <!-- Publish/Submit for Review Dialogs -->

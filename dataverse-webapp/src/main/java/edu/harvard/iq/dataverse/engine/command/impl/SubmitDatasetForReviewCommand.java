@@ -4,8 +4,8 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
@@ -17,7 +17,6 @@ import io.vavr.control.Option;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Future;
 
 @RequiredPermissions(Permission.EditDataset)
 public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Dataset> {
@@ -37,12 +36,15 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.inReview"), this);
         }
 
+        if (getDataset().getLatestVersion().getFileMetadatas().isEmpty()) {
+            throw new NoDatasetFilesException("There was no files for dataset version with id: " + getDataset().getLatestVersion().getId());
+        }
+
         //SEK 9-1 Add Lock before saving dataset
         DatasetLock inReviewLock = new DatasetLock(DatasetLock.Reason.InReview, getRequest().getAuthenticatedUser());
         ctxt.engine().submit(new AddLockCommand(getRequest(), getDataset(), inReviewLock));
-        Dataset updatedDataset = save(ctxt);
 
-        return updatedDataset;
+        return save(ctxt);
     }
 
     public Dataset save(CommandContext ctxt)  {
@@ -67,9 +69,8 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
                                                                                   savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
         }
 
-        //  TODO: What should we do with the indexing result? Print it to the log?
         boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
+        ctxt.index().indexDataset(savedDataset, doNormalSolrDocCleanUp);
         return savedDataset;
     }
 
