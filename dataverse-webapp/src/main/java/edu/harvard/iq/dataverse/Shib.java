@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import io.vavr.control.Option;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -559,7 +560,7 @@ public class Shib implements java.io.Serializable {
     }
 
     public String getPreferredNotificationsLanguage() {
-        return preferredNotificationsLanguage.getLanguage();
+        return Option.of(preferredNotificationsLanguage).getOrElse(Locale.ROOT).getLanguage();
     }
 
     public String getLocalizedPreferredNotificationsLanguage() {

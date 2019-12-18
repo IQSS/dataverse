@@ -139,15 +139,18 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.notificationsLanguage.tip']}"></span>
                                 </label>
                                 <div class="col-sm-4">
-                                    <p:selectOneMenu styleClass="facet-category-default"
+                                    <p:selectOneMenu id="preferredLanguageDropdown"
+                                                     styleClass="facet-category-default"
                                                      disabled="#{false}"
                                                      validator="#{OAuth2FirstLoginPage.validatePreferredNotificationsLanguage}"
                                                      hideNoSelectionOption="true"
+                                                     value="#{OAuth2FirstLoginPage.preferredNotificationsLanguage}"
+                                                     required="#{true}"
                                     >
                                         <f:selectItem
                                                 itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                 noSelectionOption="true"
-                                                itemValue="#{null}"
+                                                itemValue=""
                                                 itemDisabled="true"
                                                 aria-hidden="true"
                                         />
@@ -156,6 +159,7 @@
                                                        itemLabel="#{OAuth2FirstLoginPage.getLocalizedDisplayNameForLanguage(language)}"
                                                        itemValue="#{language}"/>
                                     </p:selectOneMenu>
+                                    <p:message for="preferredLanguageDropdown" display="text" />
                                 </div>
                             </div>
                             <ui:include src="../termsofuse.xhtml"/>

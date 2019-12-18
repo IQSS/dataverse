@@ -40,6 +40,7 @@ import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.primefaces.event.TabChangeEvent;
@@ -740,7 +741,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String getPreferredNotificationsLanguage() {
-        return preferredNotificationsLanguage.getLanguage();
+        return Option.of(preferredNotificationsLanguage).getOrElse(Locale.ROOT).getLanguage();
     }
 
     public String getLocalizedPreferredNotificationsLanguage() {

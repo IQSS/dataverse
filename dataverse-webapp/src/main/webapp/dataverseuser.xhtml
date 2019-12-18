@@ -695,16 +695,20 @@
                                                            itemLabel="#{DataverseUserPage.getLocalizedDisplayNameForLanguage(language)}"
                                                            itemValue="#{language}"/>
                                         </p:selectOneMenu>
-                                        <p:selectOneMenu styleClass="facet-category-default"
+                                        <p:selectOneMenu id="preferredLanguageDropdown"
+                                                         styleClass="facet-category-default"
                                                          disabled="#{false}"
                                                          validator="#{DataverseUserPage.validatePreferredNotificationsLanguage}"
                                                          hideNoSelectionOption="true"
                                                          rendered="#{DataverseUserPage.editMode eq 'CREATE'}"
+                                                         value="#{DataverseUserPage.preferredNotificationsLanguage}"
+                                                         required="#{true}"
+                                                         requiredMessage="#{bundle['user.notificationsLanguage.requiredMessage']}"
                                         >
                                             <f:selectItem
                                                     itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                     noSelectionOption="true"
-                                                    itemValue="#{null}"
+                                                    itemValue=""
                                                     itemDisabled="true"
                                                     aria-hidden="true"
                                             />
@@ -713,6 +717,7 @@
                                                            itemLabel="#{DataverseUserPage.getLocalizedDisplayNameForLanguage(language)}"
                                                            itemValue="#{language}"/>
                                         </p:selectOneMenu>
+                                        <p:message for="preferredLanguageDropdown" display="text" />
                                     </div>
                                 </div>
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
