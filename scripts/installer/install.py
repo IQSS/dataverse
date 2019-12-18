@@ -32,8 +32,6 @@ longOptions = ["verbose",
                "admin_email=",
                "config_file="]
 
-# @todo: add --config_file= option, to specify a file other than default.config?
-
 # default values of the command line options:
 nonInteractive=False
 verbose=False
@@ -111,7 +109,6 @@ config.read(configFile)
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
 
-# enumerate postgres drivers (no longer necessary!)
 # there's now a single driver that works for all supported versions:
 # jodbc.postgresql.org recommends 4.2 for Java 8.
 # updated drivers may be obtained from
@@ -119,7 +116,28 @@ apiUrl = "http://localhost:8080/api"
 pgJdbcDriver = "postgresql-42.2.2.jar"
 
 # 0. A few preliminary checks:                                                                                   
-# 0a. OS: @todo (assuming linux)
+# 0a. OS flavor:
+ 
+try:
+   unameToken = subprocess.check_output(["uname", "-a"]).split()[0]
+except:
+   sys.exit("Warning! Failed to execute \"uname -a\"; aborting")
+
+if unameToken == "Darwin":
+   print "\nThis appears to be a MacOS X system; good."
+   myOS = "MacOSX"
+elif unameToken == "Linux":
+   if os.path.exists("/etc/redhat-release"):
+      print "\nThis appears to be a RedHat system; good."
+      myOS = "RedHat"
+   else:
+      print "\nThis appears to be a non-RedHat Linux system;"
+      print "this installation *may* succeed; but we're not making any promises!"
+      myOS = "Linux"
+else:
+   print "\nERROR: The installer only works on a RedHat Linux or MacOS X system!"
+   print "This appears to be neither. Aborting";
+   sys.exit(1)
 
 # 0b. host name:
 # the name entered on the command line as --hostname overrides other methods:
@@ -169,6 +187,9 @@ if mailServer != "":
 if gfDir != "":
    config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
 
+# 0e. current working directory:
+# @todo - do we need it still?
+
 # 1. CHECK FOR SOME MANDATORY COMPONENTS (war file, etc.)                                                         
 # since we can't do anything without these things in place, better check for                                      
 # them before we go into the interactive config mode.                                                             
@@ -193,10 +214,7 @@ if not pgOnly:
          sys.exit("Sorry, I can't seem to find an appropriate warfile.\nAre you running the installer from the right directory?")
    print warfile+" available to deploy. Good."
 
-   # 1b. current working directory:
-   # @todo (move it under 0. as well?)
-
-   # 1c. check for reference_data.sql
+   # 1b. check for reference_data.sql
    referenceData = '../database/reference_data.sql'
    if not os.path.isfile(referenceData):
       # if it's not there, then we're probably running out of the 
@@ -207,8 +225,7 @@ if not pgOnly:
 
    print "found "+referenceData+"... good"
 
-
-   # 1d. check for existence of jq
+   # 1c. check if jq is available
    # (but we're only doing it if it's not that weird "pod name" mode)
    if podName != "start-glassfish":
       print "Checking if jq is available..."
@@ -218,13 +235,13 @@ if not pgOnly:
       except:
          sys.exit("Can't find the jq utility in my path. Is it installed?")
 
-   # 1e. check java version
+   # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT)
    print "Found java version "+java_version
    if not re.search("1.8", java_version):
       sys.exit("Dataverse requires Java 1.8. Please install it, or make sure it's in your PATH, and try again")
 
-   # 1f. check if the setup scripts - setup-all.sh, are available as well, maybe?
+   # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
 
 # 2. INTERACTIVE CONFIG SECTION
@@ -321,10 +338,8 @@ solrLocation = config.get('system', 'SOLR_LOCATION')
 
 if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not skipDatabaseSetup:
    print "performing database setup"
-   # 3a. locate psql (@todo:)
-   # (is it still needed though? can we import reference data without it? - actually, yes, should be able to use psycopg2!)
 
-   # 3b. can we connect as the postgres admin user?
+   # 3a. can we connect as the postgres admin user?
    admin_conn_string = "dbname='postgres' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
 
    try:
@@ -334,7 +349,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print "Can't connect to PostgresQL as the admin user.\n"
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
-   # 3c. get the Postgres version (do we need it still?)
+   # 3b. get the Postgres version (do we need it still?)
    try:
       pg_full_version = conn.server_version
       print "PostgresQL version: "+str(pg_full_version)
@@ -342,7 +357,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print "Warning: Couldn't determine PostgresQL version."
    conn.close()
 
-   # 3d. create role:
+   # 3c. create role:
 
    conn_cmd = "CREATE ROLE "+pgUser+" PASSWORD '"+pgPassword+"' NOSUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;"
    conn = psycopg2.connect(admin_conn_string)
@@ -353,7 +368,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    except:
       print "Looks like the user already exists. Continuing."
 
-   # 3e. create database:
+   # 3d. create database:
 
    conn_cmd = "CREATE DATABASE "+pgDb+" OWNER "+pgUser+";"
    try:
@@ -374,38 +389,25 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print "postgres-only setup complete."
       sys.exit()
 
-# ----- a few useful functions ----- #
-
-# for editing lines in domain.xml
-# (we really don't want to edit domain.xml - we want to use asadmin for all glassfish tinkering though...)
-def replaceLine(file, pattern, subst):
-   fh, tempfile = mkstemp()
-   with fdopen(fh,'w') as new_file:
-      with open(file) as orig_file:
-         print file
-         for line in orig_file:
-            new_file.write(line.replace(pattern, subst))
-   backup = file+".bak"
-   copy2(file, backup)
-   move(tempfile, file)
-
-# determine free system memory (Linux for now)
-def linuxRAM():
-        totalMemory = os.popen("free -m").readlines()[1].split()[1]
-        return int(totalMemory)
-
 # 4. CONFIGURE GLASSFISH
 
 # 4a. Glassfish heap size - let's make it 1/2 of system memory
-#totalRAM = linuxRAM()
-#gfHeap = int( totalRAM / 2)
-#gf_xmx = "Xmx"+str(gfHeap)
+# @todo: should we skip doing this in the non-interactive mode? (and just use the value from the config file?)
+def linuxRAM():
+   totalMemory = os.popen("free -m").readlines()[1].split()[1]
+   return int(totalMemory)
 
-#try:
-#   replaceLine(gfConfig, "Xmx512", gf_xmx)
-#   print "Setting JVM heap to "+str(gfHeap)+". You may want to increase this to suit your system."
-#except:
-#   print "Unable to adjust JVM heap size. Please check file permissions, etc?"
+def macosRAM():
+   totalMemory = subprocess.check_output(["/usr/sbin/sysctl", "-n", "hw.memsize"]).rstrip()
+   return int(int(totalMemory) / (1024 * 1024)) # megabytes
+
+if myOS == "MacOSX":
+   gfHeap = int(macosRAM() / 2)
+else:
+   # linux
+   gfHeap = int(linuxRAM() / 2)
+print "Setting Glassfish heap size (Xmx) to "+str(gfHeap)+" Megabytes"
+config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
 # 4b. PostgresQL driver:
 pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
@@ -564,10 +566,7 @@ if returnCode != 0:
 # @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
 
 # 6. Import reference data
-# @todo
 print "importing reference data..."
-# should be able to do this in psycopg2 - by something along the lines of
-# with self.connection as cursor:
 # open the new postgresQL connection (as the application user):
 conn_string="dbname='"+pgDb+"' user='"+pgUser+"' password='"+pgPassword+"' host='"+pgHost+"'"
 conn = psycopg2.connect(conn_string)
@@ -581,10 +580,6 @@ except:
 
 cur.close()
 conn.close()
-
-# etc. 
-# this should allow us to completely bypass using psql - just saving us all the trouble 
-# of locating the correct executable, etc.!
 
 # 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)
