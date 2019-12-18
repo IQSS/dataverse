@@ -3,9 +3,10 @@ package edu.harvard.iq.dataverse.datafile.file;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;

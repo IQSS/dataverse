@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessage
 
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;

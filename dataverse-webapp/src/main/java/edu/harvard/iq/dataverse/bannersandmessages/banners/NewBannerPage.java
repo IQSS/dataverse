@@ -9,17 +9,18 @@ import edu.harvard.iq.dataverse.bannersandmessages.validation.BannerErrorHandler
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.ByteArrayContent;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import java.io.Serializable;
 
 @ViewScoped

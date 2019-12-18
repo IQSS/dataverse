@@ -1,10 +1,11 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.chart.BarChartModel;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

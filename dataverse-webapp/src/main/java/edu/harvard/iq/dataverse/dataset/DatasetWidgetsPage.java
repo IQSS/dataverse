@@ -14,13 +14,14 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.Lazy;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

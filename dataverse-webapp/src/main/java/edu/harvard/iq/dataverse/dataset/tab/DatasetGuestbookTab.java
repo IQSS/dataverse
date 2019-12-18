@@ -3,10 +3,11 @@ package edu.harvard.iq.dataverse.dataset.tab;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.Serializable;
 
 @ViewScoped

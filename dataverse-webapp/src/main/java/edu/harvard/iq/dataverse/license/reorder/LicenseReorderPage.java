@@ -8,10 +8,11 @@ import edu.harvard.iq.dataverse.license.dto.LicenseSimpleDto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

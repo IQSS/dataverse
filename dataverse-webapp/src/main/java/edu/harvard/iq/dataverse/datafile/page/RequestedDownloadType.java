@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseDialog;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import java.io.Serializable;

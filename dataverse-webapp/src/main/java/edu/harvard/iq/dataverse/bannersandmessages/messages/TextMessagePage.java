@@ -5,12 +5,13 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.LazyDataModel;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.Serializable;
 
 @ViewScoped

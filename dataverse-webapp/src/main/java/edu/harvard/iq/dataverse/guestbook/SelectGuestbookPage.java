@@ -12,11 +12,12 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.faces.application.FacesMessage;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +33,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
     private DatasetDao datasetDao;
     private PermissionsWrapper permissionsWrapper;
     private DataverseRequestServiceBean dvRequestService;
-    private DatasetVersionServiceBean versionService;
     private SelectGuestBookService selectGuestBookService;
 
     private String persistentId;
@@ -51,12 +51,11 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     @Inject
     public SelectGuestbookPage(DatasetDao datasetDao, PermissionsWrapper permissionsWrapper,
-                               DataverseRequestServiceBean dvRequestService, DatasetVersionServiceBean versionService,
+                               DataverseRequestServiceBean dvRequestService,
                                SelectGuestBookService selectGuestBookService) {
         this.datasetDao = datasetDao;
         this.permissionsWrapper = permissionsWrapper;
         this.dvRequestService = dvRequestService;
-        this.versionService = versionService;
         this.selectGuestBookService = selectGuestBookService;
     }
 

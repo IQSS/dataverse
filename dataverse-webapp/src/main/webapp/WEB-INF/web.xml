@@ -30,6 +30,11 @@
         <param-value>Production</param-value>
     </context-param>
     <context-param>
+        <param-name>com.sun.faces.numberOfLogicalViews</param-name>
+        <param-value>30</param-value>
+    </context-param>
+
+    <context-param>
         <param-name>primefaces.THEME</param-name>
         <param-value>bootstrap</param-value>
     </context-param>

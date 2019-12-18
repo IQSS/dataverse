@@ -3,13 +3,14 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.Serializable;
 import java.util.List;
 

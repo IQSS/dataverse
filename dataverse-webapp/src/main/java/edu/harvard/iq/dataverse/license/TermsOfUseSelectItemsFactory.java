@@ -3,18 +3,19 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
-import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

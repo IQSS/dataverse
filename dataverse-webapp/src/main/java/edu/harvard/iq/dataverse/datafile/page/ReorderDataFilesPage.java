@@ -7,11 +7,12 @@ import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.util.List;
 import java.util.Optional;
 
