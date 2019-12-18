@@ -459,7 +459,6 @@ if re.match(gfDomain+" not running", domain_status):
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
-#gfAdminLoginStatus = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser])
 gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
 
 #print "asadmin login output: "+gfAdminLoginStatus
@@ -469,6 +468,7 @@ print "asadmin login return code: "+str(gfAdminLoginStatus)
 
 print "Note: some asadmin commands will fail, and that's ok. Existing settings can't be created; new settings can't be cleared beforehand."
 
+# @todo: move all the functions into separate .py files?
 def runAsadminScript(config):
    # We are going to run a standalone shell script with a bunch of asadmin                                      
    # commands to set up all the glassfish components for the application.                                       
