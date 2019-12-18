@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.search;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -18,9 +19,12 @@ import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
@@ -37,6 +41,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -49,9 +54,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.common.BundleUtil.getStringFromBundle;
 import static java.lang.String.format;
@@ -61,6 +68,25 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
+    
+    
+    public enum SortOrder {
+
+        asc, desc;
+        
+        
+        public static Optional<SortOrder> fromString(String sortOrderString) {
+            return Try.of(() -> SortOrder.valueOf(sortOrderString))
+                    .toJavaOptional();
+                    
+        }
+        
+        public static List<String> allowedOrderStrings() {
+            return Lists.newArrayList(SortOrder.values()).stream()
+                    .map(so -> so.name())
+                    .collect(Collectors.toList());
+        }
+    }
 
     /**
      * We're trying to make the SearchServiceBean lean, mean, and fast, with as
@@ -85,6 +111,8 @@ public class SearchServiceBean {
     private SolrFieldFactory solrFieldFactory;
     @Inject
     private SolrClient solrServer;
+    @Inject
+    private SolrQuerySanitizer querySanitizer;
 
     /**
      * Import note: "onlyDatatRelatedToMe" relies on filterQueries for providing
@@ -105,7 +133,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, String sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
         return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
 
@@ -130,7 +158,7 @@ public class SearchServiceBean {
      * @throws SearchException
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
-                                    List<String> filterQueries, String sortField, String sortOrder, int paginationStart,
+                                    List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart,
                                     boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities)
             throws SearchException {
 
@@ -140,18 +168,13 @@ public class SearchServiceBean {
         if (numResultsPerPage < 1) {
             throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
         }
-
+        
         SolrQuery solrQuery = new SolrQuery();
-        query = SearchUtil.sanitizeQuery(query);
+        
+        query = querySanitizer.sanitizeQuery(query);
         solrQuery.setQuery(query);
-//        SortClause foo = new SortClause("name", SolrQuery.ORDER.desc);
-//        if (query.equals("*") || query.equals("*:*")) {
-//            solrQuery.setSort(new SortClause(SearchFields.NAME_SORT, SolrQuery.ORDER.asc));
-        solrQuery.setSort(new SortClause(sortField, sortOrder));
-//        } else {
-//            solrQuery.setSort(sortClause);
-//        }
-//        solrQuery.setSort(sortClause);
+        
+        solrQuery.setSort(new SortClause(sortField, sortOrder == SortOrder.asc ? ORDER.asc : ORDER.desc));
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         Integer fragSize = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
@@ -217,16 +240,9 @@ public class SearchServiceBean {
         // -----------------------------------
         // Facets to Retrieve
         // -----------------------------------
-//        solrQuery.addFacetField(SearchFields.HOST_DATAVERSE);
-//        solrQuery.addFacetField(SearchFields.AUTHOR_STRING);
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
         solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
-//        solrQuery.addFacetField(SearchFields.AFFILIATION);
         solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
-//        solrQuery.addFacetField(SearchFields.CATEGORY);
-//        solrQuery.addFacetField(SearchFields.FILE_TYPE_MIME);
-//        solrQuery.addFacetField(SearchFields.DISTRIBUTOR);
-//        solrQuery.addFacetField(SearchFields.KEYWORD);
         /**
          * @todo when a new method on datasetFieldService is available
          * (retrieveFacetsByDataverse?) only show the facets that the dataverse
@@ -245,24 +261,22 @@ public class SearchServiceBean {
                 // -----------------------------------
                 // PERMISSION FILTER QUERY
                 // -----------------------------------
-                String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, dataverse, onlyDatatRelatedToMe);
+                String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe);
                 if (permissionFilterQuery != null) {
                     solrQuery.addFilterQuery(permissionFilterQuery);
                 }
-                if (dataverse != null) {
-                    for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
-                        DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
+                for (DataverseFacet dataverseFacet : dataverse.getDataverseFacets()) {
+                    DatasetFieldType datasetField = dataverseFacet.getDatasetFieldType();
 
-                        SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
-                                                                               datasetField.getFieldType(),
-                                                                               datasetField.isThisOrParentAllowsMultipleValues(),
-                                                                               datasetField.isFacetable());
-                        solrQuery.addFacetField(dsfSolrField.getNameFacetable());
-                    }
+                    SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
+                                                                           datasetField.getFieldType(),
+                                                                           datasetField.isThisOrParentAllowsMultipleValues(),
+                                                                           datasetField.isFacetable());
+                    solrQuery.addFacetField(dsfSolrField.getNameFacetable());
                 }
             }
         } else {
-            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, null, onlyDatatRelatedToMe);
+            String permissionFilterQuery = this.getPermissionFilterQuery(dataverseRequest, solrQuery, onlyDatatRelatedToMe);
             if (permissionFilterQuery != null) {
                 solrQuery.addFilterQuery(permissionFilterQuery);
             }
@@ -321,34 +335,7 @@ public class SearchServiceBean {
         QueryResponse queryResponse = null;
         try {
             queryResponse = solrServer.query(solrQuery);
-        } catch (RemoteSolrException ex) {
-            String messageFromSolr = ex.getLocalizedMessage();
-            String error = "Search Syntax Error: ";
-            String stringToHide = "org.apache.solr.search.SyntaxError: ";
-            if (messageFromSolr.startsWith(stringToHide)) {
-                // hide "org.apache.solr..."
-                error += messageFromSolr.substring(stringToHide.length());
-            } else {
-                error += messageFromSolr;
-            }
-            logger.info(error);
-            SolrQueryResponse exceptionSolrQueryResponse = new SolrQueryResponse(solrQuery);
-            exceptionSolrQueryResponse.setError(error);
-
-            // we can't show anything because of the search syntax error
-            long zeroNumResultsFound = 0;
-            long zeroGetResultsStart = 0;
-            List<SolrSearchResult> emptySolrSearchResults = new ArrayList<>();
-            List<FacetCategory> exceptionFacetCategoryList = new ArrayList<>();
-            Map<String, List<String>> emptySpellingSuggestion = new HashMap<>();
-            exceptionSolrQueryResponse.setNumResultsFound(zeroNumResultsFound);
-            exceptionSolrQueryResponse.setResultsStart(zeroGetResultsStart);
-            exceptionSolrQueryResponse.setSolrSearchResults(emptySolrSearchResults);
-            exceptionSolrQueryResponse.setFacetCategoryList(exceptionFacetCategoryList);
-            exceptionSolrQueryResponse.setTypeFacetCategories(exceptionFacetCategoryList);
-            exceptionSolrQueryResponse.setSpellingSuggestionsByToken(emptySpellingSuggestion);
-            return exceptionSolrQueryResponse;
-        } catch (SolrServerException | IOException ex) {
+        } catch (RemoteSolrException | SolrServerException | IOException ex) {
             throw new SearchException("Internal Dataverse Search Engine Error", ex);
         }
 
@@ -604,7 +591,7 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<>();
-        List<FacetCategory> typeFacetCategories = new ArrayList<>();
+        Option<FacetCategory> typeFacetCategory = Option.none();
         boolean hidePublicationStatusFacet = false;
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
@@ -702,7 +689,7 @@ public class SearchServiceBean {
             if (!facetLabelList.isEmpty()) {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
                     // the "type" facet is special, these are not
-                    typeFacetCategories.add(facetCategory);
+                    typeFacetCategory = Option.of(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
                     if (unpublishedAvailable || draftsAvailable || deaccessionedAvailable) {
                         hidePublicationStatusFacet = false;
@@ -756,7 +743,7 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
-        solrQueryResponse.setTypeFacetCategories(typeFacetCategories);
+        solrQueryResponse.setTypeFacetCategory(typeFacetCategory.getOrNull());
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         String[] filterQueriesArray = solrQuery.getFilterQueries();
@@ -785,7 +772,7 @@ public class SearchServiceBean {
      *
      * @return
      */
-    private String getPermissionFilterQuery(DataverseRequest dataverseRequest, SolrQuery solrQuery, Dataverse dataverse, boolean onlyDatatRelatedToMe) {
+    private String getPermissionFilterQuery(DataverseRequest dataverseRequest, SolrQuery solrQuery, boolean onlyDatatRelatedToMe) {
 
         User user = dataverseRequest.getUser();
         if (user == null) {

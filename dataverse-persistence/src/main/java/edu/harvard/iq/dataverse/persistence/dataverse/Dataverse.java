@@ -342,6 +342,9 @@ public class Dataverse extends DvObjectContainer {
     }
     */
 
+    public boolean isRoot() {
+        return this.getOwner() == null;
+    }
 
     public List<Guestbook> getParentGuestbooks() {
         List<Guestbook> retList = new ArrayList<>();

@@ -187,13 +187,6 @@ public class Search extends AbstractApiBean {
              * "subtree_ss" path like "/2/3".
              */
 //            value.add("fq_provided", filterQueries.toString());
-            if (solrQueryResponse.getError() != null) {
-                /**
-                 * @todo You get here if you pass only ":" as a query, for
-                 * example. Should we return more or better information?
-                 */
-                return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
-            }
             response.setHeader("Access-Control-Allow-Origin", "*");
             return allowCors(ok(value));
         } else {

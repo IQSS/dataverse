@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.Term
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
@@ -184,45 +185,22 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
-    public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder) {
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
+    public List<FileMetadata> findFileMetadataByDatasetVersionId(Long datasetVersionId, int maxResults, FileSortFieldAndOrder sortFieldAndOrder) {
         if (maxResults < 0) {
             // return all results if user asks for negative number of results
             maxResults = 0;
         }
-        String qr = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder;
+        String sortFieldString = sortFieldAndOrder.getSortField();
+        String sortOrderString = sortFieldAndOrder.getSortOrder() == SortOrder.desc ? "desc" : "asc";
+        String qr = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortFieldString + " " + sortOrderString;
         return em.createQuery(qr, FileMetadata.class)
                 .setParameter("datasetVersionId", datasetVersionId)
                 .setMaxResults(maxResults)
                 .getResultList();
     }
 
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, FileSortFieldAndOrder sortFieldAndOrder) {
 
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-        String searchClause = "";
-        if (searchTerm != null && !searchTerm.isEmpty()) {
-            searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
-        }
-
-        String queryString = "select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId"
-                + searchClause
-                + " order by o." + sortField + " " + sortOrder;
-        return em.createQuery(queryString, FileMetadata.class)
-                .setParameter("datasetVersionId", datasetVersionId)
-                .getResultList();
-    }
-
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, String userSuppliedSortField, String userSuppliedSortOrder) {
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-
-        searchTerm = searchTerm.trim();
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
         String searchClause = "";
         if (searchTerm != null && !searchTerm.isEmpty()) {
             searchClause = " and  (lower(o.label) like '%" + searchTerm.toLowerCase() + "%' or lower(o.description) like '%" + searchTerm.toLowerCase() + "%')";
@@ -233,24 +211,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         //as the second parameter. 
         return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = " + datasetVersionId
                                             + searchClause
-                                            + " order by o." + sortField + " " + sortOrder)
-                .getResultList();
-    }
-
-
-    public List<FileMetadata> findFileMetadataByDatasetVersionIdLazy(Long datasetVersionId, int maxResults, String userSuppliedSortField, String userSuppliedSortOrder, int firstResult) {
-        FileSortFieldAndOrder sortFieldAndOrder = new FileSortFieldAndOrder(userSuppliedSortField, userSuppliedSortOrder);
-        String sortField = sortFieldAndOrder.getSortField();
-        String sortOrder = sortFieldAndOrder.getSortOrder();
-
-        if (maxResults < 0) {
-            // return all results if user asks for negative number of results
-            maxResults = 0;
-        }
-        return em.createQuery("select o from FileMetadata o where o.datasetVersion.id = :datasetVersionId order by o." + sortField + " " + sortOrder, FileMetadata.class)
-                .setParameter("datasetVersionId", datasetVersionId)
-                .setMaxResults(maxResults)
-                .setFirstResult(firstResult)
+                                            + " order by o." + sortFieldAndOrder.getSortField() + " " + (sortFieldAndOrder.getSortOrder() == SortOrder.desc ? "desc" : "asc"))
                 .getResultList();
     }
 

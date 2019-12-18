@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SortBy;
 import org.apache.commons.lang.StringUtils;
 
 public class FileSortFieldAndOrder {
 
     private String sortField;
-    private String sortOrder;
+    private SortOrder sortOrder;
 
     private static String displayOrder = "displayOrder";
     public static String label = "label";
@@ -14,7 +15,7 @@ public class FileSortFieldAndOrder {
     public static String size = "dataFile.filesize";
     public static String type = "dataFile.contentType";
 
-    public FileSortFieldAndOrder(String userSuppliedSortField, String userSuppliedSortOrder) {
+    public FileSortFieldAndOrder(String userSuppliedSortField, SortOrder userSuppliedSortOrder) {
         if (StringUtils.isBlank(userSuppliedSortField)) {
             sortField = displayOrder;
         } else if (isUserSuppliedSortField(userSuppliedSortField)) {
@@ -22,22 +23,19 @@ public class FileSortFieldAndOrder {
         } else {
             sortField = label;
         }
-        if (StringUtils.isBlank(userSuppliedSortOrder)) {
-            sortOrder = SortBy.ASCENDING;
-        } else if (userSuppliedSortOrder.equals(SortBy.ASCENDING) || userSuppliedSortOrder.equals(SortBy.DESCENDING)) {
-            sortOrder = userSuppliedSortOrder;
+        
+        if (userSuppliedSortOrder == null) {
+            sortOrder = SortOrder.asc;
         } else {
-            sortOrder = SortBy.ASCENDING;
+            sortOrder = userSuppliedSortOrder;
         }
-        this.sortField = sortField;
-        this.sortOrder = sortOrder;
     }
 
     public String getSortField() {
         return sortField;
     }
 
-    public String getSortOrder() {
+    public SortOrder getSortOrder() {
         return sortOrder;
     }
 

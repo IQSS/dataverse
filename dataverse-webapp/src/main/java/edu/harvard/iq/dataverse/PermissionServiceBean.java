@@ -222,7 +222,7 @@ public class PermissionServiceBean {
             return isUserAllowedOn(user,
                                    (Class<? extends Command>) Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
         }
-
+        
         public Set<Permission> get() {
             return permissionsFor(user, subject);
         }

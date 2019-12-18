@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -12,51 +12,47 @@ public class FileSortFieldAndOrderTest {
 
         FileSortFieldAndOrder bothUnspecified = new FileSortFieldAndOrder(null, null);
         assertEquals("displayOrder", bothUnspecified.getSortField());
-        assertEquals(SortBy.ASCENDING, bothUnspecified.getSortOrder());
+        assertEquals(SortOrder.asc, bothUnspecified.getSortOrder());
 
-        FileSortFieldAndOrder unspecifiedFieldAsc = new FileSortFieldAndOrder(null, SortBy.ASCENDING);
+        FileSortFieldAndOrder unspecifiedFieldAsc = new FileSortFieldAndOrder(null, SortOrder.asc);
         assertEquals("displayOrder", unspecifiedFieldAsc.getSortField());
-        assertEquals(SortBy.ASCENDING, unspecifiedFieldAsc.getSortOrder());
+        assertEquals(SortOrder.asc, unspecifiedFieldAsc.getSortOrder());
 
-        FileSortFieldAndOrder unspecifiedFieldDesc = new FileSortFieldAndOrder(null, SortBy.DESCENDING);
+        FileSortFieldAndOrder unspecifiedFieldDesc = new FileSortFieldAndOrder(null, SortOrder.desc);
         assertEquals("displayOrder", unspecifiedFieldDesc.getSortField());
-        assertEquals(SortBy.DESCENDING, unspecifiedFieldDesc.getSortOrder());
-
-        FileSortFieldAndOrder unspecifiedFieldJunkOrder = new FileSortFieldAndOrder(null, "junk");
-        assertEquals("displayOrder", unspecifiedFieldJunkOrder.getSortField());
-        assertEquals(SortBy.ASCENDING, unspecifiedFieldJunkOrder.getSortOrder());
+        assertEquals(SortOrder.desc, unspecifiedFieldDesc.getSortOrder());
 
         FileSortFieldAndOrder labelAsc = new FileSortFieldAndOrder("label", null);
         assertEquals("label", labelAsc.getSortField());
-        assertEquals(SortBy.ASCENDING, labelAsc.getSortOrder());
+        assertEquals(SortOrder.asc, labelAsc.getSortOrder());
 
         FileSortFieldAndOrder createDate = new FileSortFieldAndOrder("dataFile.createDate", null);
         assertEquals("dataFile.createDate", createDate.getSortField());
-        assertEquals(SortBy.ASCENDING, createDate.getSortOrder());
+        assertEquals(SortOrder.asc, createDate.getSortOrder());
 
         FileSortFieldAndOrder junkField = new FileSortFieldAndOrder("junk", null);
         assertEquals("label", junkField.getSortField());
-        assertEquals(SortBy.ASCENDING, junkField.getSortOrder());
+        assertEquals(SortOrder.asc, junkField.getSortOrder());
 
-        FileSortFieldAndOrder junkFieldDesc = new FileSortFieldAndOrder("junk", SortBy.DESCENDING);
+        FileSortFieldAndOrder junkFieldDesc = new FileSortFieldAndOrder("junk", SortOrder.desc);
         assertEquals("label", junkFieldDesc.getSortField());
-        assertEquals(SortBy.DESCENDING, junkFieldDesc.getSortOrder());
+        assertEquals(SortOrder.desc, junkFieldDesc.getSortOrder());
 
         FileSortFieldAndOrder sizeNull = new FileSortFieldAndOrder("dataFile.filesize", null);
         assertEquals("dataFile.filesize", sizeNull.getSortField());
-        assertEquals(SortBy.ASCENDING, sizeNull.getSortOrder());
+        assertEquals(SortOrder.asc, sizeNull.getSortOrder());
 
         FileSortFieldAndOrder contentType = new FileSortFieldAndOrder("dataFile.contentType", null);
         assertEquals("dataFile.contentType", contentType.getSortField());
-        assertEquals(SortBy.ASCENDING, contentType.getSortOrder());
+        assertEquals(SortOrder.asc, contentType.getSortOrder());
 
-        FileSortFieldAndOrder contentTypeAsc = new FileSortFieldAndOrder("dataFile.contentType", SortBy.ASCENDING);
+        FileSortFieldAndOrder contentTypeAsc = new FileSortFieldAndOrder("dataFile.contentType", SortOrder.asc);
         assertEquals("dataFile.contentType", contentTypeAsc.getSortField());
-        assertEquals(SortBy.ASCENDING, contentTypeAsc.getSortOrder());
+        assertEquals(SortOrder.asc, contentTypeAsc.getSortOrder());
 
-        FileSortFieldAndOrder contentTypeDesc = new FileSortFieldAndOrder("dataFile.contentType", SortBy.DESCENDING);
+        FileSortFieldAndOrder contentTypeDesc = new FileSortFieldAndOrder("dataFile.contentType", SortOrder.desc);
         assertEquals("dataFile.contentType", contentTypeDesc.getSortField());
-        assertEquals(SortBy.DESCENDING, contentTypeDesc.getSortOrder());
+        assertEquals(SortOrder.desc, contentTypeDesc.getSortOrder());
 
     }
 
@@ -67,27 +63,27 @@ public class FileSortFieldAndOrderTest {
 
         // expect
         assertEquals("displayOrder", displayOrder.getSortField());
-        assertEquals(SortBy.ASCENDING, displayOrder.getSortOrder());
+        assertEquals(SortOrder.asc, displayOrder.getSortOrder());
     }
 
     @Test
     public void shouldSortFilesByDisplayOrderWithGivenSortType() {
         // given
-        FileSortFieldAndOrder displayOrderAsc = new FileSortFieldAndOrder("displayOrder", SortBy.ASCENDING);
+        FileSortFieldAndOrder displayOrderAsc = new FileSortFieldAndOrder("displayOrder", SortOrder.asc);
 
         // expect
         assertEquals("displayOrder", displayOrderAsc.getSortField());
-        assertEquals(SortBy.ASCENDING, displayOrderAsc.getSortOrder());
+        assertEquals(SortOrder.asc, displayOrderAsc.getSortOrder());
     }
 
     @Test
     public void shouldSortFilesByDisplayOrderDescending() {
         // given
-        FileSortFieldAndOrder displayOrderDesc = new FileSortFieldAndOrder("displayOrder", SortBy.DESCENDING);
+        FileSortFieldAndOrder displayOrderDesc = new FileSortFieldAndOrder("displayOrder", SortOrder.desc);
 
         // expect
         assertEquals("displayOrder", displayOrderDesc.getSortField());
-        assertEquals(SortBy.DESCENDING, displayOrderDesc.getSortOrder());
+        assertEquals(SortOrder.desc, displayOrderDesc.getSortOrder());
     }
 
 }

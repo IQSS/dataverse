@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -632,11 +633,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
     }
 
-    public enum SortOrder {
-
-        asc, desc
-    }
-
     public String searchRedirect(String dataverseRedirectPage) {
         dataverseRedirectPage = StringUtils.isBlank(dataverseRedirectPage) ? "/dataverseuser.xhtml?selectTab=dataRelatedToMe" : dataverseRedirectPage;
 
@@ -800,7 +796,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     searchTerm,
                     filterQueriesFinal,
                     SearchFields.RELEASE_OR_CREATE_DATE,
-                    SortBy.DESCENDING,
+                    SortOrder.desc,
                     paginationStart,
                     true,
                     SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE
@@ -808,12 +804,12 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
             if (solrQueryResponse.getNumResultsFound() == 0) {
                 this.solrIsDown = true;
-                this.errorFromSolr = solrQueryResponse.getError();
                 return DataRetrieverAPI.MSG_NO_RESULTS_FOUND;
             }
 
         } catch (SearchException ex) {
             solrQueryResponse = null;
+            errorFromSolr = ex.getMessage();
             logger.severe("Solr SearchException: " + ex.getMessage());
         }
 
@@ -829,7 +825,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         searchTerm,
                         filterQueriesFinal,
                         SearchFields.RELEASE_OR_CREATE_DATE,
-                        SortBy.DESCENDING,
+                        SortOrder.desc,
                         0,
                         true,
                         1000
@@ -858,7 +854,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
             this.datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
             this.staticSolrFieldFriendlyNamesBySolrField = solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField();
             this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
-            this.errorFromSolr = solrQueryResponse.getError();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
@@ -868,10 +863,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
             previewCountbyType.put("datasets", 0L);
             previewCountbyType.put("files", 0L);
             if (solrQueryResponse != null) {
-                for (FacetCategory facetCategory : solrQueryResponse.getTypeFacetCategories()) {
-                    for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
-                        previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                    }
+                for (FacetLabel facetLabel : solrQueryResponse.getTypeFacetCategory().getFacetLabel()) {
+                    previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
                 }
             }
 

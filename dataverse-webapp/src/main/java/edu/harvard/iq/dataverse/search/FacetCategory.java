@@ -41,4 +41,9 @@ public class FacetCategory {
         return isNotBlank(bundleDisplayName) ? bundleDisplayName : friendlyName;
     }
 
+    @Override
+    public String toString() {
+        return "FacetCategory [name=" + name + ", facetLabel=" + facetLabel + ", friendlyName=" + friendlyName + "]";
+    }
+    
 }

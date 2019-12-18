@@ -1,22 +1,15 @@
 package edu.harvard.iq.dataverse.search;
 
-import java.util.Arrays;
-import java.util.List;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
+
 import java.util.Objects;
 
 public class SortBy {
 
-    public static final String ASCENDING = "asc";
-    public static final String DESCENDING = "desc";
-
-    public static List<String> allowedOrderStrings() {
-        return Arrays.asList(ASCENDING, DESCENDING);
-    }
-
     private final String field;
-    private final String order;
+    private final SortOrder order;
 
-    public SortBy(String field, String order) {
+    public SortBy(String field, SortOrder order) {
         this.field = field;
         this.order = order;
     }
@@ -30,7 +23,7 @@ public class SortBy {
         return field;
     }
 
-    public String getOrder() {
+    public SortOrder getOrder() {
         return order;
     }
 

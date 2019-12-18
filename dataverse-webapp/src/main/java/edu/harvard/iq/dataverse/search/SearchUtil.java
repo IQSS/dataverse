@@ -1,48 +1,16 @@
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.common.Util;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 public class SearchUtil {
 
-    /**
-     * @param query The query string that might be mutated before feeding it
-     *              into Solr.
-     * @return The query string that may have been mutated or null if null was
-     * passed in.
-     */
-    public static String sanitizeQuery(String query) {
-        if (query == null) {
-            return null;
-        }
-        String[] colonParts = query.split(":");
-        if (colonParts.length > 0) {
-            String first = colonParts[0];
-            if (first.startsWith("doi")) {
-                query = query.replaceAll("doi:", "doi\\\\:");
-            } else if (first.startsWith("hdl")) {
-                query = query.replaceAll("hdl:", "hdl\\\\:");
-            } else if (first.startsWith("datasetPersistentIdentifier")) {
-                query = query.replaceAll("datasetPersistentIdentifier:doi:", "datasetPersistentIdentifier:doi\\\\:");
-                query = query.replaceAll("datasetPersistentIdentifier:hdl:", "datasetPersistentIdentifier:hdl\\\\:");
-            } else {
-                /**
-                 * No-op, don't mutate the query.
-                 *
-                 * Because we want to support advanced search queries like
-                 * "title:foo" we can't simply escape the whole query with
-                 * `ClientUtils.escapeQueryChars(query)`:
-                 *
-                 * http://lucene.apache.org/solr/4_6_0/solr-solrj/org/apache/solr/client/solrj/util/ClientUtils.html#escapeQueryChars%28java.lang.String%29
-                 */
-            }
-        }
-        return query;
-    }
+    
+    // -------------------- LOGIC --------------------
 
     public static SolrInputDocument createSolrDoc(DvObjectSolrDoc dvObjectSolrDoc) {
         if (dvObjectSolrDoc == null) {
@@ -67,41 +35,11 @@ public class SearchUtil {
     }
 
     public static SortBy getSortBy(String sortField, String sortOrder) throws Exception {
+        
+        String parsedSortField = parseSortField(sortField);
+        SortOrder parsedSortOrder = parseSortOrder(sortOrder, parsedSortField);
 
-        if (StringUtils.isBlank(sortField)) {
-            sortField = SearchFields.RELEVANCE;
-        } else if (sortField.equals("name")) {
-            // "name" sounds better than "name_sort" so we convert it here so users don't have to pass in "name_sort"
-            sortField = SearchFields.NAME_SORT;
-        } else if (sortField.equals("date")) {
-            // "date" sounds better than "release_or_create_date_dt"
-            sortField = SearchFields.RELEASE_OR_CREATE_DATE;
-        }
-
-        if (StringUtils.isBlank(sortOrder)) {
-            if (StringUtils.isNotBlank(sortField)) {
-                // default sorting per field if not specified
-                if (sortField.equals(SearchFields.RELEVANCE)) {
-                    sortOrder = SortBy.DESCENDING;
-                } else if (sortField.equals(SearchFields.NAME_SORT)) {
-                    sortOrder = SortBy.ASCENDING;
-                } else if (sortField.equals(SearchFields.RELEASE_OR_CREATE_DATE)) {
-                    sortOrder = SortBy.DESCENDING;
-                } else {
-                    // asc for alphabetical by default despite GitHub using desc by default:
-                    // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
-                    // http://developer.github.com/v3/search/
-                    sortOrder = SortBy.ASCENDING;
-                }
-            }
-        }
-
-        List<String> allowedSortOrderValues = SortBy.allowedOrderStrings();
-        if (!allowedSortOrderValues.contains(sortOrder)) {
-            throw new Exception("The 'order' parameter was '" + sortOrder + "' but expected one of " + allowedSortOrderValues + ". (The 'sort' parameter was/became '" + sortField + "'.)");
-        }
-
-        return new SortBy(sortField, sortOrder);
+        return new SortBy(parsedSortField, parsedSortOrder);
     }
 
     public static String determineFinalQuery(String userSuppliedQuery) {
@@ -115,4 +53,42 @@ public class SearchUtil {
         }
     }
 
+    // -------------------- PRIVATE --------------------
+    
+    private static String parseSortField(String sortField) {
+        
+        if (StringUtils.isBlank(sortField)) {
+            return SearchFields.RELEVANCE;
+        } else if (StringUtils.equals(sortField, "name")) {
+            // "name" sounds better than "name_sort" so we convert it here so users don't have to pass in "name_sort"
+            return SearchFields.NAME_SORT;
+        } else if (StringUtils.equals(sortField, "date")) {
+            // "date" sounds better than "release_or_create_date_dt"
+            return SearchFields.RELEASE_OR_CREATE_DATE;
+        }
+        return sortField;
+    }
+    
+    private static SortOrder parseSortOrder(String sortOrder, String parsedSortField) throws Exception {
+        
+        if (StringUtils.isBlank(sortOrder)) {
+            // default sorting per field if not specified
+            if (StringUtils.equals(parsedSortField, SearchFields.RELEVANCE)) {
+                return SortOrder.desc;
+            } else if (StringUtils.equals(parsedSortField, SearchFields.NAME_SORT)) {
+                return SortOrder.asc;
+            } else if (StringUtils.equals(parsedSortField, SearchFields.RELEASE_OR_CREATE_DATE)) {
+                return SortOrder.desc;
+            } else {
+                // asc for alphabetical by default despite GitHub using desc by default:
+                // "The sort order if sort parameter is provided. One of asc or desc. Default: desc"
+                // http://developer.github.com/v3/search/
+                return SortOrder.asc;
+            }
+        }
+        
+        return SortOrder.fromString(sortOrder)
+            .orElseThrow(() -> new Exception("The 'order' parameter was '" + sortOrder + "' but expected one of " + SortOrder.allowedOrderStrings() + ". "
+                    + "(The 'sort' parameter was/became '" + parsedSortField + "'.)"));
+    }
 }

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrQuerySanitizer;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -56,6 +57,10 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     @Inject
     SolrClient solrServer;
+    
+    @Inject
+    SolrQuerySanitizer querySanitizer;
+    
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
 
@@ -233,7 +238,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public String addQueryRestrictions(String query) {
         // "sanitizeQuery()" does something special that's needed to be able 
         // to search on global ids; which we will most likely need. 
-        query = SearchUtil.sanitizeQuery(query);
+        query = querySanitizer.sanitizeQuery(query);
         // fix case in "and" and "or" operators: 
         query = query.replaceAll(" [Aa][Nn][Dd] ", " AND ");
         query = query.replaceAll(" [Oo][Rr] ", " OR ");

@@ -20,10 +20,9 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
-import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -35,11 +34,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.logging.Logger;
 
-//import edu.harvard.iq.dataverse.authorization.MyDataQueryHelperServiceBean;
 
 /**
  * @author rmp553
@@ -71,14 +67,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
     AuthenticationServiceBean authenticationService;
     @EJB
     DataverseDao dataverseDao;
-    //@EJB
-    //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
     GroupServiceBean groupService;
 
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;
-    private List<String> defaultDvObjectTypes = MyDataFilterParams.defaultDvObjectTypes;
     private MyDataFinder myDataFinder;
     private SolrQueryResponse solrQueryResponse;
     private AuthenticatedUser authUser = null;
@@ -94,11 +87,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
      */
     public DataRetrieverAPI() {
 
-    }
-
-    private int randInt(int min, int max) {
-        Random rand = new Random();
-        return rand.nextInt((max - min) + 1) + min;
     }
 
     public String getRetrieveDataFullAPIPath() {
@@ -126,17 +114,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
         return new Pager(numResults, itemsPerPage, chosenPage);
 
     }
-    
-    /*
-    @Path("test-it2")
-    @GET
-    @Produces({"application/json"})
-    public String retrieveTestPager(@QueryParam("selectedPage") int selectedPage){
-        
-        return this.getRandomPagerPager(selectedPage).asJSONString();
-    }
-    */
-    //private String getUserIdentifier()
 
 
     public boolean isSuperuser() {
@@ -149,91 +126,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
             return null;
         }
         return authenticationService.getAuthenticatedUser(userIdentifier);
-    }
-
-    public Map<String, Long> getTotalCountsFromSolrAsJavaMap(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
-        //msgt("getTotalCountsFromSolrAsJavaMap: " + searchUser.getIdentifier());
-        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
-        if (solrQueryResponseForCounts == null) {
-            logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
-            return null;
-        }
-        return solrQueryResponseForCounts.getDvObjectCounts();
-    }
-
-    public JsonObjectBuilder getTotalCountsFromSolrAsJSON(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
-
-        SolrQueryResponse solrQueryResponseForCounts = getTotalCountsFromSolr(dataverseRequest, myDataFinder);
-        if (solrQueryResponseForCounts == null) {
-            logger.severe("DataRetrieverAPI.getTotalCountsFromSolrAsJSON: solrQueryResponseForCounts should not be null");
-            return null;
-        }
-        return solrQueryResponseForCounts.getDvObjectCountsAsJSON();
-    }
-
-
-    private SolrQueryResponse getTotalCountsFromSolr(DataverseRequest dataverseRequest, MyDataFinder myDataFinder) {
-        //msgt("getTotalCountsFromSolr: " + searchUser.getIdentifier());
-
-        if (myDataFinder == null) {
-            throw new NullPointerException("myDataFinder cannot be null");
-        }
-        if (dataverseRequest == null) {
-            throw new NullPointerException("dataverseRequest cannot be null");
-        }
-
-        // -------------------------------------------------------
-        // Create new filter params that only check by the User 
-        // -------------------------------------------------------
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, myDataFinder.getRolePermissionHelper());
-        if (filterParams.hasError()) {
-            logger.severe("getTotalCountsFromSolr. filterParams error: " + filterParams.getErrorMessage());
-            return null;
-        }
-
-        // -------------------------------------------------------
-        // Re-run all of the entity queries (sigh)
-        // -------------------------------------------------------
-        myDataFinder.initFields();
-        myDataFinder.runFindDataSteps(filterParams);
-        if (myDataFinder.hasError()) {
-            logger.severe("getTotalCountsFromSolr. myDataFinder error: " + myDataFinder.getErrorMessage());
-            return null;
-        }
-
-        // -------------------------------------------------------
-        // Generate filterQueries for total counts
-        // -------------------------------------------------------
-        List<String> filterQueries = myDataFinder.getSolrFilterQueriesForTotalCounts();
-        if (filterQueries == null) {
-            logger.severe("getTotalCountsFromSolr. filterQueries was null!");
-            return null;
-        }
-        //msgt("getTotalCountsFromSolr");
-        //msgt(StringUtils.join(filterQueries, " AND "));
-
-        // -------------------------------------------------------
-        // Run Solr
-        // -------------------------------------------------------
-        SolrQueryResponse solrQueryResponseForCounts;
-        try {
-            solrQueryResponseForCounts = searchService.search(
-                    dataverseRequest,
-                    null, // subtree, default it to Dataverse for now
-                    "*",  //    Get everything--always
-                    filterQueries,//filterQueries,
-                    SearchFields.NAME_SORT, SortBy.ASCENDING,
-                    //SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
-                    0, //paginationStart,
-                    true, // dataRelatedToMe
-                    SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
-            );
-        } catch (SearchException ex) {
-            logger.severe("Search for total counts failed with filter query");
-            logger.severe("filterQueries: " + StringUtils.join(filterQueries, "(separator)"));
-            return null;
-        }
-        return solrQueryResponseForCounts;
     }
 
     private String getJSONErrorString(String jsonMsg, String optionalLoggerMsg) {
@@ -393,7 +285,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     filterParams.getSearchTerm(),  //"*", //
                     filterQueries,//filterQueries,
                     //SearchFields.NAME_SORT, SortBy.ASCENDING,
-                    SearchFields.RELEASE_OR_CREATE_DATE, SortBy.DESCENDING,
+                    SearchFields.RELEASE_OR_CREATE_DATE, SortOrder.desc,
                     solrCardStart, //paginationStart,
                     true, // dataRelatedToMe
                     SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE

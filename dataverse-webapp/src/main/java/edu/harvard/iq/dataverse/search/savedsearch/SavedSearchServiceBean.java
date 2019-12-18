@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearch;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
@@ -200,9 +201,7 @@ public class SavedSearchServiceBean {
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
-        String sortField = SearchFields.RELEVANCE;
-        String sortOrder = SortBy.DESCENDING;
-        SortBy sortBy = new SortBy(sortField, sortOrder);
+        SortBy sortBy = new SortBy(SearchFields.RELEVANCE, SortOrder.desc);
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;

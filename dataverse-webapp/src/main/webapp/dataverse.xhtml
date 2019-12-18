@@ -37,7 +37,6 @@
                 <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
                 <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                 <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
-                <f:viewParam name="debug" value="#{SearchIncludeFragment.debug}"/>
                 <f:viewAction action="#{SearchIncludeFragment.search()}"/>
             </f:metadata>
 
@@ -66,7 +65,7 @@
                             </ui:fragment>
                             <!-- END: Publish Button -->
                             <div class="btn-group"
-                                 jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
+                                 jsf:rendered="#{dataverseSession.user.superuser and (!(empty SearchIncludeFragment.query) or DataversePage.dataverse.owner != null)}">
                                 <a href="#" type="button" class="btn btn-default btn-access dropdown-toggle"
                                    data-toggle="dropdown" aria-expanded="false">
                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span
@@ -81,11 +80,11 @@
                                             #{bundle['dataverse.link']}
                                         </p:commandLink>
                                     </li>
-                                    <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                    <li class="#{!(empty SearchIncludeFragment.query) ? '' : 'disabled'}">
                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                        oncomplete="PF('linkDataverseForm').show()"
                                                        update=":linkDataverseForm"
-                                                       disabled="#{SearchIncludeFragment.mode != 'search'}">
+                                                       disabled="#{!(empty SearchIncludeFragment.query)}">
                                             #{bundle['dataverse.savedsearch.link']}
                                         </p:commandLink>
                                     </li>
@@ -259,7 +258,7 @@
                     </div>
 
                     <ui:fragment
-                            rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
+                            rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and empty SearchIncludeFragment.query}">
                         <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                         <ui:fragment
                                 rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">

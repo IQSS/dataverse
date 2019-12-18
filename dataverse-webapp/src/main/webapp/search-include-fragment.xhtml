@@ -11,22 +11,20 @@
     <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
 
     <!--@elvariable id="friendlyNames" type="java.util.List<java.lang.String>"-->
-    <!--@elvariable id="dataverseRedirectPage" type="java.lang.String"-->
 
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
             <h:form>
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default btn-access" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}">
+                <p:watermark for="searchBasic" value="#{bundle['dataverse.search.input.watermark']}"/>
+                <p:commandLink id="searchbutton" styleClass="btn btn-default btn-access" action="#{SearchIncludeFragment.searchRedirect()}">
                     <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                 </p:commandLink>
-                <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage)}"/>
+                <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect()}"/>
                 <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
                     <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
                     <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
-                    <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
                 </h:outputLink>
             </h:form>
         </div>
@@ -226,17 +224,6 @@
             </h:form>
         </div>
         <div id="dv-main" class="col-sm-8 col-md-9">
-            <!--DEBUG BEGIN-->
-            <div jsf:rendered="#{SearchIncludeFragment.debug}" style="background-color: lightgray">
-                <tt>
-                    <h:outputText value="mode:#{SearchIncludeFragment.mode} "/>
-                    <h:outputText value="sort=#{SearchIncludeFragment.sortField}:#{SearchIncludeFragment.sortOrder}"/><br/>
-                    <h:outputText value="#{SearchIncludeFragment.filterQueriesDebug}"/><br/>
-                    <h:outputText value="solrIsDown=#{SearchIncludeFragment.solrIsDown}"/><br/>
-                    <h:outputText value="errorFromSolr: #{SearchIncludeFragment.errorFromSolr}" rendered="#{SearchIncludeFragment.errorFromSolr != null}"/>
-                </tt>
-            </div>
-            <!--DEBUG END-->
 
             <!--toggle sidebar button-->
             <p class="visible-xs-block">
@@ -244,8 +231,8 @@
             </p>
 
             <!-- Message for zero results -->
-            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{(SearchIncludeFragment.searchResultsList.size() == 0) and (!SearchIncludeFragment.wasSolrErrorEncountered())}">
-                <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
+            <div id="emptyResults" class="emptyResults bg-warning" jsf:rendered="#{(empty SearchIncludeFragment.searchResultsList) and (!SearchIncludeFragment.wasSolrErrorEncountered())}">
+                <ui:fragment rendered="#{empty SearchIncludeFragment.query}">
                     <!--THIS IS EMPTY / SEARCH-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--SEARCH ZERO COUNTS-->
@@ -270,7 +257,7 @@
                         </div>
                     </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                <ui:fragment rendered="#{!dataverseSession.user.authenticated and empty SearchIncludeFragment.query}">
                     <!--THIS IS EMPTY / BROWSE / GUEST-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--BROWSE GUEST ZERO COUNTS-->
@@ -289,7 +276,7 @@
                         </p>
                     </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{dataverseSession.user.authenticated and !(permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                <ui:fragment rendered="#{dataverseSession.user.authenticated and !(permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)) and empty SearchIncludeFragment.query}">
                     <!--THIS IS EMPTY / BROWSE / LOGGED IN / NO PERMS-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--BROWSE NO_ADD_BUTTON ZERO COUNTS-->
@@ -300,12 +287,12 @@
                         <p>#{bundle['dataverse.results.empty.browse.loggedin.noperms.hidden']}</p>
                     </ui:fragment>
                 </ui:fragment>
-                <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)) and SearchIncludeFragment.mode == SearchIncludeFragment.browseModeString}">
+                <ui:fragment rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) or permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)) and empty SearchIncludeFragment.query}">
                     <!--THIS IS EMPTY / BROWSE / LOGGED IN / PERMS-->
                     <ui:fragment rendered="#{SearchIncludeFragment.facetCountDataverses eq 0 and SearchIncludeFragment.facetCountDatasets eq 0 and SearchIncludeFragment.facetCountFiles eq 0}">
                         <!--BROWSE CAN_ADD ZERO COUNTS-->
                         <p>
-                            <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
+                            <h:outputFormat value="#{bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
                                 <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                 <f:param value="#{settingsWrapper.guidesVersion}"/>
                             </h:outputFormat>
@@ -415,7 +402,7 @@
                                     <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
                                 </h:outputLink>
                             </li>
-                            <ui:fragment rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}">
+                            <ui:fragment rendered="#{!(empty SearchIncludeFragment.query)}">
                                 <li>
                                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.sort.option.relevance']}" styleClass="#{SearchIncludeFragment.sortedByRelevance ? 'highlightBold' : ''}"/>
@@ -438,12 +425,9 @@
             <o:importFunctions type="org.omnifaces.el.functions.Strings" />
             <ui:param name="descriptionAbbreviationThreshold" value="280"/>
             <!--CARDS-->
-            <h:dataTable id="resultsTable" styleClass="#{SearchIncludeFragment.searchResultsCount > 0 ? '' : 'resultsNone'}" value="#{SearchIncludeFragment.searchResultsList}" var="result"
-                         rendered="#{SearchIncludeFragment.searchResultsList.size() > 0}">
+            <h:dataTable id="resultsTable" value="#{SearchIncludeFragment.searchResultsList}" var="result"
+                         rendered="#{!(empty SearchIncludeFragment.searchResultsList)}">
                 <h:column>
-                    <ui:fragment rendered="#{SearchIncludeFragment.debug == true}">
-                        <h:outputText value="score: #{result.score}" rendered="#{SearchIncludeFragment.mode == SearchIncludeFragment.searchModeString}"/>
-                    </ui:fragment>
                     <!--DATAVERSE CARDS-->
                     <div class="dataverseResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type == 'dataverses'}">
                         <div class="card-preview-icon-block text-center">
@@ -461,7 +445,6 @@
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/>
                             </h:outputLink>
                             <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
                             <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
@@ -520,8 +503,7 @@
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
-                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
-
+                            </a>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary pull-right" rendered="#{!empty result.userRole}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger pull-right" rendered="#{result.deaccessionedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning pull-right" rendered="#{result.unpublishedState}"/>
@@ -589,7 +571,7 @@
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
                                 <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{SearchIncludeFragment.debug == true}"/></a>
+                            </a>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary pull-right" rendered="#{!empty result.userRole}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning pull-right" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success pull-right" rendered="#{result.inReviewState}"/>

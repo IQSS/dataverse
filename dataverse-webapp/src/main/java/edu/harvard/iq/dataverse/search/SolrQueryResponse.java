@@ -20,11 +20,10 @@ public class SolrQueryResponse {
     private Long resultsStart;
     private Map<String, List<String>> spellingSuggestionsByToken;
     private List<FacetCategory> facetCategoryList;
-    private List<FacetCategory> typeFacetCategories;
+    private FacetCategory typeFacetCategory;
     private Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
     private Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private List<String> filterQueriesActual = new ArrayList<String>();
-    private String error;
     private Map<String, Long> dvObjectCounts = new HashMap<>();
     private Map<String, Long> publicationStatusCounts = new HashMap<>();
 
@@ -159,12 +158,12 @@ public class SolrQueryResponse {
         this.facetCategoryList = facetCategoryList;
     }
 
-    public List<FacetCategory> getTypeFacetCategories() {
-        return typeFacetCategories;
+    public FacetCategory getTypeFacetCategory() {
+        return typeFacetCategory;
     }
 
-    public void setTypeFacetCategories(List<FacetCategory> typeFacetCategories) {
-        this.typeFacetCategories = typeFacetCategories;
+    public void setTypeFacetCategory(FacetCategory typeFacetCategory) {
+        this.typeFacetCategory = typeFacetCategory;
     }
 
     public Map<String, String> getDatasetfieldFriendlyNamesBySolrField() {
@@ -189,24 +188,6 @@ public class SolrQueryResponse {
 
     public void setFilterQueriesActual(List<String> filterQueriesActual) {
         this.filterQueriesActual = filterQueriesActual;
-    }
-
-    /**
-     * Check if the error string has been set
-     *
-     * @return
-     */
-    public boolean hasError() {
-        return error != null;
-    }
-
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 
     public SolrQuery getSolrQuery() {

@@ -37,6 +37,8 @@ import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ejb.EJB;
@@ -581,7 +583,6 @@ public class Index extends AbstractApiBean {
         Dataverse subtreeScope = dataverseDao.findRootDataverse();
 
         String sortField = SearchFields.ID;
-        String sortOrder = SortBy.ASCENDING;
         int paginationStart = 0;
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
@@ -589,7 +590,7 @@ public class Index extends AbstractApiBean {
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(subtreeScope);
         try {
-            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, SortOrder.asc, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
@@ -740,12 +741,12 @@ public class Index extends AbstractApiBean {
             @PathParam("dataset_id") long datasetIdToLookUp,
             @QueryParam("maxResults") int maxResults,
             @QueryParam("sort") String sortField,
-            @QueryParam("order") String sortOrder
+            @QueryParam("order") SortOrder sortOrder
     ) {
         JsonArrayBuilder data = Json.createArrayBuilder();
         List<FileMetadata> fileMetadatasFound = new ArrayList<>();
         try {
-            fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, sortField, sortOrder);
+            fileMetadatasFound = dataFileService.findFileMetadataByDatasetVersionId(datasetIdToLookUp, maxResults, new FileSortFieldAndOrder(sortField, sortOrder));
         } catch (Exception ex) {
             return error(Status.BAD_REQUEST, "error: " + ex.getCause().getMessage() + ex);
         }

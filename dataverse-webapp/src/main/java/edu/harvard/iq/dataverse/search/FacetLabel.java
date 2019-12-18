@@ -61,4 +61,10 @@ public class FacetLabel {
     public void setFilterQuery(String filterQuery) {
         this.filterQuery = filterQuery;
     }
+
+    @Override
+    public String toString() {
+        return "FacetLabel [name=" + name + ", displayName=" + displayName + ", count=" + count + ", filterQuery="
+                + filterQuery + "]";
+    }
 }
