@@ -17,7 +17,7 @@ from tempfile import mkstemp
 import xml.etree.cElementTree as ET
 
 # process command line arguments: 
-
+# (all the options supported by the old installer replicated verbatim!)
 shortOptions = "vyf"
 longOptions = ["verbose", 
                "yes", 
@@ -30,6 +30,8 @@ longOptions = ["verbose",
                "gfdir=", 
                "mailserver=", 
                "admin_email="]
+
+# @todo: add --config_file= option, to specify a file other than default.config?
 
 # default values of the command line options:
 nonInteractive=False
@@ -115,9 +117,10 @@ pgJdbcDriver = "postgresql-42.2.2.jar"
 
 # 0b. host name:
 # the name entered on the command line as --hostname overrides other methods:
-if hostName is not "":
+if hostName != "":
    config.set('glassfish', 'HOST_DNS_ADDRESS', hostName)
 else:
+   # (@todo? skip this if in --noninteractive mode? i.e., just use what's in default.config?)
    try:
       hostNameFromCommand = subprocess.check_output(["hostname"]).rstrip()
       config.set('glassfish', 'HOST_DNS_ADDRESS', hostNameFromCommand)
@@ -127,35 +130,37 @@ else:
 # 0c. current OS user. 
 # try to get the current username from the environment; the first one we find wins:
 currentUser = os.environ.get('LOGNAME')
-if currentUser is None or currentUser is '':
+if currentUser is None or currentUser == "":
    currentUser = os.environ.get('USER')
-if currentUser is None or currentUser is '':
+if currentUser is None or currentUser == "":
    currentUser = pwd.getpwuid(os.getuid())[0]
 # we may need this username later (when we decide if we need to sudo to run asadmin?) 
 
-# if the username was specified on the command line, it takes precendece:
-if gfUser is not "":
+# if the username was specified on the command line, it takes precedence:
+if gfUser != "":
    config.set('glassfish', 'GLASSFISH_USER', gfUser)
    # @todo: check if the glassfish user specified actually exists
    # (replicate from the old installer)
 else:
    # use the username from the environment that we just found, above: 
-   config.set('glassfish', 'GLASSFISH_USER', currentUser)
+   # (@todo? skip this if in --noninteractive mode? i.e., just use what's in default.config?)
+   if currentUser is not None and currentUser != "":
+      config.set('glassfish', 'GLASSFISH_USER', currentUser)
 
 # @todo: warn the user that runnning the installer as root is not recommended, if that's what they are doing
 # (replicate from the old installer)
 
-# 0d. the following 3 options can also be specified on the command line, and                                      
-# also take precedence over the default values that are hard-coded and/or                                         
-# provided in the default.config file:                                                                            
+# 0d. the following 3 options can also be specified on the command line, and
+# also take precedence over the default values that are hard-coded and/or
+# provided in the default.config file:
 
-if adminEmail is not "":
+if adminEmail != "":
    config.set('system', 'ADMIN_EMAIL', adminEmail)
 
-if mailServer is not "":
+if mailServer != "":
    config.set('system', 'MAIL_SERVER', mailServer)
 
-if gfDir is not "":
+if gfDir != "":
    config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
 
 # 1. CHECK FOR SOME MANDATORY COMPONENTS (war file, etc.)                                                         
@@ -185,7 +190,7 @@ if not pgOnly:
    # 1b. current working directory:
    # @todo (move it under 0. as well?)
 
-   # 1c. check for reference-data.sql
+   # 1c. check for reference_data.sql
    if not os.path.isfile('../database/reference_data.sql'):
       sys.exit("WARNING: Can't find .sql data template!\nAre you running the installer from the right directory?")
    else:
@@ -194,7 +199,7 @@ if not pgOnly:
 
    # 1d. check for existence of jq
    # (but we're only doing it if it's not that weird "pod name" mode)
-   if podName is not "start-glassfish":
+   if podName != "start-glassfish":
       print "Checking if jq is available..."
       try:
          subprocess.call(["jq", "--version"])
@@ -244,17 +249,17 @@ else:
 
             # empty config prompt means 
             # this option is not part of the interactive config:
-            if configPrompt is not '':
+            if configPrompt != "":
                configHelp = interactiveConfig.get('comments', option)
                configHelp = re.sub('\\\\n', "\n", configHelp)
-               if configHelp is '':
+               if configHelp == "":
                   promptLine = configPrompt + ": [" + config.get(section, option) + "] "
                else:
                   promptLine = configPrompt + configHelp + "[" + config.get(section, option) + "] "
                   
                userInput = raw_input(promptLine)
             
-               if userInput is not '':
+               if userInput != "":
                   config.set(section, option, userInput)
 
                # @todo: for certain specific options, we want to do validation in real time:
@@ -266,16 +271,16 @@ else:
       print "\nOK, please confirm what you've entered:\n"
       for section in configSections:
          for option in config.options(section):
-            if interactiveConfig.get('prompts', option) is not '':
+            if interactiveConfig.get('prompts', option) != "":
                print interactiveConfig.get('prompts', option) + ": " + config.get(section, option)
 
       yesno = raw_input("\nIs this correct? [y/n] ")
 
-      while ( yesno is not 'y' and yesno is not 'n' ):
+      while ( yesno != 'y' and yesno != 'n' ):
          yesnoPrompt = "Please enter 'y' or 'n'!\n(or ctrl-C to exit the installer)\n"
          yesno = raw_input(yesnoPrompt)
 
-      if yesno is 'y':
+      if yesno == 'y':
          dialogDone = True
       
 # 2c. initialize configuration variables from what we've gathered in the config dict: (for convenience)
@@ -303,10 +308,10 @@ solrLocation = config.get('system', 'SOLR_LOCATION')
 
 # 3. SET UP POSTGRES USER AND DATABASE
 
-if podName is not "start-glassfish" and podName is not "dataverse-glassfish-0" and not skipDatabaseSetup:
+if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not skipDatabaseSetup:
    print "performing database setup"
    # 3a. locate psql (@todo:)
-   # (is it still needed though? can we import reference data without it?)
+   # (is it still needed though? can we import reference data without it? - actually, yes, should be able to use psycopg2!)
 
    # 3b. can we connect as the postgres admin user?
    admin_conn_string = "dbname='postgres' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
@@ -441,9 +446,11 @@ if re.match(gfDomain+" not running", domain_status):
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
-gfAdminLoginStatus = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser])
+#gfAdminLoginStatus = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser])
+gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
 
-print "asadmin login output: "+gfAdminLoginStatus
+#print "asadmin login output: "+gfAdminLoginStatus
+print "asadmin login return code: "+str(gfAdminLoginStatus)
 
 # 4f. configure glassfish by running the standalone shell script that executes the asadmin commands as needed.
 
@@ -478,7 +485,7 @@ def runAsadminScript(config):
    os.environ['DOI_MDCBASEURL'] = config.get('doi','DOI_MDCBASEURL')
 
    mailServerEntry = config.get('system','MAIL_SERVER')
-   print "mailserver: "+mailServerEntry
+
    try:
       mailServerHost, mailServerPort = config.get('system','MAIL_SERVER').split(":",1)
       os.environ['SMTP_SERVER'] = mailServerHost
@@ -490,16 +497,10 @@ def runAsadminScript(config):
    os.environ['FILES_DIR'] = config.get('glassfish','GLASSFISH_DIRECTORY') + "/glassfish/domains/domain1/files"
 
    # run glassfish setup script:
-#   glassfishSetupOutput = subprocess.check_output(["./glassfish-setup.sh"], stderr=subprocess.STDOUT)
-#   glassfishSetupOutput = subprocess.check_output(["./glassfish-setup.sh"])
 
-#   print glassfishSetupOutput
-
-   try:
-      returncode = subprocess.call(["./glassfish-setup.sh"])
-      if returncode != 0:
-         return False
-   except:
+   print "running glassfish configuration script (glassfish-setup.sh)"
+   returncode = subprocess.call(["./glassfish-setup.sh"])
+   if returncode != 0:
       return False
 
    return True
@@ -530,33 +531,41 @@ if not os.path.exists(jhoveConfigDist):
 if not os.path.exists(jhoveConfigDist) or not os.path.exists(jhoveConfigSchemaDist):
    sys.exit("Jhove config files not found; aborting. (are you running the installer in the right directory?)")
 
-print "\nCopying additional configuration files... "
+print "\nInstalling additional configuration files (Jhove)... "
 try: 
    copy2(jhoveConfigDist, gfConfigDir)
    copy2(jhoveConfigSchemaDist, gfConfigDir)
    print "done."
 except: 
-   sys.exit("Failed to copy Jhove config files into the domain config dir.")
+   sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
+
+# @todo: The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
+# - so it may need to be readjusted, if glassfish lives somewhere other than /usr/local/glassfish4
+# (replicate from the old installer)
 
 # 5. Deploy the application: 
 
-try:
-   subprocess.call([asadmincmd, "deploy", warfile])
-   print "deployed the application"
-except:
-   sys.exit("Failed to deploy the application! WAR file: " + warfile)
+print "Deploying the application ("+warfile+")"
+returnCode = subprocess.call([asadmincmd, "deploy", warfile])
+if returnCode != 0:
+   sys.exit("Failed to deploy the application!")
+# @todo: restart/try to deploy again if it failed?
+# @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
 
 # 6. Import reference data
 # @todo
+# should be able to do this in psycopg2 - by something along the lines of
+# with self.connection as cursor:
+#    cursor.execute(open("reference_data.sql", "r").read())
+# etc. 
+# this should allow us to completely bypass using psql - just saving us all the trouble 
+# of locating the correct executable, etc.!
 
-# 7. CHECK IF THE APPLICATION IS RUNNING
-# (try restarting glassfish if not?)
-# @todo
-
-# 8. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
+# 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)
 # @todo
-# 8a. run setup scripts
+# 7a. run setup scripts
+print "Running post-deployment setup script (setup-all.sh)"
 if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    os.chdir("../api")
 
@@ -564,25 +573,29 @@ if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
 if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    sys.exit("Can't find the api setup scripts; aborting. (are you running the installer in the right directory?)")
 
+# @todo: instead of dumping the output of the script on screen, save it in 
+# a log file, like we do in the old installer.
 try:
    subprocess.call(["./setup-all.sh"])
 except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
-# 8b. configure admin email in the application settings
-try:
-   subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
-except:
-   #sys.exit("failed to configure the admin email in the Dataverse settings!")
-   print("WARNING: failed to configure the admin email in the Dataverse settings!")
+# 7b. configure admin email in the application settings
+print "configuring system email address..."
+returnCode = subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
+if returnCode != 0:
+   print("\nWARNING: failed to configure the admin email in the Dataverse settings!")
+else:
+   print "\ndone."
 
 # 8c. configure remote Solr location, if specified
-if solrLocation is not "LOCAL":
-   try:
-      subprocess.call(["curl", "-X", "PUT", "-d", solrLocation, apiUrl+"/admin/settings/:SolrHostColonPort"])
-   except:
-      #sys.exit("failed to configure the remote Solr location in the Dataverse settings!")
-      print("WARNING: failed to configure the remote Solr location in the Dataverse settings!")
+if solrLocation != "LOCAL":
+   print "configuring remote Solr location... ("+solrLocation+")"
+   returnCode = subprocess.call(["curl", "-X", "PUT", "-d", solrLocation, apiUrl+"/admin/settings/:SolrHostColonPort"])
+   if returnCode != 0:
+      print("\nWARNING: failed to configure the remote Solr location in the Dataverse settings!")
+   else:
+      print "\ndone."
 
 # 9. DECLARE VICTORY
 # ... and give some additional information to the user
@@ -618,5 +631,5 @@ sys.exit()
 
 # 10. (OPTIONALLY?) CHECK THE RSERVE SETUP
 # @todo
-# disabled in the current version of the old installer
+# (it's disabled in the current version of the old installer)
 
