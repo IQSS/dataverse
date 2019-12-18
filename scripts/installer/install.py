@@ -29,7 +29,8 @@ longOptions = ["verbose",
                "gfuser=", 
                "gfdir=", 
                "mailserver=", 
-               "admin_email="]
+               "admin_email=",
+               "config_file="]
 
 # @todo: add --config_file= option, to specify a file other than default.config?
 
@@ -45,6 +46,7 @@ gfUser=""
 gfDir=""
 mailServer=""
 adminEmail=""
+configFile="default.config"
 
 cmdLineArguments = sys.argv
 
@@ -62,7 +64,7 @@ for currentArgument, currentValue in parsedArguments:
       print ("enabling non-interactive mode")
       nonInteractive=True
    elif currentArgument in ("--force"):
-      print ("enabling \"force\" mode - will continue if the database specified already exists!")
+      print ("enabling \"force\" mode - will continue even if the database specified already exists!")
       force=True
    elif currentArgument in ("--pg_only"):
       pgOnly=True
@@ -80,6 +82,8 @@ for currentArgument, currentValue in parsedArguments:
       mailServer=currentValue
    elif currentArgument in ("--admin_email"):
       adminEmail=currentValue
+   elif currentArgument in ("--config_file"):
+      configFile=currentValue
 
 # "podName" is specified as an env. variable and used in Docker scripts;
 # (@todo: is it really needed though? can we use the existing option "skipDatabaseSetup" instead?)
@@ -100,7 +104,9 @@ else:
 
 # read pre-defined defaults:
 config = SafeConfigParser()
-config.read("default.config")
+if not os.path.exists(configFile):
+   sys.exit("Configuration file "+configFile+" not found.")
+config.read(configFile)
 
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
@@ -191,11 +197,16 @@ if not pgOnly:
    # @todo (move it under 0. as well?)
 
    # 1c. check for reference_data.sql
-   if not os.path.isfile('../database/reference_data.sql'):
-      sys.exit("WARNING: Can't find .sql data template!\nAre you running the installer from the right directory?")
-   else:
-      print "found ../database/reference_data.sql... good"
-   # @todo: add checks for the location of the sql file in the release bundle. 
+   referenceData = '../database/reference_data.sql'
+   if not os.path.isfile(referenceData):
+      # if it's not there, then we're probably running out of the 
+      # unzipped installer bundle, so it should be right here in the current directory:
+      referenceData = 'reference_data.sql'
+      if not os.path.isfile(referenceData):
+         sys.exit("Can't find reference_data.sql!\nAre you running the installer from the right directory?")
+
+   print "found "+referenceData+"... good"
+
 
    # 1d. check for existence of jq
    # (but we're only doing it if it's not that weird "pod name" mode)
@@ -554,9 +565,23 @@ if returnCode != 0:
 
 # 6. Import reference data
 # @todo
+print "importing reference data..."
 # should be able to do this in psycopg2 - by something along the lines of
 # with self.connection as cursor:
-#    cursor.execute(open("reference_data.sql", "r").read())
+# open the new postgresQL connection (as the application user):
+conn_string="dbname='"+pgDb+"' user='"+pgUser+"' password='"+pgPassword+"' host='"+pgHost+"'"
+conn = psycopg2.connect(conn_string)
+conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+cur = conn.cursor()
+try:
+   cur.execute(open(referenceData, "r").read())
+   print "done."
+except: 
+   print "WARNING: failed to import reference data!"
+
+cur.close()
+conn.close()
+
 # etc. 
 # this should allow us to completely bypass using psql - just saving us all the trouble 
 # of locating the correct executable, etc.!
