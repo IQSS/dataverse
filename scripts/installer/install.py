@@ -9,12 +9,14 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import re
 from shutil import copy2, move
-import subprocess # for java / asadmin commands
+import subprocess 
 import getopt
 import sys
 import pwd
 from tempfile import mkstemp
 import xml.etree.cElementTree as ET
+from installUtils import (checkUser, linuxRAM, macosRAM)
+from installGlassfish import runAsadminScript
 
 # process command line arguments: 
 # (all the options supported by the old installer replicated verbatim!)
@@ -165,8 +167,9 @@ if currentUser is None or currentUser == "":
 if gfUser != "":
    config.set('glassfish', 'GLASSFISH_USER', gfUser)
    # check if the glassfish user specified actually exists
-   ret = subprocess.call("id "+gfUser+" > /dev/null 2>&1", shell=True)
-   if ret != 0:
+#   ret = subprocess.call("id "+gfUser+" > /dev/null 2>&1", shell=True)
+#   if ret != 0:
+   if not checkUser(gfUser):
       sys.exit("Couldn't find user "+gfUser+". Please ensure the account exists.")
 else:
    # use the username from the environment that we just found, above: 
@@ -408,14 +411,6 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
 
 # 4a. Glassfish heap size - let's make it 1/2 of system memory
 # @todo: should we skip doing this in the non-interactive mode? (and just use the value from the config file?)
-def linuxRAM():
-   totalMemory = os.popen("free -m").readlines()[1].split()[1]
-   return int(totalMemory)
-
-def macosRAM():
-   totalMemory = subprocess.check_output(["/usr/sbin/sysctl", "-n", "hw.memsize"]).rstrip()
-   return int(int(totalMemory) / (1024 * 1024)) # megabytes
-
 if myOS == "MacOSX":
    gfHeap = int(macosRAM() / 2)
 else:
@@ -483,57 +478,6 @@ print "asadmin login return code: "+str(gfAdminLoginStatus)
 
 print "Note: some asadmin commands will fail, and that's ok. Existing settings can't be created; new settings can't be cleared beforehand."
 
-# @todo: move all the functions into separate .py files?
-def runAsadminScript(config):
-   # We are going to run a standalone shell script with a bunch of asadmin                                      
-   # commands to set up all the glassfish components for the application.                                       
-   # All the parameters must be passed to that script as environmental                                          
-   # variables:
-   os.environ['GLASSFISH_DOMAIN'] = "domain1";
-   os.environ['ASADMIN_OPTS'] = "";
-
-   os.environ['HOST_ADDRESS'] = config.get('glassfish','HOST_DNS_ADDRESS')
-   os.environ['GLASSFISH_ROOT'] = config.get('glassfish','GLASSFISH_DIRECTORY')
-   os.environ['MEM_HEAP_SIZE'] = config.get('glassfish','GLASSFISH_HEAP')
-	
-   os.environ['DB_PORT'] = config.get('database','POSTGRES_PORT')
-   os.environ['DB_HOST'] = config.get('database','POSTGRES_SERVER')
-   os.environ['DB_NAME'] = config.get('database','POSTGRES_DATABASE')
-   os.environ['DB_USER'] = config.get('database','POSTGRES_USER')
-   os.environ['DB_PASS'] = config.get('database','POSTGRES_PASSWORD')
-   
-   os.environ['RSERVE_HOST'] = config.get('rserve','RSERVE_HOST')
-   os.environ['RSERVE_PORT'] = config.get('rserve','RSERVE_PORT')
-   os.environ['RSERVE_USER'] = config.get('rserve','RSERVE_USER')
-   os.environ['RSERVE_PASS'] = config.get('rserve','RSERVE_PASSWORD')
-
-   os.environ['DOI_BASEURL'] = config.get('doi','DOI_BASEURL')
-   os.environ['DOI_USERNAME'] = config.get('doi','DOI_USERNAME')
-   os.environ['DOI_PASSWORD'] = config.get('doi','DOI_PASSWORD')
-   os.environ['DOI_MDCBASEURL'] = config.get('doi','DOI_MDCBASEURL')
-
-   mailServerEntry = config.get('system','MAIL_SERVER')
-
-   try:
-      mailServerHost, mailServerPort = config.get('system','MAIL_SERVER').split(":",1)
-      os.environ['SMTP_SERVER'] = mailServerHost
-      os.environ['SMTP_SERVER_PORT'] = mailServerPort
-   except:
-      mailServerHost = config.get('system','MAIL_SERVER')
-      os.environ['SMTP_SERVER'] = mailServerHost
-
-   os.environ['FILES_DIR'] = config.get('glassfish','GLASSFISH_DIRECTORY') + "/glassfish/domains/domain1/files"
-
-   # run glassfish setup script:
-
-   print "running glassfish configuration script (glassfish-setup.sh)"
-   returncode = subprocess.call(["./glassfish-setup.sh"])
-   if returncode != 0:
-      return False
-
-   return True
-
-
 if not runAsadminScript(config):
    sys.exit("Glassfish configuration script failed to execute properly; aborting.")
 
@@ -598,7 +542,6 @@ conn.close()
 
 # 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)
-# @todo
 # 7a. run setup scripts
 print "Running post-deployment setup script (setup-all.sh)"
 if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
