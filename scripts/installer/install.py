@@ -15,7 +15,7 @@ import sys
 import pwd
 from tempfile import mkstemp
 import xml.etree.cElementTree as ET
-from installUtils import (checkUser, linuxRAM, macosRAM)
+from installUtils import (check_user, linux_ram, macos_ram, test_smtp_server, test_glassfish_directory, validate_admin_email)
 from installGlassfish import runAsadminScript
 
 # process command line arguments: 
@@ -194,13 +194,28 @@ if not nonInteractive:
 # provided in the default.config file:
 
 if adminEmail != "":
-   config.set('system', 'ADMIN_EMAIL', adminEmail)
+   print "testing "+adminEmail+"..."
+   if validate_admin_email(adminEmail):
+      print "ok"
+      config.set('system', 'ADMIN_EMAIL', adminEmail)
+   else:
+      sys.exit("Invalid email address: "+adminEmail+". Please specify a valid email address for the admin.")
 
 if mailServer != "":
-   config.set('system', 'MAIL_SERVER', mailServer)
+   print "testing "+mailServer+"..."
+   if test_smtp_server(mailServer):
+      print "ok"
+      config.set('system', 'MAIL_SERVER', mailServer)
+   else:
+      sys.exit("Could not establish connection to "+mailServer+". Please specify a valid smtp server.")
 
 if gfDir != "":
-   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
+   print "testing "+gfDir+"..."
+   if test_glassfish_directory(gfDir):
+      print "ok"
+      config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
+   else:
+      sys.exit("Invalid Glassfish directory: "+gfDir+". Please specify a valid glassfish directory.")
 
 # 0e. current working directory:
 # @todo - do we need it still?
@@ -305,8 +320,25 @@ else:
                if userInput != "":
                   config.set(section, option, userInput)
 
-               # @todo: for certain specific options, we want to do validation in real time:
-               # (replicate from the old installer)
+               # for the following specific options, we want to do validation in real time:
+               if option == "admin_email":
+                  adminEmail = config.get('system', 'ADMIN_EMAIL')
+                  while not validate_admin_email(adminEmail):
+                     print "\nInvalid email address: "+adminEmail+"!"
+                     adminEmail = raw_input("Enter a valid email address for the admin:\n(Or ctrl-C to exit the installer): ")
+                  config.set('system', 'ADMIN_EMAIL', adminEmail)
+               elif option == "glassfish_directory":
+                  gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
+                  while not test_glassfish_directory(gfDir):
+                     print "\nInvalid Glassfish directory!"
+                     gfDir = raw_input("Enter the root directory of your Glassfish installation:\n(Or ctrl-C to exit the installer): ")
+                  config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
+               elif option == "mail_server":
+                  mailServer = config.get('system', 'MAIL_SERVER')
+                  while not test_smtp_server(mailServer):
+                     mailServer = raw_input("Enter a valid SMTP (mail) server:\n(Or ctrl-C to exit the installer): ")
+                  config.set('system', 'MAIL_SERVER', mailServer)
+                                              
 
                print
 
@@ -412,10 +444,10 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
 # 4a. Glassfish heap size - let's make it 1/2 of system memory
 # @todo: should we skip doing this in the non-interactive mode? (and just use the value from the config file?)
 if myOS == "MacOSX":
-   gfHeap = int(macosRAM() / 2)
+   gfHeap = int(macos_ram() / 2)
 else:
    # linux
-   gfHeap = int(linuxRAM() / 2)
+   gfHeap = int(linux_ram() / 2)
 print "Setting Glassfish heap size (Xmx) to "+str(gfHeap)+" Megabytes"
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
