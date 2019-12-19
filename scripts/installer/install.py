@@ -164,16 +164,27 @@ if currentUser is None or currentUser == "":
 # if the username was specified on the command line, it takes precedence:
 if gfUser != "":
    config.set('glassfish', 'GLASSFISH_USER', gfUser)
-   # @todo: check if the glassfish user specified actually exists
-   # (replicate from the old installer)
+   # check if the glassfish user specified actually exists
+   ret = subprocess.call("id "+gfUser+" > /dev/null 2>&1", shell=True)
+   if ret != 0:
+      sys.exit("Couldn't find user "+gfUser+". Please ensure the account exists.")
 else:
    # use the username from the environment that we just found, above: 
    # (@todo? skip this if in --noninteractive mode? i.e., just use what's in default.config?)
    if currentUser is not None and currentUser != "":
       config.set('glassfish', 'GLASSFISH_USER', currentUser)
 
-# @todo: warn the user that runnning the installer as root is not recommended, if that's what they are doing
-# (replicate from the old installer)
+# warn the user that runnning the installer as root is not recommended, if that's what they are doing
+if not nonInteractive:
+   if os.getuid() == 0:
+      print "\n####################################################################"
+      print "     It is recommended that this script not be run as root."
+      print " Consider creating a glassfish service account, giving it ownership"
+      print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,"
+      print "    along with the JVM-specified files.dir location, and running"
+      print "       this installer as the user who will launch Glassfish."
+      print "####################################################################\n"
+      ret = raw_input("hit return to continue (or ctrl-C to exit the installer)")
 
 # 0d. the following 3 options can also be specified on the command line, and
 # also take precedence over the default values that are hard-coded and/or
@@ -376,9 +387,9 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       cur.execute(conn_cmd)
    except:
       if force:
-         sys.exit("Couldn't create database or database already exists.\n")
-      else:
          print "WARNING: failed to create the database - continuing, since the --force option was specified"
+      else:
+         sys.exit("Couldn't create database or database already exists.\n")
 
    conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
