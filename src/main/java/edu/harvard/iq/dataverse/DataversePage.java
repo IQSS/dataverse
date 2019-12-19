@@ -856,9 +856,9 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();
         }
 
-        SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
+        SavedSearch savedSearch = new SavedSearch(query, linkingDataverse, savedSearchCreator);
         savedSearch.setSavedSearchFilterQueries(new ArrayList<>());
-        for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
+        for (String filterQuery : filterQueries) {
             /**
              * @todo Why are there null's here anyway? Turn on debug and figure
              * this out.

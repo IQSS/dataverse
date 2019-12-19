@@ -449,7 +449,7 @@
                                                         </p:commandLink>
                                                     </li>
                                                     <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
-                                                        <p:commandLink onclick="linkSavedSearchCommand();"
+                                                        <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
                                                                        update=":linkDataverseForm">
                                                             #{bundle['dataverse.savedsearch.link']}
@@ -457,7 +457,6 @@
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <p:remoteCommand name="linkSavedSearchCommand" action="#{DataversePage.setupLinkingPopup('savedSearch')}"/> 
                                             <!-- Edit Button -->
                                             <div class="btn-group" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
@@ -659,76 +658,15 @@
                 </p:dialog>
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
-                    <h:form styleClass="form-horizontal" rendered="#{DataversePage.dataversesForLinking.size() > 1}">
-                        <p:focus for="dvNameSelect"/>
-                        <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
-                            <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                            <p class="help-block">#{bundle['dataverse.savedsearch.dataverse.choose']}</p>
-                        </ui:fragment>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">
-                                <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
-                                    <f:param value="#{DataversePage.dataversesForLinking.size()}"/>
-                                </h:outputFormat>
-                            </label>
-                            <div class="col-sm-7">
-                                <h:selectOneMenu id="dvNameSelect" styleClass="form-control" value="#{DataversePage.linkingDataverseId}">
-                                    <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
-                                </h:selectOneMenu>
-                                <ui:remove>
-                                <p:autoComplete id="dvName"
-                                                value="#{DataversePage.dataversesForLinking}"
-                                                queryDelay="1000"
-                                                var="u"
-                                                itemLabel="#{u.id}"
-                                                itemValue="#{u.id}">
-                                    <f:facet name="itemtip">
-                                        <div>
-                                            <strong>#{u.id}</strong><br/>
-                                            <em>#{u.affiliation}</em>
-                                        </div>
-                                    </f:facet>
-                                </p:autoComplete>
-                                </ui:remove>
-                            </div>
-                        </div>
-                        <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                            <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.query}">
-                                <label class="col-sm-4 control-label">
-                                     #{bundle['dataverse.savedsearch.searchquery']}
-                                </label>
-                                <div class="col-sm-7">
-                                    <p class="form-control-static">
-                                        #{SearchIncludeFragment.query}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
-                                <label class="col-sm-4 control-label">
-                                     #{bundle['dataverse.savedsearch.filterQueries']}
-                                </label>
-                                <div class="col-sm-7">
-                                    <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq">
-                                        <p class="form-control-static"><h:outputText value="#{fq}"/></p>
-                                    </ui:repeat>
-                                </div>
-                            </div>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"
-                                              rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.savedsearch.save']}" action="#{DataversePage.saveSavedSearch}"
-                                             rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}"/>
-                            <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </h:form>
-                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
-                        <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
-                        <div class="form-horizontal">
+                    <h:form styleClass="form-horizontal"> 
+                        <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() > 1}">
+                            <p:focus for="dvNameSelect"/>
+                            <ui:fragment rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}">
+                                <p class="help-block">#{bundle['dataverse.link.dataverse.choose']}</p>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                                <p class="help-block">#{bundle['dataverse.savedsearch.dataverse.choose']}</p>
+                            </ui:fragment>
                             <div class="form-group">
                                 <label class="col-sm-4 control-label">
                                     <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
@@ -736,27 +674,91 @@
                                     </h:outputFormat>
                                 </label>
                                 <div class="col-sm-7">
-                                    <p class="form-control-static">#{DataversePage.linkingDataverse.displayName}</p>
+                                    <h:selectOneMenu id="dvNameSelect" styleClass="form-control" value="#{DataversePage.linkingDataverseId}">
+                                        <f:selectItems value="#{DataversePage.linkingDVSelectItems}" />
+                                    </h:selectOneMenu>
+                                    <ui:remove>
+                                        <p:autoComplete id="dvName"
+                                                        value="#{DataversePage.dataversesForLinking}"
+                                                        queryDelay="1000"
+                                                        var="u"
+                                                        itemLabel="#{u.id}"
+                                                        itemValue="#{u.id}">
+                                            <f:facet name="itemtip">
+                                                <div>
+                                                    <strong>#{u.id}</strong><br/>
+                                                    <em>#{u.affiliation}</em>
+                                                </div>
+                                            </f:facet>
+                                        </p:autoComplete>
+                                    </ui:remove>
                                 </div>
                             </div>
-                        </div>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" onclick="PF('linkDataverseForm').hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
-                            <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
+                            <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
+                                <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.query}">
+                                    <label class="col-sm-4 control-label">
+                                     #{bundle['dataverse.savedsearch.searchquery']}
+                                    </label>
+                                    <div class="col-sm-7">
+                                        <p class="form-control-static">
+                                        #{SearchIncludeFragment.query.toString()}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
+                                    <label class="col-sm-4 control-label">
+                                     #{bundle['dataverse.savedsearch.filterQueries']}
+                                    </label>
+                                    <div class="col-sm-7">
+                                        <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq">
+                                            <p class="form-control-static"><h:outputText value="#{fq}"/></p>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </ui:fragment>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" action="#{DataversePage.saveLinkedDataverse}"
+                                                 rendered="#{DataversePage.linkMode == 'LINKDATAVERSE'}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.savedsearch.save']}" action="#{DataversePage.saveSavedSearch}"
+                                                 rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}"/>
+                                <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
                                 #{bundle.cancel}
-                            </button>
-                        </div>
-                    </ui:fragment>
-                    <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
-                        <p class="text-danger">
-                            <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable']}
-                        </p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('linkDataverseForm').hide();" type="button">                              
+                                </button>
+                            </div>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 1}">
+                            <p class="help-block">#{bundle['dataverse.link.no.choice']}</p>
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">
+                                        <h:outputFormat value="#{bundle['dataverse.link.yourDataverses']}">
+                                            <f:param value="#{DataversePage.dataversesForLinking.size()}"/>
+                                        </h:outputFormat>
+                                    </label>
+                                    <div class="col-sm-7">
+                                        <p class="form-control-static">#{DataversePage.linkingDataverse.displayName}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataverse.link.save']}" onclick="PF('linkDataverseForm').hide()" actionListener="#{DataversePage.saveLinkedDataverse()}"/>
+                                <button class="btn btn-link" onclick="PF('linkDataverseForm').hide();" type="button">                              
+                                #{bundle.cancel}
+                                </button>
+                            </div>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{DataversePage.dataversesForLinking.size() == 0}">
+                            <p class="text-danger">
+                                <span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataverse.link.no.linkable']}
+                            </p>
+                            <div class="button-block">
+                                <button class="btn btn-default" onclick="PF('linkDataverseForm').hide();" type="button">                              
                                 #{bundle.close}
-                            </button>
-                        </div>
-                    </ui:fragment>
+                                </button>
+                            </div>
+                        </ui:fragment>
+                    </h:form>
                 </p:dialog>
                 <!-- Metadata Resest Modifications Popup -->
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
