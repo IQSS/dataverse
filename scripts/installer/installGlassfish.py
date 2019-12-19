@@ -1,4 +1,4 @@
-from os import environ
+import os
 import subprocess
 
 def runAsadminScript(config):
