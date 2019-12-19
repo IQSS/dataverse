@@ -21,6 +21,7 @@ import xml.etree.cElementTree as ET
 shortOptions = "vyf"
 longOptions = ["verbose", 
                "yes", 
+               "force",
                "noninteractive", 
                "pg_only", 
                "skip_db_setup", 
@@ -374,7 +375,10 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    try:
       cur.execute(conn_cmd)
    except:
-      sys.exit("Couldn't create database or database already exists.\n")
+      if force:
+         sys.exit("Couldn't create database or database already exists.\n")
+      else:
+         print "WARNING: failed to create the database - continuing, since the --force option was specified"
 
    conn_cmd = "GRANT ALL PRIVILEGES on DATABASE "+pgDb+" to "+pgUser+";"
    try:
