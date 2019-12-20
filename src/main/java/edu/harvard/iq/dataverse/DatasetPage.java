@@ -2695,7 +2695,11 @@ public class DatasetPage implements java.io.Serializable {
             //as well as the ingest success message
             //SEK 12/20/2019 - since we are ingesting a file we know that there is a current draft version
             lockedDueToIngestVar = null;
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+            if (canViewUnpublishedDataset()) {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+            } else {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+            }
         }
 
         return "";
