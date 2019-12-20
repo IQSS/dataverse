@@ -675,8 +675,13 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getProductionDate() {
-        //todo get "Production Date" from datasetfieldvalue table
-        return "Production Date";
+        String retVal = "";
+        for (DatasetField dsfv : this.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.productionDate)) {
+                retVal = dsfv.getDisplayValue();
+            }
+        }
+        return retVal;
     }
 
     /**
