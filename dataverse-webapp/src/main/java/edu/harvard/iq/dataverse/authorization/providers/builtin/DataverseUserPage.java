@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -708,9 +707,8 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
-    public String getReasonForReturn(DatasetVersion datasetVersion) {
-        // TODO: implement me! See getReasonsForReturn in api/Notifications.java
-        return "";
+    public String getReasonForReturn(UserNotification notification) {
+        return notification.getReturnToAuthorReason();
     }
 
     public String getPasswordRequirements() {

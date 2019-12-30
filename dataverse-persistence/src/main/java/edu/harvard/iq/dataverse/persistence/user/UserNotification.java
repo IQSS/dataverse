@@ -45,6 +45,9 @@ public class UserNotification implements Serializable {
     private NotificationType type;
     private Long objectId;
 
+    @Column(nullable = true)
+    private String returnToAuthorReason;
+
     @Transient
     private boolean displayAsRead;
 
@@ -107,6 +110,18 @@ public class UserNotification implements Serializable {
 
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
+    }
+
+    /**
+     * required for {@link NotificationType.RETURNEDDS} only
+     * @return provided by user reason for dataset publish rejection
+     */
+    public String getReturnToAuthorReason() {
+        return returnToAuthorReason;
+    }
+
+    public void setReturnToAuthorReason(String returnToAuthorReason) {
+        this.returnToAuthorReason = returnToAuthorReason;
     }
 
     @Transient

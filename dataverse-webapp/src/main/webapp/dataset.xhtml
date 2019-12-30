@@ -6,12 +6,14 @@
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:dv="http://dataverse.org/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
 >
 
 <!--@elvariable id="dataset" type="edu.harvard.iq.dataverse.persistence.dataset.Dataset"-->
 <!--@elvariable id="privateUrlLink" type="java.lang.String"-->
 <!--@elvariable id="dataverseLk" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
+<!--@elvariable id="DatasetPage" type="edu.harvard.iq.dataverse.DatasetPage"-->
 
 <h:head>
 </h:head>
@@ -162,7 +164,7 @@
                                     <!-- END: Publish Buttons -->
 
                                     <!-- Return to Author Button -->
-                                    <p:commandLink type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)                                                                                                           
+                                    <p:commandLink id="returnForModificationButton" type="button" styleClass="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)
                                                                                                           ? 'disabled' : ''}"
                                                    onclick="PF('sendBackToContributor').show()"
                                                    rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
@@ -1003,38 +1005,48 @@
                 </p:dialog>
 
                 <p:dialog header="#{bundle['dataset.rejectBtn']}" widgetVar="sendBackToContributor" modal="true">
-                    <p class="text-warning">
-                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.rejectMessage']}
-                    </p>
-                    <ui:remove>
-                        <!--FIXME update for new comments table -->
-                        <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}"
-                                         maxlength="200" widgetVar="returnReason"
-                                         cols="70" counter="display" counterTemplate="{0} characters remaining."
-                                         autoResize="false"/>
-                        <p>
-                            <h:outputText id="display"/>
-                        </p>
-                        <p:watermark for="returnReason" value="#{bundle['dataset.rejectWatermark']}"
+                    <div class="form-group">
+                        <label for="returnReasonTextArea" class="col-sm-3 control-label">#{bundle['dataset.reject.messageBox.label']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        </label>
+                        <div class="col-sm-9">
+                            <p:fragment id="returnReasonFragment">
+                                <p:inputTextarea id="returnReasonTextArea"
+                                                 rows="3"
+                                                 value="#{DatasetPage.returnToAuthorReason}"
+                                                 maxlength="255"
+                                                 cols="60"
+                                                 counter="display"
+                                                 counterTemplate="#{bundle['dataset.reject.messageBox.counter']}"
+                                                 autoResize="false"
+                                                 required="#{param['DO_RETURN_VALIDATION']}"
+                                                 requiredMessage="#{bundle['dataset.reject.enterReason']}"
+                                                 styleClass="form-control"
+                                >
+                                </p:inputTextarea>
+                                <h:message for="returnReasonTextArea" styleClass="bg-danger text-danger"/>
+                                <p>
+                                    <h:outputText id="display"/>
+                                </p>
+                            </p:fragment>
+                        </div>
+                        <p:watermark for="returnReasonTextArea" value="#{bundle['dataset.rejectWatermark']}"
                                      id="returnReasonwatermark"/>
-                    </ui:remove>
-
+                    </div>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}" onclick="PF('sendBackToContributor').hide()"
-                                         action="#{DatasetPage.sendBackToContributor}"/>
-                        <ui:remove>
-                            <p:commandButton value="#{bundle.continue}" onclick="testReturnReason();"/>
-                        </ui:remove>
+                        <p:commandLink styleClass="btn btn-default btn-access"
+                                       value="#{bundle.ok}"
+                                       update=":messagePanel returnReasonFragment"
+                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('sendBackToContributor').hide();"
+                                       actionListener="#{DatasetPage.sendBackToContributor()}"
+                        >
+                            <f:param name="DO_RETURN_VALIDATION" value="#{true}" />
+                        </p:commandLink>
                         <p:commandButton value="#{bundle.cancel}"
                                          onclick="PF('sendBackToContributor').hide();"
-                                         type="button"/>
+                                         type="button" />
                     </div>
                 </p:dialog>
-                <p:remoteCommand name="returnToAuthorCommand" action="#{DatasetPage.sendBackToContributor}"/>
-                <p:confirmDialog id="enterReturnReason" message="#{bundle['dataset.reject.enterReason']}"
-                                 header="#{bundle['dataset.reject.enterReason.header']}"
-                                 widgetVar="enterReturnReason"> </p:confirmDialog>
-
                 <!-- END: Publish/Submit for Review Dialogs -->
             </h:form>
 
@@ -1043,17 +1055,6 @@
 
 
             <script type="text/javascript">
-
-                function testReturnReason() {
-                    var returnReasonText = PF('returnReason').jq.val();
-                    if (returnReasonText.length === 0) {
-                        PF('enterReturnReason').show();
-                    } else {
-                        PF('sendBackToContributor').hide();
-                        returnToAuthorCommand();
-                    }
-                }
-
                 /* using this function to prevent syntax errors on conditionally deciding onclick action */
                 function sentToReview() {
                     PF('inreview').show();

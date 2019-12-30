@@ -377,6 +377,8 @@ public class MailMessageCreator {
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer",
                                                          notificationDto.getNotificationReceiver().getNotificationsLanguage());
 
+                pattern += addReturnReasonMessage(notificationDto);
+
                 messageText += MessageFormat.format(pattern,
                                                     version.getDataset().getDisplayName(),
                                                     getDatasetDraftLink(version.getDataset()),
@@ -408,6 +410,16 @@ public class MailMessageCreator {
                 return messageText + checksumImportMsg;
         }
         return StringUtils.EMPTY;
+    }
+
+    private String addReturnReasonMessage(EmailNotificationDto notificationDto) {
+        if(StringUtils.isNotEmpty(notificationDto.getReturnToAuthorReason())) {
+            return "\n\n"
+                    + BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationDto.getNotificationReceiver().getNotificationsLanguage())
+                    + "\n\n"
+                    + notificationDto.getReturnToAuthorReason();
+        }
+         return StringUtils.EMPTY;
     }
 
     private String dataFileMessage(EmailNotificationDto notificationDto, DataFile dataFile, AuthenticatedUser requestor) {

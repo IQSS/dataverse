@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.notification.dto;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import org.apache.commons.lang.StringUtils;
 
 public class EmailNotificationDto {
 
@@ -12,6 +13,7 @@ public class EmailNotificationDto {
     private long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
+    private String returnToAuthorReason;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -24,6 +26,18 @@ public class EmailNotificationDto {
         this.dvObjectId = dvObjectId;
         this.notificationObjectType = notificationObjectType;
         this.notificationReceiver = notificationReceiver;
+        this.returnToAuthorReason = StringUtils.EMPTY;
+    }
+
+    public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
+                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String returnToAuthorReason) {
+        this.userNotificationId = userNotificationId;
+        this.userEmail = userEmail;
+        this.notificationType = notificationType;
+        this.dvObjectId = dvObjectId;
+        this.notificationObjectType = notificationObjectType;
+        this.notificationReceiver = notificationReceiver;
+        this.returnToAuthorReason = returnToAuthorReason;
     }
 
     // -------------------- GETTERS --------------------
@@ -50,5 +64,9 @@ public class EmailNotificationDto {
 
     public long getDvObjectId() {
         return dvObjectId;
+    }
+
+    public String getReturnToAuthorReason() {
+        return returnToAuthorReason;
     }
 }

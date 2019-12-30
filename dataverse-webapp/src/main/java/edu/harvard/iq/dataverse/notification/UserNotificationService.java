@@ -91,6 +91,27 @@ public class UserNotificationService {
         executorService.submit(() -> sendEmail(emailNotificationDto, requestor));
     }
 
+    /**
+     * Saves notification to database, then sends email asynchronously.
+     *
+     * @param notificationObjectType - type has to match correct #{@link NotificationType}
+     * @param comment - custom user message added to notification on '{@link NotificationType.RETURNEDDS}
+     */
+    public void sendNotificationWithEmail(AuthenticatedUser dataverseUser,
+                                          Timestamp sendDate,
+                                          NotificationType type,
+                                          long dvObjectId,
+                                          NotificationObjectType notificationObjectType,
+                                          String comment) {
+
+        UserNotification userNotification = sendNotification(dataverseUser, sendDate, type, dvObjectId, comment);
+
+        userNotificationDao.flush();
+
+        EmailNotificationDto emailNotificationDto = mailMapper.toDto(userNotification, dvObjectId, notificationObjectType, comment);
+
+        executorService.submit(() -> sendEmail(emailNotificationDto));
+    }
     // -------------------- PRIVATE --------------------
 
     private boolean sendEmail(EmailNotificationDto emailNotificationDto, AuthenticatedUser requester) {
@@ -133,6 +154,19 @@ public class UserNotificationService {
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(dvObjectId);
+
+        userNotificationDao.save(userNotification);
+
+        return userNotification;
+    }
+
+    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type, long dvObjectId, String returnToAuthorReason) {
+        UserNotification userNotification = new UserNotification();
+        userNotification.setUser(dataverseUser);
+        userNotification.setSendDate(sendDate);
+        userNotification.setType(type);
+        userNotification.setObjectId(dvObjectId);
+        userNotification.setReturnToAuthorReason(returnToAuthorReason);
 
         userNotificationDao.save(userNotification);
 

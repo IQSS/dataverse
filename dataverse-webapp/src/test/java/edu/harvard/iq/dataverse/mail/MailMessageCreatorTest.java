@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.mail;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -9,6 +10,10 @@ import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
@@ -30,6 +35,7 @@ import org.mockito.quality.Strictness;
 import org.simplejavamail.email.Recipient;
 
 import javax.mail.internet.InternetAddress;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -58,6 +64,9 @@ public class MailMessageCreatorTest {
     @Mock
     private DataverseSession dataverseSession;
 
+    @Mock
+    private MailService mailService;
+
     private static String GUIDESBASEURL = "http://guides.dataverse.org";
     private static String GUIDESVERSION = "V8";
     private static String SITEURL = "http://localhost:8080";
@@ -65,6 +74,7 @@ public class MailMessageCreatorTest {
     private static String SYSTEMEMAIL = "test@icm.pl";
 
     private Dataverse testDataverse = createTestDataverse();
+    private DatasetVersion testDatasetVersion = createTestDatasetVersion();
 
     @BeforeEach
     void prepare() {
@@ -78,6 +88,7 @@ public class MailMessageCreatorTest {
                 roleAssignment));
         Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
         Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
+        Mockito.when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
         Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
         Mockito.when(systemConfig.getGuidesBaseUrl()).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
@@ -88,7 +99,8 @@ public class MailMessageCreatorTest {
                                                     dataverseDao,
                                                     confirmEmailService,
                                                     genericDao,
-                                                    dataverseSession);
+                                                    dataverseSession
+        );
     }
 
     @Test
@@ -189,6 +201,20 @@ public class MailMessageCreatorTest {
         Assert.assertEquals(getAssignRoleSubject(), messageAndSubject._2);
     }
 
+    @Test
+    public void getMessageAndSubject_ForDatasetVersion_ReturnToAuthor() {
+        //given
+        EmailNotificationDto testEmailNotificationDto = createReturnToAuthorNotificationDto();
+
+        //when
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                "test@icm.pl");
+
+        //then
+        Assert.assertEquals(getReturnToAuthorMessage(), messageAndSubject._1);
+        Assert.assertEquals("Root: Your dataset has been returned", messageAndSubject._2);
+    }
+
     private String getFooterMessage() {
         return "\n\nYou may contact us for support at " + SYSTEMEMAIL + ".\n\nThank you,\n" +
                 BrandingUtil.getSupportTeamName(MailUtil.parseSystemAddress(SYSTEMEMAIL), ROOTDVNAME);
@@ -216,6 +242,13 @@ public class MailMessageCreatorTest {
                 " na stronie " + GUIDESBASEURL + "/" + GUIDESVERSION + "/user/dataverse-management.html.";
     }
 
+    private String getReturnToAuthorMessage() {
+        return "Hello, \n"
+                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT&faces-redirect=true) was returned by the curator "
+                + "of rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse).\n\n"
+                + "Additional information:\n\nDataset returned to author message";
+    }
+
     private String getAssignRoleSubject() {
         return "Root: You have been assigned a role";
     }
@@ -231,6 +264,7 @@ public class MailMessageCreatorTest {
     private Dataverse createTestDataverse() {
         Dataverse dataverse = createRootDataverse("NICE DATAVERSE");
         dataverse.setAlias("nicedataverse");
+        dataverse.setName("rootDataverseName");
 
         return dataverse;
     }
@@ -271,6 +305,16 @@ public class MailMessageCreatorTest {
                                         new AuthenticatedUser());
     }
 
+    private EmailNotificationDto createReturnToAuthorNotificationDto() {
+        return new EmailNotificationDto(1L,
+                "useremail@test.com",
+                NotificationType.RETURNEDDS,
+                3L,
+                NotificationObjectType.DATASET_VERSION,
+                new AuthenticatedUser(),
+                "Dataset returned to author message");
+    }
+
     private Dataverse createRootDataverse(String rootdvname) {
         Dataverse rootDataverse = new Dataverse();
         rootDataverse.setName(rootdvname);
@@ -283,5 +327,31 @@ public class MailMessageCreatorTest {
         dataverseRole.setAlias(DataverseRole.ADMIN);
         roleAssignment.setRole(dataverseRole);
         return roleAssignment;
+    }
+
+    private DatasetVersion createTestDatasetVersion() {
+        Dataverse dataverse = createTestDataverse();
+        dataverse.setId(1L);
+
+        Dataset dataset = new Dataset();
+        dataset.setId(2L);
+        dataset.setOwner(dataverse);
+
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setId(3L);
+        datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+        DatasetFieldType datasetFieldType = new DatasetFieldType();
+        datasetFieldType.setTitle("TheTitle");
+        datasetFieldType.setChildDatasetFieldTypes(Collections.EMPTY_LIST);
+
+
+        DatasetField datasetField = DatasetField.createNewEmptyDatasetField(datasetFieldType, datasetVersion);
+
+        datasetVersion.setDatasetFields(Lists.newArrayList());
+        datasetVersion.setDataset(dataset);
+        dataset.setVersions(Lists.newArrayList(datasetVersion));
+
+        return datasetVersion;
     }
 }

@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -58,7 +57,7 @@ public class ReturnDatasetToAuthorCommand extends AbstractDatasetCommand<Dataset
         authors.removeAll(reviewers);
         for (AuthenticatedUser au : authors) {
             ctxt.notifications().sendNotificationWithEmail(au, getTimestamp(), NotificationType.RETURNEDDS,
-                                                           savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION);
+                                                           savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, comment);
         }
 
 
