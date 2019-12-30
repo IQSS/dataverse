@@ -22,7 +22,7 @@
             <ui:param name="pageTitle" value="#{bundle.login} - #{dataverseDao.findRootDataverse().name}"/>
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
+            <ui:param name="loginRedirectPage" value="%2Fdataverse.xhtml"/>
             <ui:define name="body">
                 <ui:fragment rendered="#{LoginPage.listAuthenticationProviders().size() lt 1}">
                     <div class="row">
