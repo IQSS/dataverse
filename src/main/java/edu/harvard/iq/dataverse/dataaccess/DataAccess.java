@@ -91,24 +91,24 @@ public class DataAccess {
     // Experimental extension of the StorageIO system allowing direct access to
     // stored physical files that may not be associated with any DvObjects
 
-    public static StorageIO<DvObject> getDirectStorageIO(String storageLocation) throws IOException {
-    	String[] response = getDriverIdAndStorageId(storageLocation);
+    public static StorageIO<DvObject> getDirectStorageIO(String fullStorageLocation) throws IOException {
+    	String[] response = getDriverIdAndStorageLocation(fullStorageLocation);
     	String storageDriverId = response[0];
-    	String storageIdentifier=response[1];
+    	String storageLocation=response[1];
         String storageType = getDriverType(storageDriverId);
         switch(storageType) {
         case "file":
-            return new FileAccessIO<>(storageIdentifier, storageDriverId);
+            return new FileAccessIO<>(storageLocation, storageDriverId);
         case "s3":
-            return new S3AccessIO<>(storageIdentifier, storageDriverId);
+            return new S3AccessIO<>(storageLocation, storageDriverId);
         case "swift":
-            return new SwiftAccessIO<>(storageIdentifier, storageDriverId);
+            return new SwiftAccessIO<>(storageLocation, storageDriverId);
         default:
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
     }
     
-    public static String[] getDriverIdAndStorageId(String storageLocation) {
+    public static String[] getDriverIdAndStorageLocation(String storageLocation) {
     	//default if no prefix
     	String storageIdentifier=storageLocation;
         int separatorIndex = storageLocation.indexOf("://");
@@ -118,6 +118,10 @@ public class DataAccess {
         	storageIdentifier = storageLocation.substring(separatorIndex + 3);
         }
 		return new String[]{storageDriverId, storageIdentifier};
+    }
+    
+    public static String getStorarageIdFromLocation(String location) {
+    	return location.substring(location.lastIndexOf('/')+1);
     }
     
     public static String getDriverType(String driverId) {

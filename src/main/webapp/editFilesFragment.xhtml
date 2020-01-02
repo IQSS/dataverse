@@ -520,6 +520,7 @@
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
     <p:remoteCommand  name="requestDirectUploadUrl" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.requestDirectUploadUrl()}"  />
+    <p:remoteCommand  name="handleExternalUpload" partialSubmit="true" async="true" update="datasetForm:filesTable" actionListener="#{EditDatafilesPage.handleExternalUpload()}"  />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->

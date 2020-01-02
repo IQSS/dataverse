@@ -1449,13 +1449,24 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
         if (!canUpdateDataset) {
             return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
         }
-        
-        String url = FileUtil.getDirectUploadUrl(dataset);
-        if(url==null) {
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
         	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
         }
-        String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
-		String response = "{\"url\":\"" + url + "\",\"driverId\":\"" + driverId + "\"}";
+        String url = null;
+        String storageIdentifier = null;
+        try {
+        	url = s3io.generateTemporaryS3UploadUrl();
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
+        }
+
+        
+		JsonObjectBuilder response = Json.createObjectBuilder()
+	            .add("url", url)
+	            .add("storageIdentifier", storageIdentifier );
 		return ok(response);
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();

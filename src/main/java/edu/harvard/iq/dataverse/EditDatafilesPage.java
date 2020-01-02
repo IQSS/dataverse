@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -10,8 +11,10 @@ import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -1728,7 +1731,21 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void requestDirectUploadUrl() {
-    	PrimeFaces.current().executeScript("uploadFileDirectly('" + FileUtil.getDirectUploadUrl(dataset) + "')");
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
+        	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
+        }
+        String url = null;
+        String storageIdentifier = null;
+        try {
+        	url = s3io.generateTemporaryS3UploadUrl();
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+       	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
+       }
+
+    	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
     
     public void uploadFinished() {
@@ -1758,6 +1775,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
+            logger.info("Added " + dataFile.getFileMetadata().getLabel());
         }
         
        
@@ -1821,7 +1839,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         uploadComponentId = event.getComponent().getClientId();
         
-        if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
+        if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
                                     contentType
                                 )){
@@ -1878,6 +1896,32 @@ public class EditDatafilesPage implements java.io.Serializable {
             //    uploadComponentId,                         
             //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", uploadWarningMessage));
         }
+    }
+    
+    private void handleReplaceFileUpload(String fullStorageLocation, 
+    		String fileName, 
+    		String contentType){
+
+    	fileReplacePageHelper.resetReplaceFileHelper();
+
+    	saveEnabled = false;
+
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation,
+    			fileName,
+    			contentType
+    			)){
+    		saveEnabled = true;
+
+    		/**
+    		 * If the file content type changed, let the user know
+    		 */
+    		if (fileReplacePageHelper.hasContentTypeWarning()){
+    			//Add warning to popup instead of page for Content Type Difference
+    			setWarningMessageForPopUp(fileReplacePageHelper.getContentTypeWarning());
+    		}
+    	} else {
+    		uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
+    	}
     }
 
     private String uploadWarningMessage = null; 
@@ -1968,6 +2012,129 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     /**
+     * Using information from the DropBox choose, ingest the chosen files
+     *  https://www.dropbox.com/developers/dropins/chooser/js
+     * 
+     * @param event
+     */
+    public void handleExternalUpload() {
+    	Map<String,String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+    	
+    	this.uploadComponentId = paramMap.get("uploadComponentId");
+        String fullStorageIdentifier = paramMap.get("fullStorageIdentifier");
+        String fileName = paramMap.get("fileName");
+        String contentType = paramMap.get("contentType");
+        String checksumType = paramMap.get("checksumType");
+        String checksumValue = paramMap.get("checksumValue");
+        
+        logger.info("UCI" + uploadComponentId);
+        logger.info("FSI" + fullStorageIdentifier);
+        logger.info("FN" + fileName);
+        logger.info("CT" + contentType);
+        logger.info("CST" + checksumType);
+        logger.info("CDV" + checksumValue);
+        int lastColon = fullStorageIdentifier.lastIndexOf(':');
+        String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        logger.info("SL " + storageLocation);
+    	if (!uploadInProgress) {
+    		uploadInProgress = true;
+    	}
+    	logger.fine("handleExternalUpload");
+    	
+    	StorageIO<DvObject> sio;
+    	String localWarningMessage = null;
+    	try {
+    		sio = DataAccess.getDirectStorageIO(storageLocation);
+
+    		//Populate metadata
+    		sio.open(DataAccessOption.READ_ACCESS);
+    		//get file size
+    		long fileSize = sio.getSize();
+    		logger.info("FS " + fileSize);
+
+    		/* ----------------------------
+                Check file size
+                - Max size NOT specified in db: default is unlimited
+                - Max size specified in db: check too make sure file is within limits
+            // ---------------------------- */
+    		if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
+    			String warningMessage = "Uploaded file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
+    			sio.delete();
+    			//msg(warningMessage);
+    			//FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
+    			if (localWarningMessage == null) {
+    				localWarningMessage = warningMessage;
+    			} else {
+    				localWarningMessage = localWarningMessage.concat("; " + warningMessage);
+    			}
+    		} else {
+    			// -----------------------------------------------------------
+    			// Is this a FileReplaceOperation?  If so, then diverge!
+    			// -----------------------------------------------------------
+    			if (this.isFileReplaceOperation()){
+    				this.handleReplaceFileUpload(storageLocation, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT);
+    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+    				return;
+    			}
+    			// -----------------------------------------------------------
+    			List<DataFile> datafiles = new ArrayList<>(); 
+
+    			// -----------------------------------------------------------
+    			// Send it through the ingest service
+    			// -----------------------------------------------------------
+    			try {
+
+    				// Note: A single uploaded file may produce multiple datafiles - 
+    				// for example, multiple files can be extracted from an uncompressed
+    				// zip file.
+    				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
+    				if(contentType==null) {
+    					contentType = "application/octet-stream";
+    				}
+    				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
+    					String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
+    					if (localWarningMessage == null) {
+    						localWarningMessage = warningMessage;
+    					} else {
+    						localWarningMessage = localWarningMessage.concat("; " + warningMessage);
+    					}
+
+    				}
+    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, storageLocation, checksumValue, systemConfig);
+                    logger.info("Created " + datafiles.size() + " files.");
+    			} catch (IOException ex) {
+    				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
+    			}
+
+    			if (datafiles == null){
+    				logger.log(Level.SEVERE, "Failed to create DataFile for file {0}", new Object[]{fileName});
+    			}else{    
+    				// -----------------------------------------------------------
+    				// Check if there are duplicate files or ingest warnings
+    				// -----------------------------------------------------------
+    				uploadWarningMessage = processUploadedFileList(datafiles);
+    				logger.info("Warning message during upload: " + uploadWarningMessage);
+    			}
+    			if(!uploadInProgress) {
+    				logger.warning("Upload in progress cancelled");
+    				for (DataFile newFile : datafiles) {
+    					deleteTempFile(newFile);
+    				}
+    			}
+    		}
+    	} catch (IOException e) {
+    		logger.log(Level.SEVERE, "Failed to create DataFile for file {0}: {1}", new Object[]{fileName, e.getMessage()});
+    	}
+    	if (localWarningMessage != null) {
+    		if (uploadWarningMessage == null) {
+    			uploadWarningMessage = localWarningMessage;
+    		} else {
+    			uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
+    		}
+    	}
+    }
+    
+    /**
      *  After uploading via the site or Dropbox, 
      *  check the list of DataFile objects
      * @param dFileList 
@@ -1980,7 +2147,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
-        
+        logger.info("Processing list of " + dFileList.size() + " files.");
         if (dFileList == null) {
             return null;
         }
@@ -2042,6 +2209,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dataFile.setPreviewImageAvailable(true);
                 }
                 uploadedFiles.add(dataFile);
+                logger.info("Added file to list: " + dataFile.getFileMetadata().getLabel());
                 // We are NOT adding the fileMetadata to the list that is being used
                 // to render the page; we'll do that once we know that all the individual uploads
                 // in this batch (as in, a bunch of drag-and-dropped files) have finished. 

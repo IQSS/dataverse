@@ -11,7 +11,7 @@ function setupDirectUpload(enabled, theDatasetId) {
     fileInput.addEventListener('change', function(event) {
       fileList=[];
       for(var i=0;i<fileInput.files.length;i++) {
-        queueFileForDirectUpload(fileInput.files[i]);
+        queueFileForDirectUpload(fileInput.files[i], datasetId);
         console.log('Found: ' + fileInput.files[i].name);
       }
     }, {once:false});
@@ -24,9 +24,9 @@ function setupDirectUpload(enabled, theDatasetId) {
             fileInput=mutation.addedNodes[i];
             mutation.addedNodes[i].addEventListener('change', function(event) {
               for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
-                queueFileForDirectUpload(mutation.addedNodes[i].files[j], dataset);
+                queueFileForDirectUpload(mutation.addedNodes[i].files[j], datasetId);
                 console.log('Found: ' + mutation.addedNodes[j].files[i].name);
-                
+
               }
             }, {once:false});
           }
@@ -41,29 +41,35 @@ function setupDirectUpload(enabled, theDatasetId) {
   } //else ?
 }
 
-function queueFileForDirectUpload(file, dataset) {
+function queueFileForDirectUpload(file, datasetId) {
   fileList.push(file);
-  
+
   //calc md5
   //check for dupes
   //check size
   requestDirectUploadUrl();
   console.log('URL Requested');
-  
+
 }
 
-function uploadFileDirectly(url) {
-  console.log("Retreieved " + url);
+function uploadFileDirectly(url, storageId) {
+  console.log("Retrieved " + url + ' for ' + storageId);
   var data = new FormData();
   data.append('file',fileList[0]);
-  $('ui-fileupload-progress').append($('<progress/>'));
+  $('.ui-fileupload-progress').append($('<progress/>'));
   $.ajax({
     url: url,
-    type: 'POST',
+    type: 'PUT',
     data: data,
     cache: false,
     processData: false,
-    success: reportUpload,
+    success: function () {
+     reportUpload(storageId, fileList[0]) 
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.log('Failure: ' + jqXHR.status);
+      console.log('Failure: ' + errorThrown);
+    },
     xhr: function() {
       var myXhr = $.ajaxSettings.xhr();
       if(myXhr.upload) {
@@ -72,21 +78,33 @@ function uploadFileDirectly(url) {
             $('progress').attr({
               value:e.loaded,
               max:e.total
-            })
+            });
           }
-        })
+        });
       }
+      return myXhr;
       }
   });
-  //perform post - check cors issues
+  console.log('after ajax');
+//perform post - check cors issues
   //trigger gui swap/server file add
   //handle cancel buttons?
+
+}
+
+function reportUpload(storageId, file){
+  
+  //storageId is not the location - has a : separator and no path elements from dataset
+  
+  //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+  handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:0}]);
+  console.log('Done ' + storageId + " " + file.name );
+  $('.ui-fileupload-files').html("");
+  fileList=[];
+  uploadFinished(document.getElementById('datasetForm:fileUpload_input'));
   
 }
 
-function reportUpload(data){
-  console.log('Done ' + data );
-}
 
 function removeErrors() {
                        	  var errors = document.getElementsByClassName("ui-fileupload-error");
@@ -136,6 +154,8 @@ function uploadFinished(fileupload) {
           observer.disconnect();
           observer=null;
         }
+    } else {
+      console.log('Still ' + fileupload.files.length + ' files' );
     }
 }
 

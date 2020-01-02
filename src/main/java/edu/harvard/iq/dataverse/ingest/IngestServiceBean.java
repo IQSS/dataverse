@@ -176,22 +176,22 @@ public class IngestServiceBean {
 				}
 				logger.info("SI: " + dataFile.getStorageIdentifier());
 				
-				String[] storageInfo = DataAccess.getDriverIdAndStorageId(dataFile.getStorageIdentifier());
+				String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
-				String storageId = storageInfo[1];
+				String storageLocation = storageInfo[1];
 				if (driverType.equals("tmp")|| driverType.contentEquals("file")) {  //"file" is the default if no prefix
-					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageId;
+					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
 
 					// Try to save the file in its permanent location:
-					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
+					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageLocation);
 					WritableByteChannel writeChannel = null;
 					FileChannel readChannel = null;
 
 					StorageIO<DataFile> dataAccess = null;
 
 					try {
-						logger.fine("Attempting to create a new storageIO object for " + storageId);
-						dataAccess = DataAccess.createNewStorageIO(dataFile, storageId);
+						logger.fine("Attempting to create a new storageIO object for " + storageLocation);
+						dataAccess = DataAccess.createNewStorageIO(dataFile, storageLocation);
 
 						logger.fine("Successfully created a new storageIO object.");
 						/*
@@ -252,7 +252,7 @@ public class IngestServiceBean {
 					// dataset directory. We should also remember to delete any such files in the
 					// temp directory:
 					List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
-							storageId);
+							storageLocation);
 					if (generatedTempFiles != null) {
 						for (Path generated : generatedTempFiles) {
 							if (savedSuccess) { // no need to try to save this aux file permanently, if we've failed to

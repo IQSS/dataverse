@@ -82,6 +82,8 @@ import java.util.zip.ZipInputStream;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import org.apache.commons.io.FilenameUtils;
 
+import com.amazonaws.AmazonServiceException;
+
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1669,33 +1671,39 @@ public class FileUtil implements java.io.Serializable  {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
     }
     
-    public static String getDirectUploadUrl(Dataset dataset) {
-		String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
-		boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
-		//Should only be requested when it is allowed, but we'll log a warning otherwise
-		if(!directEnabled) {
-			logger.warning("Direct upload not supported for files in this dataset: " + dataset.getId());
-			return null;
-		}
-		String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
-		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
-		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid, driverId);
-		String url = null;
-		try {
-			url = s3io.generateTemporaryS3UploadUrl();
-		} catch (IOException e) {
-			logger.warning("Identifier Collision");
-			e.printStackTrace();
-		}
-		String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
-		logger.info("endpoint: " + endpoint);
-		String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
-		logger.info("proxy: " + proxy);
-		if(proxy!=null) {
-			url = url.replace(endpoint, proxy);
-		}
-		logger.info("url: " + url);
-		return url;
+    public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
+    	String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+    	boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
+    	//Should only be requested when it is allowed, but we'll log a warning otherwise
+    	if(!directEnabled) {
+    		logger.warning("Direct upload not supported for files in this dataset: " + dataset.getId());
+    		return null;
+    	}
+    	S3AccessIO<DataFile> s3io = null;
+    	String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
+    	String sid = null;
+    	int i=0;
+    	while (s3io==null && i<5) {
+    		sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
+    		try {
+    			s3io = new S3AccessIO<DataFile>(sid, driverId);
+    			if(s3io.exists()) {
+    				s3io=null;
+    				i=i+1;
+    			} 
+
+    		} catch (Exception e) {
+    			i=i+1;
+    		}
+
+    	}
+    	return s3io;
+    }
+    
+    public static String getStorageIdentifierFromLocation(String location) {
+    	int driverEnd = location.indexOf("://") + 3;
+    	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
+    	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
 
 }

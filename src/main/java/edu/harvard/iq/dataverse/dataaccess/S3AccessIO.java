@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -101,11 +102,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 
-	public S3AccessIO(String storageLocation, String driverId) {
+	public S3AccessIO(String storageLocation, String driverId) throws IOException {
 		this(null, null, driverId);
         // TODO: validate the storage location supplied
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
+       
     }
     
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client, String driverId) {
@@ -126,7 +128,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private String s3profile = "default";
     private String bucketName = null;
     
-    private String key;
+    private String key = null;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -212,7 +214,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
+        	//Direct access, e.g. for external upload - no associated DVobject yet, but we want to be abel to get the size
+        	if(key!=null) {
+        		 ObjectMetadata objectMetadata = null; 
+                 try {
+                     objectMetadata = s3.getObjectMetadata(bucketName, key);
+                 } catch (SdkClientException sce) {
+                     throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
+                 }
+                 this.setSize(objectMetadata.getContentLength());
+        	}else {
             throw new IOException("Data Access: Invalid DvObject type");
+        	}
         }
     }
 
@@ -773,7 +786,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             key = getMainFileKey();
             java.util.Date expiration = new java.util.Date();
             long msec = expiration.getTime();
-            msec += 1000 * getUrlExpirationMinutes();
+            msec += 60 * 1000 * getUrlExpirationMinutes();
             expiration.setTime(msec);
 
             GeneratePresignedUrlRequest generatePresignedUrlRequest = 
@@ -821,40 +834,37 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     public String generateTemporaryS3UploadUrl() throws IOException {
-        //Questions:
 
-        // Q. how long should the download url work?
-        // A. 1 hour by default seems like an OK number. Making it configurable seems like a good idea too. -- L.A.
-        if (s3 == null) {
-            throw new IOException("ERROR: s3 not initialised. ");
+        key = getMainFileKey();
+        java.util.Date expiration = new java.util.Date();
+        long msec = expiration.getTime();
+        msec += 60 * 1000 * getUrlExpirationMinutes();
+        expiration.setTime(msec);
+
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = 
+        		new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
+        URL presignedUrl; 
+        try {
+        	presignedUrl = s3.generatePresignedUrl(generatePresignedUrlRequest);
+        } catch (SdkClientException sce) {
+        	//throw new IOException("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
+        	presignedUrl = null; 
         }
-        //ToDO: Check for existing file given storage ID (could check bucket and/or DV Datafile
-        if(true) {
-            key = getMainFileKey();
-            java.util.Date expiration = new java.util.Date();
-            long msec = expiration.getTime();
-            msec += 1000 * getUrlExpirationMinutes();
-            expiration.setTime(msec);
-
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = 
-                          new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
-            URL s; 
-            try {
-                s = s3.generatePresignedUrl(generatePresignedUrlRequest);
-            } catch (SdkClientException sce) {
-                //throw new IOException("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
-                s = null; 
-            }
-
-            if (s != null) {
-                return s.toString();
-            }
-            
-            //throw new IOException("Failed to generate temporary S3 url for "+key);
-            return null;
-        } else {
-            throw new IOException("Data Access: GenerateTemporaryS3UploadUrl: StorageIdentifier already in use!");
+        String urlString = null;
+        if (presignedUrl != null) {
+        	String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
+        	logger.info("endpoint: " + endpoint);
+        	String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
+        	logger.info("proxy: " + proxy);
+        	if(proxy!=null) {
+        		urlString = presignedUrl.toString().replace(endpoint, proxy);
+        	} else {
+        		urlString = presignedUrl.toString();
+        	}
         }
+
+        //throw new IOException("Failed to generate temporary S3 url for "+key);
+        return urlString;
     }
     
     int getUrlExpirationMinutes() {
