@@ -2100,7 +2100,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     					}
 
     				}
-    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, storageLocation, checksumValue, systemConfig);
+    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
                     logger.info("Created " + datafiles.size() + " files.");
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
