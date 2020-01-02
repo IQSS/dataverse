@@ -522,7 +522,7 @@
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
     <p:remoteCommand  name="requestDirectUploadUrl" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.requestDirectUploadUrl()}"  />
-    <p:remoteCommand  name="handleExternalUpload" partialSubmit="true" async="true"  update="@none" action="#{EditDatafilesPage.handleExternalUpload()}" oncomplete="javascript:bind_bsui_components();uploadFinished(PF('fileUploadWidget'));"  />
+    <p:remoteCommand  name="handleExternalUpload" partialSubmit="true" async="true"  update="@none" action="#{EditDatafilesPage.handleExternalUpload()}" oncomplete="javascript:bind_bsui_components();directUploadFinished();"  />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->
