@@ -94,15 +94,19 @@ function uploadFileDirectly(url, storageId) {
 
 function reportUpload(storageId, file){
   
-  //storageId is not the location - has a : separator and no path elements from dataset
+  getMD5(
+    file,
+    prog => console.log("Progress: " + prog)
+  ).then(
+    md5 => {
+      //storageId is not the location - has a : separator and no path elements from dataset
   
-  //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-  handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:0}]);
-  console.log('Done ' + storageId + " " + file.name );
-  $('.ui-fileupload-files').html("");
-  fileList=[];
-  uploadFinished(document.getElementById('datasetForm:fileUpload_input'));
-  
+      //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+      handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:d5}]);
+      console.log('Done ' + storageId + " " + file.name );
+    },
+    err => console.error(err)
+  );
 }
 
 
@@ -207,3 +211,61 @@ function uploadFailure(fileUpload) {
        	}
     }
 }
+
+//MD5 Hashing functions
+
+function readChunked(file, chunkCallback, endCallback) {
+  var fileSize   = file.size;
+  var chunkSize  = 4 * 1024 * 1024; // 4MB
+  var offset     = 0;
+  
+  var reader = new FileReader();
+  reader.onload = function() {
+    if (reader.error) {
+      endCallback(reader.error || {});
+      return;
+    }
+    offset += reader.result.length;
+    // callback for handling read chunk
+    // TODO: handle errors
+    chunkCallback(reader.result, offset, fileSize); 
+    if (offset >= fileSize) {
+      endCallback(null);
+      return;
+    }
+    readNext();
+  };
+
+  reader.onerror = function(err) {
+    endCallback(err || {});
+  };
+
+  function readNext() {
+    var fileSlice = file.slice(offset, offset + chunkSize);
+    reader.readAsBinaryString(fileSlice);
+  }
+  readNext();
+}
+
+function getMD5(blob, cbProgress) {
+  return new Promise((resolve, reject) => {
+    var md5 = CryptoJS.algo.MD5.create();
+    readChunked(blob, (chunk, offs, total) => {
+      md5.update(CryptoJS.enc.Latin1.parse(chunk));
+      if (cbProgress) {
+        cbProgress(offs / total);
+      }
+    }, err => {
+      if (err) {
+        reject(err);
+      } else {
+        // TODO: Handle errors
+        var hash = md5.finalize();
+        var hashHex = hash.toString(CryptoJS.enc.Hex);
+        resolve(hashHex);
+      }
+    });
+  });
+}
+
+
