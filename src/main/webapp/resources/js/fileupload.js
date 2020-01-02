@@ -48,13 +48,7 @@ function queueFileForDirectUpload(file, datasetId) {
   //check for dupes
   //check size
   requestDirectUploadUrl();
-      var files =  $('.ui-fileupload-files .ui-fileupload-row');
-    //Add an id attribute to each entry so we can later match errors with the right entry
-    for(var i=0;i< files.length;i++) {
-      if(files[i].children[1].nodeValue == file.name) {
-        files[i].setAttribute('upid', 'pending');
-      }
-    }
+
   console.log('URL Requested');
 
 }
@@ -63,21 +57,8 @@ function uploadFileDirectly(url, storageId) {
   console.log("Retrieved " + url + ' for ' + storageId);
   var data = new FormData();
   //Pick a pending file
-  var files =  $('.ui-fileupload-files .ui-fileupload-row');
-  var index = -1;
-    for(var i=0;i< files.length;i++) {
-      if(files[i].getAttribute('upid') == 'pending') {
-        files[i].setAttribute('upid', storageId);
-        for(var j=0;j<fileList.length;j++) {
-          if (files[i].children[1].nodeValue == fileList[j].name) {
-            index = j;
-            break; 
-          }
-        }
-        break;
-      }
-    }
-  data.append('file',fileList[index]);
+  var file = fileList.pop();
+  data.append('file',file);
   $('.ui-fileupload-progress').append($('<progress/>'));
   $.ajax({
     url: url,
@@ -86,7 +67,7 @@ function uploadFileDirectly(url, storageId) {
     cache: false,
     processData: false,
     success: function () {
-     reportUpload(storageId, fileList[index]) 
+     reportUpload(storageId, file) 
     },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('Failure: ' + jqXHR.status);
@@ -122,16 +103,6 @@ function reportUpload(storageId, file){
   ).then(
     md5 => {
       //storageId is not the location - has a : separator and no path elements from dataset
-      var index = -1;
-      for(var j=0;j<fileList.length;j++) {
-          if (file.name == fileList[j].name) {
-            index = j;
-            break; 
-          }
-        }
-      
-      fileList=fileList.slice(index,1);
-  
       //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
       handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
       console.log('Done ' + storageId + " " + file.name );
