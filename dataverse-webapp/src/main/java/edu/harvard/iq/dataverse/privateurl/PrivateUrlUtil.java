@@ -71,18 +71,15 @@ public class PrivateUrlUtil {
      * @todo If there is a use case for this outside the context of Private URL,
      * move this method to somewhere more centralized.
      */
-    static public DatasetVersion getDraftDatasetVersionFromRoleAssignment(RoleAssignment roleAssignment) {
+    static public DatasetVersion getLatestDatasetVersionFromRoleAssignment(RoleAssignment roleAssignment) {
         if (roleAssignment == null) {
             return null;
         }
         Dataset dataset = getDatasetFromRoleAssignment(roleAssignment);
         if (dataset != null) {
-            DatasetVersion latestVersion = dataset.getLatestVersion();
-            if (latestVersion.isDraft()) {
-                return latestVersion;
-            }
+            return dataset.getLatestVersion();
         }
-        logger.fine("Couldn't find draft, returning null");
+        logger.fine("Couldn't find latest version, returning null");
         return null;
     }
 
@@ -105,9 +102,9 @@ public class PrivateUrlUtil {
      */
     public static PrivateUrlRedirectData getPrivateUrlRedirectData(RoleAssignment roleAssignment) {
         PrivateUrlUser privateUrlUser = PrivateUrlUtil.getPrivateUrlUserFromRoleAssignment(roleAssignment);
-        String draftDatasetPageToBeRedirectedTo = PrivateUrlUtil.getDraftDatasetPageToBeRedirectedTo(roleAssignment);
+        String datasetPageToBeRedirectedTo = PrivateUrlUtil.getLatestVersionDatasetPageToBeRedirectedTo(roleAssignment);
         try {
-            return new PrivateUrlRedirectData(privateUrlUser, draftDatasetPageToBeRedirectedTo);
+            return new PrivateUrlRedirectData(privateUrlUser, datasetPageToBeRedirectedTo);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Exception caught trying to instantiate PrivateUrlRedirectData: " + ex.getMessage(), ex);
             return null;
@@ -117,20 +114,20 @@ public class PrivateUrlUtil {
     /**
      * Returns a relative URL or "UNKNOWN."
      */
-    static String getDraftDatasetPageToBeRedirectedTo(RoleAssignment roleAssignment) {
-        DatasetVersion datasetVersion = getDraftDatasetVersionFromRoleAssignment(roleAssignment);
-        return getDraftUrl(datasetVersion);
+    static String getLatestVersionDatasetPageToBeRedirectedTo(RoleAssignment roleAssignment) {
+        DatasetVersion datasetVersion = getLatestDatasetVersionFromRoleAssignment(roleAssignment);
+        return getLatestVersionUrl(datasetVersion);
     }
 
     /**
      * Returns a relative URL or "UNKNOWN."
      */
-    static String getDraftUrl(DatasetVersion draft) {
-        if (draft != null) {
-            Dataset dataset = draft.getDataset();
+    static String getLatestVersionUrl(DatasetVersion datasetVersion) {
+        if (datasetVersion != null) {
+            Dataset dataset = datasetVersion.getDataset();
             if (dataset != null) {
                 if (dataset.getGlobalId().isComplete()) {
-                    String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
+                    String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=" + datasetVersion.getFriendlyVersionNumber();
                     return relativeUrl;
                 }
             }

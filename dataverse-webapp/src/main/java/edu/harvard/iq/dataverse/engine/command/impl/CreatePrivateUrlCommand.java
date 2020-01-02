@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
@@ -45,15 +44,6 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
              * @todo Internationalize this.
              */
             String message = "Private URL already exists for dataset id " + dataset.getId() + ".";
-            logger.info(message);
-            throw new IllegalCommandException(message, this);
-        }
-        DatasetVersion latestVersion = dataset.getLatestVersion();
-        if (!latestVersion.isDraft()) {
-            /**
-             * @todo Internationalize this.
-             */
-            String message = "Can't create Private URL because the latest version of dataset id " + dataset.getId() + " is not a draft.";
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

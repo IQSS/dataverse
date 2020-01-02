@@ -34,11 +34,11 @@ public class PrivateUrlPage implements Serializable {
     public String init() {
         try {
             PrivateUrlRedirectData privateUrlRedirectData = privateUrlService.getPrivateUrlRedirectDataFromToken(token);
-            String draftDatasetPageToBeRedirectedTo = privateUrlRedirectData.getDraftDatasetPageToBeRedirectedTo() + "&faces-redirect=true";
+            String datasetPageToBeRedirectedTo = privateUrlRedirectData.getDatasetPageToBeRedirectedTo() + "&faces-redirect=true";
             PrivateUrlUser privateUrlUser = privateUrlRedirectData.getPrivateUrlUser();
             session.setUser(privateUrlUser);
-            logger.info("Redirecting PrivateUrlUser '" + privateUrlUser.getIdentifier() + "' to " + draftDatasetPageToBeRedirectedTo);
-            return draftDatasetPageToBeRedirectedTo;
+            logger.info("Redirecting PrivateUrlUser '" + privateUrlUser.getIdentifier() + "' to " + datasetPageToBeRedirectedTo);
+            return datasetPageToBeRedirectedTo;
         } catch (Exception ex) {
             logger.info("Exception processing Private URL token '" + token + "':" + ex);
             return "/404.xhtml";

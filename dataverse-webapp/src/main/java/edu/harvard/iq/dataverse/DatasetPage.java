@@ -1065,10 +1065,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
-    public boolean isUserCanCreatePrivateURL() {
-        return dataset.getLatestVersion().isDraft();
-    }
-
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
     }

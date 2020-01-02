@@ -11,29 +11,29 @@ import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 public class PrivateUrlRedirectData {
 
     private final PrivateUrlUser privateUrlUser;
-    private final String draftDatasetPageToBeRedirectedTo;
+    private final String datasetPageToBeRedirectedTo;
 
     /**
      * @throws java.lang.Exception The reason why a PrivateUrlRedirectData
      *                             object could not be instantiated.
      */
-    public PrivateUrlRedirectData(PrivateUrlUser privateUrlUser, String draftDatasetPageToBeRedirectedTo) throws Exception {
+    public PrivateUrlRedirectData(PrivateUrlUser privateUrlUser, String datasetPageToBeRedirectedTo) throws Exception {
         if (privateUrlUser == null) {
             throw new Exception("PrivateUrlUser cannot be null");
         }
-        if (draftDatasetPageToBeRedirectedTo == null) {
+        if (datasetPageToBeRedirectedTo == null) {
             throw new Exception("draftDatasetPageToBeRedirectedTo cannot be null");
         }
         this.privateUrlUser = privateUrlUser;
-        this.draftDatasetPageToBeRedirectedTo = draftDatasetPageToBeRedirectedTo;
+        this.datasetPageToBeRedirectedTo = datasetPageToBeRedirectedTo;
     }
 
     public PrivateUrlUser getPrivateUrlUser() {
         return privateUrlUser;
     }
 
-    public String getDraftDatasetPageToBeRedirectedTo() {
-        return draftDatasetPageToBeRedirectedTo;
+    public String getDatasetPageToBeRedirectedTo() {
+        return datasetPageToBeRedirectedTo;
     }
 
 }

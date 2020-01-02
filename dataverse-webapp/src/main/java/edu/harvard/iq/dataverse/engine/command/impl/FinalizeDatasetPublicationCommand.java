@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
@@ -103,11 +102,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         ctxt.em().merge(ddu);
 
         updateParentDataversesSubjectsField(theDataset, ctxt);
-
-        PrivateUrl privateUrl = ctxt.engine().submit(new GetPrivateUrlCommand(getRequest(), theDataset));
-        if (privateUrl != null) {
-            ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
-        }
 
         if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.

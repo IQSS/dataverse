@@ -676,7 +676,7 @@
                 </p:dialog>
                 <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}"
                           widgetVar="privateUrlConfirmation" modal="true">
-                    <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
+                    <p:fragment id="privateUrlPanel">
                         <p class="help-block">
                             <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
                                 <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
@@ -715,16 +715,6 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.close}"
                                              onclick="PF('privateUrlConfirmation').hide();"
                                              update="privateUrlPanel"/>
-                        </div>
-                    </p:fragment>
-                    <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
-                        <p class="text-danger"><span
-                                class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.privateurl.cannotCreate']}
-                        </p>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}"
-                                             onclick="PF('privateUrlConfirmation').hide();"
-                                             type="button"/>
                         </div>
                     </p:fragment>
                 </p:dialog>

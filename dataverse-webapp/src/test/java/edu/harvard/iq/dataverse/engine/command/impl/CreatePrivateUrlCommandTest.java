@@ -123,7 +123,8 @@ public class CreatePrivateUrlCommandTest {
     }
 
     @Test
-    public void testAttemptCreatePrivateUrlOnNonDraft() {
+    public void testCreatePrivateUrlSuccessfully_onReleased() {
+        // given
         dataset = new Dataset();
         List<DatasetVersion> versions = new ArrayList<>();
         DatasetVersion datasetVersion = new DatasetVersion();
@@ -131,20 +132,26 @@ public class CreatePrivateUrlCommandTest {
         versions.add(datasetVersion);
         dataset.setVersions(versions);
         dataset.setId(latestVersionIsNotDraft);
-        String expected = "Can't create Private URL because the latest version of dataset id " + latestVersionIsNotDraft + " is not a draft.";
-        String actual = null;
-        PrivateUrl privateUrl = null;
-        try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertEquals(expected, actual);
-        assertNull(privateUrl);
+
+        // when
+        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+
+        // then
+        assertNotNull(privateUrl);
+        assertNotNull(privateUrl.getDataset());
+        assertNotNull(privateUrl.getRoleAssignment());
+
+        PrivateUrlUser expectedUser = new PrivateUrlUser(dataset.getId());
+        assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
+        assertEquals(expectedUser.isSuperuser(), false);
+        assertEquals(expectedUser.isAuthenticated(), false);
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertNotNull(privateUrl.getToken());
+        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
 
     @Test
-    public void testCreatePrivateUrlSuccessfully()  {
+    public void testCreatePrivateUrlSuccessfully_onDraft()  {
         dataset = new Dataset();
         dataset.setId(createDatasetLong);
         PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
