@@ -101,8 +101,11 @@ function reportUpload(storageId, file){
     md5 => {
       //storageId is not the location - has a : separator and no path elements from dataset
   
+      $('.ui-fileupload-files').html("");
+      fileList=[];
+  
       //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-      handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:d5}]);
+      handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
       console.log('Done ' + storageId + " " + file.name );
     },
     err => console.error(err)
@@ -152,6 +155,19 @@ function uploadStarted() {
 
 function uploadFinished(fileupload) {
     if (fileupload.files.length === 0) {
+        $('button[id$="AllUploadsFinished"]').trigger('click');
+        //stop observer when we're done
+        if(observer !=null) {
+          observer.disconnect();
+          observer=null;
+        }
+    } else {
+      console.log('Still ' + fileupload.files.length + ' files' );
+    }
+}
+
+function directUploadFinished() {
+    if (fileList.length === 0) {
         $('button[id$="AllUploadsFinished"]').trigger('click');
         //stop observer when we're done
         if(observer !=null) {
