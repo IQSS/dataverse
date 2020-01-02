@@ -101,7 +101,11 @@ public class LoginPage implements java.io.Serializable {
     long op2;
     Long userSum;
 
-    public void init() {
+    public String init() {
+        if (dvRequestService.getDataverseRequest().getUser().isAuthenticated()) {
+            return redirectPage + "?faces-redirect=true";
+        }
+
         Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType(CredentialsAuthenticationProvider.class).iterator();
         if (credentialsIterator.hasNext()) {
             setCredentialsAuthProviderId(credentialsIterator.next());
@@ -109,6 +113,8 @@ public class LoginPage implements java.io.Serializable {
         resetFilledCredentials(null);
         authProvider = authSvc.getAuthenticationProvider(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultAuthProvider));
         random = new Random();
+
+        return "";
     }
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
