@@ -691,6 +691,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String destinationKey = null;
         if (dvObject instanceof DataFile) {
             destinationKey = key;
+        } else if((dvObject==null) && (key !=null)) {
+        	//direct access
+        	destinationKey = key;
         } else {
             logger.warning("Trying to check if a path exists is only supported for a data file.");
         }
