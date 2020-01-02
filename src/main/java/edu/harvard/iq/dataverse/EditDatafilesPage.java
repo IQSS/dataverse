@@ -2088,7 +2088,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     				// for example, multiple files can be extracted from an uncompressed
     				// zip file.
     				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-    				if(contentType==null) {
+    				if(StringUtils.isEmpty(contentType)) {
     					contentType = "application/octet-stream";
     				}
     				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
