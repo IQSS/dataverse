@@ -187,6 +187,21 @@ public class DataversePage implements java.io.Serializable {
         this.linkMode = linkMode;
     }
     
+    public boolean showLinkingPopup() {
+        String testquery = "";
+        if (session.getUser() == null) {
+            return false;
+        }
+        if (dataverse == null) {
+            return false;
+        }
+        if (query != null) {
+            testquery = query;
+        }
+
+        return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
+    }
+    
     public void setupLinkingPopup (String popupSetting){
         if (popupSetting.equals("link")){
             setLinkMode(LinkMode.LINKDATAVERSE);           

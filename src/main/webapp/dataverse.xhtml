@@ -435,7 +435,8 @@
                                                 </button>
                                             </ui:fragment>
                                             <!-- END: Publish Button -->
-                                            <div class="btn-group" jsf:rendered="#{dataverseSession.user.superuser and (SearchIncludeFragment.mode == 'search' or DataversePage.dataverse.owner != null)}">
+                                            <ui:fragment rendered="#{DataversePage.showLinkingPopup()}">
+                                            <div class="btn-group" >
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                                     <span class="glyphicon glyphicon-link"/> #{bundle['link']} <span class="caret"></span>
                                                 </button>
@@ -444,19 +445,21 @@
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('link')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
                                                                        update=":linkDataverseForm"
-                                                                       disabled="#{DataversePage.dataverse.owner == null}">
+                                                                       >
                                                             #{bundle['dataverse.link']}
                                                         </p:commandLink>
                                                     </li>
                                                     <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
-                                                                       update=":linkDataverseForm">
+                                                                       update=":linkDataverseForm"
+                                                                       >
                                                             #{bundle['dataverse.savedsearch.link']}
                                                         </p:commandLink>
                                                     </li>
                                                 </ul>
                                             </div>
+                                            </ui:fragment>
                                             <!-- Edit Button -->
                                             <div class="btn-group" jsf:rendered="#{permissionsWrapper.canIssueUpdateDataverseCommand(DataversePage.dataverse)}">
                                                 <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
@@ -648,6 +651,7 @@
                 <!-- END Search/Browse Facets Panel -->
                 <!-- POPUPS -->
                 <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
+                    <h:form styleClass="form-horizontal"> 
                     <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
                     <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
                     <div class="button-block">
@@ -655,6 +659,7 @@
                             #{bundle.close}
                         </button>
                     </div>
+                    </h:form>
                 </p:dialog>
                 <!-- Link Dataverse Popup -->
                 <p:dialog id="linkDataverseForm" header="#{DataversePage.linkMode == 'SAVEDSEARCH' ? bundle['dataverse.savedsearch.link'] : bundle['dataverse.link']}" widgetVar="linkDataverseForm" modal="true">
@@ -762,6 +767,7 @@
                 </p:dialog>
                 <!-- Metadata Resest Modifications Popup -->
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}" widgetVar="resetModifications" modal="true" closable="false">
+                    <h:form styleClass="form-horizontal">
                     <p class="text-warning">
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataverse.resetModifications.text']}
                     </p>
@@ -771,6 +777,7 @@
                             #{bundle.cancel}
                         </button>
                     </div>
+                    </h:form>
                 </p:dialog>
                 <script>
                     //<![CDATA[
