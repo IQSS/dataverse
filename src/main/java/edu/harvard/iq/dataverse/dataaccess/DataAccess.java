@@ -20,18 +20,25 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.logging.Logger;
+import java.util.Map.Entry;
+import java.util.Set;
 /**
  *
  * @author Leonid Andreev
  */
 
+
 public class DataAccess {
 
+	private static final Logger logger = Logger.getLogger(DataAccess.class.getCanonicalName());
+	
     public DataAccess() {
 
     };
@@ -85,24 +92,24 @@ public class DataAccess {
     // Experimental extension of the StorageIO system allowing direct access to
     // stored physical files that may not be associated with any DvObjects
 
-    public static StorageIO<DvObject> getDirectStorageIO(String storageLocation) throws IOException {
-    	String[] response = getDriverIdAndStorageId(storageLocation);
+    public static StorageIO<DvObject> getDirectStorageIO(String fullStorageLocation) throws IOException {
+    	String[] response = getDriverIdAndStorageLocation(fullStorageLocation);
     	String storageDriverId = response[0];
-    	String storageIdentifier=response[1];
+    	String storageLocation=response[1];
         String storageType = getDriverType(storageDriverId);
         switch(storageType) {
         case "file":
-            return new FileAccessIO<>(storageIdentifier, storageDriverId);
+            return new FileAccessIO<>(storageLocation, storageDriverId);
         case "s3":
-            return new S3AccessIO<>(storageIdentifier, storageDriverId);
+            return new S3AccessIO<>(storageLocation, storageDriverId);
         case "swift":
-            return new SwiftAccessIO<>(storageIdentifier, storageDriverId);
+            return new SwiftAccessIO<>(storageLocation, storageDriverId);
         default:
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
     }
     
-    public static String[] getDriverIdAndStorageId(String storageLocation) {
+    public static String[] getDriverIdAndStorageLocation(String storageLocation) {
     	//default if no prefix
     	String storageIdentifier=storageLocation;
         int separatorIndex = storageLocation.indexOf("://");
@@ -114,6 +121,10 @@ public class DataAccess {
 		return new String[]{storageDriverId, storageIdentifier};
     }
     
+    public static String getStorarageIdFromLocation(String location) {
+    	return location.substring(location.lastIndexOf('/')+1);
+    }
+    
     public static String getDriverType(String driverId) {
     	return System.getProperty("dataverse.files." + driverId + ".type", "file");
     }
@@ -122,7 +133,7 @@ public class DataAccess {
     // for saving new, not yet saved datafiles.
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
 
-        return createNewStorageIO(dvObject, storageTag, getStorageDriverId(dvObject.getDataverseContext()));
+        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getStorageDriverId());
     }
 
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {
@@ -160,24 +171,51 @@ public class DataAccess {
 
     static HashMap<String, String> drivers = null;
     
-    public static String getStorageDriverId(Dataverse dataverse) {
+    public static String getStorageDriverId(String driverLabel) {
     	if (drivers==null) {
-    		drivers = new HashMap<String, String>();
-    		Properties p = System.getProperties();
-    		for(String property: p.stringPropertyNames()) {
-    			if(property.startsWith("dataverse.files.") && property.endsWith(".affiliation")) {
-    				String driverId = property.substring(16);
-    				driverId=driverId.substring(0,driverId.indexOf('.'));
-    				drivers.put(p.get(property).toString(), driverId);
+    		populateDrivers();
+    	}
+    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    		return drivers.get(driverLabel);
+    	} 
+    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    }
+
+    public static Set<Entry<String, String>> getStorageDriverLabels() {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	return drivers.entrySet();
+    }
+
+    private static void populateDrivers() {
+    	drivers = new HashMap<String, String>();
+    	Properties p = System.getProperties();
+    	for(String property: p.stringPropertyNames()) {
+    		if(property.startsWith("dataverse.files.") && property.endsWith(".label")) {
+    			String driverId = property.substring(16); // "dataverse.files.".length
+    			driverId=driverId.substring(0,driverId.indexOf('.'));
+    			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
+    			drivers.put(p.get(property).toString(), driverId);
+    		}
+
+    	}
+    }
+
+    public static String getStorageDriverLabelFor(String storageDriverId) {
+    	String label = "<<Default>>";
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	if(drivers.containsValue(storageDriverId)) {
+    		for(String key: drivers.keySet()) {
+    			if(drivers.get(key).equals(storageDriverId)) {
+    				label = key;
+    				break;
     			}
 
     		}
     	}
-    	if(drivers.containsKey(dataverse.getAffiliation())) {
-    		return drivers.get(dataverse.getAffiliation());
-    	} 
-    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
-
+    	return label;
     }
-
 }

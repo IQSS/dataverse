@@ -147,6 +147,8 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+    
+    private String storageDriver;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -756,4 +758,12 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
+
+	public String getStorageDriverId() {
+		return storageDriver;
+	}
+
+	public void setStorageDriverId(String storageDriver) {
+		this.storageDriver = storageDriver;
+	}
 }

@@ -1300,7 +1300,7 @@ public class Datasets extends AbstractApiBean {
             if ("validation passed".equals(statusMessageFromDcm)) {
                logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
 
-                String storageDriver = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+                String storageDriver = dataset.getDataverseContext().getStorageDriverId();
                 String uploadFolder = jsonFromDcm.getString("uploadFolder");
                 int totalSize = jsonFromDcm.getInt("totalSize");
                 String storageDriverType = System.getProperty("dataverse.file." + storageDriver + ".type");
