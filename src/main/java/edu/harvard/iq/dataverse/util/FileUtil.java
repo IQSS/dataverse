@@ -1338,7 +1338,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
-    	String driverId = DataAccess.getStorageDriverId(dataFile.getDataverseContext());
+    	String driverId = dataFile.getDataverseContext().getStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
         String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
@@ -1672,7 +1672,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
-    	String driverId = DataAccess.getStorageDriverId(dataset.getDataverseContext());
+    	String driverId = dataset.getDataverseContext().getStorageDriverId();
     	boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
     	//Should only be requested when it is allowed, but we'll log a warning otherwise
     	if(!directEnabled) {

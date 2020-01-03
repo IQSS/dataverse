@@ -22,9 +22,14 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 /**
  *
  * @author Leonid Andreev
@@ -132,7 +137,7 @@ public class DataAccess {
     // for saving new, not yet saved datafiles.
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
 
-        return createNewStorageIO(dvObject, storageTag, getStorageDriverId(dvObject.getDataverseContext()));
+        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getStorageDriverId());
     }
 
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {
@@ -170,25 +175,51 @@ public class DataAccess {
 
     static HashMap<String, String> drivers = null;
     
-    public static String getStorageDriverId(Dataverse dataverse) {
+    public static String getStorageDriverId(String driverLabel) {
     	if (drivers==null) {
-    		drivers = new HashMap<String, String>();
-    		Properties p = System.getProperties();
-    		for(String property: p.stringPropertyNames()) {
-    			if(property.startsWith("dataverse.files.") && property.endsWith(".affiliation")) {
-    				String driverId = property.substring(16);
-    				driverId=driverId.substring(0,driverId.indexOf('.'));
-    				logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
-    				drivers.put(p.get(property).toString(), driverId);
+    		populateDrivers();
+    	}
+    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    		return drivers.get(driverLabel);
+    	} 
+    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    }
+
+    public static Set<Entry<String, String>> getStorageDriverLabels() {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	return drivers.entrySet();
+    }
+
+    private static void populateDrivers() {
+    	drivers = new HashMap<String, String>();
+    	Properties p = System.getProperties();
+    	for(String property: p.stringPropertyNames()) {
+    		if(property.startsWith("dataverse.files.") && property.endsWith(".label")) {
+    			String driverId = property.substring(16); // "dataverse.files.".length
+    			driverId=driverId.substring(0,driverId.indexOf('.'));
+    			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
+    			drivers.put(p.get(property).toString(), driverId);
+    		}
+
+    	}
+    }
+
+    public static String getStorageDriverLabelFor(String storageDriverId) {
+    	String label = "<<Default>>";
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	if(drivers.containsValue(storageDriverId)) {
+    		for(String key: drivers.keySet()) {
+    			if(drivers.get(key).equals(storageDriverId)) {
+    				label = key;
+    				break;
     			}
 
     		}
     	}
-    	if(drivers.containsKey(dataverse.getAffiliation())) {
-    		return drivers.get(dataverse.getAffiliation());
-    	} 
-    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
-
+    	return label;
     }
-
 }
