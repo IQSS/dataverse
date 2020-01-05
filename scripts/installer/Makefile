@@ -8,6 +8,7 @@ JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_fields.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_copies.xml ${INSTALLER_ZIP_DIR}/updateSchemaMDB.sh
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
+PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installGlassfish.py ${INSTALLER_ZIP_DIR}/requirements.txt
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
@@ -15,9 +16,9 @@ installer:	dvinstall.zip
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -79,3 +80,8 @@ ${SOLR_CONFIG}:		../../conf/solr/7.3.1/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/solr/7.3.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+
+${PYTHON_FILES}: README_python.txt install.py installConfig.py installGlassfish.py installUtils.py requirements.txt
+	@echo copying Python installer files
+	@mkdir -p ${INSTALLER_ZIP_DIR}
+	/bin/cp README_python.txt install.py installConfig.py installGlassfish.py installUtils.py requirements.txt ${INSTALLER_ZIP_DIR}
