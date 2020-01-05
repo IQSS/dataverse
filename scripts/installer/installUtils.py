@@ -11,6 +11,20 @@ def check_user(userName):
 
     return True
 
+def is_python_3():
+    python_version = int(str(range(3))[-2])
+    if python_version == 3:
+        return True
+    return False
+
+def read_user_input(prompt):
+    if is_python_3(): 
+        user_input = input(prompt)
+    else:
+        user_input = raw_input(prompt)        
+    return user_input
+
+
 def linux_ram():
     totalMemory = os.popen("free -m").readlines()[1].split()[1]
     return int(totalMemory)
@@ -39,20 +53,20 @@ def test_smtp_server(address):
     try:
         ip = socket.gethostbyname(smtpHost)
     except:
-        print "Failed to look up the ip address of "+smtpHost
+        print("Failed to look up the ip address of "+smtpHost)
         return False
 
     try: 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     except socket.error as err: 
-        print "failed to create socket, error %s" %(err) 
+        print("failed to create socket, error %s" %(err))
         return False
       
     # connecting to the server 
     try:
         s.connect((smtpHost, int(smtpPort))) 
     except socket.error as err:
-        print "failed to connect, error %s" %(err)
+        print("failed to connect, error %s" %(err))
         return False
   
     return True

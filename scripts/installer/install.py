@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-from ConfigParser import SafeConfigParser
 import os.path
 from os import fdopen
 from os import environ
@@ -15,8 +14,9 @@ import sys
 import pwd
 from tempfile import mkstemp
 import xml.etree.cElementTree as ET
-from installUtils import (check_user, linux_ram, macos_ram, test_smtp_server, test_glassfish_directory, validate_admin_email)
+from installUtils import (check_user, read_user_input, linux_ram, macos_ram, test_smtp_server, test_glassfish_directory, validate_admin_email)
 from installGlassfish import runAsadminScript
+from installConfig import read_config_file
 
 # process command line arguments: 
 # (all the options supported by the old installer replicated verbatim!)
@@ -104,10 +104,9 @@ else:
 
 
 # read pre-defined defaults:
-config = SafeConfigParser()
 if not os.path.exists(configFile):
    sys.exit("Configuration file "+configFile+" not found.")
-config.read(configFile)
+config=read_config_file(configFile)
 
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
@@ -122,24 +121,25 @@ pgJdbcDriver = "postgresql-42.2.2.jar"
 # 0a. OS flavor:
  
 try:
-   unameToken = subprocess.check_output(["uname", "-a"]).split()[0]
+   unameOutput = subprocess.check_output(["uname", "-a"])
+   unameToken = unameOutput.decode().split()[0]
 except:
    sys.exit("Warning! Failed to execute \"uname -a\"; aborting")
 
 if unameToken == "Darwin":
-   print "\nThis appears to be a MacOS X system; good."
+   print("\nThis appears to be a MacOS X system; good.")
    myOS = "MacOSX"
 elif unameToken == "Linux":
    if os.path.exists("/etc/redhat-release"):
-      print "\nThis appears to be a RedHat system; good."
+      print("\nThis appears to be a RedHat system; good.")
       myOS = "RedHat"
    else:
-      print "\nThis appears to be a non-RedHat Linux system;"
-      print "this installation *may* succeed; but we're not making any promises!"
+      print("\nThis appears to be a non-RedHat Linux system;")
+      print("this installation *may* succeed; but we're not making any promises!")
       myOS = "Linux"
 else:
-   print "\nERROR: The installer only works on a RedHat Linux or MacOS X system!"
-   print "This appears to be neither. Aborting";
+   print("\nERROR: The installer only works on a RedHat Linux or MacOS X system!")
+   print("This appears to be neither. Aborting")
    sys.exit(1)
 
 # 0b. host name:
@@ -149,10 +149,10 @@ if hostName != "":
 else:
    # (@todo? skip this if in --noninteractive mode? i.e., just use what's in default.config?)
    try:
-      hostNameFromCommand = subprocess.check_output(["hostname"]).rstrip()
+      hostNameFromCommand = subprocess.check_output(["hostname"]).decode().rstrip()
       config.set('glassfish', 'HOST_DNS_ADDRESS', hostNameFromCommand)
    except:
-      print "Warning! Failed to execute \"hostname\"; assuming \"" + config.get('glassfish', 'HOST_DNS_ADDRESS') + "\""
+      print("Warning! Failed to execute \"hostname\"; assuming \"" + config.get('glassfish', 'HOST_DNS_ADDRESS') + "\"")
 
 # 0c. current OS user. 
 # try to get the current username from the environment; the first one we find wins:
@@ -180,39 +180,39 @@ else:
 # warn the user that runnning the installer as root is not recommended, if that's what they are doing
 if not nonInteractive:
    if os.getuid() == 0:
-      print "\n####################################################################"
-      print "     It is recommended that this script not be run as root."
-      print " Consider creating a glassfish service account, giving it ownership"
-      print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,"
-      print "    along with the JVM-specified files.dir location, and running"
-      print "       this installer as the user who will launch Glassfish."
-      print "####################################################################\n"
-      ret = raw_input("hit return to continue (or ctrl-C to exit the installer)")
+      print("\n####################################################################")
+      print("     It is recommended that this script not be run as root.")
+      print(" Consider creating a glassfish service account, giving it ownership")
+      print("  on the glassfish/domains/domain1/ and glassfish/lib/ directories,")
+      print("    along with the JVM-specified files.dir location, and running")
+      print("       this installer as the user who will launch Glassfish.")
+      print("####################################################################\n")
+      ret = read_user_input("hit return to continue (or ctrl-C to exit the installer)")
 
 # 0d. the following 3 options can also be specified on the command line, and
 # also take precedence over the default values that are hard-coded and/or
 # provided in the default.config file:
 
 if adminEmail != "":
-   print "testing "+adminEmail+"..."
+   print("testing "+adminEmail+"...")
    if validate_admin_email(adminEmail):
-      print "ok"
+      print("ok")
       config.set('system', 'ADMIN_EMAIL', adminEmail)
    else:
       sys.exit("Invalid email address: "+adminEmail+". Please specify a valid email address for the admin.")
 
 if mailServer != "":
-   print "testing "+mailServer+"..."
+   print("testing "+mailServer+"...")
    if test_smtp_server(mailServer):
-      print "ok"
+      print("ok")
       config.set('system', 'MAIL_SERVER', mailServer)
    else:
       sys.exit("Could not establish connection to "+mailServer+". Please specify a valid smtp server.")
 
 if gfDir != "":
-   print "testing "+gfDir+"..."
+   print("testing "+gfDir+"...")
    if test_glassfish_directory(gfDir):
-      print "ok"
+      print("ok")
       config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
    else:
       sys.exit("Invalid Glassfish directory: "+gfDir+". Please specify a valid glassfish directory.")
@@ -226,7 +226,7 @@ if gfDir != "":
 # (skip if this is a database-only setup)
 
 if not pgOnly:
-   print "Checking for required components..."
+   print("Checking for required components...")
    # 1a. check to see if warfile is available
    warfile = "dataverse.war"
    warfileVersion = None
@@ -242,7 +242,7 @@ if not pgOnly:
       warfile = '../../target/dataverse-' + warfileVersion + '.war'
       if not os.path.isfile(warfile):
          sys.exit("Sorry, I can't seem to find an appropriate warfile.\nAre you running the installer from the right directory?")
-   print warfile+" available to deploy. Good."
+   print(warfile+" available to deploy. Good.")
 
    # 1b. check for reference_data.sql
    referenceData = '../database/reference_data.sql'
@@ -253,21 +253,21 @@ if not pgOnly:
       if not os.path.isfile(referenceData):
          sys.exit("Can't find reference_data.sql!\nAre you running the installer from the right directory?")
 
-   print "found "+referenceData+"... good"
+   print("found "+referenceData+"... good")
 
    # 1c. check if jq is available
    # (but we're only doing it if it's not that weird "pod name" mode)
    if podName != "start-glassfish":
-      print "Checking if jq is available..."
+      print("Checking if jq is available...")
       try:
          subprocess.call(["jq", "--version"])
-         print "good!"
+         print("good!")
       except:
          sys.exit("Can't find the jq utility in my path. Is it installed?")
 
    # 1d. check java version
-   java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT)
-   print "Found java version "+java_version
+   java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
+   print("Found java version "+java_version)
    if not re.search("1.8", java_version):
       sys.exit("Dataverse requires Java 1.8. Please install it, or make sure it's in your PATH, and try again")
 
@@ -277,25 +277,24 @@ if not pgOnly:
 # 2. INTERACTIVE CONFIG SECTION
 
 # 2a. read the input prompts and help messages for the interactive mode:
-interactiveConfig = SafeConfigParser()
-interactiveConfig.read("interactive.config")
+interactiveConfig = read_config_file("interactive.config")
 
 # 2b. run the interactive dialog:
 if nonInteractive:
-   print "non-interactive mode - skipping the config dialog"
+   print("non-interactive mode - skipping the config dialog")
 else:
-   print "\nWelcome to the Dataverse installer.\n"
+   print("\nWelcome to the Dataverse installer.\n")
 
    if pgOnly:
-      print "You will be guided through the process of configuring your"
-      print "PostgreSQL database for use by the Dataverse application."
+      print("You will be guided through the process of configuring your")
+      print("PostgreSQL database for use by the Dataverse application.")
    else:
-      print "You will be guided through the process of setting up a NEW"
-      print "instance of the dataverse application"
+      print("You will be guided through the process of setting up a NEW")
+      print("instance of the dataverse application")
 
    print
-   print "Please enter the following configuration values:"
-   print "(hit [RETURN] to accept the default value)"
+   print("Please enter the following configuration values:")
+   print("(hit [RETURN] to accept the default value)")
    print
 
    dialogDone = False
@@ -315,7 +314,7 @@ else:
                else:
                   promptLine = configPrompt + configHelp + "[" + config.get(section, option) + "] "
                   
-               userInput = raw_input(promptLine)
+               userInput = read_user_input(promptLine)
             
                if userInput != "":
                   config.set(section, option, userInput)
@@ -324,36 +323,36 @@ else:
                if option == "admin_email":
                   adminEmail = config.get('system', 'ADMIN_EMAIL')
                   while not validate_admin_email(adminEmail):
-                     print "\nInvalid email address: "+adminEmail+"!"
-                     adminEmail = raw_input("Enter a valid email address for the admin:\n(Or ctrl-C to exit the installer): ")
+                     print("\nInvalid email address: "+adminEmail+"!")
+                     adminEmail = read_user_input("Enter a valid email address for the admin:\n(Or ctrl-C to exit the installer): ")
                   config.set('system', 'ADMIN_EMAIL', adminEmail)
                elif option == "glassfish_directory":
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
                   while not test_glassfish_directory(gfDir):
-                     print "\nInvalid Glassfish directory!"
-                     gfDir = raw_input("Enter the root directory of your Glassfish installation:\n(Or ctrl-C to exit the installer): ")
+                     print("\nInvalid Glassfish directory!")
+                     gfDir = read_user_input("Enter the root directory of your Glassfish installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
                   while not test_smtp_server(mailServer):
-                     mailServer = raw_input("Enter a valid SMTP (mail) server:\n(Or ctrl-C to exit the installer): ")
+                     mailServer = read_user_input("Enter a valid SMTP (mail) server:\n(Or ctrl-C to exit the installer): ")
                   config.set('system', 'MAIL_SERVER', mailServer)
                                               
 
                print
 
       # 2b. Verify that they are happy with what they have entered:
-      print "\nOK, please confirm what you've entered:\n"
+      print("\nOK, please confirm what you've entered:\n")
       for section in configSections:
          for option in config.options(section):
             if interactiveConfig.get('prompts', option) != "":
-               print interactiveConfig.get('prompts', option) + ": " + config.get(section, option)
+               print(interactiveConfig.get('prompts', option) + ": " + config.get(section, option))
 
-      yesno = raw_input("\nIs this correct? [y/n] ")
+      yesno = read_user_input("\nIs this correct? [y/n] ")
 
       while ( yesno != 'y' and yesno != 'n' ):
          yesnoPrompt = "Please enter 'y' or 'n'!\n(or ctrl-C to exit the installer)\n"
-         yesno = raw_input(yesnoPrompt)
+         yesno = read_user_input(yesnoPrompt)
 
       if yesno == 'y':
          dialogDone = True
@@ -384,24 +383,24 @@ solrLocation = config.get('system', 'SOLR_LOCATION')
 # 3. SET UP POSTGRES USER AND DATABASE
 
 if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not skipDatabaseSetup:
-   print "performing database setup"
+   print("performing database setup")
 
    # 3a. can we connect as the postgres admin user?
    admin_conn_string = "dbname='postgres' user='postgres' password='"+pgAdminPassword+"' host='"+pgHost+"'"
 
    try:
       conn = psycopg2.connect(admin_conn_string)
-      print "Admin database connectivity succeeds."
+      print("Admin database connectivity succeeds.")
    except:
-      print "Can't connect to PostgresQL as the admin user.\n"
+      print("Can't connect to PostgresQL as the admin user.\n")
       sys.exit("Is the server running, have you adjusted pg_hba.conf, etc?")
 
    # 3b. get the Postgres version (do we need it still?)
    try:
       pg_full_version = conn.server_version
-      print "PostgresQL version: "+str(pg_full_version)
+      print("PostgresQL version: "+str(pg_full_version))
    except:
-      print "Warning: Couldn't determine PostgresQL version."
+      print("Warning: Couldn't determine PostgresQL version.")
    conn.close()
 
    # 3c. create role:
@@ -413,7 +412,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    try:
       cur.execute(conn_cmd)
    except:
-      print "Looks like the user already exists. Continuing."
+      print("Looks like the user already exists. Continuing.")
 
    # 3d. create database:
 
@@ -422,7 +421,7 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       cur.execute(conn_cmd)
    except:
       if force:
-         print "WARNING: failed to create the database - continuing, since the --force option was specified"
+         print("WARNING: failed to create the database - continuing, since the --force option was specified")
       else:
          sys.exit("Couldn't create database or database already exists.\n")
 
@@ -434,9 +433,9 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
    cur.close()
    conn.close()
 
-   print "Database and role created!"
+   print("Database and role created!")
    if pgOnly:
-      print "postgres-only setup complete."
+      print("postgres-only setup complete.")
       sys.exit()
 
 # 4. CONFIGURE GLASSFISH
@@ -448,7 +447,7 @@ if myOS == "MacOSX":
 else:
    # linux
    gfHeap = int(linux_ram() / 2)
-print "Setting Glassfish heap size (Xmx) to "+str(gfHeap)+" Megabytes"
+print("Setting Glassfish heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
 # 4b. PostgresQL driver:
@@ -456,9 +455,9 @@ pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
 
 try:
    copy2(pg_driver_jarpath, gfJarPath)
-   print "Copied "+pgJdbcDriver+" into "+gfJarPath
+   print("Copied "+pgJdbcDriver+" into "+gfJarPath)
 except:
-   print "Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?"
+   print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
 
 # 4c. create glassfish admin credentials file
@@ -467,14 +466,14 @@ userHomeDir = pwd.getpwuid(os.getuid())[5]
 gfClientDir = userHomeDir+"/.gfclient"
 gfClientFile = gfClientDir+"/pass"
 
-print "using glassfish client file: " + gfClientFile
+print("using glassfish client file: " + gfClientFile)
 
 # mkdir gfClientDir
 if not os.path.isdir(gfClientDir):
    try:
-      os.mkdir([gfClientDir,0700])
+      os.mkdir(gfClientDir,0o700)
    except:
-      print "Couldn't create "+gfClientDir+", please check permissions."
+      print("Couldn't create "+gfClientDir+", please check permissions.")
  
 # write credentials
 credstring = "asadmin://"+gfAdminUser+"@localhost:4848"
@@ -482,20 +481,20 @@ credstring = "asadmin://"+gfAdminUser+"@localhost:4848"
 f = open(gfClientFile, 'w')
 try:
    f.write(credstring)
-   print "Glassfish admin credentials written to "+gfClientFile+"."
+   print("Glassfish admin credentials written to "+gfClientFile+".")
 except:
-   print "Unable to write Glassfish admin credentials. Subsequent commands will likely fail."
+   print("Unable to write Glassfish admin credentials. Subsequent commands will likely fail.")
 f.close
 
 # 4d. check if glassfish is running, attempt to start if necessary
 asadmincmd = gfDir +"/bin/asadmin"
-domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT)
+domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT).decode()
 if re.match(gfDomain+" not running", domain_status):
-   print "Looks like Glassfish isn't running. Attempting to start it..."
+   print("Looks like Glassfish isn't running. Attempting to start it...")
    subprocess.call([asadmincmd, "start-domain"], stderr=subprocess.STDOUT)
    # now check again or bail
-   print "Checking to be sure "+gfDomain+" is running."
-   domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT)
+   print("Checking to be sure "+gfDomain+" is running.")
+   domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT).decode()
    if not re.match(gfDomain+" running", domain_status):
       sys.exit("There was a problem starting Glassfish. Please ensure that it's running, or that the installer can launch it.")
 
@@ -505,7 +504,7 @@ gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser
 
 # 4f. configure glassfish by running the standalone shell script that executes the asadmin commands as needed.
 
-print "Note: some asadmin commands will fail, and that's ok. Existing settings can't be created; new settings can't be cleared beforehand."
+print("Note: some asadmin commands will fail, and that's ok. Existing settings can't be created; new settings can't be cleared beforehand.")
 
 if not runAsadminScript(config):
    sys.exit("Glassfish configuration script failed to execute properly; aborting.")
@@ -532,11 +531,11 @@ if not os.path.exists(jhoveConfigDist):
 if not os.path.exists(jhoveConfigDist) or not os.path.exists(jhoveConfigSchemaDist):
    sys.exit("Jhove config files not found; aborting. (are you running the installer in the right directory?)")
 
-print "\nInstalling additional configuration files (Jhove)... "
+print("\nInstalling additional configuration files (Jhove)... ")
 try: 
    copy2(jhoveConfigDist, gfConfigDir)
    copy2(jhoveConfigSchemaDist, gfConfigDir)
-   print "done."
+   print("done.")
 except: 
    sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
 
@@ -546,7 +545,7 @@ except:
 
 # 5. Deploy the application: 
 
-print "Deploying the application ("+warfile+")"
+print("Deploying the application ("+warfile+")")
 returnCode = subprocess.call([asadmincmd, "deploy", warfile])
 if returnCode != 0:
    sys.exit("Failed to deploy the application!")
@@ -554,7 +553,7 @@ if returnCode != 0:
 # @todo: if asadmin deploy says it was successful, verify that the application is running... if not - repeat the above?
 
 # 6. Import reference data
-print "importing reference data..."
+print("importing reference data...")
 # open the new postgresQL connection (as the application user):
 conn_string="dbname='"+pgDb+"' user='"+pgUser+"' password='"+pgPassword+"' host='"+pgHost+"'"
 conn = psycopg2.connect(conn_string)
@@ -562,9 +561,9 @@ conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 cur = conn.cursor()
 try:
    cur.execute(open(referenceData, "r").read())
-   print "done."
+   print("done.")
 except: 
-   print "WARNING: failed to import reference data!"
+   print("WARNING: failed to import reference data!")
 
 cur.close()
 conn.close()
@@ -572,7 +571,7 @@ conn.close()
 # 7. RUN SETUP SCRIPTS AND CONFIGURE EXTRA SETTINGS
 # (note that we may need to change directories, depending on whether this is a dev., or release installer)
 # 7a. run setup scripts
-print "Running post-deployment setup script (setup-all.sh)"
+print("Running post-deployment setup script (setup-all.sh)")
 if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    os.chdir("../api")
 
@@ -588,51 +587,51 @@ except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
 # 7b. configure admin email in the application settings
-print "configuring system email address..."
+print("configuring system email address...")
 returnCode = subprocess.call(["curl", "-X", "PUT", "-d", adminEmail, apiUrl+"/admin/settings/:SystemEmail"])
 if returnCode != 0:
    print("\nWARNING: failed to configure the admin email in the Dataverse settings!")
 else:
-   print "\ndone."
+   print("\ndone.")
 
 # 8c. configure remote Solr location, if specified
 if solrLocation != "LOCAL":
-   print "configuring remote Solr location... ("+solrLocation+")"
+   print("configuring remote Solr location... ("+solrLocation+")")
    returnCode = subprocess.call(["curl", "-X", "PUT", "-d", solrLocation, apiUrl+"/admin/settings/:SolrHostColonPort"])
    if returnCode != 0:
       print("\nWARNING: failed to configure the remote Solr location in the Dataverse settings!")
    else:
-      print "\ndone."
+      print("\ndone.")
 
 # 9. DECLARE VICTORY
 # ... and give some additional information to the user
 
-print "\n\nYou should now have a running Dataverse instance at"
-print "  http://" + hostName + ":8080\n\n"
+print("\n\nYou should now have a running Dataverse instance at")
+print("  http://" + hostName + ":8080\n\n")
 
 # DataCite instructions: 
 
-print "\nYour Dataverse has been configured to use DataCite, to register DOI global identifiers in the "
-print "test name space \"10.5072\" with the \"shoulder\" \"FK2\""
-print "However, you have to contact DataCite (support\@datacite.org) and request a test account, before you "
-print "can publish datasets. Once you receive the account name and password, add them to your domain.xml,"
-print "as the following two JVM options:"
-print "\t<jvm-options>-Ddoi.username=...</jvm-options>"
-print "\t<jvm-options>-Ddoi.password=...</jvm-options>"
-print "and restart glassfish"
-print "If this is a production Dataverse and you are planning to register datasets as "
-print "\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\""
-print "section of the Installataion guide, on how to configure your Dataverse with the proper registration"
-print "credentials.\n"
+print("\nYour Dataverse has been configured to use DataCite, to register DOI global identifiers in the ")
+print("test name space \"10.5072\" with the \"shoulder\" \"FK2\"")
+print("However, you have to contact DataCite (support\@datacite.org) and request a test account, before you ")
+print("can publish datasets. Once you receive the account name and password, add them to your domain.xml,")
+print("as the following two JVM options:")
+print("\t<jvm-options>-Ddoi.username=...</jvm-options>")
+print("\t<jvm-options>-Ddoi.password=...</jvm-options>")
+print("and restart glassfish")
+print("If this is a production Dataverse and you are planning to register datasets as ")
+print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"")
+print("section of the Installataion guide, on how to configure your Dataverse with the proper registration")
+print("credentials.\n")
 
 # Warning for the developers about deployment: 
 
 if warfileVersion is not None:
-   print "IMPORTANT!"
-   print "If this is a personal development installation, we recommend that you undeploy the currently-running copy"
-   print "of the application, with the following asadmin command:\n"
-   print "\t" + gfDir + '/bin/asadmin undeploy dataverse-' + warfileVersion + "\n"
-   print "before attempting to deploy from your development environment in NetBeans.\n"
+   print("IMPORTANT!")
+   print("If this is a personal development installation, we recommend that you undeploy the currently-running copy")
+   print("of the application, with the following asadmin command:\n")
+   print("\t" + gfDir + '/bin/asadmin undeploy dataverse-' + warfileVersion + "\n")
+   print("before attempting to deploy from your development environment in NetBeans.\n")
 
 sys.exit()
 

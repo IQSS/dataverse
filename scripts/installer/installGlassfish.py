@@ -43,7 +43,7 @@ def runAsadminScript(config):
 
    # run glassfish setup script:
 
-   print "running glassfish configuration script (glassfish-setup.sh)"
+   print("running glassfish configuration script (glassfish-setup.sh)")
    returncode = subprocess.call(["./glassfish-setup.sh"])
    if returncode != 0:
       return False
