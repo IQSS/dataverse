@@ -6,4 +6,4 @@
  */
 
 update datasetfieldtype set displayformat = '#VALUE, '
-where name in ('country', 'state', 'city');
+where name in ('country', 'state', 'city', 'otherGeographicCoverage');

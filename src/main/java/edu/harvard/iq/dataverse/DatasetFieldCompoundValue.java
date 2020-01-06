@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,8 +137,9 @@ public class DatasetFieldCompoundValue implements Serializable {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
-
+        boolean fixTrailingComma = false;
         for (DatasetField childDatasetField : childDatasetFields) {
+            fixTrailingComma = false;
             // skip the value if it is empty or N/A
             if (!StringUtils.isBlank(childDatasetField.getValue()) && !DatasetField.NA_VALUE.equals(childDatasetField.getValue())) {
                 String format = childDatasetField.getDatasetFieldType().getDisplayFormat();
@@ -148,19 +150,51 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
+                //if a series of child values is comma delimited we want to strip off the final entry's comma
+                if (format.equals("#VALUE, ")) fixTrailingComma = true;
+                
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
+
                 String displayValue = format
                         .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                         .replace("#VALUE",  sanitizedValue );
-
+                            if(childDatasetField.getDatasetFieldType().getName().equals("country")){
+                                    System.out.print(displayValue);
+                            }
                 fieldMap.put(childDatasetField,displayValue);
             }
         }
+        
+        if (fixTrailingComma) {
+            return (removeLastComma(fieldMap));
+        }
 
         return fieldMap;
+    }
+    
+    private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
+
+        Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();
+        Map.Entry<DatasetField, String> entry = null;
+        DatasetField keyVal = null;
+        String oldValue = null;
+
+        while (itr.hasNext()) {
+            entry = itr.next();
+            keyVal = entry.getKey();
+            oldValue = entry.getValue();
+        }
+
+        if (keyVal != null && oldValue != null && oldValue.length() >= 2) {
+            String newValue = oldValue.substring(0, oldValue.length() - 2);
+            mapIn.replace(keyVal, oldValue, newValue);
+        }
+
+        return mapIn;
+
     }
 }
