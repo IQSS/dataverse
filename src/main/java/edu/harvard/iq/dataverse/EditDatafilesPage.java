@@ -998,15 +998,22 @@ public class EditDatafilesPage implements java.io.Serializable {
     		String si = dataFile.getStorageIdentifier();
     		if (si.contains("://")) {
     			//Direct upload files will already have a store id in their storageidentifier
-    			DataAccess.getStorageIO(dataFile).delete();	
+    			StorageIO<DataFile> sio = DataAccess.getStorageIO(dataFile);
+    			sio.open(DataAccessOption.WRITE_ACCESS); //populates the key/location needed to do a delete()
+    			sio.delete();
     		} else {
     			//Temp files sent to this method have no prefix, not even "tmp://"
     			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
     		}
     	} catch (IOException ioEx) {
     		// safe to ignore - it's just a temp file. 
-    		logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
-    				+ dataFile.getStorageIdentifier());
+    		logger.warning(ioEx.getMessage());
+    		if(dataFile.getStorageIdentifier().contains("://")) {
+    			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
+    		} else {
+    			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+    					+ dataFile.getStorageIdentifier());
+    		}
     	}
     }
 
