@@ -42,6 +42,7 @@ function setupDirectUpload(enabled, theDatasetId) {
 }
 
 function queueFileForDirectUpload(file, datasetId) {
+  if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
 
   //calc md5
@@ -59,7 +60,8 @@ function uploadFileDirectly(url, storageId) {
   //Pick a pending file
   var file = fileList.pop();
   data.append('file',file);
-  $('.ui-fileupload-progress').append($('<progress/>'));
+  $('.ui-fileupload-progress').html('');
+  $('.ui-fileupload-progress').append($('<progress/>')).attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all');
   $.ajax({
     url: url,
     type: 'PUT',
@@ -78,9 +80,10 @@ function uploadFileDirectly(url, storageId) {
       if(myXhr.upload) {
         myXhr.upload.addEventListener('progress', function(e) {
           if(e.lengthComputable) {
+            var doublelength = 2 * e.total;
             $('progress').attr({
               value:e.loaded,
-              max:e.total
+              max:doublelength
             });
           }
         });
@@ -99,7 +102,14 @@ function reportUpload(storageId, file){
   
   getMD5(
     file,
-    prog => console.log("Progress: " + prog)
+    prog => {console.log("Progress: " + prog);
+    
+    var current = 1 + prog;
+    $('progress').attr({
+              value:current,
+              max:2
+            });
+    }
   ).then(
     md5 => {
       //storageId is not the location - has a : separator and no path elements from dataset
@@ -231,7 +241,7 @@ function uploadFailure(fileUpload) {
 
 function readChunked(file, chunkCallback, endCallback) {
   var fileSize   = file.size;
-  var chunkSize  = 4 * 1024 * 1024; // 4MB
+  var chunkSize  = 64 * 1024 * 1024; // 64MB
   var offset     = 0;
   
   var reader = new FileReader();
