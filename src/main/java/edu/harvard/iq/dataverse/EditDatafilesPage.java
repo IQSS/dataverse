@@ -998,9 +998,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     		String si = dataFile.getStorageIdentifier();
     		if (si.contains("://")) {
     			//Direct upload files will already have a store id in their storageidentifier
+    			//but they need to be associated with a dataset for the overall storagelocation to be calculated
+    			//so we temporarily set the owner
+    			if(dataFile.getOwner()!=null) {
+    				logger.warning("Datafile owner was not null as expected");
+    			}
+    			dataFile.setOwner(dataset);
     			StorageIO<DataFile> sio = DataAccess.getStorageIO(dataFile);
     			sio.open(DataAccessOption.WRITE_ACCESS); //populates the key/location needed to do a delete()
     			sio.delete();
+    			dataFile.setOwner(null);
     		} else {
     			//Temp files sent to this method have no prefix, not even "tmp://"
     			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
