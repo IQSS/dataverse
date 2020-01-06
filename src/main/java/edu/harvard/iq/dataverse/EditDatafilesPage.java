@@ -1004,9 +1004,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     				logger.warning("Datafile owner was not null as expected");
     			}
     			dataFile.setOwner(dataset);
-    			StorageIO<DataFile> sio = DataAccess.getStorageIO(dataFile);
-    			sio.open(DataAccessOption.WRITE_ACCESS); //populates the key/location needed to do a delete()
-    			sio.delete();
+    			//Use one StorageIO to get the storageLocation and then create a direct storage storageIO class to perform the delete 
+    			// (since delete is forbidden except for direct storage)
+    			String sl = DataAccess.getStorageIO(dataFile).getStorageLocation();
+    			DataAccess.getDirectStorageIO(sl).delete();
     			dataFile.setOwner(null);
     		} else {
     			//Temp files sent to this method have no prefix, not even "tmp://"
