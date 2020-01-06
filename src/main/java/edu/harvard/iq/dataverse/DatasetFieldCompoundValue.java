@@ -162,9 +162,6 @@ public class DatasetFieldCompoundValue implements Serializable {
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                         .replace("#VALUE",  sanitizedValue );
-                            if(childDatasetField.getDatasetFieldType().getName().equals("country")){
-                                    System.out.print(displayValue);
-                            }
                 fieldMap.put(childDatasetField,displayValue);
             }
         }
