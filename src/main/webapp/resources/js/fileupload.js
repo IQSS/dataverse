@@ -61,7 +61,7 @@ function uploadFileDirectly(url, storageId) {
   var file = fileList.pop();
   data.append('file',file);
   $('.ui-fileupload-progress').html('');
-  $('.ui-fileupload-progress').append($('<progress/>')).attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all');
+  $('.ui-fileupload-progress').append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
   $.ajax({
     url: url,
     type: 'PUT',
