@@ -967,42 +967,49 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 
     private void deleteTempFile(DataFile dataFile) {
-                        // Before we remove the file from the list and forget about 
-                        // it:
-                        // The physical uploaded file is still sitting in the temporary
-                        // directory. If it were saved, it would be moved into its 
-                        // permanent location. But since the user chose not to save it,
-                        // we have to delete the temp file too. 
-                        // 
-                        // Eventually, we will likely add a dedicated mechanism
-                        // for managing temp files, similar to (or part of) the storage 
-                        // access framework, that would allow us to handle specialized
-                        // configurations - highly sensitive/private data, that 
-                        // has to be kept encrypted even in temp files, and such. 
-                        // But for now, we just delete the file directly on the 
-                        // local filesystem: 
+    	// Before we remove the file from the list and forget about 
+    	// it:
+    	// The physical uploaded file is still sitting in the temporary
+    	// directory. If it were saved, it would be moved into its 
+    	// permanent location. But since the user chose not to save it,
+    	// we have to delete the temp file too. 
+    	// 
+    	// Eventually, we will likely add a dedicated mechanism
+    	// for managing temp files, similar to (or part of) the storage 
+    	// access framework, that would allow us to handle specialized
+    	// configurations - highly sensitive/private data, that 
+    	// has to be kept encrypted even in temp files, and such. 
+    	// But for now, we just delete the file directly on the 
+    	// local filesystem: 
 
-                        try {
-            List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
-                    Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
-            if (generatedTempFiles != null) {
-                for (Path generated : generatedTempFiles) {
-                    logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
-                    try {
-                        Files.delete(generated);
-                    } catch (IOException ioex) {
-                        logger.warning("Failed to delete generated file " + generated.toString());
-                    }
-                }
-            }
-            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
-                        } catch (IOException ioEx) {
-                            // safe to ignore - it's just a temp file. 
-            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
-                    + dataFile.getStorageIdentifier());
-        }
-                        }
-                        
+    	try {
+    		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+    				Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+    		if (generatedTempFiles != null) {
+    			for (Path generated : generatedTempFiles) {
+    				logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+    				try {
+    					Files.delete(generated);
+    				} catch (IOException ioex) {
+    					logger.warning("Failed to delete generated file " + generated.toString());
+    				}
+    			}
+    		}
+    		String si = dataFile.getStorageIdentifier();
+    		if (si.contains("://")) {
+    			//Direct upload files will already have a store id in their storageidentifier
+    			DataAccess.getStorageIO(dataFile).delete();	
+    		} else {
+    			//Temp files sent to this method have no prefix, not even "tmp://"
+    			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
+    		}
+    	} catch (IOException ioEx) {
+    		// safe to ignore - it's just a temp file. 
+    		logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+    				+ dataFile.getStorageIdentifier());
+    	}
+    }
+
     private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
         Iterator<FileMetadata> fmit = fmds.iterator();
         while (fmit.hasNext()) {
