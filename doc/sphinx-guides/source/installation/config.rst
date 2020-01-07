@@ -499,7 +499,8 @@ JVM Option                                   Value               Description    
 dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
 dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
 dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
 dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
 dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``

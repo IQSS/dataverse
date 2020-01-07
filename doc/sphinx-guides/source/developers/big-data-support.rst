@@ -6,7 +6,25 @@ Big data support is highly experimental. Eventually this content will move to th
 .. contents:: |toctitle|
         :local:
 
-Various components need to be installed and configured for big data support.
+Various components need to be installed and/or configured for big data support.
+
+S3 Direct Upload and Download
+-----------------------------
+
+A lightweight option for supporting file sizes beyond a few gigabytes - a size that can cause performance issues when uploaded through the Dataverse server itself - is to configure an S3 store to provide direct upload and download via 'pre-signed URLs'. When these options are configured, file uploads and downloads are made directly to and from a configured S3 store using secure (https) connections that enforce Dataverse's access controls. (The upload and download URLs are signed with a unique key that only allows access for a short time period and Dataverse will only generate such a URL if the user has permission to upload/download the specific file in question.)
+
+This option can handle files >40GB and could be appropriate for files up to a TB. Other options can scale farther, but this option has the advantages that it is simple to configure and does not require any user training - uploads and downloads are done via the same interface as normal uploads to Dataverse.
+
+To configure these options, an administrator must set two JVM options for the Dataverse server using the same process as for other configuration options:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
+
+With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.  
+
+At present, one drawback for direct-upload is that files are not 'ingested', e.g. zip files are not unzipped, derived files and metadata are not created, etc. This could be appropriate for large files. There are plans to remove this limitation in the future (potentially up to a configurable size limit so that the largest files retain as much performance as possible.)
+
+One additional step that is required to enable direct download to work with previewers is to allow cross site (CORS) requests on your S3 store.
 
 Data Capture Module (DCM)
 -------------------------
