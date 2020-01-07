@@ -126,7 +126,6 @@ public class AddReplaceFileHelper{
     // -- Optional  
     private DataFile fileToReplace;             // step 25
     
-    
     // -----------------------------------
     // Instance variables derived from other input
     // -----------------------------------
@@ -345,10 +344,6 @@ public class AddReplaceFileHelper{
         return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
-
-
-    
-
 
 	public boolean runReplaceFile(Long oldFileId,
                             String newFileName, 
@@ -973,7 +968,7 @@ public class AddReplaceFileHelper{
         
         return true;
     }
-    
+
     
     /**
      * Optional: old file to replace
@@ -1474,7 +1469,7 @@ public class AddReplaceFileHelper{
 
         Command<Dataset> update_cmd;
         update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
-        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(false);  
+        ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
             // Submit the update dataset command 

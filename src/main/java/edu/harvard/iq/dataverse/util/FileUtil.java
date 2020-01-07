@@ -1207,19 +1207,14 @@ public class FileUtil implements java.io.Serializable  {
         if ((checksum !=null)&&(!checksum.isEmpty())) {
         	datafile.setChecksumType(checksumType);
             datafile.setChecksumValue(checksum);
-            } else {
-        
-        
-        
-        
-        
-        try {
-            // We persist "SHA1" rather than "SHA-1".
-            datafile.setChecksumType(checksumType);
-            datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
-        } catch (Exception cksumEx) {
-            logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
-        }
+        } else {
+        	try {
+        		// We persist "SHA1" rather than "SHA-1".
+        		datafile.setChecksumType(checksumType);
+        		datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
+        	} catch (Exception cksumEx) {
+        		logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
+        	}
         }
         return datafile;
     }

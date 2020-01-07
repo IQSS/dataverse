@@ -125,7 +125,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private boolean s3chunkedEncoding = true;
     private String s3profile = "default";
     private String bucketName = null;
-    
     private String key = null;
 
     @Override
@@ -856,7 +855,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
         	presignedUrl = s3.generatePresignedUrl(generatePresignedUrlRequest);
         } catch (SdkClientException sce) {
-        	//throw new IOException("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
+        	logger.warning("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
         	presignedUrl = null; 
         }
         String urlString = null;
@@ -872,7 +871,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         	}
         }
 
-        //throw new IOException("Failed to generate temporary S3 url for "+key);
         return urlString;
     }
     
@@ -925,8 +923,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         s3profile = System.getProperty("dataverse.files." + this.driverId + ".profile","default");
        
         bucketName = System.getProperty("dataverse.files." + this.driverId + ".bucket-name");
-        
-        
 	}
 
 }

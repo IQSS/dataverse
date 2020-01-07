@@ -1462,7 +1462,6 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
         	logger.warning(io.getMessage());
         	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
 		}
-
         
 		JsonObjectBuilder response = Json.createObjectBuilder()
 	            .add("url", url)
@@ -1560,10 +1559,8 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 					if (optionalFileParams.hasMimetype()) {
 						newFileContentType = optionalFileParams.getMimeType();
 					}
-
 				}
 			} else {
-
 				return error(BAD_REQUEST,
 						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
 			}
@@ -1571,10 +1568,6 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 			newFilename = contentDispositionHeader.getFileName();
 			newFileContentType = formDataBodyPart.getMediaType().toString();
 		}
-        logger.info("StorageId: " + newStorageIdentifier);
-        logger.info("FileName: " + newFilename);
-        logger.info("Mime: " + newFileContentType);
-
 
         
         //-------------------

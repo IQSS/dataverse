@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -88,8 +87,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
@@ -358,8 +355,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean directUploadEnabled() {
-    	logger.info(this.dataset.getDataverseContext().getAlias() + " " + this.dataset.getDataverseContext().getAffiliation() + " " + this.dataset.getDataverseContext().getStorageDriverId());
-    	logger.info("denabled: " + this.dataset.getDataverseContext().getStorageDriverId() + " " + Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getStorageDriverId() + ".upload-redirect"));
     	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getStorageDriverId() + ".upload-redirect");
     }
     
@@ -1252,7 +1247,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         Command<Dataset> cmd;
         try {
             cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone);
-            ((UpdateDatasetVersionCommand) cmd).setValidateLenient(false);
+            ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             dataset = commandEngine.submit(cmd);
 
         } catch (EJBException ex) {
@@ -1797,7 +1792,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
-            logger.info("Added " + dataFile.getFileMetadata().getLabel());
         }
         
        
@@ -1925,13 +1919,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     		String contentType){
 
     	fileReplacePageHelper.resetReplaceFileHelper();
-
     	saveEnabled = false;
-
-    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation,
-    			fileName,
-    			contentType
-    			)){
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation, fileName, contentType)){
     		saveEnabled = true;
 
     		/**
@@ -1949,8 +1938,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String uploadWarningMessage = null; 
     private String uploadSuccessMessage = null; 
     private String uploadComponentId = null; 
-    
-    
     
     /**
      * Handle native file replace
@@ -2049,15 +2036,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         String checksumType = paramMap.get("checksumType");
         String checksumValue = paramMap.get("checksumValue");
         
-        logger.info("UCI" + uploadComponentId);
-        logger.info("FSI" + fullStorageIdentifier);
-        logger.info("FN" + fileName);
-        logger.info("CT" + contentType);
-        logger.info("CST" + checksumType);
-        logger.info("CDV" + checksumValue);
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
-        logger.info("SL " + storageLocation);
     	if (!uploadInProgress) {
     		uploadInProgress = true;
     	}
@@ -2072,7 +2052,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     		sio.open(DataAccessOption.READ_ACCESS);
     		//get file size
     		long fileSize = sio.getSize();
-    		logger.info("FS " + fileSize);
 
     		/* ----------------------------
                 Check file size
@@ -2082,13 +2061,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     		if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
     			String warningMessage = "Uploaded file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
     			sio.delete();
-    			//msg(warningMessage);
-    			//FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-    			if (localWarningMessage == null) {
-    				localWarningMessage = warningMessage;
-    			} else {
-    				localWarningMessage = localWarningMessage.concat("; " + warningMessage);
-    			}
+    			localWarningMessage = warningMessage;
     		} else {
     			// -----------------------------------------------------------
     			// Is this a FileReplaceOperation?  If so, then diverge!
@@ -2115,15 +2088,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     				}
     				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
     					String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
-    					if (localWarningMessage == null) {
-    						localWarningMessage = warningMessage;
-    					} else {
-    						localWarningMessage = localWarningMessage.concat("; " + warningMessage);
-    					}
-
+    					localWarningMessage = warningMessage;
     				}
     				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
-                    logger.info("Created " + datafiles.size() + " files.");
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
     			}
@@ -2135,7 +2102,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     				// Check if there are duplicate files or ingest warnings
     				// -----------------------------------------------------------
     				uploadWarningMessage = processUploadedFileList(datafiles);
-    				logger.info("Warning message during upload: " + uploadWarningMessage);
     			}
     			if(!uploadInProgress) {
     				logger.warning("Upload in progress cancelled");
@@ -2169,7 +2135,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
-        logger.info("Processing list of " + dFileList.size() + " files.");
         if (dFileList == null) {
             return null;
         }
@@ -2231,7 +2196,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                     dataFile.setPreviewImageAvailable(true);
                 }
                 uploadedFiles.add(dataFile);
-                logger.info("Added file to list: " + dataFile.getFileMetadata().getLabel());
                 // We are NOT adding the fileMetadata to the list that is being used
                 // to render the page; we'll do that once we know that all the individual uploads
                 // in this batch (as in, a bunch of drag-and-dropped files) have finished. 

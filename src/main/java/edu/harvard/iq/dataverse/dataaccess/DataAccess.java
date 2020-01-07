@@ -27,6 +27,10 @@ import java.util.logging.Logger;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+/**
+*
+* @author Leonid Andreev
+*/
 
 
 
@@ -160,7 +164,6 @@ public class DataAccess {
         default:
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
-
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
@@ -184,7 +187,6 @@ public class DataAccess {
     			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
     			drivers.put(p.get(property).toString(), driverId);
     		}
-
     	}
     }
 
@@ -199,7 +201,6 @@ public class DataAccess {
     				label = key;
     				break;
     			}
-
     		}
     	}
     	return label;
