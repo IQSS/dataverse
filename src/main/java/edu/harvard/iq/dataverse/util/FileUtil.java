@@ -79,11 +79,9 @@ import org.apache.commons.io.FileUtils;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
-
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -734,13 +732,8 @@ public class FileUtil implements java.io.Serializable  {
 				// the size limit for each of the individual unpacked files)
 				Long fileSize = tempFile.toFile().length();
 				if (fileSizeLimit != null && fileSize > fileSizeLimit) {
-					try {
-						tempFile.toFile().delete();
-					} catch (Exception ex) {
-					}
-					throw new IOException(MessageFormat.format(
-							BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"),
-							bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));
+					try {tempFile.toFile().delete();} catch (Exception ex) {}
+					throw new IOException (MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"), bytesToHumanReadable(fileSize), bytesToHumanReadable(fileSizeLimit)));  
 				}
 
 			} else {
@@ -780,16 +773,18 @@ public class FileUtil implements java.io.Serializable  {
 					// 3. We should ALWAYS trust our utilities when it comes to
 					// ingestable types.
 
-					if (suppliedContentType == null || suppliedContentType.equals("")
-							|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-							|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-							|| (canIngestAsTabular(suppliedContentType)
-									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-									&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-							|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
-							|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-							|| recognizedType.equals(MIME_TYPE_ZIP)) {
+					if (suppliedContentType == null
+                        || suppliedContentType.equals("")
+						|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
+						|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+						|| (canIngestAsTabular(suppliedContentType)
+								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
+								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
+								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
+                        || canIngestAsTabular(recognizedType)
+                        || recognizedType.equals("application/fits-gzipped")
+						|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+						|| recognizedType.equals(MIME_TYPE_ZIP)) {
 						finalType = recognizedType;
 					}
 				}
@@ -823,16 +818,12 @@ public class FileUtil implements java.io.Serializable  {
 				try {
 					uncompressedIn = new GZIPInputStream(new FileInputStream(tempFile.toFile()));
 					File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
-					datafile = createSingleDataFile(version, unZippedTempFile, finalFileName,
-							MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
+					datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, MIME_TYPE_UNDETERMINED_DEFAULT, systemConfig.getFileFixityChecksumAlgorithm());
 				} catch (IOException | FileExceedsMaxSizeException ioex) {
 					datafile = null;
 				} finally {
 					if (uncompressedIn != null) {
-						try {
-							uncompressedIn.close();
-						} catch (IOException e) {
-						}
+                        try {uncompressedIn.close();} catch (IOException e) {}
 					}
 				}
 
@@ -865,20 +856,25 @@ public class FileUtil implements java.io.Serializable  {
 				try {
 					Charset charset = null;
 					/*
-					 * TODO: (?) We may want to investigate somehow letting the user specify the
-					 * charset for the filenames in the zip file... - otherwise, ZipInputStream
-					 * bails out if it encounteres a file name that's not valid in the current
-					 * charest (i.e., UTF-8, in our case). It would be a bit trickier than what
-					 * we're doing for SPSS tabular ingests - with the lang. encoding pulldown menu
-					 * - because this encoding needs to be specified *before* we upload and attempt
-					 * to unzip the file. -- L.A. 4.0 beta12
-					 * logger.info("default charset is "+Charset.defaultCharset().name()); if
-					 * (Charset.isSupported("US-ASCII")) {
-					 * logger.info("charset US-ASCII is supported."); charset =
-					 * Charset.forName("US-ASCII"); if (charset != null) {
-					 * logger.info("was able to obtain charset for US-ASCII"); }
-					 * 
-					 * }
+                	TODO: (?)
+                	We may want to investigate somehow letting the user specify 
+                	the charset for the filenames in the zip file...
+                    - otherwise, ZipInputStream bails out if it encounteres a file 
+                	name that's not valid in the current charest (i.e., UTF-8, in 
+                    our case). It would be a bit trickier than what we're doing for 
+                    SPSS tabular ingests - with the lang. encoding pulldown menu - 
+                	because this encoding needs to be specified *before* we upload and
+                    attempt to unzip the file. 
+                	        -- L.A. 4.0 beta12
+                	logger.info("default charset is "+Charset.defaultCharset().name());
+                	if (Charset.isSupported("US-ASCII")) {
+                    	logger.info("charset US-ASCII is supported.");
+                    	charset = Charset.forName("US-ASCII");
+                    	if (charset != null) {
+                       	    logger.info("was able to obtain charset for US-ASCII");
+                    	}
+                    
+                	 }
 					 */
 
 					if (charset != null) {
@@ -911,10 +907,9 @@ public class FileUtil implements java.io.Serializable  {
 						if (!zipEntry.isDirectory()) {
 							if (datafiles.size() > fileNumberLimit) {
 								logger.warning("Zip upload - too many files.");
-								warningMessage = "The number of files in the zip archive is over the limit ("
-										+ fileNumberLimit
-										+ "); please upload a zip archive with fewer files, if you want them to be ingested "
-										+ "as individual DataFiles.";
+								warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit + 
+										"); please upload a zip archive with fewer files, if you want them to be ingested " +
+										"as individual DataFiles.";
 								throw new IOException();
 							}
 
@@ -928,8 +923,7 @@ public class FileUtil implements java.io.Serializable  {
 								// Check if it's a "fake" file - a zip archive entry
 								// created for a MacOS X filesystem element: (these
 								// start with "._")
-								if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store")
-										&& !"".equals(shortName)) {
+								if (!shortName.startsWith("._") && !shortName.startsWith(".DS_Store") && !"".equals(shortName)) {
 									// OK, this seems like an OK file entry - we'll try
 									// to read it and create a DataFile with it:
 
@@ -939,15 +933,11 @@ public class FileUtil implements java.io.Serializable  {
 											systemConfig.getFileFixityChecksumAlgorithm(), null, false);
 
 									if (!fileEntryName.equals(shortName)) {
-										// If the filename looks like a hierarchical folder name (i.e., contains slashes
-										// and backslashes),
-										// we'll extract the directory name; then subject it to some "aggressive
-										// sanitizing" - strip all
-										// the leading, trailing and duplicate slashes; then replace all the characters
-										// that
+                                    	// If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
+                                    	// we'll extract the directory name; then subject it to some "aggressive sanitizing" - strip all 
+                                    	// the leading, trailing and duplicate slashes; then replace all the characters that 
 										// don't pass our validation rules.
-										String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$",
-												"");
+                                    	String directoryName = fileEntryName.replaceFirst("[\\\\/][\\\\/]*[^\\\\/]*$", "");
 										directoryName = StringUtil.sanitizeFileDirectory(directoryName, true);
 										// if (!"".equals(directoryName)) {
 										if (!StringUtil.isEmpty(directoryName)) {
@@ -961,8 +951,7 @@ public class FileUtil implements java.io.Serializable  {
 										// Now that we have it saved in a temporary location,
 										// let's try and determine its real type:
 
-										String tempFileName = getFilesTempDirectory() + "/"
-												+ datafile.getStorageIdentifier();
+                                    	String tempFileName = getFilesTempDirectory() + "/" + datafile.getStorageIdentifier();
 
 										try {
 											recognizedType = determineFileType(new File(tempFileName), shortName);
@@ -971,8 +960,7 @@ public class FileUtil implements java.io.Serializable  {
 												datafile.setContentType(recognizedType);
 											}
 										} catch (Exception ex) {
-											logger.warning("Failed to run the file utility mime type check on file "
-													+ fileName);
+                                        	logger.warning("Failed to run the file utility mime type check on file " + fileName);
 										}
 
 										datafiles.add(datafile);
@@ -995,31 +983,29 @@ public class FileUtil implements java.io.Serializable  {
 
 					datafiles.clear();
 				} catch (FileExceedsMaxSizeException femsx) {
-					logger.warning(
-							"One of the unzipped files exceeds the size limit; resorting to saving the file as is. "
-									+ femsx.getMessage());
+                	logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
 					warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
 					datafiles.clear();
 				} finally {
 					if (unZippedIn != null) {
-						try {
-							unZippedIn.close();
-						} catch (Exception zEx) {
-						}
+                    		try {unZippedIn.close();} catch (Exception zEx) {}
 					}
 				}
 				if (datafiles.size() > 0) {
 					// link the data files to the dataset/version:
 					// (except we no longer want to do this! -- 4.6)
-					/*
-					 * Iterator<DataFile> itf = datafiles.iterator(); while (itf.hasNext()) {
-					 * DataFile datafile = itf.next(); datafile.setOwner(version.getDataset()); if
-					 * (version.getFileMetadatas() == null) { version.setFileMetadatas(new
-					 * ArrayList()); } version.getFileMetadatas().add(datafile.getFileMetadata());
-					 * datafile.getFileMetadata().setDatasetVersion(version);
-					 * 
-					 * version.getDataset().getFiles().add(datafile); }
-					 */
+                	/*Iterator<DataFile> itf = datafiles.iterator();
+                	while (itf.hasNext()) {
+                    	DataFile datafile = itf.next();
+                    	datafile.setOwner(version.getDataset());
+                        if (version.getFileMetadatas() == null) {
+                        	version.setFileMetadatas(new ArrayList());
+                        }
+                    	version.getFileMetadatas().add(datafile.getFileMetadata());
+                    	datafile.getFileMetadata().setDatasetVersion(version);
+                    
+                    	version.getDataset().getFiles().add(datafile);
+                	} */
 					// remove the uploaded zip file:
 					try {
 						Files.delete(tempFile);
@@ -1052,26 +1038,22 @@ public class FileUtil implements java.io.Serializable  {
 						FileInputStream finalFileInputStream = new FileInputStream(finalFile);
 						finalType = determineContentType(finalFile);
 						if (finalType == null) {
-							logger.warning(
-									"Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
+                        	logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
 							continue;
 						}
 
 						File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
-						DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile,
-								finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
+                    	DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, systemConfig.getFileFixityChecksumAlgorithm());
 						if (new_datafile != null) {
 							datafiles.add(new_datafile);
 						} else {
-							logger.severe("Could not add part of rezipped shapefile. new_datafile was null: "
-									+ finalFile.getName());
+                        	logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
 						}
 						finalFileInputStream.close();
 
 					}
 				} catch (FileExceedsMaxSizeException femsx) {
-					logger.severe("One of the unzipped shape files exceeded the size limit; giving up. "
-							+ femsx.getMessage());
+                	logger.severe("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
 					datafiles.clear();
 				}
 

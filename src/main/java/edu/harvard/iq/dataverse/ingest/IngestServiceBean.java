@@ -174,8 +174,7 @@ public class IngestServiceBean {
 					unattached = true;
 					dataFile.setOwner(dataset);
 				}
-				logger.info("SI: " + dataFile.getStorageIdentifier());
-				
+
 				String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
 				String storageLocation = storageInfo[1];

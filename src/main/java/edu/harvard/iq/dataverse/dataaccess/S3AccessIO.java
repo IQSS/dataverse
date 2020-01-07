@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -83,7 +82,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
             s3CB.setPayloadSigningEnabled(s3payloadSigning);
             // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
-            // Boolean is inverted, otherwise setting dataverse.files.s3-chunked-encoding=false would result in leaving Chunked Encoding enabled
+            // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
             s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
 
             s3CB.setCredentials(new ProfileCredentialsProvider(s3profile));
@@ -102,12 +101,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 
-	public S3AccessIO(String storageLocation, String driverId) throws IOException {
+	public S3AccessIO(String storageLocation, String driverId) {
 		this(null, null, driverId);
         // TODO: validate the storage location supplied
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
-       
     }
     
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client, String driverId) {
@@ -776,6 +774,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return key;
     }
     
+    public boolean downloadRedirectEnabled() {
+    	String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
+    
     public String generateTemporaryS3Url() throws IOException {
         //Questions:
         // Q. Should this work for private and public?
@@ -871,7 +877,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     int getUrlExpirationMinutes() {
-        String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes"); 
+        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes"); 
         if (optionValue != null) {
             Integer num; 
             try {
