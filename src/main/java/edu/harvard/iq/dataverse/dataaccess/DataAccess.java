@@ -171,16 +171,6 @@ public class DataAccess {
 
     static HashMap<String, String> drivers = null;
     
-    public static String getStorageDriverId(String driverLabel) {
-    	if (drivers==null) {
-    		populateDrivers();
-    	}
-    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
-    		return drivers.get(driverLabel);
-    	} 
-    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
-    }
-
     public static Set<Entry<String, String>> getStorageDriverLabels() {
     	if (drivers==null) {
     		populateDrivers();
