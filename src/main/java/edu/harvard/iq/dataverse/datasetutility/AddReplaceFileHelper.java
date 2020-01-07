@@ -442,6 +442,7 @@ public class AddReplaceFileHelper{
             String newFileName, 
             String newFileContentType,
             InputStream newFileInputStream,
+            String fullStorageId,
             OptionalFileParams optionalFileParams){
         
         
@@ -463,7 +464,7 @@ public class AddReplaceFileHelper{
         return this.runAddReplacePhase1(fileToReplace.getOwner(), 
                 newFileName, 
                 newFileContentType,
-                null,
+                fullStorageId,
                 newFileInputStream, 
                 optionalFileParams);
 

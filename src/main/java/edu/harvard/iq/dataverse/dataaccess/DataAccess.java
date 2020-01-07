@@ -20,15 +20,29 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 /**
  *
  * @author Leonid Andreev
  */
+import java.util.logging.Logger;
+
+
+
 
 public class DataAccess {
 
+	private static final Logger logger = Logger.getLogger(DataAccess.class.getCanonicalName());
+	
     public DataAccess() {
 
     };
@@ -51,16 +65,22 @@ public class DataAccess {
             || dvObject.getStorageIdentifier().isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
-
-        if (dvObject.getStorageIdentifier().startsWith("file://")
-                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
-            return new FileAccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("swift://")){
-            return new SwiftAccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("s3://")){
-            return new S3AccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
-            throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
+        String storageIdentifier = dvObject.getStorageIdentifier();
+        int separatorIndex = storageIdentifier.indexOf("://");
+    	String storageDriverId = "file"; //default
+        if(separatorIndex>0) {
+        	storageDriverId = storageIdentifier.substring(0,separatorIndex);
+        }
+        String storageType = getDriverType(storageDriverId);
+        switch(storageType) {
+        case "file":
+            return new FileAccessIO<>(dvObject, req, storageDriverId);
+        case "s3":
+            return new S3AccessIO<>(dvObject, req, storageDriverId);
+        case "swift":
+            return new SwiftAccessIO<>(dvObject, req, storageDriverId);
+        case "tmp":
+        	throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
 
         // TODO:
@@ -76,26 +96,51 @@ public class DataAccess {
     // Experimental extension of the StorageIO system allowing direct access to
     // stored physical files that may not be associated with any DvObjects
 
-    public static StorageIO getDirectStorageIO(String storageLocation) throws IOException {
-        if (storageLocation.startsWith("file://")) {
-            return new FileAccessIO(storageLocation.substring(7));
-        } else if (storageLocation.startsWith("swift://")){
-            return new SwiftAccessIO<>(storageLocation.substring(8));
-        } else if (storageLocation.startsWith("s3://")){
-            return new S3AccessIO<>(storageLocation.substring(5));
+    public static StorageIO<DvObject> getDirectStorageIO(String fullStorageLocation) throws IOException {
+    	String[] response = getDriverIdAndStorageLocation(fullStorageLocation);
+    	String storageDriverId = response[0];
+    	String storageLocation=response[1];
+        String storageType = getDriverType(storageDriverId);
+        switch(storageType) {
+        case "file":
+            return new FileAccessIO<>(storageLocation, storageDriverId);
+        case "s3":
+            return new S3AccessIO<>(storageLocation, storageDriverId);
+        case "swift":
+            return new SwiftAccessIO<>(storageLocation, storageDriverId);
+        default:
+        	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
-
-        throw new IOException("getDirectStorageIO: Unsupported storage method.");
+    }
+    
+    public static String[] getDriverIdAndStorageLocation(String storageLocation) {
+    	//default if no prefix
+    	String storageIdentifier=storageLocation;
+        int separatorIndex = storageLocation.indexOf("://");
+    	String storageDriverId = "file"; //default
+        if(separatorIndex>0) {
+        	storageDriverId = storageLocation.substring(0,separatorIndex);
+        	storageIdentifier = storageLocation.substring(separatorIndex + 3);
+        }
+		return new String[]{storageDriverId, storageIdentifier};
+    }
+    
+    public static String getStorarageIdFromLocation(String location) {
+    	return location.substring(location.lastIndexOf('/')+1);
+    }
+    
+    public static String getDriverType(String driverId) {
+    	return System.getProperty("dataverse.files." + driverId + ".type", "file");
     }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
 
-        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getStorageDriverId());
     }
 
-    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
+    public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {
         if (dvObject == null
                 || storageTag == null
             || storageTag.isEmpty()) {
@@ -106,23 +151,75 @@ public class DataAccess {
 
         dvObject.setStorageIdentifier(storageTag);
 
-        if (driverIdentifier == null) {
-            driverIdentifier = "file";
+        if (storageDriverId == null) {
+        	storageDriverId = "file";
         }
-
-        if (driverIdentifier.equals("file")) {
-            storageIO = new FileAccessIO<>(dvObject, null);
-        } else if (driverIdentifier.equals("swift")) {
-            storageIO = new SwiftAccessIO<>(dvObject, null);
-        } else if (driverIdentifier.equals("s3")) {
-            storageIO = new S3AccessIO<>(dvObject, null);
-        } else {
-            throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
+        String storageType = getDriverType(storageDriverId);
+        switch(storageType) {
+        case "file":
+        	storageIO = new FileAccessIO<>(dvObject, null, storageDriverId);
+        	break;
+        case "swift":
+        	storageIO = new SwiftAccessIO<>(dvObject, null, storageDriverId);
+        	break;
+        case "s3":
+        	storageIO = new S3AccessIO<>(dvObject, null, storageDriverId);
+        	break;
+        default:
+        	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
 
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
 
+    static HashMap<String, String> drivers = null;
+    
+    public static String getStorageDriverId(String driverLabel) {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    		return drivers.get(driverLabel);
+    	} 
+    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    }
 
+    public static Set<Entry<String, String>> getStorageDriverLabels() {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	return drivers.entrySet();
+    }
+
+    private static void populateDrivers() {
+    	drivers = new HashMap<String, String>();
+    	Properties p = System.getProperties();
+    	for(String property: p.stringPropertyNames()) {
+    		if(property.startsWith("dataverse.files.") && property.endsWith(".label")) {
+    			String driverId = property.substring(16); // "dataverse.files.".length
+    			driverId=driverId.substring(0,driverId.indexOf('.'));
+    			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
+    			drivers.put(p.get(property).toString(), driverId);
+    		}
+
+    	}
+    }
+
+    public static String getStorageDriverLabelFor(String storageDriverId) {
+    	String label = "<<Default>>";
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	if(drivers.containsValue(storageDriverId)) {
+    		for(String key: drivers.keySet()) {
+    			if(drivers.get(key).equals(storageDriverId)) {
+    				label = key;
+    				break;
+    			}
+
+    		}
+    	}
+    	return label;
+    }
 }

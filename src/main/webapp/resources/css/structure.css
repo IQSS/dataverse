@@ -997,3 +997,12 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 #citation-banner {width:100%; height:45px; position: absolute; z-index: 999999; border-radius: 0; border-width: 0 0 1px 0;}
 #citation-banner a.close, #citation-banner a.close span.glyphicon {line-height:.2;}
 #citation-forward {position: absolute; top:45px; height: calc(100% - 65px); border:0; background:url(/resources/images/ajax-loading.gif) no-repeat 50% 50%;}
+
+/*Direct upload progress bar*/
+progress::-webkit-progress-bar {
+  background-color:white;
+}
+
+progress::-webkit-progress-value {
+  background-color:#0e90d2;
+}

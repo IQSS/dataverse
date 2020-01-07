@@ -1,3 +1,126 @@
+var fileList = [];
+var observer2=null;
+var datasetId=null;
+
+function setupDirectUpload(enabled, theDatasetId) {
+  if(enabled) {
+    datasetId=theDatasetId;
+    $('.ui-fileupload-upload').hide();
+    $('.ui-fileupload-cancel').hide();
+    var fileInput=document.getElementById('datasetForm:fileUpload_input');
+    fileInput.addEventListener('change', function(event) {
+      fileList=[];
+      for(var i=0;i<fileInput.files.length;i++) {
+        queueFileForDirectUpload(fileInput.files[i], datasetId);
+        console.log('Found: ' + fileInput.files[i].name);
+      }
+    }, {once:false});
+    var config={childList: true};
+    var callback = function(mutations) {
+      mutations.forEach(function(mutation) {
+        for(i=0; i<mutation.addedNodes.length;i++) {
+          console.log('node ' + mutation.addedNodes[i].id);
+          if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
+            fileInput=mutation.addedNodes[i];
+            mutation.addedNodes[i].addEventListener('change', function(event) {
+              for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
+                queueFileForDirectUpload(mutation.addedNodes[i].files[j], datasetId);
+                console.log('Found: ' + mutation.addedNodes[j].files[i].name);
+
+              }
+            }, {once:false});
+          }
+        }
+      });
+    };
+    if(observer2 !=null) {
+      observer2.disconnect();
+    }
+    observer2 = new MutationObserver(callback);
+    observer2.observe(document.getElementById('datasetForm:fileUpload'),config);
+  } //else ?
+}
+
+function queueFileForDirectUpload(file, datasetId) {
+  if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
+  fileList.push(file);
+
+  //calc md5
+  //check for dupes
+  //check size
+  requestDirectUploadUrl();
+
+  console.log('URL Requested');
+
+}
+
+function uploadFileDirectly(url, storageId) {
+  console.log("Retrieved " + url + ' for ' + storageId);
+  var data = new FormData();
+  //Pick a pending file
+  var file = fileList.pop();
+  data.append('file',file);
+  $('.ui-fileupload-progress').html('');
+  $('.ui-fileupload-progress').append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
+  $.ajax({
+    url: url,
+    type: 'PUT',
+    data: data,
+    cache: false,
+    processData: false,
+    success: function () {
+     reportUpload(storageId, file) 
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.log('Failure: ' + jqXHR.status);
+      console.log('Failure: ' + errorThrown);
+    },
+    xhr: function() {
+      var myXhr = $.ajaxSettings.xhr();
+      if(myXhr.upload) {
+        myXhr.upload.addEventListener('progress', function(e) {
+          if(e.lengthComputable) {
+            var doublelength = 2 * e.total;
+            $('progress').attr({
+              value:e.loaded,
+              max:doublelength
+            });
+          }
+        });
+      }
+      return myXhr;
+      }
+  });
+  console.log('after ajax');
+//perform post - check cors issues
+  //trigger gui swap/server file add
+  //handle cancel buttons?
+
+}
+
+function reportUpload(storageId, file){
+  
+  getMD5(
+    file,
+    prog => {console.log("Progress: " + prog);
+    
+    var current = 1 + prog;
+    $('progress').attr({
+              value:current,
+              max:2
+            });
+    }
+  ).then(
+    md5 => {
+      //storageId is not the location - has a : separator and no path elements from dataset
+      //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+      handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
+      console.log('Done ' + storageId + " " + file.name );
+    },
+    err => console.error(err)
+  );
+}
+
 
 function removeErrors() {
                        	  var errors = document.getElementsByClassName("ui-fileupload-error");
@@ -47,6 +170,21 @@ function uploadFinished(fileupload) {
           observer.disconnect();
           observer=null;
         }
+    } else {
+      console.log('Still ' + fileupload.files.length + ' files' );
+    }
+}
+
+function directUploadFinished() {
+    if (fileList.length === 0) {
+        $('button[id$="AllUploadsFinished"]').trigger('click');
+        //stop observer when we're done
+        if(observer !=null) {
+          observer.disconnect();
+          observer=null;
+        }
+    } else {
+      console.log('Still ' + fileList.length + ' files' );
     }
 }
 
@@ -98,3 +236,61 @@ function uploadFailure(fileUpload) {
        	}
     }
 }
+
+//MD5 Hashing functions
+
+function readChunked(file, chunkCallback, endCallback) {
+  var fileSize   = file.size;
+  var chunkSize  = 64 * 1024 * 1024; // 64MB
+  var offset     = 0;
+  
+  var reader = new FileReader();
+  reader.onload = function() {
+    if (reader.error) {
+      endCallback(reader.error || {});
+      return;
+    }
+    offset += reader.result.length;
+    // callback for handling read chunk
+    // TODO: handle errors
+    chunkCallback(reader.result, offset, fileSize); 
+    if (offset >= fileSize) {
+      endCallback(null);
+      return;
+    }
+    readNext();
+  };
+
+  reader.onerror = function(err) {
+    endCallback(err || {});
+  };
+
+  function readNext() {
+    var fileSlice = file.slice(offset, offset + chunkSize);
+    reader.readAsBinaryString(fileSlice);
+  }
+  readNext();
+}
+
+function getMD5(blob, cbProgress) {
+  return new Promise((resolve, reject) => {
+    var md5 = CryptoJS.algo.MD5.create();
+    readChunked(blob, (chunk, offs, total) => {
+      md5.update(CryptoJS.enc.Latin1.parse(chunk));
+      if (cbProgress) {
+        cbProgress(offs / total);
+      }
+    }, err => {
+      if (err) {
+        reject(err);
+      } else {
+        // TODO: Handle errors
+        var hash = md5.finalize();
+        var hashHex = hash.toString(CryptoJS.enc.Hex);
+        resolve(hashHex);
+      }
+    });
+  });
+}
+
+

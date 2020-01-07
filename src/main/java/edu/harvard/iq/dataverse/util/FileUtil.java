@@ -24,11 +24,13 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -79,6 +81,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import org.apache.commons.io.FilenameUtils;
+
+import com.amazonaws.AmazonServiceException;
 
 
 /**
@@ -1334,8 +1338,10 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
-        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
-        String storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+    	String driverId = dataFile.getDataverseContext().getStorageDriverId();
+		
+        String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
+        String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
         dataFile.setStorageIdentifier(storageId);
     }
     
@@ -1663,6 +1669,41 @@ public class FileUtil implements java.io.Serializable  {
     
     public static boolean isPackageFile(DataFile dataFile) {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
+    }
+    
+    public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
+    	String driverId = dataset.getDataverseContext().getStorageDriverId();
+    	boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
+    	//Should only be requested when it is allowed, but we'll log a warning otherwise
+    	if(!directEnabled) {
+    		logger.warning("Direct upload not supported for files in this dataset: " + dataset.getId());
+    		return null;
+    	}
+    	S3AccessIO<DataFile> s3io = null;
+    	String bucket = System.getProperty("dataverse.files." + driverId + ".bucket-name") + "/";
+    	String sid = null;
+    	int i=0;
+    	while (s3io==null && i<5) {
+    		sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
+    		try {
+    			s3io = new S3AccessIO<DataFile>(sid, driverId);
+    			if(s3io.exists()) {
+    				s3io=null;
+    				i=i+1;
+    			} 
+
+    		} catch (Exception e) {
+    			i=i+1;
+    		}
+
+    	}
+    	return s3io;
+    }
+    
+    public static String getStorageIdentifierFromLocation(String location) {
+    	int driverEnd = location.indexOf("://") + 3;
+    	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
+    	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
 
 }

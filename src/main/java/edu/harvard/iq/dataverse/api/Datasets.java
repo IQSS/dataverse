@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
@@ -1299,11 +1300,12 @@ public class Datasets extends AbstractApiBean {
             if ("validation passed".equals(statusMessageFromDcm)) {
                logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
 
-                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
+                String storageDriver = dataset.getDataverseContext().getStorageDriverId();
                 String uploadFolder = jsonFromDcm.getString("uploadFolder");
                 int totalSize = jsonFromDcm.getInt("totalSize");
+                String storageDriverType = System.getProperty("dataverse.file." + storageDriver + ".type");
                 
-                if (storageDriver.equals("file")) {
+                if (storageDriverType.equals("file")) {
                     logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
 
                     ImportMode importMode = ImportMode.MERGE;
@@ -1319,7 +1321,7 @@ public class Datasets extends AbstractApiBean {
                         String message = wr.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
-                } else if(storageDriver.equals("s3")) {
+                } else if(storageDriverType.equals("s3")) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
@@ -1445,20 +1447,27 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
 		}
 		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to list dataset thumbnail candidates.");
+            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+        }
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
+        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
 		}
-		String bucket = System.getProperty("dataverse.files.s3-bucket-name") + "/";
-		String sid = bucket+ dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier();
-		S3AccessIO<DataFile> s3io = new S3AccessIO<DataFile>(sid);
 		String url = null;
+        String storageIdentifier = null;
 		try {
 			url = s3io.generateTemporaryS3UploadUrl();
-		} catch (IOException e) {
-			logger.warning("Identifier Collision");
-			e.printStackTrace();
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
 		}
-		return ok(url);
 
+        
+		JsonObjectBuilder response = Json.createObjectBuilder()
+	            .add("url", url)
+	            .add("storageIdentifier", storageIdentifier );
+		return ok(response);
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
 	}

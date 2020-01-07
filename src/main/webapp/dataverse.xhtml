@@ -138,6 +138,19 @@
                                     <p:message for="identifier" display="text"/>
                                 </div>
                             </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser}">
+                                <h:outputLabel for="dataverseStorage" styleClass="control-label">
+                                    #{bundle.storage} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.storage.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId}">
+                                              <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseStorage" display="text"/>
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">

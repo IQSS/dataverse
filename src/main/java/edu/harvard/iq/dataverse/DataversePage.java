@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -1181,5 +1184,13 @@ public class DataversePage implements java.io.Serializable {
         } else {
             return null;
         }
+    }
+    
+    public Set<Entry<String, String>> getStorageDriverOptions() {
+    	return DataAccess.getStorageDriverLabels();
+    }
+    
+    public String getCurrentStorageDriverLabel() {
+    	return DataAccess.getStorageDriverLabelFor(dataverse.getStorageDriverId());
     }
 }
