@@ -1,0 +1,14 @@
+## Notes for Dataverse Installation Administrators
+
+### Run ReExportall
+
+We made changes to the JSON Export in this release (#6246). If you'd like these changes to reflected in your JSON exports, you should run ReExportall as part of the upgrade process. We've included this in the detailed instructions below.
+
+
+
+
+
+
+xxx. (Optional) Run ReExportall to update JSON Exports  
+
+   <http://guides.dataverse.org/en/4.19/admin/metadataexport.html?highlight=export#batch-exports-through-the-api>
