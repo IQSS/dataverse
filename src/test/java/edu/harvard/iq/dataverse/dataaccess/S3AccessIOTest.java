@@ -99,7 +99,7 @@ public class S3AccessIOTest {
     @Test
     void default_getUrlExpirationMinutes() {
         // given
-        System.clearProperty("dataverse.files.s3-url-expiration-minutes");
+        System.clearProperty("dataverse.files.s3.url-expiration-minutes");
         // when & then
         assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
     }
@@ -107,7 +107,7 @@ public class S3AccessIOTest {
     @Test
     void validSetting_getUrlExpirationMinutes() {
         // given
-        System.setProperty("dataverse.files.s3-url-expiration-minutes", "120");
+        System.setProperty("dataverse.files.s3.url-expiration-minutes", "120");
         // when & then
         assertEquals(120, dataFileAccess.getUrlExpirationMinutes());
     }
@@ -115,7 +115,7 @@ public class S3AccessIOTest {
     @Test
     void invalidSetting_getUrlExpirationMinutes() {
         // given
-        System.setProperty("dataverse.files.s3-url-expiration-minutes", "NaN");
+        System.setProperty("dataverse.files.s3.url-expiration-minutes", "NaN");
         // when & then
         assertEquals(60, dataFileAccess.getUrlExpirationMinutes());
     }
