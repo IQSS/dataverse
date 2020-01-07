@@ -46,6 +46,10 @@ This yum repo is recommended at https://wiki.shibboleth.net/confluence/display/S
 
 ``cd /etc/yum.repos.d``
 
+Install ``wget`` if you don't have it already:
+
+``yum install wget``
+
 If you are running el7 (RHEL/CentOS 7):
 
 ``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
@@ -56,6 +60,8 @@ If you are running el6 (RHEL/CentOS 6):
 
 Install Shibboleth Via Yum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Please note that during the installation it's ok to import GPG keys from the Shibboleth project. We trust them.
 
 ``yum install shibboleth``
 
@@ -163,7 +169,7 @@ Specific Identity Provider(s)
 
 When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you should consider if your users will all come from the same Identity Provider (IdP) or not.
 
-Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the TestShib IdP from http://testshib.org but you will want to edit this file to include the metadata from the Identity Provider(s) you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
+Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
@@ -194,7 +200,7 @@ See also https://www.incommon.org/federation/attributesummary.html and https://w
 attribute-map.xml
 ~~~~~~~~~~~~~~~~~
 
-By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out. Edit the file to enable them so that all the require attributes come through. You can download a :download:`sample attribute-map.xml file <../_static/installation/files/etc/shibboleth/attribute-map.xml>`.
+By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out and "subject-id" is used instead of "eppn". We recommend downloading and using :download:`attribute-map.xml<../_static/installation/files/etc/shibboleth/attribute-map.xml>` instead which has these changes and should be compatible with Dataverse.
 
 Shibboleth and ADFS
 ~~~~~~~~~~~~~~~~~~~
@@ -257,7 +263,15 @@ Congrats! You've made the creator of http://stopdisablingselinux.com proud. :)
 Restart Apache and Shibboleth
 -----------------------------
 
-After configuration is complete:
+After configuration is complete, restart ``shib`` and ``httpd``.
+
+On CentOS 7:
+
+``systemctl restart shibd.service``
+
+``systemctl restart httpd.service``
+
+On CentOS 6:
 
 ``service shibd restart``
 
@@ -265,6 +279,14 @@ After configuration is complete:
 
 Configure Apache and shibd to Start at Boot
 -------------------------------------------
+
+On CentOS 7:
+
+``systemctl enable httpd.service``
+
+``systemctl enable shibd.service``
+
+On CentOS 6:
 
 ``chkconfig httpd on``
 
@@ -298,53 +320,48 @@ Once you have confirmed that the Dataverse web interface is listing the institut
 
 ``curl -X DELETE http://localhost:8080/api/admin/authenticationProviders/shib``
 
-Before contacting your actual Identity Provider, we recommend testing first with the "TestShib" Identity Provider (IdP) to ensure that you have configured everything correctly.
+Before contacting your actual Identity Provider, we recommend testing first with the "SAMLtest" Identity Provider (IdP) to ensure that you have configured everything correctly. This process is described next.
 
 Exchange Metadata with Your Identity Provider
 ---------------------------------------------
 
-http://testshib.org (TestShib) is a fantastic resource for testing Shibboleth configurations. Depending on your relationship with your identity people you may want to avoid bothering them until you have tested your Dataverse configuration with the TestShib Identity Provider (IdP). This process is explained below.
+https://samltest.id (SAMLtest) is a fantastic resource for testing Shibboleth configurations. Depending on your relationship with your identity people you may want to avoid bothering them until you have tested your Dataverse configuration with the SAMLtest Identity Provider (IdP). This process is explained below.
 
-If you've temporarily configured your ``MetadataProvider`` to use the TestShib Identity Provider (IdP) as outlined above, you can download your metadata like this (substituting your hostname in both places):
+If you've temporarily configured your ``MetadataProvider`` to use the SAMLtest Identity Provider (IdP) as outlined above, you can download your metadata like this (substituting your hostname in both places):
 
 ``curl https://dataverse.example.edu/Shibboleth.sso/Metadata > dataverse.example.edu``
 
-Then upload your metadata to http://testshib.org/register.html
+Then upload your metadata to https://samltest.id/upload.php (or click "Fetch").
 
-Then try to log in to Dataverse using the TestShib IdP. After logging in, you can visit the https://dataverse.example.edu/Shibboleth.sso/Session (substituting your hostname) to troubleshoot which attributes are being received. You should see something like the following:
+Then try to log in to Dataverse using the SAMLtest IdP. After logging in, you can visit the https://dataverse.example.edu/Shibboleth.sso/Session (substituting your hostname) to troubleshoot which attributes are being received. You should see something like the following:
 
 .. code-block:: none
 
     Miscellaneous
     Session Expiration (barring inactivity): 479 minute(s)
-    Client Address: 65.112.10.82
+    Client Address: 75.69.182.6
     SSO Protocol: urn:oasis:names:tc:SAML:2.0:protocol
-    Identity Provider: https://idp.testshib.org/idp/shibboleth
-    Authentication Time: 2016-03-08T13:45:10.922Z
+    Identity Provider: https://samltest.id/saml/idp
+    Authentication Time: 2019-11-28T01:23:28.381Z
     Authentication Context Class: urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
     Authentication Context Decl: (none)
-
+    
     Attributes
-    affiliation: Member@testshib.org;Staff@testshib.org
-    cn: Me Myself And I
-    entitlement: urn:mace:dir:entitlement:common-lib-terms
-    eppn: myself@testshib.org
-    givenName: Me Myself
-    persistent-id: https://idp.testshib.org/idp/shibboleth!https://dataverse.example.edu/sp!RuyCiLvUcgmKqyh/rOQPh+wyR7s=
-    sn: And I
-    telephoneNumber: 555-5555
-    uid: myself
-    unscoped-affiliation: Member;Staff
+    displayName: Rick Sanchez
+    eppn: rsanchez@samltest.id
+    givenName: Rick
+    mail: rsanchez@samltest.id
+    sn: Sanchez
+    telephoneNumber: +1-555-555-5515
+    uid: rick
 
-(As of this writing the TestShib IdP does not send the "mail" attribute, a required attribute, but for testing purposes, Dataverse compensates for this for the TestShib IdP and permits login anyway.)
+When you are done testing, you can delete the SAMLtest users you created like this (after you have deleted any data and permisions associated with the users):
 
-When you are done testing, you can delete the TestShib users you created like this (after you have deleted any data and permisions associated with the users):
-
-``curl -X DELETE http://localhost:8080/api/admin/authenticatedUsers/myself``
+``curl -X DELETE http://localhost:8080/api/admin/authenticatedUsers/rick``
 
 (Of course, you are also welcome to do a fresh reinstall per the :doc:`installation-main` section.)
 
-If your Dataverse installation is working with TestShib it **should** work with your institution's Identity Provider (IdP). Next, you should:
+If your Dataverse installation is working with SAMLtest it **should** work with your institution's Identity Provider (IdP). Next, you should:
 
 - Send your identity people your metadata file above (or a link to download it themselves). From their perspective you are a Service Provider (SP).
 - Ask your identity people to send you the metadata for the Identity Provider (IdP) they operate. See the section above on ``shibboleth2.xml`` and ``MetadataProvider`` for what to do with the IdP metadata. Restart ``shibd`` and ``httpd`` as necessary.
@@ -417,11 +434,13 @@ Per above, you now need to tell the user to use the password reset feature to se
 Institution-Wide Shibboleth Groups
 ----------------------------------
 
-Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://idp.testshib.org/idp/shibboleth`` as the IdP would include everyone who logs in via the TestShib IdP mentioned above.
+Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
 
-To create an institution-wide Shibboleth groups, create a JSON file as below and issue this curl command: ``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupTestShib.json``
+To create an institution-wide Shibboleth groups, create a JSON file like :download:`shibGroupSAMLtest.json<../_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json>` as below and issue this curl command:
 
-.. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupTestShib.json 
+``curl http://localhost:8080/api/admin/groups/shib -X POST -H 'Content-type:application/json' --upload-file shibGroupSAMLtest.json``
+
+.. literalinclude:: ../_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json
 
 Institution-wide Shibboleth groups are based on the "Shib-Identity-Provider" SAML attribute asserted at runtime after successful authentication with the Identity Provider (IdP) and held within the browser session rather than being persisted in the database for any length of time. It is for this reason that roles based on these groups, such as the ability to create a dataset, are not honored by non-browser interactions, such as through the SWORD API. 
 

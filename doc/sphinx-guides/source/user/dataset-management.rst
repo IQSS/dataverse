@@ -58,7 +58,7 @@ Supported HTML Fields
 
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
-<strong>, <strike>, <ul>.
+<strong>, <strike>, <u>, <ul>.
 
 File Upload
 ==============

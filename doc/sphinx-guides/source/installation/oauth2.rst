@@ -13,6 +13,8 @@ As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of t
 
 Dataverse supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
+In addition :doc:`oidc` are supported, using a standard based on OAuth2.
+
 Setup
 -----
 

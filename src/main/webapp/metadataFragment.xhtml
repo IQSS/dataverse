@@ -150,21 +150,30 @@
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
-                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
-                                                        <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                                                                         id="unique1" rendered="#{!dsf.datasetFieldType.allowMultiples}">
-                                                            <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                            <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                        </p:selectOneMenu>
-                                                        <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                            <p:selectManyCheckbox value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" layout="pageDirection"
-                                                                                  id="unique2">
-                                                                <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
-                                                                <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
-                                                            </p:selectManyCheckbox>
-                                                        </div>
-                                                        <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
-                                                            <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
+                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">                                                    
+                                                        <div class="form-group dataset-field-values">
+                                                            <div class="form-col-container col-sm-9 edit-field">
+                                                                <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
+                                                                                 id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
+                                                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
+                                                                </p:selectOneMenu>
+                                                                <!--
+                                                                <p:outputPanel id="selectedValsList" style="padding-top:.5em;">
+                                                                    <ui:repeat value="#{dsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty dsf.controlledVocabularyValues}">
+                                                                        <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                    </ui:repeat>
+                                                                </p:outputPanel>
+                                                                -->
+                                                                <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true"
+                                                                                      id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
+                                                                </p:selectCheckboxMenu>
+                                                                <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
+                                                                    <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </ui:fragment>
                                                 </div>
@@ -188,9 +197,7 @@
                                                         <div class="form-col-container #{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'col-sm-12' : 'col-sm-6'}">
                                                             <ui:fragment rendered="#{subdsf.datasetFieldType.name == 'dsDescriptionValue'}">
                                                                 <p class="help-block">
-                                                                    <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                                                                        <f:param value="#{bundle.htmlAllowedTags}"/>
-                                                                    </h:outputFormat>
+                                                                    <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                                                 </p>
                                                             </ui:fragment>
                                                             <label jsf:for="#{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
@@ -212,12 +219,18 @@
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectOneMenu>
-                                                                <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{subdsf.datasetFieldType.allowMultiples}">
-                                                                    <p:selectManyCheckbox value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                                                                                          layout="pageDirection">
+                                                                <!--
+                                                                <p:outputPanel id="selectedValsListCompound" style="padding-top:.5em;">
+                                                                    <ui:repeat value="#{subdsf.controlledVocabularyValues}" var="cvv" rendered="#{!empty subdsf.controlledVocabularyValues}">
+                                                                        <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
+                                                                    </ui:repeat>
+                                                                </p:outputPanel>
+-->
+                                                                    <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                                                                                          rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"  >
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-                                                                    </p:selectManyCheckbox>
-                                                                </div>
+                                                                    </p:selectCheckboxMenu>
+
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty subdsf.validationMessage}">
                                                                     <span class="ui-message-error-detail">#{subdsf.validationMessage}</span>
                                                                 </div>

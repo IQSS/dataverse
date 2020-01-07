@@ -163,7 +163,9 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr/solr-7.3.1``
 
-``bin/solr start``
+(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
+
+``bin/solr start -j "-Djetty.host=127.0.0.1"``
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 

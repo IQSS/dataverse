@@ -2693,8 +2693,13 @@ public class DatasetPage implements java.io.Serializable {
         if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
             //we need to add a redirect here to disply the explore buttons as needed
             //as well as the ingest success message
+            //SEK 12/20/2019 - since we are ingesting a file we know that there is a current draft version
             lockedDueToIngestVar = null;
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+            if (canViewUnpublishedDataset()) {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+            } else {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+            }
         }
 
         return "";
@@ -4285,9 +4290,12 @@ public class DatasetPage implements java.io.Serializable {
             selectedTags = selectedTags.clone();
         }
     }
-        
-
     
+    public void handleCVVSelection(final AjaxBehaviorEvent event) {
+        //Dummy method for AJAX update of items selected
+    }
+        
+   
     private void refreshTabFileTagsByName(){
         
         tabFileTagsByName= new ArrayList<>();

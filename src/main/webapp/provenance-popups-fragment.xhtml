@@ -172,8 +172,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
-            <button jsf:id="confirmProvenancePopupCancelButton" class="btn btn-link" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();" type="button">
+            <p:commandButton styleClass="btn btn-default" id="confirmProvenancePopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('confirmProvenancePopup').hide();javascript:bind_bsui_components();" action="#{provPopupFragmentBean.stagePopupChanges(saveInPopup == 'true')}" update=":messagePanel"/>
+            <button type="button" jsf:id="confirmProvenancePopupCancelButton" class="btn btn-link" onclick="PF('editProvenancePopup').show();PF('confirmProvenancePopup').hide();" oncomplete="javascript:bind_bsui_components();">
                 #{bundle.cancel}
             </button>
         </div>
