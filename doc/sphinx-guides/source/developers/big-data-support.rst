@@ -18,7 +18,7 @@ Install a DCM
 
 Installation instructions can be found at https://github.com/sbgrid/data-capture-module/blob/master/doc/installation.md. Note that shared storage (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
-.. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3-bucket-name``.
+.. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3.bucket-name``.
 
 Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
@@ -100,6 +100,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
+- Also Note: With the new support for multiple file store in Dataverse, DCM requires a store with id="s3" and DCM will only work with this store.
 
   - Add AWS bucket info to dcmsrv
     - Add AWS credentials to ``~/.aws/credentials``
@@ -115,6 +116,9 @@ Optional steps for setting up the S3 Docker DCM Variant
     - ``cd /opt/glassfish4/bin/``
     - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
     - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
+    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.type=s3"``
+    - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.label=s3"``
+    
 
   - Add AWS bucket info to Dataverse
     - Add AWS credentials to ``~/.aws/credentials``
@@ -132,7 +136,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 
     - S3 bucket for Dataverse
 
-      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"``
+      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
 
     - S3 bucket for DCM (as Dataverse needs to do the copy over)
 
