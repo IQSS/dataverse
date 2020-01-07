@@ -73,6 +73,9 @@ function preliminary_setup()
   # location of the datafiles directory: 
   # (defaults to dataverse/files in the users home directory)
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${FILES_DIR}"
+  # Backward compatible file store configuration
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.type=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.label=file"
   # Rserve-related JVM options: 
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
