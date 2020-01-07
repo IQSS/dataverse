@@ -675,7 +675,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getProductionDate() {
-        String retVal = "";
+        String retVal = null;
         for (DatasetField dsfv : this.getDatasetFields()) {
             if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.productionDate)) {
                 retVal = dsfv.getDisplayValue();
