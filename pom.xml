@@ -7,11 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-<<<<<<< IQSS/6485
     <version>4.18.1</version>
-=======
-    <version>4.18.1-tdl-dev-ms</version>
->>>>>>> 08f6849 multistore implementation (built on direct upload)
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
