@@ -126,20 +126,25 @@ public class DataAccess {
     }
     
     public static String getDriverType(String driverId) {
-    	return System.getProperty("dataverse.files." + driverId + ".type", "file");
+    	return System.getProperty("dataverse.files." + driverId + ".type");
     }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
     // for saving new, not yet saved datafiles.
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
-
+        if (dvObject == null
+        		|| dvObject.getDataverseContext()==null
+                || storageTag == null
+                || storageTag.isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
+        }
         return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getStorageDriverId());
     }
 
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {
         if (dvObject == null
                 || storageTag == null
-            || storageTag.isEmpty()) {
+                || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 

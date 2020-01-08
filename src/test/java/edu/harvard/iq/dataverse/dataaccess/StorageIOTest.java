@@ -77,9 +77,9 @@ public class StorageIOTest {
         } catch (ClassCastException ex) {
             assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
         }
-        String dummyDriverId="dummy";
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null, dummyDriverId).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null, dummyDriverId).getDataverse());
+        // null driver defaults to 'file'
+        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null, null).getDataFile());
+        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null, null).getDataverse());
     }
 
     @Test

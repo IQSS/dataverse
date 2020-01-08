@@ -50,8 +50,8 @@ import java.util.ArrayList;
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
 	public FileAccessIO() {
-		//Partially functional StorageIO object - constructor only for testing
-		super();
+		//Constructor only for testing
+		super(null, null, null);
 	}
 	
     public FileAccessIO(T dvObject, DataAccessRequest req, String driverId ) {
