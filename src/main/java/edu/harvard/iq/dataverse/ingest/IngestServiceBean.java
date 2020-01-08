@@ -72,6 +72,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
@@ -178,8 +179,9 @@ public class IngestServiceBean {
 				String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
 				String storageLocation = storageInfo[1];
+				String tempFileLocation = null;
 				if (driverType.equals("tmp")|| driverType.contentEquals("file")) {  //"file" is the default if no prefix
-					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
+					tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
 
 					// Try to save the file in its permanent location:
 					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageLocation);
@@ -303,40 +305,7 @@ public class IngestServiceBean {
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
 
-					if (savedSuccess) {
-						// These are all brand new files, so they should all have
-						// one filemetadata total. -- L.A.
-						FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
-						String fileName = fileMetadata.getLabel();
 
-						boolean metadataExtracted = false;
-						if (FileUtil.canIngestAsTabular(dataFile)) {
-							/*
-							 * Note that we don't try to ingest the file right away - instead we mark it as
-							 * "scheduled for ingest", then at the end of the save process it will be queued
-							 * for async. ingest in the background. In the meantime, the file will be
-							 * ingested as a regular, non-tabular file, and appear as such to the user,
-							 * until the ingest job is finished with the Ingest Service.
-							 */
-							dataFile.SetIngestScheduled();
-						} else if (fileMetadataExtractable(dataFile)) {
-
-							try {
-								// FITS is the only type supported for metadata
-								// extraction, as of now. -- L.A. 4.0
-								dataFile.setContentType("application/fits");
-								metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
-							} catch (IOException mex) {
-								logger.severe("Caught exception trying to extract indexable metadata from file "
-										+ fileName + ",  " + mex.getMessage());
-							}
-							if (metadataExtracted) {
-								logger.fine("Successfully extracted indexable metadata from file " + fileName);
-							} else {
-								logger.fine("Failed to extract indexable metadata from file " + fileName);
-							}
-						}
-					}
 				} else {
 					try {
 						StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
@@ -355,7 +324,48 @@ public class IngestServiceBean {
 				}
 
 				logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
+				boolean belowLimit = false;
 
+				try {
+					belowLimit = dataFile.getStorageIO().isBelowIngestSizeLimit();
+				} catch (IOException e) {
+					logger.warning("Error getting ingest limit for file: " + dataFile.getIdentifier() + " : " + e.getMessage());
+				} 
+
+				if (savedSuccess && belowLimit) {
+					// These are all brand new files, so they should all have
+					// one filemetadata total. -- L.A.
+					FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+					String fileName = fileMetadata.getLabel();
+
+					boolean metadataExtracted = false;
+					if (FileUtil.canIngestAsTabular(dataFile)) {
+						/*
+						 * Note that we don't try to ingest the file right away - instead we mark it as
+						 * "scheduled for ingest", then at the end of the save process it will be queued
+						 * for async. ingest in the background. In the meantime, the file will be
+						 * ingested as a regular, non-tabular file, and appear as such to the user,
+						 * until the ingest job is finished with the Ingest Service.
+						 */
+						dataFile.SetIngestScheduled();
+					} else if (fileMetadataExtractable(dataFile)) {
+
+						try {
+							// FITS is the only type supported for metadata
+							// extraction, as of now. -- L.A. 4.0
+							dataFile.setContentType("application/fits");
+							metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
+						} catch (IOException mex) {
+							logger.severe("Caught exception trying to extract indexable metadata from file "
+									+ fileName + ",  " + mex.getMessage());
+						}
+						if (metadataExtracted) {
+							logger.fine("Successfully extracted indexable metadata from file " + fileName);
+						} else {
+							logger.fine("Failed to extract indexable metadata from file " + fileName);
+						}
+					}
+				}
 				if (savedSuccess) {
 					// temp dbug line
 					// System.out.println("ADDING FILE: " + fileName + "; for dataset: " +
@@ -1134,12 +1144,17 @@ public class IngestServiceBean {
     public boolean extractMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;
 
-        FileInputStream tempFileInputStream = null; 
-        
-        try {
-            tempFileInputStream = new FileInputStream(new File(tempFileLocation));
-        } catch (FileNotFoundException notfoundEx) {
-            throw new IOException("Could not open temp file "+tempFileLocation);
+        InputStream tempFileInputStream = null; 
+        if(tempFileLocation == null) {
+        	StorageIO<DataFile> sio = dataFile.getStorageIO();
+        	sio.open(DataAccessOption.READ_ACCESS);
+        	tempFileInputStream = sio.getInputStream();
+        } else {
+        	try {
+        		tempFileInputStream = new FileInputStream(new File(tempFileLocation));
+        	} catch (FileNotFoundException notfoundEx) {
+        		throw new IOException("Could not open temp file "+tempFileLocation);
+        	}
         }
         
         // Locate metadata extraction plugin for the file format by looking

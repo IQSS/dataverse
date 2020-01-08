@@ -533,4 +533,13 @@ public abstract class StorageIO<T extends DvObject> {
         // By default, we open the file in read mode:
         return false;
     }
+
+	public boolean isBelowIngestSizeLimit() {
+		long limit = Long.parseLong(System.getProperty("dataverse.files." + this.driverId + ".ingestsizelimit", "-1"));
+		if(limit>0 && getSize()>limit) {
+			return false;
+		} else {
+		    return true;
+		}
+	}
 }
