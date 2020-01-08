@@ -579,10 +579,8 @@ if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
 if not os.path.exists("setup-all.sh") or not os.path.isdir("data"):
    sys.exit("Can't find the api setup scripts; aborting. (are you running the installer in the right directory?)")
 
-# @todo: instead of dumping the output of the script on screen, save it in 
-# a log file, like we do in the old installer.
 try:
-   subprocess.call(["./setup-all.sh"])
+   subprocess.call("./setup-all.sh > setup-all.$$.log 2>&1", shell=True)
 except:
    sys.exit("Failure to execute setup-all.sh! aborting.")
 
