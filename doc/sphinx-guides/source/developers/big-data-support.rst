@@ -20,9 +20,13 @@ To configure these options, an administrator must set two JVM options for the Da
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
 
+
 With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.  
 
-At present, one drawback for direct-upload is that files are not 'ingested', e.g. zip files are not unzipped, derived files and metadata are not created, etc. This could be appropriate for large files. There are plans to remove this limitation in the future (potentially up to a configurable size limit so that the largest files retain as much performance as possible.)
+At present, one potential drawback for direct-upload is that files are only partially 'ingested', tabular and FITS files are processed, but zip files are not unzipped, and the file contents are not inspected to evaluate their mimetype. This could be appropriate for large files, or it may be useful to completely turn off ingest processing for performance reasons (ingest processing requires a copy of the file to be retrieved by Dataverse from the S3 store). A store using direct uplod can be configured to disable all ingest processing for files above a given size limit:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
+
 
 One additional step that is required to enable direct download to work with previewers is to allow cross site (CORS) requests on your S3 store.
 
