@@ -126,7 +126,7 @@ public class DataAccess {
     }
     
     public static String getDriverType(String driverId) {
-    	return System.getProperty("dataverse.files." + driverId + ".type");
+    	return System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
     }
 
     // createDataAccessObject() methods create a *new*, empty DataAccess objects,
