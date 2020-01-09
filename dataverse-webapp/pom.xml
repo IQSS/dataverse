@@ -453,6 +453,13 @@
                     <include>**/firstNames/*.*</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>config/version.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
         </resources>
         
         <plugins>

@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.apache.commons.io.IOUtils;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,9 +11,7 @@ import org.json.JSONObject;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -33,8 +31,10 @@ public class SystemConfig {
 
     private static final Logger logger = Logger.getLogger(SystemConfig.class.getCanonicalName());
 
-    @EJB
-    SettingsServiceBean settingsService;
+    private static final String VERSION_PROPERTIES_CLASSPATH = "/config/version.properties";
+    private static final String VERSION_PROPERTIES_KEY = "dataverse.version";
+    private static final String VERSION_PLACEHOLDER = "${project.version}";
+    private static final String VERSION_FALLBACK = "4.0";
 
     public static final String DATAVERSE_PATH = "/dataverse/";
 
@@ -42,6 +42,11 @@ public class SystemConfig {
      * A JVM option for where files are stored on the file system.
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
+
+
+    @EJB
+    private SettingsServiceBean settingsService;
+
 
     private static String appVersionString = null;
     private static String buildNumberString = null;
@@ -54,102 +59,27 @@ public class SystemConfig {
 
         if (appVersionString == null) {
 
-            // The Version Number is no longer supplied in a .properties file - so
-            // we can't just do 
-            //  return BundleUtil.getStringFromBundle("version.number", null, ResourceBundle.getBundle("VersionNumber", Locale.US));
-            //
-            // Instead, we'll rely on Maven placing the version number into the
-            // Manifest, and getting it from there:
-            // (this is considered a better practice, and will also allow us
-            // to maintain this number in only one place - the pom.xml file)
-            // -- L.A. 4.0.2
-
-            // One would assume, that once the version is in the MANIFEST.MF, 
-            // as Implementation-Version:, it would be possible to obtain 
-            // said version simply as 
-            //    appVersionString = getClass().getPackage().getImplementationVersion();
-            // alas - that's not working, for whatever reason. (perhaps that's 
-            // only how it works with jar-ed packages; not with .war files).
-            // People on the interwebs suggest that one should instead 
-            // open the Manifest as a resource, then extract its attributes. 
-            // There were some complications with that too. Plus, relying solely 
-            // on the MANIFEST.MF would NOT work for those of the developers who 
-            // are using "in place deployment" (i.e., where 
-            // Netbeans runs their builds directly from the local target 
-            // directory, bypassing the war file deployment; and the Manifest 
-            // is only available in the .war file). For that reason, I am 
-            // going to rely on the pom.properties file, and use java.util.Properties 
-            // to read it. We have to look for this file in 2 different places
-            // depending on whether this is a .war file deployment, or a 
-            // developers build. (the app-level META-INF is only populated when
-            // a .war file is built; the "maven-archiver" directory, on the other 
-            // hand, is only available when it's a local build deployment).
-            // So, long story short, I'm resorting to the convoluted steps below. 
-            // It may look hacky, but it should actually be pretty solid and 
-            // reliable. 
-
-
-            // First, find the absolute path url of the application persistence file
-            // always supplied with the Dataverse app:
-            java.net.URL fileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
-            String filePath = null;
-
-
-            if (fileUrl != null) {
-                filePath = fileUrl.getFile();
-                if (filePath != null) {
-                    InputStream mavenPropertiesInputStream = null;
-                    String mavenPropertiesFilePath;
-                    Properties mavenProperties = new Properties();
-
-
-                    filePath = filePath.replaceFirst("/[^/]*$", "/");
-                    // Using a relative path, find the location of the maven pom.properties file. 
-                    // First, try to look for it in the app-level META-INF. This will only be 
-                    // available if it's a war file deployment: 
-                    mavenPropertiesFilePath = filePath.concat("../../../META-INF/maven/edu.harvard.iq/dataverse-webapp/pom.properties");
-
-                    try {
-                        mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                    } catch (IOException ioex) {
-                        // OK, let's hope this is a local dev. build. 
-                        // In that case the properties file should be available in 
-                        // the maven-archiver directory: 
-
-                        mavenPropertiesFilePath = filePath.concat("../../../../maven-archiver/pom.properties");
-
-                        // try again: 
-
-                        try {
-                            mavenPropertiesInputStream = new FileInputStream(mavenPropertiesFilePath);
-                        } catch (IOException ioex2) {
-                            logger.warning("Failed to find and/or open for reading the pom.properties file.");
-                            mavenPropertiesInputStream = null;
-                        }
-                    }
-
-                    if (mavenPropertiesInputStream != null) {
-                        try {
-                            mavenProperties.load(mavenPropertiesInputStream);
-                            appVersionString = mavenProperties.getProperty("version");
-                        } catch (IOException ioex) {
-                            logger.warning("caught IOException trying to read and parse the pom properties file.");
-                        } finally {
-                            IOUtils.closeQuietly(mavenPropertiesInputStream);
-                        }
-                    }
-
-                } else {
-                    logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!");
-                }
+            // We'll rely on Maven placing the version number into the
+            // version.properties file using resource filtering
+            
+            Try<String> appVersionTry = Try.withResources(() -> getClass().getResourceAsStream(VERSION_PROPERTIES_CLASSPATH))
+                    .of(is -> {
+                        Properties properties = new Properties();
+                        properties.load(is);
+                        return properties;
+                    })
+                    .map(p -> p.getProperty(VERSION_PROPERTIES_KEY));
+            
+            if (appVersionTry.isFailure()) {
+                appVersionString = VERSION_FALLBACK;
+                logger.warning("Failed to read the " + VERSION_PROPERTIES_CLASSPATH + " file");
+                
+            } else if (StringUtils.equals(appVersionTry.get(), VERSION_PLACEHOLDER)) {
+                appVersionString = VERSION_FALLBACK;
+                logger.warning(VERSION_PROPERTIES_CLASSPATH + " was not filtered by maven (check your pom.xml configuration)");
+                
             } else {
-                logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
-            }
-
-
-            if (appVersionString == null) {
-                // still null? - defaulting to 4.0:    
-                appVersionString = "4.0";
+                appVersionString = appVersionTry.get();
             }
         }
 
