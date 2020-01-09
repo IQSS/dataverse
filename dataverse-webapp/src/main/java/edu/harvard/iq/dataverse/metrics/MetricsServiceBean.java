@@ -11,6 +11,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -153,8 +154,34 @@ public class MetricsServiceBean implements Serializable {
                 .getResultList());
     }
 
+    /**
+     * Published files size
+     */
+    public List<ChartMetrics> countPublishedFilesStorage() {
+        return mapToChartMetrics(em.createNativeQuery(
+            "select \n" +
+                    "extract(year from sub.first_publishDate) as year,\n" +
+                    "extract(month from sub.first_publishDate) as month,\n" +
+                    "ceiling(sum(sub.filesize) / (1024 * 1024)) as published_files_counter\n" +
+                    "from (select \n" +
+                    "       df.filesize,\n" +
+                    "       min(dsv.releasetime) as first_publishDate\n" +
+                    "       from filemetadata fm\n" +
+                    "       inner join datasetversion dsv\n" +
+                    "       on fm.datasetversion_id = dsv.id\n" +
+                    "       left join datafile df\n" +
+                    "       on fm.datafile_id = df.id\n" +
+                    "       where dsv.releasetime is not null\n" +
+                    "       group by fm.datafile_id, df.filesize\n" +
+                    "       order by fm.datafile_id ) sub\n" +
+                    "group by year, month\n" +
+                    "order by year, month")
+                .getResultList());
+    }
+
     private List<ChartMetrics> mapToChartMetrics(List<Object[]> result) {
         return result.stream()
+                .peek(dm -> dm[2] = dm[2] instanceof BigDecimal ?  ((BigDecimal) dm[2]).longValue() : dm[2])
                 .map(dm -> new ChartMetrics((Double) dm[0], (Double) dm[1], (Long) dm[2]))
                 .collect(Collectors.toList());
     }
