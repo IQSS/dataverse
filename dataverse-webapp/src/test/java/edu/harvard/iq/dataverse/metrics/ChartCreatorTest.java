@@ -16,10 +16,11 @@ public class ChartCreatorTest {
     public void verifyIfChartBarModelCorrectlyDistributesDatasets() {
         //given
         ChartCreator chartCreator = new ChartCreator();
-        List<DatasetsMetrics> datasetsMetrics = generateSampleDatasetsMetrics();
+        List<ChartMetrics> chartMetrics = generateSampleDatasetsMetrics();
+
         //when
-        BarChartModel barChartModel = chartCreator.initYearlyBarModel(datasetsMetrics);
-        BarChartModel createdModel = chartCreator.createBarModel(datasetsMetrics, "test", barChartModel);
+        BarChartModel createdModel = chartCreator.createYearlyChart(chartMetrics, "publishedDatasets");
+
         //then
         assertEquals(78L, getMaximumYaxisHeight(createdModel));
         assertEquals(7, getYearValueFromModel(createdModel, 2018));
@@ -37,11 +38,11 @@ public class ChartCreatorTest {
         return number.intValue();
     }
 
-    private List<DatasetsMetrics> generateSampleDatasetsMetrics() {
+    private List<ChartMetrics> generateSampleDatasetsMetrics() {
         return Arrays.asList(
-                new DatasetsMetrics(2018.0, (double) 4, 7L),
-                new DatasetsMetrics(2019.0, (double) 1, 78L),
-                new DatasetsMetrics(2020.0, (double) 12, 8L)
+                new ChartMetrics(2018.0, (double) 4, 7L),
+                new ChartMetrics(2019.0, (double) 1, 78L),
+                new ChartMetrics(2020.0, (double) 12, 8L)
         );
     }
 }

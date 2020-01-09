@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class MetricsUtilTest {
 
     private static final long COUNT = 42l;
-    private List<DatasetsMetrics> datasetsMetrics;
+    private List<ChartMetrics> chartMetrics;
 
     @Test
     public void testCountToJson() {
@@ -189,10 +189,10 @@ public class MetricsUtilTest {
     @Test
     public void shouldCountDatasetMetricsForYear() {
         // given
-        List<DatasetsMetrics> metrics = allMetrics();
+        List<ChartMetrics> metrics = allMetrics();
 
         // when
-        List<DatasetsMetrics> result = MetricsUtil.countDatasetsPerYear(metrics);
+        List<ChartMetrics> result = MetricsUtil.countMetricsPerYear(metrics);
 
         // then
         verifyMetricsSize(result, 3);
@@ -204,10 +204,10 @@ public class MetricsUtilTest {
     @Test
     public void shouldFillDataSetsMetricsWithEmptyMonths() {
         // given
-        List<DatasetsMetrics> metrics = allMetrics();
+        List<ChartMetrics> metrics = allMetrics();
 
         // when
-        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2018);
+        List<ChartMetrics> result = MetricsUtil.fillMissingMonthsForMetrics(metrics, 2018);
 
         // then
         verifyMetricsSize(result, 12);
@@ -216,10 +216,10 @@ public class MetricsUtilTest {
     @Test
     public void verifyCountForYearMonth() {
         // given
-        List<DatasetsMetrics> metrics = allMetrics();
+        List<ChartMetrics> metrics = allMetrics();
 
         // when
-        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2020);
+        List<ChartMetrics> result = MetricsUtil.fillMissingMonthsForMetrics(metrics, 2020);
 
         // then
         verifyDatasetsCountForYearMonth(result, 11, 9);
@@ -229,31 +229,31 @@ public class MetricsUtilTest {
     @Test
     public void shouldFillRestOfTheMonthWithZeroCount() {
         // given
-        List<DatasetsMetrics> metrics = allMetrics();
+        List<ChartMetrics> metrics = allMetrics();
 
         // when
-        List<DatasetsMetrics> result = MetricsUtil.fillMissingDatasetMonths(metrics, 2020);
+        List<ChartMetrics> result = MetricsUtil.fillMissingMonthsForMetrics(metrics, 2020);
 
         // then
         verifyMissingYearMonthRangeCountAsZero(result, 2020, 1, 10);
     }
 
-    private void verifyCountForYear(List<DatasetsMetrics> metrics, double year, long count) {
+    private void verifyCountForYear(List<ChartMetrics> metrics, double year, long count) {
         long sum = metrics.stream().filter(dm -> dm.getYear() == year)
-                .mapToLong(DatasetsMetrics::getCount)
+                .mapToLong(ChartMetrics::getCount)
                 .sum();
         assertEquals(count, sum);
     }
 
-    private void verifyDatasetsCountForYearMonth(List<DatasetsMetrics> result, int month, int datasetCount) {
+    private void verifyDatasetsCountForYearMonth(List<ChartMetrics> result, int month, int datasetCount) {
         assertEquals((long) result.get(month - 1).getCount(), datasetCount);
     }
 
-    private void verifyMissingYearMonthRangeCountAsZero(List<DatasetsMetrics> result, double year,
+    private void verifyMissingYearMonthRangeCountAsZero(List<ChartMetrics> result, double year,
                                                         int fromMonth, int toMonth) {
         for (int month = fromMonth; month <= toMonth; month++) {
             final int filterByMonth = month;
-            DatasetsMetrics metrics = result.stream()
+            ChartMetrics metrics = result.stream()
                     .filter(dm -> dm.getYear() == year)
                     .filter(dm -> dm.getMonth() == filterByMonth)
                     .findAny()
@@ -262,18 +262,18 @@ public class MetricsUtilTest {
         }
     }
 
-    private void verifyMetricsSize(List<DatasetsMetrics> result, int size) {
+    private void verifyMetricsSize(List<ChartMetrics> result, int size) {
         assertEquals(size, result.size());
     }
 
-    private List<DatasetsMetrics> allMetrics() {
+    private List<ChartMetrics> allMetrics() {
         return Lists.newArrayList(
-                new DatasetsMetrics(2018.0, (double) 4, 7L),
-                new DatasetsMetrics(2018.0, (double) 5, 1L),
-                new DatasetsMetrics(2018.0, (double) 6, 0L),
-                new DatasetsMetrics(2019.0, (double) 1, 78L),
-                new DatasetsMetrics(2020.0, (double) 11, 9L),
-                new DatasetsMetrics(2020.0, (double) 12, 8L)
+                new ChartMetrics(2018.0, (double) 4, 7L),
+                new ChartMetrics(2018.0, (double) 5, 1L),
+                new ChartMetrics(2018.0, (double) 6, 0L),
+                new ChartMetrics(2019.0, (double) 1, 78L),
+                new ChartMetrics(2020.0, (double) 11, 9L),
+                new ChartMetrics(2020.0, (double) 12, 8L)
         );
     }
 }

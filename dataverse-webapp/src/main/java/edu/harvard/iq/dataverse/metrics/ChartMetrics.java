@@ -2,19 +2,19 @@ package edu.harvard.iq.dataverse.metrics;
 
 import java.util.Objects;
 
-public class DatasetsMetrics {
+public class ChartMetrics {
 
     private int year;
     private int month;
     private Long count;
 
-    public DatasetsMetrics(Double year, Double month, Long count) {
+    public ChartMetrics(Double year, Double month, Long count) {
         this.year = year.intValue();
         this.month = month.intValue();
         this.count = count;
     }
 
-    public DatasetsMetrics(Double year, Long count) {
+    public ChartMetrics(Double year, Long count) {
         this.year = year.intValue();
         this.count = count;
     }
@@ -43,7 +43,7 @@ public class DatasetsMetrics {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DatasetsMetrics that = (DatasetsMetrics) o;
+        ChartMetrics that = (ChartMetrics) o;
         return year == that.year &&
                 month == that.month &&
                 Objects.equals(count, that.count);

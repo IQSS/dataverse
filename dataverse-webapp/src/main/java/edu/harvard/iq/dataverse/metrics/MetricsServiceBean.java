@@ -101,8 +101,8 @@ public class MetricsServiceBean implements Serializable {
     /**
      * Datasets
      */
-    public List<DatasetsMetrics> countPublishedDatasets() {
-        return mapToDatasetsMetrics(em.createNativeQuery(
+    public List<ChartMetrics> countPublishedDatasets() {
+        return mapToChartMetrics(em.createNativeQuery(
                 "SELECT\n" +
                         "    EXTRACT(YEAR FROM dsv.lastupdatetime) as year,\n" +
                         "    EXTRACT(MONTH FROM dsv.lastupdatetime) as month,\n" +
@@ -111,14 +111,51 @@ public class MetricsServiceBean implements Serializable {
                         "    WHERE\n" +
                         "        dsv.versionnumber = 1 and\n" +
                         "        dsv.minorversionnumber = 0 and\n" +
-                        "        dsv.versionstate = 'RELEASED'\n" +
+                        "        dsv.releasetime is not null\n" +
                         "GROUP BY year, month")
                                             .getResultList());
     }
 
-    private List<DatasetsMetrics> mapToDatasetsMetrics(List<Object[]> result) {
+    /**
+     * Authenticated users
+     */
+    public List<ChartMetrics> countAuthenticatedUsers() {
+        return mapToChartMetrics(em.createNativeQuery(
+                "SELECT\n" +
+                        "    EXTRACT(YEAR FROM au.createdtime) as year,\n" +
+                        "    EXTRACT(MONTH FROM au.createdtime) as month,\n" +
+                        "    count (au.id)\n" +
+                        "    FROM authenticateduser au\n" +
+                        "    GROUP BY year, month")
+                .getResultList());
+    }
+
+    /**
+     * Published files
+     */
+    public List<ChartMetrics> countPublishedFiles() {
+        return mapToChartMetrics(em.createNativeQuery(
+                "select \n" +
+                        "extract(year from sub.first_publishDate) as year,\n" +
+                        "extract(month from sub.first_publishDate) as month,\n" +
+                        "count(sub.datafile_id) as published_files_counter\n" +
+                        "from (select \n" +
+                        "       fm.datafile_id,\n" +
+                        "       min(dsv.releasetime) as first_publishDate\n" +
+                        "       from filemetadata fm\n" +
+                        "       inner join datasetversion dsv\n" +
+                        "       on fm.datasetversion_id = dsv.id\n" +
+                        "       where dsv.releasetime is not null\n" +
+                        "       group by fm.datafile_id\n" +
+                        "       order by fm.datafile_id ) sub\n" +
+                        "group by year, month\n" +
+                        "order by year, month\n")
+                .getResultList());
+    }
+
+    private List<ChartMetrics> mapToChartMetrics(List<Object[]> result) {
         return result.stream()
-                .map(dm -> new DatasetsMetrics((Double) dm[0], (Double) dm[1], (Long) dm[2]))
+                .map(dm -> new ChartMetrics((Double) dm[0], (Double) dm[1], (Long) dm[2]))
                 .collect(Collectors.toList());
     }
 

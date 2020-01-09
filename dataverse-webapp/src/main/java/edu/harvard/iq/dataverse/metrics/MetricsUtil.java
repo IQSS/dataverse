@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MetricsUtil {
 
@@ -171,32 +172,63 @@ public class MetricsUtil {
         return jab;
     }
 
-    static List<DatasetsMetrics> countDatasetsPerYear(List<DatasetsMetrics> datasetsMetrics) {
+    public static List<ChartMetrics> countMetricsPerYearAndFillMissingYears(List<ChartMetrics> metrics) {
+        return fillMissingYearsForMetrics(countMetricsPerYear(metrics));
+    }
+
+    public static List<ChartMetrics> countMetricsPerYearAndFillMissingYearsDescending(List<ChartMetrics> metrics) {
+        List<ChartMetrics> yearsDescending = fillMissingYearsForMetrics(countMetricsPerYear(metrics));
+        yearsDescending.sort(Comparator.comparingLong(ChartMetrics::getYear).reversed());
+        return yearsDescending;
+    }
+
+    static List<ChartMetrics> countMetricsPerYear(List<ChartMetrics> chartMetrics) {
         Map<Integer, Long> counts = new HashMap<>();
 
-        datasetsMetrics.forEach(
+        chartMetrics.forEach(
                 (metrics -> {
                     Long yearCount = counts.getOrDefault(metrics.getYear(), 0L);
                     counts.put(metrics.getYear(), metrics.getCount() + yearCount);
                 }));
 
         return counts.entrySet().stream()
-                .map(integerLongEntry -> new DatasetsMetrics((double) integerLongEntry.getKey(), integerLongEntry.getValue()))
-                .sorted(Comparator.comparing(DatasetsMetrics::getYear))
+                .map(integerLongEntry -> new ChartMetrics((double) integerLongEntry.getKey(), integerLongEntry.getValue()))
+                .sorted(Comparator.comparing(ChartMetrics::getYear))
                 .collect(Collectors.toList());
     }
 
-    static List<DatasetsMetrics> fillMissingDatasetMonths(List<DatasetsMetrics> datasetsMetrics, int year) {
+    static List<ChartMetrics> fillMissingMonthsForMetrics(List<ChartMetrics> chartMetrics, int year) {
         List<Integer> months = getListWithMonthsValues();
 
-        List<DatasetsMetrics> filteredMetrics = datasetsMetrics.stream()
+        List<ChartMetrics> filteredMetrics = chartMetrics.stream()
                 .filter(metrics -> metrics.getYear() == year)
                 .peek(metrics -> months.removeIf(month -> month == metrics.getMonth()))
                 .collect(Collectors.toList());
 
-        months.forEach(month -> filteredMetrics.add(new DatasetsMetrics((double) year, (double) month, 0L)));
-        filteredMetrics.sort(Comparator.comparing(DatasetsMetrics::getMonth));
+        months.forEach(month -> filteredMetrics.add(new ChartMetrics((double) year, (double) month, 0L)));
+        filteredMetrics.sort(Comparator.comparing(ChartMetrics::getMonth));
         return filteredMetrics;
+    }
+
+    static List<ChartMetrics> fillMissingYearsForMetrics(List<ChartMetrics> missingYearsMetrics) {
+        int currentYear = LocalDate.now().getYear();
+        int minYear = missingYearsMetrics.stream()
+                .mapToInt(ChartMetrics::getYear)
+                .min()
+                .orElse(currentYear);
+
+        List<Integer> years = getListWithYears(minYear, currentYear);
+        List<ChartMetrics> filledYearsMetrics = new ArrayList<>();
+        years.forEach(year -> filledYearsMetrics.add(new ChartMetrics((double) year,
+                missingYearsMetrics.stream()
+                        .filter(metric -> metric.getYear() == year)
+                        .findFirst()
+                        .map(ChartMetrics::getCount)
+                        .orElse(0L)
+        )));
+
+        filledYearsMetrics.sort(Comparator.comparingLong(ChartMetrics::getYear));
+        return filledYearsMetrics;
     }
 
     private static List<Integer> getListWithMonthsValues() {
@@ -207,6 +239,10 @@ public class MetricsUtil {
         }
 
         return months;
+    }
+
+    private static List<Integer> getListWithYears(int fromYear, int toYear) {
+        return IntStream.rangeClosed(fromYear, toYear).boxed().collect(Collectors.toList());
     }
 }
 
