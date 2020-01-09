@@ -19,10 +19,12 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.validation.ValidationException;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -54,9 +56,14 @@ class DatasetVersionServiceBeanTest {
     public void updateDatasetVersion() {
         //given
         DatasetVersion testDatasetVersion = prepareDataset();
+        
+        TypedQuery<DatasetVersion> dbQuery = mock(TypedQuery.class);
+        when(dbQuery.setParameter("datasetId", 1L)).thenReturn(dbQuery);
+        when(dbQuery.setMaxResults(1)).thenReturn(dbQuery);
+        when(dbQuery.getSingleResult()).thenReturn(testDatasetVersion);
 
         //when
-        when(entityManager.find(DatasetVersion.class, testDatasetVersion.getId())).thenReturn(testDatasetVersion);
+        when(entityManager.createQuery(any(), eq(DatasetVersion.class))).thenReturn(dbQuery);
         Dataset updatedDataset = Assertions.assertDoesNotThrow(() -> datasetVersionService.updateDatasetVersion(testDatasetVersion, true));
 
         //then

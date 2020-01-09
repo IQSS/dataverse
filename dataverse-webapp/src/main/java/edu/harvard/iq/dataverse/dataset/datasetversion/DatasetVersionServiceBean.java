@@ -1171,7 +1171,7 @@ w
         }
 
         Dataset dataset = editVersion.getDataset();
-        DatasetVersion datasetBeforeChanges = find(editVersion.getId());
+        DatasetVersion datasetBeforeChanges = findLatestVersion(dataset.getId());
 
 
         UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
@@ -1181,5 +1181,17 @@ w
         return commandEngine.submit(command);
     }
 
+
+    private DatasetVersion findLatestVersion(long datasetId) {
+        String queryStr = "SELECT dv FROM DatasetVersion dv";
+        queryStr += " INNER JOIN Dataset ds";
+        queryStr += " ON dv.dataset.id=ds.id";
+        queryStr += " WHERE ds.id = :datasetId";
+        queryStr += " ORDER BY dv.versionNumber DESC, dv.minorVersionNumber DESC";
+        return em.createQuery(queryStr, DatasetVersion.class)
+                .setParameter("datasetId", datasetId)
+                .setMaxResults(1)
+                .getSingleResult();
+    }
 
 } // end class

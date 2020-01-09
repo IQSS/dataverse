@@ -52,7 +52,6 @@ public class EditDatasetMetadataPage implements Serializable {
 
     private Dataset dataset;
     private DatasetVersion workingVersion;
-    private DatasetVersion clone;
     private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit;
 
     // -------------------- GETTERS --------------------
@@ -101,7 +100,6 @@ public class EditDatasetMetadataPage implements Serializable {
         }
 
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
 
         List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(workingVersion.getDatasetFields(),
                 dataset.getOwner().getMetadataBlockRootDataverse());
