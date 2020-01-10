@@ -75,7 +75,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
     // -------------------- TESTS --------------------
 
     @Test
-    public void saveNewDataverse_ShouldSuccessfullySave() throws SolrServerException, IOException {
+    public void saveNewDataverse_ShouldSuccessfullySave() throws SolrServerException, IOException, InterruptedException {
         //given
         long userId = loginSessionWithSuperUser();
         Dataverse dataverse = prepareDataverse();
@@ -91,7 +91,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Assert.assertEquals("NICE DATAVERSE", dbDataverse.getName());
 
         await()
-                .atMost(Duration.ofSeconds(10L))
+                .atMost(Duration.ofSeconds(15L))
                 .until(() -> smtpServer.mailBox().stream()
                         .anyMatch(emailModel -> emailModel.getSubject().contains("Your dataverse has been created")));
 
