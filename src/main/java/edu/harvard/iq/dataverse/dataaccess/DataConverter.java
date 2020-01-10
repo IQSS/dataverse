@@ -95,7 +95,7 @@ public class DataConverter {
             convertedFileStream = Channels.newInputStream((ReadableByteChannel) storageIO.openAuxChannel(formatRequested));
             convertedFileSize = storageIO.getAuxObjectSize(formatRequested);
         } catch (IOException ioex) {
-            logger.fine("No cached copy for file format "+formatRequested+", file "+file.getStorageIdentifier());
+            logger.warning("No cached copy for file format "+formatRequested+", file "+file.getStorageIdentifier());
             convertedFileStream = null;
         }
 

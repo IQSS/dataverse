@@ -1693,7 +1693,7 @@ public class UtilIT {
         try {
             return IOUtils.toByteArray(inputStream);
         } catch (IOException ex) {
-            logger.fine("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
+            logger.warning("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
             return null;
         }
     }

@@ -742,7 +742,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (Exception ex) {
-            logger.fine("Solr exception: " + ex.getLocalizedMessage());
+            logger.warning("Solr exception: " + ex.getLocalizedMessage());
             // solr maybe down/some error may have occurred... 
             return false; 
         }
@@ -857,7 +857,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (HttpSolrClient.RemoteSolrException ex) {
-            logger.fine("Remote Solr Exception: " + ex.getLocalizedMessage());
+            logger.warning("Remote Solr Exception: " + ex.getLocalizedMessage());
             String msg = ex.getLocalizedMessage(); 
             if (msg.contains(SearchFields.FILE_DELETED)) {
                 fileDeletedFlagNotIndexed = true; 
@@ -959,7 +959,7 @@ public class DatasetPage implements java.io.Serializable {
                 logger.fine("DatasetPage: Failed to cast storageIO as SwiftAccessIO (most likely because storageIO is a FileAccessIO)");
             } 
         } catch (IOException e) {
-            logger.fine("DatasetPage: Failed to get storageIO");
+            logger.warning("DatasetPage: Failed to get storageIO");
 
         }
         return null;

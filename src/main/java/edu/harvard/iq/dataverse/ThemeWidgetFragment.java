@@ -237,7 +237,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
             editDv.getDataverseTheme().setLogoFooter(uFile.getFileName());
 
         } catch (IOException e) {
-            logger.finer("caught IOException");
+            logger.warning("Error uploading logo file: " + e);
             logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
             throw new RuntimeException("Error uploading logo file", e); // improve error handling
         }

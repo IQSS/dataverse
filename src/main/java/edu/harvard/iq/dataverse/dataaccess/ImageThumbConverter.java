@@ -312,7 +312,7 @@ public class ImageThumbConverter {
                 return false;
             }
         } catch (FileNotFoundException fnfe) {
-            logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
+            logger.warning("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
             return false;
 
         } catch (IOException ioex) {
@@ -365,7 +365,7 @@ public class ImageThumbConverter {
             outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             logger.fine("Opened an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
         } catch (Exception ioex) {
-            logger.fine("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
+            logger.warning("Failed to open an auxiliary channel/output stream " + THUMBNAIL_SUFFIX + size + " on " + storageIO.getDataFile().getStorageIdentifier());
             tempFileRequired = true;
         }
 
@@ -374,7 +374,7 @@ public class ImageThumbConverter {
                 tempFile = File.createTempFile("tempFileToRescale", ".tmp");
                 outputStream = new FileOutputStream(tempFile);
             } catch (IOException ioex) {
-                logger.fine("GenerateImageThumb: failed to open a temporary file.");
+                logger.warning("GenerateImageThumb: failed to open a temporary file.");
                 return false;
             }
         }
@@ -410,7 +410,7 @@ public class ImageThumbConverter {
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
         } catch (Exception ioex) {
-            logger.fine("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
+            logger.warning("caught Exception while checking for a cached thumbnail (file " + storageIO.getDataFile().getStorageIdentifier() + ")");
             return false;
         }
 
@@ -445,7 +445,7 @@ public class ImageThumbConverter {
         try {
             storageIO = file.getStorageIO();
         } catch (Exception ioEx) {
-            logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
+            logger.warning("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
             return null;
         }
 

@@ -611,7 +611,7 @@ public class FileUtil implements java.io.Serializable  {
                 }
             }
         } catch(XMLStreamException e) {
-            logger.fine("XML error - this is not a valid graphML file.");
+            logger.warning("XML error - this is not a valid graphML file.");
             isGraphML = false;
         } catch(IOException e) {
             throw new EJBException(e);

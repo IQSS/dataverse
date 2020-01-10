@@ -70,7 +70,7 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
                     .setParameter("linkingDataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
+            logger.warning("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);
         }
         return foundDataverseLinkingDataverse;
     }

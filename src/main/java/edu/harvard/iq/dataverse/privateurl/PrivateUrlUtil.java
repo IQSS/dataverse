@@ -41,7 +41,7 @@ public class PrivateUrlUtil {
         try {
             datasetId = new Long(parts[1]);
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
-            logger.fine("Could not find dataset id in '" + identifier + "': " + ex);
+            logger.warning("Could not find dataset id in '" + identifier + "': " + ex);
             return null;
         }
         return new PrivateUrlUser(datasetId);

@@ -737,10 +737,10 @@ public class FilePage implements java.io.Serializable {
             if (storageIO != null && storageIO instanceof SwiftAccessIO) {
                 return (SwiftAccessIO)storageIO;
             } else {
-                logger.fine("FilePage: Failed to cast storageIO as SwiftAccessIO");
+                logger.warning("FilePage: Failed to cast storageIO as SwiftAccessIO");
             } 
         } catch (IOException e) {
-            logger.fine("FilePage: Failed to get storageIO");
+            logger.warning("FilePage: Failed to get storageIO");
         }
         return null;
     }

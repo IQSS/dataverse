@@ -140,7 +140,7 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
             try {
                 Double.parseDouble(value.getValue());
             } catch (Exception e) {
-                logger.fine("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
+                logger.warning("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
                 try {
                     context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " is not a valid number.").addConstraintViolation();
                 } catch (NullPointerException npe) {

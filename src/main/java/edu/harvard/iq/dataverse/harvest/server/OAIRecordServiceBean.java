@@ -244,7 +244,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             exportServiceInstance.exportAllFormats(dataset);
             datasetService.updateLastExportTimeStamp(dataset.getId());
         } catch (Exception e) {
-            logger.fine("Caught unknown exception while trying to export");
+            logger.warning("Caught unknown exception while trying to export");
             throw new ExportException(e.getMessage());
         }
     }
@@ -348,7 +348,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         try {
             return query.getResultList();      
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.warning("Caught exception; returning null.");
             return null;
         }
     }
@@ -367,7 +367,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         try {
             return query.getResultList();      
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.warning("Caught exception; returning null.");
             return null;
         }
     }
@@ -386,7 +386,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
         try {
             return query.getResultList();      
         } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
+            logger.warning("Caught exception; returning null.");
             return null;
         }
     }

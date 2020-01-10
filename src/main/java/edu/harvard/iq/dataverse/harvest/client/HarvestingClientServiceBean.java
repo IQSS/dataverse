@@ -62,7 +62,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
 					.setParameter("nickName", nickName.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single harvesting client by nickname \"" + nickName + "\": " + ex);
+            logger.warning("Unable to find a single harvesting client by nickname \"" + nickName + "\": " + ex);
             return null;
         }
     }

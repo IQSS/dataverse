@@ -129,7 +129,7 @@ public class DatasetUtil {
                 in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             }
         } catch (IOException ex) {
-            logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
+            logger.warning("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
         }
 
         
@@ -141,7 +141,7 @@ public class DatasetUtil {
                 logger.fine("will get thumbnail from dataset logo");
                 return datasetThumbnail;
             } catch (IOException ex) {
-                logger.fine("Unable to read thumbnail image from file: " + ex);
+                logger.warning("Unable to read thumbnail image from file: " + ex);
                 return null;
             } finally
 	    {
@@ -344,7 +344,7 @@ public class DatasetUtil {
         try {
             Files.delete(Paths.get(thumbFileLocation));
         } catch (IOException ioex) {
-            logger.fine("Failed to delete temporary thumbnail file");
+            logger.warning("Failed to delete temporary thumbnail file");
         }
         
         logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);

@@ -74,7 +74,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
                     .setParameter("dataverseId", linkingDataverseId)
                     .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
-            logger.fine("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);        
+            logger.warning("no datasetLinkingDataverse found for datasetId " + datasetId + " and linkingDataverseId " + linkingDataverseId);
         }
         return foundDatasetLinkingDataverse;
     }

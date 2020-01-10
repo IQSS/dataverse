@@ -373,7 +373,7 @@ public class ImportServiceBean {
             importedDataset = engineSvc.submit(new CreateHarvestedDatasetCommand(ds, dataverseRequest));
 
         } catch (JsonParseException | ImportException | CommandException ex) {
-            logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
+            logger.warning("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
             FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
             byte[] jsonBytes = json.getBytes();
             int i = 0;

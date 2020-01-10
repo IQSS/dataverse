@@ -204,7 +204,7 @@ public class DataverseServiceBean implements java.io.Serializable {
 					.setParameter("alias", anAlias.toLowerCase())
 					.getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
+            logger.warning("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }

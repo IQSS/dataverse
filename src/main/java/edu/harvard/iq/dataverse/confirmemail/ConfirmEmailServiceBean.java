@@ -176,7 +176,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up " + token + " caught " + ex);
+            logger.warning("When looking up " + token + " caught " + ex);
         }
         return confirmEmailData;
     }
@@ -188,7 +188,7 @@ public class ConfirmEmailServiceBean {
         try {
             confirmEmailData = typedQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException ex) {
-            logger.fine("When looking up user " + user + " caught " + ex);
+            logger.warning("When looking up user " + user + " caught " + ex);
         }
         return confirmEmailData;
     }

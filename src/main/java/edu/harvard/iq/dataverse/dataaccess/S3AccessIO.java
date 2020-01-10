@@ -732,7 +732,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             } 
             return null; 
         } catch (AmazonClientException ase) {
-            logger.fine("Caught an AmazonClientException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
+            logger.warning("Caught an AmazonClientException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
             return null;
         }
     }
