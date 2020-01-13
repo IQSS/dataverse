@@ -9,9 +9,10 @@ Requirements
 ============
 
 The script should work with both Python v. 2 and 3. It was tested with
-v. 2.7.16 and v. 3.7.16.  Version 3 is strongly recommended, since the
-version 2 has been officially EOL-ed as of Jan. 1 2020. But we intend
-to maintain backward compatibility, at least for now.
+v. 2.7.16 and v. 3.7.16.  Version 3.7 or newer is strongly
+recommended, since the version 2 has been officially EOL-ed as of
+Jan. 1 2020. If you have to use Python 2, we intend to maintain
+backward compatibility, for now, but please use version 2.7 or newer.
 
 
 The extra module psycopg2 (PostgreSQL client) is required. The
