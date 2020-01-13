@@ -429,7 +429,7 @@ List Versions of a Dataset
 Get Version of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Show a version of the dataset. The Dataset also include any metadata blocks the data might have::
+|CORS| Show a version of the dataset. The output includes any metadata blocks the dataset might have::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
 
