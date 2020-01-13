@@ -21,7 +21,31 @@ Install the module with
 
 pip install psycopg2 
 
-(or "pip3 install psycopg2" if you intend to use python3 and it's installed separately on your system)
+(or "pip3 install psycopg2" if you intend to use python3 and it's
+installed separately on your system)
+
+In order to build the module, pip will need to execute pg_config,
+PostgreSQL configuration utility. Make sure it is in your PATH. If you
+have multiple versions of PostgresQL installed, make sure the version
+that you will be using with Dataverse is the first on your PATH. For
+example,
+
+   PATH=/usr/pgsql-9.6/bin:$PATH; export PATH
+
+Certain libraries and source include files, both for PostgresQL and
+Python, are also needed to compile the module. On
+RedHat/CentOS/etc. you may need to install the -devel packages, *for
+the specific versions* of PostgreSQL and Python you will be using. For
+example:
+
+	yum install postgresql96-devel
+	yum install python37-devel
+	etc. 
+
+On MacOS, all the needed libraries and source files appear to be
+included by default with standard distributions of PostgreSQL and
+Python.
+
 
 Howto
 =====
@@ -35,5 +59,10 @@ or
 python3 install.py
 (if python3 is installed separately from the default version 2)
 
+If you run into any problems, or have any suggestions, please let us
+know. Once again, this is still a beta/experimental version.
 
+And if getting it to work on your system ends up being too much
+trouble, there's always an option of going back to the old, default
+installer.
 
