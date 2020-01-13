@@ -375,7 +375,7 @@ gfHeap = config.get('glassfish', 'GLASSFISH_HEAP')
 gfAdminUser = config.get('glassfish', 'GLASSFISH_ADMIN_USER')
 gfAdminPassword = config.get('glassfish', 'GLASSFISH_ADMIN_PASSWORD')
 gfDomain = "domain1"
-gfJarPath = gfDir+"/glassfish/modules"
+gfJarPath = gfDir+"/glassfish/lib"
 # system settings:
 adminEmail = config.get('system', 'ADMIN_EMAIL')
 solrLocation = config.get('system', 'SOLR_LOCATION')
