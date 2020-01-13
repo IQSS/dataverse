@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
@@ -184,7 +185,7 @@ public class OAIServlet extends HttpServlet {
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
                 .withCompression("gzip")        // ?
                 .withCompression("deflate")     // ?
-                .withAdminEmail(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail))
+                .withAdminEmail(MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail)).getAddress())
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withGranularity(Granularity.Second)
                 .withMaxListIdentifiers(100)
