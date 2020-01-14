@@ -503,6 +503,7 @@ public class AuthenticationServiceBean {
         if ( tkn.getExpireTime() != null ) {
             if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
                 em.remove(tkn);
+		logger.info("attempted access with expired token: " + apiToken);
                 return null;
             }
         }
