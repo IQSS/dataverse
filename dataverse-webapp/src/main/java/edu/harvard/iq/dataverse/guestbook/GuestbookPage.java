@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.guestbook;
 
+import com.rometools.utils.Lists;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -58,7 +59,7 @@ public class GuestbookPage implements java.io.Serializable {
     private Long ownerId;
     private Long guestbookId;
     private Long sourceId;
-    private Boolean customQuestions = Boolean.FALSE;
+    private Boolean hasCustomQuestions = Boolean.FALSE;
 
     private UIInput guestbookName;
 
@@ -102,8 +103,8 @@ public class GuestbookPage implements java.io.Serializable {
         return ownerId;
     }
 
-    public Boolean getCustomQuestions() {
-        return customQuestions;
+    public Boolean getHasCustomQuestions() {
+        return hasCustomQuestions;
     }
 
     public UIInput getGuestbookName() {
@@ -181,7 +182,9 @@ public class GuestbookPage implements java.io.Serializable {
             return StringUtils.EMPTY;
         }
 
-        if (guestbook.getCustomQuestions() != null) {
+        if(!hasCustomQuestions) {
+            guestbook.setCustomQuestions(null);
+        } else if (guestbook.getCustomQuestions() != null) {
             removeUnusedQuestionValues();
             renumberQuestionsDisplayOrder();
         }
@@ -223,7 +226,7 @@ public class GuestbookPage implements java.io.Serializable {
             guestbook.setCustomQuestions(new ArrayList<>());
             addCustomQuestion(0);
         } else {
-            this.customQuestions = Boolean.TRUE;
+            this.hasCustomQuestions = Boolean.TRUE;
             for (CustomQuestion question : guestbook.getCustomQuestions()) {
                 addInitialEmptyCustomQuestionValues(question);
             }
@@ -232,7 +235,7 @@ public class GuestbookPage implements java.io.Serializable {
 
     private void addInitialEmptyCustomQuestionValues(CustomQuestion question) {
         List<CustomQuestionValue> questionValues = question.getCustomQuestionValues();
-        if (questionValues == null || questionValues.isEmpty()) {
+        if (Lists.isEmpty(questionValues)) {
             question.setCustomQuestionValues(new ArrayList<>());
             addCustomQuestionValue(question, 0);
             addCustomQuestionValue(question, 1);
@@ -326,8 +329,8 @@ public class GuestbookPage implements java.io.Serializable {
         this.guestbookId = guestbookId;
     }
 
-    public void setCustomQuestions(Boolean customQuestions) {
-        this.customQuestions = customQuestions;
+    public void setHasCustomQuestions(Boolean hasCustomQuestions) {
+        this.hasCustomQuestions = hasCustomQuestions;
     }
 
     public void setGuestbookName(UIInput guestbookName) {

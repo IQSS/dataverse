@@ -87,7 +87,7 @@
                             <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
                             <div class="row">
                                 <div class="col-xs-9 checkbox">
-                                    <p:selectBooleanCheckbox value="#{GuestbookPage.customQuestions}"
+                                    <p:selectBooleanCheckbox value="#{GuestbookPage.hasCustomQuestions}"
                                                              itemLabel="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.toggle']}">
                                         <p:ajax update="customQuestions"/>
                                     </p:selectBooleanCheckbox>
@@ -96,7 +96,7 @@
                             <br/>
                             <p:fragment id="customQuestions">
                                 <ui:repeat value="#{GuestbookPage.guestbook.customQuestions}" var="cq"
-                                           varStatus="valCount" rendered="#{GuestbookPage.customQuestions}">
+                                           varStatus="valCount" rendered="#{GuestbookPage.hasCustomQuestions}">
                                     <div class="form-group">
                                         <!-- Sub Fields -->
                                         <div class="col-9">
