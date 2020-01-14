@@ -428,7 +428,7 @@ public class IngestServiceBean {
                 // refresh the copy of the DataFile:
                 dataFile = fileService.find(dataFile.getId());
 
-                long ingestSizeLimit = -1;
+                long ingestSizeLimit = 0;
                 try {
                     ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
                 } catch (IOException ioex) {
@@ -1068,7 +1068,7 @@ public class IngestServiceBean {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), ',');
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) || mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) /*|| mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)*/) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), '\t');
         }  else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
