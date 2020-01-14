@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.ControlledVocabAlternate;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.ControlledVocabularyValueDetail;
 import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -411,6 +412,16 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
+        
+        if (values.length >= 6 && values[5] != null && !values[5].isEmpty()) {
+            ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndUrlPrefix(cvv, values[5]);
+            if (cvvd == null) {
+                cvvd = new ControlledVocabularyValueDetail();
+                cvvd.setControlledVocabularyValue(cvv);
+                cvvd.setUrlPrefix(values[5]);
+                cvv.setControlledVocabularyValueDetail(cvvd);
+            }
+        }
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
     }

@@ -131,7 +131,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         return compoundValue;
     }
 
-    final private static String REGEX_FIELD_NAME = "(#[a-z]+\\w*)";
+    final private static String REGEX_FIELD_NAME = "(##[a-z]+\\w*)";
     static private Map<String, String> referencesMap = new LinkedHashMap<>();
 
 
@@ -147,20 +147,20 @@ public class DatasetFieldCompoundValue implements Serializable {
         for (DatasetField childDatasetField : childDatasetFields){
             Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
             while (matcher.find()){
-                referencesMap.putIfAbsent(matcher.group(0), null);
+                referencesMap.put(matcher.group(0), null);
             }
         }
 
         for (DatasetField childDatasetField : childDatasetFields) {
-            if (referencesMap.containsKey("#"+childDatasetField.getDatasetFieldType().getName())){
-                // temporary, this gets the CVV Identifier instead of the Value if there is an Identifier.
-                // need a better solution for getting a CVV Identifier instead of normal value
+            if (referencesMap.containsKey("##"+childDatasetField.getDatasetFieldType().getName())){
                 if (childDatasetField.getSingleControlledVocabularyValue() != null){
-                    if (!StringUtils.isBlank(childDatasetField.getSingleControlledVocabularyValue().getIdentifier())){
-                        referencesMap.putIfAbsent("#"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getIdentifier());
+                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix().isEmpty()){
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix());
+                    } else {
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getStrValue());
                     }
-                } else{
-                    referencesMap.putIfAbsent("#"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
+                } else {
+                    referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
                 }
 
             }

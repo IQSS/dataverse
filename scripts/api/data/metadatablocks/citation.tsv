@@ -12,7 +12,7 @@
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
-	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	<a href="#authorIdentifierScheme#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifier
+	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	<a href="##authorIdentifierScheme#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifier
 	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
@@ -79,7 +79,7 @@
 	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder	detail										
 	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
 	subject	Astronomy and Astrophysics	D1	2											
@@ -128,11 +128,11 @@
 	contributorType	Supervisor		14											
 	contributorType	Work Package Leader		15											
 	contributorType	Other		16											
-	authorIdentifierScheme	ORCID	https://orcid.org/	0											
-	authorIdentifierScheme	ISNI	http://isni.org/isni/	1											
-	authorIdentifierScheme	LCNA		2											
-	authorIdentifierScheme	VIAF		3											
-	authorIdentifierScheme	GND		4											
+	authorIdentifierScheme	ORCID		0	https://orcid.org/										
+	authorIdentifierScheme	ISNI		1	http://isni.org/isni/										
+	authorIdentifierScheme	LCNA		2	http://id.loc.gov/authorities/names/										
+	authorIdentifierScheme	VIAF		3	https://viaf.org/viaf/										
+	authorIdentifierScheme	GND		4		https://d-nb.info/gnd/									
 	authorIdentifierScheme	DAI		5
 	authorIdentifierScheme	ResearcherID		6
 	authorIdentifierScheme	ScopusID		7
