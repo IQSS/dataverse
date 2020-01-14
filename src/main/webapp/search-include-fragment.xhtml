@@ -583,7 +583,7 @@
                             <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
                                             data-clipboard-text="#{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}"
-                                            title="#{bundle['file.checksum.copy']} #{result.entitygetChecksumType()}"
+                                            title="#{bundle['file.checksum.copy']} #{result.entity.getChecksumType()}"
                                             jsf:rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}">
                                             #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}
                                             <span class="glyphicon glyphicon-copy"></span>
