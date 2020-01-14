@@ -47,7 +47,7 @@ public class ReorderDataFilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        fileMetadatas = fetchedDatasetVersion.get().getFileMetadatasSorted();
+        fileMetadatas = fetchedDatasetVersion.get().getAllFilesMetadataSorted();
 
         // for some reason the original fileMetadatas is causing null if used anywhere else. For
         fileMetadatasCopy = fileMetadatas;

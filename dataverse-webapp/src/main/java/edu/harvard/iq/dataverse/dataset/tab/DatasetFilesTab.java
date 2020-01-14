@@ -196,8 +196,7 @@ public class DatasetFilesTab implements Serializable {
         this.workingVersion = workingVersion;
         rowsPerPage = 10;
 
-        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
-
+        fileMetadatasSearch = getAccessibleFilesMetadata();
 
         logger.fine("Checking if rsync support is enabled.");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods))
@@ -230,6 +229,14 @@ public class DatasetFilesTab implements Serializable {
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         
         guestbookResponseDialog.initForDatasetVersion(workingVersion);
+    }
+
+    private List<FileMetadata> getAccessibleFilesMetadata() {
+        if (permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), dataset)) {
+            return workingVersion.getAllFilesMetadataSorted();
+        } else {
+            return workingVersion.getOnlyFilesMetadataNotUnderEmbargoSorted();
+        }
     }
 
     // -------------------- GETTERS --------------------
@@ -286,7 +293,7 @@ public class DatasetFilesTab implements Serializable {
     // -------------------- LOGIC --------------------
 
     public void refresh() {
-        fileMetadatasSearch = workingVersion.getFileMetadatasSorted();
+        fileMetadatasSearch = getAccessibleFilesMetadata();
         lockedFromDownloadVar = null;
         lockedFromEditsVar = null;
     }
@@ -686,6 +693,11 @@ public class DatasetFilesTab implements Serializable {
 
     private List<FileMetadata> selectFileMetadatasForDisplay(String searchTerm) {
         Set<Long> searchResultsIdSet = null;
+        List<FileMetadata> retList = new ArrayList<>();
+
+        if (fileMetadatasSearch.isEmpty()) {
+            return retList;
+        }
 
         if (searchTerm != null && !searchTerm.equals("")) {
             List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, new FileSortFieldAndOrder("", SortOrder.asc));
@@ -695,9 +707,7 @@ public class DatasetFilesTab implements Serializable {
             }
         }
 
-        List<FileMetadata> retList = new ArrayList<>();
-
-        for (FileMetadata fileMetadata : workingVersion.getFileMetadatasSorted()) {
+        for (FileMetadata fileMetadata : getAccessibleFilesMetadata()) {
             if (searchResultsIdSet == null || searchResultsIdSet.contains(fileMetadata.getId())) {
                 retList.add(fileMetadata);
             }

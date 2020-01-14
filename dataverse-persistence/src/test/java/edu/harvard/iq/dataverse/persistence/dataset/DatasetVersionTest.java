@@ -4,8 +4,11 @@ import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import org.junit.Test;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -68,12 +71,28 @@ public class DatasetVersionTest {
     }
 
     @Test
+    public void testFilteringOutEmbargoedFilesMetadata() {
+        // given
+        Dataset ds = MocksFactory.makeDataset();
+        ds.setEmbargoDate(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
+
+        DatasetVersion datasetVersion = ds.getLatestVersion();
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+
+        // when
+        List<FileMetadata> fileMetadata = datasetVersion.getOnlyFilesMetadataNotUnderEmbargoSorted();
+
+        // then
+        assertTrue(fileMetadata.isEmpty());
+    }
+
+    @Test
     public void shouldSortFileMetadataByDisplayOrder() {
         // given
         DatasetVersion version = withUnSortedFiles();
 
         // when
-        List<FileMetadata> orderedMetadatas = version.getFileMetadatasSorted();
+        List<FileMetadata> orderedMetadatas = version.getAllFilesMetadataSorted();
 
         // then
         verifySortOrder(orderedMetadatas, "file4.png", 0);

@@ -113,7 +113,6 @@ public class FilePage implements java.io.Serializable {
 
     public String init() {
 
-
         if (fileId != null || persistentId != null) {
 
             // ---------------------------------------
@@ -152,6 +151,11 @@ public class FilePage implements java.io.Serializable {
                 }
 
                 return permissionsWrapper.notFound();
+            }
+
+            if (!permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), file.getOwner()) &&
+                    file.getOwner().hasActiveEmbargo()) {
+                return permissionsWrapper.notAuthorized();
             }
 
             RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
@@ -399,8 +403,8 @@ public class FilePage implements java.io.Serializable {
             }
 
         }
-        if (priorVersion != null && priorVersion.getFileMetadatasSorted() != null) {
-            for (FileMetadata fmdTest : priorVersion.getFileMetadatasSorted()) {
+        if (priorVersion != null && priorVersion.getAllFilesMetadataSorted() != null) {
+            for (FileMetadata fmdTest : priorVersion.getAllFilesMetadataSorted()) {
                 for (DataFile fileTest : allfiles) {
                     if (fmdTest.getDataFile().equals(fileTest)) {
                         return fmdTest;
@@ -430,8 +434,8 @@ public class FilePage implements java.io.Serializable {
 
         List<DataFile> allfiles = allRelatedFiles();
 
-        if (dvPrevious != null && dvPrevious.getFileMetadatasSorted() != null) {
-            for (FileMetadata fmdTest : dvPrevious.getFileMetadatasSorted()) {
+        if (dvPrevious != null && dvPrevious.getAllFilesMetadataSorted() != null) {
+            for (FileMetadata fmdTest : dvPrevious.getAllFilesMetadataSorted()) {
                 for (DataFile fileTest : allfiles) {
                     if (fmdTest.getDataFile().equals(fileTest)) {
                         return fmdTest;

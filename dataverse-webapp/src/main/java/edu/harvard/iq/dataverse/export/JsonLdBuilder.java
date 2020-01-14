@@ -258,7 +258,7 @@ public class JsonLdBuilder {
             job.add("spatialCoverage", spatialArray);
         }
 
-        List<FileMetadata> fileMetadatasSorted = datasetVersion.getFileMetadatasSorted();
+        List<FileMetadata> fileMetadatasSorted = datasetVersion.getAllFilesMetadataSorted();
         if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
             JsonArrayBuilder fileArray = Json.createArrayBuilder();
             for (FileMetadata fileMetadata : fileMetadatasSorted) {

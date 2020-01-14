@@ -203,9 +203,18 @@ public class DatasetVersion implements Serializable {
         return fileMetadatas;
     }
 
-    public List<FileMetadata> getFileMetadatasSorted() {
+    public List<FileMetadata> getAllFilesMetadataSorted() {
         List<FileMetadata> result = newArrayList(fileMetadatas);
         Collections.sort(result, FileMetadata.compareByDisplayOrder);
+        return result;
+    }
+
+    public List<FileMetadata> getOnlyFilesMetadataNotUnderEmbargoSorted() {
+        List<FileMetadata> result = newArrayList();
+        if (!dataset.hasActiveEmbargo()) {
+            result = getAllFilesMetadataSorted();
+        }
+
         return result;
     }
 
@@ -1536,5 +1545,4 @@ public class DatasetVersion implements Serializable {
         }
         return ++maxDisplayOrder;
     }
-
 }

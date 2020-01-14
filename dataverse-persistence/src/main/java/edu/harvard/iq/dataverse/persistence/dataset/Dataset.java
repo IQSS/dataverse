@@ -33,6 +33,7 @@ import javax.persistence.TemporalType;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -118,6 +119,9 @@ public class Dataset extends DvObjectContainer {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date guestbookChangeTime;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date embargoDate;
 
     @OneToMany(mappedBy = "dataset", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLinkingDataverse> datasetLinkingDataverses;
@@ -235,6 +239,14 @@ public class Dataset extends DvObjectContainer {
         this.guestbookChangeTime = guestbookChangeTime;
     }
 
+    public Option<Date> getEmbargoDate() {
+        return Option.of(embargoDate);
+    }
+
+    public void setEmbargoDate(Date embargoDate) {
+        this.embargoDate = embargoDate;
+    }
+
     public String getPersistentURL() {
         return new GlobalId(this).toURL().toString();
     }
@@ -263,6 +275,10 @@ public class Dataset extends DvObjectContainer {
             }
         }
         return hasDeaccessionedVersions; // since any published version would have already returned
+    }
+
+    public boolean hasActiveEmbargo() {
+        return this.getEmbargoDate().isDefined() && Instant.now().isBefore(this.getEmbargoDate().get().toInstant());
     }
 
     public DatasetVersion getLatestVersion() {
