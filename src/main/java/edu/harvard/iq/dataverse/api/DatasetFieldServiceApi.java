@@ -412,7 +412,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
-        
         if (values.length >= 6 && values[5] != null && !values[5].isEmpty()) {
             ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndUrlPrefix(cvv, values[5]);
             if (cvvd == null) {

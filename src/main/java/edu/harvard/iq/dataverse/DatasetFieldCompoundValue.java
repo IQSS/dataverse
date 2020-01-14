@@ -8,8 +8,13 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.persistence.CascadeType;
@@ -33,7 +38,6 @@ import org.apache.commons.lang.StringUtils;
 public class DatasetFieldCompoundValue implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = Logger.getLogger(DatasetFieldCompoundValue.class.getName());
 
     public static final Comparator<DatasetFieldCompoundValue> DisplayOrder = new Comparator<DatasetFieldCompoundValue>() {
         @Override
@@ -138,8 +142,9 @@ public class DatasetFieldCompoundValue implements Serializable {
     public Map<DatasetField,String> getDisplayValueMap() {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
-
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
+        boolean fixTrailingComma = false;
+
         Pattern pattern = Pattern.compile(REGEX_FIELD_NAME);
         String fieldName = new String();
         String fieldValue = new String();
@@ -167,6 +172,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         }
 
         for (DatasetField childDatasetField : childDatasetFields) {
+            fixTrailingComma = false;
             // skip the value if it is empty or N/A
             if (!StringUtils.isBlank(childDatasetField.getValue()) && !DatasetField.NA_VALUE.equals(childDatasetField.getValue())) {
                 String format = childDatasetField.getDatasetFieldType().getDisplayFormat();
@@ -177,6 +183,9 @@ public class DatasetFieldCompoundValue implements Serializable {
                 if (!childDatasetField.getDatasetFieldType().isSanitizeHtml() && childDatasetField.getDatasetFieldType().isEscapeOutputText()){
                     sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
                 }
+                //if a series of child values is comma delimited we want to strip off the final entry's comma
+                if (format.equals("#VALUE, ")) fixTrailingComma = true;
+
                 Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
                 while (matcher.find()) {
                     if (referencesMap.containsKey(matcher.group(0)) && referencesMap.get(matcher.group(0)) != null) {
@@ -200,6 +209,32 @@ public class DatasetFieldCompoundValue implements Serializable {
             }
         }
 
+        if (fixTrailingComma) {
+            return (removeLastComma(fieldMap));
+        }
+
         return fieldMap;
+    }
+
+    private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
+
+        Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();
+        Map.Entry<DatasetField, String> entry = null;
+        DatasetField keyVal = null;
+        String oldValue = null;
+
+        while (itr.hasNext()) {
+            entry = itr.next();
+            keyVal = entry.getKey();
+            oldValue = entry.getValue();
+        }
+
+        if (keyVal != null && oldValue != null && oldValue.length() >= 2) {
+            String newValue = oldValue.substring(0, oldValue.length() - 2);
+            mapIn.replace(keyVal, oldValue, newValue);
+        }
+
+        return mapIn;
+
     }
 }
