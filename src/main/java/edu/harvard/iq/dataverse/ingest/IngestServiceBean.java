@@ -325,6 +325,10 @@ public class IngestServiceBean {
                         } else {
                             logger.fine("Failed to extract indexable metadata from file " + fileName);
                         }
+                    } else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
+                        // Make sure no *uningested* tab-delimited files are saved with the type "text/tab-separated-values"!
+                        // "text/tsv" should be used instead: 
+                        dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
                     }
                     // temp dbug line
                     //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
@@ -423,10 +427,10 @@ public class IngestServiceBean {
 
         List<DataFile> scheduledFiles = new ArrayList<>();
         for (DataFile dataFile : dataFiles) {
+            // refresh the copy of the DataFile:
+            dataFile = fileService.find(dataFile.getId());
+            
             if (dataFile.isIngestScheduled()) {
-
-                // refresh the copy of the DataFile:
-                dataFile = fileService.find(dataFile.getId());
 
                 long ingestSizeLimit = 0;
                 try {
@@ -730,6 +734,15 @@ public class IngestServiceBean {
         DataFile dataFile = fileService.find(datafile_id);
         boolean ingestSuccessful = false;
         boolean forceTypeCheck = false;
+        
+        // Never attempt to ingest a file that's already ingested!
+        if (dataFile.isTabularData()) {
+            FileUtil.createIngestFailureReport(dataFile, "Repeated ingest attempted on a tabular data file! (status flag was: "+dataFile.getIngestStatus());
+            dataFile.setIngestDone();
+            dataFile = fileService.save(dataFile);
+            logger.warning("Repeated ingest attempted on a tabular data file (datafile id "+datafile_id+"); exiting.");
+            return false;
+        }
         
         IngestRequest ingestRequest = dataFile.getIngestRequest();
         if (ingestRequest != null) {
