@@ -738,14 +738,13 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	border-radius: $border-radius;
 }
 
-#actionButtonBlock {
+#dataverseForm #actionButtonBlock {
 	width: calc(100% + 10px);
 	margin-left: 10px;
-
-	.glyphicon {
-		margin-right: 5px;
-		color: $icon-color;
-	}
+}
+#actionButtonBlock .glyphicon {
+	margin-right: 5px;
+	color: $icon-color;
 }
 
 .row.panelSearchForm {
@@ -1131,6 +1130,40 @@ div.filesTable .ui-paginator {
 	div.field-add-delete a.btn.compound-field-btn {
 		margin-top: 0;
 	}
+}
+
+/* File preview */
+
+#fileImageTitle .citation-block {
+	padding-right: 15px;
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	#file-title-block {
+		margin-top: 2em;
+	}
+
+	#file-preview-icon-block, #border-block, #preview-square {
+		max-height: 420px
+	}
+
+	#file-preview-icon-block > #border-block {
+		position: relative;
+		display: inline-block;
+		margin: 0 auto;
+		left: 50%;
+		transform: translateX(-50%);
+
+		> #preview-square {
+			padding-bottom: 420px;
+	
+			> img.img-responsive {
+				position: unset;
+				transform: none;
+			}
+		}
+	} 
+
 }
 
 /* Modal */
