@@ -182,6 +182,8 @@ It's fine to accept the default values.
 
 After a while you will see ``Enter admin user name [Enter to accept default]>`` and you can just hit Enter.
 
+**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). For now it is being offered as an (experimental) alternative. See README_python.txt, in the scripts/installer directory, for more information on how to run it (please give it a try, and let us know if there are any problems and/or if you have any suggestions!)
+
 Verify Dataverse is Running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

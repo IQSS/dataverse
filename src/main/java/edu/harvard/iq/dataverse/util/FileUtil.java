@@ -1249,7 +1249,7 @@ public class FileUtil implements java.io.Serializable  {
             case MIME_TYPE_CSV:
             case MIME_TYPE_CSV_ALT:
             case MIME_TYPE_TSV:
-            case MIME_TYPE_TSV_ALT:
+            //case MIME_TYPE_TSV_ALT:
             case MIME_TYPE_XLSX:
             case MIME_TYPE_SPSS_SAV:
             case MIME_TYPE_SPSS_POR:

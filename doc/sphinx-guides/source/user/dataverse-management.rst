@@ -89,6 +89,8 @@ Dataverse Listing Widget
 
 The Dataverse Listing Widget provides a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it displays the content in the widget on your website. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your website.
 
+.. _openscholar-dataverse-level:
+
 Adding Widgets to an OpenScholar Website
 ******************************************
 #. Log in to your OpenScholar website
