@@ -227,22 +227,9 @@ To support multiple stores, Dataverse now requires an id, type, and label for ea
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=<type>"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
 
-For backward compatibility, the id and type should be the same, and the label can be set to the same value as well. For example, the following would define a backward compatible file store:
-
-.. code-block:: none
-
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.type=file"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.label=file"
-  
-or a file or swift store, this is all that is needed for backward compatibility. For an s3 store, any additional options must be changed to conform to the new, more consistent naming convention using a . after the store's id ('s3' for backward compatibility) For example:
-
-.. code-block:: none
-
-    ./asadmin delete-jvm-options "-Ddataverse.files.s3-bucket-name=<your_bucket_name>"
-    ./asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=<your_bucket_name>"
-
 Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
-However, if you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
+
+If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
 ::
 
