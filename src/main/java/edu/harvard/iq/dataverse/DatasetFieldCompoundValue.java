@@ -159,7 +159,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         for (DatasetField childDatasetField : childDatasetFields) {
             if (referencesMap.containsKey("##"+childDatasetField.getDatasetFieldType().getName())){
                 if (childDatasetField.getSingleControlledVocabularyValue() != null){
-                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix().isEmpty()){
+                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix().isEmpty()){
                         referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix());
                     } else {
                         referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getStrValue());
@@ -167,7 +167,6 @@ public class DatasetFieldCompoundValue implements Serializable {
                 } else {
                     referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
                 }
-
             }
         }
 
