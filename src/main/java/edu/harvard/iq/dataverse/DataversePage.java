@@ -193,6 +193,21 @@ public class DataversePage implements java.io.Serializable {
         this.linkMode = linkMode;
     }
     
+    public boolean showLinkingPopup() {
+        String testquery = "";
+        if (session.getUser() == null) {
+            return false;
+        }
+        if (dataverse == null) {
+            return false;
+        }
+        if (query != null) {
+            testquery = query;
+        }
+
+        return (session.getUser().isSuperuser() && (dataverse.getOwner() != null || !testquery.isEmpty()));
+    }
+    
     public void setupLinkingPopup (String popupSetting){
         if (popupSetting.equals("link")){
             setLinkMode(LinkMode.LINKDATAVERSE);           
@@ -868,9 +883,9 @@ public class DataversePage implements java.io.Serializable {
             return returnRedirect();
         }
 
-        SavedSearch savedSearch = new SavedSearch(searchIncludeFragment.getQuery(), linkingDataverse, savedSearchCreator);
+        SavedSearch savedSearch = new SavedSearch(query, linkingDataverse, savedSearchCreator);
         savedSearch.setSavedSearchFilterQueries(new ArrayList<>());
-        for (String filterQuery : searchIncludeFragment.getFilterQueriesDebug()) {
+        for (String filterQuery : filterQueries) {
             /**
              * @todo Why are there null's here anyway? Turn on debug and figure
              * this out.
