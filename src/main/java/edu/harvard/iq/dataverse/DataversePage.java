@@ -341,6 +341,8 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getName() == null) {
                 dataverse.setName(DataverseUtil.getSuggestedDataverseNameOnCreate(session.getUser()));
             }
+            //Inherit storage driver by default (superuser can change it in the form)
+            dataverse.setStorageDriverId(dataverse.getOwner().getStorageDriverId());
         }
 
         return null;
