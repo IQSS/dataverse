@@ -104,13 +104,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-        String storageDriverLabel = jobj.getString("storageDriverLabel", null);
-    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels()) {
-    		if(store.getKey().equals(storageDriverLabel)) {
-    			dv.setStorageDriverId(store.getValue());
-    			break;
-    		}
-    	}       
+      
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;
