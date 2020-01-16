@@ -76,7 +76,7 @@ Once Glassfish is installed, you'll need a newer version of the Weld library (v2
 
 	# cd /usr/local/glassfish4/glassfish/modules
 	# rm weld-osgi-bundle.jar
-	# curl -L -O http://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.10.Final/weld-osgi-bundle-2.2.10.Final-glassfish4.jar
+	# curl -L -O https://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.10.Final/weld-osgi-bundle-2.2.10.Final-glassfish4.jar
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
