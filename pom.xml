@@ -55,13 +55,13 @@
         <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
-            <url>http://repo1.maven.org/maven2</url>
+            <url>https://repo1.maven.org/maven2</url>
             <layout>default</layout>
         </repository>
         <repository>
             <id>prime-repo</id>
             <name>PrimeFaces Maven Repository</name>
-            <url>http://repository.primefaces.org</url>
+            <url>https://repository.primefaces.org</url>
             <layout>default</layout>
         </repository>
         <repository>
