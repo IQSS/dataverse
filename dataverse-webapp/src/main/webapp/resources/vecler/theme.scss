@@ -112,6 +112,10 @@ body {
 	color: $icon-color;
 }
 
+.ui-widget-content {
+	color: $main-text-color;
+}
+
 @mixin btn-access {
 	background: #fff;
 	border: 1px solid $gray-border-color;
@@ -286,6 +290,17 @@ a,
 	}
 }
 
+span.glyphicon-question-sign.tooltip-icon::before {
+	margin-left: 8px;
+	color: #9cd7f0;
+}
+.glyphicon.glyphicon-asterisk.text-danger::before {
+	content: "*";
+	font-family: $font-main;
+	font-size: 15px;
+	color: #de8800;
+}
+
 /* Missing checkbox tick fix */
 tr.ui-state-highlight .ui-icon {
 	background-image: url("img/primefaces-main-default.png");
@@ -306,6 +321,17 @@ tr.ui-state-highlight .ui-icon {
 	}
 }
 
+/* Custom bootstrap columns */
+
+@media screen and (min-width: $screen-md) {
+	.col-md-24-3 {
+		width: 12.5%;
+	}
+	.col-md-24-21 {
+		width: 87.5%;
+	}
+}
+
 /* Forms */
 
 #datasetThumbnail {
@@ -314,8 +340,10 @@ tr.ui-state-highlight .ui-icon {
 
 .ui-selectonemenu {
 	border: 1px solid #e8e8e8;
+	min-height: 35px;
 
 	.ui-selectonemenu-label {
+		margin-right: 23px;
 		padding-left: 15px;
 		background: #fff;
 		box-shadow: none;
@@ -409,8 +437,252 @@ input, textarea {
 	}
 }
 
+.resize-vertical {
+	resize: vertical;
+}
+
 .ui-noselection-option {
 	display: none;
+}
+
+.dataverse-general-info-address-field {
+	margin-top: 0;
+	margin-bottom: -2px;
+}
+
+.ui-widget-content label.ui-state-disabled {
+	background: none;
+}
+
+/* Checkboxes */
+
+@mixin checkbox {
+	font-family: "Glyphicons Halflings";
+	font-size: 17px;
+	color: $icon-color;
+	z-index: 3;
+}
+
+.ui-chkbox-box,
+.ui-state-active .ui-chkbox-icon.ui-icon,
+.ui-state-default .ui-chkbox-icon.ui-icon,
+.ui-state-focus .ui-chkbox-icon.ui-icon {
+	background: none;
+}
+
+.ui-chkbox-box {
+	font-weight: normal;
+	position: relative; 
+
+	.ui-chkbox-icon::before {
+		@include checkbox;
+
+		content: "\e157";
+		position: absolute;
+		top: -6px;
+		left: -2px;
+
+		background: #FFF;
+		text-indent: 0;
+	}
+
+	.ui-chkbox-icon.ui-icon-check::before {
+		content: "\e067";
+	}
+
+	&.ui-state-focus .ui-chkbox-icon::before {
+		color: #de8800;
+	}
+
+	&.ui-state-disabled {
+		opacity: 0.65;
+	}
+
+	&.ui-state-disabled .ui-chkbox-icon::before {
+		color: $main-text-color;
+	}
+}
+
+.checkbox label input, label input.fancy-checkbox[type=checkbox] {
+	opacity: 0;
+
+	+ span::before {
+		@include checkbox;
+		content: "\e157";
+		margin-left: -13px;
+		position: relative;
+		top: 2px;
+		left: -14px;
+	}
+
+	&:checked + span::before {
+		content: "\e067";
+	}
+
+	&:focus + span::before {
+		color: #de8800;
+	}
+
+	&:disabled + span::before {
+		opacity: 0.65;
+		color: $main-text-color;
+	}
+}
+
+input.fancy-checkbox[type=checkbox] {
+	opacity: 0;
+
+	+ label {
+		margin-left: -6px;
+	}
+
+	+ label::before {
+		@include checkbox;
+		content: "\e157";
+		margin-left: -13px;
+		position: relative;
+		top: 2px;
+		left: -8px;
+	}
+
+	&:checked + label::before {
+		content: "\e067";
+	}
+
+	&:focus + label::before {
+		color: #de8800;
+	}
+
+	&:disabled + label::before {
+		opacity: 0.65;
+		color: $main-text-color;
+	}
+}
+
+/* Radio buttons */
+
+.ui-radiobutton .ui-radiobutton-box {
+	background: none;
+	box-shadow: none;
+	border-radius: 10px;
+	border: 2px solid $icon-color;
+	line-height: 10px;
+	text-align: center;
+
+	.ui-radiobutton-icon {
+		height: 8px;
+		width: 8px;
+		display: inline-block;
+		background-image: none !important;
+		background-color: $icon-color;
+		border-radius: 100%;
+		margin: auto;
+	}
+
+	&:not(.ui-state-active):not(.ui-state-focus) .ui-radiobutton-icon {
+		display: none;
+	}
+	
+	&.ui-state-focus {
+		border-color: #de8800;
+
+		.ui-radiobutton-icon {
+			background-color: #de8800;
+		}
+	}
+
+	&.ui-state-disabled {
+		border: 2px solid $main-text-color;
+		opacity: 0.65;
+
+		.ui-radiobutton-icon {
+			background-color: $main-text-color;
+		}
+	}
+}
+
+/* Picklist */
+
+.ui-picklist {
+	width: 100%;
+
+	.ui-picklist-list-wrapper {
+		&:nth-of-type(3) {
+			width: 100%;
+
+			ul {
+				width: 100%;
+			}
+		}
+		.ui-picklist-list {
+			padding: 10px 0;
+			border-radius: 5px;
+
+			li {
+				margin: 0;
+				padding-left: 13px;
+				border-radius: 0;
+
+				&:last-child {
+					margin-bottom: 10px;
+				}
+			}
+		}
+
+		.ui-widget-content {
+			.ui-state-active {
+				background: $gray-border-color;
+				color: $main-text-color;
+			}
+
+			.ui-state-highlight {
+				background: $search-result-desc-color;
+				color: $main-text-color;
+
+				.ui-chkbox-box::before, .ui-chkbox-icon::before {
+					background: $search-result-desc-color;
+				}
+			}
+		}
+
+		.ui-picklist-caption {
+			padding: 13px 3px;
+			border: 0;
+			background: none;
+			text-align: left;
+
+			.ui-selectonemenu {
+				margin: -7px -3px;
+			}
+
+			&+ .ui-picklist-list.ui-picklist-source {
+				width: 100%
+			}
+		}
+	}
+
+	.ui-picklist-buttons {
+		vertical-align: top;
+
+		.ui-picklist-buttons-cell {
+			margin-top: unquote("calc(1em + 33px)");
+			padding: 0 8px 0 13px;
+
+			button {
+				padding: 0 27px 0 30px
+			}
+
+			.ui-button-text.ui-c {
+				padding: 0;
+				margin: 6px 0 5px 0;
+			}
+		}
+	}
+}
+
+/* Float elements parent size fix */
+.col-md-6.form-group.form-col-container {
+	overflow: auto;
 }
 
 /* Labels */
@@ -504,6 +776,10 @@ input, textarea {
 					td {
 						background: $search-result-desc-color;
 						border-color: $gray-border-color;
+
+						.ui-chkbox-box::before, .ui-chkbox-icon::before {
+							background: $search-result-desc-color;
+						}
 					}
 				}
 			}
@@ -580,6 +856,10 @@ input, textarea {
 				& + th {
 					border-left: none;
 				}
+
+				.ui-chkbox-box::before, .ui-chkbox-icon::before {
+					background: $search-result-desc-color;
+				}
 			}
 		}
 
@@ -628,12 +908,20 @@ input, textarea {
 
 		td {
 			background: $search-result-desc-color;
+
+			.ui-chkbox-box::before, .ui-chkbox-icon::before {
+				background: $search-result-desc-color;
+			}
 		}
 	}
 
 	tr, tr.ui-datatable-odd {
 		&:hover td {
 			background: $table-row-hover;
+
+			.ui-chkbox-box::before, .ui-chkbox-icon::before {
+				background: $table-row-hover;
+			}
 		}
 	}
 
@@ -658,6 +946,10 @@ tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-head
 
 			a {
 				color: $link-color;
+			}
+
+			.ui-chkbox-box::before, .ui-chkbox-icon::before {
+				background: $table-row-highlight;
 			}
 		}
 	}
@@ -697,6 +989,50 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 		top: 3px;
 		left: 7px;
 		color: $icon-color;
+	}
+
+	.ui-chkbox-box::before, .ui-chkbox-icon::before {
+		background: $search-result-desc-color;
+	}
+}
+
+.table-striped > tbody > tr:nth-of-type(2n+1) {
+	background: #fff;
+}
+.table-striped > tbody > tr:hover {
+	background: $table-row-hover;
+
+	.ui-chkbox-box::before, .ui-chkbox-icon::before {
+		background: $table-row-hover;
+	}
+}
+
+.table > tbody > tr {
+	> td {
+		padding: 12px 16px 10px 16px;
+		border-top: 1px solid $gray-border-color;
+
+		.ui-chkbox .ui-chkbox-box {
+			margin-right: 5px;
+		}
+	}
+
+	&:first-child > td {
+		border-top: none;
+	}
+}
+
+.panel {
+	border: 1px solid $gray-border-color;
+
+	&, .panel-body {
+		border-radius: $border-radius;
+	}
+
+	.panel-body {
+		table.table {
+			margin-bottom: 0;
+		}
 	}
 }
 
@@ -929,41 +1265,11 @@ div.panelSearchForm input.search-input {
 		margin-left: 4px;
 	}
 
-	.ui-chkbox-box,
-	.ui-state-active .ui-chkbox-icon.ui-icon,
-	.ui-state-default .ui-chkbox-icon.ui-icon {
-		background: none;
-	}
 }
 
 .facetTypeChBox.facetLink {
-	.ui-chkbox-box {
-		position: relative; 
-
-		&::before {
-			content: "\e157";
-			position: absolute;
-			top: -7px;
-			left: -2px;
-
-			font-family: "Glyphicons Halflings";
-			font-size: 17px;
-			color: $icon-color;
-			background: #FFF;
-			z-index: 3;
-		}
-	
-		&.ui-state-disabled::before {
-			color: $main-text-color;
-		}
-	}
-
 	&.facetSelected {
 		font-weight: normal;
-
-		.ui-chkbox-box::before {
-			content: "\e067";
-		}
 	}
 }
 
@@ -1252,9 +1558,18 @@ div.filesTable .ui-paginator {
 	}
 
 	.ui-state-default, a.btn {
-		&:not(input):not(textarea):not(th):not(ul) {
+		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
 			@include btn-access;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+
+			&:last-child {
+				border: 1px solid transparent;
+				box-shadow: none;
+
+				&:active {
+					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+				}
+			}
 		}
 	}	
 
@@ -1307,6 +1622,10 @@ div.ui-widget-overlay {
 
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {
 	background: $main-color;
+
+	.ui-chkbox-box {
+		background: $main-color;
+	}
 }
 
 #navbarsearch-modal {
