@@ -63,7 +63,7 @@ curl -f -sS "${DATAVERSE_URL}/api/admin/index/solr/schema${UNBLOCK_KEY}" > $TMPF
 
 ### Fail gracefull if Dataverse is not ready yet.
 if [[ "`wc -l ${TMPFILE}`" < "3" ]]; then
-  echo "Dataverse responded with empty file. Did you bootstrap yet?"
+  echo "Dataverse responded with empty file. When running on K8s: did you bootstrap yet?"
   exit 123
 fi
 
