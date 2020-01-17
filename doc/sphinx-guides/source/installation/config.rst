@@ -110,7 +110,7 @@ Root Dataverse Permissions
 
 The user who creates a dataverse is given the "Admin" role on that dataverse. The root dataverse is created automatically for you by the installer and the "Admin" is the superuser account ("dataverseAdmin") we used in the :doc:`installation-main` section to confirm that we can log in. These next steps of configuring the root dataverse require the "Admin" role on the root dataverse, but not the much more powerful superuser attribute. In short, users with the "Admin" role are subject to the permission system. A superuser, on the other hand, completely bypasses the permission system. You can give non-superusers the "Admin" role on the root dataverse if you'd like them to configure the root dataverse.
 
-In order for non-superusers to start creating dataverses or datasets, you need click "Edit" then "Permissions" and make choices about which users can add dataverses or datasets within the root dataverse. (There is an API endpoint for this operation as well.) Again, the user who creates a dataverse will be granted the "Admin" role on that dataverse. Non-superusers who are not "Admin" on the root dataverse will not be able to to do anything useful until the root dataverse has been published.
+In order for non-superusers to start creating dataverses or datasets, you need click "Edit" then "Permissions" and make choices about which users can add dataverses or datasets within the root dataverse. (There is an API endpoint for this operation as well.) Again, the user who creates a dataverse will be granted the "Admin" role on that dataverse. Non-superusers who are not "Admin" on the root dataverse will not be able to do anything useful until the root dataverse has been published.
 
 As the person installing Dataverse you may or may not be a local metadata expert. You may want to have others sign up for accounts and grant them the "Admin" role at the root dataverse to configure metadata fields, templates, browse/search facets, guestbooks, etc. For more on these topics, consult the :doc:`/user/dataverse-management` section of the User Guide.
 
@@ -302,6 +302,8 @@ Amazon S3 Storage (or Compatible)
 For institutions and organizations looking to use some kind of S3-based object storage for files uploaded to Dataverse,
 this is entirely possible. You can either use Amazon Web Services or use some other, even on-site S3-compatible
 storage (like Minio, Ceph RADOS S3 Gateway and many more). 
+
+The Dataverse S3 driver supports multipart upload for files over 4 GB.
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
@@ -873,6 +875,8 @@ The password reset feature requires ``dataverse.fqdn`` to be configured.
 | Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
 | ``https://{dataverse.fqdn}/``
 | If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+
+.. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++

@@ -132,7 +132,7 @@ Version 9.6 is strongly recommended because it is the version developers and QA 
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
-	
+
 Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
@@ -141,17 +141,17 @@ Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 	# service postgresql-9.6 initdb
 	# service postgresql-9.6 start
 
-Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
+Configuring Database Access for the Dataverse Application (and the Dataverse Installer)
 =======================================================================================
 
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
 
-- If PostgreSQL is running on the same server as Glassfish, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
+- If PostgreSQL is running on the same server as Glassfish, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this::
 
   	host all all 127.0.0.1/32 md5
 
-  Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there. 
+  Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there.
 
 
 - The Dataverse installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
@@ -167,9 +167,9 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
   Where ``[ADDRESS]`` is the numeric IP address of the Glassfish server. Enter this address when the installer asks for the PostgreSQL server address.
 
-- In some distributions, PostgreSQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented out and looks like this:: 
+- In some distributions, PostgreSQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented out and looks like this::
 
-        listen_addresses='*' 
+        listen_addresses='*'
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
@@ -177,11 +177,11 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
         # systemctl restart postgresql-9.6
 
-  On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
+  On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal::
 
       	kill -1 PROCESS_ID
 
-Solr 
+Solr
 ----
 
 The Dataverse search index is powered by Solr.
@@ -254,7 +254,25 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Solr must be firewalled off from all hosts except the server(s) running Dataverse. Otherwise, any host  that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_2/securing-solr.html
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy. 
+
+It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
+
+If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es). 
+
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
+
+        # usermod -s /sbin/nologin solr
+
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
+
+        # usermod -s /bin/bash solr
+
+or simply prepend each command you would run as the Solr user with "sudo -u solr":
+
+        # sudo -u solr command
+
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised. 
 
 jq
 --
@@ -277,19 +295,19 @@ or you may install it manually::
 ImageMagick
 -----------
 
-Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps). 
+Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps).
 
 Installing and configuring ImageMagick
 ======================================
 
 On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
 
-	# yum install ImageMagick 
+	# yum install ImageMagick
 
-(most RedHat systems will have it pre-installed). 
-When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
+(most RedHat systems will have it pre-installed).
+When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required.
 
-On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew. 
+On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew.
 
 If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
 
@@ -365,8 +383,8 @@ Rserve
 Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
-network connections on a dedicated port. This requires some extra 
-configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
+network connections on a dedicated port. This requires some extra
+configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.
 Run the script as follows (as root)::
 
     cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
@@ -462,5 +480,3 @@ Next Steps
 ----------
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.
-
-

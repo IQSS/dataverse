@@ -5,40 +5,40 @@ A dataverse is a container for datasets (research data, code, documentation, and
 
 |image1|
 
-Once a user creates a dataverse they, by default, become the
-administrator of that dataverse. The dataverse administrator has access
-to manage the settings described in this guide.
+Once a user creates a dataverse they, by default, become the administrator of that dataverse. The dataverse administrator has access to manage the settings described in this guide.
 
 .. contents:: |toctitle|
   :local:
 
-Create a Dataverse (Within the "Root" Dataverse)
-===================================================
+Create a New Dataverse
+=======================
 
-Creating a dataverse is easy but first you must be a registered user (see :doc:`/user/account`).
+Creating a dataverse is easy but first you must be a registered user (see :doc:`/user/account`). Once you are logged in, click on the "Add Data" button, or "Add Data" navbar link and in the dropdown menu select "New Dataverse".
 
-#. Once you are logged in click on the "Add Data" button and in the dropdown menu select "New Dataverse".
-#. Once on the "New Dataverse" page fill in the following fields:
-    * **Name**: Enter the name of your dataverse.
+#. **Fill in the following fields on the "New Dataverse" page** (required fields in the form are denoted by a red asterisk, next to the label):
+    * **Host Dataverse**: Select a dataverse you would like to create the new dataverse in, by default the root dataverse is selected if you click the Add Data button from the root dataverse, your My Data pg, the Add Data link in the navbar, or the Add a dataset button on the custom homepage (if configured), but you can select any dataverse for which you the proper permissions to create dataverses.
+    * **Dataverse Name**: Enter the name of your dataverse.
+    * **Affiliation**: Add any affiliation that can be associated with this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
     * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change this field in the future, the URL for your Dataverse will change (http//.../'identifier'), which will break older links to the page.
-    * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
-    * **Affiliation**: Add any Affiliation that can be associated with this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
-    * **Description**: Provide a description of this dataverse. This will display on the landing page of your dataverse and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <ul>).
     * **Category**: Select a category that best describes the type of dataverse this will be. For example, if this is a dataverse for an individual researcher's datasets, select *Researcher*. If this is a dataverse for an institution, select *Organization or Institution*.
-    * **Choose the sets of Metadata Fields for datasets in this dataverse**: By default the metadata elements will be from the host dataverse that this new dataverse is created in. Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the :doc:`/user/appendix`.
-    * **Select facets for this dataverse**:  Choose which metadata fields will be used as facets on your dataverse. These facets will allow users browsing or searching your dataverse to filter its contents according to the fields you’ve selected. For example, if you select “Subject” as a facet, users will be able to filter your dataverse’s contents by subject area. By default, the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in, but you can add or remove facets from this default.
-#. Selected metadata elements are also used to pick which metadata fields you would like to use for creating templates for your datasets. Metadata fields can be hidden, or selected as required or optional. Once you have selected all the fields you would like to use, you can create your template(s) after you finish creating your dataverse.
-#. Click "Create Dataverse" button and you're done! 
+    * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
+    * **Description**: Provide a description of this dataverse. This will display on the landing page of your dataverse and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
+#. **Choose the sets of Metadata Fields for datasets in this dataverse**:
+    * By default the metadata elements will be from the host dataverse that this new dataverse is created in.
+    * Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the :doc:`/user/appendix`.
+    * Metadata fields can be hidden, or selected as required or optional.
+    * Selected metadata elements are also used to pick which metadata fields you would like to use for creating :ref:`Dataset Templates <dataset-templates>`: after you finish creating your dataverse.
+#. **Choose which metadata fields will be used as browse/search facets on your dataverse**:
+    * These facets will allow users browsing or searching your dataverse to filter its contents according to the fields you have selected. For example, if you select “Subject” as a facet, users will be able to filter your dataverse’s contents by subject area.
+    * By default, the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in, but you can add or remove facets from this default.
+#. **Click the "Create Dataverse" button** and you're done!
 
-\*Required fields are denoted by a red asterisk.
+Edit Dataverse
+================
 
-Edit Dataverse 
-=================
+To edit your dataverse, navigate to your dataverse's landing page and select the "Edit Dataverse" button, where you will be presented with the following editing options: 
 
-To edit your dataverse, navigate to your dataverse's landing page and select the "Edit Dataverse" button, 
-where you will be presented with the following editing options: 
-
-- :ref:`General Information <general-information>`: edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse
+- :ref:`General Information <general-information>`: edit name, affiliation, identifier, category, contact email, description, metadata fields, and browse/search facets for your dataverse
 - :ref:`Theme <theme>`: upload a logo for your dataverse, add a link to your department or personal website, add a custom footer image, and select colors for your dataverse in order to brand it
 - :ref:`Widgets <dataverse-widgets>`: get code to add to your website to have your dataverse display on it
 - :ref:`Permissions <dataverse-permissions>`: give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
@@ -89,6 +89,7 @@ Dataverse Listing Widget
 
 The Dataverse Listing Widget provides a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it displays the content in the widget on your website. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your website.
 
+.. _openscholar-dataverse-level:
 
 Adding Widgets to an OpenScholar Website
 ******************************************
@@ -125,6 +126,7 @@ Please note that even on a newly created dataverse, you may see user and groups 
 
 Setting Access Configurations
 *******************************
+
 Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your dataverse and what permissions are granted to those who add to your dataverse.
 
 |image4|
@@ -137,6 +139,7 @@ Both of these settings can be changed at any time.
 
 Assigning Roles to Users and Groups
 *************************************
+
 Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your dataverse. A role is a set of permissions granted to a user or group when they're using your dataverse. For example, giving your research assistant the "Contributor" role would give her the following self-explanatory permissions on your dataverse and all datasets within your dataverse: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". She would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your dataverse. If you wanted to give her that permission, you would give her a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
 
 |image5|
@@ -151,6 +154,7 @@ Note: If you need to assign a role to ALL Dataverse user accounts, you can assig
 
 Dataset Templates
 -------------------
+
 Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a dataverse. In Dataverse 4.0, templates are created at the dataverse level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
@@ -169,6 +173,7 @@ How do you create a template?
 
 Dataset Guestbooks
 -----------------------------
+
 Guestbooks allow you to collect data about who is downloading the files from your datasets. You can decide to collect account information (username, given name & last name, affiliation, etc.) as well as create custom questions (e.g., What do you plan to use this data for?). You are also able to download the data collected from the enabled guestbooks as Excel files to store and use outside of Dataverse.
 
 How do you create a guestbook?
@@ -179,15 +184,11 @@ How do you create a guestbook?
 #. Name the guestbook, determine the account information that you would like to be required (all account information fields show when someone downloads a file), and then add Custom Questions (can be required or not required). 
 #. Hit the Create Dataset Guestbook button once you have finished.
 
-What can you do with a guestbook?
-After creating a guestbook, you will notice there are several options for a guestbook and appear in the list of guestbooks. 
+What can you do with a guestbook? After creating a guestbook, you will notice there are several options for a guestbook and appear in the list of guestbooks. 
 
 - If you want to use a guestbook you have created, you will first need to click the button in the Action column that says Enable. Once a guestbook has been enabled, you can go to the License + Terms for a dataset and select a guestbook for it.
-
 - There are also options to view, copy, edit, or delete a guestbook.
-
 - Once someone has downloaded a file in a dataset where a guestbook has been assigned, an option to download collected data will appear. 
-
 
 .. _featured-dataverses:
 
@@ -228,7 +229,6 @@ Once your dataverse is ready to go public, go to your dataverse page, click on t
 hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish, since once a dataverse
 is made public, it can no longer be unpublished.
 
-
 .. |image1| image:: ./img/Dataverse-Diagram.png
 .. |image2| image:: ./img/dvperms1.png
    :class: img-responsive
@@ -240,6 +240,3 @@ is made public, it can no longer be unpublished.
    :class: img-responsive
 .. |image6| image:: ./img/dv5.png
    :class: img-responsive
-
-
-

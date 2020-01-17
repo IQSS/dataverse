@@ -41,8 +41,8 @@ Each of these metadata exports contains the metadata of the most recently publis
 Adding a New Dataset
 ====================
 
-#. Navigate to the dataverse in which you want to add a dataset. 
-#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
+#. Navigate to the dataverse in which you want to add a dataset.
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root dataverse, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root dataverse. You can change this by selecting another dataverse you have proper permissions to create datasets in, from the Host Dataverse dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
@@ -51,14 +51,14 @@ Adding a New Dataset
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
 
 Supported HTML Fields
 ---------------------
 
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
-<strong>, <strike>, <ul>.
+<strong>, <strike>, <u>, <ul>.
 
 File Upload
 ==============
@@ -209,8 +209,6 @@ These folder names are subject to strict validation rules. Only the following ch
 
 .. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
 
-
-
 Other File Types
 ----------------
 
@@ -276,6 +274,7 @@ Dataset terms can be viewed and edited from the Terms tab of the dataset page, o
 
 CC0 Public Domain Dedication
 ----------------------------
+
 By default, all new datasets created through Dataverse's web UI are given a `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_.
 
 The `Creative Commons <https://creativecommons.org>`_ organization defines a number of `licenses <https://creativecommons.org/licenses/>`_ that allow copyright holders to release their intellectual property more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the IP must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate IP to the public domain. 
@@ -422,6 +421,8 @@ Dataset Citation Widget
 
 The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse.
 
+.. _openscholar-dataset-level:
+
 Adding Widgets to an OpenScholar Website
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -540,4 +541,3 @@ If you deaccession the most recently published version of the dataset but not al
    
 .. _Make Data Count: https://makedatacount.org
 .. _Crossref: https://crossref.org
-
