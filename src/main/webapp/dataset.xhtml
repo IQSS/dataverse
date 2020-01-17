@@ -407,7 +407,7 @@
                                                 </div>
                                                 <!-- Make Data Count downloads -->
                                                 <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
-                                                    <h:outputFormat value="{0} #{bundle['metrics.downloads']} + ({1} #{bundle['metrics.downloads.nonMDC']}">
+                                                    <h:outputFormat value="{0} #{bundle['metrics.downloads']} + ({1} #{bundle['metrics.downloads.nonMDC']})">
                                                         <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
                                                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         
