@@ -416,7 +416,7 @@
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
-                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                        <span jsf:rendered="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0}" class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}"></span>
                                                     </span>
                                                 </div>
