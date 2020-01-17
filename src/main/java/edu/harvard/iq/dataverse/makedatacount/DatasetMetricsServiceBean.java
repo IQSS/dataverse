@@ -107,6 +107,24 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         dm.setDownloadsTotal(dm.getDownloadsTotalRegular() + dm.getDownloadsTotalMachine());
         dm.setDownloadsUnique(dm.getDownloadsUniqueRegular() + dm.getDownloadsUniqueMachine());
 
+        StringBuilder metricsBuilder = new StringBuilder();
+        metricsBuilder.append("Dataset: " + dataset.getId() + "\n");
+        metricsBuilder.append("Country: " + country + "\n");
+        metricsBuilder.append("Month/Year: " + monthYear + "\n");
+        metricsBuilder.append("TotalRegularViews: " + dm.getViewsTotalRegular() + "\n");
+        metricsBuilder.append("TotalViewsUnique: " + dm.getViewsUnique() + "\n");
+        metricsBuilder.append("TotalMachineViews: " + dm.getViewsTotalMachine() + "\n");
+        metricsBuilder.append("UniqueMachineViews: " + dm.getViewsUniqueMachine() + "\n");
+        metricsBuilder.append("TotalViews: " + dm.getViewsTotal() + "\n");
+        metricsBuilder.append("UniqueViews: " + dm.getViewsUnique() + "\n");
+        metricsBuilder.append("TotalRegularDownloads: " + dm.getDownloadsTotalRegular() + "\n");
+        metricsBuilder.append("TotalDownloadsUnique: " + dm.getDownloadsUnique() + "\n");
+        metricsBuilder.append("TotalMachineDownloads: " + dm.getDownloadsTotalMachine() + "\n");
+        metricsBuilder.append("UniqueMachineDownloads: " + dm.getDownloadsUniqueMachine() + "\n");
+        metricsBuilder.append("TotalDownloads: " + dm.getDownloadsTotal() + "\n");
+        metricsBuilder.append("UniqueDownloads: " + dm.getDownloadsUnique() + "\n");
+        
+        logger.info(metricsBuilder.toString());
         return dm;
 
     }
