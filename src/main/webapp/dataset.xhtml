@@ -407,8 +407,10 @@
                                                 </div>
                                                 <!-- Make Data Count downloads -->
                                                 <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
-                                                    <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
+                                                    <h:outputFormat value="{0} #{bundle['metrics.downloads']} + ({1} #{bundle['metrics.downloads.nonMDC']}">
                                                         <f:param value="#{datasetMetricsServiceBean.getMetrics(DatasetPage.dataset).getDownloadsTotal()}"/>
+                                                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
+                                                        
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
