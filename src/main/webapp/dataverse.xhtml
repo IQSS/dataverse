@@ -250,7 +250,8 @@
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none"
-                                                         update="@all"
+                                                         update="@widgetVar(optionBlock)" 
+                                                         process="@this @widgetVar(optionBlock)"
                                                          action="#{DataversePage.resetToInherit()}">
                                         </p:commandButton>
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">

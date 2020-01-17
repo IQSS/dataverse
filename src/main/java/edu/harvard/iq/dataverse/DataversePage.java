@@ -731,13 +731,8 @@ public class DataversePage implements java.io.Serializable {
     public String resetToInherit() {
 
         setInheritMetadataBlockFromParent(true);
-        if (editMode.equals(DataversePage.EditMode.CREATE)) {;
-            refreshAllMetadataBlocks();
-            return null;
-        } else {
-            String retVal = save();
-            return retVal;
-        }
+        refreshAllMetadataBlocks();
+        return null;
     }
 
     public void cancelMetadataBlocks() {
