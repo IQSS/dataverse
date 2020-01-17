@@ -947,7 +947,7 @@ public class GuestbookResponseServiceBean {
         // dataset id is null, will return 0        
         Query query;
         if(date != null) {
-            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsedate < '" + date.toString() + "'");
+            query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId + " and responsetime < '" + date.toString() + "'");
         }else {
             query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.dataset_id  = " + datasetId);
         }
