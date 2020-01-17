@@ -410,7 +410,7 @@ public class DatasetsIT {
         getDatasetVersion.prettyPrint();
         getDatasetVersion.then().assertThat()
                 .body("data.datasetId", equalTo(datasetId))
-                .body("data.datasetPid", equalTo(datasetPersistentId))
+                .body("data.datasetPersistentId", equalTo(datasetPersistentId))
                 .statusCode(OK.getStatusCode());
 
         Response citationBlock = UtilIT.getMetadataBlockFromDatasetVersion(datasetPersistentId, null, null, apiToken);
