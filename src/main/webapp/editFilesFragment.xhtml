@@ -304,10 +304,10 @@
                     
                     <p:commandButton id="updateEditDataFilesButtonsForUpload" action="#{EditDatafilesPage.uploadFinished()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
                     <p:commandButton id="updateEditDataFilesButtonsForDelete" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:editDataFilesButtons" rendered="#{showFileButtonUpdate}" style="display:none"/>
-                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@form,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="AllUploadsFinished" action="#{EditDatafilesPage.uploadFinished()}" update="@form,datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:bind_bsui_components();javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <p:commandButton id="dropBoxUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="#{ createDataset ? '' : 'datasetForm:editDataFilesButtons,'}datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:dropBoxUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
                     <p:commandButton id="hypothesisUploadFinished" action="#{EditDatafilesPage.uploadFinished()}" update="#{ createDataset ? '' : 'datasetForm:editDataFilesButtons,'}datasetForm:fileUpload,datasetForm:hypothesisButton,datasetForm:hypothesisUploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" style="display:none"/>
-                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/> 
+                    <p:commandButton id="allDeletesFinished" action="#{EditDatafilesPage.deleteFilesCompleted()}" update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:hypothesisButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable" oncomplete="javascript:bind_bsui_components();javascript:uploadWidgetDropMsg();" style="display:none"/> 
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
                     <!-- ????? 
                     datasetForm:fileUpload,
@@ -354,7 +354,8 @@
                                 <div class="thumbnail-block">
                                     <!-- Thumbnail Preview -->
                                     <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
-                                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"
+                                          data-template='&lt;div class="popover thumb-preview" role="tooltip"&gt;&lt;div class="arrow"&gt;&lt;/div&gt;&lt;h3 class="popover-title"&gt;&lt;/h3&gt;&lt;div class="popover-content"&gt;&lt;/div&gt;&lt;/div&gt;'>
                                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
                                     </span>
                                     <!-- Default Icon -->
@@ -440,12 +441,12 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="toggle_dropdown();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
                                                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                 </p:commandLink>
                                             </li>
@@ -460,48 +461,47 @@
                                         </ul>
                                     </div>
                                 </f:facet>
-                                <div style="margin-right:14px;" class="btn-group" >
+                                <div style="margin-right:14px;" class="btn-group">
                                     <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
                                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                         <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
-                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink id="fileProvenanceButton"
                                                                update=":datasetForm:editProvenancePopup"
                                                                oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                                    <f:actionListener binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, EditDatafilesPage.dataset)}" />
+                                                    <f:actionListener binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, EditDatafilesPage.dataset)}"/>
                                                     #{bundle['file.provenance']} 
                                                 </p:commandLink>    
                                             </li> 
                                         </ui:fragment>
-
                                         <ui:fragment rendered="#{false and !settingsWrapper.publicInstall}">
-                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink oncomplete="toggle_dropdown();" 
                                                                onclick="testFilesSelectedForRestriction()">
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                                 </p:commandLink>
                                             </li>
-                                            <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                            <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
                                                                action="#{DatasetPage.restrictSelectedFiles(false)}">
                                                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                 </p:commandLink>
                                             </li>
                                         </ui:fragment>
-                                        <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                        <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                             <p:commandLink id="fileCategoriesButton"
                                                            actionListener="#{EditDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                            update=":datasetForm:editFileTagsPopup"
                                                            oncomplete="PF('editFileTagsPopup').show();bind_bsui_components();">
                                                 #{bundle['file.tags']} 
-                                            </p:commandLink>    
+                                            </p:commandLink>
                                         </li>        
                                         <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}" jsf:rendered="#{false}">
-                                            <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
-                                                <h:outputText value="#{bundle['file.delete']}"/> 
+                                            <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile">
+                                                <h:outputText value="#{bundle['file.delete']}"/>
                                             </p:commandLink>
                                         </li>
                                         <li>
@@ -510,7 +510,7 @@
                                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                                            update=":datasetForm:fileSetThumbnail"
                                                            oncomplete="PF('fileSetThumbnail').show()">
-                                        #{bundle['file.setThumbnail']}
+                                                #{bundle['file.setThumbnail']}
                                             </p:commandLink>
                                         </li>
                                         <li>
@@ -518,7 +518,7 @@
                                                            rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and EditDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
                                                            oncomplete="PF('fileThumbnailConfirm').show()">
-                                        #{bundle['file.setThumbnail']}
+                                                #{bundle['file.setThumbnail']}
                                             </p:commandLink>
                                         </li>
                                         <li>
@@ -528,7 +528,7 @@
                                                            actionListener="#{EditDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
                                                            update=":datasetForm:fileAdvancedOptions"
                                                            oncomplete="PF('fileAdvancedOptions').show()">
-                                        #{bundle['file.advancedIngestOptions']}
+                                                #{bundle['file.advancedIngestOptions']}
                                             </p:commandLink>
                                         </li>
                                     </ul>
@@ -551,10 +551,10 @@
     <p:dialog id="fileTypeDifferentPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" 
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();"
                              action="#{EditDatafilesPage.deleteFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
-            <button class="btn btn-default" onclick="PF('fileTypeDifferentPopup').hide();" type="button">                              
+            <button class="btn btn-default" onclick="PF('fileTypeDifferentPopup').hide();" type="button">
                 #{bundle.continue}
             </button>
         </div>
@@ -563,7 +563,7 @@
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment" modal="true">
         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
         <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForDeleteFragment').hide();" type="button">                              
+            <button class="btn btn-default" onclick="PF('selectFilesForDeleteFragment').hide();bind_bsui_components();" type="button">                              
                 #{bundle.close}
             </button>
         </div>
@@ -574,9 +574,9 @@
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}"/>
-            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide();" type="button">                              
+            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -608,8 +608,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" action="#{EditDatafilesPage.saveWithTermsOfUse()}"/>
-            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" type="button">                              
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();" action="#{EditDatafilesPage.saveWithTermsOfUse()}"/>
+            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -792,8 +792,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
-            <p:commandButton styleClass="btn btn-link" id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
+            <p:commandButton styleClass="btn btn-default" id="fileAdvancedOptionsSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileAdvancedOptions').hide();javascript:bind_bsui_components();" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
+            <p:commandButton styleClass="btn btn-link" id="fileAdvancedOptionsCancelButton" value="#{bundle.cancel}" onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
         </div>
     </p:dialog>
     <!-- end of "advanced options" dialogue -->
@@ -813,8 +813,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
-            <p:commandButton styleClass="btn btn-link" id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
+            <p:commandButton styleClass="btn btn-default" id="fileSetThumbnailSaveBtn" value="#{bundle.saveChanges}" oncomplete="PF('fileSetThumbnail').hide();javascript:bind_bsui_components();" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
+            <p:commandButton styleClass="btn btn-link" id="fileSetThumbnailCancelBtn" value="#{bundle.cancel}" onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
     <p:dialog id="fileThumbnailConfirm" styleClass="smallPopUp" header="#{bundle['file.setThumbnail.header']}" widgetVar="fileThumbnailConfirm" modal="true">
@@ -824,8 +824,8 @@
             </p>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide()" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
-            <button class="btn btn-link" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();" type="button">                              
+            <p:commandButton styleClass="btn btn-default" id="fileThumbnailConfirmCntBtn" value="#{bundle.continue}" oncomplete="PF('fileThumbnailConfirm').hide();javascript:bind_bsui_components();" update=":datasetForm:filesTable,:messagePanel" actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
+            <button class="btn btn-link" onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -911,8 +911,8 @@
             </div> -->
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide()" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
-            <p:commandButton styleClass="btn btn-link" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
+            <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide();javascript:bind_bsui_components();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
+            <p:commandButton styleClass="btn btn-link" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
     </p:dialog>
     <script src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>

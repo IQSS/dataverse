@@ -39,6 +39,9 @@ Just make sure the user running the installer has write permission to:
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
+**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). But for now it is being offered as an (experimental) alternative. See README_python.txt, included in the installer bundle, for more information on how to run it.
+
+
 The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:

@@ -9,8 +9,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:o="http://omnifaces.org/ui"
-      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+      xmlns:o="http://omnifaces.org/ui">
     <h:head>
     </h:head>
     <h:body>
@@ -58,8 +57,8 @@
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
-                    <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
-                    <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                    <f:viewParam name="id" value="#{DatasetPage.id}"/>
+                    <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
@@ -385,8 +384,14 @@
                                             <div id="metrics-block">
                                             <div id="metrics-heading">
                                                 #{bundle['metrics.dataset.title']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                        data-original-title="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.dataset.tip.makedatacount'] : bundle['metrics.dataset.tip.default']}"></span>
+                                                <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
+                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                        data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
+                                                    <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
+                                                        data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
+                                                </ui:fragment>
                                             </div>
                                             <div id="metrics-body">
                                                 <!-- Classic downloads -->
@@ -635,6 +640,7 @@
                             
                             <script>
                                 //<![CDATA[
+                                // javascript for refreshing page when locks
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });
@@ -1592,7 +1598,7 @@
                 <script>
                     //<![CDATA[
                     $(document).ready(function () {
-                        popoverHTML('#{bundle.htmlAllowedTitle}');
+                        popoverHTML('#{bundle.htmlAllowedTitle}','#{bundle.htmlAllowedTags}');
                     });
                     function openDialog() {
                         PF('details').show();

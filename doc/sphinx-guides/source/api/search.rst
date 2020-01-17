@@ -35,7 +35,6 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
-query_entities   boolean  Whether entities are queried via direct database calls (for developer use).
 ===============  =======  ===========
 
 Basic Search Example
@@ -49,7 +48,7 @@ https://demo.dataverse.org/api/search?q=trees
         "status":"OK",
         "data":{
             "q":"trees",
-            "total_count":4,
+            "total_count":5,
             "start":0,
             "spelling_alternatives":{
                 "trees":"[tree]"
@@ -99,9 +98,49 @@ https://demo.dataverse.org/api/search?q=trees
                     "identifier":"birds",
                     "description":"A bird dataverse with some trees",
                     "published_at":"2016-05-10T12:57:27Z"
-                }
+                },
+                {  
+                    "name":"Darwin's Finches",
+                    "type":"dataset",
+                    "url":"https://doi.org/10.70122/FK2/MB5VGR",
+                    "global_id":"doi:10.70122/FK2/MB5VGR",
+                    "description":"Darwin's finches (also known as the GalÃ¡pagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at":"2019-12-11T15:26:10Z",
+                    "publisher":"dvbe69f5e1",
+                    "citationHtml":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/MB5VGR\" target=\"_blank\">https://doi.org/10.70122/FK2/MB5VGR</a>, Root, V3",
+                    "identifier_of_dataverse":"dvbe69f5e1",
+                    "name_of_dataverse":"dvbe69f5e1",
+                    "citation":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/MB5VGR, Root, V3",
+                    "storageIdentifier":"file://10.70122/FK2/MB5VGR",
+                    "subjects":[  
+                       "Astronomy and Astrophysics",
+                       "Other"
+                    ],
+                    "versionId":1260,
+                    "versionState":"RELEASED",
+                    "majorVersion":3,
+                    "minorVersion":0,
+                    "createdAt":"2019-09-20T18:08:29Z",
+                    "updatedAt":"2019-12-11T15:26:10Z",
+                    "contacts":[  
+                       {  
+                          "name":"Finch, Fiona",
+                          "affiliation":""
+                       }
+                    ],
+                    "producers":[  
+                       "Allen, Irwin",
+                       "Spielberg, Stephen"
+                    ],
+                    "authors":[  
+                       "Finch, Fiona",
+                       "Spruce, Sabrina",
+                       "Poe, Edgar Allen",
+                       "Mulligan, Hercules"
+                    ]
+                 }
             ],
-            "count_in_response":4
+            "count_in_response":5
         }
     }
 

@@ -452,7 +452,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
-            dataversePage.setFilterQueries(filterQueries);
+            dataversePage.setFilterQueries(filterQueriesFinal);
             dataversePage.setSearchResultsCount(searchResultsCount);
             dataversePage.setSelectedTypesString(selectedTypesString);
             dataversePage.setSortField(sortField);

@@ -85,18 +85,14 @@ function disabledLinks(){
 /*
 * Custom Popover with HTML code snippet
 */
-function popoverHTML(popoverTitleHTML) {
+function popoverHTML(popoverTitleHTML, popoverTagsHTML) {
    var popoverTemplateHTML = ['<div class="popover">',
        '<div class="arrow"></div>',
        '<h3 class="popover-title"></h3>',
        '<div class="popover-content">',
        '</div>',
        '</div>'].join('');
-
-   var popoverContentHTML = ['<code>',
-       '&lt;a&gt;, &lt;b&gt;, &lt;blockquote&gt;, &lt;br&gt;, &lt;code&gt;, &lt;del&gt;, &lt;dd&gt;, &lt;dl&gt;, &lt;dt&gt;, &lt;em&gt;, &lt;hr&gt;, &lt;h1&gt;-&lt;h3&gt;, &lt;i&gt;, &lt;img&gt;, &lt;kbd&gt;, &lt;li&gt;, &lt;ol&gt;, &lt;p&gt;, &lt;pre&gt;, &lt;s&gt;, &lt;sup&gt;, &lt;sub&gt;, &lt;strong&gt;, &lt;strike&gt;, &lt;ul&gt;',
-       '</code>'].join('');
-
+   var popoverContentHTML = ['<code>', popoverTagsHTML, '</code>'].join('');
    $('body').popover({
        selector: 'a.popoverHTML',
        title: popoverTitleHTML,

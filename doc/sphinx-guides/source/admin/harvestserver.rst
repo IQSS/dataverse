@@ -22,6 +22,8 @@ You might consider adding your OAI-enabled production instance of Dataverse to
 `this shared list <https://docs.google.com/spreadsheets/d/12cxymvXCqP_kCsLKXQD32go79HBWZ1vU_tdG4kvP5S8/>`_
 of such instances.
 
+The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).
+
 How does it work? 
 -----------------
 

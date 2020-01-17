@@ -695,8 +695,13 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getProductionDate() {
-        //todo get "Production Date" from datasetfieldvalue table
-        return "Production Date";
+        String retVal = null;
+        for (DatasetField dsfv : this.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.productionDate)) {
+                retVal = dsfv.getDisplayValue();
+            }
+        }
+        return retVal;
     }
 
     /**
@@ -1150,6 +1155,62 @@ public class DatasetVersion implements Serializable {
         return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
     }
     
+    public List<String> getRelatedMaterial() {
+        List<String> relMaterial = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.relatedMaterial)) {
+                relMaterial.addAll(dsf.getValues());
+            }
+        }
+        return relMaterial;
+    } 
+    
+    public List<String> getDataSource() {
+        List<String> dataSources = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dataSources)) {
+                dataSources.addAll(dsf.getValues());
+            }
+        }
+        return dataSources;
+    }
+    
+    public List<String[]> getGeographicCoverage() {
+        List<String[]> geoCoverages = new ArrayList<>();
+
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoCoverage : dsf.getDatasetFieldCompoundValues()) {
+                    String country = null;
+                    String state = null;
+                    String city = null;
+                    String other = null;
+                    String[] coverageItem = null;
+                    for (DatasetField subField : geoCoverage.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
+                            country = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
+                            state = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
+                            city = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            other = subField.getDisplayValue();
+                        }
+
+                        coverageItem = new String[]{country, state, city, other};
+                    }
+                    geoCoverages.add(coverageItem);
+                }
+
+            }
+        }
+        return geoCoverages;
+    }
+
+    
     public List<DatasetRelPublication> getRelatedPublications() {
         List<DatasetRelPublication> relatedPublications = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1161,6 +1222,8 @@ public class DatasetVersion implements Serializable {
                             String citation = subField.getDisplayValue();
                             relatedPublication.setText(citation);
                         }
+
+                        
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
                             // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
                             // for this url metadata field is likely set up so that the display value is automatically 
