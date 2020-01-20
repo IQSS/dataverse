@@ -132,7 +132,7 @@
 	authorIdentifierScheme	ISNI		1	http://isni.org/isni/										
 	authorIdentifierScheme	LCNA		2	http://id.loc.gov/authorities/names/										
 	authorIdentifierScheme	VIAF		3	https://viaf.org/viaf/										
-	authorIdentifierScheme	GND		4		https://d-nb.info/gnd/									
+	authorIdentifierScheme	GND		4	https://d-nb.info/gnd/										
 	authorIdentifierScheme	DAI		5
 	authorIdentifierScheme	ResearcherID		6
 	authorIdentifierScheme	ScopusID		7
