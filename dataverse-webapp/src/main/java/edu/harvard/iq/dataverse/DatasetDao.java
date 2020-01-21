@@ -514,6 +514,7 @@ public class DatasetDao implements java.io.Serializable {
         }
         dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(dataset, inputStream, new DataAccess());
         dataset.setThumbnailFile(null);
+        dataset.setUseGenericThumbnail(false);
         return merge(dataset);
     }
 
