@@ -23,6 +23,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -110,6 +112,9 @@ public class IndexServiceBean {
     SettingsServiceBean settingsService;
     @EJB
     SolrClientService solrClientService;
+
+    @EJB
+    VariableServiceBean variableService;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -1145,12 +1150,46 @@ public class IndexServiceBean {
                             // is something social science-specific...
                             // anyway -- needs to be reviewed. -- L.A. 4.0alpha1
 
+                            //Variable Name
                             if (var.getName() != null && !var.getName().equals("")) {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
-                            if (var.getLabel() != null && !var.getLabel().equals("")) {
-                                datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+
+
+                            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(var.getId(), fileMetadata.getId());
+                            VariableMetadata vm = null;
+                            if (vmList != null && vmList.size() >0) {
+                                vm = vmList.get(0);
                             }
+
+                            if (vmList.size() == 0 ) {
+                                //Variable Label
+                                if (var.getLabel() != null && !var.getLabel().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+                                }
+
+                            } else if (vm != null) {
+                                if (vm.getLabel() != null && !vm.getLabel().equals("")  ) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, vm.getLabel());
+                                }
+                                if (vm.getLiteralquestion() != null && !vm.getLiteralquestion().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.LITERAL_QUESTION, vm.getLiteralquestion());
+                                }
+                                if (vm.getInterviewinstruction() != null && !vm.getInterviewinstruction().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.INTERVIEW_INSTRUCTIONS, vm.getInterviewinstruction());
+                                }
+                                if (vm.getPostquestion() != null && !vm.getPostquestion().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.POST_QUESTION, vm.getPostquestion());
+                                }
+                                if (vm.getUniverse() != null && !vm.getUniverse().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_UNIVERSE, vm.getUniverse());
+                                }
+                                if (vm.getNotes() != null && !vm.getNotes().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_NOTES, vm.getNotes());
+                                }
+
+                            }
+
                         }
                         // TABULAR DATA TAGS:
                         // (not to be confused with the file categories, indexed above!)
