@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.privateurl;
 
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -10,11 +11,14 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Static, testable methods with no runtime dependencies.
@@ -164,14 +168,14 @@ public class PrivateUrlUtil {
      * @todo Move this to somewhere more central.
      */
     public static List<String> getRequiredPermissions(CommandException ex) {
-        List<String> stringsToReturn = new ArrayList<>();
-        Map<String, Set<Permission>> map = ex.getFailedCommand().getRequiredPermissions();
-        map.entrySet().stream().forEach((entry) -> {
-            entry.getValue().stream().forEach((permission) -> {
-                stringsToReturn.add(permission.name());
-            });
-        });
-        return stringsToReturn;
+        Map<String, Set<Permission>> permissions = Optional.ofNullable(ex.getFailedCommand())
+                .map(Command::getRequiredPermissions)
+                .orElse(Collections.emptyMap());
+        return permissions.values()
+                .stream()
+                .flatMap(Set::stream)
+                .map(Permission::name)
+                .collect(Collectors.toList());
     }
 
 }

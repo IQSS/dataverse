@@ -17,6 +17,8 @@ import org.junit.runner.RunWith;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -53,7 +55,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessVersion(versionToBeDeaccessed, "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessVersions(dataset, Collections.singletonList(versionToBeDeaccessed), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
@@ -72,7 +74,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessVersions(dataset, dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
@@ -89,7 +91,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessReleasedVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessReleasedVersions(dataset, dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
