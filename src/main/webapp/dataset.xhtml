@@ -417,7 +417,7 @@
                                                     </h:outputFormat>
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.makedatacount.tip']}"></span>
-                                                    <span jsf:rendered="#{(settingsWrapper.getMDCStartDate()!=null) && (guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0)}">        
+                                                    <span jsf:rendered="#{(settingsWrapper.getMDCStartDate()!=null) and (guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate()) > 0)}">        
                                                         <h:outputFormat value="#{bundle['metrics.downloads.nonMDC']}">
                                                             <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id, settingsWrapper.getMDCStartDate())}"/>
                                                         </h:outputFormat>
