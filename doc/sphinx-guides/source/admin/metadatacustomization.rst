@@ -120,6 +120,17 @@ Each of the three main sections own sets of properties:
 |                       |                       | cause display         |
 |                       |                       | problems.             |
 +-----------------------+-----------------------+-----------------------+
+| blockURI              | Associates the        | The citation          |
+|                       | properties in a block | #metadataBlock has    |
+|                       | with an external URI. | the blockURI          |
+|                       | Properties will be    | https://dataverse.org |
+|                       | assigned the global   | /schema/citation/     |
+|                       | identifier            | which assigns a       |
+|                       | blockURI<name> in the | global URI to terms   |
+|                       | OAI_ORE metadata      | such as 'https://     |
+|                       | and archival Bags     | dataverse.org/schema/ |
+|                       |                       | citation/subtitle'    |
++-----------------------+-----------------------+-----------------------+
 
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -315,6 +326,19 @@ Each of the three main sections own sets of properties:
 |                       |                       | reference another      |
 |                       |                       | existing metadata      |
 |                       |                       | block.)                |
++-----------------------+-----------------------+------------------------+
+| termURI               | Specify a global URI  | For example, the       |
+|                       | identifying this term | existing citation      |
+|                       | in an external        | #metadataBlock         |
+|                       | community vocabulary. | defines the property   |
+|                       |                       | names 'title'          |
+|                       | This value overrides  | as http://purl.org/dc/ |
+|                       | the default created   | terms/title - i.e.     |
+|                       | by appending the      | indicating that it can |
+|                       | property name to the  | be interpreted as the  |
+|                       | blockURI defined      | Dublin Core term       |
+|                       | for the               | 'title'                |
+|                       | #metadataBlock        |                        |
 +-----------------------+-----------------------+------------------------+
 
 #controlledVocabulary (enumerated) properties
