@@ -163,7 +163,9 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr/solr-7.3.1``
 
-``bin/solr start``
+(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
+
+``bin/solr start -j "-Djetty.host=127.0.0.1"``
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
@@ -179,6 +181,8 @@ Navigate to the directory where you cloned the Dataverse git repo and run these 
 It's fine to accept the default values.
 
 After a while you will see ``Enter admin user name [Enter to accept default]>`` and you can just hit Enter.
+
+**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). For now it is being offered as an (experimental) alternative. See README_python.txt, in the scripts/installer directory, for more information on how to run it (please give it a try, and let us know if there are any problems and/or if you have any suggestions!)
 
 Verify Dataverse is Running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

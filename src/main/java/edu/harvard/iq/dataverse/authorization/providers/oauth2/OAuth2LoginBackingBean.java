@@ -1,16 +1,16 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
-import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
-import com.github.scribejava.core.oauth.OAuth20Service;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.util.ClockUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -19,16 +19,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.omnifaces.util.Faces;
 
 /**
  * Backing bean of the oauth2 login process. Used from the login and the
@@ -41,11 +40,14 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 public class OAuth2LoginBackingBean implements Serializable {
 
     private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
-    private static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
+    static final long STATE_TIMEOUT = 1000 * 60 * 15; // 15 minutes in msec
     private int responseCode;
     private String responseBody;
-    private Optional<String> redirectPage;
+    Optional<String> redirectPage = Optional.empty();
     private OAuth2Exception error;
+    /**
+     * TODO: Only used in exchangeCodeForToken(). Make local var in method.
+     */
     private OAuth2UserRecord oauthUser;
 
     @EJB
@@ -62,7 +64,11 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     @Inject
     OAuth2FirstLoginPage newAccountPage;
-
+    
+    @Inject
+    @ClockUtil.LocalTime
+    Clock clock;
+    
     /**
      * Generate the OAuth2 Provider URL to be used in the login page link for the provider.
      * @param idpId Unique ID for the provider (used to lookup in authn service bean)
@@ -71,16 +77,8 @@ public class OAuth2LoginBackingBean implements Serializable {
      */
     public String linkFor(String idpId, String redirectPage) {
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        OAuth20Service svc = idp.getService(systemConfig.getOAuth2CallbackUrl());
         String state = createState(idp, toOption(redirectPage));
-        
-        AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder()
-                                         .state(state);
-        
-        // Do not include scope if empty string (necessary for GitHub)
-        if (!idp.getSpacedScope().isEmpty()) { aub.scope(idp.getSpacedScope()); }
-        
-        return aub.build();
+        return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
     
     /**
@@ -88,17 +86,15 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @throws IOException
      */
     public void exchangeCodeForToken() throws IOException {
-        HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        HttpServletRequest req = Faces.getRequest();
         
         try {
-            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req);
+            Optional<AbstractOAuth2AuthenticationProvider> oIdp = parseStateFromRequest(req.getParameter("state"));
             Optional<String> code = parseCodeFromRequest(req);
 
             if (oIdp.isPresent() && code.isPresent()) {
                 AbstractOAuth2AuthenticationProvider idp = oIdp.get();
-                
-                OAuth20Service svc = idp.getService(systemConfig.getOAuth2CallbackUrl());
-                oauthUser = idp.getUserRecord(code.get(), svc);
+                oauthUser = idp.getUserRecord(code.get(), systemConfig.getOAuth2CallbackUrl());
                 
                 UserRecordIdentifier idtf = oauthUser.getUserRecordIdentifier();
                 AuthenticatedUser dvUser = authenticationSvc.lookupUser(idtf);
@@ -106,20 +102,20 @@ public class OAuth2LoginBackingBean implements Serializable {
                 if (dvUser == null) {
                     // need to create the user
                     newAccountPage.setNewUser(oauthUser);
-                    FacesContext.getCurrentInstance().getExternalContext().redirect("/oauth2/firstLogin.xhtml");
+                    Faces.redirect("/oauth2/firstLogin.xhtml");
         
                 } else {
                     // login the user and redirect to HOME of intended page (if any).
                     session.setUser(dvUser);
                     session.configureSessionTimeout();
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
-                    tokenData.setUser(dvUser);
-                    tokenData.setOauthProviderId(idp.getId());
-                    oauth2Tokens.store(tokenData);
-                    String destination = redirectPage.orElse("/");
-                    HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
-                    String prettyUrl = response.encodeRedirectURL(destination);
-                    FacesContext.getCurrentInstance().getExternalContext().redirect(prettyUrl);
+                    if (tokenData != null) {
+                        tokenData.setUser(dvUser);
+                        tokenData.setOauthProviderId(idp.getId());
+                        oauth2Tokens.store(tokenData);
+                    }
+                    
+                    Faces.redirect(redirectPage.orElse("/"));
                 }
             }
         } catch (OAuth2Exception ex) {
@@ -132,6 +128,10 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
     }
     
+    /**
+     * TODO: Refactor this to be included in calling method.
+     * TODO: Use org.apache.commons.io.IOUtils.toString(req.getReader()) instead of overcomplicated code below.
+     */
     private Optional<String> parseCodeFromRequest(@NotNull HttpServletRequest req) {
         String code = req.getParameter("code");
         if (code == null || code.trim().isEmpty()) {
@@ -152,11 +152,21 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
         return Optional.of(code);
     }
-
-    private Optional<AbstractOAuth2AuthenticationProvider> parseStateFromRequest(@NotNull HttpServletRequest req) {
-        String state = req.getParameter("state");
-        
-        if (state == null) {
+    
+    /**
+     * Parse and verify the state returned from the provider.
+     *
+     * As it contains the providers implementation "id" field when send by us,
+     * we can return the corresponding provider object.
+     *
+     * This function is not side effect free: it will (if present) set {@link #redirectPage}
+     * to the value received from the state.
+     *
+     * @param state The state string, created in  {@link #createState(AbstractOAuth2AuthenticationProvider, Optional)}, send and returned by provider
+     * @return A corresponding provider object when state verification succeeded.
+     */
+    Optional<AbstractOAuth2AuthenticationProvider> parseStateFromRequest(@NotNull String state) {
+        if (state == null || state.trim().equals("")) {
             logger.log(Level.INFO, "No state present in request");
             return Optional.empty();
         }
@@ -177,10 +187,10 @@ public class OAuth2LoginBackingBean implements Serializable {
         String[] stateFields = raw.split("~", -1);
         if (idp.getId().equals(stateFields[0])) {
             long timeOrigin = Long.parseLong(stateFields[1]);
-            long timeDifference = System.currentTimeMillis() - timeOrigin;
+            long timeDifference = this.clock.millis() - timeOrigin;
             if (timeDifference > 0 && timeDifference < STATE_TIMEOUT) {
                 if ( stateFields.length > 3) {
-                    redirectPage = Optional.ofNullable(stateFields[3]);
+                    this.redirectPage = Optional.ofNullable(stateFields[3]);
                 }
                 return Optional.of(idp);
             } else {
@@ -192,14 +202,20 @@ public class OAuth2LoginBackingBean implements Serializable {
             return Optional.empty();
         }
     }
-
-    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage ) {
+    
+    /**
+     * Create a randomized unique state string to be used while crafting the autorization request
+     * @param idp
+     * @param redirectPage
+     * @return Random state string, composed from system time, random numbers and redirectPage parameter
+     */
+    String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
         SecureRandom rand = new SecureRandom();
         
-        String base = idp.getId() + "~" + System.currentTimeMillis() 
+        String base = idp.getId() + "~" + this.clock.millis()
                                   + "~" + rand.nextInt(1000)
                                   + redirectPage.map( page -> "~"+page).orElse("");
 
@@ -207,15 +223,24 @@ public class OAuth2LoginBackingBean implements Serializable {
         final String state = idp.getId() + "~" + encrypted;
         return state;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public String getResponseBody() {
         return responseBody;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public int getResponseCode() {
         return responseCode;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public OAuth2UserRecord getUser() {
         return oauthUser;
     }
@@ -223,17 +248,26 @@ public class OAuth2LoginBackingBean implements Serializable {
     public OAuth2Exception getError() {
         return error;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public boolean isInError() {
         return error != null;
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public List<AbstractOAuth2AuthenticationProvider> getProviders() {
         return authenticationSvc.getOAuth2Providers().stream()
                 .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
     }
-
+    
+    /**
+     * TODO: Unused. Remove.
+     */
     public boolean isOAuth2ProvidersDefined() {
         return !authenticationSvc.getOAuth2Providers().isEmpty();
     }

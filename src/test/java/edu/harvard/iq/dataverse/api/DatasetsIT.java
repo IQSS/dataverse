@@ -406,6 +406,13 @@ public class DatasetsIT {
         assertTrue(datasetContactFromExport.toString().contains("finch@mailinator.com"));
         assertTrue(firstValue.toString().contains("finch@mailinator.com"));
 
+        Response getDatasetVersion = UtilIT.getDatasetVersion(datasetPersistentId, ":latest-published", apiToken);
+        getDatasetVersion.prettyPrint();
+        getDatasetVersion.then().assertThat()
+                .body("data.datasetId", equalTo(datasetId))
+                .body("data.datasetPersistentId", equalTo(datasetPersistentId))
+                .statusCode(OK.getStatusCode());
+
         Response citationBlock = UtilIT.getMetadataBlockFromDatasetVersion(datasetPersistentId, null, null, apiToken);
         citationBlock.prettyPrint();
         citationBlock.then().assertThat()

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization;
 
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
@@ -17,10 +18,6 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.MicrosoftOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
@@ -29,11 +26,9 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -119,6 +114,7 @@ public class AuthenticationServiceBean {
             registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
             registerProviderFactory( new ShibAuthenticationProviderFactory() );
             registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
+            registerProviderFactory( new OIDCAuthenticationProviderFactory() );
         
         } catch (AuthorizationSetupException ex) { 
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
@@ -434,11 +430,43 @@ public class AuthenticationServiceBean {
         }
         TypedQuery<ApiToken> typedQuery = em.createNamedQuery("ApiToken.findByUser", ApiToken.class);
         typedQuery.setParameter("user", au);
-        try {
-            return typedQuery.getSingleResult();
-        } catch (NoResultException | NonUniqueResultException ex) {
-            logger.log(Level.FINE, "When looking up API token for {0} caught {1}", new Object[]{au, ex});
+        List<ApiToken> tokens = typedQuery.getResultList();
+        Timestamp latest = new Timestamp(java.time.Instant.now().getEpochSecond()*1000);
+        if (tokens.isEmpty()) {
+            // Normal case - no token exists
             return null;
+        }
+        if (tokens.size() == 1) {
+            // Normal case - one token that may or may not have expired
+            ApiToken token = tokens.get(0);
+            if (token.getExpireTime().before(latest)) {
+                // Don't return an expired token which is unusable, delete it instead
+                em.remove(token);
+                return null;
+            } else {
+                return tokens.get(0);
+            }
+        } else {
+            // We have more than one due to https://github.com/IQSS/dataverse/issues/6389 or
+            // similar, so we should delete all but one token.
+            // Since having an expired token also makes no sense, if we only have an expired
+            // token, remove that as well
+            ApiToken goodToken = null;
+            for (ApiToken token : tokens) {
+                Timestamp time = token.getExpireTime();
+                if (time.before(latest)) {
+                    em.remove(token);
+                } else {
+                    if(goodToken != null) {
+                      em.remove(goodToken);
+                      goodToken = null;
+                    }
+                    latest = time;
+                    goodToken = token;
+                }
+            }
+            // Null if there are no un-expired ones
+            return goodToken;
         }
     }
     
@@ -475,6 +503,7 @@ public class AuthenticationServiceBean {
         if ( tkn.getExpireTime() != null ) {
             if ( tkn.getExpireTime().before( new Timestamp(new Date().getTime())) ) {
                 em.remove(tkn);
+		logger.info("attempted access with expired token: " + apiToken);
                 return null;
             }
         }
@@ -872,25 +901,6 @@ public class AuthenticationServiceBean {
             logger.info("When trying to validate password, exception calling authSvc.authenticate: " + sb.toString());
             return null;
         }
-    }
-
-    /**
-     * @todo Consider making the sort order configurable by making it a colum on
-     * AuthenticationProviderRow
-     */
-    public List<String> getAuthenticationProviderIdsSorted() {
-        GitHubOAuth2AP github = new GitHubOAuth2AP(null, null);
-        GoogleOAuth2AP google = new GoogleOAuth2AP(null, null);
-        MicrosoftOAuth2AP microsoft = new MicrosoftOAuth2AP(null, null);
-        return Arrays.asList(
-                BuiltinAuthenticationProvider.PROVIDER_ID,
-                ShibAuthenticationProvider.PROVIDER_ID,
-                OrcidOAuth2AP.PROVIDER_ID_PRODUCTION,
-                OrcidOAuth2AP.PROVIDER_ID_SANDBOX,
-                github.getId(),
-                google.getId(),
-                microsoft.getId()
-        );
     }
     
     public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){ 

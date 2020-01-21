@@ -39,6 +39,9 @@ Just make sure the user running the installer has write permission to:
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
+**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). But for now it is being offered as an (experimental) alternative. See README_python.txt, included in the installer bundle, for more information on how to run it.
+
+
 The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
@@ -86,6 +89,9 @@ Glassfish does not provide up to date documentation but Payara (a fork of Glassf
 - exporting to DDI format
 - which Dataverse installation an "external tool" should return to
 - which Dataverse installation Geoconnect should return to
+- URLs embedded in SWORD API responses
+
+The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl`.
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 

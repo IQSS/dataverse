@@ -27,6 +27,7 @@ import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -200,7 +201,76 @@ public class SearchIT {
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
+    
+    @Test
+    public void testAdditionalDatasetContent6300() {
 
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        Response datasetAsJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetAsJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String identifier = JsonPath.from(datasetAsJson.getBody().asString()).getString("data.identifier");
+
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-add-metadata.json";
+        Response addSubjectViaNative = UtilIT.addDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, apiToken);
+        addSubjectViaNative.prettyPrint();
+        addSubjectViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response searchResponse = UtilIT.search("id:dataset_" + datasetId + "_draft", apiToken);
+        searchResponse.prettyPrint();
+        /*["Astronomy and Astrophysics"]*/
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].subjects").contains("Astronomy and Astrophysics"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].versionState").equals("DRAFT"));
+        /*                "versionState": "DRAFT",*/
+
+        //We now need to publish to see version number
+        Response publishDataverse = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        searchResponse = UtilIT.search("id:dataset_" + datasetId, apiToken);
+        searchResponse.prettyPrint();
+        /*["Astronomy and Astrophysics"]*/
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].subjects").contains("Astronomy and Astrophysics"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].versionState").equals("RELEASED"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].majorVersion").equals("1"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].minorVersion").equals("0"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].authors").contains("Spruce, Sabrina"));
+
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].contacts[0].name").contains("Finch, Fiona"));
+        assertTrue(searchResponse.body().jsonPath().getString("data.items[0].storageIdentifier").contains(identifier));
+
+    }
+    
+    
     /*
      * Note: this test does a lot of checking for permissions with / without privlidged api key.
      * Thumbnails access is the same with/without that access as of 4.9.4 --MAD
