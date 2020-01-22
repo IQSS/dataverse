@@ -246,11 +246,14 @@ public class IndexServiceBean {
         }
         // Add paths for linking dataverses
         for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataverse.getId())) {
-            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+            List<String> linkingDataversePaths = getDVObjectLinkingPaths(linkingDataverse);
             for (String dvPath : linkingDataversePaths) {
                 dataversePaths.add(dvPath);
+            }
+            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse is linked and contains datasets then
+                // the datasets must be reindexed to get the new paths added
+                indexDataset(dv, true);
             }
         }
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
@@ -281,6 +284,13 @@ public class IndexServiceBean {
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
 
+    }
+    
+    private List<String> getDVObjectLinkingPaths(Dataverse linkingDataverse) {
+        List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+        List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
+        List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+        return linkingDataversePaths;
     }
 
     @TransactionAttribute(REQUIRES_NEW)
@@ -688,9 +698,21 @@ public class IndexServiceBean {
             List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
             List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
             for (String dvPath : linkingDataversePaths) {
+                System.out.print("Dataset linking paths: " + dvPath);
                 dataversePaths.add(dvPath);
             }
         }
+        //Is my owning dataverse linked?
+        //if so I must add paths to the linking dataverse #6262
+        for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())){
+            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
+            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+            for (String dvPath : linkingDataversePaths) {
+                dataversePaths.add(dvPath);
+            }
+        }
+        
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
