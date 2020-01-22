@@ -469,6 +469,9 @@
                                                             <td>
                                                                 <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                                                 <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                                <c:if test="#{DatasetPage.datasetVersionUI.datasetRelPublications.size() > 1}">
+                                                                    <h:outputText value=" (Click the metadata tab below to see more related publications)" escape="false"/>
+                                                                </c:if>
                                                             </td>
                                                         </tr>
                                                         <tr id="#{dsf.datasetFieldType.name}" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'}">
