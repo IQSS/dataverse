@@ -1,8 +1,7 @@
 package edu.harvard.iq.dataverse.guestbook;
 
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import io.vavr.control.Option;
 
@@ -15,7 +14,7 @@ import java.time.Instant;
 @Stateless
 public class SelectGuestBookService {
 
-    private DatasetVersionServiceBean versionService;
+    private DatasetService datasetService;
     private Clock systemTime = Clock.systemDefaultZone();
 
     // -------------------- CONSTRUCTORS --------------------
@@ -25,32 +24,54 @@ public class SelectGuestBookService {
     }
 
     @Inject
-    public SelectGuestBookService(DatasetVersionServiceBean versionService) {
-        this.versionService = versionService;
+    public SelectGuestBookService(DatasetService datasetService) {
+        this.datasetService = datasetService;
     }
 
     // -------------------- LOGIC --------------------
 
-    public Dataset saveGuestbookChanges(DatasetVersion editedDataset,
-                                        Option<Guestbook> selectedGuestbook,
-                                        Option<Guestbook> guestbookBeforeChanges) {
+    public Dataset saveGuestbookChanges(Dataset editedDataset,
+                                        Option<Guestbook> selectedGuestbook) {
 
-        Dataset dataset = editedDataset.getDataset();
+        Option<Guestbook> previousGuestbook = Option.of(editedDataset.getGuestbook());
 
-        if (isGuestbookAddedOrRemoved(selectedGuestbook, guestbookBeforeChanges)) {
-
-            dataset.setGuestbookChangeTime(Timestamp.from(Instant.now(systemTime)));
+        if (guestbookIsAddedOrRemoved(selectedGuestbook, previousGuestbook)) {
+            editedDataset.setGuestbookChangeTime(Timestamp.from(Instant.now(systemTime)));
         }
 
-        dataset.setGuestbook(selectedGuestbook.getOrNull());
-        return versionService.updateDatasetVersion(editedDataset, true);
+        if(isSelectedGuestbookSameAsPrevious(selectedGuestbook, previousGuestbook)) {
+            return editedDataset;
+        }
+
+        editedDataset.setGuestbook(selectedGuestbook.getOrNull());
+
+        return datasetService.updateDatasetGuestbook(editedDataset);
     }
 
     // -------------------- PRIVATE --------------------
 
-    private boolean isGuestbookAddedOrRemoved(Option<Guestbook> selectedGuestbook, Option<Guestbook> guestbookBeforeChanges) {
-        return (guestbookBeforeChanges.isEmpty() && selectedGuestbook.isDefined()) ||
-                (guestbookBeforeChanges.isDefined() && selectedGuestbook.isEmpty());
+    private boolean isSelectedGuestbookSameAsPrevious(Option<Guestbook> selectedGuestbook, Option<Guestbook> previousGuestbook) {
+        return isSameGuestbookChosen(selectedGuestbook, previousGuestbook) || isStillNoGuestbookChosen(selectedGuestbook, previousGuestbook);
+    }
+
+    private boolean isSameGuestbookChosen(Option<Guestbook> selectedGuestbook, Option<Guestbook> previousGuestbook) {
+        return selectedGuestbook.isDefined() && previousGuestbook.isDefined() &&  selectedGuestbook.get().equals(previousGuestbook.get());
+    }
+
+    private boolean isStillNoGuestbookChosen(Option<Guestbook> selectedGuestbook, Option<Guestbook> previousGuestbook) {
+        return selectedGuestbook.isEmpty() && previousGuestbook.isEmpty();
+    }
+
+    private boolean guestbookIsAddedOrRemoved(Option<Guestbook> selectedGuestbook, Option<Guestbook> guestbookBeforeChanges) {
+        return isGuestbookAdded(selectedGuestbook, guestbookBeforeChanges) || isGuestbookRemoved(selectedGuestbook, guestbookBeforeChanges);
+    }
+
+    private boolean isGuestbookAdded(Option<Guestbook> selectedGuestbook, Option<Guestbook> guestbookBeforeChanges) {
+        return guestbookBeforeChanges.isEmpty() && selectedGuestbook.isDefined();
+    }
+
+    private boolean isGuestbookRemoved(Option<Guestbook> selectedGuestbook, Option<Guestbook> guestbookBeforeChanges) {
+        return guestbookBeforeChanges.isDefined() && selectedGuestbook.isEmpty();
     }
 
     // -------------------- SETTERS --------------------

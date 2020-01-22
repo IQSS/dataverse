@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.guestbook;
 
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
@@ -26,7 +26,7 @@ class SelectGuestBookServiceTest {
     private SelectGuestBookService selectGuestBookService;
 
     @Mock
-    private DatasetVersionServiceBean versionService;
+    private DatasetService datasetService;
 
     private static final long UTC_CLOCK_TIME = 1111111111L;
 
@@ -48,10 +48,9 @@ class SelectGuestBookServiceTest {
         datasetVersion.getDataset().setGuestbook(oldGuestbook);
 
         //when
-        when(versionService.updateDatasetVersion(datasetVersion, true)).thenReturn(datasetVersion.getDataset());
-        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion,
-                                                                           Option.none(),
-                                                                           Option.of(oldGuestbook));
+        when(datasetService.updateDatasetGuestbook(datasetVersion.getDataset())).thenReturn(datasetVersion.getDataset());
+        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion.getDataset(),
+                                                                           Option.none());
 
         //then
         Assert.assertEquals(utcClock.instant(), savedDataset.getGuestbookChangeTime().get().toInstant());
@@ -64,13 +63,11 @@ class SelectGuestBookServiceTest {
         DatasetVersion datasetVersion = preparedDatasetVersion();
 
         Guestbook freshGuestbook = new Guestbook();
-        datasetVersion.getDataset().setGuestbook(freshGuestbook);
 
         //when
-        when(versionService.updateDatasetVersion(datasetVersion, true)).thenReturn(datasetVersion.getDataset());
-        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion,
-                                                                           Option.of(freshGuestbook),
-                                                                           Option.none());
+        when(datasetService.updateDatasetGuestbook(datasetVersion.getDataset())).thenReturn(datasetVersion.getDataset());
+        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion.getDataset(),
+                                                                           Option.of(freshGuestbook));
 
         //then
         Assert.assertEquals(utcClock.instant(), savedDataset.getGuestbookChangeTime().get().toInstant());
@@ -83,9 +80,7 @@ class SelectGuestBookServiceTest {
         DatasetVersion datasetVersion = preparedDatasetVersion();
 
         //when
-        when(versionService.updateDatasetVersion(datasetVersion, true)).thenReturn(datasetVersion.getDataset());
-        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion,
-                                                                           Option.none(),
+        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion.getDataset(),
                                                                            Option.none());
 
         //then
@@ -102,11 +97,10 @@ class SelectGuestBookServiceTest {
         addedGuestbook.setId(2L);
 
         //when
-        when(versionService.updateDatasetVersion(datasetVersion, true)).thenReturn(datasetVersion.getDataset());
+        when(datasetService.updateDatasetGuestbook(datasetVersion.getDataset())).thenReturn(datasetVersion.getDataset());
 
 
-        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion,
-                                                                           Option.of(addedGuestbook),
+        Dataset savedDataset = selectGuestBookService.saveGuestbookChanges(datasetVersion.getDataset(),
                                                                            Option.of(addedGuestbook));
 
         //then
@@ -118,6 +112,7 @@ class SelectGuestBookServiceTest {
 
     private DatasetVersion preparedDatasetVersion() {
         Dataset dataset = new Dataset();
+        dataset.setId(1L);
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setDataset(dataset);
 

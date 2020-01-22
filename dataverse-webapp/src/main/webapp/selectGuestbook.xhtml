@@ -14,7 +14,7 @@
 </h:head>
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{selectGuestbookPage.workingVersion.title} - #{selectGuestbookPage.dataset.owner.name}"/>
+        <ui:param name="pageTitle" value="#{selectGuestbookPage.dataset.latestVersion.title} - #{selectGuestbookPage.dataset.owner.name}"/>
         <ui:param name="dataset" value="#{selectGuestbookPage.dataset}"/>
         <ui:param name="showMessagePanel" value="#{true}"/>
         <ui:define name="body">

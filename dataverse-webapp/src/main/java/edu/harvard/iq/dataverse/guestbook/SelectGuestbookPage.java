@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
@@ -17,7 +16,6 @@ import org.omnifaces.cdi.ViewScoped;
 import javax.faces.application.FacesMessage;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,7 +37,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
     private Long datasetId;
 
     private Dataset dataset;
-    private DatasetVersion workingVersion;
     private Guestbook selectedGuestbook;
     private Guestbook guestbookBeforeChanges;
     private List<Guestbook> availableGuestbooks;
@@ -72,10 +69,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
         return dataset;
     }
 
-    public DatasetVersion getWorkingVersion() {
-        return workingVersion;
-    }
-
     public Guestbook getSelectedGuestbook() {
         return selectedGuestbook;
     }
@@ -105,8 +98,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
-        workingVersion = dataset.getEditVersion();
-        guestbookBeforeChanges = dataset.getGuestbook();
         selectedGuestbook = dataset.getGuestbook();
         availableGuestbooks = dataset.getDataverseContext().getAvailableGuestbooks();
 
@@ -119,9 +110,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     public String save() {
 
-        Try<Dataset> selectGuestbookOperation = Try.of(() -> selectGuestBookService.saveGuestbookChanges(workingVersion,
-                                                                                                         Option.of(selectedGuestbook),
-                                                                                                         Option.of(guestbookBeforeChanges)));
+        Try<Dataset> selectGuestbookOperation = Try.of(() -> selectGuestBookService.saveGuestbookChanges(dataset, Option.of(selectedGuestbook)));
 
         if (selectGuestbookOperation.isFailure()) {
             Throwable ex = selectGuestbookOperation.getCause();
@@ -151,7 +140,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
     // -------------------- PRIVATE --------------------
     private String returnToLatestVersion() {
         dataset = datasetDao.find(dataset.getId());
-        workingVersion = dataset.getLatestVersion();
+        DatasetVersion workingVersion = dataset.getLatestVersion();
         if (workingVersion.isDeaccessioned() && dataset.getReleasedVersion() != null) {
             workingVersion = dataset.getReleasedVersion();
         }

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -159,6 +160,10 @@ public class DatasetService {
                                                                       null,
                                                                       null));
 
+    }
+
+    public Dataset updateDatasetGuestbook(Dataset editedDataset) {
+        return commandEngine.submit(new UpdateDatasetGuestbookCommand(dvRequestService.getDataverseRequest(), editedDataset));
     }
 
     // -------------------- PRIVATE --------------------
