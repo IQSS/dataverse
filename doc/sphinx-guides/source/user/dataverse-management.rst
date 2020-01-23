@@ -193,13 +193,15 @@ What can you do with a guestbook? After creating a guestbook, you will notice th
 .. _featured-dataverses:
 
 Featured Dataverses
-----------------------
+-------------------
 
 Featured Dataverses is a way to display sub dataverses in your dataverse that you want to feature for people to easily see when they visit your dataverse. 
 
 Click on Featured Dataverses and a pop up will appear. Select which sub dataverses you would like to have appear. 
 
 Note: Featured Dataverses can only be used with published dataverses.
+
+.. _dataset-linking:
 
 Dataset Linking
 ===============
@@ -214,9 +216,10 @@ To link a dataset to your dataverse, you must navigate to that dataset and click
 
 There is currently no way to remove established links in the UI. If you need to remove a link between a dataverse and a dataset, please contact the support team for the Dataverse installation you are using.
 
+.. _link-dataverse:
 
 Dataverse Linking
-======================================================
+=================
 
 Similarly to dataset linking, dataverse linking allows a dataverse owner to "link" their dataverse to another dataverse, so the dataverse being linked will appear in the linking dataverse's list of contents without actually *being* in that dataverse. Currently, the ability to link a dataverse to another dataverse is a superuser only feature. 
 
