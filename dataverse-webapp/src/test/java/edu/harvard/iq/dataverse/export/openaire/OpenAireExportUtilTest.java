@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.export.openaire;
 
 import com.google.gson.Gson;
@@ -11,15 +6,19 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import org.junit.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -30,60 +29,46 @@ import java.util.Scanner;
  */
 public class OpenAireExportUtilTest {
 
-    public OpenAireExportUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
+    // -------------------- TESTS --------------------
 
     /**
-     * Test: 1, Identifier (with mandatory type sub-property) (M)
+     * Test: 1A, Identifier (with mandatory type sub-property) (M)
      *
      * identifier
      */
     @Test
-    public void testWriteIdentifierElement() throws XMLStreamException {
-        System.out.println("writeIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteIdentifierElement_doi() throws XMLStreamException, IOException {
+        Writer writer = new Writer();
 
-        // doi
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
-        xmlw.close();
+        OpenAireExportUtil.writeIdentifierElement(writer.xml, globalId.toURL().toString(), null);
+        writer.close();
         Assert.assertEquals("<identifier identifierType=\"DOI\">"
                         + persistentAuthority + "/" + persistentId + "</identifier>",
-                sw.toString());
+                writer.toString());
+    }
 
-        // handle
-        sw = new StringWriter();
-        xmlw = f.createXMLStreamWriter(sw);
-        persistentAgency = "hdl";
-        persistentAuthority = "1902.1";
-        persistentId = "111012";
-        globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
-        xmlw.close();
+    /**
+     * Test: 1B, Identifier (with mandatory type sub-property) (M)
+     *
+     * identifier
+     */
+    @Test
+    public void testWriteIdentifierElement_handle() throws XMLStreamException, IOException {
+        Writer writer = new Writer();
+
+        String persistentAgency = "hdl";
+        String persistentAuthority = "1902.1";
+        String persistentId = "111012";
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        OpenAireExportUtil.writeIdentifierElement(writer.xml, globalId.toURL().toString(), null);
+        writer.close();
         Assert.assertEquals("<identifier identifierType=\"Handle\">"
                         + persistentAuthority + "/" + persistentId + "</identifier>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -93,21 +78,13 @@ public class OpenAireExportUtilTest {
      * creators
      */
     @Test
-    public void testWriteCreatorsElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeCreatorsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-simplified.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteCreatorsElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
@@ -139,7 +116,7 @@ public class OpenAireExportUtilTest {
                         + "<affiliation>Bottom</affiliation>"
                         + "</creator>"
                         + "</creators>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -151,21 +128,13 @@ public class OpenAireExportUtilTest {
      * creators
      */
     @Test
-    public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeCreatorsElementWithOrganizations");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-organizations.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-organizations.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName nameType=\"Organizational\">IBM</creatorName>"
@@ -186,7 +155,7 @@ public class OpenAireExportUtilTest {
                         + "<creatorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</creatorName>"
                         + "</creator>"
                         + "</creators>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -199,20 +168,13 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteCreatorsElementWithOrganizationsAndComma()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeCreatorsElementWithOrganizationsAndComma");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-organizations-comma.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-organizations-comma.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
-        xmlw.close();
+        OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
+        writer.close();
         Assert.assertEquals("<creators>"
                         + "<creator>"
                         + "<creatorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
@@ -227,7 +189,7 @@ public class OpenAireExportUtilTest {
                         + "<creatorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</creatorName>"
                         + "</creator>"
                         + "</creators>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -236,23 +198,16 @@ public class OpenAireExportUtilTest {
      * titles
      */
     @Test
-    public void testWriteTitleElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeTotlesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteTitleElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-simplified.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeTitlesElement(xmlw, dto, null);
+        OpenAireExportUtil.writeTitlesElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<titles><title>My Dataset</title></titles>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -264,20 +219,17 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWritePublisherElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writePublisherElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWritePublisherElement() throws XMLStreamException, IOException {
+        Writer writer = new Writer();
 
         DatasetDTO datasetDto = new DatasetDTO();
         datasetDto.setPublisher("Publisher01");
         String publisher = datasetDto.getPublisher();
-        OpenAireExportUtil.writeFullElement(xmlw, null, "publisher", null, publisher, null);
+        OpenAireExportUtil.writeFullElement(writer.xml, null, "publisher", null, publisher, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<publisher>Publisher01</publisher>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -289,23 +241,16 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWritePublicationYearElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writePublicationYearElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWritePublicationYearElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-simplified.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writePublicationYearElement(xmlw, dto, null, null);
+        OpenAireExportUtil.writePublicationYearElement(writer.xml, dto, null, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<publicationYear>2014</publicationYear>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -317,23 +262,13 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testSubjectsElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-//        System.out.println(getClass().getClassLoader("txt/export/openaire/dataset-all-defaults.txt"));
-        System.out.println(new File("txt/export/openaire/dataset-all-defaults.txt").getAbsolutePath());
-        System.out.println(new File(".").getPath());
-        System.out.println("writeSubjectsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testSubjectsElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeSubjectsElement(xmlw, dto, null);
-        xmlw.close();
+        OpenAireExportUtil.writeSubjectsElement(writer.xml, dto, null);
+        writer.close();
         Assert.assertEquals("<subjects>"
                         + "<subject>Agricultural Sciences</subject>"
                         + "<subject>Business and Management</subject>"
@@ -344,7 +279,7 @@ public class OpenAireExportUtilTest {
                         + "<subject schemeURI=\"http://KeywordVocabularyURL2.org\" "
                         + "subjectScheme=\"KeywordVocabulary2\">KeywordTerm2</subject>"
                         + "</subjects>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -354,21 +289,14 @@ public class OpenAireExportUtilTest {
      * contributors
      */
     @Test
-    public void testWriteContributorsElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeContributorsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteContributorsElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-simplified.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName nameType=\"Personal\">Smith, John</contributorName>"
@@ -381,7 +309,7 @@ public class OpenAireExportUtilTest {
                         + "<contributorName>pete@malinator.com</contributorName>"
                         + "</contributor>"
                         + "</contributors>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -394,21 +322,14 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteContributorsElementWithOrganizations()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeContributorsElementWithOrganizations");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-organizations.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-organizations.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName nameType=\"Organizational\">IBM</contributorName>"
@@ -432,7 +353,7 @@ public class OpenAireExportUtilTest {
                         + "<contributorName>pete@malinator.com</contributorName>"
                         + "</contributor>"
                         + "</contributors>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -445,21 +366,14 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteContributorsElementWithOrganizationsAndComma()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeContributorsElementWithOrganizationsAndComma");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-organizations-comma.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-organizations-comma.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</contributorName>"
@@ -477,7 +391,7 @@ public class OpenAireExportUtilTest {
                         + "<contributorName>pete@malinator.com</contributorName>"
                         + "</contributor>"
                         + "</contributors>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -488,21 +402,14 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteContributorsElementComplete()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeContributorsElementComplete");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<contributors>"
                         + "<contributor contributorType=\"ContactPerson\">"
                         + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
@@ -539,7 +446,7 @@ public class OpenAireExportUtilTest {
                         + "<affiliation>DistributorAffiliation2</affiliation>"
                         + "</contributor>"
                         + "</contributors>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -551,21 +458,13 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteDatesElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeDatesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteDatesElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeDatesElement(xmlw, dto, null);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        OpenAireExportUtil.writeDatesElement(writer.xml, datasetDto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<dates>"
                         + "<date dateType=\"Issued\">1004-01-01</date>"
                         + "<date dateType=\"Created\">1003-01-01</date>"
@@ -574,7 +473,29 @@ public class OpenAireExportUtilTest {
                         + "<date dateType=\"Collected\">1006-01-01/1006-01-01</date>"
                         + "<date dateType=\"Collected\">1006-02-01/1006-02-02</date>"
                         + "</dates>",
-                sw.toString());
+                writer.toString());
+    }
+
+    @Test
+    public void testWriteDatesElement_withEmbargo() throws XMLStreamException, IOException, URISyntaxException {
+        // given
+        Writer writer = new Writer();
+
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        datasetDto.setEmbargoDate("2020-01-01");
+        datasetDto.setPublicationDate("2019-01-01");
+        datasetDto.setEmbargoActive(true);
+
+        // when
+        OpenAireExportUtil.writeDatesElement(writer.xml, datasetDto, null);
+        writer.close();
+
+        // then
+        Assert.assertEquals("<dates>"
+                        + "<date dateType=\"Accepted\">2019-01-01</date>"
+                        + "<date dateType=\"Available\">2020-01-01</date>"
+                        + "</dates>",
+                writer.toString());
     }
 
     /**
@@ -586,24 +507,17 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteLanguageElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeLanguageElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteLanguageElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        String language = OpenAireExportUtil.getLanguage(xmlw, dto);
-        OpenAireExportUtil.writeFullElement(xmlw, null, "language", null, language, null);
+        String language = OpenAireExportUtil.getLanguage(writer.xml, dto);
+        OpenAireExportUtil.writeFullElement(writer.xml, null, "language", null, language, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<language>it</language>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -616,24 +530,17 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteResourceTypeElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeResourceTypeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteResourceTypeElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeResourceTypeElement(xmlw, dto, null);
+        OpenAireExportUtil.writeResourceTypeElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">"
                         + "KindOfData1</resourceType>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -645,29 +552,22 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteAlternateIdentifierElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAlternateIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAlternateIdentifierElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
 
-        OpenAireExportUtil.writeAlternateIdentifierElement(xmlw, dto, null);
+        OpenAireExportUtil.writeAlternateIdentifierElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<alternateIdentifiers>"
                         + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
                         + "OtherIDIdentifier1</alternateIdentifier>"
                         + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
                         + "OtherIDIdentifier2</alternateIdentifier>"
                         + "</alternateIdentifiers>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -680,28 +580,21 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteRelatedIdentifierElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeRelatedIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteRelatedIdentifierElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeRelatedIdentifierElement(xmlw, dto, null);
+        OpenAireExportUtil.writeRelatedIdentifierElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<relatedIdentifiers>"
                         + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
                         + "RelatedPublicationIDNumber1</relatedIdentifier>"
                         + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                         + "RelatedPublicationIDNumber2</relatedIdentifier>"
                         + "</relatedIdentifiers>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -713,31 +606,24 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteEmptySizeElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeEmptySizeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteEmptySizeElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // set an empty file list
             dto.setFiles(new ArrayList<FileDTO>());
 
             // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
+            writer.xml.writeStartElement("root");
+            OpenAireExportUtil.writeSizeElement(writer.xml, dto, null);
 
-            xmlw.writeEndElement();
+            writer.xml.writeEndElement();
         }
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<root />",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -749,26 +635,19 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteSizeElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeSizeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteSizeElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
+        OpenAireExportUtil.writeSizeElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<sizes>"
                         + "<size>1000</size>"
                         + "<size>20</size>"
                         + "</sizes>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -780,32 +659,25 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteEmptyFormatElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeEmptyFormatElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteEmptyFormatElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // set an empty file list
             dto.setFiles(new ArrayList<FileDTO>());
 
             // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
+            writer.xml.writeStartElement("root");
+            OpenAireExportUtil.writeFormatElement(writer.xml, dto, null);
 
-            xmlw.writeEndElement();
+            writer.xml.writeEndElement();
         }
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<root />",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -817,26 +689,19 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteFormatElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeFormatElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteFormatElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
+        OpenAireExportUtil.writeFormatElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<formats>"
                         + "<format>application/pdf</format>"
                         + "<format>application/xml</format>"
                         + "</formats>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -848,29 +713,22 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteEmptyVersionElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeEmptyVersionElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteEmptyVersionElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeVersionElement(xmlw, dto, null);
+            writer.xml.writeStartElement("root");
+            OpenAireExportUtil.writeVersionElement(writer.xml, dto, null);
 
-            xmlw.writeEndElement();
+            writer.xml.writeEndElement();
         }
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<root><version>1.0</version></root>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -882,27 +740,20 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteVersionElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeVersionElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteVersionElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             dto.setVersionNumber(2L);
             dto.setVersionMinorNumber(1L);
         }
-        OpenAireExportUtil.writeVersionElement(xmlw, dto, null);
+        OpenAireExportUtil.writeVersionElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<version>2.1</version>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -914,25 +765,18 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteAccessRightElement_openAccess_sameLicenses() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_openAccess_sameLicenses() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
                         + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                         + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -944,21 +788,14 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteDescriptionsElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeDescriptionsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteDescriptionsElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeDescriptionsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeDescriptionsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<descriptions>"
                         + "<description descriptionType=\"Abstract\">DescriptionText 1"
                         + "</description>"
@@ -978,7 +815,7 @@ public class OpenAireExportUtilTest {
                         + "</description>"
                         + "<description descriptionType=\"Other\">Notes1"
                         + "</description></descriptions>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -990,21 +827,14 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteGeoLocationElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeGeoLocationElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteGeoLocationElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeGeoLocationsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<geoLocations>"
                         + "<geoLocation>"
                         + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
@@ -1024,7 +854,7 @@ public class OpenAireExportUtilTest {
                         + "<westBoundLongitude>50</westBoundLongitude>"
                         + "</geoLocationBox>"
                         + "</geoLocation></geoLocations>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -1036,21 +866,14 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteGeoLocationElement2() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeGeoLocationElement2");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteGeoLocationElement2() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-simplified.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
+        OpenAireExportUtil.writeGeoLocationsElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<geoLocations>"
                         + "<geoLocation>"
                         + "<geoLocationBox>"
@@ -1060,7 +883,7 @@ public class OpenAireExportUtilTest {
                         + "<southBoundLatitude>34</southBoundLatitude>"
                         + "</geoLocationBox>"
                         + "</geoLocation></geoLocations>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -1073,21 +896,14 @@ public class OpenAireExportUtilTest {
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteFundingReferencesElement() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeFundingReferencesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteFundingReferencesElement() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
+        OpenAireExportUtil.writeFundingReferencesElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<fundingReferences><fundingReference>"
                         + "<funderName>GrantInformationGrantAgency1</funderName>"
                         + "<awardNumber>GrantInformationGrantNumber1</awardNumber>"
@@ -1096,7 +912,7 @@ public class OpenAireExportUtilTest {
                         + "<funderName>GrantInformationGrantAgency2</funderName>"
                         + "<awardNumber>GrantInformationGrantNumber2</awardNumber>"
                         + "</fundingReference></fundingReferences>",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -1106,28 +922,21 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteFunderNamePropertyNotInContributor()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeFunderNamePropertyNotInContributor");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-updated.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-updated.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         {
             // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
+            writer.xml.writeStartElement("root");
+            OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
-            xmlw.writeEndElement();
+            writer.xml.writeEndElement();
         }
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<root />",
-                sw.toString());
+                writer.toString());
     }
 
     /**
@@ -1137,183 +946,182 @@ public class OpenAireExportUtilTest {
      */
     @Test
     public void testWriteFunderNamePropertyInFundingReferencesElement()
-            throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeFunderNamePropertyInFundingReferencesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+            throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-updated.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-updated.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
+        OpenAireExportUtil.writeFundingReferencesElement(writer.xml, dto, null);
 
-        xmlw.close();
+        writer.close();
         Assert.assertEquals("<fundingReferences>"
                         + "<fundingReference><funderName>Dennis</funderName></fundingReference>"
                         + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH1231245154</awardNumber></fundingReference>"
                         + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
                         + "</fundingReferences>",
-                sw.toString());
+                writer.toString());
     }
 
 
     @Test
-    public void testWriteAccessRightElement_restrictedAccess_withGuestbook() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_restrictedAccess_withGuestbook() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, true);
-        xmlw.close();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        datasetDto.setHasActiveGuestbook(true);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
                         + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/legalcode\">"
                         + "CC0 Creative Commons Zero 1.0 Waiver</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_restrictedAccess_withoutGuestbook() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_restrictedAccess_withoutGuestbook() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-with-one-restrictedFile.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-with-one-restrictedFile.txt");
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
                         + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_restrictedAccess_allFilesRestricted() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_restrictedAccess_allFilesRestricted() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-with-all-restrictedFiles.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-with-all-restrictedFiles.txt");
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
                         + "<rights>Access to all files in the dataset is restricted.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_openAccess_allFilesAllRightsReserved() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_openAccess_allFilesAllRightsReserved() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-with-all-allRightsReservedFiles.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-with-all-allRightsReservedFiles.txt");
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
                         + "<rights>All rights reserved.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_openAccess_differentLicenses() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_openAccess_differentLicenses() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         dto.getFiles().get(1).setLicenseName("\"Apache Software License 2.0\"");
         dto.getFiles().get(1).setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0");
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
                         + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_openAccess_licenseAndAllRightsReserved() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_openAccess_licenseAndAllRightsReserved() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         dto.getFiles().get(1).setTermsOfUseType(FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED.toString());
         dto.getFiles().get(1).setLicenseName("");
         dto.getFiles().get(1).setLicenseUrl("");
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
                         + "<rights>Different licenses and/or terms apply to individual files in the dataset.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
     }
 
     @Test
-    public void testWriteAccessRightElement_restrictedAccess_withRestrictedFile() throws XMLStreamException, FileNotFoundException, URISyntaxException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
+    public void testWriteAccessRightElement_restrictedAccess_withRestrictedFile() throws XMLStreamException, IOException, URISyntaxException {
+        Writer writer = new Writer();
 
-        File file = new File(Paths.get(getClass().getClassLoader()
-                .getResource("txt/export/openaire/dataset-all-defaults.txt").toURI()).toUri());
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
         dto.getFiles().get(1).setTermsOfUseType(FileTermsOfUse.TermsOfUseType.RESTRICTED.toString());
         dto.getFiles().get(1).setLicenseName("");
         dto.getFiles().get(1).setLicenseUrl("");
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null, false);
-        xmlw.close();
+        datasetDto.setHasActiveGuestbook(false);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        writer.close();
         Assert.assertEquals("<rightsList>"
                         + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
                         + "<rights>Different licenses and/or terms apply to individual files in the dataset. Access to some files in the dataset is restricted.</rights></rightsList>",
-                sw.toString());
+                writer.toString());
+    }
+
+    @Test
+    public void testWriteAccessRightElement_withEmbargo() throws XMLStreamException, IOException, URISyntaxException {
+        // given
+        Writer writer = new Writer();
+
+        DatasetDTO dataset = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        dataset.setEmbargoActive(true);
+
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, dataset, null);
+        writer.close();
+
+        // then
+        Assert.assertEquals("<rightsList>" +
+                        "<rights rightsURI=\"info:eu-repo/semantics/embargoedAccess\" />" +
+                        "</rightsList>",
+                writer.toString());
+    }
+
+    // -------------------- PRIVATE ---------------------
+
+    private DatasetDTO createDatasetDTOFromJson(String filePath) throws URISyntaxException, IOException {
+        File file = new File(Paths.get(getClass().getClassLoader()
+                .getResource(filePath).toURI()).toUri());
+        String text = FileUtils.readFileToString(file, Charset.defaultCharset());
+        Gson gson = new Gson();
+        return gson.fromJson(text, DatasetDTO.class);
+    }
+
+    // -------------------- INNER CLASSES --------------------
+
+    private static class Writer {
+        private final StringWriter string;
+        public final XMLStreamWriter xml;
+
+        public Writer() throws XMLStreamException {
+            this.string = new StringWriter();
+            this.xml = XMLOutputFactory.newInstance()
+                    .createXMLStreamWriter(string);
+        }
+
+        public void close() throws XMLStreamException, IOException {
+            string.close();
+            xml.close();
+        }
+
+        @Override
+        public String toString() {
+            return string.toString();
+        }
     }
 }

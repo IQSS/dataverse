@@ -20,11 +20,13 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -37,6 +39,7 @@ public class OpenAireExportUtil {
     private static final String RIGHTS_URI_CLOSED_ACCESS = "info:eu-repo/semantics/closedAccess";
     private static final String RIGHTS_URI_RESTRICTED_ACCESS = "info:eu-repo/semantics/restrictedAccess";
     private static final String RIGHTS_URI_OPEN_ACCESS = "info:eu-repo/semantics/openAccess";
+    private static final String RIGHTS_URI_EMBARGOED_ACCESS = "info:eu-repo/semantics/embargoedAccess";
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
     public static String SCHEMA_VERSION = "4.1";
@@ -113,7 +116,7 @@ public class OpenAireExportUtil {
         writeContributorsElement(xmlw, version, language);
 
         // 8, Date (with type sub-property)  (R)
-        writeDatesElement(xmlw, version, language);
+        writeDatesElement(xmlw, datasetDto, language);
 
         // 9, Language (MA), language
         writeFullElement(xmlw, null, "language", null, language, null);
@@ -138,7 +141,7 @@ public class OpenAireExportUtil {
         writeVersionElement(xmlw, version, language);
 
         // 16 Rights (O), rights
-        writeAccessRightsElement(xmlw, version/*, version.getTermsOfAccess(), version.getRestrictions()*/, language, datasetDto.hasActiveGuestbook());
+        writeAccessRightsElement(xmlw, datasetDto, language);
 
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
@@ -763,47 +766,50 @@ public class OpenAireExportUtil {
      * 8, Date (with type sub-property) (R)
      *
      * @param xmlw The Steam writer
-     * @param datasetVersionDTO
+     * @param datasetDTO
      * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeDatesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeDatesElement(XMLStreamWriter xmlw, DatasetDTO dataset, String language) throws XMLStreamException {
+        if (dataset.isEmbargoActive()) {
+            embargoDatesElement(xmlw, dataset, language);
+        } else {
+            standardDatesElement(xmlw, dataset.getDatasetVersion(), language);
+        }
+    }
+
+    private static void embargoDatesElement(XMLStreamWriter xmlw, DatasetDTO dataset, String language) throws XMLStreamException {
+        xmlw.writeStartElement("dates");
+        writeFullElement(xmlw, null, "date", createMap("dateType", "Accepted"), dataset.getPublicationDate(), language);
+        writeFullElement(xmlw, null, "date", createMap("dateType", "Available"), dataset.getEmbargoDate(), language);
+        xmlw.writeEndElement();
+    }
+
+    private static void standardDatesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         boolean date_check = false;
         String dateOfDistribution = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.distributionDate);
         if (StringUtils.isNotBlank(dateOfDistribution)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
-
-            Map<String, String> date_map = new HashMap<String, String>();
-            date_map.put("dateType", "Issued");
-            writeFullElement(xmlw, null, "date", date_map, dateOfDistribution, language);
+            writeFullElement(xmlw, null, "date", createMap("dateType", "Issued"), dateOfDistribution, language);
         }
         // dates -> date with dateType attribute
 
         String dateOfProduction = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.productionDate);
         if (StringUtils.isNotBlank(dateOfProduction)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
-
-            Map<String, String> date_map = new HashMap<String, String>();
-            date_map.put("dateType", "Created");
-            writeFullElement(xmlw, null, "date", date_map, dateOfProduction, language);
+            writeFullElement(xmlw, null, "date", createMap("dateType", "Created"), dateOfProduction, language);
         }
 
         String dateOfDeposit = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.dateOfDeposit);
         if (StringUtils.isNotBlank(dateOfDeposit)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
-
-            Map<String, String> date_map = new HashMap<String, String>();
-            date_map.put("dateType", "Submitted");
-            writeFullElement(xmlw, null, "date", date_map, dateOfDeposit, language);
+            writeFullElement(xmlw, null, "date", createMap("dateType", "Submitted"), dateOfDeposit, language);
         }
 
         String dateOfVersion = datasetVersionDTO.getReleaseTime();
         if (StringUtils.isNotBlank(dateOfVersion)) {
             date_check = writeOpenTag(xmlw, "dates", date_check);
-
-            Map<String, String> date_map = new HashMap<String, String>();
-            date_map.put("dateType", "Updated");
-            writeFullElement(xmlw, null, "date", date_map, dateOfVersion.substring(0, 10), language);
+            writeFullElement(xmlw, null, "date", createMap("dateType", "Updated"), dateOfVersion.substring(0, 10), language);
         }
 
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
@@ -828,10 +834,7 @@ public class OpenAireExportUtil {
 
                             if (StringUtils.isNotBlank(dateOfCollectionStart) && StringUtils.isNotBlank(dateOfCollectionEnd)) {
                                 date_check = writeOpenTag(xmlw, "dates", date_check);
-
-                                Map<String, String> date_map = new HashMap<String, String>();
-                                date_map.put("dateType", "Collected");
-                                writeFullElement(xmlw, null, "date", date_map, dateOfCollectionStart + "/" + dateOfCollectionEnd, language);
+                                writeFullElement(xmlw, null, "date", createMap("dateType", "Collected"), dateOfCollectionStart + "/" + dateOfCollectionEnd, language);
                             }
                         }
                     }
@@ -839,6 +842,12 @@ public class OpenAireExportUtil {
             }
         }
         writeEndTag(xmlw, date_check);
+    }
+
+    private static <K, V> Map<K,V> createMap(K key, V value) {
+        Map<K, V> result = new HashMap<>();
+        result.put(key, value);
+        return result;
     }
 
     /**
@@ -1095,23 +1104,28 @@ public class OpenAireExportUtil {
      * 16 Rights (O)
      *
      * @param xmlw The Steam writer
-     * @param datasetVersionDTO
+     * @param dataset
      * @param language current language
-     * @param hasActiveGuestbook is there active guestbook on dataset
      * @throws XMLStreamException
      */
-    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language,
-                                                boolean hasActiveGuestbook) throws XMLStreamException {
+    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetDTO dataset, String language) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
-
-        List<FileDTO> files = datasetVersionDTO.getFiles();
-        // set terms from the info:eu-repo-Access-Terms vocabulary
-        writeRightsUriInfoAttribute(xmlw, files, language, hasActiveGuestbook);
-        writeRightsUriLicenseInfoAttribute(xmlw, files, language);
-
+        if (dataset.isEmbargoActive()) {
+            writeRightsHeader(xmlw, language);
+            xmlw.writeAttribute("rightsURI", RIGHTS_URI_EMBARGOED_ACCESS);
+            xmlw.writeEndElement();
+        } else {
+            List<FileDTO> files = Optional.ofNullable(dataset.getDatasetVersion())
+                    .map(DatasetVersionDTO::getFiles)
+                    .orElseGet(Collections::emptyList);
+            // set terms from the info:eu-repo-Access-Terms vocabulary
+            writeRightsUriInfoAttribute(xmlw, files, language, dataset.hasActiveGuestbook());
+            writeRightsUriLicenseInfoAttribute(xmlw, files, language);
+        }
         xmlw.writeEndElement(); // </rightsList>
     }
+
 
     /**
      * 16 Rights (O)

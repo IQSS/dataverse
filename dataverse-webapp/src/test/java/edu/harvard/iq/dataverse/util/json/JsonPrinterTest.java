@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
@@ -15,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -25,16 +27,23 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class JsonPrinterTest {
 
@@ -252,11 +261,78 @@ public class JsonPrinterTest {
 
     }
 
-    DatasetField constructPrimitive(String datasetFieldTypeName, String value) {
+    @Test
+    public void shouldIncludeEmbargoDate() throws ParseException {
+        // given
+        Dataset dataset = createDatasetForTests();
+        String expectedDate = "2020-01-17";
+        Date embargoDate = Util.getDateFormat().parse(expectedDate);
+        dataset.setEmbargoDate(embargoDate);
+
+        // when
+        JsonObject jsonObject = JsonPrinter.json(dataset).build();
+
+        // then
+        assertThat("Should include embargo date", jsonObject.getString("embargoDate"), is(expectedDate));
+    }
+
+    @Test
+    public void shouldNotIncludeEmptyEmbargoDate() {
+        // given
+        Dataset datasetWithNoEmbargoDate = createDatasetForTests();
+
+        // when
+        JsonObject jsonObject = JsonPrinter.json(datasetWithNoEmbargoDate).build();
+
+        // then
+        assertThat("Should not include embargo date if it's null", jsonObject.get("embargoDate"), nullValue());
+    }
+
+    @Test
+    public void shouldProperlySetWhetherEmbargoIsActive() {
+        // given
+        Dataset dsWithActiveEmbargo = createDatasetForTests();
+        Date dateInFuture = Date.from(LocalDate.now()
+                .plusDays(7L)
+                .atStartOfDay()
+                .atZone(ZoneId.systemDefault())
+                .toInstant());
+        dsWithActiveEmbargo.setEmbargoDate(dateInFuture);
+
+        Dataset dsWithInactiveEmbargo = createDatasetForTests();
+        Date dateInPast = Date.from(LocalDate.now()
+                .minusDays(7L)
+                .atStartOfDay()
+                .atZone(ZoneId.systemDefault())
+                .toInstant());
+        dsWithInactiveEmbargo.setEmbargoDate(dateInPast);
+
+        // when
+        JsonObject active = JsonPrinter.json(dsWithActiveEmbargo).build();
+        JsonObject inactive = JsonPrinter.json(dsWithInactiveEmbargo).build();
+
+        // then
+        assertThat("Object with embargo in future should have embargo flag set to TRUE",
+                active.getBoolean("embargoActive"), is(true));
+        assertThat("Object with embargo in past should have embargo flag set to FALSE",
+                inactive.getBoolean("embargoActive"), is(false));
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private Dataset createDatasetForTests() {
+        Dataset dataset = new Dataset();
+        dataset.setId(234L);
+        dataset.setOwner(new Dataverse());
+        dataset.setIdentifier("identifier");
+        dataset.setProtocol("doi");
+        return dataset;
+    }
+
+    private DatasetField constructPrimitive(String datasetFieldTypeName, String value) {
         DatasetField retVal = new DatasetField();
         retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(datasetFieldTypeName));
         retVal.setDatasetFieldValues(Collections.singletonList(new DatasetFieldValue(retVal, value)));
         return retVal;
     }
-
 }

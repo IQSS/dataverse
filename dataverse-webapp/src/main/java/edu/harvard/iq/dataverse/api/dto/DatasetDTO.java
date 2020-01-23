@@ -17,12 +17,13 @@ public class DatasetDTO implements java.io.Serializable {
     private String globalIdCreateTime;
     private String publisher;
     private String publicationDate;
+    private String embargoDate;
+    private boolean embargoActive;
     private boolean hasActiveGuestbook;
     private DatasetVersionDTO datasetVersion;
     private List<DataFileDTO> dataFiles;
     public static final String DOI_PROTOCOL = "doi";
     public static final String HDL_PROTOCOL = "hdl";
-
     public String getId() {
         return id;
     }
@@ -105,6 +106,22 @@ public class DatasetDTO implements java.io.Serializable {
 
     public void setPublicationDate(String publicationDate) {
         this.publicationDate = publicationDate;
+    }
+
+    public String getEmbargoDate() {
+        return embargoDate;
+    }
+
+    public void setEmbargoDate(String embargoDate) {
+        this.embargoDate = embargoDate;
+    }
+
+    public boolean isEmbargoActive() {
+        return embargoActive;
+    }
+
+    public void setEmbargoActive(boolean embargoActive) {
+        this.embargoActive = embargoActive;
     }
 
     @Override

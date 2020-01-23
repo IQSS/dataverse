@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
@@ -48,6 +49,8 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -305,7 +308,9 @@ public class JsonPrinter {
                 .add("publisher", getRootDataverseNameforCitation(ds))
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier())
-                .add("hasActiveGuestbook", ds.getGuestbook() != null);
+                .add("hasActiveGuestbook", ds.getGuestbook() != null)
+                .add("embargoDate", format(ds.getEmbargoDate().getOrNull(), Util::getDateFormat))
+                .add("embargoActive", ds.hasActiveEmbargo());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv, boolean excludeEmailFields) {
@@ -533,9 +538,9 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(FileMetadata fmd) {
         return jsonObjectBuilder()
                 // deprecated: .add("category", fmd.getCategory())
-                // TODO: uh, figure out what to do here... it's deprecated 
-                // in a sense that there's no longer the category field in the 
-                // fileMetadata object; but there are now multiple, oneToMany file 
+                // TODO: uh, figure out what to do here... it's deprecated
+                // in a sense that there's no longer the category field in the
+                // fileMetadata object; but there are now multiple, oneToMany file
                 // categories - and we probably need to export them too!) -- L.A. 4.5
                 .add("description", fmd.getDescription())
                 .add("label", fmd.getLabel()) // "label" is the filename
@@ -555,20 +560,20 @@ public class JsonPrinter {
     }
 
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
-        // File names are no longer stored in the DataFile entity; 
-        // (they are instead in the FileMetadata (as "labels") - this way 
-        // the filename can change between versions... 
+        // File names are no longer stored in the DataFile entity;
+        // (they are instead in the FileMetadata (as "labels") - this way
+        // the filename can change between versions...
         // It does appear that for some historical purpose we still need the
-        // filename in the file DTO (?)... We rely on it to be there for the 
-        // DDI export, for example. So we need to make sure this is is the 
-        // *correct* file name - i.e., that it comes from the right version. 
+        // filename in the file DTO (?)... We rely on it to be there for the
+        // DDI export, for example. So we need to make sure this is is the
+        // *correct* file name - i.e., that it comes from the right version.
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
 
         if (fileMetadata != null) {
             fileName = fileMetadata.getLabel();
         } else if (df.getFileMetadata() != null) {
-            // Note that this may not necessarily grab the file metadata from the 
+            // Note that this may not necessarily grab the file metadata from the
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
@@ -610,8 +615,12 @@ public class JsonPrinter {
                 ;
     }
 
-    public static String format(Date d) {
-        return (d == null) ? null : Util.getDateTimeFormat().format(d);
+    public static String format(Date date) {
+        return format(date, Util::getDateTimeFormat);
+    }
+
+    public static String format(Date date, Supplier<SimpleDateFormat> formatter) {
+        return date != null ? formatter.get().format(date) : null;
     }
 
     private static JsonArrayBuilder getFileCategories(FileMetadata fmd) {
@@ -650,9 +659,9 @@ public class JsonPrinter {
     private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
 
         Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
+
         Deque<JsonArrayBuilder> valueArrStack = new LinkedList<>();
         JsonObjectBuilder result = null;
-
         DatasetFieldsToJson(JsonArrayBuilder result) {
             valueArrStack.push(result);
         }
@@ -709,8 +718,8 @@ public class JsonPrinter {
                 valueArrStack.peek().add(jsonField);
             }
         }
-    }
 
+    }
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
                 .add("id", aRow.getId())
