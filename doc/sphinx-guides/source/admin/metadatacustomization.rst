@@ -9,18 +9,17 @@ Dataverse has a flexible data-driven metadata system powered by "metadata blocks
 Introduction
 ------------
 
-Before you embark on customizing metadata in Dataverse you should make sure you are aware of the modest amount of customization that is available with the Dataverse web interface. It's possible to hide fields and make field required by clicking "Edit" at the dataverse level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the context of dataset templates in the :doc:`/user/dataverse-management` section of the User Guide.
+Before you embark on customizing metadata in Dataverse you should make sure you are aware of the modest amount of customization that is available with the Dataverse web interface. It's possible to hide fields and make field required by clicking "Edit" at the dataverse level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the :ref:`create-dataverse` section of the Dataverse Management page in the User Guide.
 
 Much more customization of metadata is possible, but this is an advanced topic so feedback on what is written below is very welcome. The possibilities for customization include:
 
 -  Editing and adding metadata fields
 
--  Editing and adding instructional text (field label tooltips and text
-   box watermarks)
+-  Editing and adding instructional text (field label tooltips and text box watermarks)
 
 -  Editing and adding controlled vocabularies
 
--  Changing which fields depositors must use in order to save datasets (see also "dataset templates" in the :doc:`/user/dataverse-management` section of the User Guide.)
+-  Changing which fields depositors must use in order to save datasets (see also :ref:`dataset-templates` section of the User Guide.)
 
 -  Changing how saved metadata values are displayed in the UI
 
@@ -38,10 +37,8 @@ tab-separated value (TSV). [1]_\ :sup:`,`\  [2]_ While it is technically
 possible to define more than one metadata block in a TSV file, it is
 good organizational practice to define only one in each file.
 
-The metadata block TSVs shipped with Dataverse are in `this folder in
-the Dataverse github
-repo <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files are `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.
-Human-readable copies are available in `this Google Sheets
+The metadata block TSVs shipped with Dataverse are in `/tree/develop/scripts/api/data/metadatablocks
+<https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files `/tree/develop/src/main/java <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__ of the Dataverse GitHub repo. Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse installation process operates on the TSVs, not the Google spreadsheet.
 
 About the metadata block TSV
@@ -391,12 +388,10 @@ FieldType definitions
 |                                   | newlines. While any HTML is       |
 |                                   | permitted, only a subset of HTML  |
 |                                   | tags will be rendered in the UI.  |
-|                                   | A `list of supported tags is      |
-|                                   | included in the Dataverse User    |
-|                                   | Guide <http://guides.dataverse.or |
-|                                   | g/en/latest/user/dataset-manageme |
-|                                   | nt.html#supported-html-fields>`__ |
-|                                   | .                                 |
+|                                   | See the                           |
+|                                   | :ref:`supported-html-fields`      |
+|                                   | section of the Dataset + File     |
+|                                   | Management page in the User Guide.|
 +-----------------------------------+-----------------------------------+
 | url                               | If not empty, field must contain  |
 |                                   | a valid URL.                      |
@@ -504,10 +499,10 @@ Setting Up a Dev Environment for Testing
 
 You have several options for setting up a dev environment for testing metadata block changes:
 
-- Vagrant: See the :doc:`/developers/tools` section of the Dev Guide.
+- Vagrant: See the :doc:`/developers/tools` section of the Developer Guide.
 - docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
-- AWS deployment: See the :doc:`/developers/deployment` section of the Dev Guide.
-- Full dev environment: See the :doc:`/developers/dev-environment` section of the Dev Guide.
+- AWS deployment: See the :doc:`/developers/deployment` section of the Developer Guide.
+- Full dev environment: See the :doc:`/developers/dev-environment` section of the Developer Guide.
 
 To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
@@ -586,7 +581,7 @@ controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
 Enabling a Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
+Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the UI (see :ref:`general-information` section of Dataverse Management in the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
 
 ``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
 
@@ -631,7 +626,7 @@ As mentioned above, changes to metadata blocks that ship with Dataverse will be 
 
 Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
 
-The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Dev Guide.
+The ability to reload metadata blocks means that SQL update scripts don't need to be written for these changes. See also the :doc:`/developers/sql-upgrade-scripts` section of the Developer Guide.
 
 Tips from the Dataverse Community
 ---------------------------------

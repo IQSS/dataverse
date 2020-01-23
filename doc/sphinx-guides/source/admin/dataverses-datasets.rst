@@ -22,7 +22,7 @@ Moves a dataverse whose id is passed to a new dataverse whose id is passed. The 
 Link a Dataverse
 ^^^^^^^^^^^^^^^^
 
-Creates a link between a dataverse and another dataverse (see the :ref:`link-dataverse` section of the User Guide for more information). Only accessible to superusers. ::
+Creates a link between a dataverse and another dataverse (see the :ref:`dataverse-linking` section of the User Guide for more information). Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/dataverses/$linked-dataverse-alias/link/$linking-dataverse-alias
 

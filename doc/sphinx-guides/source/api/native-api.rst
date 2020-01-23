@@ -205,7 +205,7 @@ Delete the assignment whose id is ``$id``::
 List Metadata Blocks Defined on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Get the metadata blocks defined on a dataverse which determine which field are available to authors when they create and edit datasets within that dataverse. This feature is described under "General Information" in the :doc:`/user/dataverse-management` section of the User Guide.
+|CORS| Get the metadata blocks defined on a dataverse which determine which field are available to authors when they create and edit datasets within that dataverse. This feature is described in :ref:`general-information` section of Dataverse Management of the User Guide.
 
 Please note that an API token is only required if the dataverse has not been published.
 
@@ -748,7 +748,7 @@ The review process can sometimes resemble a tennis match, with the authors submi
 Link a Dataset
 ~~~~~~~~~~~~~~
 
-Creates a link between a dataset and a dataverse (see the Linked Dataverses + Linked Datasets section of the :doc:`/user/dataverse-management` guide for more information). ::
+Creates a link between a dataset and a dataverse (see :ref:`dataset-linking` section of Dataverse Management in the User Guide for more information). ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$linked-dataset-id/link/$linking-dataverse-alias
 
@@ -1064,12 +1064,12 @@ In order to delete a token use::
 Builtin Users
 -------------
 
-Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. Dataverse stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also "Auth Modes: Local vs. Remote vs. Both" in the :doc:`/installation/config` section of the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
+Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. Dataverse stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also :ref:`auth-modes` section of Configuration in the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
 
 Create a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~
 
-For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under "Securing Your Installation" and "Database Settings" in the :doc:`/installation/config` section of the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
+For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under :ref:`securing-your-installation`: and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
 
 To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
 
@@ -1221,7 +1221,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Custom Popup Text for Publishing Datasets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For now, only the value for the ``:DatasetPublishPopupCustomText`` setting from the :doc:`/installation/config` section of the Installation Guide is exposed:
+For now, only the value for the :ref:`:DatasetPublishPopupCustomText` setting from the Configuration section of the Installation Guide is exposed:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -1285,10 +1285,12 @@ Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
+.. _admin:
+
 Admin
 -----
 
-This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See also "Blocking API Endpoints" under "Securing Your Installation" in the :doc:`/installation/config` section of the Installation Guide.
+This is the administrative part of the API. For security reasons, it is absolutely essential that you block it before allowing public access to a Dataverse installation. Blocking can be done using settings. See the ``post-install-api-block.sh`` script in the ``scripts/api`` folder for details. See :ref:`blocking-api-endpoints` in Securing Your Installation section of the Configuration page of the Installation Guide.
 
 List All Database Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

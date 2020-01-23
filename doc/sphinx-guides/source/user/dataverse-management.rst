@@ -10,6 +10,8 @@ Once a user creates a dataverse they, by default, become the administrator of th
 .. contents:: |toctitle|
   :local:
 
+.. _create-dataverse:
+
 Create a New Dataverse
 =======================
 
@@ -216,7 +218,7 @@ To link a dataset to your dataverse, you must navigate to that dataset and click
 
 There is currently no way to remove established links in the UI. If you need to remove a link between a dataverse and a dataset, please contact the support team for the Dataverse installation you are using.
 
-.. _link-dataverse:
+.. _dataverse-linking:
 
 Dataverse Linking
 =================

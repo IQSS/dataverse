@@ -11,6 +11,8 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _securing-your-installation:
+
 Securing Your Installation
 --------------------------
 
@@ -59,7 +61,7 @@ Related to this is that you should remove ``/root/.glassfish/pass`` to ensure th
 Enforce Strong Passwords for User Accounts
 ++++++++++++++++++++++++++++++++++++++++++
 
-Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the :ref:`auth-modes` section below for more on login options.
 
 Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
 
@@ -178,6 +180,8 @@ Here are the configuration options for handles:
 - :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+
+.. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
@@ -1068,6 +1072,8 @@ Please note that there are other reasons why download URLs may not be included f
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
+.. _database-settings:
+
 Database Settings
 -----------------
 
@@ -1515,6 +1521,8 @@ Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect 
 Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+.. _:DatasetPublishPopupCustomText:
 
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
