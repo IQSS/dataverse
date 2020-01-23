@@ -698,7 +698,6 @@ public class IndexServiceBean {
             List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
             List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
             for (String dvPath : linkingDataversePaths) {
-                System.out.print("Dataset linking paths: " + dvPath);
                 dataversePaths.add(dvPath);
             }
         }
