@@ -1069,7 +1069,7 @@ Builtin users are known as "Username/Email and Password" users in the :doc:`/use
 Create a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~
 
-For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under :ref:`securing-your-installation`: and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
+For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under :ref:`securing-your-installation` and :ref:`database-settings` sections of Configuration in the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
 
 To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
 
@@ -1176,6 +1176,8 @@ Shibboleth Groups
 -----------------
 
 Management of Shibboleth groups via API is documented in the :doc:`/installation/shibboleth` section of the Installation Guide.
+
+.. _info:
 
 Info
 ----
