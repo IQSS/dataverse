@@ -246,7 +246,7 @@ public class IndexServiceBean {
         }
         // Add paths for linking dataverses
         for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataverse.getId())) {
-            List<String> linkingDataversePaths = getDVObjectLinkingPaths(linkingDataverse);
+            List<String> linkingDataversePaths = getDataverseLinkingPaths(linkingDataverse);
             for (String dvPath : linkingDataversePaths) {
                 dataversePaths.add(dvPath);
             }
@@ -286,7 +286,7 @@ public class IndexServiceBean {
 
     }
     
-    private List<String> getDVObjectLinkingPaths(Dataverse linkingDataverse) {
+    private List<String> getDataverseLinkingPaths(Dataverse linkingDataverse) {
         List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
         List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
@@ -1260,7 +1260,7 @@ public class IndexServiceBean {
         }
     }
 
-    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
+    private List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
         List<String> subtrees = new ArrayList<>();
         for (int i = 0; i < dataversePathSegments.size(); i++) {
             StringBuilder pathBuilder = new StringBuilder();
