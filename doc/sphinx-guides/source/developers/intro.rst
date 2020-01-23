@@ -60,7 +60,7 @@ As a developer, you also may be interested in these projects related to Datavers
 - DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
 - dataverse-sample-data - populate your Dataverse installation with sample data: https://github.com/IQSS/dataverse-sample-data
 - dataverse-metrics - aggregate and visualize metrics for installations of Dataverse around the world: https://github.com/IQSS/dataverse-metrics
-- Configuration management scripts - Ansible, Puppet, etc.: See :ref:`advanced` section in Preparation of the Installation Guide.
+- Configuration management scripts - Ansible, Puppet, etc.: See :ref:`advanced` section in the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
 - GeoConnect (Python) - create a map by uploading files to Dataverse: https://github.com/IQSS/geoconnect
 - `DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag datasets with privacy levels: https://github.com/IQSS/DataTags
