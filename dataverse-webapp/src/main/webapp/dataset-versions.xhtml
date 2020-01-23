@@ -34,14 +34,14 @@
             </p:commandButton>
         </div>
 
-        <p:dataTable id="versionsTable" value="#{datasetVersionsTab.versionsSummary}" var="versionSummary" widgetVar="versionsTable"
+        <p:dataTable id="versionsTable" class="no-alternating-row-colors" value="#{datasetVersionsTab.versionsSummary}" var="versionSummary" widgetVar="versionsTable"
                      rowKey="#{versionSummary.version}" selection="#{datasetVersionsTab.selectedVersions}"
                      disabledSelection="#{!versionSummary.canBeCompared}" >
             <!-- start: checkbox column -->
             <p:column selectionMode="multiple" class="col-select-width text-center" rendered="#{datasetVersionsTab.comparableVersionsCount > 2}"/><!-- end: checkbox column -->
 
             <!-- start: version number column -->
-            <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
+            <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1">
                 <ui:fragment rendered="#{versionSummary.showLink}">
                     <a id="versionLink" href="/dataset.xhtml?persistentId=#{datasetVersionsTab.dataset.globalIdString}&#38;version=#{versionSummary.version.friendlyVersionNumber}" class="ui-commandlink ui-widget">
                         <h:outputText value="#{versionSummary.version.friendlyVersionNumber}" />

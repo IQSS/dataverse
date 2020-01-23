@@ -82,8 +82,8 @@
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                 </p:selectManyCheckbox>
                                                             </div>
-                                                            <div class="alert-danger" jsf:rendered="#{!empty dsf.validationMessage}">
-                                                                <strong>#{dsf.validationMessage}</strong>
+                                                            <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty dsf.validationMessage}">
+                                                                <span class="ui-message-error-detail">#{dsf.validationMessage}</span>
                                                             </div>
                                                         </ui:fragment>
                                                     </div>
@@ -132,9 +132,9 @@
                                                                                 <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
                                                                             </p:selectManyCheckbox>
                                                                         </div>
-                                                                        <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
-                                                                            <strong>#{subdsf.validationMessage}</strong>
-                                                                        </div>
+                                                                    </div>
+                                                                    <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty subdsf.validationMessage}">
+                                                                        <span class="ui-message-error-detail">#{subdsf.validationMessage}</span>
                                                                     </div>
                                                                 </div>
                                                             </ui:repeat>

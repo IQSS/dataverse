@@ -116,6 +116,10 @@ body {
 	color: $main-text-color;
 }
 
+.btn {
+	font-size: 15px;
+}
+
 @mixin btn-access {
 	background: #fff;
 	border: 1px solid $gray-border-color;
@@ -182,6 +186,10 @@ body {
 	padding: 15px 20px;
 	border-radius: $border-radius;
 	margin-bottom: 20px;
+
+	p {
+		margin: 0;
+	}
 }
 
 .ui-message, .ui-messages {
@@ -452,6 +460,10 @@ input, textarea {
 
 .ui-widget-content label.ui-state-disabled {
 	background: none;
+}
+
+div.edit-compound-field .ui-message, .ui-message-form {
+	margin: 6px 0;
 }
 
 /* Checkboxes */
@@ -881,6 +893,11 @@ input.fancy-checkbox[type=checkbox] {
 				& + td {
 					border-left: none;
 				}
+
+				&:only-child {
+					border-left: 1px solid $gray-border-color;
+					border-right: 1px solid $gray-border-color;
+				}
 			}
 
 			+ tr td {
@@ -960,7 +977,7 @@ tr.ui-state-hover, .ui-widget-content tr.ui-state-hover {
 	color: $main-text-color;
 }
 
-#datasetForm\:tabView\:versionsTable {
+div[id$="versionsTable"] {
 	th, td {
 		&:not(:last-child) {
 			border-right: none;
@@ -1467,9 +1484,99 @@ div.filesTable .ui-paginator {
 				position: unset;
 				transform: none;
 			}
+
+			> span.text-muted {
+				position: static;
+				font-size: 21.5em;
+			}
 		}
 	} 
+}
 
+/* Dataset/Dataverse preview */
+
+#breadcrumbNavBlock {
+	margin-bottom: 35px;
+
+	.breadcrumbCarrot {
+		margin: 0 12px;
+	}
+
+	.breadcrumbActive {
+		font-weight: normal;
+	}
+}
+
+#topDatasetBlock #actionButtonBlock {
+	margin-left: 0;
+	width: 100%;
+}
+
+#title-block {
+	margin-top: 20px;
+	margin-bottom: 32px;
+
+	.title-preview-icon-block {
+		.icon-dataset {
+			line-height: 0.8em;
+		}
+
+		+ .col-xs-11 {
+			padding-left: 15px;
+		}
+	}
+
+	#title {
+		font-size: 26px;
+		font-weight: normal;
+		line-height: 30px;
+	}
+}
+
+.citation-block .alert.alert-info.bg-citation {
+	padding: 10px 26px 10px 24px;
+
+	.citation-download {
+		padding-bottom: 3.5px;
+	}
+
+	.citation-standards {
+		margin-bottom: -4px;
+	}
+}
+
+.metadata-panel-body {
+	padding: 44px 31px 48px 31px;
+}
+
+.glyphicon.glyphicon-question-sign.tooltip-icon {
+	margin-left: 4px;
+}
+
+div[id$="versionsTable"] td {
+	padding: 14px 20px;
+}
+
+.ui-datatable.ui-widget.no-alternating-row-colors .ui-datatable-odd td {
+	background: #fff;
+}
+
+div.filesTable {
+	thead[id$="filesTable_head"] tr {
+		background: none;
+	}
+
+	.ui-widget-header {
+		font-weight: normal;
+	}
+
+	.col-file-metadata:only-child {
+		padding: 10px 20px;
+	}
+}
+
+#datasetForm\:tabView\:filesTable\:filesHeaderBlock .col-xs-6 {
+	padding: 0 4px;
 }
 
 /* Modal */
