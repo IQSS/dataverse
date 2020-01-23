@@ -165,7 +165,7 @@ The root dataverse must be published for some of the REST Assured tests to run.
 dataverse.siteUrl
 ^^^^^^^^^^^^^^^^^
 
-When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See :ref:`jvm-options` sectoin in Configuration of the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
+When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See :ref:`jvm-options` section in the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
