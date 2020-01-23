@@ -62,7 +62,7 @@ import static com.google.common.collect.Lists.newArrayList;
  */
 @Entity
 @Table(indexes = {@Index(columnList = "dataset_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id","versionnumber","minorversionnumber"}))
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 public class DatasetVersion implements Serializable {
 

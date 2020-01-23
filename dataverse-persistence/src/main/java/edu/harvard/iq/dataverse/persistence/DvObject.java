@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -64,11 +65,12 @@ import java.util.Set;
 // in the child tables. (i.e., the id sequences will be "sparse" in the 3 
 // child tables). Tested, appears to be working properly. -- L.A. Nov. 4 2014
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "dtype")
 @Table(indexes = {@Index(columnList = "dtype")
         , @Index(columnList = "owner_id")
         , @Index(columnList = "creator_id")
         , @Index(columnList = "releaseuser_id")},
-        uniqueConstraints = @UniqueConstraint(columnNames = {"authority,protocol,identifier"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"authority","protocol","identifier"}))
 public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
 
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
@@ -483,5 +485,14 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
     public abstract boolean isAncestorOf(DvObject other);
 
     @OneToMany(mappedBy = "definitionPoint", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    List<RoleAssignment> roleAssignments;
+    private List<RoleAssignment> roleAssignments;
+
+    
+    public List<RoleAssignment> getRoleAssignments() {
+        return roleAssignments;
+    }
+
+    public void setRoleAssignments(List<RoleAssignment> roleAssignments) {
+        this.roleAssignments = roleAssignments;
+    }
 }

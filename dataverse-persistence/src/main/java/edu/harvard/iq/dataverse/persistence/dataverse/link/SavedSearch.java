@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(indexes = {@Index(columnList = "definitionpoint_id")
-        , @Index(columnList = "creator_id")})
+@Table(indexes = {@Index(columnList = "definitionpoint")
+        , @Index(columnList = "creator")})
 public class SavedSearch implements Serializable {
 
     @Id

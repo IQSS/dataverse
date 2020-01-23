@@ -84,7 +84,7 @@ public class VariableMetadata implements Serializable {
     /**
      * categoriesMetadata: variable metadata for categories that includes weighted frequencies
      */
-    @OneToMany(mappedBy = "VariableMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "variableMetadata", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<CategoryMetadata> categoriesMetadata;
 
     /**
