@@ -180,7 +180,17 @@ List Facets Configured for a Dataverse
 
 .. code-block:: bash
 
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
   curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/facets
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/facets
 
 Set Facets for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
