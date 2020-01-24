@@ -200,10 +200,17 @@ UnknownHostException While Deploying
 
 If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or service not known" in server.log and your hostname is "myhost" the problem is likely that "myhost" doesn't appear in ``/etc/hosts``. See also http://stackoverflow.com/questions/21817809/glassfish-exception-during-deployment-project-with-stateful-ejb/21850873#21850873
 
+.. _fresh-reinstall:
+
 Fresh Reinstall
 ---------------
 
-Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
+Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Glassfish, a common helpful process is to:
+
+- Stop Glassfish; 
+- Remove the ``generated`` and ``osgi-cache`` directories; 
+- Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
+- Start Glassfish
 
 Drop database
 ^^^^^^^^^^^^^
@@ -244,4 +251,4 @@ Rerun Installer
 
 With all the data cleared out, you should be ready to rerun the installer per above.
 
-Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :) For more on this topic, see "Rebuilding Your Dev Environment" in the :doc:`/developers/dev-environment` section of the Developer Guide.
+Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. For more on this topic, see :ref:`rebuilding-dev-environment` section of the Developer Guide.

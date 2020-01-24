@@ -17,7 +17,7 @@ Choose Your Own Installation Adventure
 Vagrant (for Testing Only)
 ++++++++++++++++++++++++++
 
-If you are looking to simply kick the tires on installing Dataverse and are familiar with Vagrant, you are welcome to read through the "Vagrant" section of the :doc:`/developers/tools` section of the Developer Guide. Checking out a tagged release is recommended rather than running ``vagrant up`` on unreleased code.
+If you are looking to simply kick the tires on installing Dataverse and are familiar with Vagrant, you are welcome to read through the :ref:`vagrant` section of the :doc:`/developers/tools` section of the Developer Guide. Checking out a tagged release is recommended rather than running ``vagrant up`` on unreleased code.
 
 Pilot Installation
 ++++++++++++++++++
