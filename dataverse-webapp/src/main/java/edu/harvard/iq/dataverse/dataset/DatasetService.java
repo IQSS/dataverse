@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.annotations.PermissionNeeded;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
@@ -13,6 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetGuestbookComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.interceptors.LoggedCall;
+import edu.harvard.iq.dataverse.interceptors.Restricted;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -20,12 +24,14 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +40,8 @@ import java.util.logging.Logger;
 public class DatasetService {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
-
+    private static final String DATASET_LOCKED_FOR_UPDATE_MESSAGE = "Update embargo date failed. Dataset is locked. ";
+    private static final String DATASET_IN_WRONG_STATE_MESSAGE = "Setting embargo date failed. Dataset is in wrong state.";
 
     private EjbDataverseEngine commandEngine;
     private UserNotificationService userNotificationService;
@@ -44,6 +51,7 @@ public class DatasetService {
     private IngestServiceBean ingestService;
     private SettingsServiceBean settingsService;
     private ProvPopupFragmentBean provPopupFragmentBean;
+    private PermissionServiceBean permissionService;
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -56,7 +64,7 @@ public class DatasetService {
     public DatasetService(EjbDataverseEngine commandEngine, UserNotificationService userNotificationService,
                           DatasetDao datasetDao, DataverseSession session, DataverseRequestServiceBean dvRequestService,
                           IngestServiceBean ingestService, SettingsServiceBean settingsService,
-                          ProvPopupFragmentBean provPopupFragmentBean) {
+                          ProvPopupFragmentBean provPopupFragmentBean, PermissionServiceBean permissionService) {
         this.commandEngine = commandEngine;
         this.userNotificationService = userNotificationService;
         this.datasetDao = datasetDao;
@@ -65,6 +73,7 @@ public class DatasetService {
         this.ingestService = ingestService;
         this.settingsService = settingsService;
         this.provPopupFragmentBean = provPopupFragmentBean;
+        this.permissionService = permissionService;
     }
 
 
@@ -166,6 +175,28 @@ public class DatasetService {
         return commandEngine.submit(new UpdateDatasetGuestbookCommand(dvRequestService.getDataverseRequest(), editedDataset));
     }
 
+    @LoggedCall
+    @Restricted(@PermissionNeeded(needs = {Permission.EditDataset}))
+    public Dataset setDatasetEmbargoDate(@PermissionNeeded Dataset dataset, Date embargoDate) throws IllegalStateException {
+        if(dataset.hasEverBeenPublished() && !session.getUser().isSuperuser()) {
+            throw new IllegalStateException(getDatasetInWrongStateMessage());
+        }
+        return updateDatasetEmbargoDate(dataset, embargoDate);
+    }
+
+    @LoggedCall
+    @Restricted(@PermissionNeeded(needs = {Permission.EditDataset}))
+    public Dataset liftDatasetEmbargoDate(@PermissionNeeded Dataset dataset) {
+        return updateDatasetEmbargoDate(dataset, null);
+    }
+
+    String getDatasetLockedMessage(Dataset dataset) {
+        return DATASET_LOCKED_FOR_UPDATE_MESSAGE + dataset.getLocks().toString();
+    }
+
+    String getDatasetInWrongStateMessage() {
+        return DATASET_IN_WRONG_STATE_MESSAGE;
+    }
     // -------------------- PRIVATE --------------------
 
     private AuthenticatedUser retrieveAuthenticatedUser() {
@@ -174,4 +205,15 @@ public class DatasetService {
         }
         return (AuthenticatedUser) session.getUser();
     }
+
+    private Dataset updateDatasetEmbargoDate(Dataset dataset, Date embargoDate) throws IllegalStateException {
+        if(dataset.isLocked()) {
+            logger.log(Level.WARNING, "Dataset is locked. Cannot perform update embargo date");
+            throw new IllegalStateException(getDatasetLockedMessage(dataset));
+        }
+
+        dataset.setEmbargoDate(embargoDate);
+        return datasetDao.merge(dataset);
+    }
+
 }

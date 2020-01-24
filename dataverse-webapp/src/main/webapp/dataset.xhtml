@@ -228,6 +228,17 @@
                                                         value="#{bundle['dataset.editBtn.itemLabel.selectGuestbook']}"/>
                                             </h:outputLink>
                                         </li>
+                                        <li>
+                                            <p:commandLink id="setEmbargo"
+                                                           action="#{DatasetPage.initCurrentEmbargo()}"
+                                                           update="setEmbargoPanel"
+                                                           oncomplete="PF('setEmbargoConfirmation').show()"
+                                                           rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo() or DatasetPage.isUserAbleToLiftEmbargo()}"
+                                            >
+                                                <h:outputText
+                                                        value="#{bundle['dataset.editBtn.itemLabel.embargo']}"/>
+                                            </p:commandLink>
+                                        </li>
                                         <ui:fragment
                                                 rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
                                             <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
@@ -423,7 +434,7 @@
                                 </ui:fragment>
                             </div>
                             <!-- BEGIN: DATASET SUMMARY -->
-                            <div id="dataset-summary-metadata" class="row panel panel-default"
+                            <div jsf:id="dataset-summary-metadata" class="row panel panel-default"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
                                                     (!empty DatasetPage.datasetSummaryFields or !empty DatasetPage.workingVersion.fileMetadatas) }">
                                 <div class="panel-body metadata-panel-body">
@@ -486,7 +497,7 @@
                                     </ui:repeat>
 
                                     <ui:fragment
-                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and !DatasetPage.sameTermsOfUseForAllFiles}">
+                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and !DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
                                         <div class="form-group">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.license']}
@@ -500,7 +511,7 @@
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment
-                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.sameTermsOfUseForAllFiles}">
+                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
                                         <div class="form-group"
                                              jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
                                             <label class="col-sm-3 control-label">
@@ -543,6 +554,21 @@
                                                         rendered="#{DatasetPage.termsOfUseOfFirstFile.get().restrictType == restrictTypeEnum.CUSTOM}"/>
                                             </div>
                                         </div>
+                                    </ui:fragment>
+                                    <!-- Embargo -->
+                                    <ui:fragment
+                                            rendered="#{DatasetPage.dataset.hasActiveEmbargo()}">
+                                    <div class="form-group" >
+                                        <label class="col-sm-3 control-label">
+                                            #{bundle['dataset.embargo.title']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right"
+                                                  data-original-title="#{bundle['dataset.embargo.description']}"></span>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            #{DatasetPage.currentEmbargoDateForDisplay}
+                                        </div>
+                                    </div>
                                     </ui:fragment>
                                 </div>
                             </div>
@@ -662,6 +688,79 @@
                                          type="button"/>
                     </div>
                 </p:dialog>
+                <!-- Set Embargo -->
+                <p:dialog id="SetEmbargo" styleClass="smallPopUp" header="#{bundle['dataset.embargo.header']}"
+                          widgetVar="setEmbargoConfirmation" modal="true">
+                    <p:fragment id="setEmbargoPanel">
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['dataset.embargo.tip']}"
+                                            escape="false"
+                                            rendered="#{empty DatasetPage.currentEmbargoDate}"
+                            >
+                            </h:outputFormat>
+                            <h:outputFormat value="#{bundle['dataset.embargo.message']}"
+                                            escape="false"
+                                            rendered="#{not empty DatasetPage.currentEmbargoDate}"
+                            >
+                                <f:param value="#{DatasetPage.currentEmbargoDateForDisplay}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div>
+                            <p:outputLabel for="embargoDatePicker" value="Embargo: " />
+                            <p:calendar
+                                    id="embargoDatePicker"
+                                    value="#{DatasetPage.currentEmbargoDate}"
+                                    showButtonBar="true"
+                                    mindate="#{DatasetPage.getTomorrowsDate()}"
+                                    effect="drop"
+                                    navigator="true"
+                                    pattern="#{settingsWrapper.getSettingValue(':DefaultDateFormat')}"
+                                    validator="#{DatasetPage.validateEmbargoDate}"
+                                    locale="#{dataverseSession.localeCode}"
+                                    timeZone="UTC"
+                            />
+                            <p:message id="embargoMsg" for="embargoDatePicker" display="text" />
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle['dataset.embargo.setEmbargo']}"
+                                             action="#{DatasetPage.updateEmbargoDate()}"
+                                             update="setEmbargoPanel,:messagePanel, dataset-summary-metadata"
+                                             rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo()}"
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('setEmbargoConfirmation').hide(); } else { #{DatasetPage.initCurrentEmbargo()}; }"
+                            />
+                            <p:commandButton value="#{bundle['dataset.embargo.lift.button']}"
+                                             onclick="PF('setEmbargoConfirmation').hide();PF('removeEmbargoConfirmation').show()"
+                                             rendered="#{DatasetPage.isUserAbleToLiftEmbargo()}" update="setEmbargoPanel"/>
+                            <p:commandButton styleClass="btn btn-default"
+                                             value="#{bundle.close}"
+                                             onclick="PF('setEmbargoConfirmation').hide();"
+                                             update="setEmbargoPanel, embargoDatePicker"
+                                             resetValues="true"
+                            />
+                        </div>
+                    </p:fragment>
+                </p:dialog>
+                <!-- Confirm embargo lift -->
+                <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.embargo.header']}"
+                          widgetVar="removeEmbargoConfirmation" modal="true" closable="false">
+                    <p class="text-warning"><span
+                            class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.embargo.lift.confirmationText']}
+                    </p>
+                    <p jsf:rendered="#{DatasetPage.dataset.hasEverBeenPublished()}" class="text-warning"><span
+                            class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.embargo.lift.publishedConfirmationText']}
+                    </p>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle['dataset.embargo.lift.confirmButton']}"
+                                         immediate="true"
+                                         action="#{DatasetPage.liftEmbargo()}"
+                                         update="setEmbargoPanel,:messagePanel, dataset-summary-metadata"
+                                         onclick="PF('removeEmbargoConfirmation').hide();"/>
+                        <p:commandButton value="#{bundle.cancel}"
+                                         onclick="PF('removeEmbargoConfirmation').hide();PF('setEmbargoConfirmation').show();"
+                                         type="button"/>
+                    </div>
+                </p:dialog>
+
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}"
                           widgetVar="deleteVersionConfirmation" modal="true">
                     <p class="text-warning"><span
@@ -1050,7 +1149,38 @@
                     PF('inreview').show();
                 }
             </script>
+
+            <script type="text/javascript">
+                PrimeFaces.locales['pl'] = {
+                    closeText: 'Zamknij',
+                    prevText: 'Poprzedni',
+                    nextText: 'Następny',
+                    monthNames: ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
+                    monthNamesShort: ['Sty','Lut','Mar','Kwi','Maj','Cze', 'Lip','Sie','Wrz','Paź','Lis','Gru'],
+                    dayNames: ['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'],
+                    dayNamesShort: ['Nie','Pon','Wt','Śr','Czw','Pt','So'],
+                    dayNamesMin: ['N','P','W','Ś','Cz','P','S'],
+                    weekHeader: 'Tydzień',
+                    firstDay: 1,
+                    isRTL: false,
+                    showMonthAfterYear: false,
+                    yearSuffix: '',
+                    timeOnlyTitle: 'Tylko czas',
+                    timeText: 'Czas',
+                    hourText: 'Godzina',
+                    minuteText: 'Minuta',
+                    secondText: 'Sekunda',
+                    currentText: 'Teraz',
+                    ampm: false,
+                    month: 'Miesiąc',
+                    week: 'Tydzień',
+                    day: 'Dzień',
+                    allDayText : 'Cały dzień'
+                };
+            </script>
         </ui:define>
     </ui:composition>
 </h:body>
+
+
 </html>

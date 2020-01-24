@@ -281,6 +281,10 @@ public class Dataset extends DvObjectContainer {
         return this.getEmbargoDate().isDefined() && Instant.now().isBefore(this.getEmbargoDate().get().toInstant());
     }
 
+    public boolean hasEverBeenPublished() {
+        return this.getVersions().size() > 1 || this.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT;
+    }
+
     public DatasetVersion getLatestVersion() {
         return getVersions().get(0);
     }

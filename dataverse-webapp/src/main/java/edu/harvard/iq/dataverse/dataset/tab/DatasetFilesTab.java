@@ -53,9 +53,9 @@ import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
-
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -666,6 +666,11 @@ public class DatasetFilesTab implements Serializable {
 
     public boolean isAllFilesSelected() {
         return selectedFiles.size() >= allCurrentFilesCount();
+    }
+
+    public String getEmbargoDateForDisplay() {
+        SimpleDateFormat format = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
+        return format.format(dataset.getEmbargoDate().getOrNull());
     }
 
     // -------------------- PRIVATE --------------------

@@ -10,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -476,7 +474,13 @@ public class SettingsServiceBean {
          * Unlike the FQDN option above, this would be a complete URL,
          * with the protocol, port number etc.
          */
-        SiteUrl
+        SiteUrl,
+
+        /**
+         * Application wide format for dates.
+         * Use this whenever you want to print date on GUI.
+         */
+        DefaultDateFormat
         ;
 
         @Override
