@@ -53,6 +53,8 @@ Adding a New Dataset
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
 
+.. _supported-html-fields:
+
 Supported HTML Fields
 ---------------------
 
