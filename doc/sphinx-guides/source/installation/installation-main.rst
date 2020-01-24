@@ -205,7 +205,12 @@ If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or ser
 Fresh Reinstall
 ---------------
 
-Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data.
+Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Glassfish, a common helpful process is to:
+
+- Stop Glassfish; 
+- Remove the ``generated`` and ``osgi-cache`` directories; 
+- Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
+- Start Glassfish
 
 Drop database
 ^^^^^^^^^^^^^
