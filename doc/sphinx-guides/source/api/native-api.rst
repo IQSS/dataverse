@@ -295,9 +295,19 @@ Assigns a new role, based on the POSTed JSON. ::
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER/api/dataverses/$id/assignments
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
 
-POSTed JSON example::
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$id/assignments --upload-file role.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/assignments --upload-file role.json
+
+POSTed JSON example (the content of ``role.json`` file)::
 
   {
     "assignee": "@uma",
