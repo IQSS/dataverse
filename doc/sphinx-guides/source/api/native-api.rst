@@ -77,13 +77,16 @@ To view a published dataverse:
 
 .. code-block:: bash
 
-  curl $SERVER_URL/api/dataverses/$id
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl $SERVER_URL/api/dataverses/$ID
 
 To view an unpublished dataverse:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id
+  curl https://demo.dataverse.org/api/dataverses/root
 
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
