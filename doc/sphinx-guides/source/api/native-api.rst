@@ -411,7 +411,17 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER/api/dataverses/$id/metadatablocks/isRoot
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$id/metadatablocks/isRoot
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X PUT https://demo.dataverse.org/api/dataverses/root/metadatablocks/isRoot
 
 .. note:: Previous endpoints ``$SERVER/api/dataverses/$id/metadatablocks/:isRoot`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
