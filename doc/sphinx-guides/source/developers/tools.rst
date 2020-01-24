@@ -25,6 +25,8 @@ Maven
 
 With Maven installed you can run ``mvn package`` and ``mvn test`` from the command line. It can be downloaded from https://maven.apache.org
 
+.. _vagrant:
+
 Vagrant
 +++++++
 

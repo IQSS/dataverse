@@ -44,6 +44,8 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 
         # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
+.. _glassfish:
+
 Glassfish
 ---------
 
@@ -330,8 +332,8 @@ use Dataverse - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
 you choose to also install `TwoRavens
 <https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries.  Please consult the instructions in the
-TowRavens section of the Installation Guide.
+components and libraries. Please consult the instructions in the
+:doc:`/installation/r-rapache-tworavens/` section of the Installation Guide.
 
 
 Installing R
