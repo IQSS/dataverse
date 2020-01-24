@@ -139,7 +139,17 @@ Shows the combined size in bytes of all the files uploaded into the dataverse ``
 
 .. code-block:: bash
 
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
   curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/storagesize
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/storagesize
 
 The size of published and unpublished files will be summed both in the dataverse specified and beneath all its sub-dataverses, recursively. 
 By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
