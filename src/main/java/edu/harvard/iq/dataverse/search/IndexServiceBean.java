@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -135,6 +136,8 @@ public class IndexServiceBean {
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
     private SolrClient solrServer;
+
+    private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
@@ -923,7 +926,7 @@ public class IndexServiceBean {
                              * whether full text indexing is on now.
                              */
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(releasedFileMetadata)) {
+                                if (fileMetadata.contentEquals(releasedFileMetadata) && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)) {
                                     indexThisMetadata = false;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                                 } else {

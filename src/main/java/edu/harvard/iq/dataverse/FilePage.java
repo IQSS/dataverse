@@ -78,6 +78,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private Long datasetVersionId;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -170,10 +171,14 @@ public class FilePage implements java.io.Serializable {
 
                 return permissionsWrapper.notFound();
             }
-
             RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            Long getDatasetVersionID = null;
+            if (datasetVersionId == null) {
+                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+                getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            } else {
+                getDatasetVersionID = datasetVersionId;
+            }
             fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
             if (fileMetadata == null) {
@@ -235,6 +240,14 @@ public class FilePage implements java.io.Serializable {
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;
+    }
+
+    public Long getDatasetVersionId() {
+        return datasetVersionId;
+    }
+
+    public void setDatasetVersionId(Long datasetVersionId) {
+        this.datasetVersionId = datasetVersionId;
     }
     
     private List<ExternalTool> addMapLayerAndSortExternalTools(){
