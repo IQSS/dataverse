@@ -271,8 +271,19 @@ Assign a default role to a user creating a dataset in a dataverse ``id`` where `
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias
-  
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+  export roleAlias=curator
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$id/defaultContributorRole/$roleAlias
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/defaultContributorRole/curator
+
 Note: You may use "none" as the ``roleAlias``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
 
 .. _assign-role-on-a-dataverse-api:
