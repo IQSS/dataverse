@@ -64,32 +64,44 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root --upload-file dataverse-complete.json
 
-You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly created dataverse.
+You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the newly-created dataverse.
 
 .. _view-dataverse:
 
 View a Dataverse
 ~~~~~~~~~~~~~~~~
 
-|CORS| View data about the dataverse identified by ``$id``. ``$id`` can be the id number of the dataverse, its identifier (a.k.a. alias), or the special value ``:root`` for the root dataverse.
+|CORS| View a JSON representation of the dataverse identified by ``$id``. ``$id`` can be the database ID of the dataverse, its alias, or the special value ``:root`` for the root dataverse.
 
-``curl $SERVER_URL/api/dataverses/$id``
+To view a published dataverse:
+
+.. code-block:: bash
+
+  curl $SERVER_URL/api/dataverses/$id
+
+To view an unpublished dataverse:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id
 
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
-In order to delete a dataverse you must first delete or move all of its contents elsewhere.
+Before you may delete a dataverse you must first delete or move all of its contents elsewhere.
 
-Deletes the dataverse whose ID is given:
+Deletes the dataverse whose database ID or alias is given:
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/dataverses/$id``
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$id
 
 .. _show-contents-of-a-dataverse-api:
 
 Show Contents of a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the dataverses and datasets directly under a dataverse (direct children only). You must specify the "alias" of a dataverse or its database id. If you specify your API token and have access, unpublished dataverses and datasets will be included in the listing.
+|CORS| Lists all the dataverses and datasets directly under a dataverse (direct children only, not recursive) specified by database id or alias. If you pass your API token and have access, unpublished dataverses and datasets will be included in the response.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -112,32 +124,39 @@ Report the data (file) size of a Dataverse
 
 Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
 
-``curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER_URL/api/dataverses/$id/storagesize``
+.. code-block:: bash
 
-Both published and unpublished files will be counted, in the dataverse specified, and in all its sub-dataverses, recursively. 
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/storagesize
+
+The size of published and unpublished files will be summed both in the dataverse specified and beneath all its sub-dataverses, recursively. 
 By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
-
 
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All the roles defined directly in the dataverse identified by ``id``::
 
-  GET http://$SERVER/api/dataverses/$id/roles?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/roles
 
 List Facets Configured for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List all the facets for a given dataverse ``id``. ::
+|CORS| List all the facets for a given dataverse ``id``::
 
-  GET http://$SERVER/api/dataverses/$id/facets?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/facets
 
 Set Facets for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign search facets for a given dataverse with alias ``$alias``
+Assign search facets for a given dataverse identified by ``id``::
 
-``curl -H "X-Dataverse-key: $apiKey" -X POST http://$server/api/dataverses/$alias/facets --upload-file facets.json``
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER/api/dataverses/$id/facets --upload-file facets.json
 
 Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
@@ -146,7 +165,9 @@ Create a New Role in a Dataverse
 
 Creates a new role under dataverse ``id``. Needs a json file with the role description::
 
-  POST http://$SERVER/api/dataverses/$id/roles?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER/api/dataverses/$id/roles
   
 POSTed JSON example::
 
@@ -166,14 +187,18 @@ List Role Assignments in a Dataverse
 
 List all the role assignments at the given dataverse::
 
-  GET http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/assignments
   
 Assign Default Role to User Creating a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
 
-  PUT http://$SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER/api/dataverses/$id/defaultContributorRole/$roleAlias
   
 Note: You may use "none" as the ``roleAlias``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
 
@@ -184,7 +209,9 @@ Assign a New Role on a Dataverse
 
 Assigns a new role, based on the POSTed JSON. ::
 
-  POST http://$SERVER/api/dataverses/$id/assignments?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER/api/dataverses/$id/assignments
 
 POSTed JSON example::
 
@@ -200,7 +227,9 @@ Delete Role Assignment from a Dataverse
 
 Delete the assignment whose id is ``$id``::
 
-  DELETE http://$SERVER/api/dataverses/$id/assignments/$id?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER/api/dataverses/$id/assignments/$id
 
 List Metadata Blocks Defined on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -255,7 +284,9 @@ Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 
 Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
 
-  GET http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/metadatablocks/isRoot
 
 Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,9 +294,11 @@ Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
-  PUT http://$SERVER/api/dataverses/$id/metadatablocks/isRoot?key=$apiKey
+.. code-block:: bash
 
-.. note:: Previous endpoints ``GET http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER/api/dataverses/$id/metadatablocks/isRoot
+
+.. note:: Previous endpoints ``$SERVER/api/dataverses/$id/metadatablocks/:isRoot`` and ``POST http://$SERVER/api/dataverses/$id/metadatablocks/:isRoot?key=$apiKey`` are deprecated, but supported.
 
 
 .. _create-dataset-command: 
@@ -305,7 +338,7 @@ The fully expanded example above (without the environment variables) looks like 
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets --upload-file dataset-finch1.json
 
-You should expect a 201 ("CREATED") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
+You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
 Import a Dataset into a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -314,7 +347,9 @@ Import a Dataset into a Dataverse
 
 To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
 
 The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
 
@@ -342,7 +377,9 @@ Import a Dataset into a Dataverse with a DDI file
 
 To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
 
 The optional ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if the provided PID fails validation.
 
