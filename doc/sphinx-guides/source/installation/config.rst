@@ -1351,6 +1351,12 @@ Set ``:ExcludeEmailFromExport`` to prevent email addresses for contacts from bei
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
 
+Note: After making a change to this setting, a reExportAll needs to be run before the changes will be reflected in the exports:
+
+``curl http://localhost:8080/api/admin/metadata/reExportAll``
+
+This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
+
 :NavbarAboutUrl
 +++++++++++++++
 
