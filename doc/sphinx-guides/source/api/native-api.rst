@@ -220,9 +220,19 @@ Creates a new role under dataverse ``id``. Needs a json file with the role descr
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER/api/dataverses/$id/roles
-  
-POSTed JSON example::
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER/api/dataverses/$id/roles --upload-file roles.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+
+Where ``roles.json`` looks like this::
 
   {
     "alias": "sys1",
