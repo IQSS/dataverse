@@ -199,7 +199,17 @@ Assign search facets for a given dataverse identified by ``id``::
 
 .. code-block:: bash
 
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
   curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER/api/dataverses/$id/facets --upload-file facets.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/facets --upload-file facets.json
 
 Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
