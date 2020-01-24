@@ -348,10 +348,10 @@ Please note that an API token is only required if the dataverse has not been pub
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export ALIAS=root
   export SERVER_URL=https://demo.dataverse.org
+  export alias=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$alias/metadatablocks
 
 The fully expanded example above (without environment variables) looks like this:
 
