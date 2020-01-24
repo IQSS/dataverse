@@ -373,9 +373,9 @@ The metadata blocks that are available with a default installation of Dataverse 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export ALIAS=root
   export SERVER_URL=https://demo.dataverse.org
-  
+  export ALIAS=root
+
   curl -H X-Dataverse-key:$API_TOKEN -X POST -H \"Content-type:application/json\" --upload-file define-metadatablocks.json $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
 
 The fully expanded example above (without environment variables) looks like this:
@@ -391,7 +391,17 @@ Get whether the dataverse is a metadata block root, or does it uses its parent b
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER/api/dataverses/$id/metadatablocks/isRoot
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/metadatablocks/isRoot
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/metadatablocks/isRoot
 
 Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
