@@ -1037,12 +1037,6 @@ public class UtilIT {
         return response;
     }
 
-    static Response getDatasetVersion(String persistentId, String versionNumber, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/datasets/:persistentId/versions/" + versionNumber + "?persistentId=" + persistentId);
-    }
-
     static Response getMetadataBlockFromDatasetVersion(String persistentId, String versionNumber, String metadataBlock, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
