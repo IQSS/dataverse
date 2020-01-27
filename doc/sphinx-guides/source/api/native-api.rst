@@ -82,11 +82,27 @@ To view a published dataverse:
 
   curl $SERVER_URL/api/dataverses/$id
 
-To view an unpublished dataverse:
+The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
   curl https://demo.dataverse.org/api/dataverses/root
+
+To view an unpublished dataverse:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export id=root
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root
 
 Delete a Dataverse
 ~~~~~~~~~~~~~~~~~~
