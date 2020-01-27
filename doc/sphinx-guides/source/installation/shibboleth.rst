@@ -7,7 +7,7 @@ Shibboleth
 Introduction
 ------------
 
-By configuring and enabling Shibboleth support in Dataverse, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse application, the Shibboleth feature is known as "Institutional Log In" as explained to end users in the :doc:`/user/account` section of the User Guide.
+By configuring and enabling Shibboleth support in Dataverse, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse application, the Shibboleth feature is known as :ref:`institutional-log-in` as explained to end users in the :doc:`/user/account` section of the User Guide.
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 
@@ -16,7 +16,7 @@ Shibboleth can be compared and contrasted with OAuth2, which you can read about 
 Installation
 ------------
 
-We assume you've already gone through a basic installation as described in the :doc:`/installation/installation-main` section and that you've paid particular attention to the "Auth Modes: Local vs. Remote vs. Both" explanation in the :doc:`/installation/config` section. You're going to give Shibboleth a whirl. Let's get started.
+We assume you've already gone through a basic installation as described in the :doc:`/installation/installation-main` section and that you've paid particular attention to the :ref:`auth-modes` explanation in the :doc:`/installation/config` section. You're going to give Shibboleth a whirl. Let's get started.
 
 System Requirements
 ~~~~~~~~~~~~~~~~~~~
