@@ -250,12 +250,36 @@ public class IndexServiceBean {
             for (String dvPath : linkingDataversePaths) {
                 dataversePaths.add(dvPath);
             }
+        }
+        
+        //Is my owning dataverse or any of its ancestors linked?
+        List <Dataverse> ancestorsLinkingDVs = findLinkedParents(dataverse, false);
+
+        //if so I must add paths to the linking dataverse #6262
+        for (Dataverse linkingDataverse : ancestorsLinkingDVs){
+            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
+            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+            for (String dvPath : linkingDataversePaths) {
+                dataversePaths.add(dvPath);
+            }
+        }
+        
+        if (ancestorsLinkingDVs.size() > 0 || !dvLinkingService.findLinkingDataverses(dataverse.getId()).isEmpty()) {
             for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
                 //if this dataverse is linked and contains datasets then
                 // the datasets must be reindexed to get the new paths added
                 indexDataset(dv, true);
             }
+            for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse is linked and contains dataverses then
+                // the dataverses must be reindexed to get the new paths added
+                indexDataverse(dv);
+            }
         }
+
+        
+        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -691,7 +715,7 @@ public class IndexServiceBean {
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);       
         // Add Paths for linking dataverses
         for (Dataverse linkingDataverse : dsLinkingService.findLinkingDataverses(dataset.getId())) {
             List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
@@ -701,9 +725,12 @@ public class IndexServiceBean {
                 dataversePaths.add(dvPath);
             }
         }
-        //Is my owning dataverse linked?
+               
+        //Are any of my ancestors linked?        
         //if so I must add paths to the linking dataverse #6262
-        for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataset.getOwner().getId())){
+        List <Dataverse> ancestorsLinkinDvs = findLinkedParents(dataset.getOwner(), true);
+        
+        for (Dataverse linkingDataverse : ancestorsLinkinDvs){
             List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
             List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
             List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
@@ -891,7 +918,7 @@ public class IndexServiceBean {
                 }
             }
         }
-
+        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -1258,6 +1285,30 @@ public class IndexServiceBean {
             // base case
             return segments;
         }
+    }
+    
+    public List<Dataverse> findLinkedParents(Dataverse dataverse, Boolean self) {
+        Dataverse rootDataverse = findRootDataverseCached();
+
+        List<Dataverse> ancestorList = dataverse.getOwners();
+        if (self != null && self){
+            //For Datasets "self == true" we must check the owning dataverse 
+            //as well as all of its ancestors
+            ancestorList.add(dataverse);
+        }
+        List<Dataverse> parentLinkers = new ArrayList<>();
+        for (Dataverse prior : ancestorList) {
+            if (!dataverse.equals(rootDataverse)) {
+                // important when creating root dataverse
+                List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
+                for (Dataverse toAdd : linkingDVs) {
+                    parentLinkers.add(toAdd);
+                }
+            }
+        }
+        
+        return parentLinkers;
+
     }
 
     private List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
