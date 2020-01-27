@@ -84,6 +84,8 @@ As another example, here is how to create a Mail Host via command line for Amazo
 - Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost email-smtp.us-east-1.amazonaws.com --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --transprotocol aws --transprotocolclass com.amazonaws.services.simpleemail.AWSJavaMailTransport --property mail.smtp.auth=true:mail.smtp.user=[aws_access_key]:mail.smtp.password=[aws_secret_key]:mail.transport.protocol=smtp:mail.smtp.port=587:mail.smtp.starttls.enable=true mail/notifyMailSession``
 
+.. _rebuilding-dev-environment:
+
 Rebuilding Your Dev Environment
 -------------------------------
 
@@ -96,7 +98,7 @@ If you have an old copy of the database and old Solr data and want to start fres
 - confirm http://localhost:8080 is up
 - If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
 
-You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
+You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See :ref:`fresh-reinstall` section of the Installation Guide.
 
 DataCite
 --------
