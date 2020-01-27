@@ -330,7 +330,7 @@ Next you need to figure out the alias or database id of the "parent" dataverse i
   export PARENT=root
   export SERVER_URL=https://demo.dataverse.org
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$PARENT/datasets --upload-file dataset-finch1.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/dataverses/$PARENT/datasets" --upload-file dataset-finch1.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
