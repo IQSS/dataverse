@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.dataset;
 
+import edu.harvard.iq.dataverse.DatasetDao;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -44,6 +46,9 @@ public class DatasetServiceTest {
 
     @Mock
     private DatasetDao datasetDao;
+
+    @Mock
+    private PermissionsWrapper permissionsWrapper;
 
     @Mock
     private DataverseSession session;

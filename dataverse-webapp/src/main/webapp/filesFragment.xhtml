@@ -60,36 +60,35 @@
             <p:ajax event="rowUnselect" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
             <p:ajax event="rowDblselect" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
 
-            <f:facet name="header">
-                <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{datasetFilesTab.workingVersion.fileMetadatas.size() gt 1}">
-                    <div class="col-xs-6">
-                        <!-- dataset file search -->
-                        <div class="input-group">
-                            <p:inputText id="searchFiles" styleClass="form-control" value="#{datasetFilesTab.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
-                                         onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                            <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                            <p:remoteCommand name="submitsearch"
-                                             action="#{datasetFilesTab.updateFileSearch()}"
-                                             process="@this @widgetVar(inputSearchTerm)"
-                                             update="@form" partialSubmit="true"
-                                             onstart="PF('filesTable').paginator.setPage(0);"
-                            >
-                                <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
-                            </p:remoteCommand>
+        <f:facet name="header">
+            <div jsf:id="filesHeaderBlock" class="row" jsf:rendered="#{datasetFilesTab.workingVersion.fileMetadatas.size() gt 1}">
+                <div class="col-xs-6">
+                    <!-- dataset file search -->
+                    <div class="input-group">
+                        <p:inputText id="searchFiles" styleClass="form-control" value="#{datasetFilesTab.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
+                                     onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                        <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
+                        <p:remoteCommand name="submitsearch"
+                                         action="#{datasetFilesTab.updateFileSearch()}"
+                                         process="@this @widgetVar(inputSearchTerm)"
+                                         update="@form" partialSubmit="true"
+                                         onstart="PF('filesTable').paginator.setPage(0);"
+                        >
+                            <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
+                        </p:remoteCommand>
 
-                            <span class="input-group-btn">
-                                <p:commandLink styleClass="btn btn-default"
-                                               action="#{datasetFilesTab.updateFileSearch()}"
-                                               process="@this @widgetVar(inputSearchTerm)"
-                                               update="@form"
-                                               partialSubmit="true"
-                                               onstart="PF('filesTable').paginator.setPage(0);"
-                                >
-                                    <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
-                                    <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
-                                </p:commandLink>
-                            </span>
-                        </div>
+                        <span class="input-group-btn">
+                            <p:commandLink styleClass="btn btn-default"
+                                           action="#{datasetFilesTab.updateFileSearch()}"
+                                           process="@this @widgetVar(inputSearchTerm)"
+                                           update="@form"
+                                           partialSubmit="true"
+                                           onstart="PF('filesTable').paginator.setPage(0);"
+                            >
+                                <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                                <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
+                            </p:commandLink>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -102,37 +101,38 @@
                         <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
                     </h:outputFormat>
                 </div>
-                    <div class="col-xs-9">
-                        <p:outputPanel id="filesButtons">
-                        <div jsf:id="uploadComputeBlock" class="button-block pull-right no-margin-top"
-                              jsf:rendered="#{datasetFilesTab.canUpdateDataset() and !widgetWrapper.widgetView}">
 
-                            <!-- DOWNLOAD DCM SCRIPT BUTTON -->
-                            <h:commandLink id="rsyncDLFF" actionListener="#{datasetFilesTab.downloadRsyncScript()}" styleClass="btn btn-default"
-                                           rendered="#{empty datasetFilesTab.workingVersion.fileMetadatas
-                                                             and datasetFilesTab.lockedDueToDcmUpload}">
-                                <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
-                            </h:commandLink>
+                <div class="col-xs-9">
+                    <p:outputPanel id="filesButtons">
+                    <div jsf:id="uploadComputeBlock" class="button-block pull-right no-margin-top"
+                          jsf:rendered="#{datasetFilesTab.canUpdateDataset() and !widgetWrapper.widgetView}">
 
-                            <!-- REORDER FILES BUTTON -->
-                            <h:outputLink value="/reorderdatafiles.xhtml?datasetVersionId=#{datasetFilesTab.workingVersion.id}"
-                                          type="button" styleClass="btn btn-default btn-access #{datasetFilesTab.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                                          disabled="#{datasetFilesTab.lockedFromEdits}">
-                                <span class="glyphicon #{datasetFilesTab.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-sort'}"/>
-                                <h:outputText id="reorderFile-s-Link" value="#{bundle['file.reorderFiles']}"/>
-                            </h:outputLink>
+                        <!-- DOWNLOAD DCM SCRIPT BUTTON -->
+                        <h:commandLink id="rsyncDLFF" actionListener="#{datasetFilesTab.downloadRsyncScript()}" styleClass="btn btn-default"
+                                       rendered="#{empty datasetFilesTab.workingVersion.fileMetadatas
+                                                         and datasetFilesTab.lockedDueToDcmUpload}">
+                            <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
+                        </h:commandLink>
 
-                            <!-- UPLOAD FILES BUTTON -->
-                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{datasetFilesTab.dataset.id}&#38;mode=UPLOAD"
-                                          type="button" styleClass="btn btn-default btn-access #{datasetFilesTab.lockedFromEdits ? 'ui-state-disabled' : ''}"
-                                          disabled="#{datasetFilesTab.lockedFromEdits}">
-                                <span class="glyphicon #{datasetFilesTab.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/>
-                                <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
-                            </h:outputLink>
-                        </div>
-                       </p:outputPanel>
+                        <!-- REORDER FILES BUTTON -->
+                        <h:outputLink value="/reorderdatafiles.xhtml?datasetVersionId=#{datasetFilesTab.workingVersion.id}"
+                                      type="button" styleClass="btn btn-default btn-access #{datasetFilesTab.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                      disabled="#{datasetFilesTab.lockedFromEdits}">
+                            <span class="glyphicon #{datasetFilesTab.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-sort'}"/>
+                            <h:outputText id="reorderFile-s-Link" value="#{bundle['file.reorderFiles']}"/>
+                        </h:outputLink>
+
+                        <!-- UPLOAD FILES BUTTON -->
+                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{datasetFilesTab.dataset.id}&#38;mode=UPLOAD"
+                                      type="button" styleClass="btn btn-default btn-access #{datasetFilesTab.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                      disabled="#{datasetFilesTab.lockedFromEdits}">
+                            <span class="glyphicon #{datasetFilesTab.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/>
+                            <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                        </h:outputLink>
                     </div>
+                   </p:outputPanel>
                 </div>
+            </div>
 
             <div class="row" jsf:rendered="#{datasetFilesTab.fileLabelSearchTerm.equals('') ?
                         datasetFilesTab.workingVersion.fileMetadatas.size() gt datasetFilesTab.rowsPerPage :
@@ -151,65 +151,58 @@
                                 <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
                                 <f:param value="#{datasetFilesTab.fileLabelSearchTerm.equals('') ? '.' : bundle['file.selectAllFiles.suffixForSearching']}" />
                             </h:outputFormat>
-                            <ui:fragment rendered="#{!datasetFilesTab.isAllFilesSelected()}">
-                            &#160;
-                            <p:commandLink action="#{datasetFilesTab.selectAllFiles}" update="@form">
-                                <h:outputFormat value="#{bundle['file.selectAllFiles']}">
-                                    <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
-                                    <f:param value="#{datasetFilesTab.fileLabelSearchTerm.equals('') ? '.' : bundle['file.selectAllFiles.suffixForSearching']}" />
-                                </h:outputFormat>
-                            </p:commandLink>
-                            </ui:fragment>
-                            &#160;
-                            <p:commandLink rendered="#{datasetFilesTab.selectedFiles.size() gt 0}"
-                                           value="#{bundle['file.clearSelection']}"
-                                           action="#{datasetFilesTab.clearSelection}"
-                                           update="@form"/>
-                        </p>
-                    </div>
+                        </p:commandLink>
+                        </ui:fragment>
+                        &#160;
+                        <p:commandLink rendered="#{datasetFilesTab.selectedFiles.size() gt 0}"
+                                       value="#{bundle['file.clearSelection']}"
+                                       action="#{datasetFilesTab.clearSelection}"
+                                       update="@form"/>
+                    </p>
                 </div>
-            </f:facet>
+            </div>
+        </f:facet>
 
-            <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
+        <p:column selectionMode="multiple" class="text-center" style="width:20px !important;"  />
 
-            <p:column class="col-file-thumb" style="width:64px !important;">
-                <div class="thumbnail-block text-center">
-                    <!-- Thumbnail Preview -->
-                    <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and datasetFilesTab.isThumbnailAvailable(fileMetadata)}"
-                          data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+        <p:column class="col-file-thumb" style="width:64px !important;">
+            <div class="thumbnail-block text-center">
+                <!-- Thumbnail Preview -->
+                <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and datasetFilesTab.isThumbnailAvailable(fileMetadata)}"
+                      data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
 
-                        <img src="#{datasetFilesTab.getDataFileThumbnailAsBase64(fileMetadata)}"/>
-                    </span>
+                    <img src="#{datasetFilesTab.getDataFileThumbnailAsBase64(fileMetadata)}"/>
+                </span>
 
-                    <!-- Default Icon -->
-                    <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !datasetFilesTab.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
+                <!-- Default Icon -->
+                <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{(!empty fileMetadata.dataFile.id and !datasetFilesTab.isThumbnailAvailable(fileMetadata)) or (empty fileMetadata.dataFile.id and !dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType))}"/>
 
-                    <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
-                    <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
-                        <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
-                        <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
-                    </ui:fragment>
+                <!-- the "temp preview" is for new, not yet saved files; these should never appear on this page - as we now have the editfilespage for that, correct? -->
+                <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and dataFileServiceBean.isTemporaryPreviewAvailable(fileMetadata.dataFile.storageIdentifier, fileMetadata.dataFile.contentType)}">
+                    <p:graphicImage value="/api/access/tempPreview/#{fileMetadata.dataFile.storageIdentifier}?mimetype=#{fileMetadata.dataFile.contentType}"/>
+                    <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
+                </ui:fragment>
 
-                    <!-- Restricted File Icon -->
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED}">
-                        <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{!fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
-                        <span class="icon-unlock text-success" jsf:rendered="#{fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
-                    </div>
+                <!-- Restricted File Icon -->
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED}">
+                    <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{!fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
+                    <span class="icon-unlock text-success" jsf:rendered="#{fileDownloadHelper.canUserDownloadFile(fileMetadata)}"/>
                 </div>
-            </p:column>
-            <p:column class="col-file-metadata">
+            </div>
+        </p:column>
+        <p:column class="col-file-metadata">
 
-                <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
-                    <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
-                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                        #{fileMetadata.label}
-                    </a>
-                </ui:fragment>
-                <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
-                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                        #{fileMetadata.label}
-                    </a>
-                </ui:fragment>
+            <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
+                <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                    #{fileMetadata.label}
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
+                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                    #{fileMetadata.label}
+                </a>
+            </ui:fragment>
 
                 <!-- TYPE + SIZE + DATE + CHECKSUM -->
                 <div class="text-muted small">

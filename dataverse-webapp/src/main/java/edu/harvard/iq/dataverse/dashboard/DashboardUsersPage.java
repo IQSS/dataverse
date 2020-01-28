@@ -8,12 +8,14 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.mydata.Pager;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.omnifaces.cdi.ViewScoped;
 
+import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -31,6 +33,8 @@ public class DashboardUsersPage implements java.io.Serializable {
     private DataverseSession session;
     private PermissionsWrapper permissionsWrapper;
     private DashboardUsersService dashboardUsersService;
+    @EJB
+    private SettingsServiceBean settingsService;
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
 
@@ -184,6 +188,23 @@ public class DashboardUsersPage implements java.io.Serializable {
      */
     public String getUserCount() {
         return NumberFormat.getInstance().format(userService.getTotalUserCount());
+    }
+
+    /**
+     * Maximum length in months for embargo on dataset.
+     *
+     * @return
+     */
+    public String getMaximumEmbargoLengthString() {
+        return NumberFormat.getInstance().format(getMaximumEmbargoLength());
+    }
+
+    public int getMaximumEmbargoLength() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength).intValue();
+    }
+
+    public boolean isMaximumEmbargoLengthSet() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength) > 0;
     }
 
     /**

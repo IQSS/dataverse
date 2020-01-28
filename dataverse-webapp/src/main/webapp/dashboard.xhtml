@@ -148,6 +148,33 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Maximum Embargo -->
+                            <div class="col-md-4">
+                                <div class="card-box">
+                                    <h4 class="header-title">#{bundle['dashboard.card.maximumembargo.header']}</h4>
+                                    <div class="row text-center">
+                                        <div class="col-xs-12 text-center" jsf:rendered="#{!DashboardUsersPage.isMaximumEmbargoLengthSet()}">
+                                            <h:outputText value="#{bundle['dashboard.card.maximumembargo.notSet.header']}"/>
+                                            <p class="small text-muted">#{bundle['dashboard.card.maximumembargo.notSet.text']}</p>
+                                        </div>
+                                        <div class="col-xs-12 text-center" jsf:rendered="#{DashboardUsersPage.isMaximumEmbargoLengthSet()}">
+                                            <h:outputText value="#{DashboardUsersPage.getMaximumEmbargoLengthString()}"/>
+                                            <p class="small text-muted">
+                                                <h:outputFormat value="#{bundle['dashboard.card.maximumembargo.months']}">
+                                                    <f:param value="#{DashboardUsersPage.getMaximumEmbargoLength()}" />
+                                                </h:outputFormat>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div  class="col-xs-12">
+                                            <p>
+                                                <a href="/dashboard-maximumembargo.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.maximumembargo.manage']}</a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -50,6 +50,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +67,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,6 +76,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,7 +150,7 @@ public class DatasetPage implements java.io.Serializable {
 
     private Date currentEmbargoDate;
 
-    // This is the Dataset-level thumbnail; 
+    // This is the Dataset-level thumbnail;
     // it's either the thumbnail of the designated datafile, 
     // or scaled down uploaded "logo" file, or randomly selected
     // image datafile from this dataset. 
@@ -1249,16 +1252,17 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getCurrentEmbargoDateForDisplay() {
         SimpleDateFormat format = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
-        return format.format(currentEmbargoDate);
+        return currentEmbargoDate != null ? format.format(currentEmbargoDate) : "";
+    }
+
+    public String getMaximumEmbargoDateForDisplay() {
+        SimpleDateFormat format = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
+        return getMaximumEmbargoDate().isDefined() ? format.format(getMaximumEmbargoDate().get()) : "";
     }
 
     public void validateEmbargoDate(FacesContext context, UIComponent toValidate, Object embargoDate) {
-        if(embargoDate != null &&
-                ((Date) embargoDate).toInstant().isBefore(getTomorrowsDate().toInstant())) {
-            ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.embargo.validate.min.failureMessage"), null);
-            context.addMessage(toValidate.getClientId(context), message);
-        }
+        validateVersusMinimumDate(context, toValidate, embargoDate);
+        validateVersusMaximumDate(context, toValidate, embargoDate);
     }
 
     public boolean isUserUnderEmbargo() {
@@ -1271,5 +1275,44 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isUserAbleToLiftEmbargo() {
         return dataset.hasActiveEmbargo();
+    }
+
+    public int getMaximumEmbargoLength() {
+        return settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaximumEmbargoLength);
+    }
+
+    public boolean isMaximumEmbargoLengthSet() {
+        return getMaximumEmbargoLength() > 0;
+    }
+
+    public Option<Date> getMaximumEmbargoDate() {
+        if(isMaximumEmbargoLengthSet()) {
+            return Option.of(Date.from(Instant
+                    .now().atOffset(ZoneOffset.UTC)
+                    .plus(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength), ChronoUnit.MONTHS)
+                    .toInstant()));
+        }
+        return Option.none();
+    }
+
+    // -------------------- PRIVATE ---------------------
+    private void validateVersusMaximumDate(FacesContext context, UIComponent toValidate, Object embargoDate) {
+        if(isMaximumEmbargoLengthSet() &&
+                !Objects.isNull(embargoDate) &&
+                ((Date) embargoDate).toInstant().isAfter(getMaximumEmbargoDate().get().toInstant())) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("dataset.embargo.validate.max.failureMessage", getMaximumEmbargoDateForDisplay()), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+    }
+
+    private void validateVersusMinimumDate(FacesContext context, UIComponent toValidate, Object embargoDate) {
+        if(!Objects.isNull(embargoDate) &&
+                ((Date) embargoDate).toInstant().isBefore(getTomorrowsDate().toInstant())) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.embargo.validate.min.failureMessage"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
     }
 }

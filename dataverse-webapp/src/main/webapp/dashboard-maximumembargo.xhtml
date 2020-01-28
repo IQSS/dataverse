@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:p="http://primefaces.org/ui"
+>
+<h:head>
+</h:head>
+
+<h:body>
+    <f:metadata>
+        <f:viewParam name="dataverseId" value="#{dataverseDao.findRootDataverse().id}"/>
+        <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+        <f:viewAction action="#{MaximumEmbargoPage.init()}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse())}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverseDao.findRootDataverse().getId()), bundle['dashboard.title'])}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.maximumembargo.manage'])}"/>
+    </f:metadata>
+
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseDao.findRootDataverse().name} #{bundle.dataverse}"/>
+        <ui:param name="showDataverseHeader" value="false"/>
+        <ui:define name="body">
+            <h:form id="dashboardMaximumEmbargoForm" onkeypress="return event.keyCode != 13">
+                <div class="panel-group" jsf:id="maximumEmbargoBlockHeader">
+                    <div class="panel panel-default">
+                        <div class="collapse in">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <div class="col-sm-9">
+                                        <ui:fragment rendered="true">
+                                            <div class="checkbox">
+                                                <p:selectBooleanCheckbox id="setmaxdate"
+                                                                         required="false"
+                                                                         value="#{MaximumEmbargoPage.maximumEmbargoSet}"
+                                                                         itemLabel="#{bundle['dashboard.card.maximumembargo.checkbox.message']}"
+                                                                         onchange="#{MaximumEmbargoPage.maximumEmbargoLength}">
+                                                    <p:ajax update="@form" />
+                                                </p:selectBooleanCheckbox>
+                                            </div>
+                                            <div class="ui-inputnumber" jsf:rendered="#{MaximumEmbargoPage.maximumEmbargoSet}">
+                                                <h:outputLabel for="maxembargoval" value="#{bundle['dashboard.card.maximumembargo.input.label']}" />
+                                                <h:outputText value="&#160;" />
+                                                <p:spinner id="maxembargoval"
+                                                           value="#{MaximumEmbargoPage.maximumEmbargoLength}"
+                                                           min="1"
+                                                           rotate="false"
+                                                           converter="javax.faces.Integer"
+                                                           maxlength="5"
+                                                />
+                                            </div>
+
+                                        </ui:fragment>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom action buttons -->
+                <div class="button-block">
+                    <p:commandButton id="save" styleClass="btn btn-default"
+                                     value="#{bundle.saveChanges}"
+                                     action="#{MaximumEmbargoPage.save}"
+                                     update="@form,:messagePanel," />
+                    <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}"
+                                     action="#{MaximumEmbargoPage.cancel}" process="@this" >
+                        <p:resetInput target="@form" />
+                    </p:commandButton>
+                </div>
+
+                <p:blockUI block="dashboardMaximumEmbargoForm" />
+            </h:form>
+        </ui:define>
+    </ui:composition>
+
+</h:body>
+</html>
