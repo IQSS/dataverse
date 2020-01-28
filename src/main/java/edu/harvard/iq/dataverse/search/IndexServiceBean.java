@@ -267,12 +267,12 @@ public class IndexServiceBean {
         
         if (ancestorsLinkingDVs.size() > 0 || !dvLinkingService.findLinkingDataverses(dataverse.getId()).isEmpty()) {
             for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
-                //if this dataverse is linked and contains datasets then
+                //if this dataverse or any of its ancestors is linked and contains datasets then
                 // the datasets must be reindexed to get the new paths added
                 indexDataset(dv, true);
             }
             for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
-                //if this dataverse is linked and contains dataverses then
+                //if this dataverse or any of its ancestors is linked and contains dataverses then
                 // the dataverses must be reindexed to get the new paths added
                 indexDataverse(dv);
             }
