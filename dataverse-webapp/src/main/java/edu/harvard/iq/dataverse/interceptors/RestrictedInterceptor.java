@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.interceptors;
 
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.annotations.processors.PermissionDataProcessor;
-import edu.harvard.iq.dataverse.annotations.processors.RestrictedObject;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.PermissionDataProcessor;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.RestrictedObject;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
@@ -36,8 +36,6 @@ import static edu.harvard.iq.dataverse.interceptors.InterceptorCommons.createNam
 public class RestrictedInterceptor {
     private static final Logger logger = Logger.getLogger(RestrictedInterceptor.class.getSimpleName());
 
-    private PermissionDataProcessor permissionDataProcessor = new PermissionDataProcessor();
-
     @EJB
     private PermissionServiceBean permissionService;
 
@@ -50,7 +48,7 @@ public class RestrictedInterceptor {
     public Object callRestricted(InvocationContext ctx) throws Exception {
         DataverseRequest request = requestService.getDataverseRequest();
         Method method = ctx.getMethod();
-        Set<RestrictedObject> restrictedObjects = permissionDataProcessor.gatherPermissionRequirements(method, ctx.getParameters());
+        Set<RestrictedObject> restrictedObjects = PermissionDataProcessor.gatherPermissionRequirements(method, ctx.getParameters());
         if (restrictedObjects.isEmpty()) {
             throw new RuntimeException("Service method: " + createName(method) + " does not define required permissions.");
         }
@@ -90,41 +88,59 @@ public class RestrictedInterceptor {
             return;
         }
         String restrictedObjectsLog = restrictedObjects.stream()
-                .map(r -> "[" + r.name + " : " + extractSafelyObjectName(r) + "]")
+                .map(r -> "[" + r.name + " : " + extractSafelyObjectNames(r) + "]")
                 .collect(Collectors.joining(" "));
         String currentInfo = logRecord.getInfo() != null ? logRecord.getInfo() : StringUtils.EMPTY;
         logRecord.setInfo(currentInfo + " " + restrictedObjectsLog);
     }
 
-    private static String extractSafelyObjectName(RestrictedObject restrictedObject) {
-        return restrictedObject.object != null
-                ? restrictedObject.object.accept(DvObject.NamePrinter)
-                : "<null>";
+    private static String extractSafelyObjectNames(RestrictedObject restrictedObject) {
+        return restrictedObject.objects.stream()
+                .map(RestrictedInterceptor::extractSafelyObjectName)
+                .collect(Collectors.joining(","));
+    }
+
+    private static String extractSafelyObjectName(DvObject dvObject) {
+        return dvObject != null ? dvObject.accept(DvObject.NamePrinter) : "<null>";
     }
 
     private List<MissingPermissions> checkPermissions(Set<RestrictedObject> restrictedObjects, DataverseRequest request) {
         List<MissingPermissions> missingPermissions = new ArrayList<>();
 
-        for (RestrictedObject restrictedObject : restrictedObjects) {
-            DvObject dvObject = restrictedObject.object;
-            Set<Permission> granted = dvObject != null
-                    ? permissionService.permissionsFor(request, dvObject)
-                    : EnumSet.allOf(Permission.class);
-            Set<Permission> required = restrictedObject.permissions;
-            if (isAnyPermissionMissing(required, granted, restrictedObject.allRequired)) {
-                missingPermissions.add(new MissingPermissions(restrictedObject, SetUtils.difference(required, granted)));
-            }
-        }
-
-        return missingPermissions;
+        return restrictedObjects.stream()
+                .flatMap(r -> r.objects.stream()
+                        .map(d -> new DvObjectWithUserPermissions(d, r, fetchGrantedPermissions(d, request))))
+                .filter(this::isAnyPermissionMissing)
+                .map(MissingPermissions::new)
+                .collect(Collectors.toList());
     }
 
-    private boolean isAnyPermissionMissing(Set<Permission> required, Set<Permission> granted, boolean allRequired) {
-        return (!allRequired && !CollectionUtils.containsAny(granted, required))
-                || (allRequired && !granted.containsAll(required));
+    private Set<Permission> fetchGrantedPermissions(DvObject dvObject, DataverseRequest request) {
+        return dvObject != null
+                ? permissionService.permissionsFor(request, dvObject)
+                : EnumSet.allOf(Permission.class);
+    }
+
+    private boolean isAnyPermissionMissing(DvObjectWithUserPermissions toCheck) {
+        return (!toCheck.allRequired && !CollectionUtils.containsAny(toCheck.granted, toCheck.required))
+                || (toCheck.allRequired && !toCheck.granted.containsAll(toCheck.required));
     }
 
     // -------------------- INNER CLASSES --------------------
+
+    private static class DvObjectWithUserPermissions {
+        public final DvObject dvObject;
+        public final Set<Permission> required;
+        public final Set<Permission> granted;
+        public final boolean allRequired;
+
+        public DvObjectWithUserPermissions(DvObject dvObject, RestrictedObject restrictedObject, Set<Permission> granted) {
+            this.dvObject = dvObject;
+            this.required = restrictedObject.permissions;
+            this.granted = granted;
+            this.allRequired = restrictedObject.allRequired;
+        }
+    }
 
     private static class MissingPermissions {
         public final DvObject dvObject;
@@ -132,11 +148,11 @@ public class RestrictedInterceptor {
         public final Set<Permission> required;
         public final Set<Permission> missing;
 
-        public MissingPermissions(RestrictedObject restrictedObject, Set<Permission> missing) {
-            this.dvObject = restrictedObject.object;
-            this.dvObjectName = extractSafelyObjectName(restrictedObject);
-            this.required = restrictedObject.permissions;
-            this.missing = missing;
+        public MissingPermissions(DvObjectWithUserPermissions source) {
+            this.dvObject = source.dvObject;
+            this.dvObjectName = extractSafelyObjectName(source.dvObject);
+            this.required = source.required;
+            this.missing = SetUtils.difference(source.required, source.granted);
         }
 
         @Override

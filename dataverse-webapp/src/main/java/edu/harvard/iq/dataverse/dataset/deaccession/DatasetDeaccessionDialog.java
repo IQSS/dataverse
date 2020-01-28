@@ -149,11 +149,11 @@ public class DatasetDeaccessionDialog implements Serializable {
 
         if (selectedDeaccessionVersions == null) {
             deaccessionOperation = Try.of(
-                    () -> datasetDeaccessionService.deaccessReleasedVersions(dataset, dataset.getVersions(),
+                    () -> datasetDeaccessionService.deaccessReleasedVersions(dataset.getVersions(),
                             deaccessionReason, deaccessionForwardURLFor));
         } else {
             deaccessionOperation = Try.of(
-                    () -> datasetDeaccessionService.deaccessVersions(dataset, selectedDeaccessionVersions,
+                    () -> datasetDeaccessionService.deaccessVersions(selectedDeaccessionVersions,
                             deaccessionReason, deaccessionForwardURLFor));
         }
 

@@ -1,8 +1,11 @@
 package edu.harvard.iq.dataverse.annotations;
 
+import edu.harvard.iq.dataverse.annotations.processors.permissions.extractors.DvObjectExtractor;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.extractors.CastingExtractor;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -26,12 +29,19 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  */
+@Repeatable(PermissionNeeded.Container.class)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PermissionNeeded {
     String value() default "";
     String on() default "";
     Permission[] needs() default { };
-    Permission[] needsOnOwner() default { };
+    Class<? extends DvObjectExtractor> extractor() default CastingExtractor.class;
     boolean allRequired() default false;
+
+    @Target({ElementType.PARAMETER})
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Container {
+        PermissionNeeded[] value() default { };
+    }
 }

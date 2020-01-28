@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.annotations.processors;
 
 import edu.harvard.iq.dataverse.annotations.PermissionNeeded;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.PermissionDataProcessor;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.RestrictedObject;
+import edu.harvard.iq.dataverse.annotations.processors.permissions.extractors.DvObjectExtractor;
 import edu.harvard.iq.dataverse.interceptors.Restricted;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -11,9 +14,13 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -31,12 +38,11 @@ class PermissionDataProcessorTest {
 
     private static final Annotated ANNOTATED_CLASS = new Annotated();
 
-    private final PermissionDataProcessor processor = new PermissionDataProcessor();
-
     static {
         FIRST.setId(1L);
         FIRST.setOwner(OWNER);
         SECOND.setId(2L);
+        SECOND.setOwner(OWNER);
         THIRD.setId(3L);
     }
 
@@ -49,7 +55,7 @@ class PermissionDataProcessorTest {
         Object[] parameterValues = new Object[] {FIRST, SECOND};
 
         // when
-        Set<RestrictedObject> result = processor.gatherPermissionRequirements(method, parameterValues);
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
 
         // then
         assertThat("Empty set should be returned for not annotated method",
@@ -63,7 +69,7 @@ class PermissionDataProcessorTest {
         Object[] parameterValues = new Object[] {FIRST, SECOND};
 
         // when
-        Set<RestrictedObject> result = processor.gatherPermissionRequirements(method, parameterValues);
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
 
         // then
         Set<Set<Permission>> setsOfPermissions = result.stream()
@@ -84,32 +90,32 @@ class PermissionDataProcessorTest {
         Object[] parameterValues = new Object[] {FIRST, SECOND};
 
         // when
-        Set<RestrictedObject> result = processor.gatherPermissionRequirements(method, parameterValues);
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
 
         // then
-        Set<RestrictedObject> expected = HashSet.of(
-                RestrictedObject.of("source", FIRST, Collections.singleton(Permission.EditDataset), false),
-                RestrictedObject.of("", SECOND, Collections.singleton(Permission.AddDataset), false))
-                .toJavaSet();
+        Set<RestrictedObject> expected = Stream.of(
+                RestrictedObject.of("source", singleton(FIRST), singleton(Permission.EditDataset), false),
+                RestrictedObject.of("", singleton(SECOND), singleton(Permission.AddDataset), false))
+                .collect(toSet());
 
         assertThat("Result should be equal to expected set",
                 result, equalTo(expected));
     }
 
     @Test
-    void shouldAssignPermissionsToOwnerIfNeeded() {
+    void shouldUseExtractorIfDefined() {
         // given
-        Method method = getMethod("withOwner", ANNOTATED_CLASS);
+        Method method = getMethod("withExtractor", ANNOTATED_CLASS);
         Object[] parameterValues = new Object[] {FIRST};
 
         // when
-        Set<RestrictedObject> result = processor.gatherPermissionRequirements(method, parameterValues);
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
 
         // then
-        Set<RestrictedObject> expected = HashSet.of(
-                RestrictedObject.of("source", FIRST, Collections.singleton(Permission.EditDataset), false),
-                RestrictedObject.of("source_owner", OWNER, Collections.singleton(Permission.AddDataset), false))
-                .toJavaSet();
+        Set<RestrictedObject> expected = Stream.of(
+                RestrictedObject.of("source", singleton(FIRST), singleton(Permission.EditDataset), false),
+                RestrictedObject.of("owner", singleton(OWNER), singleton(Permission.AddDataset), false))
+                .collect(toSet());
 
         assertThat("Result should be equal to expected set",
                 result, equalTo(expected));
@@ -119,18 +125,38 @@ class PermissionDataProcessorTest {
     @Test
     void shouldAssingPermissionsInProperOrder() {
         // given
-        Method method = getMethod("multipleNames", ANNOTATED_CLASS);
+        Method method = getMethod("multipleNamesWithExtractor", ANNOTATED_CLASS);
         Object[] parameterValues = new Object[] {"someString", FIRST, SECOND, THIRD};
 
         // when
-        Set<RestrictedObject> result = processor.gatherPermissionRequirements(method, parameterValues);
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
 
         // then
-        Set<RestrictedObject> expected = HashSet.of(
-                RestrictedObject.of("target", FIRST, Collections.singleton(Permission.EditDataset), false),
-                RestrictedObject.of("aux", SECOND, Collections.singleton(Permission.EditDataset), false),
-                RestrictedObject.of("source", THIRD, Collections.singleton(Permission.EditDataset), false))
-                .toJavaSet();
+        Set<RestrictedObject> expected = Stream.of(
+                RestrictedObject.of("target", singleton(FIRST), singleton(Permission.EditDataset), false),
+                RestrictedObject.of("aux", singleton(SECOND), singleton(Permission.EditDataset), false),
+                RestrictedObject.of("source", singleton(THIRD), singleton(Permission.EditDataset), false),
+                RestrictedObject.of("owner", singleton(OWNER), singleton(Permission.EditDataverse), false))
+                .collect(toSet());
+
+        assertThat("Result should be equal to expected set",
+                result, equalTo(expected));
+    }
+
+    @Test
+    void shouldHandleContainerTypeParameters() {
+        // given
+        Method method = getMethod("collectionAsParameter", ANNOTATED_CLASS);
+        List<DvObject> parameters = Stream.of(FIRST, SECOND, THIRD).collect(toList());
+        Object[] parameterValues = new Object[] {parameters};
+
+        // when
+        Set<RestrictedObject> result = PermissionDataProcessor.gatherPermissionRequirements(method, parameterValues);
+
+        // then
+        Set<RestrictedObject> expected = singleton(
+                RestrictedObject.of("", Stream.of(FIRST, SECOND, THIRD).collect(toSet()), singleton(Permission.EditDataset), false)
+        );
 
         assertThat("Result should be equal to expected set",
                 result, equalTo(expected));
@@ -169,22 +195,41 @@ class PermissionDataProcessorTest {
         }
 
         @Restricted({
-                @PermissionNeeded(on = "source", needs = {Permission.EditDataset}, needsOnOwner = {Permission.AddDataset})
+                @PermissionNeeded(on = "source", needs = {Permission.EditDataset}),
+                @PermissionNeeded(on = "owner", needs = {Permission.AddDataset})
         })
-        public void withOwner(@PermissionNeeded("source") DvObject o1) {
+        public void withExtractor(
+                @PermissionNeeded("source")
+                @PermissionNeeded(value = "owner", extractor = DvObjectOwner.class) DvObject o1
+        ) {
             ;
         }
 
         @Restricted({
                 @PermissionNeeded(on = "source", needs = {Permission.EditDataset}),
                 @PermissionNeeded(on = "target", needs = {Permission.EditDataset}),
-                @PermissionNeeded(on = "aux", needs = {Permission.EditDataset})
+                @PermissionNeeded(on = "aux", needs = {Permission.EditDataset}),
+                @PermissionNeeded(on = "owner", needs = {Permission.EditDataverse})
         })
-        public void multipleNames(String message,
-                                  @PermissionNeeded("target") DvObject o1,
-                                  @PermissionNeeded("aux") DvObject o2,
+        public void multipleNamesWithExtractor(String message,
+                                  @PermissionNeeded("target")
+                                  @PermissionNeeded(value = "owner", extractor = DvObjectOwner.class) DvObject o1,
+                                  @PermissionNeeded("aux")
+                                  @PermissionNeeded(value = "owner", extractor = DvObjectOwner.class) DvObject o2,
                                   @PermissionNeeded("source") DvObject o3) {
             ;
+        }
+
+        @Restricted(@PermissionNeeded(needs = {Permission.EditDataset}))
+        public void collectionAsParameter(@PermissionNeeded List<DvObject> collection) {
+            ;
+        }
+
+        public static class DvObjectOwner implements DvObjectExtractor {
+            @Override
+            public DvObject extract(Object input) {
+                return ((DvObject) input).getOwner();
+            }
         }
     }
 }

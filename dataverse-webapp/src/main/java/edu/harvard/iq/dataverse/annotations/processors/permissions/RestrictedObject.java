@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.annotations.processors;
+package edu.harvard.iq.dataverse.annotations.processors.permissions;
 
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -8,15 +8,15 @@ import java.util.Objects;
 import java.util.Set;
 
 public class RestrictedObject {
-    public final DvObject object;
+    public final Set<DvObject> objects;
     public final String name;
     public final Set<Permission> permissions;
     public final boolean allRequired;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public RestrictedObject(String name, DvObject object, Set<Permission> permissions, boolean allRequired) {
-        this.object = object;
+    public RestrictedObject(String name, Set<DvObject> objects, Set<Permission> permissions, boolean allRequired) {
+        this.objects = objects;
         this.name = name;
         this.permissions = Collections.unmodifiableSet(permissions);
         this.allRequired = allRequired;
@@ -24,8 +24,8 @@ public class RestrictedObject {
 
     // -------------------- LOGIC --------------------
 
-    public static RestrictedObject of(String name, DvObject object, Set<Permission> permissions, boolean allRequired) {
-        return new RestrictedObject(name, object, permissions, allRequired);
+    public static RestrictedObject of(String name, Set<DvObject> objects, Set<Permission> permissions, boolean allRequired) {
+        return new RestrictedObject(name, objects, permissions, allRequired);
     }
 
     // -------------------- HashCode & Equals --------------------
@@ -36,22 +36,23 @@ public class RestrictedObject {
         if (o == null || getClass() != o.getClass()) return false;
         RestrictedObject that = (RestrictedObject) o;
         return allRequired == that.allRequired &&
-                Objects.equals(object, that.object) &&
+                Objects.equals(objects, that.objects) &&
                 name.equals(that.name) &&
-                permissions.equals(that.permissions);
+                Objects.equals(permissions, that.permissions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(object, name, permissions, allRequired);
+        return Objects.hash(objects, name, permissions, allRequired);
     }
+
 
     // -------------------- toString --------------------
 
     @Override
     public String toString() {
         return "RestrictedObject[" +
-                "object=" + object +
+                "objects=" + objects +
                 ", name=" + name +
                 ", permissions=" + permissions +
                 ", allRequired=" + allRequired +

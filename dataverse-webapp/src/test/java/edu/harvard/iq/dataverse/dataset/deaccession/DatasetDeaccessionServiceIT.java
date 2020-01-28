@@ -55,7 +55,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessVersions(dataset, Collections.singletonList(versionToBeDeaccessed), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessVersions(Collections.singletonList(versionToBeDeaccessed), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
@@ -74,7 +74,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessVersions(dataset, dataset.getVersions(), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
@@ -91,7 +91,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         int versionsCount = dataset.getVersions().size();
 
         // when
-        deaccessionService.deaccessReleasedVersions(dataset, dataset.getVersions(), "TestReason", "https://www.google.com/");
+        deaccessionService.deaccessReleasedVersions(dataset.getVersions(), "TestReason", "https://www.google.com/");
 
         // then
         Dataset dbDataset = datasetDao.find(56L);
