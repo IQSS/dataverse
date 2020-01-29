@@ -302,13 +302,6 @@ public class IndexServiceBean {
         return new AsyncResult<>(msg);
 
     }
-    
-    private List<String> getDataverseLinkingPaths(Dataverse linkingDataverse) {
-        List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-        List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
-        return linkingDataversePaths;
-    }
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
