@@ -475,6 +475,7 @@ public class SettingsServiceBean {
          * with the protocol, port number etc.
          */
         SiteUrl,
+        PrivacyPolicy,
 
         /**
          * Dataverse admin can configure application-wide maximum length for embargo.

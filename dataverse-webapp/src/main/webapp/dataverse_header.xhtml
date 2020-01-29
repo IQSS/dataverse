@@ -34,6 +34,18 @@
                                         styleClass="navbar-brand custom-logo"/>
                     </a>
                 </div>
+                <div id="cookie-banner" jsf:rendered="#{empty cookie['ConsentCookie']}">
+                    <h:form>
+                        #{bundle['header.cookie.consent.text']}
+                        <h:outputLink value="/privacy-policy.xhtml">
+                            <h:outputText value="#{bundle['header.cookie.consent.privacy.policy.link']}"/>
+                        </h:outputLink>.
+                        <p:commandButton id="hide-cookie-banner"
+                                         value="#{bundle['header.cookie.consent.button']}"
+                                         action="#{cookieConsent.addCookie()}"
+                                         oncomplete="document.getElementById('cookie-banner').style.display='none'"/>
+                    </h:form>
+                </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
                         <li class="dropdown">

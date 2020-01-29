@@ -210,15 +210,15 @@ public class SystemConfig {
     }
 
     public String getApplicationTermsOfUse() {
-        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse);
-
-        return appTermsOfUse.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle("system.app.terms") : appTermsOfUse;
+        return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.ApplicationTermsOfUse, "system.app.terms");
     }
 
     public String getApiTermsOfUse() {
-        String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse);
+        return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.ApiTermsOfUse, "system.api.terms");
+    }
 
-        return apiTermsOfUse.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle("system.api.terms") : apiTermsOfUse;
+    public String getPrivacyPolicy() {
+        return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.PrivacyPolicy, "system.privacy.policy");
     }
 
     public long getTabularIngestSizeLimit() {
@@ -496,5 +496,9 @@ public class SystemConfig {
         return configuredLocales;
     }
 
+    private String getFromBundleIfEmptyProperty(SettingsServiceBean.Key key, String bundleKey) {
+        String result = settingsService.getValueForKey(key);
 
+        return result.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle(bundleKey) : result;
+    }
 }
