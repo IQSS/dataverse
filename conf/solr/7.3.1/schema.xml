@@ -171,6 +171,12 @@
     <field name="variableName" type="text_en" stored="true" indexed="true" multiValued="true"/>
     <field name="variableLabel" type="text_en" stored="true" indexed="true" multiValued="true"/>
 
+    <field name="literalQuestion" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="interviewInstructions" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="postQuestion" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="variableUniverse" type="text_en" stored="true" indexed="true" multiValued="true"/>
+    <field name="variableNotes" type="text_en" stored="true" indexed="true" multiValued="true"/>
+
     <field name="fileDescription" type="text_en" stored="true" indexed="true" multiValued="false"/>
 
     <field name="fileTypeGroupFacet" type="string" stored="true" indexed="true" multiValued="false"/>
@@ -229,6 +235,12 @@
     <!-- Added for Dataverse 4.0 Beta: make variable names and labels searchable in basic search https://redmine.hmdc.harvard.edu/issues/3945 -->
     <copyField source="variableName" dest="_text_" maxChars="3000"/>
     <copyField source="variableLabel" dest="_text_" maxChars="3000"/>
+    <!-- Added variable level metadata that can be updated from DCT -->
+    <copyField source="literalQuestion" dest="_text_" maxChars="3000"/>
+    <copyField source="interviewInstructions" dest="_text_" maxChars="3000"/>
+    <copyField source="postQuestion" dest="_text_" maxChars="3000"/>
+    <copyField source="variableUniverse" dest="_text_" maxChars="3000"/>
+    <copyField source="variableNotes" dest="_text_" maxChars="3000"/>
     <!-- Make dataverse subject and affiliation searchable from basic search: https://github.com/IQSS/dataverse/issues/1431 -->
     <copyField source="dvSubject" dest="_text_" maxChars="3000"/>
     <copyField source="dvAlias" dest="_text_" maxChars="3000"/>
