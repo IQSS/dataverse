@@ -1117,7 +1117,11 @@ public class SolrSearchResult {
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
 
         if (parentDatasetGlobalId != null) {
-            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            if (isDraftState()) {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId + "&version=DRAFT";
+            } else {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            }
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }
