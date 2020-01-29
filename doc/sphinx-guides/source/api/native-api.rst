@@ -78,9 +78,9 @@ To view a published dataverse:
 .. code-block:: bash
 
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl $SERVER_URL/api/dataverses/$id
+  curl $SERVER_URL/api/dataverses/$ID
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -94,9 +94,9 @@ To view an unpublished dataverse:
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -115,9 +115,9 @@ Deletes the dataverse whose database ID or alias is given:
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$id
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$ID
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -138,9 +138,9 @@ Show Contents of a Dataverse
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export alias=root
+  export ALIAS=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$alias/contents
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/contents
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -157,9 +157,9 @@ Shows the combined size in bytes of all the files uploaded into the dataverse ``
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/storagesize
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/storagesize
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -179,9 +179,9 @@ All the roles defined directly in the dataverse identified by ``id``::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/roles
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/roles
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -198,9 +198,9 @@ List Facets Configured for a Dataverse
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/facets
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/facets
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -217,9 +217,9 @@ Assign search facets for a given dataverse identified by ``id``::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$id/facets --upload-file facets.json
+  curl -H X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/dataverses/$ID/facets --upload-file facets.json
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -238,9 +238,9 @@ Creates a new role under dataverse ``id``. Needs a json file with the role descr
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$id/roles --upload-file roles.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -270,9 +270,9 @@ List all the role assignments at the given dataverse::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/assignments
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/assignments
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -289,10 +289,10 @@ Assign a default role to a user creating a dataset in a dataverse ``id`` where `
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
-  export roleAlias=curator
+  export ID=root
+  export ROLE_ALIAS=curator
 
-  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$id/defaultContributorRole/$roleAlias
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$ID/defaultContributorRole/$ROLE_ALIAS
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -300,7 +300,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X PUT https://demo.dataverse.org/api/dataverses/root/defaultContributorRole/curator
 
-Note: You may use "none" as the ``roleAlias``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
+Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
 
 .. _assign-role-on-a-dataverse-api:
 
@@ -313,9 +313,9 @@ Assigns a new role, based on the POSTed JSON. ::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$id/assignments --upload-file role.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/assignments --upload-file role.json
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -341,10 +341,10 @@ Delete the assignment whose id is ``$id``::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
-  export assignmentId=6
+  export ID=root
+  export ASSIGNMENT_ID=6
 
-  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$id/assignments/$assignmentId
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$ID/assignments/$ASSIGNMENT_ID
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -365,9 +365,9 @@ Please note that an API token is only required if the dataverse has not been pub
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export alias=root
+  export ALIAS=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$alias/metadatablocks
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -409,9 +409,9 @@ Get whether the dataverse is a metadata block root, or does it uses its parent b
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$id/metadatablocks/isRoot
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/metadatablocks/isRoot
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -429,9 +429,9 @@ values are ``true`` and ``false`` (both are valid JSON expressions). ::
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export id=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$id/metadatablocks/isRoot
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT $SERVER_URL/api/dataverses/$ID/metadatablocks/isRoot
 
 The fully expanded example above (without environment variables) looks like this:
 
