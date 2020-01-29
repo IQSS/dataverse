@@ -1333,9 +1333,10 @@ public class IndexServiceBean {
                 // important when creating root dataverse
                 List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
                 for (Dataverse toAdd : linkingDVs) {
-
                     List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+                    //path starts with linking dataverse
                     linkingDataversePathSegmentsAccumulator.add(toAdd.getId().toString());
+                    //then add segments from the target dataverse up to the linked dataverse
                     List<String> linkingdataverseSegments = findPathSegments(dataverse, linkingDataversePathSegmentsAccumulator, prior);
 
                     List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
