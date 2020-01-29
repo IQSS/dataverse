@@ -1669,7 +1669,7 @@ div.filesTable {
 			@include btn-access;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
 
-			&:last-child {
+			&:not([class^="ui-selectonemenu"]):last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
 

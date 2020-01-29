@@ -664,7 +664,7 @@
 
     <p:dialog id="selectFilesForLicenseEdit" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForLicenseEdit" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/>Brak zanaczonych plików</p>
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['noFilesSelected']}</p>
         <div class="button-block">
             <p:commandButton value="#{bundle.close}" onclick="PF('selectFilesForLicenseEdit').hide();"/>
         </div>
