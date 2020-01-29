@@ -138,9 +138,9 @@ Show Contents of a Dataverse
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ALIAS=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/contents
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/contents
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -365,9 +365,9 @@ Please note that an API token is only required if the dataverse has not been pub
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ALIAS=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/metadatablocks
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -390,9 +390,9 @@ The metadata blocks that are available with a default installation of Dataverse 
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ALIAS=root
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -H \"Content-type:application/json\" --upload-file define-metadatablocks.json $SERVER_URL/api/dataverses/$ALIAS/metadatablocks
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/metadatablocks -H \"Content-type:application/json\" --upload-file define-metadatablocks.json
 
 The fully expanded example above (without environment variables) looks like this:
 
