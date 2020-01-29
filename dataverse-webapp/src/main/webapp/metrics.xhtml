@@ -4,7 +4,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+>
 <f:view locale="#{dataverseSession.localeCode}">
 <h:body>
     <f:metadata>
@@ -12,6 +14,7 @@
         <f:viewAction action="#{UsersChart.init}" />
         <f:viewAction action="#{FilesChart.init}" />
         <f:viewAction action="#{FilesStorageChart.init}" />
+        <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(), bundle['metrics.title'])}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
@@ -38,7 +41,8 @@
                              type="bar"
                              model="#{PublishedDatasetsChart.publishedDatasetsModel}"
                              style="height:300px"
-                             responsive="true" />
+                             responsive="true"
+                    />
                 </p:panelGrid>
             </h:form>
 
@@ -110,12 +114,31 @@
                              type="bar"
                              model="#{UsersChart.usersChart}"
                              style="height:300px"
-                             responsive="true" />
+                             responsive="true"
+                    />
                 </p:panelGrid>
             </h:form>
+
+            <!-- Used in ChartCreator class as extender -->
+            <script type="text/javascript">
+                function customizeChart()
+                {
+                    this.cfg.legend = {
+                        show: false
+                    };
+                    this.cfg.highlighter = {
+                        show: true,
+                        tooltipLocation: 'n',
+                        useAxesFormatters: false,
+                        tooltipAxes: 'y'
+                    };
+                    this.cfg.seriesDefaults.rendererOptions = {
+                        barWidth : 30
+                    };
+                }
+            </script>
         </ui:define>
     </ui:composition>
-
 </h:body>
 </f:view>
 </html>

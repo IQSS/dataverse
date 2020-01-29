@@ -22,7 +22,7 @@ public class ChartCreatorTest {
         BarChartModel createdModel = chartCreator.createYearlyChart(chartMetrics, "publishedDatasets");
 
         //then
-        assertEquals(78L, getMaximumYaxisHeight(createdModel));
+        assertEquals(84L, getMaximumYaxisHeight(createdModel));
         assertEquals(7, getYearValueFromModel(createdModel, 2018));
         assertEquals(78, getYearValueFromModel(createdModel, 2019));
         assertEquals(8, getYearValueFromModel(createdModel, 2020));
