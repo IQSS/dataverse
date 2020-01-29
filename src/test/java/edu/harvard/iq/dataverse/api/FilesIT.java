@@ -1333,6 +1333,14 @@ public class FilesIT {
         dvStorageSizeResponse.prettyPrint();
                 
         assertEquals(magicControlString, JsonPath.from(dvStorageSizeResponse.body().asString()).getString("data.message"));
+        
+        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize"), magicSizeNumber);
+        
+        Response datasetStorageSizeResponse = UtilIT.findDatasetStorageSize(datasetId.toString());
+        datasetStorageSizeResponse.prettyPrint();
+                
+        assertEquals(magicControlString, JsonPath.from(datasetStorageSizeResponse.body().asString()).getString("data.message"));
+        
     }
     
     @Test
