@@ -129,3 +129,10 @@ OJS
 The Open Journal Systems (OJS) Dataverse Plugin adds data sharing and preservation to the OJS publication process.
 
 https://github.com/pkp/ojs/tree/ojs-stable-2_4_8/plugins/generic/dataverse
+
+OpenScholar
+~~~~~~~~~~~
+
+The Dataverse module from OpenScholar allows Dataverse widgets to be easily embedded in its web pages:
+
+https://github.com/openscholar/openscholar/tree/SCHOLAR-3.x/openscholar/modules/os_features/os_dataverse

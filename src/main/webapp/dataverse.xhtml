@@ -19,10 +19,10 @@
             </ui:define>
             <ui:define name="body">
                 <f:metadata>
-                    <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-                    <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
+                    <f:viewParam name="id" value="#{DataversePage.id}"/>
+                    <f:viewParam name="alias" value="#{DataversePage.alias}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                    <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <o:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
@@ -263,7 +263,8 @@
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none"
-                                                         update="@all"
+                                                         update="@widgetVar(optionBlock)" 
+                                                         process="@this @widgetVar(optionBlock)"
                                                          action="#{DataversePage.resetToInherit()}">
                                         </p:commandButton>
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
@@ -383,7 +384,7 @@
                         </p:panel>
                         <!-- Save / Cancel Button Panel -->
                         <div class="button-block">
-                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
+                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@form :messagePanel">
                                 <f:ajax onerror="window.scrollTo(0, 0)" />
                             </p:commandButton>
                             <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>

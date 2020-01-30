@@ -41,6 +41,17 @@ As of this writing only OJS 2.x is supported and instructions for getting starte
 
 If you are interested in OJS 3.x supporting deposit from Dataverse, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
 
+Embedding Data on Websites
+--------------------------
+
+OpenScholar
++++++++++++
+
+`OpenScholar <https://theopenscholar.com>`_ is oriented toward hosting websites for academic institutions and offers `Dataverse Widgets <https://help.theopenscholar.com/dataverse>`_ that can be added to web pages. See also:
+
+- :ref:`openscholar-dataverse-level` (dataverse level)
+- :ref:`openscholar-dataset-level` (dataset level)
+
 Analysis and Computation
 ------------------------
 

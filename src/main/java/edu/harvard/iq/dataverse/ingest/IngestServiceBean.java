@@ -364,7 +364,11 @@ public class IngestServiceBean {
 						} else {
 							logger.fine("Failed to extract indexable metadata from file " + fileName);
 						}
-					}
+					} else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
+                        // Make sure no *uningested* tab-delimited files are saved with the type "text/tab-separated-values"!
+                        // "text/tsv" should be used instead: 
+                        dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
+                    }
 				}
 				if (savedSuccess) {
 					// temp dbug line
@@ -465,12 +469,12 @@ public class IngestServiceBean {
 
         List<DataFile> scheduledFiles = new ArrayList<>();
         for (DataFile dataFile : dataFiles) {
+            // refresh the copy of the DataFile:
+            dataFile = fileService.find(dataFile.getId());
+            
             if (dataFile.isIngestScheduled()) {
 
-                // refresh the copy of the DataFile:
-                dataFile = fileService.find(dataFile.getId());
-
-                long ingestSizeLimit = -1;
+                long ingestSizeLimit = 0;
                 try {
                     ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
                 } catch (IOException ioex) {
@@ -772,6 +776,15 @@ public class IngestServiceBean {
         DataFile dataFile = fileService.find(datafile_id);
         boolean ingestSuccessful = false;
         boolean forceTypeCheck = false;
+        
+        // Never attempt to ingest a file that's already ingested!
+        if (dataFile.isTabularData()) {
+            FileUtil.createIngestFailureReport(dataFile, "Repeated ingest attempted on a tabular data file! (status flag was: "+dataFile.getIngestStatus());
+            dataFile.setIngestDone();
+            dataFile = fileService.save(dataFile);
+            logger.warning("Repeated ingest attempted on a tabular data file (datafile id "+datafile_id+"); exiting.");
+            return false;
+        }
         
         IngestRequest ingestRequest = dataFile.getIngestRequest();
         if (ingestRequest != null) {
@@ -1110,7 +1123,7 @@ public class IngestServiceBean {
             ingestPlugin = new RDATAFileReader(new RDATAFileReaderSpi());
         } else if (mimeType.equals(FileUtil.MIME_TYPE_CSV) || mimeType.equals(FileUtil.MIME_TYPE_CSV_ALT)) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), ',');
-        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) || mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)) {
+        } else if (mimeType.equals(FileUtil.MIME_TYPE_TSV) /*|| mimeType.equals(FileUtil.MIME_TYPE_TSV_ALT)*/) {
             ingestPlugin = new CSVFileReader(new CSVFileReaderSpi(), '\t');
         }  else if (mimeType.equals(FileUtil.MIME_TYPE_XLSX)) {
             ingestPlugin = new XLSXFileReader(new XLSXFileReaderSpi());
