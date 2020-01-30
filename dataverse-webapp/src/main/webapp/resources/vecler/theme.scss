@@ -466,6 +466,10 @@ div.edit-compound-field .ui-message, .ui-message-form {
 	margin: 6px 0;
 }
 
+.form-group .ui-message.ui-message-error {
+	margin: 5px 0 0 0;
+}
+
 /* Checkboxes */
 
 @mixin checkbox {
