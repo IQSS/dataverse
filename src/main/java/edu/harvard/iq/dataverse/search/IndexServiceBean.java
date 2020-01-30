@@ -260,7 +260,7 @@ public class IndexServiceBean {
         }
 
         //Get Linking Dataverses to see if I need to reindex my children
-        if (!dvLinkingService.findLinkingDataverses(dataverse.getId()).isEmpty() || hasAnyLinkingDataverses(dataverse)) {
+        if (hasAnyLinkingDataverses(dataverse)) {
             for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
                 //if this dataverse or any of its ancestors is linked and contains datasets then
                 // the datasets must be reindexed to get the new paths added
@@ -1310,6 +1310,7 @@ public class IndexServiceBean {
     private boolean hasAnyLinkingDataverses(Dataverse dataverse) {
         Dataverse rootDataverse = findRootDataverseCached();
         List<Dataverse> ancestorList = dataverse.getOwners();
+        ancestorList.add(dataverse);
         for (Dataverse prior : ancestorList) {
             if (!dataverse.equals(rootDataverse)) {
                 List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
