@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -36,6 +37,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1748,6 +1751,14 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public void requestDirectUploadUrl() {
+        
+    	//Need to assign an identifier at this point if direct upload is used.
+        if ( isEmpty(dataset.getIdentifier()) ) {
+        	CommandContext ctxt = commandEngine.getContext();
+        	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+            dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
+        }
+        
         S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
         if(s3io == null) {
         	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
