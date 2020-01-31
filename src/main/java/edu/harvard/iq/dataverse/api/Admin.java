@@ -1683,7 +1683,7 @@ public class Admin extends AbstractApiBean {
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
     	}
-    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels()) {
+    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
     		if(store.getKey().equals(label)) {
     			dataverse.setStorageDriverId(store.getValue());
     			return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
@@ -1708,7 +1708,7 @@ public class Admin extends AbstractApiBean {
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
     	}
-    	dataverse.setStorageDriverId(null);
+    	dataverse.setStorageDriverId("");
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
     
@@ -1724,7 +1724,7 @@ public class Admin extends AbstractApiBean {
     		return wr.getResponse();
     	}
     	JsonObjectBuilder bld = jsonObjectBuilder();
-    	DataAccess.getStorageDriverLabels().forEach(s -> bld.add(s.getKey(), s.getValue()));
+    	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
 		return ok(bld);
     }
 }
