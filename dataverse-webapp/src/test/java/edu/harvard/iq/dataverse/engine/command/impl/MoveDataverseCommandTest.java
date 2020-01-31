@@ -17,8 +17,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexBatchServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.junit.Before;
 import org.junit.Test;
 

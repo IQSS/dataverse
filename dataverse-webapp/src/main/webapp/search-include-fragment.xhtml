@@ -8,6 +8,8 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
+    <o:importConstants type="edu.harvard.iq.dataverse.search.query.SearchObjectType" var="searchObjectTypeEnum"/>
+    
     <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
 
     <!--@elvariable id="friendlyNames" type="java.util.List<java.lang.String>"-->
@@ -84,19 +86,23 @@
             <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? 'facetSelected': ''}"
+                            disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('dataverses')}"/>
+                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes(searchObjectTypeEnum.DATAVERSES)}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES)}"
+                                disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="dataverses"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -115,19 +121,23 @@
                 </div>
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? 'facetSelected': ''}"
+                            disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('datasets')}"/>
+                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes(searchObjectTypeEnum.DATASETS)}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS)}"
+                                disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="datasets"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -146,19 +156,23 @@
                 </div>
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeChBox facetLink #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? 'facetSelected': ''}"
+                            disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes('files')}"/>
+                        <f:param name="types" value="#{SearchIncludeFragment.getNewSelectedTypes(searchObjectTypeEnum.FILES)}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
                         </c:forEach>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}"/>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.FILES)}"
+                                disabled="#{SearchIncludeFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                            styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <f:param name="types" value="files"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -429,7 +443,7 @@
                          rendered="#{!(empty SearchIncludeFragment.searchResultsList)}">
                 <h:column>
                     <!--DATAVERSE CARDS-->
-                    <div class="dataverseResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type == 'dataverses'}">
+                    <div class="dataverseResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATAVERSES}">
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
@@ -488,7 +502,7 @@
                         </ui:repeat>
                     </div>
                     <!--DATASET CARDS-->
-                    <div class="datasetResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type == 'datasets'}">
+                    <div class="datasetResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATASETS}">
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>                               
@@ -552,7 +566,7 @@
                         </div>
                     </div>
                     <!--FILE CARDS-->
-                    <div class="fileResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type == 'files'}">
+                    <div class="fileResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.FILES}">
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>

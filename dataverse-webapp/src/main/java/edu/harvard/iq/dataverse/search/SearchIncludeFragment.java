@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -15,6 +14,11 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
 import javax.faces.view.ViewScoped;
 
@@ -32,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @ViewScoped
 @Named("SearchIncludeFragment")
@@ -82,7 +87,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String dataversePath = null;
 
     private String selectedTypesString;
-    private List<String> selectedTypesList = new ArrayList<>();
+    private SearchForTypes selectedTypes = SearchForTypes.all();
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
@@ -226,7 +231,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
 
 
-        List<String> filterQueriesWithoutType = new ArrayList<>();
+        List<String> filterQueriesFinal = new ArrayList<>();
 
         if (!dataverse.isRoot()) {
             /**
@@ -234,26 +239,16 @@ public class SearchIncludeFragment implements java.io.Serializable {
              */
             dataversePath = dataverseDao.determineDataversePath(this.dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-            filterQueriesWithoutType.add(filterDownToSubtree);
+            filterQueriesFinal.add(filterDownToSubtree);
         }
 
-        filterQueriesWithoutType.addAll(filterQueries);
+        filterQueriesFinal.addAll(filterQueries);
         
         
-        
-        if (StringUtils.isNotEmpty(selectedTypesString)) {
-            
-            String selectedTypesHumanReadable = StringUtils.join(selectedTypesString.split(":"), " OR ");
-            typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
-        }
-        selectedTypesList = Lists.newArrayList(selectedTypesString.split(":"));
-        
-
-        List<String> filterQueriesFinal = new ArrayList<>(filterQueriesWithoutType);
-        filterQueriesFinal.add(typeFilterQuery);
-        
-        List<String> filterQueriesFinalAllTypes = new ArrayList<>(filterQueriesWithoutType);
-        filterQueriesFinalAllTypes.add(SearchFields.TYPE + ":(dataverses OR datasets OR files)");
+        selectedTypes = SearchForTypes.byTypes(
+                Arrays.stream(selectedTypesString.split(":"))
+                    .map(typeString -> SearchObjectType.fromSolrValue(typeString))
+                    .collect(Collectors.toList()));
 
         int paginationStart = (page - 1) * paginationGuiRows;
 
@@ -268,19 +263,19 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse), 
-                    queryToPassToSolr, filterQueriesFinal, sortField, sortOrder, 
+                    queryToPassToSolr, selectedTypes, filterQueriesFinal, sortField, sortOrder, 
                     paginationStart, false, numRows, false);
             
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
             SolrQueryResponse solrQueryResponseAllTypes = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
-                    queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder, 
+                    queryToPassToSolr, SearchForTypes.all(), filterQueriesFinal, sortField, sortOrder, 
                     paginationStart, false, numRows, false);
             
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put("dataverses", solrQueryResponseAllTypes.getDvObjectCounts().get("dataverses_count"));
-            previewCountbyType.put("datasets", solrQueryResponseAllTypes.getDvObjectCounts().get("datasets_count"));
-            previewCountbyType.put("files", solrQueryResponseAllTypes.getDvObjectCounts().get("files_count"));
+            previewCountbyType.put("dataverses", solrQueryResponseAllTypes.getDvObjectCounts().getDataversesCount());
+            previewCountbyType.put("datasets", solrQueryResponseAllTypes.getDvObjectCounts().getDatasetsCount());
+            previewCountbyType.put("files", solrQueryResponseAllTypes.getDvObjectCounts().getDatafilesCount());
 
         } catch (SearchException ex) {
             String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]";
@@ -320,7 +315,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             solrSearchResult.setIsInTree(true);
             // (we'll review this later!)
 
-            if (solrSearchResult.getType().equals("dataverses")) {
+            if (solrSearchResult.getType() == SearchObjectType.DATAVERSES) {
                 dataverseDao.populateDvSearchCard(solrSearchResult);
                 
                 /*
@@ -329,7 +324,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     solrSearchResult.setHarvested(true);
                 }*/
 
-            } else if (solrSearchResult.getType().equals("datasets")) {
+            } else if (solrSearchResult.getType() == SearchObjectType.DATASETS) {
                 datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
                 // @todo - the 3 lines below, should they be moved inside
@@ -339,7 +334,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                 }
 
-            } else if (solrSearchResult.getType().equals("files")) {
+            } else if (solrSearchResult.getType() == SearchObjectType.FILES) {
                 dataFileService.populateFileSearchCard(solrSearchResult);
 
                 /**
@@ -523,14 +518,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void setSelectedTypesString(String selectedTypesString) {
         this.selectedTypesString = selectedTypesString;
-    }
-
-    public List<String> getSelectedTypesList() {
-        return selectedTypesList;
-    }
-
-    public void setSelectedTypesList(List<String> selectedTypesList) {
-        this.selectedTypesList = selectedTypesList;
     }
 
     public String getSearchFieldType() {
@@ -754,24 +741,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
         friendlyNames.add(localizedFacetName);
         return friendlyNames;
     }
+    
+    public String getNewSelectedTypes(SearchObjectType typeClicked) {
+        SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
+        
+        return newTypesSelected.getTypes().stream()
+                .map(t -> t.getSolrValue())
+                .collect(Collectors.joining(":"));
 
-    public String getNewSelectedTypes(String typeClicked) {
-        List<String> newTypesSelected = new ArrayList<>();
-        for (String selectedType : selectedTypesList) {
-            if (selectedType.equals(typeClicked)) {
+    }
 
-            } else {
-                newTypesSelected.add(selectedType);
-            }
-
-        }
-        if (selectedTypesList.contains(typeClicked)) {
-
-        } else {
-            newTypesSelected.add(typeClicked);
-        }
-        return StringUtils.join(newTypesSelected, ":");
-
+    public SearchForTypes getSelectedTypes() {
+        return selectedTypes;
     }
 
     public String getErrorFromSolr() {
@@ -860,7 +841,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
             //logger.info("checking DisplayImage for the search result " + i++);
-            if (result.getType().equals("dataverses")) {
+            if (result.getType() == SearchObjectType.DATAVERSES) {
                 /**
                  * @todo Someday we should probably revert this setImageUrl to
                  * the original meaning "image_url" to address this issue:
@@ -869,7 +850,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                  * https://github.com/IQSS/dataverse/issues/3616
                  */
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType().equals("datasets")) {
+            } else if (result.getType() == SearchObjectType.DATASETS) {
                 if (result.getEntity() != null) {
                     result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
                 }
@@ -880,7 +861,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                     harvestedDatasetIds.add(result.getEntityId());
                 }
-            } else if (result.getType().equals("files")) {
+            } else if (result.getType() == SearchObjectType.FILES) {
                 result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -902,11 +883,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {
-                        if (result.getType().equals("files")) {
+                        if (result.getType() == SearchObjectType.FILES) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
                             }
-                        } else if (result.getType().equals("datasets")) {
+                        } else if (result.getType() == SearchObjectType.DATASETS) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
                             }

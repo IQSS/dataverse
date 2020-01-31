@@ -12,8 +12,9 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +53,7 @@ public class RoleTagRetriever {
 
     private Map<Long, Long> childToParentIdHash;     // { dvobject id : parent id }
 
-    private Map<Long, String> idToDvObjectType;     // { dvobject id : dvobject type }
+    private Map<Long, SearchObjectType> idToDvObjectType;     // { dvobject id : dvobject type }
 
     private List<Long> datasetIdsNeedingParentIds;
 
@@ -148,8 +150,8 @@ public class RoleTagRetriever {
         }
 
         msgt("show idToDvObjectType");
-        for (Map.Entry<Long, String> entry : idToDvObjectType.entrySet()) {
-            msg("dv id: " + entry.getKey() + " | type: " + entry.getValue());
+        for (Entry<Long, SearchObjectType> entry : idToDvObjectType.entrySet()) {
+            msg("dv id: " + entry.getKey() + " | type: " + entry.getValue().getSolrValue());
         }
 
         for (Map.Entry<Long, List<String>> entry : finalIdToRolesHash.entrySet()) {
@@ -202,7 +204,7 @@ public class RoleTagRetriever {
             // -------------------------------------------------
             finalCardIds.add(doc.getEntityId());
 
-            String dtype = doc.getType();
+            SearchObjectType dtype = doc.getType();
             Long entityId = doc.getEntityId();
 
             if (dtype == null) {
@@ -226,7 +228,7 @@ public class RoleTagRetriever {
             // -------------------------------------------------
             // For datasets and files, check parents
             // -------------------------------------------------
-            if (!(dtype.equals(SearchConstants.SOLR_DATAVERSES))) {
+            if (dtype != SearchObjectType.DATAVERSES) {
 
                 // -------------------------------------------------
                 // (d) Add to the childToParentIdHash  { child id : parent id }
@@ -250,13 +252,13 @@ public class RoleTagRetriever {
                 // (f) Add the parent to the DvObject type lookup { dvObject id : dtype } 
                 //          - similar to (b) above
                 // -------------------------------------------------
-                if (doc.getType().equals(SearchConstants.SOLR_FILES)) {
+                if (doc.getType() == SearchObjectType.FILES) {
                     logger.fine("It's a file");
 
                     // -------------------------------------------------
                     // (f1) This is a file, we know the parent is a Dataset
                     // -------------------------------------------------
-                    this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATASETS);
+                    this.idToDvObjectType.put(parentId, SearchObjectType.DATASETS);
 
                     // -------------------------------------------------
                     // (g) For files, we'll need to get roles from the grandparent--e.g., the dataverse
@@ -264,13 +266,13 @@ public class RoleTagRetriever {
                     this.datasetIdsNeedingParentIds.add(parentId);
 
                 }
-                if (dtype.equals(SearchConstants.SOLR_DATASETS)) {
+                if (dtype == SearchObjectType.DATASETS) {
                     logger.fine("It's a dataset");
 
                     // -------------------------------------------------
                     // (f2) This is a Dataset, we know the parent is a Dataverse
                     // -------------------------------------------------
-                    this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES);
+                    this.idToDvObjectType.put(parentId, SearchObjectType.DATAVERSES);
                 }
             }
 
@@ -348,7 +350,7 @@ public class RoleTagRetriever {
             if (dtype.equals(DvObject.DATASET_DTYPE_STRING)) {
                 this.childToParentIdHash.put(dvId, parentId); // Store the parent child relation
                 this.addIdNeedingRoleRetrieval(parentId); // We need the roles for this dataverse
-                this.idToDvObjectType.put(parentId, SearchConstants.SOLR_DATAVERSES); // store the dv object type
+                this.idToDvObjectType.put(parentId, SearchObjectType.DATAVERSES); // store the dv object type
             }
         }
     }
@@ -529,12 +531,10 @@ public class RoleTagRetriever {
             // -------------------------------------------------
             // (d) get dtype
             // -------------------------------------------------
-            String dtype = this.idToDvObjectType.get(dvIdForCard);
+            SearchObjectType dtype = this.idToDvObjectType.get(dvIdForCard);
 
             switch (dtype) {
-                //case(SearchConstants.SOLR_DATAVERSES  // No indirect assignments                   
-
-                case (SearchConstants.SOLR_DATASETS):
+                case DATASETS:
 
                     // -------------------------------------------------
                     // (d1) May have indirect assignments re: dataverse
@@ -547,7 +547,7 @@ public class RoleTagRetriever {
                         //msg("Roles from dataverse: " + finalRoleNames.toString());
                     }
                     break;
-                case (SearchConstants.SOLR_FILES):
+                case FILES:
                     //msg("(c) FILES");
 
                     // -------------------------------------------------
@@ -571,6 +571,9 @@ public class RoleTagRetriever {
                         }
                     }
 
+                    break;
+                default:
+                    // No indirect assignments for dataverse
                     break;
             } // end switch
             //msg("Roles from dataverse: " + formattedRoleNames.toString());

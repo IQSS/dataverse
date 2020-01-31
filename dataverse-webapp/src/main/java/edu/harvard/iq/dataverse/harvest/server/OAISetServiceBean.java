@@ -2,11 +2,13 @@ package edu.harvard.iq.dataverse.harvest.server;
 
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
+import edu.harvard.iq.dataverse.search.query.SolrQuerySanitizer;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrQuerySanitizer;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -246,7 +248,9 @@ public class OAISetServiceBean implements java.io.Serializable {
         // append the search clauses that limit the search to a) datasets
         // b) published and c) local: 
         // SearchFields.TYPE
-        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchConstants.DATASETS + " AND " + SearchFields.IS_HARVESTED + ":" + false + " AND " + SearchFields.PUBLICATION_STATUS + ":" + IndexServiceBean.PUBLISHED_STRING);
+        query = query.concat(" AND " + SearchFields.TYPE + ":" + SearchObjectType.DATASETS.getSolrValue()
+                + " AND " + SearchFields.IS_HARVESTED + ":" + false 
+                + " AND " + SearchFields.PUBLICATION_STATUS + ":" + SearchPublicationStatus.PUBLISHED.getSolrValue());
 
         return query;
     }

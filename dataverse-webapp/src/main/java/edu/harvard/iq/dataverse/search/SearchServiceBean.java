@@ -17,6 +17,18 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
+import edu.harvard.iq.dataverse.search.query.SolrQuerySanitizer;
+import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.FacetLabel;
+import edu.harvard.iq.dataverse.search.response.Highlight;
+import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
@@ -29,6 +41,7 @@ import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.RangeFacet;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
@@ -133,8 +146,8 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
-        return search(dataverseRequest, dataverses, query, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch, List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart, boolean onlyDatatRelatedToMe, int numResultsPerPage) throws SearchException {
+        return search(dataverseRequest, dataverses, query, typesToSearch, filterQueries, sortField, sortOrder, paginationStart, onlyDatatRelatedToMe, numResultsPerPage, true);
     }
 
     /**
@@ -157,7 +170,7 @@ public class SearchServiceBean {
      * @return
      * @throws SearchException
      */
-    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query,
+    public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch,
                                     List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart,
                                     boolean onlyDatatRelatedToMe, int numResultsPerPage, boolean retrieveEntities)
             throws SearchException {
@@ -282,6 +295,8 @@ public class SearchServiceBean {
             }
         }
 
+        addDvObjectTypeFilterQuery(solrQuery, typesToSearch);
+
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
         /**
          * @todo: hide the extra line this shows in the GUI... at least it's
@@ -374,7 +389,9 @@ public class SearchServiceBean {
         for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            String type = (String) solrDocument.getFieldValue(SearchFields.TYPE);
+            String solrType = (String) solrDocument.getFieldValue(SearchFields.TYPE);
+            SearchObjectType type = SearchObjectType.fromSolrValue(solrType);
+            
             float score = (Float) solrDocument.getFieldValue(SearchFields.RELEVANCE);
             logger.fine("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
@@ -430,7 +447,10 @@ public class SearchServiceBean {
             if (states != null) {
                 // set list of all statuses
                 // this method also sets booleans for individual statuses
-                solrSearchResult.setPublicationStatuses(states);
+                List<SearchPublicationStatus> publicationStates = states.stream()
+                        .map(solrStatus -> SearchPublicationStatus.fromSolrValue(solrStatus))
+                        .collect(Collectors.toList());
+                solrSearchResult.setPublicationStatuses(publicationStates);
             }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
@@ -460,10 +480,7 @@ public class SearchServiceBean {
                 solrSearchResult.setHarvested(true);
             }
 
-            /**
-             * @todo start using SearchConstants class here
-             */
-            if (type.equals("dataverses")) {
+            if (type == SearchObjectType.DATAVERSES) {
                 solrSearchResult.setName(name);
                 solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
                 // Do not set the ImageUrl, let the search include fragment fill in
@@ -476,7 +493,7 @@ public class SearchServiceBean {
                  * dataverses? Michael: url changed.
                  */
 //                solrSearchResult.setApiUrl(baseUrl + "/api/dataverses/" + entityid);
-            } else if (type.equals("datasets")) {
+            } else if (type == SearchObjectType.DATASETS) {
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?globalId=" + identifier);
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
@@ -516,7 +533,7 @@ public class SearchServiceBean {
                 if (authors != null) {
                     solrSearchResult.setDatasetAuthors(authors);
                 }
-            } else if (type.equals("files")) {
+            } else if (type == SearchObjectType.FILES) {
                 String parentGlobalId = null;
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
                 if (parentGlobalIdObject != null) {
@@ -591,7 +608,6 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<>();
-        Option<FacetCategory> typeFacetCategory = Option.none();
         boolean hidePublicationStatusFacet = false;
         boolean draftsAvailable = false;
         boolean unpublishedAvailable = false;
@@ -614,11 +630,11 @@ public class SearchServiceBean {
                     facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
                     facetLabelList.add(facetLabel);
                     if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                        if (facetLabel.getName().equals(IndexServiceBean.getUNPUBLISHED_STRING())) {
+                        if (facetLabel.getName().equals(SearchPublicationStatus.UNPUBLISHED.getSolrValue())) {
                             unpublishedAvailable = true;
-                        } else if (facetLabel.getName().equals(IndexServiceBean.getDRAFT_STRING())) {
+                        } else if (facetLabel.getName().equals(SearchPublicationStatus.DRAFT.getSolrValue())) {
                             draftsAvailable = true;
-                        } else if (facetLabel.getName().equals(IndexServiceBean.getDEACCESSIONED_STRING())) {
+                        } else if (facetLabel.getName().equals(SearchPublicationStatus.DEACCESSIONED.getSolrValue())) {
                             deaccessionedAvailable = true;
                         }
                     }
@@ -689,7 +705,6 @@ public class SearchServiceBean {
             if (!facetLabelList.isEmpty()) {
                 if (facetCategory.getName().equals(SearchFields.TYPE)) {
                     // the "type" facet is special, these are not
-                    typeFacetCategory = Option.of(facetCategory);
                 } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
                     if (unpublishedAvailable || draftsAvailable || deaccessionedAvailable) {
                         hidePublicationStatusFacet = false;
@@ -743,7 +758,6 @@ public class SearchServiceBean {
         solrQueryResponse.setSolrSearchResults(solrSearchResults);
         solrQueryResponse.setSpellingSuggestionsByToken(spellingSuggestionsByToken);
         solrQueryResponse.setFacetCategoryList(facetCategoryList);
-        solrQueryResponse.setTypeFacetCategory(typeFacetCategory.getOrNull());
         solrQueryResponse.setNumResultsFound(queryResponse.getResults().getNumFound());
         solrQueryResponse.setResultsStart(queryResponse.getResults().getStart());
         String[] filterQueriesArray = solrQuery.getFilterQueries();
@@ -757,8 +771,8 @@ public class SearchServiceBean {
             logger.info("solrQuery.getFilterQueries() was null");
         }
 
-        solrQueryResponse.setDvObjectCounts(queryResponse.getFacetField("dvObjectType"));
-        solrQueryResponse.setPublicationStatusCounts(queryResponse.getFacetField("publicationStatus"));
+        solrQueryResponse.setDvObjectCounts(convertFacetToDvObjectCounts(queryResponse.getFacetField(SearchFields.TYPE)));
+        solrQueryResponse.setPublicationStatusCounts(convertFacetToPublicationStatusCounts(queryResponse.getFacetField(SearchFields.PUBLICATION_STATUS)));
 
         return solrQueryResponse;
     }
@@ -958,5 +972,41 @@ public class SearchServiceBean {
      */
     private String toBundleNameFormat(String name) {
         return StringUtils.stripAccents(name.toLowerCase().replace(" ", "_"));
+    }
+    
+    private DvObjectCounts convertFacetToDvObjectCounts(FacetField dvObjectFacetField) {
+        
+        DvObjectCounts dvObjectCounts = DvObjectCounts.emptyDvObjectCounts();
+        if (dvObjectFacetField == null) {
+            return dvObjectCounts;
+        }
+        
+        for (Count count: dvObjectFacetField.getValues()) {
+            SearchObjectType dvType = SearchObjectType.fromSolrValue(count.getName());
+            dvObjectCounts.setCountByObjectType(dvType, count.getCount());
+        }
+        return dvObjectCounts;
+    }
+    
+    private PublicationStatusCounts convertFacetToPublicationStatusCounts(FacetField publicationStatusFacetField) {
+        
+        PublicationStatusCounts publicationStatusCounts = PublicationStatusCounts.emptyPublicationStatusCounts();
+        if (publicationStatusFacetField == null) {
+            return publicationStatusCounts;
+        }
+        
+        for (Count count: publicationStatusFacetField.getValues()) {
+            SearchPublicationStatus status = SearchPublicationStatus.fromSolrValue(count.getName());
+            publicationStatusCounts.setCountByPublicationStatus(status, count.getCount());
+        }
+        return publicationStatusCounts;
+    }
+    
+    private void addDvObjectTypeFilterQuery(SolrQuery query, SearchForTypes typesToSearch) {
+        String filterValue = typesToSearch.getTypes().stream()
+                .map(t -> t.getSolrValue())
+                .collect(Collectors.joining(" OR "));
+
+        query.addFilterQuery(SearchFields.TYPE + ":(" + filterValue + ")");
     }
 }

@@ -180,23 +180,12 @@ public class MyDataFinder {
 
     }
 
-    public List<String> getSolrFilterQueriesForTotalCounts() {
-
-        return this.getSolrFilterQueries(true);
-    }
-
-
-    public List<String> getSolrFilterQueries() {
-
-        return this.getSolrFilterQueries(false);
-    }
-
     /**
      * Get the final queries for the Solr Search object
      *
      * @return
      */
-    private List<String> getSolrFilterQueries(boolean totalCountsOnly) {
+    public List<String> getSolrFilterQueries() {
         if (this.hasError()) {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method on a MyDataFinder object, first check 'hasError()'");
         }
@@ -214,23 +203,9 @@ public class MyDataFinder {
             return null;
         }
         filterQueries.add(dvObjectFQ);
-        // -----------------------------------------------------------------
-        // For total counts, don't filter by publicationStatus or DvObjectType
-        // -----------------------------------------------------------------
-        if (totalCountsOnly == true) {
-            return filterQueries;
-        }
 
         // -----------------------------------------------------------------
-        // (2) FQ by dvObjectType
-        // -----------------------------------------------------------------
-        filterQueries.add(this.filterParams.getSolrFragmentForDvObjectType());
-        //fq=dvObjectType:(dataverses+OR+datasets+OR+files)
-        //fq=(dvObjectType:Dataset)
-        //filterQueries.add("dvObjectType:(dataverses OR datasets OR files)");
-
-        // -----------------------------------------------------------------
-        // (3) FQ by Publication Status
+        // (2) FQ by Publication Status
         // -----------------------------------------------------------------
         filterQueries.add(this.filterParams.getSolrFragmentForPublicationStatus());
         //fq=publicationStatus:"Unpublished"&fq=publicationStatus:"Draft"

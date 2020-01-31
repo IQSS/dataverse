@@ -1,18 +1,7 @@
 package edu.harvard.iq.dataverse.search;
 
 public class SearchConstants {
-
-    // these are the values we index into Solr as "dvtype"
-    public static final String DATAVERSES = "dataverses";
-    public static final String SOLR_DATAVERSES = DATAVERSES;  // transitional, see #2490
-
-    public static final String DATASETS = "datasets";
-    public static final String SOLR_DATASETS = DATASETS;  // transitional, see #2490
-
-    public static final String FILES = "files";
-    public static final String SOLR_FILES = FILES;  // transitional, see #2490
-
-
+    
     // these are the values we want the user to operate on from the Search API
     public static final String DATAVERSE = "dataverse";
     public static final String DATASET = "dataset";

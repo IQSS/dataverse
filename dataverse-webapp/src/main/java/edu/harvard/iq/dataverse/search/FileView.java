@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
+
 import java.util.List;
 
 public class FileView {

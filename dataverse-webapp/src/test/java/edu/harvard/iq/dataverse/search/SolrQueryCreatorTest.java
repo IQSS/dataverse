@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.search;
 
 import com.google.common.collect.Lists;
-import edu.harvard.iq.dataverse.search.dto.CheckboxSearchField;
-import edu.harvard.iq.dataverse.search.dto.NumberSearchField;
-import edu.harvard.iq.dataverse.search.dto.SearchBlock;
-import edu.harvard.iq.dataverse.search.dto.SearchField;
-import edu.harvard.iq.dataverse.search.dto.TextSearchField;
+import edu.harvard.iq.dataverse.search.advanced.CheckboxSearchField;
+import edu.harvard.iq.dataverse.search.advanced.NumberSearchField;
+import edu.harvard.iq.dataverse.search.advanced.SearchBlock;
+import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.SolrQueryCreator;
+import edu.harvard.iq.dataverse.search.advanced.TextSearchField;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 

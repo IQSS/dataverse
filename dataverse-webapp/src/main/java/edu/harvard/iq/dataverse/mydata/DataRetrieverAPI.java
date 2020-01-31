@@ -21,8 +21,11 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
+import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -269,6 +272,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
 
         //msg("search with user: " + searchUser.getIdentifier());
 
+        SearchForTypes typesToSearch = filterParams.getSolrFragmentForDvObjectType();
+        
         List<String> filterQueries = this.myDataFinder.getSolrFilterQueries();
         if (filterQueries == null) {
             logger.fine("No ids found for this search");
@@ -283,6 +288,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     dataverseRequest,
                     null, // subtree, default it to Dataverse for now
                     filterParams.getSearchTerm(),  //"*", //
+                    typesToSearch,
                     filterQueries,//filterQueries,
                     //SearchFields.NAME_SORT, SortBy.ASCENDING,
                     SearchFields.RELEASE_OR_CREATE_DATE, SortOrder.desc,
@@ -361,7 +367,12 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
-        return solrResponse.getDvObjectCountsAsJSON();
+        DvObjectCounts dvObjectCounts = solrResponse.getDvObjectCounts();
+        
+        return Json.createObjectBuilder()
+                .add("dataverses_count", dvObjectCounts.getDataversesCount())
+                .add("datasets_count", dvObjectCounts.getDatasetsCount())
+                .add("files_count", dvObjectCounts.getDatafilesCount());
     }
 
     private JsonObjectBuilder getPublicationStatusCounts(SolrQueryResponse solrResponse) {
@@ -370,7 +381,14 @@ public class DataRetrieverAPI extends AbstractApiBean {
             logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: solrQueryResponse should not be null");
             return null;
         }
-        return solrResponse.getPublicationStatusCountsAsJSON();
+        
+        PublicationStatusCounts statusCounts = solrResponse.getPublicationStatusCounts();
+        return Json.createObjectBuilder()
+                .add("in_review_count", statusCounts.getInReviewCount())
+                .add("unpublished_count", statusCounts.getUnpublishedCount())
+                .add("published_count", statusCounts.getPublishedCount())
+                .add("draft_count", statusCounts.getDraftCount())
+                .add("deaccessioned_count", statusCounts.getDeaccessionedCount());
     }
 
     /**

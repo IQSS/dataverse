@@ -13,8 +13,8 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFeaturedDataverse
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.search.SavedSearchService;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchService;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;

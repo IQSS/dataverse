@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.interceptors.Restricted;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

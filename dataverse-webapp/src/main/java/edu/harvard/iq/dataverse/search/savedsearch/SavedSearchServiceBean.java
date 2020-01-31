@@ -18,9 +18,10 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SortBy;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -211,6 +212,7 @@ public class SavedSearchServiceBean {
                 new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest()),
                 dataverses,
                 savedSearch.getQuery(),
+                SearchForTypes.all(),
                 savedSearch.getFilterQueriesAsStrings(),
                 sortBy.getField(),
                 sortBy.getOrder(),

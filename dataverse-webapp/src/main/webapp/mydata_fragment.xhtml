@@ -7,6 +7,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
+    <o:importConstants type="edu.harvard.iq.dataverse.search.query.SearchObjectType" var="searchObjectTypeEnum"/>
     <c:set var="page" value="/dataverseuser.xhtml?selectTab=dataRelatedToMe"/>
 
     <div class="row">
@@ -59,10 +60,10 @@
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
-                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}"
-                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('dataverses') == null}">
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
-                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('dataverses')}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes(searchObjectTypeEnum.DATAVERSES)}"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
                         <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -72,11 +73,11 @@
                         </c:forEach>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox
-                                value="#{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? true : false}"
-                                disabled="#{MyDataSearchFragment.getNewSelectedTypes('dataverses') == null ? true : false}"/>
+                                value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES)}"
+                                disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
                         <f:param name="types" value="dataverses"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
@@ -91,7 +92,7 @@
                         <i class="icon-dataverse text-icon-inline"></i>
 
                         <h:outputFormat styleClass="facetTypeDataverse"
-                                        value="#{bundle['dataverse.results.types.dataverses']} #{MyDataSearchFragment.selectedTypesList.contains('dataverses') ? '&#40;{0}&#41;': ''}">
+                                        value="#{bundle['dataverse.results.types.dataverses']} #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? '&#40;{0}&#41;': ''}">
                             <f:param value="#{MyDataSearchFragment.facetCountDataverses != null ? MyDataSearchFragment.facetCountDataverses : 0}"/>
                         </h:outputFormat>
                     </h:outputLink>
@@ -99,10 +100,10 @@
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
-                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}"
-                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('datasets') == null}">
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
-                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('datasets')}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes(searchObjectTypeEnum.DATASETS)}"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
                         <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -112,11 +113,11 @@
                         </c:forEach>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox
-                                value="#{MyDataSearchFragment.selectedTypesList.contains('datasets') ? true : false}"
-                                disabled="#{MyDataSearchFragment.getNewSelectedTypes('datasets') == null ? true : false}"/>
+                                value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS)}"
+                                disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
                         <f:param name="types" value="datasets"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
@@ -131,7 +132,7 @@
                         <i class="icon-dataset text-icon-inline"></i>
 
                         <h:outputFormat styleClass="facetTypeDataset"
-                                        value="#{bundle['dataverse.results.types.datasets']} #{MyDataSearchFragment.selectedTypesList.contains('datasets') ? '&#40;{0}&#41;': ''}">
+                                        value="#{bundle['dataverse.results.types.datasets']} #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? '&#40;{0}&#41;': ''}">
                             <f:param value="#{MyDataSearchFragment.facetCountDatasets != null ? MyDataSearchFragment.facetCountDatasets : 0}"/>
                         </h:outputFormat>
                     </h:outputLink>
@@ -139,10 +140,10 @@
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
-                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}"
-                                  disabled="#{MyDataSearchFragment.getNewSelectedTypes('files') == null}">
+                                  styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? 'facetSelected': ''}"
+                                  disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
-                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes('files')}"/>
+                        <f:param name="types" value="#{MyDataSearchFragment.getNewSelectedTypes(searchObjectTypeEnum.FILES)}"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
                         <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -151,11 +152,11 @@
                             <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
                         </c:forEach>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{MyDataSearchFragment.selectedTypesList.contains('files') ? true : false}"
-                                                 disabled="#{MyDataSearchFragment.getNewSelectedTypes('files') == null ? true : false}"/>
+                        <p:selectBooleanCheckbox value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES)}"
+                                                 disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypesList.contains('files') ? 'facetSelected': ''}">
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? 'facetSelected': ''}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
                         <f:param name="types" value="files"/>
                         <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
@@ -170,7 +171,7 @@
                         <i class="icon-file text-icon-inline"></i>
 
                         <h:outputFormat styleClass="facetTypeFile"
-                                        value="#{bundle['dataverse.results.types.files']} #{MyDataSearchFragment.selectedTypesList.contains('files') ? '&#40;{0}&#41;': ''}">
+                                        value="#{bundle['dataverse.results.types.files']} #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? '&#40;{0}&#41;': ''}">
                             <f:param value="#{MyDataSearchFragment.facetCountFiles != null ? MyDataSearchFragment.facetCountFiles : 0}"/>
                         </h:outputFormat>
                     </h:outputLink>
@@ -370,7 +371,7 @@
                         <h:outputText value="score: #{result.score}" rendered="#{MyDataSearchFragment.mode == MyDataSearchFragment.searchModeString}"/>
                     </ui:fragment>
                     <!--DATAVERSE CARDS-->
-                    <div class="dataverseResult clearfix" jsf:rendered="#{result.type == 'dataverses'}">
+                    <div class="dataverseResult clearfix" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATAVERSES}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
@@ -432,7 +433,7 @@
                         </ui:repeat>
                     </div>
                     <!--DATASET CARDS-->
-                    <div class="datasetResult clearfix" jsf:rendered="#{result.type == 'datasets'}">
+                    <div class="datasetResult clearfix" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATASETS}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
@@ -499,7 +500,7 @@
                         </div>
                     </div>
                     <!--FILE CARDS-->
-                    <div class="fileResult clearfix" jsf:rendered="#{result.type == 'files'}">
+                    <div class="fileResult clearfix" jsf:rendered="#{result.type eq searchObjectTypeEnum.FILES}">
                         <div class="card-title-icon-block">
                             <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!MyDataSearchFragment.rootDv and !result.isInTree}"/>
                             <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>

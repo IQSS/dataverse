@@ -10,6 +10,13 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.FacetLabel;
+import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.jboss.arquillian.junit.Arquillian;
@@ -26,9 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -72,16 +77,15 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__with_query() throws SearchException {
         // given
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
-        List<String> filters = Lists.newArrayList("dvObjectType:(dataverses OR datasets OR files)");
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "title:only", filters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "title:only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_66_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "only", filters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_66_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "dateOfDeposit:2019", filters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "dateOfDeposit:2019", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_66_draft", "dataset_52_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "doi:FK2/MLXK1N", filters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "doi:FK2/MLXK1N", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_52_draft");
         
     }
@@ -91,21 +95,18 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         // given
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
         List<String> filters1 = Lists.newArrayList(
-                "publicationStatus: Published",
-                "dvObjectType:(dataverses OR datasets OR files)");
+                "publicationStatus: Published");
         List<String> filters2 = Lists.newArrayList(
-                "authorName_ss: Some author name",
-                "dvObjectType:(dataverses OR datasets OR files)");
+                "authorName_ss: Some author name");
         List<String> filters3 = Lists.newArrayList(
-                "fileTypeGroupFacet: ZIP",
-                "dvObjectType:(dataverses OR datasets OR files)");
+                "fileTypeGroupFacet: ZIP");
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters1, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters1, "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_57", "dataset_56", "dataverse_19");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters2, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters2, "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_66_draft", "dataset_52_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters3, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters3, "dateSort", SortOrder.desc, 0, true, 20, false),
                 "datafile_55_draft", "datafile_53_draft");
     }
     
@@ -113,16 +114,16 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__with_dv_object_filter() throws SearchException {
         // given
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
-        List<String> dataverseOnlyFilters = Collections.singletonList("dvObjectType:(dataverses)");
-        List<String> filesOnlyFilters = Collections.singletonList("dvObjectType:(files)");
-        List<String> datasetsAndFilesFilters = Collections.singletonList("dvObjectType:(datasets OR files)");
+        SearchForTypes dataverseOnlyFilters = SearchForTypes.byTypes(SearchObjectType.DATAVERSES);
+        SearchForTypes filesOnlyFilters = SearchForTypes.byTypes(SearchObjectType.FILES);
+        SearchForTypes datasetsAndFilesFilters = SearchForTypes.byTypes(SearchObjectType.DATASETS, SearchObjectType.FILES);
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", dataverseOnlyFilters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", dataverseOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataverse_51", "dataverse_19", "dataverse_67");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filesOnlyFilters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filesOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "datafile_55_draft", "datafile_53_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", datasetsAndFilesFilters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", datasetsAndFilesFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_57", "dataset_56_draft", "dataset_56",
                 "dataset_66_draft", "datafile_55_draft",
                 "datafile_53_draft", "dataset_52_draft");
@@ -132,18 +133,17 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__with_sorting() throws SearchException {
         // given
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
-        List<String> filters = Collections.singletonList("dvObjectType:(dataverses OR datasets OR files)");
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
                 "dataset_57", "dataset_56_draft", "dataset_56", "dataset_66_draft",
                 "datafile_55_draft", "datafile_53_draft", // both have the same create date
                 "dataset_52_draft", "dataverse_51", "dataverse_19", "dataverse_67");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "dateSort", SortOrder.asc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.asc, 0, true, 20, false),
                 "dataverse_67", "dataverse_19", "dataverse_51", "dataset_52_draft",
                 "datafile_55_draft", "datafile_53_draft", // both have the same create date
                 "dataset_66_draft", "dataset_56_draft", "dataset_56", "dataset_57");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "nameSort", SortOrder.asc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "nameSort", SortOrder.asc, 0, true, 20, false),
                 "dataset_66_draft", "dataset_52_draft", "dataverse_19",
                 "datafile_55_draft", "datafile_53_draft", "dataverse_51", "dataverse_67",
                 "dataset_56_draft", "dataset_56", "dataset_57");  // don't have any name (no title)
@@ -153,14 +153,13 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__with_paging() throws SearchException {
         // given
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
-        List<String> filters = Collections.singletonList("dvObjectType:(dataverses OR datasets OR files)");
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "dateSort", SortOrder.desc, 0, true, 3, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 3, false),
                 "dataset_57", "dataset_56_draft", "dataset_56");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "dateSort", SortOrder.desc, 2, true, 1, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 2, true, 1, false),
                 "dataset_56");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filters, "dateSort", SortOrder.desc, 7, true, 100, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 7, true, 100, false),
                 "dataverse_51", "dataverse_19", "dataverse_67");
     }
     
@@ -168,7 +167,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__by_guest_user() throws SearchException {
         // when
         SolrQueryResponse searchResponse = searchService.search(guestDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
-                "*", Lists.newArrayList("dvObjectType:(dataverses OR datasets OR files)"), "dateSort", SortOrder.desc, 0, true, 20);
+                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
         
         // then
         assertSearchResultIds(searchResponse, "dataset_57", "dataset_56", "dataverse_19");
@@ -179,7 +178,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         
         // when
         SolrQueryResponse searchResponse = searchService.search(adminDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
-                "*", Lists.newArrayList("dvObjectType:(dataverses OR datasets OR files)"), "dateSort", SortOrder.desc, 0, true, 20);
+                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
         
         // then
         assertSearchResultIds(searchResponse, "dataset_57", "dataset_56_draft", "dataset_56", "dataset_66_draft",
@@ -190,15 +189,8 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         
         assertThat(searchResponse.getSpellingSuggestionsByToken(), aMapWithSize(0));
 
-        assertThat(searchResponse.getDvObjectCounts().keySet(), containsInAnyOrder("dataverses_count", "datasets_count", "files_count"));
-        assertEquals(Long.valueOf(3), searchResponse.getDvObjectCounts().get("dataverses_count"));
-        assertEquals(Long.valueOf(5), searchResponse.getDvObjectCounts().get("datasets_count"));
-        assertEquals(Long.valueOf(2), searchResponse.getDvObjectCounts().get("files_count"));
-        
-        assertThat(searchResponse.getPublicationStatusCounts().keySet(), containsInAnyOrder("unpublished_count", "draft_count", "published_count"));
-        assertEquals(Long.valueOf(6), searchResponse.getPublicationStatusCounts().get("unpublished_count"));
-        assertEquals(Long.valueOf(5), searchResponse.getPublicationStatusCounts().get("draft_count"));
-        assertEquals(Long.valueOf(3), searchResponse.getPublicationStatusCounts().get("published_count"));
+        assertEquals(new DvObjectCounts(3, 5, 2), searchResponse.getDvObjectCounts());
+        assertEquals(new PublicationStatusCounts(0, 6, 3, 5, 0), searchResponse.getPublicationStatusCounts());
         
         
         assertThat(searchResponse.getDatasetfieldFriendlyNamesBySolrField(), aMapWithSize(0));
@@ -207,12 +199,6 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         assertThat(searchResponse.getFilterQueriesActual(),
                 containsInAnyOrder("dvObjectType:(dataverses OR datasets OR files)"));
         
-        
-        FacetCategory typeFacet = searchResponse.getTypeFacetCategory();
-        
-        assertContainsFacetCount(typeFacet, "dataverses", 3);
-        assertContainsFacetCount(typeFacet, "datasets", 5);
-        assertContainsFacetCount(typeFacet, "files", 2);
         
         List<FacetCategory> facets = searchResponse.getFacetCategoryList();
         assertThat(facets.stream().map(f -> f.getName()).collect(Collectors.toList()),
@@ -254,6 +240,29 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         FacetCategory fileTypeGroupFacet = extractFacetWithName(facets, "fileTypeGroupFacet");
         assertContainsFacetCount(fileTypeGroupFacet, "ZIP", 2);
         
+    }
+    
+    @Test
+    public void search__no_results() throws SearchException {
+        
+        // when
+        SolrQueryResponse searchResponse = searchService.search(adminDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
+                "willDefenitelyNotExists", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
+        
+        // then
+        assertThat(searchResponse.getSolrSearchResults(), is(empty()));
+        
+        assertEquals(Long.valueOf(0), searchResponse.getNumResultsFound());
+        assertEquals(Long.valueOf(0), searchResponse.getResultsStart());
+        
+        assertEquals(DvObjectCounts.emptyDvObjectCounts(), searchResponse.getDvObjectCounts());
+        assertEquals(PublicationStatusCounts.emptyPublicationStatusCounts(), searchResponse.getPublicationStatusCounts());
+        
+        assertThat(searchResponse.getSpellingSuggestionsByToken(), aMapWithSize(0));
+        assertThat(searchResponse.getDatasetfieldFriendlyNamesBySolrField(), aMapWithSize(0));
+        assertThat(searchResponse.getStaticSolrFieldFriendlyNamesBySolrField(), aMapWithSize(0));
+        
+        assertThat(searchResponse.getFacetCategoryList(), is(empty()));
     }
     
     // -------------------- PRIVATE --------------------

@@ -10,9 +10,12 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
@@ -37,11 +40,11 @@ public class MyDataFilterParams {
     public static final List<String> defaultDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING);
     public static final List<String> allDvObjectTypes = Arrays.asList(DvObject.DATAVERSE_DTYPE_STRING, DvObject.DATASET_DTYPE_STRING, DvObject.DATAFILE_DTYPE_STRING);
 
-    public static final List<String> defaultPublishedStates = Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
-                                                                            IndexServiceBean.getUNPUBLISHED_STRING(),
-                                                                            IndexServiceBean.getDRAFT_STRING(),
-                                                                            IndexServiceBean.getIN_REVIEW_STRING(),
-                                                                            IndexServiceBean.getDEACCESSIONED_STRING());
+    public static final List<String> defaultPublishedStates = Arrays.asList(SearchPublicationStatus.PUBLISHED.getSolrValue(),
+                                                                            SearchPublicationStatus.UNPUBLISHED.getSolrValue(),
+                                                                            SearchPublicationStatus.DRAFT.getSolrValue(),
+                                                                            SearchPublicationStatus.IN_REVIEW.getSolrValue(),
+                                                                            SearchPublicationStatus.DEACCESSIONED.getSolrValue());
     public static final List<String> allPublishedStates = defaultPublishedStates;
             /*Arrays.asList(IndexServiceBean.getPUBLISHED_STRING(),
                                                     IndexServiceBean.getUNPUBLISHED_STRING(),
@@ -49,13 +52,13 @@ public class MyDataFilterParams {
                                                     IndexServiceBean.getIN_REVIEW_STRING(),
                                                     IndexServiceBean.getDEACCESSIONED_STRING());*/
 
-    public static final HashMap<String, String> sqlToSolrSearchMap;
+    public static final HashMap<String, SearchObjectType> sqlToSolrSearchMap;
 
     static {
         sqlToSolrSearchMap = new HashMap<>();
-        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchConstants.DATAVERSES);
-        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchConstants.DATASETS);
-        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchConstants.FILES);
+        sqlToSolrSearchMap.put(DvObject.DATAVERSE_DTYPE_STRING, SearchObjectType.DATAVERSES);
+        sqlToSolrSearchMap.put(DvObject.DATASET_DTYPE_STRING, SearchObjectType.DATASETS);
+        sqlToSolrSearchMap.put(DvObject.DATAFILE_DTYPE_STRING, SearchObjectType.FILES);
     }
 
     public static final HashMap<String, String> userInterfaceToSqlSearchMap;
@@ -247,22 +250,17 @@ public class MyDataFilterParams {
         return this.dvObjectTypes.contains(DvObject.DATAFILE_DTYPE_STRING);
     }
 
-    public String getSolrFragmentForDvObjectType() {
+    public SearchForTypes getSolrFragmentForDvObjectType() {
         if ((this.dvObjectTypes == null) || (this.dvObjectTypes.isEmpty())) {
             throw new IllegalStateException("Error encountered earlier.  Before calling this method, first check 'hasError()'");
         }
 
-        List<String> solrTypes = new ArrayList<>();
+        List<SearchObjectType> solrTypes = new ArrayList<>();
         for (String dtype : this.dvObjectTypes) {
             solrTypes.add(MyDataFilterParams.sqlToSolrSearchMap.get(dtype));
         }
 
-        String valStr = StringUtils.join(solrTypes, " OR ");
-        if (this.dvObjectTypes.size() > 1) {
-            valStr = "(" + valStr + ")";
-        }
-
-        return SearchFields.TYPE + ":" + valStr;// + ")";
+        return SearchForTypes.byTypes(solrTypes.toArray(new SearchObjectType[0]));
     }
 
     public String getSolrFragmentForPublicationStatus() {

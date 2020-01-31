@@ -22,17 +22,16 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
-import edu.harvard.iq.dataverse.search.FacetCategory;
-import edu.harvard.iq.dataverse.search.FacetLabel;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.StringUtils;
 import javax.faces.view.ViewScoped;
@@ -121,9 +120,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private Dataverse dataverse;
     private String dataversePath = null;
     private String selectedTypesString;
-    private List<String> selectedTypesList = new ArrayList<>();
+    private SearchForTypes selectedTypes = SearchForTypes.all();
 
-    private String typeFilterQuery;
     private Map<String, Long> previewCountbyType = new HashMap<>();
     private int page = 1;
     private int paginationGuiStart = 1;
@@ -261,8 +259,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return selectedTypesString;
     }
 
-    public List<String> getSelectedTypesList() {
-        return selectedTypesList;
+    public SearchForTypes getSelectedTypes() {
+        return selectedTypes;
     }
 
     public Long getFacetCountDatasets() {
@@ -302,26 +300,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return filterQueriesDebug;
     }
 
-    public String getPUBLISHED() {
-        return IndexServiceBean.getPUBLISHED_STRING();
-    }
-
-    public String getUNPUBLISHED() {
-        return IndexServiceBean.getUNPUBLISHED_STRING();
-    }
-
-    public String getDRAFT() {
-        return IndexServiceBean.getDRAFT_STRING();
-    }
-
-    public String getIN_REVIEW() {
-        return IndexServiceBean.getIN_REVIEW_STRING();
-    }
-
-    public String getDEACCESSIONED() {
-        return IndexServiceBean.getDEACCESSIONED_STRING();
-    }
-
     public String getErrorFromSolr() {
         return errorFromSolr;
     }
@@ -352,19 +330,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
             return true;
         }
         return solrErrorEncountered;
-    }
-
-    String combine(String[] s, String glue) {
-        int k = s.length;
-        if (k == 0) {
-            return null;
-        }
-        StringBuilder out = new StringBuilder();
-        out.append(s[0]);
-        for (int x = 1; x < k; ++x) {
-            out.append(glue).append(s[x]);
-        }
-        return out.toString();
     }
 
     private Long findFacetCountByType(String type) {
@@ -459,26 +424,13 @@ public class MyDataSearchFragment implements java.io.Serializable {
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
     }
-
-    public String getNewSelectedTypes(String typeClicked) {
-        List<String> newTypesSelected = new ArrayList<>();
-        for (String selectedType : selectedTypesList) {
-            if (selectedType.equals(typeClicked)) {
-
-            } else {
-                newTypesSelected.add(selectedType);
-            }
-
-        }
-        if (selectedTypesList.contains(typeClicked)) {
-
-        } else {
-            newTypesSelected.add(typeClicked);
-        }
-
-        String[] arr = newTypesSelected.toArray(new String[newTypesSelected.size()]);
-        return combine(arr, ":");
-
+    
+    public String getNewSelectedTypes(SearchObjectType typeClicked) {
+        SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
+        
+        return newTypesSelected.getTypes().stream()
+                .map(t -> t.getSolrValue())
+                .collect(Collectors.joining(":"));
     }
 
     public boolean isTabular(DataFile datafile) {
@@ -544,9 +496,9 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {
-            if (result.getType().equals("dataverses")) {
+            if (result.getType() == SearchObjectType.DATAVERSES) {
                 result.setImageUrl(thumbnailServiceWrapper.getDataverseCardImageAsBase64Url(result));
-            } else if (result.getType().equals("datasets")) {
+            } else if (result.getType() == SearchObjectType.DATASETS) {
                 if (result.getEntity() != null) {
                     result.setImageUrl(thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(result));
                 }
@@ -557,7 +509,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     }
                     harvestedDatasetIds.add(result.getEntityId());
                 }
-            } else if (result.getType().equals("files")) {
+            } else if (result.getType() == SearchObjectType.FILES) {
                 result.setImageUrl(thumbnailServiceWrapper.getFileCardImageAsBase64Url(result));
                 if (result.isHarvested()) {
                     if (harvestedDatasetIds == null) {
@@ -579,11 +531,11 @@ public class MyDataSearchFragment implements java.io.Serializable {
             if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
                 for (SolrSearchResult result : searchResultsList) {
                     if (result.isHarvested()) {
-                        if (result.getType().equals("files")) {
+                        if (result.getType() == SearchObjectType.FILES) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
                             }
-                        } else if (result.getType().equals("datasets")) {
+                        } else if (result.getType() == SearchObjectType.DATASETS) {
                             if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
                                 result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
                             }
@@ -736,21 +688,14 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // (1) Initialize filterParams and check for Errors
         // ---------------------------------
         DataverseRequest dataverseRequest = dataverseRequestService.getDataverseRequest();
-
-        List<String> filterQueriesFinal = new ArrayList<>();
-        List<String> filterQueriesWithAllRoles = new ArrayList<>();
-        selectedTypesList = new ArrayList<>();
-        String[] parts = selectedTypesString.split(":");
-        selectedTypesList.addAll(Arrays.asList(parts));
-
-        String[] arr = selectedTypesList.toArray(new String[selectedTypesList.size()]);
-        String selectedTypesHumanReadable = combine(arr, " OR ");
-        if (!selectedTypesHumanReadable.isEmpty()) {
-            typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
-        }
+        
+        selectedTypes = SearchForTypes.byTypes(
+                Arrays.stream(selectedTypesString.split(":"))
+                    .map(typeString -> SearchObjectType.fromSolrValue(typeString))
+                    .collect(Collectors.toList()));
 
         List<Long> roleIdsForFilters = roleFilters.isEmpty() ? rolePermissionHelper.getRoleIdList() : rolePermissionHelper.findRolesIdsByNames(roleFilters);
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, toMyDataFinderFormat(selectedTypesList),
+        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, toMyDataFinderFormat(selectedTypes),
                 pub_states, roleIdsForFilters, searchTerm);
         if (filterParams.hasError()) {
             return filterParams.getErrorMessage() + filterParams.getErrorMessage();
@@ -779,10 +724,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
             }
         }
 
-        filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinal.add(typeFilterQuery);
-//        filterQueriesWithAllRoles
-
 
         // ---------------------------------
         // (3) Make Solr Query
@@ -795,7 +736,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     dataverseRequest,
                     null,
                     searchTerm,
-                    filterQueriesFinal,
+                    selectedTypes,
+                    filterQueries,
                     SearchFields.RELEASE_OR_CREATE_DATE,
                     SortOrder.desc,
                     paginationStart,
@@ -824,7 +766,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         dataverseRequest,
                         null,
                         searchTerm,
-                        filterQueriesFinal,
+                        selectedTypes,
+                        filterQueries,
                         SearchFields.RELEASE_OR_CREATE_DATE,
                         SortOrder.desc,
                         0,
@@ -860,14 +803,9 @@ public class MyDataSearchFragment implements java.io.Serializable {
             List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
 
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put("dataverses", 0L);
-            previewCountbyType.put("datasets", 0L);
-            previewCountbyType.put("files", 0L);
-            if (solrQueryResponse != null) {
-                for (FacetLabel facetLabel : solrQueryResponse.getTypeFacetCategory().getFacetLabel()) {
-                    previewCountbyType.put(facetLabel.getName(), facetLabel.getCount());
-                }
-            }
+            previewCountbyType.put("dataverses", solrQueryResponse.getDvObjectCounts().getDataversesCount());
+            previewCountbyType.put("datasets", solrQueryResponse.getDvObjectCounts().getDatasetsCount());
+            previewCountbyType.put("files", solrQueryResponse.getDvObjectCounts().getDatafilesCount());
 
             /**
              * @todo consider creating Java objects called DatasetCard,
@@ -892,10 +830,10 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 solrSearchResult.setIsInTree(true);
                 // (we'll review this later!)
 
-                if (solrSearchResult.getType().equals("dataverses")) {
+                if (solrSearchResult.getType() == SearchObjectType.DATAVERSES) {
                     dataverseDao.populateDvSearchCard(solrSearchResult);
 
-                } else if (solrSearchResult.getType().equals("datasets")) {
+                } else if (solrSearchResult.getType() == SearchObjectType.DATASETS) {
                     //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
                     datasetVersionService.populateDatasetSearchCard(solrSearchResult);
 
@@ -904,7 +842,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
                     }
 
-                } else if (solrSearchResult.getType().equals("files")) {
+                } else if (solrSearchResult.getType() == SearchObjectType.FILES) {
                     dataFileService.populateFileSearchCard(solrSearchResult);
 
                     /**
@@ -926,28 +864,17 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE ---------------------
-    private List<Long> getEntitiesIdsNotFilteredByRoles(List<String> roleFilters, RoleTagRetriever roleTagRetriever) {
-        List<Long> entitiesFilteredByRole = new ArrayList<>();
-        for(Long entityId : roleTagRetriever.getFinalIdToRolesHash().keySet()) {
-            if(roleTagRetriever.getFinalIdToRolesHash().get(entityId).stream().anyMatch(roleFilters::contains)) {
-                entitiesFilteredByRole.add(entityId);
-            }
-        }
-        return entitiesFilteredByRole;
-    }
 
-    private List<String> toMyDataFinderFormat(List<String> selectedTypesList) {
+    private List<String> toMyDataFinderFormat(SearchForTypes selectedTypes) {
         List<String> myDataFinderTypes = new ArrayList<>();
-        for(String type : selectedTypesList) {
-            if(type.equals("dataverses")) {
-                myDataFinderTypes.add(DvObject.DATAVERSE_DTYPE_STRING);
-            }
-            if(type.equals("datasets")) {
-                myDataFinderTypes.add(DvObject.DATASET_DTYPE_STRING);
-            }
-            if(type.equals("files")) {
-                myDataFinderTypes.add(DvObject.DATAFILE_DTYPE_STRING);
-            }
+        if (selectedTypes.contains(SearchObjectType.DATAVERSES)) {
+            myDataFinderTypes.add(DvObject.DATAVERSE_DTYPE_STRING);
+        }
+        if (selectedTypes.contains(SearchObjectType.DATASETS)) {
+            myDataFinderTypes.add(DvObject.DATASET_DTYPE_STRING);
+        }
+        if (selectedTypes.contains(SearchObjectType.FILES)) {
+            myDataFinderTypes.add(DvObject.DATAFILE_DTYPE_STRING);
         }
         return myDataFinderTypes;
     }
@@ -1060,10 +987,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
     public void setSelectedTypesString(String selectedTypesString) {
         this.selectedTypesString = selectedTypesString;
-    }
-
-    public void setSelectedTypesList(List<String> selectedTypesList) {
-        this.selectedTypesList = selectedTypesList;
     }
 
     public void setPage(int page) {

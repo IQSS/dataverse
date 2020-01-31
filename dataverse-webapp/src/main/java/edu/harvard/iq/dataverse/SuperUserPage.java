@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexBatchServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;

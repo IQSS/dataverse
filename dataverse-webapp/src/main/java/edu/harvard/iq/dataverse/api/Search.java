@@ -6,17 +6,19 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.search.FacetCategory;
-import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.search.query.SearchForTypes;
+import edu.harvard.iq.dataverse.search.query.SearchObjectType;
+import edu.harvard.iq.dataverse.search.query.SortBy;
+import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.FacetLabel;
+import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
+import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
-import edu.harvard.iq.dataverse.search.SolrQueryResponse;
-import edu.harvard.iq.dataverse.search.SolrSearchResult;
-import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.StringUtils;
 
@@ -87,10 +89,11 @@ public class Search extends AbstractApiBean {
             SortBy sortBy;
             int numResultsPerPage;
             List<Dataverse> dataverseSubtrees = new ArrayList<>();
+            SearchForTypes typesToSearch = SearchForTypes.all();
 
             try {
                 if (!types.isEmpty()) {
-                    filterQueries.add(getFilterQueryFromTypes(types));
+                    typesToSearch = getSearchForFromTypes(types);
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
@@ -121,6 +124,7 @@ public class Search extends AbstractApiBean {
                 solrQueryResponse = searchService.search(createDataverseRequest(user),
                                                          dataverseSubtrees,
                                                          query,
+                                                         typesToSearch,
                                                          filterQueries,
                                                          sortBy.getField(),
                                                          sortBy.getOrder(),
@@ -275,25 +279,23 @@ public class Search extends AbstractApiBean {
         }
     }
 
-    private String getFilterQueryFromTypes(List<String> types) throws Exception {
-        String filterQuery = null;
-        List<String> typeRequested = new ArrayList<>();
+    private SearchForTypes getSearchForFromTypes(List<String> types) throws Exception {
+        List<SearchObjectType> typeRequested = new ArrayList<>();
         List<String> validTypes = Arrays.asList(SearchConstants.DATAVERSE, SearchConstants.DATASET, SearchConstants.FILE);
         for (String type : types) {
             if (validTypes.contains(type)) {
                 if (type.equals(SearchConstants.DATAVERSE)) {
-                    typeRequested.add(SearchConstants.DATAVERSES);
+                    typeRequested.add(SearchObjectType.DATAVERSES);
                 } else if (type.equals(SearchConstants.DATASET)) {
-                    typeRequested.add(SearchConstants.DATASETS);
+                    typeRequested.add(SearchObjectType.DATASETS);
                 } else if (type.equals(SearchConstants.FILE)) {
-                    typeRequested.add(SearchConstants.FILES);
+                    typeRequested.add(SearchObjectType.FILES);
                 }
             } else {
                 throw new Exception("Invalid type '" + type + "'. Must be one of " + validTypes);
             }
         }
-        filterQuery = SearchFields.TYPE + ":(" + StringUtils.join(typeRequested, " OR ") + ")";
-        return filterQuery;
+        return SearchForTypes.byTypes(typeRequested.toArray(new SearchObjectType[0]));
     }
 
     //Only called when there is content

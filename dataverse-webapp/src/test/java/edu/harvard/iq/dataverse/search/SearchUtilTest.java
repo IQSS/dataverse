@@ -7,6 +7,9 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
+import edu.harvard.iq.dataverse.search.index.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.query.SortBy;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Test;
 

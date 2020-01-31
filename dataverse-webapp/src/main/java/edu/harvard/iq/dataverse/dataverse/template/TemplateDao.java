@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.dataverse.template;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
