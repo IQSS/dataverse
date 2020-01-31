@@ -26,6 +26,7 @@
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
+                    <f:viewParam name="datasetVersionId" value="#{FilePage.datasetVersionId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
@@ -306,8 +307,14 @@
                                             <div id="metrics-block" jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                                 <div id="metrics-heading">
                                                     #{bundle['metrics.file.title']}
-                                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                            data-original-title="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.file.tip.makedatacount'] : bundle['metrics.file.tip.default']}"></span>
+                                                    <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
+                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                            data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
+                                                        <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
+                                                            data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
+                                                    </ui:fragment>
                                                 </div>
                                                 <div id="metrics-body">
                                                     <!-- Classic downloads -->
@@ -363,81 +370,88 @@
                                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                                 </ui:include>
                             </p:tab>
-
-
-                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)
-                                                            and FilePage.fileMetadata.datasetVersion == FilePage.fileMetadata.datasetVersion.dataset.latestVersion}">
-                                <!-- Add external tools as an inner tab with buttons to full tool-->
+                            <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
+                                   rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.fileMetadata.datasetVersion.isPublished()}">
+                                <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div>
-                                        <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
-                                            <button type="button" id="selectTool" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool" >
-
-                                                    <li>
-                                                        <h:commandLink  action="#{FilePage.setSelectedTool(tool)}"  >
-                                                            <h:outputText  value="#{tool.displayName}" />
-                                                        </h:commandLink>
-                                                    </li>
-
-                                                </ui:repeat>
-                                            </ul>
-                                        </div>
-                                        <!-- END: Preview Button Group -->
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                        <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
+                                                <li>
+                                                    <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
+                                                        <h:outputText value="#{tool.displayName}"/>
+                                                    </h:commandLink>
+                                                </li>
+                                            </ui:repeat>
+                                        </ul>
                                     </div>
-                                <div>
-                                    <ui:fragment rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}" id="previewPresentation">
-                                        <ui:fragment rendered="#{!FilePage.selectedTool.worldMapTool}">
-                                        <h:commandButton rendered="#{!downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}" 
+                                    <!-- END: Preview Button Group -->
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                        <!-- Modular/Configured Explore Tool -->
+                                        <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
                                                          type="submit"
-                                                         styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                                         styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                                         action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool )}">
-                                        </h:commandButton>
-                                        <p:commandButton rendered="#{downloadPopupRequired}" value="#{bundle['file.previewTab.tool.open']} #{FilePage.selectedTool.displayName}"
+                                                         action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{FilePage.selectedTool.displayName}"/>
+                                            </h:outputFormat>
+                                        </h:commandLink>
+                                        <p:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
+                                                         styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          type="submit"
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                        </p:commandButton>
-                                        </ui:fragment>
-                                        
-                                        <!--WorldMap Explore-->
-                                        <ui:fragment rendered="#{FilePage.selectedTool.worldMapTool}">
-
-                                            <h:commandLink rendered="#{!downloadPopupRequired}" 
-                                                           styleClass="btn btn-default btn-xs #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                           disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-
-                                                           action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" >
-                  #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
-                                            </h:commandLink>
-                                            <p:commandButton rendered="#{downloadPopupRequired}"
-                                                             styleClass="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                             disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                                                             process="@this"
-                                                             action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap' )}"
-                                                             update="@widgetVar(downloadPopup)"
-                                                             oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                   #{bundle['file.previewTab.tool.open']} #{bundle['file.mapData.worldMap']}
-                                            </p:commandButton>
-                                        </ui:fragment>
-
-                                        <iframe role="presentation" title="External File Preview Tool" height="500" width="100%" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe> 
-                                    </ui:fragment>
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{FilePage.selectedTool.displayName}"/>
+                                            </h:outputFormat>
+                                        </p:commandLink>
+                                        <!-- Modular/Configured Explore Tool -->
+                                        <!-- WorldMap Explore -->
+                                        <h:commandLink rendered="#{FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
+                                                       styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                       disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                       action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" rel="noopener">
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
+                                            </h:outputFormat>
+                                        </h:commandLink>
+                                        <p:commandLink rendered="#{FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
+                                                         styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                                                         disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
+                                                         process="@this"
+                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap')}"
+                                                         update="@widgetVar(downloadPopup)"
+                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
+                                            </h:outputFormat>
+                                        </p:commandLink>
+                                        <!-- END WorldMap Explore -->
+                                    </div>
+                                </div>
+                                <!-- FRAME -->
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                             </p:tab>
-                            
-                            
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                               (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset()))}">
-                                
                                 <!-- Metadata -->
                                 <div class="button-block tab-header margin-bottom text-right">
                                     <!-- Add + Edit Metadata Button -->
@@ -456,7 +470,6 @@
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
                                         </button>
                                     </div>
-
                                     <!-- Export Button -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
@@ -472,7 +485,6 @@
                                         </ul>
                                     </div>
                                 </div>
-                                
                                 <div class="panel panel-default">
                                     <div data-toggle="collapse" data-target="#panelCollapseFMD" class="panel-heading text-info">
                                         #{bundle['file.metadataTab.fileMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>

@@ -10,6 +10,8 @@ Once a user creates a dataverse they, by default, become the administrator of th
 .. contents:: |toctitle|
   :local:
 
+.. _create-dataverse:
+
 Create a New Dataverse
 =======================
 
@@ -22,7 +24,7 @@ Creating a dataverse is easy but first you must be a registered user (see :doc:`
     * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change this field in the future, the URL for your Dataverse will change (http//.../'identifier'), which will break older links to the page.
     * **Category**: Select a category that best describes the type of dataverse this will be. For example, if this is a dataverse for an individual researcher's datasets, select *Researcher*. If this is a dataverse for an institution, select *Organization or Institution*.
     * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
-    * **Description**: Provide a description of this dataverse. This will display on the landing page of your dataverse and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <ul>).
+    * **Description**: Provide a description of this dataverse. This will display on the landing page of your dataverse and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
 #. **Choose the sets of Metadata Fields for datasets in this dataverse**:
     * By default the metadata elements will be from the host dataverse that this new dataverse is created in.
     * Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the :doc:`/user/appendix`.
@@ -88,6 +90,8 @@ Dataverse Listing Widget
 *************************
 
 The Dataverse Listing Widget provides a listing of all your dataverses and datasets for users to browse, sort, filter and search. When someone clicks on a dataverse or dataset in the widget, it displays the content in the widget on your website. They can download data files directly from the datasets within the widget. If a file is restricted, they will be directed to your dataverse to log in, instead of logging in through the widget on your website.
+
+.. _openscholar-dataverse-level:
 
 Adding Widgets to an OpenScholar Website
 ******************************************
@@ -191,13 +195,15 @@ What can you do with a guestbook? After creating a guestbook, you will notice th
 .. _featured-dataverses:
 
 Featured Dataverses
-----------------------
+-------------------
 
 Featured Dataverses is a way to display sub dataverses in your dataverse that you want to feature for people to easily see when they visit your dataverse. 
 
 Click on Featured Dataverses and a pop up will appear. Select which sub dataverses you would like to have appear. 
 
 Note: Featured Dataverses can only be used with published dataverses.
+
+.. _dataset-linking:
 
 Dataset Linking
 ===============
@@ -212,9 +218,10 @@ To link a dataset to your dataverse, you must navigate to that dataset and click
 
 There is currently no way to remove established links in the UI. If you need to remove a link between a dataverse and a dataset, please contact the support team for the Dataverse installation you are using.
 
+.. _dataverse-linking:
 
 Dataverse Linking
-======================================================
+=================
 
 Similarly to dataset linking, dataverse linking allows a dataverse owner to "link" their dataverse to another dataverse, so the dataverse being linked will appear in the linking dataverse's list of contents without actually *being* in that dataverse. Currently, the ability to link a dataverse to another dataverse is a superuser only feature. 
 

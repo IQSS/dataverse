@@ -23,6 +23,9 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -111,6 +114,9 @@ public class IndexServiceBean {
     @EJB
     SolrClientService solrClientService;
 
+    @EJB
+    VariableServiceBean variableService;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -130,6 +136,8 @@ public class IndexServiceBean {
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
     private SolrClient solrServer;
+
+    private VariableMetadataUtil variableMetadataUtil;
 
     @PostConstruct
     public void init() {
@@ -244,15 +252,27 @@ public class IndexServiceBean {
             // logger.info(dataverse.getName() + " size " + dataversePaths.size());
             dataversePaths.remove(dataversePaths.size() - 1);
         }
-        // Add paths for linking dataverses
-        for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataverse.getId())) {
-            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
-            for (String dvPath : linkingDataversePaths) {
-                dataversePaths.add(dvPath);
+
+        //Add paths for my linking dataverses
+        List<String> linkingDataversePaths = findLinkingDataversePaths(dataverse);
+        for (String dvPath : linkingDataversePaths) {
+            dataversePaths.add(dvPath);
+        }
+
+        //Get Linking Dataverses to see if I need to reindex my children
+        if (hasAnyLinkingDataverses(dataverse)) {
+            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse or any of its ancestors is linked and contains datasets then
+                // the datasets must be reindexed to get the new paths added
+                indexDataset(dv, true);
+            }
+            for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse or any of its ancestors is linked and contains dataverses then
+                // the dataverses must be reindexed to get the new paths added
+                indexDataverse(dv);
             }
         }
+       
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -691,6 +711,13 @@ public class IndexServiceBean {
                 dataversePaths.add(dvPath);
             }
         }
+               
+        //Add paths for my linking dataverses
+        List<String> linkingDataversePaths = findLinkingDataversePaths(dataset.getOwner());
+        for (String dvPath : linkingDataversePaths) {
+            dataversePaths.add(dvPath);
+        }
+        
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
@@ -870,7 +897,7 @@ public class IndexServiceBean {
                 }
             }
         }
-
+        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -918,7 +945,7 @@ public class IndexServiceBean {
                              * whether full text indexing is on now.
                              */
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(releasedFileMetadata)) {
+                                if (fileMetadata.contentEquals(releasedFileMetadata) && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)) {
                                     indexThisMetadata = false;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                                 } else {
@@ -1145,12 +1172,46 @@ public class IndexServiceBean {
                             // is something social science-specific...
                             // anyway -- needs to be reviewed. -- L.A. 4.0alpha1
 
+                            //Variable Name
                             if (var.getName() != null && !var.getName().equals("")) {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
-                            if (var.getLabel() != null && !var.getLabel().equals("")) {
-                                datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+
+
+                            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(var.getId(), fileMetadata.getId());
+                            VariableMetadata vm = null;
+                            if (vmList != null && vmList.size() >0) {
+                                vm = vmList.get(0);
                             }
+
+                            if (vmList.size() == 0 ) {
+                                //Variable Label
+                                if (var.getLabel() != null && !var.getLabel().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
+                                }
+
+                            } else if (vm != null) {
+                                if (vm.getLabel() != null && !vm.getLabel().equals("")  ) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, vm.getLabel());
+                                }
+                                if (vm.getLiteralquestion() != null && !vm.getLiteralquestion().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.LITERAL_QUESTION, vm.getLiteralquestion());
+                                }
+                                if (vm.getInterviewinstruction() != null && !vm.getInterviewinstruction().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.INTERVIEW_INSTRUCTIONS, vm.getInterviewinstruction());
+                                }
+                                if (vm.getPostquestion() != null && !vm.getPostquestion().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.POST_QUESTION, vm.getPostquestion());
+                                }
+                                if (vm.getUniverse() != null && !vm.getUniverse().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_UNIVERSE, vm.getUniverse());
+                                }
+                                if (vm.getNotes() != null && !vm.getNotes().equals("")) {
+                                    datafileSolrInputDocument.addField(SearchFields.VARIABLE_NOTES, vm.getNotes());
+                                }
+
+                            }
+
                         }
                         // TABULAR DATA TAGS:
                         // (not to be confused with the file categories, indexed above!)
@@ -1225,11 +1286,18 @@ public class IndexServiceBean {
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
+        return findPathSegments(dataverse, segments, null);
+    }
+
+    public List<String> findPathSegments(Dataverse dataverse, List<String> segments, Dataverse topOfPath) {
         Dataverse rootDataverse = findRootDataverseCached();
+        if (topOfPath == null) {
+            topOfPath = rootDataverse;
+        }
         if (!dataverse.equals(rootDataverse)) {
             // important when creating root dataverse
             if (dataverse.getOwner() != null) {
-                findPathSegments(dataverse.getOwner(), segments);
+                findPathSegments(dataverse.getOwner(), segments, topOfPath);
             }
             segments.add(dataverse.getId().toString());
             return segments;
@@ -1238,8 +1306,53 @@ public class IndexServiceBean {
             return segments;
         }
     }
+        
+    private boolean hasAnyLinkingDataverses(Dataverse dataverse) {
+        Dataverse rootDataverse = findRootDataverseCached();
+        List<Dataverse> ancestorList = dataverse.getOwners();
+        ancestorList.add(dataverse);
+        for (Dataverse prior : ancestorList) {
+            if (!dataverse.equals(rootDataverse)) {
+                List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
+                if (!linkingDVs.isEmpty()){
+                    return true;
+                }
+            }
+        }       
+        return false;
+    }
+    
+    private List<String> findLinkingDataversePaths(Dataverse dataverse) {
+        Dataverse rootDataverse = findRootDataverseCached();
+        List<String> pathListAccumulator = new ArrayList<>();
+        List<Dataverse> ancestorList = dataverse.getOwners();
 
-    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
+        ancestorList.add(dataverse);
+
+        for (Dataverse prior : ancestorList) {
+            if (!dataverse.equals(rootDataverse)) {
+                // important when creating root dataverse
+                List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
+                for (Dataverse toAdd : linkingDVs) {
+                    List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+                    //path starts with linking dataverse
+                    linkingDataversePathSegmentsAccumulator.add(toAdd.getId().toString());
+                    //then add segments from the target dataverse up to the linked dataverse
+                    List<String> linkingdataverseSegments = findPathSegments(dataverse, linkingDataversePathSegmentsAccumulator, prior);
+
+                    List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+                    for (String dvPath : linkingDataversePaths) {
+                        pathListAccumulator.add(dvPath);
+                    }
+                }
+            }
+        }
+
+        return pathListAccumulator;
+
+    }
+
+    private List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
         List<String> subtrees = new ArrayList<>();
         for (int i = 0; i < dataversePathSegments.size(); i++) {
             StringBuilder pathBuilder = new StringBuilder();

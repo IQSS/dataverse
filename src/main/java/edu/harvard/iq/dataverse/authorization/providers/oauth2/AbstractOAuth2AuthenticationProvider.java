@@ -6,7 +6,9 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.AuthorizationUrlBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import edu.harvard.iq.dataverse.LoginPage;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
@@ -21,6 +23,8 @@ import java.util.logging.Logger;
 
 /**
  * Base class for OAuth2 identity providers, such as GitHub and ORCiD.
+ *
+ * TODO: this really should become an interface (contract with {@link OAuth2LoginBackingBean}) when refactoring package
  * 
  * @author michael
  */
@@ -89,18 +93,37 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     protected String clientSecret;
     protected String baseUserEndpoint;
     protected String redirectUrl;
+    
     /**
      * List of scopes to be requested for authorization at identity provider.
      * Defaults to empty so no scope will be requested (use case: public info from GitHub)
      */
     protected List<String> scope = Arrays.asList("");
     
+    /**
+     * TODO: when refactoring the package to be about token flow auth, this hard dependency should be removed.
+     */
     public abstract DefaultApi20 getApiInstance();
     
     protected abstract ParsedUserResponse parseUserResponse( String responseBody );
     
     /**
-     * Build an OAuth20Service based on client ID & secret. Add default scope and insert
+     * Build an Authorization URL for this identity provider
+     * @param state A randomized state, necessary to secure the authorization flow. @see OAuth2LoginBackingBean.createState()
+     * @param callbackUrl URL where the provider should send the browser after authn in code flow
+     */
+    public String buildAuthzUrl(String state, String callbackUrl) {
+        OAuth20Service svc = this.getService(callbackUrl);
+        
+        AuthorizationUrlBuilder aub = svc.createAuthorizationUrlBuilder().state(state);
+        // Do not include scope if empty string (necessary for GitHub)
+        if (!this.getSpacedScope().isEmpty()) { aub.scope(this.getSpacedScope()); }
+        
+        return aub.build();
+    }
+    
+    /**
+     * Build an OAuth20Service based on client ID & secret, also inserting the
      * callback URL. Build uses the real API object for the target service like GitHub etc.
      * @param callbackUrl URL where the OAuth2 Provider should send browsers to after authz.
      * @return A usable OAuth20Service object
@@ -116,18 +139,19 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
      * Receive user data from OAuth2 provider after authn/z has been successfull. (Callback view uses this)
      * Request a token and access the resource, parse output and return user details.
      * @param code The authz code sent from the provider
-     * @param service The service object in use to communicate with the provider
+     * @param redirectUrl The redirect URL (some providers require this when fetching the access token, e. g. Google)
      * @return A user record containing all user details accessible for us
      * @throws IOException Thrown when communication with the provider fails
      * @throws OAuth2Exception Thrown when we cannot access the user details for some reason
      * @throws InterruptedException Thrown when the requests thread is failing
      * @throws ExecutionException Thrown when the requests thread is failing
      */
-    public OAuth2UserRecord getUserRecord(String code, @NotNull OAuth20Service service)
+    public OAuth2UserRecord getUserRecord(String code, String redirectUrl)
         throws IOException, OAuth2Exception, InterruptedException, ExecutionException {
         
+        OAuth20Service service = getService(redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
-        //final String userEndpoint = getUserEndpoint(accessToken);
+        
         // We need to check if scope is null first: GitHub is used without scope, so the responses scope is null.
         // Checking scopes via Stream to be independent from order.
         if ( ( accessToken.getScope() != null && ! getScope().stream().allMatch(accessToken.getScope()::contains) ) ||
@@ -189,6 +213,14 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     public AuthenticationProviderDisplayInfo getInfo() {
         return new AuthenticationProviderDisplayInfo(getId(), getTitle(), getSubTitle());
     }
+    
+    /**
+     * Used in {@link LoginPage#listAuthenticationProviders()} for sorting the providers in the UI
+     * TODO: this might be extended to use a value set by the admin when configuring the provider via JSON.
+     * @return an integer value (sort ascending)
+     */
+    @Override
+    public int getOrder() { return 100; }
     
     @Override
     public String getId() {

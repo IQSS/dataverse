@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.api.Util;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -75,4 +75,33 @@ public class ApiTokenPage implements java.io.Serializable {
             
         }
     }
+    
+    public String getApiTokenExpiration() {
+        if (session.getUser().isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authSvc.findApiTokenByUser(au);
+            if (apiToken != null) {
+                return Util.getDateFormat().format(apiToken.getExpireTime());
+            } else {
+                return "";
+            }
+        } else {
+            // It should be impossible to get here from the UI.
+            return "";
+        }
+    }
+    
+    public Boolean tokenIsExpired(){
+        return apiToken.getExpireTime().before(new Timestamp(System.currentTimeMillis()));
+    }
+    
+    public void revoke() {
+        if (session.getUser().isAuthenticated()) {
+            AuthenticatedUser au = (AuthenticatedUser) session.getUser();
+            apiToken = authSvc.findApiTokenByUser(au);
+            if (apiToken != null) {
+                authSvc.removeApiToken(au);
+            }
+        }
+    }   
 }

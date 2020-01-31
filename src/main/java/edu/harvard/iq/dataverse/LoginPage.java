@@ -17,11 +17,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -129,16 +125,20 @@ public class LoginPage implements java.io.Serializable {
         return infos;
     }
     
+    /**
+     * Retrieve information about all enabled identity providers in a sorted order to be displayed to the user.
+     * @return list of display information for each provider
+     */
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for (String id : authSvc.getAuthenticationProviderIdsSorted()) {
-            AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
-            if (authenticationProvider != null) {
-                if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {
-                    infos.add(authenticationProvider.getInfo());
-                } else {
-                    infos.add(authenticationProvider.getInfo());
-                }
+        List<AuthenticationProvider> idps = new ArrayList<>(authSvc.getAuthenticationProviders());
+        
+        // sort by order first. in case of same order values, be deterministic in UI and sort by id, too.
+        Collections.sort(idps, Comparator.comparing(AuthenticationProvider::getOrder).thenComparing(AuthenticationProvider::getId));
+        
+        for (AuthenticationProvider idp : idps) {
+            if (idp != null) {
+                infos.add(idp.getInfo());
             }
         }
         return infos;

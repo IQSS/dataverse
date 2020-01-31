@@ -199,12 +199,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
-				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
-					.getSingleResult();
+              ? findRootDataverse()
+              : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+                  .setParameter("alias", anAlias.toLowerCase())
+                  .getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
+            logger.warning("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }

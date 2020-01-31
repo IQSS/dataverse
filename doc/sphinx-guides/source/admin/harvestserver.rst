@@ -22,6 +22,8 @@ You might consider adding your OAI-enabled production instance of Dataverse to
 `this shared list <https://docs.google.com/spreadsheets/d/12cxymvXCqP_kCsLKXQD32go79HBWZ1vU_tdG4kvP5S8/>`_
 of such instances.
 
+The email portion of :ref:`systemEmail` will be visible via OAI-PMH (from the "Identify" verb).
+
 How does it work? 
 -----------------
 
@@ -52,7 +54,7 @@ be used to create an OAI set. Sets can overlap local dataverses, and
 can include as few or as many of your local datasets as you wish. A
 good way to master the Dataverse search query language is to
 experiment with the Advanced Search page. We also recommend that you
-consult the Search API section of the Dataverse User Guide. 
+consult the :doc:`/api/search` section of the API Guide. 
 
 Once you have entered the search query and clicked *Next*, the number
 of search results found will be shown on the next screen. This way, if
@@ -136,7 +138,7 @@ runs every night (at 2AM, by default). This export timer is created
 and activated automatically every time the application is deployed
 or restarted. Once again, this is new in Dataverse 4, and unlike DVN
 v3, where export jobs had to be scheduled and activated by the admin
-user. See the "Export" section of the Admin guide, for more information on the automated metadata exports.
+user. See the :doc:`/admin/metadataexport` section of the Admin Guide, for more information on the automated metadata exports.
 
 It is still possible however to make changes like this be immediately
 reflected in the OAI server, by going to the *Harvesting Server* page
