@@ -36,6 +36,8 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -353,6 +355,8 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getName() == null) {
                 dataverse.setName(DataverseUtil.getSuggestedDataverseNameOnCreate(session.getUser()));
             }
+            //Inherit storage driver by default (superuser can change it in the form)
+            dataverse.setStorageDriverId(dataverse.getOwner().getStorageDriverId());
         }
 
         return null;
@@ -1209,10 +1213,29 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public Set<Entry<String, String>> getStorageDriverOptions() {
-    	return DataAccess.getStorageDriverLabels();
+    	HashMap<String, String> drivers =new HashMap<String, String>();
+    	drivers.putAll(DataAccess.getStorageDriverLabels());
+    	//Add an entry for the default (inherited from an ancestor or the system default)
+    	drivers.put(getDefaultStorageDriverLabel(), "");
+    	return drivers.entrySet();
     }
     
-    public String getCurrentStorageDriverLabel() {
-    	return DataAccess.getStorageDriverLabelFor(dataverse.getStorageDriverId());
+    public String getDefaultStorageDriverLabel() {
+    	String storageDriverId = DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    	Dataverse parent = dataverse.getOwner();
+    	if(parent != null) {
+    		storageDriverId = parent.getEffectiveStorageDriverId();
+    	}
+    	boolean fromAncestor=false;
+   		if(!storageDriverId.equals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER)) {
+    			fromAncestor = true;
+    	}
+   		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
+   		if(fromAncestor) {
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+   		} else {
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+   		}
+   		return label;
     }
 }

@@ -21,18 +21,18 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DvObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Properties;
-import java.util.Set;
 /**
 *
 * @author Leonid Andreev
 */
-
-
 
 
 public class DataAccess {
@@ -152,7 +152,7 @@ public class DataAccess {
 
         dvObject.setStorageIdentifier(storageTag);
 
-        if (storageDriverId == null) {
+        if (StringUtils.isEmpty(storageDriverId)) {
         	storageDriverId = "file";
         }
         String storageType = getDriverType(storageDriverId);
@@ -169,17 +169,28 @@ public class DataAccess {
         default:
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
+
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
 
     static HashMap<String, String> drivers = null;
     
-    public static Set<Entry<String, String>> getStorageDriverLabels() {
+    public static String getStorageDriverId(String driverLabel) {
     	if (drivers==null) {
     		populateDrivers();
     	}
-    	return drivers.entrySet();
+    	if(StringUtils.isEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    		return drivers.get(driverLabel);
+    	} 
+    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    }
+
+    public static HashMap<String, String> getStorageDriverLabels() {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	return drivers;
     }
 
     private static void populateDrivers() {
@@ -196,15 +207,18 @@ public class DataAccess {
     }
 
     public static String getStorageDriverLabelFor(String storageDriverId) {
-    	String label = "<<Default>>";
-    	if (drivers==null) {
-    		populateDrivers();
-    	}
-    	if(drivers.containsValue(storageDriverId)) {
-    		for(String key: drivers.keySet()) {
-    			if(drivers.get(key).equals(storageDriverId)) {
-    				label = key;
-    				break;
+    	String label = null;
+    	if(!StringUtils.isEmpty(storageDriverId)) {
+    		if (drivers==null) {
+    			populateDrivers();
+    		}
+
+    		if(drivers.containsValue(storageDriverId)) {
+    			for(String key: drivers.keySet()) {
+    				if(drivers.get(key).equals(storageDriverId)) {
+    					label = key;
+    					break;
+    				}
     			}
     		}
     	}

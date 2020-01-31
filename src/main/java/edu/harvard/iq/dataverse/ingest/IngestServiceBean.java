@@ -230,8 +230,7 @@ public class IngestServiceBean {
 						logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
 
 					} catch (IOException ioex) {
-						logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " ("
-								+ ioex.getMessage() + ")");
+                    logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
 					} finally {
 						if (readChannel != null) {
 							try {
@@ -247,8 +246,7 @@ public class IngestServiceBean {
 						}
 					}
 
-					// Since we may have already spent some CPU cycles scaling down image
-					// thumbnails,
+                    // Since we may have already spent some CPU cycles scaling down image thumbnails, 
 					// we may as well save them, by moving these generated images to the permanent
 					// dataset directory. We should also remember to delete any such files in the
 					// temp directory:
