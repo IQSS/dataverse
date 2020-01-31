@@ -151,7 +151,7 @@ public class DataAccess {
 
         dvObject.setStorageIdentifier(storageTag);
 
-        if (storageDriverId == null) {
+        if (StringUtils.isEmpty(storageDriverId)) {
         	storageDriverId = "file";
         }
         String storageType = getDriverType(storageDriverId);
