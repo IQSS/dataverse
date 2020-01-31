@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.search.dto.SearchField;
 import edu.harvard.iq.dataverse.search.dto.TextSearchField;
 import io.vavr.Tuple;
 import org.apache.commons.lang.StringUtils;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;

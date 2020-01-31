@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.validation.EndDateMustNotBeEa
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfValidationHelper;
 import edu.harvard.iq.dataverse.util.JsfValidationHelper.ValidationCondition;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIInput;

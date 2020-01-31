@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.faces.application.FacesMessage;
 import javax.inject.Inject;

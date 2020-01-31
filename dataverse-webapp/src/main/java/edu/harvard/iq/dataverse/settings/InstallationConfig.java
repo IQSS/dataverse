@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.settings;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import java.io.Serializable;
 

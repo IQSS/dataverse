@@ -27,7 +27,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;

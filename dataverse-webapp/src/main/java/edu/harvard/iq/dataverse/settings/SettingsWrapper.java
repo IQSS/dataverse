@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Named;

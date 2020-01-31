@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners;
 
 import org.apache.commons.lang.StringUtils;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Named;

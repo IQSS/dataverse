@@ -42,7 +42,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.omnifaces.cdi.ViewScoped;
+
+import javax.faces.view.ViewScoped;
 import org.primefaces.event.data.PageEvent;
 
 import javax.ejb.EJBException;

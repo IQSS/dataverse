@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;

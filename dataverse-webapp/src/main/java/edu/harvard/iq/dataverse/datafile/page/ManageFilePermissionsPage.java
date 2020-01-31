@@ -22,7 +22,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
-import org.omnifaces.cdi.ViewScoped;
+import javax.faces.view.ViewScoped;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
