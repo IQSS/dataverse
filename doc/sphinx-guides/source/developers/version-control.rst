@@ -96,12 +96,12 @@ Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for variou
 Summary of Git commands
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-There are two scenarios:
+This section provides sequences of Git commands for two scenarios:
 
 * preparing the first request, when the IQSS Dataverse repository and the forked repository are identical
 * creating an additional request after some time, when the IQSS Dataverse repository is ahead of the forked repository
 
-We use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL, modify both accordingly.
+In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
 
 **1st scenario: preparing the first pull request**
 
