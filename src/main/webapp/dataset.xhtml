@@ -9,8 +9,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:o="http://omnifaces.org/ui"
-      xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+      xmlns:o="http://omnifaces.org/ui">
     <h:head>
     </h:head>
     <h:body>
@@ -58,8 +57,8 @@
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
-                    <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
-                    <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
+                    <f:viewParam name="id" value="#{DatasetPage.id}"/>
+                    <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
                     <f:viewParam name="versionId" value="#{DatasetPage.versionId}"/>
                     <f:viewParam name="persistentId" value="#{DatasetPage.persistentId}"/>
@@ -631,6 +630,7 @@
                             <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable" style="display:none"/>
                             <script>
                                 //<![CDATA[
+                                // javascript for refreshing page when locks
                                 $(this).ready(function () {
                                     refreshIfStillLocked();
                                 });

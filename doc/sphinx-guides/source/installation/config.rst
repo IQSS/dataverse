@@ -11,6 +11,8 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _securing-your-installation:
+
 Securing Your Installation
 --------------------------
 
@@ -49,17 +51,18 @@ Out of the box, Dataverse will list email addresses of the contacts for datasets
 
 Additional Recommendations
 ++++++++++++++++++++++++++
-Run Glassfish as a User Other Than Root
-+++++++++++++++++++++++++++++++++++++++
 
-See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
+Run Glassfish as a User Other Than Root
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See the :ref:`glassfish` section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
 Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
 
 Enforce Strong Passwords for User Accounts
-++++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the :ref:`auth-modes` section below for more on login options.
 
 Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
 
@@ -73,6 +76,8 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVDictionaries`
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
+
+.. _network-ports:
 
 Network Ports
 -------------
@@ -178,6 +183,8 @@ Here are the configuration options for handles:
 - :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
+
+.. _auth-modes:
 
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
@@ -888,10 +895,12 @@ Setting Up Integrations
 
 Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
 
+.. _jvm-options:
+
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+JVM stands for Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
@@ -1105,6 +1114,8 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+.. _database-settings:
 
 Database Settings
 -----------------
@@ -1373,7 +1384,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
-API users can retrieve this URL from the SWORD Service Document or the "info" section of our :doc:`/api/native-api` documentation.
+API users can retrieve this URL from the SWORD Service Document or the :ref:`info` section of our :doc:`/api/native-api` documentation.
 
 ``curl -X PUT -d https://dataverse.org/best-practices/harvard-api-tou http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
@@ -1388,6 +1399,12 @@ See also :ref:`Privacy Considerations <PrivacyConsiderations>` above.
 Set ``:ExcludeEmailFromExport`` to prevent email addresses for contacts from being exposed in XML or JSON representations of dataset and dataverse metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
+
+Note: After making a change to this setting, a reExportAll needs to be run before the changes will be reflected in the exports:
+
+``curl http://localhost:8080/api/admin/metadata/reExportAll``
+
+This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
 
 :NavbarAboutUrl
 +++++++++++++++
@@ -1553,6 +1570,8 @@ Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect 
 Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+.. _:DatasetPublishPopupCustomText:
 
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
@@ -1799,7 +1818,7 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 This setting controls which upload methods are available to users of your installation of Dataverse. The following upload methods are available:
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
-- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Dev Guide.
+- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
 
@@ -1853,7 +1872,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
-.. _MDCLogPath:
+.. _:MDCLogPath:
 
 :MDCLogPath
 +++++++++++
@@ -1861,6 +1880,8 @@ Sets how long a cached metrics result is used before re-running the query for a 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
 ``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+
+.. _:DisplayMDCMetrics:
 
 :DisplayMDCMetrics
 ++++++++++++++++++

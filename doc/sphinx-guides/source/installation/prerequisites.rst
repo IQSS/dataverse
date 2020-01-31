@@ -44,6 +44,8 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 
         # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
+.. _glassfish:
+
 Glassfish
 ---------
 
@@ -76,7 +78,7 @@ Once Glassfish is installed, you'll need a newer version of the Weld library (v2
 
 	# cd /usr/local/glassfish4/glassfish/modules
 	# rm weld-osgi-bundle.jar
-	# wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
+	# curl -L -O https://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.10.Final/weld-osgi-bundle-2.2.10.Final-glassfish4.jar
 
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
@@ -330,8 +332,8 @@ use Dataverse - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
 you choose to also install `TwoRavens
 <https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries.  Please consult the instructions in the
-TowRavens section of the Installation Guide.
+components and libraries. Please consult the instructions in the
+:doc:`/installation/r-rapache-tworavens/` section of the Installation Guide.
 
 
 Installing R

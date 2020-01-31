@@ -242,6 +242,8 @@ public class DatasetPage implements java.io.Serializable {
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
 
     private Dataset dataset = new Dataset();
+    
+    private Long id = null;    
     private EditMode editMode;
     private boolean bulkFileDeleteInProgress = false;
 
@@ -1446,6 +1448,9 @@ public class DatasetPage implements java.io.Serializable {
     public DatasetVersion getWorkingVersion() {
         return workingVersion;
     }
+    
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }    
 
     public EditMode getEditMode() {
         return editMode;
@@ -1799,9 +1804,9 @@ public class DatasetPage implements java.io.Serializable {
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
                 logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
-            } else if (dataset.getId() != null) {
+            } else if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                dataset = datasetService.find(dataset.getId());
+                dataset = datasetService.find(this.getId());
                 if (dataset == null) {
                     logger.warning("No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
