@@ -27,8 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.Map.Entry;
-import java.util.Set;
+import org.apache.commons.lang.StringUtils;
 /**
  *
  * @author Leonid Andreev
@@ -176,11 +175,21 @@ public class DataAccess {
 
     static HashMap<String, String> drivers = null;
     
-    public static Set<Entry<String, String>> getStorageDriverLabels() {
+    public static String getStorageDriverId(String driverLabel) {
     	if (drivers==null) {
     		populateDrivers();
     	}
-    	return drivers.entrySet();
+    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    		return drivers.get(driverLabel);
+    	} 
+    	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    }
+
+    public static HashMap<String, String> getStorageDriverLabels() {
+    	if (drivers==null) {
+    		populateDrivers();
+    	}
+    	return drivers;
     }
 
     private static void populateDrivers() {
@@ -198,17 +207,19 @@ public class DataAccess {
     }
 
     public static String getStorageDriverLabelFor(String storageDriverId) {
-    	String label = "<<Default>>";
-    	if (drivers==null) {
-    		populateDrivers();
-    	}
-    	if(drivers.containsValue(storageDriverId)) {
-    		for(String key: drivers.keySet()) {
-    			if(drivers.get(key).equals(storageDriverId)) {
-    				label = key;
-    				break;
-    			}
+    	String label = null;
+    	if(!StringUtils.isEmpty(storageDriverId)) {
+    		if (drivers==null) {
+    			populateDrivers();
+    		}
 
+    		if(drivers.containsValue(storageDriverId)) {
+    			for(String key: drivers.keySet()) {
+    				if(drivers.get(key).equals(storageDriverId)) {
+    					label = key;
+    					break;
+    				}
+    			}
     		}
     	}
     	return label;

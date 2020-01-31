@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class Dataverse extends DvObjectContainer {
 
     private String affiliation;
     
-    private String storageDriver;
+    private String storageDriver="";
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -759,6 +760,19 @@ public class Dataverse extends DvObjectContainer {
         return false;
     }
 
+	public String getEffectiveStorageDriverId() {
+		String id = storageDriver;
+		if(id == null) {
+			if(this.getOwner() != null) {
+				id = this.getOwner().getEffectiveStorageDriverId(); 
+			} else {
+				id= DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+			}
+		}
+		return id;
+	}
+	
+	
 	public String getStorageDriverId() {
 		return storageDriver;
 	}
