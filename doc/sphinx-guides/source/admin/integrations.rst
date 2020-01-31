@@ -54,7 +54,7 @@ Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/comma
 
 Flagship deployment of the Renku platform: https://renkulab.io
 
-Renku project code repository: https://github.com/SwissDataScienceCenter/renku.git
+Renku discourse: https://renku.discourse.group/
 
 
 Embedding Data on Websites
@@ -118,7 +118,10 @@ Researchers can import Dataverse datasets into their Renku projects via the
 command-line interface (CLI) by using the Dataverse DOI. See the `renku Dataset
 documentation
 <https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
-for details. The UI implementation of the import is in progress and will be
+for details. Currently Dataverse ``>=4.8.x`` is required for the import to work. If you need
+support for an earlier version of Dataverse, please get in touch with the Renku team at
+`Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
+The UI implementation of the import is in progress and will be
 completed in Q12020.
 
 
