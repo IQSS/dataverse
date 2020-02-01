@@ -738,7 +738,19 @@ Export Metadata of a Dataset in Various Formats
 
 |CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
 
-    GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export METADATA_FORMAT=ddi
+
+  curl $SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. Descriptive names can be found under :ref:`metadata-export-formats` in the User Guide.
 
