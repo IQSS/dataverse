@@ -715,9 +715,21 @@ It returns a list of versions with their metadata, and file list:
 Get Version of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Show a version of the dataset. The output includes any metadata blocks the dataset might have::
+|CORS| Show a version of the dataset. The output includes any metadata blocks the dataset might have:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0
 
 .. _export-dataset-metadata-api:
 
