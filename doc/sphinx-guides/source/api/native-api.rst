@@ -567,10 +567,10 @@ In order to publish a dataverse, you must know either its "alias" (which the GUI
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export ALIAS=root
   export SERVER_URL=https://demo.dataverse.org
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ALIAS/actions/:publish
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/actions/:publish
 
 The fully expanded example above (without environment variables) looks like this:
 
