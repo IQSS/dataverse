@@ -151,7 +151,7 @@ The fully expanded example above (without environment variables) looks like this
 Report the data (file) size of a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
+Shows the combined size in bytes of all the files uploaded into the dataverse ``id``:
 
 .. code-block:: bash
 
@@ -173,7 +173,7 @@ By default, only the archival files are counted - i.e., the files uploaded by us
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-All the roles defined directly in the dataverse identified by ``id``::
+All the roles defined directly in the dataverse identified by ``id``:
 
 .. code-block:: bash
 
@@ -192,7 +192,7 @@ The fully expanded example above (without environment variables) looks like this
 List Facets Configured for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List all the facets for a given dataverse ``id``::
+|CORS| List all the facets for a given dataverse ``id``:
 
 .. code-block:: bash
 
@@ -211,7 +211,7 @@ The fully expanded example above (without environment variables) looks like this
 Set Facets for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign search facets for a given dataverse identified by ``id``::
+Assign search facets for a given dataverse identified by ``id``:
 
 .. code-block:: bash
 
@@ -232,7 +232,7 @@ Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["au
 Create a New Role in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role under dataverse ``id``. Needs a json file with the role description::
+Creates a new role under dataverse ``id``. Needs a json file with the role description:
 
 .. code-block:: bash
 
@@ -264,7 +264,7 @@ Where ``roles.json`` looks like this::
 List Role Assignments in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List all the role assignments at the given dataverse::
+List all the role assignments at the given dataverse:
 
 .. code-block:: bash
 
@@ -283,7 +283,7 @@ The fully expanded example above (without environment variables) looks like this
 Assign Default Role to User Creating a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
+Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned:
 
 .. code-block:: bash
 
@@ -307,7 +307,7 @@ Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who cre
 Assign a New Role on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assigns a new role, based on the POSTed JSON. ::
+Assigns a new role, based on the POSTed JSON:
 
 .. code-block:: bash
 
@@ -335,7 +335,7 @@ POSTed JSON example (the content of ``role.json`` file)::
 Delete Role Assignment from a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete the assignment whose id is ``$id``::
+Delete the assignment whose id is ``$id``:
 
 .. code-block:: bash
 
@@ -403,7 +403,7 @@ The fully expanded example above (without environment variables) looks like this
 Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
+Get whether the dataverse is a metadata block root, or does it uses its parent blocks:
 
 .. code-block:: bash
 
@@ -423,7 +423,7 @@ Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
-values are ``true`` and ``false`` (both are valid JSON expressions). ::
+values are ``true`` and ``false`` (both are valid JSON expressions):
 
 .. code-block:: bash
 
@@ -501,7 +501,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets/:import?pid=doi:ZZ7/MOSEISLEYDB94&release=yes --upload-file dataset.json
+    curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets/:import?pid=doi:ZZ7/MOSEISLEYDB94&release=yes --upload-file dataset.json
 
 The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
 
@@ -527,7 +527,7 @@ Import a Dataset into a Dataverse with a DDI file
 
 .. note:: This action requires a Dataverse account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
 
 .. code-block:: bash
 
@@ -598,26 +598,52 @@ Get JSON Representation of a Dataset
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
-  Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
+Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
 
-    curl http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+.. code-block:: bash
 
-  fully expanded::
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-    curl http://localhost:8080/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+  curl $SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
 
-  Getting its draft version::
+The fully expanded example above (without environment variables) looks like this:
 
-    curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+.. code-block:: bash
 
-  fully expanded::
+  curl https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
-    curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+Getting its draft version:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=$PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
 
-|CORS| Show the dataset whose id is passed::
+|CORS| Show the dataset whose id is passed:
 
-  GET http://$SERVER/api/datasets/$id?key=$apiKey
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/doi:10.5072/FK2/J8SJZB
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
