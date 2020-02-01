@@ -633,24 +633,38 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export ID=408730
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/$ID
+  curl $SERVER_URL/api/datasets/$ID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/doi:10.5072/FK2/J8SJZB
+  curl https://demo.dataverse.org/api/datasets/408730
+
+The dataset id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| List versions of the dataset::
 
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
+
+  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/versions
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
   GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root
 
 Get Version of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
