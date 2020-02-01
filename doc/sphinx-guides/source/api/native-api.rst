@@ -649,22 +649,68 @@ The dataset id can be extracted from the response retrieved from the API which u
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List versions of the dataset::
+|CORS| List versions of the dataset:
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
+  export ID=24
 
-  curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/versions
+  curl $SERVER_URL/api/dataverses/$ID/versions
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root
+  curl https://demo.dataverse.org/api/datasets/24/versions
+
+It returns a list of versions with their metadata, and file list:
+
+.. code-block:: bash
+
+  {
+    "status": "OK",
+    "data": [
+      {
+        "id": 7,
+        "datasetId": 24,
+        "datasetPersistentId": "doi:10.5072/FK2/U6AEZM",
+        "storageIdentifier": "file://10.5072/FK2/U6AEZM",
+        "versionNumber": 2,
+        "versionMinorNumber": 0,
+        "versionState": "RELEASED",
+        "lastUpdateTime": "2015-04-20T09:58:35Z",
+        "releaseTime": "2015-04-20T09:58:35Z",
+        "createTime": "2015-04-20T09:57:32Z",
+        "license": "CC0",
+        "termsOfUse": "CC0 Waiver",
+        "termsOfAccess": "You need to request for access.",
+        "fileAccessRequest": true,
+        "metadataBlocks": {...},
+        "files": [...]
+      },
+      {
+        "id": 6,
+        "datasetId": 24,
+        "datasetPersistentId": "doi:10.5072/FK2/U6AEZM",
+        "storageIdentifier": "file://10.5072/FK2/U6AEZM",
+        "versionNumber": 1,
+        "versionMinorNumber": 0,
+        "versionState": "RELEASED",
+        "UNF": "UNF:6:y4dtFxWhBaPM9K/jlPPuqg==",
+        "lastUpdateTime": "2015-04-20T09:56:34Z",
+        "releaseTime": "2015-04-20T09:56:34Z",
+        "createTime": "2015-04-20T09:43:45Z",
+        "license": "CC0",
+        "termsOfUse": "CC0 Waiver",
+        "termsOfAccess": "You need to request for access.",
+        "fileAccessRequest": true,
+        "metadataBlocks": {...},
+        "files": [...]
+      }
+    ]
+  }
+
 
 Get Version of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
