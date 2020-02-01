@@ -486,16 +486,16 @@ Import a Dataset into a Dataverse
 
 .. note:: This action requires a Dataverse account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``DATASET_PID`` to Dataverse, and then releases it:
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export DATAVERSE_ID=root
-  export DATASET_PID=doi:ZZ7/MOSEISLEYDB94
+  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:import?pid=$DATASET_PID&release=yes --upload-file dataset.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -531,7 +531,18 @@ To import a dataset with an existing persistent identifier (PID), you have to pr
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAVERSE_ID=root
+  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets/:importddi?pid=doi:ZZ7/MOSEISLEYDB94&release=yes --upload-file ddi_dataset.xml
 
 The optional ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if the provided PID fails validation.
 
