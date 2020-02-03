@@ -6,6 +6,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -13,6 +16,9 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -26,36 +32,48 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
 
     private final Dataset dataset;
     private final Boolean countCachedFiles;
+    private final String mode;
+    private final DatasetVersion version;
 
     public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target) {
         super(aRequest, target);
         dataset = target;
         countCachedFiles = false;
+        mode = "download";
+        version = null;
     }
 
-    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles) {
+    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, String mode, DatasetVersion version) {
         super(aRequest, target);
         dataset = target;
         this.countCachedFiles = countCachedFiles;
+        this.mode = mode;
+        this.version = version;
     }
 
     @Override
     public Long execute(CommandContext ctxt) throws CommandException {
         logger.fine("getDataverseStorageSize called on " + dataset.getDisplayName());
 
-        long total = 0L;
         if (dataset == null) {
             // should never happen - must indicate some data corruption in the database
             throw new CommandException(BundleUtil.getStringFromBundle("datasets.api.listing.error"), this);
         }
 
         try {
-            total += ctxt.datasets().findStorageSize(dataset, countCachedFiles);
+            return ctxt.datasets().findStorageSize(dataset, countCachedFiles, mode, version);
         } catch (IOException ex) {
             throw new CommandException(BundleUtil.getStringFromBundle("datasets.api.datasize.ioerror"), this);
         }
 
-        return total;
+    }
+    
+    @Override
+    public Map<String, Set<Permission>> getRequiredPermissions() {
+        // for data file check permission on owning dataset
+        return Collections.singletonMap("",
+         mode != null &&  mode.equals("storage") ? Collections.singleton(Permission.ManageDatasetPermissions)
+                : Collections.<Permission>emptySet());
     }
 
 }

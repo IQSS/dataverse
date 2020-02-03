@@ -2304,8 +2304,15 @@ public class UtilIT {
      * @param apiToken
      * @return response
      */
-    static Response findDatasetStorageSize(String datasetId) {
+    static Response findDatasetStorageSize(String datasetId, String apiToken) {
         return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/storagesize");
     }
+    
+    static Response findDatasetDownloadSize(String datasetId) {
+        return given()
+                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+    }
+    
 }
