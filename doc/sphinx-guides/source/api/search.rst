@@ -146,8 +146,8 @@ https://demo.dataverse.org/api/search?q=trees
 
 .. _advancedsearch-example:
 
-Advanced Search Example
------------------------
+Advanced Search Examples
+------------------------
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
@@ -261,9 +261,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
-https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published
+https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
 
-The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
+The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions of datasets. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
 
 .. code-block:: json
 
