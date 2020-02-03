@@ -78,7 +78,9 @@ Note that it may or may not work on your system, so it is provided as an example
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 
-Timer not working 
+.. _timer-not-working:
+
+Timer Not Working
 -----------------
 
 Dataverse relies on EJB timers to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. (See :doc:`timers` for details.) If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgreSQL database you are using, and PostgreSQL JDBC driver in use by your instance of Glassfish. The symptoms:

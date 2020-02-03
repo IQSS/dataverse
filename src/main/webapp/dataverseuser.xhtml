@@ -29,7 +29,7 @@
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
-                    <f:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
+                    <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
                     <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>

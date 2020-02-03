@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.ejb.EJB;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -177,14 +179,14 @@ public class OAIServlet extends HttpServlet {
         
         String dataverseName = dataverseService.findRootDataverse().getName();
         String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
-        
+        InternetAddress internetAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 
         RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration()
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
                 .withCompression("gzip")        // ?
                 .withCompression("deflate")     // ?
-                .withAdminEmail(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail))
+                .withAdminEmail(internetAddress != null ? internetAddress.getAddress() : null)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withGranularity(Granularity.Second)
                 .withMaxListIdentifiers(100)

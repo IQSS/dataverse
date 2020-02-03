@@ -67,6 +67,8 @@ Remote Authentication
 
 Too many passwords? You can set up your Dataverse account to use log in credentials from one of the following remote authentication providers. This way, you can log in using your existing credentials from another service.
 
+.. _institutional-log-in:
+
 Institutional Log In
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -171,7 +173,7 @@ What APIs Are and Why They Are Useful
 
 API stands for "Application Programming Interface" and Dataverse APIs allow you to take advantage of integrations with other software that may have been set up by admins of your installation of Dataverse. See the :doc:`/admin/external-tools` and :doc:`/admin/integrations` sections of the Admin Guide for examples of software that is commonly integrated with Dataverse.
 
-Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the  :doc:`/api/getting-started` section of the API Guide for details.
+Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the :doc:`/api/getting-started` section of the API Guide for details.
 
 How Your API Token Is Like a Password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
