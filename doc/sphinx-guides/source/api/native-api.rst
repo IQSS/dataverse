@@ -787,9 +787,21 @@ The fully expanded example above (without environment variables) looks like this
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the metadata blocks and their content, for the given dataset and version::
+|CORS| Lists all the metadata blocks and their content, for the given dataset and version:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/metadata
 
 List Single Metadata Block for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
