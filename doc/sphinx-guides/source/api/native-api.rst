@@ -768,9 +768,21 @@ Both forms are valid according to Google's Structured Data Testing Tool at https
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the file metadata, for the given dataset and version::
+|CORS| Lists all the file metadata, for the given dataset and version:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/files
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/files
 
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
