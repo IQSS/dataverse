@@ -261,6 +261,89 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
+https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published
+
+The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
+
+.. code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+            "q": "finch",
+            "total_count": 2,
+            "start": 0,
+            "spelling_alternatives": {},
+            "items": [
+                {
+                    "name": "Darwin's Finches",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.70122/FK2/GUAS41",
+                    "global_id": "doi:10.70122/FK2/GUAS41",
+                    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at": "2019-12-24T08:05:02Z",
+                    "publisher": "mdmizanur rahman Dataverse",
+                    "citationHtml": "Finch, Fiona, 2019, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/GUAS41\" target=\"_blank\">https://doi.org/10.70122/FK2/GUAS41</a>, Demo Dataverse, V1",
+                    "identifier_of_dataverse": "rahman",
+                    "name_of_dataverse": "mdmizanur rahman Dataverse",
+                    "citation": "Finch, Fiona, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/GUAS41, Demo Dataverse, V1",
+                    "storageIdentifier": "file://10.70122/FK2/GUAS41",
+                    "subjects": [
+                        "Medicine, Health and Life Sciences"
+                    ],
+                    "versionId": 53001,
+                    "versionState": "RELEASED",
+                    "majorVersion": 1,
+                    "minorVersion": 0,
+                    "createdAt": "2019-12-05T09:18:30Z",
+                    "updatedAt": "2019-12-24T08:38:00Z",
+                    "contacts": [
+                        {
+                            "name": "Finch, Fiona",
+                            "affiliation": ""
+                        }
+                    ],
+                    "authors": [
+                        "Finch, Fiona"
+                    ]
+                },
+                {
+                    "name": "Darwin's Finches",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.70122/FK2/7ZXYRH",
+                    "global_id": "doi:10.70122/FK2/7ZXYRH",
+                    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at": "2020-01-22T21:47:34Z",
+                    "publisher": "Demo Dataverse",
+                    "citationHtml": "Finch, Fiona, 2020, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/7ZXYRH\" target=\"_blank\">https://doi.org/10.70122/FK2/7ZXYRH</a>, Demo Dataverse, V1",
+                    "identifier_of_dataverse": "demo",
+                    "name_of_dataverse": "Demo Dataverse",
+                    "citation": "Finch, Fiona, 2020, \"Darwin's Finches\", https://doi.org/10.70122/FK2/7ZXYRH, Demo Dataverse, V1",
+                    "storageIdentifier": "file://10.70122/FK2/7ZXYRH",
+                    "subjects": [
+                        "Medicine, Health and Life Sciences"
+                    ],
+                    "versionId": 53444,
+                    "versionState": "RELEASED",
+                    "majorVersion": 1,
+                    "minorVersion": 0,
+                    "createdAt": "2020-01-22T21:23:43Z",
+                    "updatedAt": "2020-01-22T21:47:34Z",
+                    "contacts": [
+                        {
+                            "name": "Finch, Fiona",
+                            "affiliation": ""
+                        }
+                    ],
+                    "authors": [
+                        "Finch, Fiona"
+                    ]
+                }
+            ],
+            "count_in_response": 2
+        }
+    }
+
 .. _search-date-range:
 
 Date Range Search Example
