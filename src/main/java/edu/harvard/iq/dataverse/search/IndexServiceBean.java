@@ -252,15 +252,27 @@ public class IndexServiceBean {
             // logger.info(dataverse.getName() + " size " + dataversePaths.size());
             dataversePaths.remove(dataversePaths.size() - 1);
         }
-        // Add paths for linking dataverses
-        for (Dataverse linkingDataverse : dvLinkingService.findLinkingDataverses(dataverse.getId())) {
-            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
-            for (String dvPath : linkingDataversePaths) {
-                dataversePaths.add(dvPath);
+
+        //Add paths for my linking dataverses
+        List<String> linkingDataversePaths = findLinkingDataversePaths(dataverse);
+        for (String dvPath : linkingDataversePaths) {
+            dataversePaths.add(dvPath);
+        }
+
+        //Get Linking Dataverses to see if I need to reindex my children
+        if (hasAnyLinkingDataverses(dataverse)) {
+            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse or any of its ancestors is linked and contains datasets then
+                // the datasets must be reindexed to get the new paths added
+                indexDataset(dv, true);
+            }
+            for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse or any of its ancestors is linked and contains dataverses then
+                // the dataverses must be reindexed to get the new paths added
+                indexDataverse(dv);
             }
         }
+       
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -699,6 +711,13 @@ public class IndexServiceBean {
                 dataversePaths.add(dvPath);
             }
         }
+               
+        //Add paths for my linking dataverses
+        List<String> linkingDataversePaths = findLinkingDataversePaths(dataset.getOwner());
+        for (String dvPath : linkingDataversePaths) {
+            dataversePaths.add(dvPath);
+        }
+        
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
@@ -878,7 +897,7 @@ public class IndexServiceBean {
                 }
             }
         }
-
+        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -1267,11 +1286,18 @@ public class IndexServiceBean {
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
+        return findPathSegments(dataverse, segments, null);
+    }
+
+    public List<String> findPathSegments(Dataverse dataverse, List<String> segments, Dataverse topOfPath) {
         Dataverse rootDataverse = findRootDataverseCached();
+        if (topOfPath == null) {
+            topOfPath = rootDataverse;
+        }
         if (!dataverse.equals(rootDataverse)) {
             // important when creating root dataverse
             if (dataverse.getOwner() != null) {
-                findPathSegments(dataverse.getOwner(), segments);
+                findPathSegments(dataverse.getOwner(), segments, topOfPath);
             }
             segments.add(dataverse.getId().toString());
             return segments;
@@ -1280,8 +1306,53 @@ public class IndexServiceBean {
             return segments;
         }
     }
+        
+    private boolean hasAnyLinkingDataverses(Dataverse dataverse) {
+        Dataverse rootDataverse = findRootDataverseCached();
+        List<Dataverse> ancestorList = dataverse.getOwners();
+        ancestorList.add(dataverse);
+        for (Dataverse prior : ancestorList) {
+            if (!dataverse.equals(rootDataverse)) {
+                List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
+                if (!linkingDVs.isEmpty()){
+                    return true;
+                }
+            }
+        }       
+        return false;
+    }
+    
+    private List<String> findLinkingDataversePaths(Dataverse dataverse) {
+        Dataverse rootDataverse = findRootDataverseCached();
+        List<String> pathListAccumulator = new ArrayList<>();
+        List<Dataverse> ancestorList = dataverse.getOwners();
 
-    List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
+        ancestorList.add(dataverse);
+
+        for (Dataverse prior : ancestorList) {
+            if (!dataverse.equals(rootDataverse)) {
+                // important when creating root dataverse
+                List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(prior.getId());
+                for (Dataverse toAdd : linkingDVs) {
+                    List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+                    //path starts with linking dataverse
+                    linkingDataversePathSegmentsAccumulator.add(toAdd.getId().toString());
+                    //then add segments from the target dataverse up to the linked dataverse
+                    List<String> linkingdataverseSegments = findPathSegments(dataverse, linkingDataversePathSegmentsAccumulator, prior);
+
+                    List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+                    for (String dvPath : linkingDataversePaths) {
+                        pathListAccumulator.add(dvPath);
+                    }
+                }
+            }
+        }
+
+        return pathListAccumulator;
+
+    }
+
+    private List<String> getDataversePathsFromSegments(List<String> dataversePathSegments) {
         List<String> subtrees = new ArrayList<>();
         for (int i = 0; i < dataversePathSegments.size(); i++) {
             StringBuilder pathBuilder = new StringBuilder();
