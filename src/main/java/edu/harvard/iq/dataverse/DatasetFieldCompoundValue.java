@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.persistence.CascadeType;
@@ -159,8 +158,8 @@ public class DatasetFieldCompoundValue implements Serializable {
         for (DatasetField childDatasetField : childDatasetFields) {
             if (referencesMap.containsKey("##"+childDatasetField.getDatasetFieldType().getName())){
                 if (childDatasetField.getSingleControlledVocabularyValue() != null){
-                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix().isEmpty()){
-                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getUrlPrefix());
+                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getDisplayFormat().isEmpty()){
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getStrValue());
                     } else {
                         referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getStrValue());
                     }

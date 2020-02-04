@@ -79,7 +79,7 @@
 	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder	detail										
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder	displayFormat	detail										
 	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
 	subject	Astronomy and Astrophysics	D1	2											
@@ -128,11 +128,11 @@
 	contributorType	Supervisor		14											
 	contributorType	Work Package Leader		15											
 	contributorType	Other		16											
-	authorIdentifierScheme	ORCID		0	https://orcid.org/										
-	authorIdentifierScheme	ISNI		1	http://isni.org/isni/										
-	authorIdentifierScheme	LCNA		2	http://id.loc.gov/authorities/names/										
-	authorIdentifierScheme	VIAF		3	https://viaf.org/viaf/										
-	authorIdentifierScheme	GND		4	https://d-nb.info/gnd/										
+	authorIdentifierScheme	ORCID		0	urlprefix	https://orcid.org/										
+	authorIdentifierScheme	ISNI		1	urlprefix	http://isni.org/isni/										
+	authorIdentifierScheme	LCNA		2	urlprefix	http://id.loc.gov/authorities/names/										
+	authorIdentifierScheme	VIAF		3	urlprefix	https://viaf.org/viaf/										
+	authorIdentifierScheme	GND		4	urlprefix	https://d-nb.info/gnd/										
 	authorIdentifierScheme	DAI		5
 	authorIdentifierScheme	ResearcherID		6
 	authorIdentifierScheme	ScopusID		7

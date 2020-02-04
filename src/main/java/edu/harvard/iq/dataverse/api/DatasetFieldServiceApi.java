@@ -33,7 +33,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -412,15 +411,18 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
-        if (values.length >= 6 && values[5] != null && !values[5].isEmpty()) {
-            ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndUrlPrefix(cvv, values[5]);
+
+        if (values.length >= 7 && values[5] != null && !values[5].isEmpty() && values[6] != null && !values[6].isEmpty()) {
+            ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndStrValue(cvv, values[6]);
             if (cvvd == null) {
                 cvvd = new ControlledVocabularyValueDetail();
                 cvvd.setControlledVocabularyValue(cvv);
-                cvvd.setUrlPrefix(values[5]);
+                cvvd.setDisplayFormat(values[5]);
+                cvvd.setStrValue(values[6]);
                 cvv.setControlledVocabularyValueDetail(cvvd);
             }
         }
+
         datasetFieldService.save(cvv);
         return cvv.getStrValue();
     }

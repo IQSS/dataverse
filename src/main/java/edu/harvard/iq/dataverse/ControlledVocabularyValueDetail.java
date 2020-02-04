@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(indexes = {@Index(columnList="controlledvocabularyvalue_id")})
+@Table(indexes = {@Index(columnList = "controlledvocabularyvalue_id")})
 public class ControlledVocabularyValueDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,15 +26,22 @@ public class ControlledVocabularyValueDetail implements Serializable {
         this.id = id;
     }
 
-    @Column(columnDefinition="TEXT")
-    private String urlPrefix;
+    @Column(columnDefinition = "TEXT")
+    private String displayFormat;
 
-    public String getUrlPrefix() {
-        return urlPrefix;
+    public String getDisplayFormat() { return displayFormat; }
+
+    public void setDisplayFormat(String displayFormat) { this.displayFormat = displayFormat; }
+
+    @Column(columnDefinition = "TEXT")
+    private String strValue;
+
+    public String getStrValue() {
+        return strValue;
     }
 
-    public void setUrlPrefix(String urlPrefix) {
-        this.urlPrefix = urlPrefix;
+    public void setStrValue(String strValue) {
+        this.strValue = strValue;
     }
 
     @OneToOne
