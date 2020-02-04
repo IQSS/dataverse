@@ -72,7 +72,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset
         return Collections.singletonMap("",
-         mode != null &&  mode.equals("storage") ? Collections.singleton(Permission.ManageDatasetPermissions)
+         mode != null &&  mode.equals("storage") ? Collections.singleton(Permission.ViewUnpublishedDataset)
                 : Collections.<Permission>emptySet());
     }
 
