@@ -893,24 +893,18 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (dataset.isHarvested()) {
             return 0L;
         }
-        
-        System.out.print("mode: " + mode);
-        System.out.print("dataset: " + dataset);
-        System.out.print("version: " + version);
+
         List<DataFile> filesToTalley = new ArrayList();
         
         if (version == null || (mode != null &&  mode.equals("storage"))){
             filesToTalley = dataset.getFiles();
         } else {
             List <FileMetadata>  fmds = version.getFileMetadatas();
-            System.out.print("FileMetadata: " + fmds.size());   
             for (FileMetadata fmd : fmds){
-                filesToTalley.add(fmd.getDataFile());
-            }
-            
+                    filesToTalley.add(fmd.getDataFile());
+            }           
         }
-
-        System.out.print("filesToTalley: " + filesToTalley.size());      
+    
         
         //CACHED EXTRAS FOR DOWNLOAD?
         
