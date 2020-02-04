@@ -25,7 +25,11 @@
       <prodStmt>
         <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo" URI="http://www.hawk.edu/url">Johnny Hawk</producer>
       </prodStmt>
-      <distStmt/>
+      <distStmt>
+        <distrbtr affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url" role="http://www.valhalla.edu/logo">Odin Raven</distrbtr>
+        <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
+        <depositr>Added, Depositor</depositr>
+      </distStmt>
     </citation>
     <stdyInfo>
       <subject>
@@ -50,15 +54,16 @@
         <eastBL>59.8</eastBL>
         <northBL>43.8</northBL>
       </sumDscr>
-      <distrbtr>
-        <distrbtr affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url" role="http://www.valhalla.edu/logo">Odin Raven</distrbtr>
-      </distrbtr>
-      <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
-      <depositr>Added, Depositor</depositr>
     </stdyInfo>
     <method>
-      <dataColl/>
+      <dataColl>
+        <sources/>
+      </dataColl>
       <anlyInfo/>
     </method>
+    <dataAccs>
+      <useStmt/>
+    </dataAccs>
+    <othrStdyMat/>
   </stdyDscr>
 </codeBook>

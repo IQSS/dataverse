@@ -71,6 +71,10 @@ import java.io.InputStreamReader;
 public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    public static final String NOTE_TYPE_TERMS_OF_USE = "DVN:TOU";
+    public static final String NOTE_SUBJECT_TERMS_OF_USE = "Terms Of Use";
+
+    public static final String LEVEL_DV = "dv";
 
     @EJB
     VariableServiceBean variableService;
@@ -173,7 +177,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
        
-        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));                       
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
         writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
         writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
         
@@ -188,9 +192,15 @@ public class DdiExportUtil {
         writeProducersElement(xmlw, version);
         
         xmlw.writeStartElement("distStmt");
-        writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
+        writeDistributorsElement(xmlw, version);
+        writeContactsElement(xmlw, version);
         writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
+        writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));
+        writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));
+
         xmlw.writeEndElement(); // diststmt
+
+        writeSeriesElement(xmlw, version);
 
         xmlw.writeEndElement(); // citation
         //End Citation Block
@@ -201,9 +211,16 @@ public class DdiExportUtil {
         
         writeSubjectElement(xmlw, version); //Subject and Keywords
         writeAbstractElement(xmlw, version); // Description
-        writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
-        
         writeSummaryDescriptionElement(xmlw, version);
+        writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
+        ////////
+        xmlw.writeEndElement(); // stdyInfo
+
+        writeMethodElement(xmlw, version);
+        writeDataAccess(xmlw , version);
+        writeOtherStudyMaterial(xmlw , version);
+
+        /*
         writeRelPublElement(xmlw, version);
 
         writeOtherIdElement(xmlw, version);
@@ -244,10 +261,52 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "contact", version.getContactForAccess()); 
         writeFullElement(xmlw, "collSize", version.getSizeOfCollection()); 
         writeFullElement(xmlw, "complete", version.getStudyCompletion()); 
-        
+        */
         
         xmlw.writeEndElement(); // stdyDscr
 
+    }
+
+    private static void writeOtherStudyMaterial(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException {
+        xmlw.writeStartElement("othrStdyMat");
+        writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
+        writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeRelPublElement(xmlw, version);
+        writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
+        xmlw.writeEndElement(); //othrStdyMat
+    }
+
+    private static void writeDataAccess(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException {
+        xmlw.writeStartElement("dataAccs");
+        if (version.getTermsOfUse() != null && !version.getTermsOfUse().trim().equals("")) {
+            xmlw.writeStartElement("notes");
+            writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_USE);
+            writeAttribute(xmlw, "level", LEVEL_DV);
+            xmlw.writeCharacters(version.getTermsOfUse());
+            xmlw.writeEndElement(); //notes
+        }
+        /*else if (xmlr.getLocalName().equals("notes")) {
+            String noteType = xmlr.getAttributeValue(null, "type");
+            if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
+                if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
+                    dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
+                }*/
+        writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace());
+        writeFullElement(xmlw, "origArch", version.getOriginalArchive());
+        writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus());
+        writeFullElement(xmlw, "collSize", version.getSizeOfCollection());
+        writeFullElement(xmlw, "complete", version.getStudyCompletion());
+        xmlw.writeStartElement("useStmt");
+        writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration());
+        writeFullElement(xmlw, "specPerm", version.getSpecialPermissions());
+        writeFullElement(xmlw, "restrctn", version.getRestrictions());
+        writeFullElement(xmlw, "contact", version.getContactForAccess());
+        writeFullElement(xmlw, "citeReq", version.getCitationRequirements());
+        writeFullElement(xmlw, "deposReq", version.getDepositorRequirements());
+        writeFullElement(xmlw, "conditions", version.getConditions());
+        writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
+        xmlw.writeEndElement(); //useStmt
+        xmlw.writeEndElement(); //dataAccs
     }
     
     private static void writeDocDescElement (XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
@@ -443,9 +502,19 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "dataCollector", dto2Primitive(version, DatasetFieldConstant.dataCollector));         
         writeFullElement(xmlw, "collectorTraining", dto2Primitive(version, DatasetFieldConstant.collectorTraining));   
         writeFullElement(xmlw, "frequenc", dto2Primitive(version, DatasetFieldConstant.frequencyOfDataCollection));      
-        writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));  
+        writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));
+
         writeTargetSampleElement(xmlw, version);
-        writeFullElement(xmlw, "deviat", dto2Primitive(version, DatasetFieldConstant.deviationsFromSampleDesign)); 
+
+        writeFullElement(xmlw, "deviat", dto2Primitive(version, DatasetFieldConstant.deviationsFromSampleDesign));
+
+        xmlw.writeStartElement("sources");
+        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
+        writeFullElement(xmlw, "srcOrig", dto2Primitive(version, DatasetFieldConstant.originOfSources));
+        writeFullElement(xmlw, "srcChar", dto2Primitive(version, DatasetFieldConstant.characteristicOfSources));
+        writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources));
+        xmlw.writeEndElement(); //sources
+
         writeFullElement(xmlw, "collMode", dto2Primitive(version, DatasetFieldConstant.collectionMode)); 
         writeFullElement(xmlw, "resInstru", dto2Primitive(version, DatasetFieldConstant.researchInstrument)); 
         writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation)); 
@@ -456,7 +525,7 @@ public class DdiExportUtil {
 
         xmlw.writeEndElement(); //dataColl
         xmlw.writeStartElement("anlyInfo");
-        writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
+        //writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
         writeFullElement(xmlw, "respRate", dto2Primitive(version, DatasetFieldConstant.responseRate));  
         writeFullElement(xmlw, "estSmpErr", dto2Primitive(version, DatasetFieldConstant.samplingErrorEstimates));  
         writeFullElement(xmlw, "dataAppr", dto2Primitive(version, DatasetFieldConstant.otherDataAppraisal)); 
@@ -691,6 +760,7 @@ public class DdiExportUtil {
         }
         writeFullElement(xmlw, "prodDate", dto2Primitive(version, DatasetFieldConstant.productionDate));    
         writeFullElement(xmlw, "prodPlac", dto2Primitive(version, DatasetFieldConstant.productionPlace));
+        writeSoftwareElement(xmlw, version);
   
         writeGrantElement(xmlw, version);
         xmlw.writeEndElement(); //prodStmt
@@ -703,7 +773,7 @@ public class DdiExportUtil {
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
-                        xmlw.writeStartElement("distrbtr");
+                        //xmlw.writeStartElement("distrbtr");
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String distributorName = "";
                             String distributorAffiliation = "";
@@ -746,8 +816,9 @@ public class DdiExportUtil {
                                 xmlw.writeEndElement(); //AuthEnty
                             }
                         }
-                        xmlw.writeEndElement(); //rspStmt
+                        //xmlw.writeEndElement(); //rspStmt
                     }
+
                 }
             }
         }
@@ -987,6 +1058,7 @@ public class DdiExportUtil {
             if ("socialscience".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.targetSampleSize.equals(fieldDTO.getTypeName())) {
+                        xmlw.writeStartElement("targetSampleSize");
                         String sizeFormula = "";
                         String actualSize = "";
                         Set<FieldDTO> foo = fieldDTO.getSingleCompound();
@@ -999,6 +1071,7 @@ public class DdiExportUtil {
                                 actualSize = next.getSinglePrimitive();
                             }
                         }
+
                         if (!sizeFormula.isEmpty()) {
                             xmlw.writeStartElement("sampleSizeFormula");
                             xmlw.writeCharacters(sizeFormula);
@@ -1009,6 +1082,7 @@ public class DdiExportUtil {
                             xmlw.writeCharacters(actualSize);
                             xmlw.writeEndElement(); //sampleSize
                         }
+                        xmlw.writeEndElement(); // targetSampleSize
                     }
                 }
             }
