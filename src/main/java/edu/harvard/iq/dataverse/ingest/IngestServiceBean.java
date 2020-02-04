@@ -277,20 +277,6 @@ public class IngestServiceBean {
                     }
                 }
 
-                // ... and let's delete the main temp file:
-                // Commenting out this "delete" for code review because otherwise "extractMetadata"
-                // below (for FITS files) fails with "Could not open temp file".
-                // See https://github.com/IQSS/dataverse/issues/5919
-/*
-                try {
-                    logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
-                    Files.delete(tempLocationPath);
-                } catch (IOException ex) {
-                    // (non-fatal - it's just a temp file.)
-                    logger.warning("Failed to delete temp file " + tempLocationPath.toString());
-                }
-*/
-
                 if (unattached) {
                     dataFile.setOwner(null);
                 }
@@ -368,8 +354,17 @@ public class IngestServiceBean {
                     
                     ret.add(dataFile);
                 }
-            }
 
+                // ... and let's delete the main temp file:
+                try {
+                    logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+                    Files.delete(tempLocationPath);
+                } catch (IOException ex) {
+                    // (non-fatal - it's just a temp file.)
+                    logger.warning("Failed to delete temp file " + tempLocationPath.toString());
+                }
+
+            }
             logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
         }
         
