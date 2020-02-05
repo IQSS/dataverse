@@ -107,6 +107,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
                 record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
             } else if (isDatasetUpdated(dataset, record)) {
                 setUpdateLogger.info("updating the timestamp on an existing record.");
+
                 record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
             }
 
@@ -282,11 +283,25 @@ public class OAIRecordServiceBean implements java.io.Serializable {
     private boolean isDatasetUpdated(Dataset dataset, OAIRecord record) {
         Date publishTime = dataset.getReleasedVersion().getReleaseTime();
 
-        boolean isGuestbookTimeAfterOaiTime = dataset.getGuestbookChangeTime()
-                .map(guestbookChangeTime -> guestbookChangeTime.after(record.getLastUpdateTime()))
+        boolean isLastModificationTimeAfterOaiTime = dataset.getLastChangeForExporterTime()
+                .map(modificationTime -> modificationTime.after(record.getLastUpdateTime()))
                 .getOrElse(false);
 
-        return publishTime.after(record.getLastUpdateTime()) || isGuestbookTimeAfterOaiTime;
+        return publishTime.after(record.getLastUpdateTime()) || isLastModificationTimeAfterOaiTime || hasEmbargoExpiredSinceLastOaiTime(dataset, record);
+    }
+
+    /**
+     * This method makes sure harvesting server notify harvesting clients that embargo expired only the first time after it happened.
+     * Without it any time after embargo expired and OAIServer runs its check it would falsely notify harvesting clients
+     * that {@value dataset} metadata changed.
+     * @param dataset
+     * @param record
+     * @return true if embargo expired between last time the check was run and this run
+     */
+    private boolean hasEmbargoExpiredSinceLastOaiTime(Dataset dataset, OAIRecord record) {
+        return dataset.getEmbargoDate()
+                    .map(embargoDate -> embargoDate.after(record.getLastUpdateTime()) && embargoDate.before(Date.from(Instant.now(systemClock))))
+                    .getOrElse(false);
     }
 
     public void setSystemClock(Clock systemClock) {

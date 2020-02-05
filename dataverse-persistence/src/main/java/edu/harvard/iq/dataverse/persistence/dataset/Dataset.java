@@ -118,7 +118,7 @@ public class Dataset extends DvObjectContainer {
     private Guestbook guestbook;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date guestbookChangeTime;
+    private Date lastChangeForExporterTime;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date embargoDate;
@@ -227,16 +227,18 @@ public class Dataset extends DvObjectContainer {
     }
 
     /**
-     * Timer used mainly for OAI exporters to determinate whether metadata was changed or not,
-     *  since license in exporters could be changed based on guestbook.
-     *
+     * Time of last changes that could affect exporters results, but are not related to specific dataset version.
+     * Example: Guestbook assigning and embargo date change can happen after dataset
+     * was published and without generating new dataset version.
+     * This operations can affect the final result of some exporters which
+     * should be reflected in OAI incremental imports.
      */
-    public Option<Date> getGuestbookChangeTime() {
-        return Option.of(guestbookChangeTime);
+    public Option<Date> getLastChangeForExporterTime() {
+        return Option.of(lastChangeForExporterTime);
     }
 
-    public void setGuestbookChangeTime(Date guestbookChangeTime) {
-        this.guestbookChangeTime = guestbookChangeTime;
+    public void setLastChangeForExporterTime(Date lastchangeforexportertime) {
+        this.lastChangeForExporterTime = lastchangeforexportertime;
     }
 
     public Option<Date> getEmbargoDate() {

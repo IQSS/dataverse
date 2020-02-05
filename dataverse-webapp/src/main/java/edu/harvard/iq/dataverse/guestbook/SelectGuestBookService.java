@@ -36,7 +36,7 @@ public class SelectGuestBookService {
         Option<Guestbook> previousGuestbook = Option.of(editedDataset.getGuestbook());
 
         if (guestbookIsAddedOrRemoved(selectedGuestbook, previousGuestbook)) {
-            editedDataset.setGuestbookChangeTime(Timestamp.from(Instant.now(systemTime)));
+            editedDataset.setLastChangeForExporterTime(Timestamp.from(Instant.now(systemTime)));
         }
 
         if(isSelectedGuestbookSameAsPrevious(selectedGuestbook, previousGuestbook)) {

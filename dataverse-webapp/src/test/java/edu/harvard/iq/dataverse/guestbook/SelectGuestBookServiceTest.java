@@ -53,7 +53,7 @@ class SelectGuestBookServiceTest {
                                                                            Option.none());
 
         //then
-        Assert.assertEquals(utcClock.instant(), savedDataset.getGuestbookChangeTime().get().toInstant());
+        Assert.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
         Assert.assertNull(savedDataset.getGuestbook());
     }
 
@@ -70,7 +70,7 @@ class SelectGuestBookServiceTest {
                                                                            Option.of(freshGuestbook));
 
         //then
-        Assert.assertEquals(utcClock.instant(), savedDataset.getGuestbookChangeTime().get().toInstant());
+        Assert.assertEquals(utcClock.instant(), savedDataset.getLastChangeForExporterTime().get().toInstant());
         Assert.assertEquals(freshGuestbook, savedDataset.getGuestbook());
     }
 
@@ -84,7 +84,7 @@ class SelectGuestBookServiceTest {
                                                                            Option.none());
 
         //then
-        Assert.assertEquals(Option.none(), savedDataset.getGuestbookChangeTime());
+        Assert.assertEquals(Option.none(), savedDataset.getLastChangeForExporterTime());
         Assert.assertNull(savedDataset.getGuestbook());
     }
 
