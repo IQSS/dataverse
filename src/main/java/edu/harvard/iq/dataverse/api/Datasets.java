@@ -77,6 +77,7 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
@@ -135,6 +136,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -1082,24 +1084,38 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @todo Make this real. Currently only used for API testing. Copied from
-     * the equivalent API endpoint for dataverses and simplified with values
-     * hard coded.
+     * Add a given assignment to a given user or group
+     * @param ra role assignment DTO
+     * @param id dataset id
+     * @param apiKey
      */
     @POST
     @Path("{identifier}/assignments")
-    public Response createAssignment(String userOrGroup, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
-        boolean apiTestingOnly = true;
-        if (apiTestingOnly) {
-            return error(Response.Status.FORBIDDEN, "This is only for API tests.");
-        }
+    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            RoleAssignee assignee = findAssignee(userOrGroup);
+            
+            RoleAssignee assignee = findAssignee(ra.getAssignee());
             if (assignee == null) {
                 return error(Response.Status.BAD_REQUEST, "Assignee not found");
+            }           
+            
+            DataverseRole theRole;
+            Dataverse dv = dataset.getOwner();
+            theRole = null;
+            while ((theRole == null) && (dv != null)) {
+                for (DataverseRole aRole : rolesSvc.availableRoles(dv.getId())) {
+                    if (aRole.getAlias().equals(ra.getRole())) {
+                        theRole = aRole;
+                        break;
+                    }
+                }
+                dv = dv.getOwner();
             }
-            DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
+            if (theRole == null) {
+                return error(Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataset.getOwner());
+            }
+
             String privateUrlToken = null;
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
