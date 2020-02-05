@@ -180,11 +180,12 @@ public class IngestServiceBean {
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
 				String storageLocation = storageInfo[1];
 				String tempFileLocation = null;
+				Path tempLocationPath = null;
 				if (driverType.equals("tmp")|| driverType.contentEquals("file")) {  //"file" is the default if no prefix
 					tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
 
 					// Try to save the file in its permanent location:
-					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageLocation);
+					tempLocationPath = Paths.get(tempFileLocation);
 					WritableByteChannel writeChannel = null;
 					FileChannel readChannel = null;
 
@@ -288,22 +289,11 @@ public class IngestServiceBean {
 						}
 					}
 
-					// ... and let's delete the main temp file:
-					try {
-						logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
-						Files.delete(tempLocationPath);
-					} catch (IOException ex) {
-						// (non-fatal - it's just a temp file.)
-						logger.warning("Failed to delete temp file " + tempLocationPath.toString());
-					}
-
 					if (unattached) {
 						dataFile.setOwner(null);
 					}
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
-
-
 				} else {
 					try {
 						StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
@@ -318,7 +308,6 @@ public class IngestServiceBean {
 					savedSuccess = true;
 					logger.info("unattached: " + unattached);
 						dataFile.setOwner(null);
-					
 				}
 
 				logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
@@ -367,6 +356,16 @@ public class IngestServiceBean {
                         // "text/tsv" should be used instead: 
                         dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
                     }
+				}
+				// ... and let's delete the main temp file if it exists:
+				if(tempLocationPath!=null) {
+    				try {
+	    				logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+			    		Files.delete(tempLocationPath);
+				    } catch (IOException ex) {
+					    // (non-fatal - it's just a temp file.)
+    					logger.warning("Failed to delete temp file " + tempLocationPath.toString());
+	    			}				
 				}
 				if (savedSuccess) {
 					// temp dbug line
