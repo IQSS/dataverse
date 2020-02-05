@@ -632,6 +632,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-content {color:#333;background:#fff;padding:8px 10px;}
 
 #metrics-heading {font-weight:bold;color:#333;background:#eee;padding:8px 10px;}
+#metrics-heading-subtitle {font-weight:normal;font-size:smaller;}
 #metrics-body {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
 #metrics-block .metrics-count-block:not(:last-child) {margin-bottom:.5em;padding-bottom:.5em;border-bottom:1px solid #EEE}
 
