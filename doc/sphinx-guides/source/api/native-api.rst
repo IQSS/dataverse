@@ -151,7 +151,7 @@ The fully expanded example above (without environment variables) looks like this
 Report the data (file) size of a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows the combined size in bytes of all the files uploaded into the dataverse ``id``. ::
+Shows the combined size in bytes of all the files uploaded into the dataverse ``id``:
 
 .. code-block:: bash
 
@@ -173,7 +173,7 @@ By default, only the archival files are counted - i.e., the files uploaded by us
 List Roles Defined in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-All the roles defined directly in the dataverse identified by ``id``::
+All the roles defined directly in the dataverse identified by ``id``:
 
 .. code-block:: bash
 
@@ -192,7 +192,7 @@ The fully expanded example above (without environment variables) looks like this
 List Facets Configured for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List all the facets for a given dataverse ``id``::
+|CORS| List all the facets for a given dataverse ``id``:
 
 .. code-block:: bash
 
@@ -211,7 +211,7 @@ The fully expanded example above (without environment variables) looks like this
 Set Facets for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign search facets for a given dataverse identified by ``id``::
+Assign search facets for a given dataverse identified by ``id``:
 
 .. code-block:: bash
 
@@ -232,7 +232,7 @@ Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["au
 Create a New Role in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role under dataverse ``id``. Needs a json file with the role description::
+Creates a new role under dataverse ``id``. Needs a json file with the role description:
 
 .. code-block:: bash
 
@@ -264,7 +264,7 @@ Where ``roles.json`` looks like this::
 List Role Assignments in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List all the role assignments at the given dataverse::
+List all the role assignments at the given dataverse:
 
 .. code-block:: bash
 
@@ -283,7 +283,7 @@ The fully expanded example above (without environment variables) looks like this
 Assign Default Role to User Creating a Dataset in a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned::
+Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned:
 
 .. code-block:: bash
 
@@ -307,7 +307,7 @@ Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who cre
 Assign a New Role on a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assigns a new role, based on the POSTed JSON. ::
+Assigns a new role, based on the POSTed JSON:
 
 .. code-block:: bash
 
@@ -335,7 +335,7 @@ POSTed JSON example (the content of ``role.json`` file)::
 Delete Role Assignment from a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete the assignment whose id is ``$id``::
+Delete the assignment whose id is ``$id``:
 
 .. code-block:: bash
 
@@ -403,7 +403,7 @@ The fully expanded example above (without environment variables) looks like this
 Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get whether the dataverse is a metadata block root, or does it uses its parent blocks::
+Get whether the dataverse is a metadata block root, or does it uses its parent blocks:
 
 .. code-block:: bash
 
@@ -423,7 +423,7 @@ Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
-values are ``true`` and ``false`` (both are valid JSON expressions). ::
+values are ``true`` and ``false`` (both are valid JSON expressions):
 
 .. code-block:: bash
 
@@ -486,11 +486,22 @@ Import a Dataset into a Dataverse
 
 .. note:: This action requires a Dataverse account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAVERSE_ID=root
+  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:import?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file dataset.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+    curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets/:import?pid=doi:ZZ7/MOSEISLEYDB94&release=yes --upload-file dataset.json
 
 The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
 
@@ -516,11 +527,22 @@ Import a Dataset into a Dataverse with a DDI file
 
 .. note:: This action requires a Dataverse account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it::
+To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DV_ALIAS/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAVERSE_ID=root
+  export PERSISTENT_IDENTIFIER=doi:ZZ7/MOSEISLEYDB94
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets/:importddi?pid=$PERSISTENT_IDENTIFIER&release=yes --upload-file ddi_dataset.xml
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/datasets/:importddi?pid=doi:ZZ7/MOSEISLEYDB94&release=yes --upload-file ddi_dataset.xml
 
 The optional ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if the provided PID fails validation.
 
@@ -545,10 +567,10 @@ In order to publish a dataverse, you must know either its "alias" (which the GUI
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  export ALIAS=root
   export SERVER_URL=https://demo.dataverse.org
+  export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ALIAS/actions/:publish
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/actions/:publish
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -576,49 +598,159 @@ Get JSON Representation of a Dataset
 
 .. note:: Datasets can be accessed using persistent identifiers. This is done by passing the constant ``:persistentId`` where the numeric id of the dataset is expected, and then passing the actual persistent id as a query parameter with the name ``persistentId``.
 
-  Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB* ::
+Example: Getting the dataset whose DOI is *10.5072/FK2/J8SJZB*:
 
-    curl http://$SERVER/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+.. code-block:: bash
 
-  fully expanded::
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-    curl http://localhost:8080/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+  curl $SERVER_URL/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER
 
-  Getting its draft version::
+The fully expanded example above (without environment variables) looks like this:
 
-    curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+.. code-block:: bash
 
-  fully expanded::
+  curl https://demo.dataverse.org/api/datasets/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
-    curl http://localhost:8080/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
+Getting its draft version:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+
+  curl http://$SERVER/api/datasets/:persistentId/versions/:draft?persistentId=$PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/J8SJZB
 
 
-|CORS| Show the dataset whose id is passed::
+|CORS| Show the dataset whose id is passed:
 
-  GET http://$SERVER/api/datasets/$id?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=408730
+
+  curl $SERVER_URL/api/datasets/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/408730
+
+The dataset id can be extracted from the response retrieved from the API which uses the persistent identifier (``/api/datasets/:persistentId/?persistentId=$PERSISTENT_IDENTIFIER``).
 
 List Versions of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List versions of the dataset::
+|CORS| List versions of the dataset:
 
-  GET http://$SERVER/api/datasets/$id/versions?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl $SERVER_URL/api/dataverses/$ID/versions
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions
+
+It returns a list of versions with their metadata, and file list:
+
+.. code-block:: bash
+
+  {
+    "status": "OK",
+    "data": [
+      {
+        "id": 7,
+        "datasetId": 24,
+        "datasetPersistentId": "doi:10.5072/FK2/U6AEZM",
+        "storageIdentifier": "file://10.5072/FK2/U6AEZM",
+        "versionNumber": 2,
+        "versionMinorNumber": 0,
+        "versionState": "RELEASED",
+        "lastUpdateTime": "2015-04-20T09:58:35Z",
+        "releaseTime": "2015-04-20T09:58:35Z",
+        "createTime": "2015-04-20T09:57:32Z",
+        "license": "CC0",
+        "termsOfUse": "CC0 Waiver",
+        "termsOfAccess": "You need to request for access.",
+        "fileAccessRequest": true,
+        "metadataBlocks": {...},
+        "files": [...]
+      },
+      {
+        "id": 6,
+        "datasetId": 24,
+        "datasetPersistentId": "doi:10.5072/FK2/U6AEZM",
+        "storageIdentifier": "file://10.5072/FK2/U6AEZM",
+        "versionNumber": 1,
+        "versionMinorNumber": 0,
+        "versionState": "RELEASED",
+        "UNF": "UNF:6:y4dtFxWhBaPM9K/jlPPuqg==",
+        "lastUpdateTime": "2015-04-20T09:56:34Z",
+        "releaseTime": "2015-04-20T09:56:34Z",
+        "createTime": "2015-04-20T09:43:45Z",
+        "license": "CC0",
+        "termsOfUse": "CC0 Waiver",
+        "termsOfAccess": "You need to request for access.",
+        "fileAccessRequest": true,
+        "metadataBlocks": {...},
+        "files": [...]
+      }
+    ]
+  }
+
 
 Get Version of a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Show a version of the dataset. The output includes any metadata blocks the dataset might have::
+|CORS| Show a version of the dataset. The output includes any metadata blocks the dataset might have:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionNumber?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0
 
 .. _export-dataset-metadata-api:
 
 Export Metadata of a Dataset in Various Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
+|CORS| Export the metadata of the current published version of a dataset in various formats see Note below:
 
-    GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export METADATA_FORMAT=ddi
+
+  curl $SERVER_URL/api/datasets/export?exporter=$METADATA_FORMAT&persistentId=PERSISTENT_IDENTIFIER
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/export?exporter=ddi&persistentId=doi:10.5072/FK2/J8SJZB
 
 .. note:: Supported exporters (export formats) are ``ddi``, ``oai_ddi``, ``dcterms``, ``oai_dc``, ``schema.org`` , ``OAI_ORE`` , ``Datacite``, ``oai_datacite`` and ``dataverse_json``. Descriptive names can be found under :ref:`metadata-export-formats` in the User Guide.
 
@@ -636,23 +768,60 @@ Both forms are valid according to Google's Structured Data Testing Tool at https
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the file metadata, for the given dataset and version::
+|CORS| Lists all the file metadata, for the given dataset and version:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/files
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/files
 
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the metadata blocks and their content, for the given dataset and version::
+|CORS| Lists all the metadata blocks and their content, for the given dataset and version:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/metadata
 
 List Single Metadata Block for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists the metadata block block named `blockname`, for the given dataset and version::
+|CORS| Lists the metadata block named `METADATA_BLOCK`, for the given dataset and version:
 
-  GET http://$SERVER/api/datasets/$id/versions/$versionId/metadata/$blockname?key=$apiKey
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+  export METADATA_BLOCK=citation
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/metadata/$METADATA_BLOCK
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/metadata/citation
 
 Update Metadata For a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -661,13 +830,37 @@ Updates the metadata for a dataset. If a draft of the dataset already exists, th
 
 You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
 
-For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this::
+For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this:
 
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
+.. code-block:: bash
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
 
-    curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PID | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PERSISTENT_IDENTIFIER --upload-file dataset-update-metadata.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/versions/:draft?persistentId=doi:10.5072/FK2/BCCP9Z --upload-file dataset-update-metadata.json
+
+Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/BCCP9Z
+
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PERSISTENT_IDENTIFIER | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/:persistentId/versions/:latest?persistentId=doi:10.5072/FK2/BCCP9Z | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
 Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
 
