@@ -383,7 +383,7 @@
                                         <div class="col-sm-3" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                             <div id="metrics-block">
                                             <div id="metrics-heading">
-                                                #{bundle['metrics.dataset.title']}
+                                                #{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.dataset.makedatacount.title'] : bundle['metrics.dataset.title']}
                                                 <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
                                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
                                                         data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
@@ -391,7 +391,9 @@
                                                 <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
                                                     <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
                                                         data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
+                                                        <div>#{bundle['metrics.dataset.makedatacount.since']} ##{!settingsWrapper.getMDCStartDate().toString()}</div>
                                                 </ui:fragment>
+                                                
                                             </div>
                                             <div id="metrics-body">
                                                 <!-- Classic downloads -->
