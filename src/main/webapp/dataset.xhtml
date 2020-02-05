@@ -389,7 +389,7 @@
                                                 <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
                                                     <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
                                                         data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
-                                                        <div>#{bundle['metrics.dataset.makedatacount.since']} ##{!settingsWrapper.getMDCStartDate().toString()}</div>
+                                                        <div id="metrics-heading-subtitle">#{bundle['metrics.dataset.makedatacount.since']} #{settingsWrapper.getMDCStartDate().toString()}</div>
                                                 </ui:fragment>
                                                 
                                             </div>
