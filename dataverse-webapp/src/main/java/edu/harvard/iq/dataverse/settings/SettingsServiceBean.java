@@ -77,15 +77,6 @@ public class SettingsServiceBean {
          */
         SearchHighlightFragmentSize,
         /**
-         * Revert to MyData *not* using the Solr "permission documents" which
-         * was the behavior in Dataverse 4.2. Starting to use Solr permission
-         * documents in MyData has been introduced in 4.2.1 as a fix for
-         * https://github.com/IQSS/dataverse/issues/2649 where the "File
-         * Downloader" role was exposing cards for unpublished datasets when it
-         * shouldn't.
-         */
-        MyDataDoesNotUseSolrPermissionDocs,
-        /**
          * Experimental: Allow non-public search with a key/token using the
          * Search API. See also https://github.com/IQSS/dataverse/issues/1299
          */

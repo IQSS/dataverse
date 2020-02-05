@@ -79,13 +79,13 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "title:only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "title:only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_66_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "only", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_66_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "dateOfDeposit:2019", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "dateOfDeposit:2019", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_66_draft", "dataset_52_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "doi:FK2/MLXK1N", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "doi:FK2/MLXK1N", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_52_draft");
         
     }
@@ -102,11 +102,11 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
                 "fileTypeGroupFacet: ZIP");
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters1, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters1, "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_57", "dataset_56", "dataverse_19");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters2, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters2, "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_66_draft", "dataset_52_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters3, "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), filters3, "dateSort", SortOrder.desc, 0, 20, false),
                 "datafile_55_draft", "datafile_53_draft");
     }
     
@@ -119,11 +119,11 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         SearchForTypes datasetsAndFilesFilters = SearchForTypes.byTypes(SearchObjectType.DATASETS, SearchObjectType.FILES);
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", dataverseOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", dataverseOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataverse_51", "dataverse_19", "dataverse_67");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filesOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", filesOnlyFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "datafile_55_draft", "datafile_53_draft");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", datasetsAndFilesFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", datasetsAndFilesFilters, Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_57", "dataset_56_draft", "dataset_56",
                 "dataset_66_draft", "datafile_55_draft",
                 "datafile_53_draft", "dataset_52_draft");
@@ -135,15 +135,15 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20, false),
                 "dataset_57", "dataset_56_draft", "dataset_56", "dataset_66_draft",
                 "datafile_55_draft", "datafile_53_draft", // both have the same create date
                 "dataset_52_draft", "dataverse_51", "dataverse_19", "dataverse_67");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.asc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.asc, 0, 20, false),
                 "dataverse_67", "dataverse_19", "dataverse_51", "dataset_52_draft",
                 "datafile_55_draft", "datafile_53_draft", // both have the same create date
                 "dataset_66_draft", "dataset_56_draft", "dataset_56", "dataset_57");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "nameSort", SortOrder.asc, 0, true, 20, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "nameSort", SortOrder.asc, 0, 20, false),
                 "dataset_66_draft", "dataset_52_draft", "dataverse_19",
                 "datafile_55_draft", "datafile_53_draft", "dataverse_51", "dataverse_67",
                 "dataset_56_draft", "dataset_56", "dataset_57");  // don't have any name (no title)
@@ -155,11 +155,11 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         List<Dataverse> dataverses = Collections.singletonList(dataverseDao.findRootDataverse());
         
         // when & then
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 3, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 3, false),
                 "dataset_57", "dataset_56_draft", "dataset_56");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 2, true, 1, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 2, 1, false),
                 "dataset_56");
-        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 7, true, 100, false),
+        assertSearchResultIds(searchService.search(adminDataverseRequest, dataverses, "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 7, 100, false),
                 "dataverse_51", "dataverse_19", "dataverse_67");
     }
     
@@ -167,7 +167,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
     public void search__by_guest_user() throws SearchException {
         // when
         SolrQueryResponse searchResponse = searchService.search(guestDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
-                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
+                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20);
         
         // then
         assertSearchResultIds(searchResponse, "dataset_57", "dataset_56", "dataverse_19");
@@ -178,7 +178,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         
         // when
         SolrQueryResponse searchResponse = searchService.search(adminDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
-                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
+                "*", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20);
         
         // then
         assertSearchResultIds(searchResponse, "dataset_57", "dataset_56_draft", "dataset_56", "dataset_66_draft",
@@ -247,7 +247,7 @@ public class SearchServiceBeanIT extends WebappArquillianDeployment {
         
         // when
         SolrQueryResponse searchResponse = searchService.search(adminDataverseRequest, Collections.singletonList(dataverseDao.findRootDataverse()),
-                "willDefenitelyNotExists", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, true, 20);
+                "willDefenitelyNotExists", SearchForTypes.all(), Collections.emptyList(), "dateSort", SortOrder.desc, 0, 20);
         
         // then
         assertThat(searchResponse.getSolrSearchResults(), is(empty()));

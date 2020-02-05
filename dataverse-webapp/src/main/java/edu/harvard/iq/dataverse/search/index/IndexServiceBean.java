@@ -105,7 +105,7 @@ public class IndexServiceBean {
     @EJB
     SystemConfig systemConfig;
     @EJB
-    SearchPermissionsServiceBean searchPermissionsService;
+    SearchPermissionsFinder searchPermissionsService;
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
@@ -127,8 +127,6 @@ public class IndexServiceBean {
     public static final String discoverabilityPermissionSuffix = "_permission";
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
-    private static final String publicGroupIdString = "public";
-    private static final String publicGroupString = groupPrefix + "public";
     public static final String HARVESTED = "Harvested";
     private String rootDataverseName;
     private Dataverse rootDataverseCached;
@@ -1233,10 +1231,6 @@ public class IndexServiceBean {
 
     public static String getGroupPerUserPrefix() {
         return groupPerUserPrefix;
-    }
-
-    public static String getPublicGroupString() {
-        return publicGroupString;
     }
 
     public String delete(Dataverse doomed) {

@@ -741,7 +741,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     SearchFields.RELEASE_OR_CREATE_DATE,
                     SortOrder.desc,
                     paginationStart,
-                    true,
                     SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE
             );
 
@@ -771,7 +770,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         SearchFields.RELEASE_OR_CREATE_DATE,
                         SortOrder.desc,
                         0,
-                        true,
                         1000
                 );
                 roleTagRetriever = new RoleTagRetriever(rolePermissionHelper, roleAssigneeService, this.dvObjectServiceBean);

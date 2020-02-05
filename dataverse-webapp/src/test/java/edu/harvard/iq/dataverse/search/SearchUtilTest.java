@@ -1,19 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.index.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
+import edu.harvard.iq.dataverse.search.index.SearchPermissions;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.query.SortBy;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -28,12 +25,14 @@ public class SearchUtilTest {
     public void testCreateSolrDoc() {
         assertEquals(null, SearchUtil.createSolrDoc(null));
         Long datasetVersionId = 345678l;
-        SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(new DvObjectSolrDoc("12345", "dataset_12345", datasetVersionId, "myNameOrTitleNotUsedHere", Arrays.asList(IndexServiceBean.getPublicGroupString())));
+        SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(new PermissionsSolrDoc(12345, "dataset_12345", datasetVersionId, "myNameOrTitleNotUsedHere",
+                new SearchPermissions(Arrays.asList("group_someAlias"), Instant.EPOCH)));
         System.out.println(solrInputDocument.toString());
         assertEquals(SearchFields.ID + "=" + IndexServiceBean.solrDocIdentifierDataset + "12345" + IndexServiceBean.discoverabilityPermissionSuffix, solrInputDocument.get(SearchFields.ID).toString());
         assertEquals(SearchFields.DEFINITION_POINT + "=dataset_12345", solrInputDocument.get(SearchFields.DEFINITION_POINT).toString());
         assertEquals(SearchFields.DEFINITION_POINT_DVOBJECT_ID + "=12345", solrInputDocument.get(SearchFields.DEFINITION_POINT_DVOBJECT_ID).toString());
-        assertEquals(SearchFields.DISCOVERABLE_BY + "=" + Arrays.asList(IndexServiceBean.getPublicGroupString()), solrInputDocument.get(SearchFields.DISCOVERABLE_BY).toString());
+        assertEquals(SearchFields.DISCOVERABLE_BY + "=" + Arrays.asList("group_someAlias"), solrInputDocument.get(SearchFields.DISCOVERABLE_BY).toString());
+        assertEquals("1970-01-01T00:00:00Z", solrInputDocument.getField(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM).getValue());
     }
 
     @Test

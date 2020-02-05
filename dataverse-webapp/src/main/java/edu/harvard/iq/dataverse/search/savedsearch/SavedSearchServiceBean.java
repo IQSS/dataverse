@@ -204,7 +204,6 @@ public class SavedSearchServiceBean {
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
         SortBy sortBy = new SortBy(SearchFields.RELEVANCE, SortOrder.desc);
         int paginationStart = 0;
-        boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(savedSearch.getDefinitionPoint());
@@ -217,7 +216,6 @@ public class SavedSearchServiceBean {
                 sortBy.getField(),
                 sortBy.getOrder(),
                 paginationStart,
-                dataRelatedToMe,
                 numResultsPerPage
         );
         return solrQueryResponse;

@@ -213,6 +213,7 @@ public class SearchFields {
     public static final String DEFINITION_POINT = "definitionPointDocId";
     public static final String DEFINITION_POINT_DVOBJECT_ID = "definitionPointDvObjectId";
     public static final String DISCOVERABLE_BY = "discoverableBy";
+    public static final String DISCOVERABLE_BY_PUBLIC_FROM = "discoverableByPublicFrom";
 
     /**
      * i.e. "Unpublished", "Draft" (multivalued)

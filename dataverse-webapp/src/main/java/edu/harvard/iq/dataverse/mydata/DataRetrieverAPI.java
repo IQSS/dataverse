@@ -293,7 +293,6 @@ public class DataRetrieverAPI extends AbstractApiBean {
                     //SearchFields.NAME_SORT, SortBy.ASCENDING,
                     SearchFields.RELEASE_OR_CREATE_DATE, SortOrder.desc,
                     solrCardStart, //paginationStart,
-                    true, // dataRelatedToMe
                     SearchConstants.NUM_SOLR_DOCS_TO_RETRIEVE //10 // SearchFields.NUM_SOLR_DOCS_TO_RETRIEVE
             );
 

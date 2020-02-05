@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.Stateless;
@@ -51,7 +52,7 @@ public class DatasetService {
     private IngestServiceBean ingestService;
     private SettingsServiceBean settingsService;
     private ProvPopupFragmentBean provPopupFragmentBean;
-    private PermissionServiceBean permissionService;
+    private SolrIndexServiceBean solrIndexService;
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -64,7 +65,8 @@ public class DatasetService {
     public DatasetService(EjbDataverseEngine commandEngine, UserNotificationService userNotificationService,
                           DatasetDao datasetDao, DataverseSession session, DataverseRequestServiceBean dvRequestService,
                           IngestServiceBean ingestService, SettingsServiceBean settingsService,
-                          ProvPopupFragmentBean provPopupFragmentBean, PermissionServiceBean permissionService) {
+                          ProvPopupFragmentBean provPopupFragmentBean, PermissionServiceBean permissionService,
+                          SolrIndexServiceBean solrIndexService) {
         this.commandEngine = commandEngine;
         this.userNotificationService = userNotificationService;
         this.datasetDao = datasetDao;
@@ -73,7 +75,7 @@ public class DatasetService {
         this.ingestService = ingestService;
         this.settingsService = settingsService;
         this.provPopupFragmentBean = provPopupFragmentBean;
-        this.permissionService = permissionService;
+        this.solrIndexService = solrIndexService;
     }
 
 
@@ -213,7 +215,11 @@ public class DatasetService {
         }
 
         dataset.setEmbargoDate(embargoDate);
-        return datasetDao.merge(dataset);
+        dataset = datasetDao.mergeAndFlush(dataset);
+        
+        solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
+        
+        return dataset;
     }
 
 }

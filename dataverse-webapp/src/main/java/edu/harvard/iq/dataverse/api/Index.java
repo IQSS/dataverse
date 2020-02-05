@@ -29,7 +29,8 @@ import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.index.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDocFactory;
 import edu.harvard.iq.dataverse.search.index.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.index.IndexResponse;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
@@ -98,6 +99,8 @@ public class Index extends AbstractApiBean {
     SearchFilesServiceBean searchFilesService;
     @EJB
     private SolrFieldFactory solrFieldFactory;
+    @EJB
+    private PermissionsSolrDocFactory solrDocFactory;
 
     public static String contentChanged = "contentChanged";
     public static String contentIndexed = "contentIndexed";
@@ -585,14 +588,13 @@ public class Index extends AbstractApiBean {
 
         String sortField = SearchFields.ID;
         int paginationStart = 0;
-        boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse;
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(subtreeScope);
         try {
             solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, SearchForTypes.all(), filterQueries,
-                    sortField, SortOrder.asc, paginationStart, dataRelatedToMe, numResultsPerPage);
+                    sortField, SortOrder.asc, paginationStart, numResultsPerPage);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
@@ -624,21 +626,22 @@ public class Index extends AbstractApiBean {
         if (dvObjectToLookUp == null) {
             return error(Status.BAD_REQUEST, "Could not find DvObject based on id " + dvObjectId);
         }
-        List<DvObjectSolrDoc> solrDocs = SolrIndexService.determineSolrDocs(dvObjectToLookUp);
+        List<PermissionsSolrDoc> solrDocs = solrDocFactory.determinePermissionsDocsOnSelfOnly(dvObjectToLookUp);
 
         JsonObjectBuilder data = Json.createObjectBuilder();
 
         JsonArrayBuilder permissionsData = Json.createArrayBuilder();
 
-        for (DvObjectSolrDoc solrDoc : solrDocs) {
+        for (PermissionsSolrDoc solrDoc : solrDocs) {
             JsonObjectBuilder dataDoc = Json.createObjectBuilder();
             dataDoc.add(SearchFields.ID, solrDoc.getSolrId());
             dataDoc.add(SearchFields.NAME_SORT, solrDoc.getNameOrTitle());
             JsonArrayBuilder perms = Json.createArrayBuilder();
-            for (String perm : solrDoc.getPermissions()) {
+            for (String perm : solrDoc.getPermissions().getPermissions()) {
                 perms.add(perm);
             }
             dataDoc.add(SearchFields.DISCOVERABLE_BY, perms);
+            dataDoc.add(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, solrDoc.getPermissions().getPublicFrom().toString());
             permissionsData.add(dataDoc);
         }
         data.add("perms", permissionsData);

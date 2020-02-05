@@ -264,13 +264,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse), 
                     queryToPassToSolr, selectedTypes, filterQueriesFinal, sortField, sortOrder, 
-                    paginationStart, false, numRows, false);
+                    paginationStart, numRows, false);
             
             // This 2nd search() is for populating the facets: -- L.A. 
             // TODO: ...
             SolrQueryResponse solrQueryResponseAllTypes = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, SearchForTypes.all(), filterQueriesFinal, sortField, sortOrder, 
-                    paginationStart, false, numRows, false);
+                    paginationStart, numRows, false);
             
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
             previewCountbyType.put("dataverses", solrQueryResponseAllTypes.getDvObjectCounts().getDataversesCount());

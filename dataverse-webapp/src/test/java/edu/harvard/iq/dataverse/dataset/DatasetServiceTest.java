@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.dataset;
 
-import edu.harvard.iq.dataverse.DatasetDao;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -14,6 +13,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,6 +46,9 @@ public class DatasetServiceTest {
 
     @Mock
     private DatasetDao datasetDao;
+    
+    @Mock
+    private SolrIndexServiceBean solrIndexService;
 
     @Mock
     private PermissionsWrapper permissionsWrapper;
@@ -103,7 +106,7 @@ public class DatasetServiceTest {
         // given
         Dataset dataset = new Dataset();
         Date embargoDate = Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS).plus(2, ChronoUnit.DAYS));
-        when(datasetDao.merge(dataset)).thenReturn(dataset);
+        when(datasetDao.mergeAndFlush(dataset)).thenReturn(dataset);
 
         // when
         Dataset result = datasetService.setDatasetEmbargoDate(dataset, embargoDate);

@@ -71,7 +71,6 @@ public class Search extends AbstractApiBean {
             @QueryParam("fq") final List<String> filterQueries,
             @QueryParam("show_entity_ids") boolean showEntityIds,
             @QueryParam("show_api_urls") boolean showApiUrls,
-            @QueryParam("show_my_data") boolean showMyData,
             @QueryParam("query_entities") boolean queryEntities,
             @Context HttpServletResponse response
     ) {
@@ -116,9 +115,6 @@ public class Search extends AbstractApiBean {
                 return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
             }
 
-            // users can't change these (yet anyway)
-            boolean dataRelatedToMe = showMyData; //getDataRelatedToMe();
-
             SolrQueryResponse solrQueryResponse;
             try {
                 solrQueryResponse = searchService.search(createDataverseRequest(user),
@@ -129,7 +125,6 @@ public class Search extends AbstractApiBean {
                                                          sortBy.getField(),
                                                          sortBy.getOrder(),
                                                          paginationStart,
-                                                         dataRelatedToMe,
                                                          numResultsPerPage,
                                                          queryEntities
                 );

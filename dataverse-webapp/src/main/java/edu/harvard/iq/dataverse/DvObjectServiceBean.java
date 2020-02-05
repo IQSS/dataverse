@@ -130,22 +130,18 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * @todo DRY! Perhaps we should merge this with the older
      * updateContentIndexTime method.
      */
-    public DvObject updatePermissionIndexTime(DvObject dvObject) {
-        /**
-         * @todo to avoid a possible OptimisticLockException, should we merge
-         * dvObject before we try to set this timestamp? See
-         * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
-         */
-        Long dvObjectId = dvObject.getId();
-        DvObject dvObjectToModify = findDvObject(dvObjectId);
-        if (dvObjectToModify == null) {
+    public int updatePermissionIndexTime(long dvObjectId) {
+        int rowsAffected = em.createQuery("UPDATE DvObject o SET o.permissionIndexTime=:currentTime WHERE o.id=:id")
+            .setParameter("id", dvObjectId)
+            .setParameter("currentTime", new Timestamp(new Date().getTime()))
+            .executeUpdate();
+        
+        if (rowsAffected == 1) {
+            logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
+        } else {
             logger.log(Level.FINE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
-            return dvObject;
         }
-        dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
-        logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
-        return savedDvObject;
+        return rowsAffected;
     }
 
     @TransactionAttribute(REQUIRES_NEW)

@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.index.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.query.SortBy;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +15,7 @@ public class SearchUtil {
     
     // -------------------- LOGIC --------------------
 
-    public static SolrInputDocument createSolrDoc(DvObjectSolrDoc dvObjectSolrDoc) {
+    public static SolrInputDocument createSolrDoc(PermissionsSolrDoc dvObjectSolrDoc) {
         if (dvObjectSolrDoc == null) {
             return null;
         }
@@ -23,7 +23,8 @@ public class SearchUtil {
         solrInputDocument.addField(SearchFields.ID, dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
         solrInputDocument.addField(SearchFields.DEFINITION_POINT, dvObjectSolrDoc.getSolrId());
         solrInputDocument.addField(SearchFields.DEFINITION_POINT_DVOBJECT_ID, dvObjectSolrDoc.getDvObjectId());
-        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY, dvObjectSolrDoc.getPermissions().getPermissions());
+        solrInputDocument.addField(SearchFields.DISCOVERABLE_BY_PUBLIC_FROM, dvObjectSolrDoc.getPermissions().getPublicFrom().toString());
         return solrInputDocument;
     }
 

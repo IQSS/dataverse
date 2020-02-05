@@ -171,6 +171,12 @@ public class DatasetDao implements java.io.Serializable {
     public Dataset merge(Dataset ds) {
         return em.merge(ds);
     }
+    
+    public Dataset mergeAndFlush(Dataset ds) {
+        Dataset merged = em.merge(ds);
+        em.flush();
+        return merged;
+    }
 
     public Dataset findByGlobalId(String globalId) {
         Dataset retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset");
