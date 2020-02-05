@@ -288,15 +288,6 @@ public class IngestServiceBean {
 						}
 					}
 
-					// ... and let's delete the main temp file:
-					try {
-						logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
-						Files.delete(tempLocationPath);
-					} catch (IOException ex) {
-						// (non-fatal - it's just a temp file.)
-						logger.warning("Failed to delete temp file " + tempLocationPath.toString());
-					}
-
 					if (unattached) {
 						dataFile.setOwner(null);
 					}
@@ -340,6 +331,14 @@ public class IngestServiceBean {
                             // "text/tsv" should be used instead: 
                             dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
 						}
+					}
+					// ... and let's delete the main temp file:
+					try {
+						logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+						Files.delete(tempLocationPath);
+					} catch (IOException ex) {
+						// (non-fatal - it's just a temp file.)
+						logger.warning("Failed to delete temp file " + tempLocationPath.toString());
 					}
 				} else {
 					try {
