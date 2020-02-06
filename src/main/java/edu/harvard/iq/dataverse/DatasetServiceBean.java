@@ -895,14 +895,14 @@ public class DatasetServiceBean implements java.io.Serializable {
             return 0L;
         }
 
-        List<DataFile> filesToTalley = new ArrayList();
+        List<DataFile> filesToTally = new ArrayList();
         
         if (version == null || (mode != null &&  mode.equals("storage"))){
-            filesToTalley = dataset.getFiles();
+            filesToTally = dataset.getFiles();
         } else {
             List <FileMetadata>  fmds = version.getFileMetadatas();
             for (FileMetadata fmd : fmds){
-                    filesToTalley.add(fmd.getDataFile());
+                    filesToTally.add(fmd.getDataFile());
             }           
         }
     
@@ -910,7 +910,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         //CACHED EXTRAS FOR DOWNLOAD?
         
         
-        for (DataFile datafile : filesToTalley) {
+        for (DataFile datafile : filesToTally) {
                 total += datafile.getFilesize();
 
                 if (!countCachedExtras) {
