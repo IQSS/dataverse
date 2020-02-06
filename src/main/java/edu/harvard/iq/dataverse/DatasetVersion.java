@@ -754,7 +754,16 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.escapeHtml(getDescription());
     }
 
-    public List<String[]> getDatasetContacts(){
+    public List<String[]> getDatasetContacts() {
+        boolean getDisplayValues = true;
+        return getDatasetContacts(getDisplayValues);
+    }
+
+    /**
+     * @param getDisplayValues Instead of the retrieving pristine value in the
+     * database, run the value through special formatting.
+     */
+    public List<String[]> getDatasetContacts(boolean getDisplayValues) {
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
@@ -767,10 +776,11 @@ public class DatasetVersion implements Serializable {
                             if (subField.isEmptyForDisplay()) {
                                 addContributor = false;
                             }
+                            // There is no use case yet for getting the non-display value for contributorName.
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            contributorAffiliation = subField.getDisplayValue();
+                            contributorAffiliation = getDisplayValues ? subField.getDisplayValue() : subField.getValue();
                         }
 
                     }
@@ -782,41 +792,6 @@ public class DatasetVersion implements Serializable {
             }
         }       
         return retList;        
-    }
-
-    /**
-     * This method is the same as getDatasetContacts above but the actual value
-     * is returned for affiliation instead of the "display" value, which as of
-     * this writing wraps the value in parentheses.
-     */
-    public List<String[]> getDatasetContactsNonDisplay() {
-        List<String[]> retList = new ArrayList<>();
-        for (DatasetField dsf : this.getDatasetFields()) {
-            Boolean addContributor = true;
-            String contributorName = "";
-            String contributorAffiliation = "";
-            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
-                            if (subField.isEmptyForDisplay()) {
-                                addContributor = false;
-                            }
-                            contributorName = subField.getDisplayValue();
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            contributorAffiliation = subField.getValue();
-                        }
-
-                    }
-                    if (addContributor) {
-                        String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
-                        retList.add(datasetContributor);
-                    }
-                }
-            }
-        }
-        return retList;
     }
 
     public List<String[]> getDatasetProducers(){
