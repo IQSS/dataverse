@@ -952,6 +952,34 @@ List Role Assignments for a Dataset
 List all the role assignments at the given dataset::
 
     GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+    
+.. _assign-role-on-a-dataverse-api:
+
+Assign a New Role on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Assigns a new role, based on the POSTed JSON:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=xxxxxx
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/datasets/$ID/assignments --upload-file role.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/xxxxxx/assignments --upload-file role.json
+
+POSTed JSON example (the content of ``role.json`` file)::
+
+  {
+    "assignee": "@uma",
+    "role": "curator"
+  }    
 
 Create a Private URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
