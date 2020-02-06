@@ -236,7 +236,7 @@ Restricted Tabular Files
 
 Restricted tabular files are treated differently than other file types in that the following information is exposed when the files are published:
 
-- The name of columns (variables)
+- The name of columns (variables).
 - The "label" (description) of columns.
 - Summary statistics (max, min, mean, etc.) of columns.
 
