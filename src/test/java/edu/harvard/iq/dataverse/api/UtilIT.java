@@ -2302,4 +2302,30 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseId + "/storagesize");
     }
+    
+    
+    /**
+     * Determine the "payload" storage size of a dataverse
+     *
+     * @param dataverseId
+     * @param apiToken
+     * @return response
+     */
+    static Response findDatasetStorageSize(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storagesize");
+    }
+    
+    static Response findDatasetDownloadSize(String datasetId) {
+        return given()
+                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+    }
+    
+    static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
+    
 }
