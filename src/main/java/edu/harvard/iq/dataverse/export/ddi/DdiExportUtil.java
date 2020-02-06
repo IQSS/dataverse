@@ -110,7 +110,8 @@ public class DdiExportUtil {
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
+        // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
+        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
@@ -129,7 +130,8 @@ public class DdiExportUtil {
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
+        // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
+        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
         createFileDscr(xmlw, version);

@@ -24,6 +24,7 @@ public class DDIExporter implements Exporter {
     // TODO: 
     // move these into the ddi export utility
     private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 
+    // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
     private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
     private static String DEFAULT_XML_VERSION = "2.5";
     
