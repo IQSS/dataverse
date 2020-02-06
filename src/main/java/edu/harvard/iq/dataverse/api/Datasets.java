@@ -80,6 +80,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
@@ -102,6 +103,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1795,6 +1797,24 @@ public class Datasets extends AbstractApiBean {
     public Response getMakeDataCountMetricCurrentMonth(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @QueryParam("country") String country) {
         String nullCurrentMonth = null;
         return getMakeDataCountMetric(idSupplied, metricSupplied, nullCurrentMonth, country);
+    }
+    
+    @GET
+    @Path("{identifier}/storagesize")
+    public Response getStorageSize(@PathParam("identifier") String dvIdtf,  @QueryParam("includeCached") boolean includeCached,  
+        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
+      
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached,GetDatasetStorageSizeCommand.Mode.STORAGE, null)))));
+    }
+    
+    @GET
+    @Path("{identifier}/versions/{versionId}/downloadsize")
+    public Response getDownloadSize(@PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,   
+        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
+      
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version , findDatasetOrDie(dvIdtf), uriInfo, headers))))));
     }
 
     @GET
