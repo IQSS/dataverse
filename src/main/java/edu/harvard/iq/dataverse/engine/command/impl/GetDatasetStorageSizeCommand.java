@@ -32,18 +32,23 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
 
     private final Dataset dataset;
     private final Boolean countCachedFiles;
-    private final String mode;
+    private final Mode mode;
     private final DatasetVersion version;
+    
+    public enum Mode {
+
+        STORAGE, DOWNLOAD
+    };
 
     public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target) {
         super(aRequest, target);
         dataset = target;
         countCachedFiles = false;
-        mode = "download";
+        mode = Mode.DOWNLOAD;
         version = null;
     }
 
-    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, String mode, DatasetVersion version) {
+    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, Mode mode, DatasetVersion version) {
         super(aRequest, target);
         dataset = target;
         this.countCachedFiles = countCachedFiles;

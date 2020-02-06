@@ -59,7 +59,7 @@ public class GetDataverseStorageSizeCommand extends AbstractCommand<Long> {
             }
             
             try {
-                total += ctxt.datasets().findStorageSize(dataset, countCachedFiles, "storage", null);
+                total += ctxt.datasets().findStorageSize(dataset, countCachedFiles, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
             } catch (IOException ex) {
                 throw new CommandException(BundleUtil.getStringFromBundle("dataverse.datasize.ioerror"), this);
             }

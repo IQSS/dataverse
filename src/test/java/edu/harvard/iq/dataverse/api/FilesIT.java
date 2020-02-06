@@ -1343,12 +1343,14 @@ public class FilesIT {
                 
         assertEquals(magicControlString, JsonPath.from(dvStorageSizeResponse.body().asString()).getString("data.message"));
         
-        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize"), magicSizeNumber);
+        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"), magicSizeNumber);
         
         Response datasetStorageSizeResponse = UtilIT.findDatasetStorageSize(datasetId.toString(), apiToken);
         datasetStorageSizeResponse.prettyPrint();
                 
         assertEquals(magicControlString, JsonPath.from(datasetStorageSizeResponse.body().asString()).getString("data.message"));
+        
+        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), magicSizeNumber);
         
         Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString());
         datasetDownloadSizeResponse.prettyPrint();

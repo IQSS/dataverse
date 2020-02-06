@@ -1805,7 +1805,7 @@ public class Datasets extends AbstractApiBean {
         @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
       
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached, "storage", null)))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached,GetDatasetStorageSizeCommand.Mode.STORAGE, null)))));
     }
     
     @GET
@@ -1814,7 +1814,7 @@ public class Datasets extends AbstractApiBean {
         @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
       
         return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
-                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, "download", getDatasetVersionOrDie(req, version , findDatasetOrDie(dvIdtf), uriInfo, headers))))));
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version , findDatasetOrDie(dvIdtf), uriInfo, headers))))));
     }
 
     @GET

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -866,12 +867,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
     
     public long findStorageSize(Dataset dataset) throws IOException {
-        return findStorageSize(dataset, false, "storage", null);
+        return findStorageSize(dataset, false, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
     
     
     public long findStorageSize(Dataset dataset, boolean countCachedExtras) throws IOException {
-        return findStorageSize(dataset, countCachedExtras, "storage", null);
+        return findStorageSize(dataset, countCachedExtras, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
   
     /**
@@ -887,7 +888,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * default mode, the method doesn't need to access the storage system, as the 
      * sizes of the main files are recorded in the database)
      */
-    public long findStorageSize(Dataset dataset, boolean countCachedExtras, String mode, DatasetVersion version) throws IOException {
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
         long total = 0L; 
         
         if (dataset.isHarvested()) {
