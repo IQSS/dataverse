@@ -115,7 +115,7 @@ apiUrl = "http://localhost:8080/api"
 # jodbc.postgresql.org recommends 4.2 for Java 8.
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
-pgJdbcDriver = "postgresql-42.2.2.jar"
+pgJdbcDriver = "postgresql-42.2.9.jar"
 
 # 0. A few preliminary checks:                                                                                   
 # 0a. OS flavor:
