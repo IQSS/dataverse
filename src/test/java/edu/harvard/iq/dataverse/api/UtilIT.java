@@ -2315,4 +2315,10 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
     }
     
+    static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
+    
 }
