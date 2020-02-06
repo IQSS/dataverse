@@ -1144,8 +1144,12 @@ public class DatasetsIT {
 
         //Give that random user permission
         //(String definitionPoint, String role, String roleAssignee, String apiToken)
+        //Can't give yourself permission
+        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, randomUserApiToken);
+                giveRandoPermission.prettyPrint();
+        assertEquals(401, giveRandoPermission.getStatusCode());
         
-        Response giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
+        giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "fileDownloader", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
         
