@@ -26,6 +26,7 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_UNF;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
+import edu.harvard.iq.dataverse.export.DDIExporter;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -110,9 +111,8 @@ public class DdiExportUtil {
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
-        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
-        writeAttribute(xmlw, "version", "2.5");
+        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+        writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
         createStdyDscr(xmlw, datasetDto);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
@@ -130,9 +130,8 @@ public class DdiExportUtil {
         xmlw.writeStartElement("codeBook");
         xmlw.writeDefaultNamespace("ddi:codebook:2_5");
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
-        xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
-        writeAttribute(xmlw, "version", "2.5");
+        xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
+        writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
         createStdyDscr(xmlw, datasetDto);
         createFileDscr(xmlw, version);
         createDataDscr(xmlw, version);

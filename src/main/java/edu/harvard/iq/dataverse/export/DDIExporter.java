@@ -13,6 +13,8 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLOutputFactory;
 
 /**
+ * This exporter is for the "full" DDI, that includes the file-level,
+ * <data> and <var> metadata.
  *
  * @author Leonid Andreev
  * (based on the original DDIExporter by
@@ -21,15 +23,10 @@ import javax.xml.stream.XMLOutputFactory;
  */
 @AutoService(Exporter.class)
 public class DDIExporter implements Exporter {
-    // TODO: 
-    // move these into the ddi export utility
-    private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 
-    // This redirects to https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd
-    private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
-    private static String DEFAULT_XML_VERSION = "2.5";
+    public static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
+    public static String DEFAULT_XML_SCHEMALOCATION = "https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
+    public static String DEFAULT_XML_VERSION = "2.5";
     
-    // This exporter is for the "full" DDI, that includes the file-level, 
-    // <data> and <var> metadata.
     @Override
     public String getProviderName() {
         return "ddi";
