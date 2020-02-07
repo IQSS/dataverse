@@ -138,7 +138,7 @@ public class DataAccess {
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
-        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getStorageDriverId());
+        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getEffectiveStorageDriverId());
     }
 
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {
