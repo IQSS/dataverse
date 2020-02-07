@@ -1665,6 +1665,7 @@ public class Admin extends AbstractApiBean {
     	} catch (WrappedResponse wr) {
     		return wr.getResponse();
     	}
+    	//Note that this returns what's set directly on this dataverse. If null, the user would have to recurse the chain of parents to find the effective storageDriver
     	return ok(dataverse.getStorageDriverId());
     }
     
