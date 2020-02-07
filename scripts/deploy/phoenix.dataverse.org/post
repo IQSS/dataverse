@@ -12,4 +12,4 @@ scripts/search/populate-users
 scripts/search/create-users
 scripts/search/tests/create-all-and-test
 scripts/search/tests/publish-spruce1-and-test
-java -jar downloads/schemaSpy_5.0.0.jar -t pgsql -host localhost -db dvndb -u postgres -p secret -s public -dp scripts/installer/pgdriver/postgresql-42.2.2.jar -o /var/www/html/schemaspy/latest
+java -jar downloads/schemaSpy_5.0.0.jar -t pgsql -host localhost -db dvndb -u postgres -p secret -s public -dp scripts/installer/pgdriver/postgresql-42.2.9.jar -o /var/www/html/schemaspy/latest

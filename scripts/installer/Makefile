@@ -46,10 +46,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
-${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.2.jar
+${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.9.jar
 	@echo copying postgres driver
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-42.2.9.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
