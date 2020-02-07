@@ -8,8 +8,7 @@ the duplicates will need to be deleted, and the integrity of the
 stored physical files verified.
 
 Please run the diagnostic script provided at
-https://github.com/IQSS/dataverse/raw/6522-duplicate-dvobjects/scripts/issues/6522/find_duplicates.sh.
-(!-- We will need to change the name of the branch above to "develop" before we merge!)
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/6522/find_duplicates.sh.
 The script relies on the PostgreSQL utility psql to access the
 database. You will need to edit the credentials at the top of the script
 to match your database configuration.
