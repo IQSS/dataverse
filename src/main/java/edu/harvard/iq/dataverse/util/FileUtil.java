@@ -1323,6 +1323,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateStorageIdentifier(DataFile dataFile) {
+    	//Is it true that this is only used for temp files and we could safely prepend "tmp://" to indicate that?
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }
     
