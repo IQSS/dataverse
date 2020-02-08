@@ -180,7 +180,7 @@ public class IngestServiceBean {
 				String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
 				String storageLocation = storageInfo[1];
-				if (driverType.equals("tmp")|| driverType.contentEquals("file")) {  //"file" is the default if no prefix
+				if (driverType.equals("tmp")) {  //"tmp" is the default if no prefix or the "tmp://" driver
 					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
 
 					// Try to save the file in its permanent location:

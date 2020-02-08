@@ -112,7 +112,7 @@ public class DataAccess {
     	//default if no prefix
     	String storageIdentifier=storageLocation;
         int separatorIndex = storageLocation.indexOf("://");
-    	String storageDriverId = "file"; //default
+    	String storageDriverId = ""; //default
         if(separatorIndex>0) {
         	storageDriverId = storageLocation.substring(0,separatorIndex);
         	storageIdentifier = storageLocation.substring(separatorIndex + 3);
@@ -125,6 +125,9 @@ public class DataAccess {
     }
     
     public static String getDriverType(String driverId) {
+    	if(driverId.isEmpty() || driverId.equals("tmp")) {
+    		return "tmp";
+    	}
     	return System.getProperty("dataverse.files." + driverId + ".type", "Undefined");
     }
 
