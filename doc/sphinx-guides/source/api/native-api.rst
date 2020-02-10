@@ -982,7 +982,7 @@ Set Citation Date Field for a Dataset
 
 Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
 To revert to the default logic, use ``:publicationDate`` as the ``$DATASET_FIELD_TYPE_NAME``.
-Note that the dataset field used has to be a date field
+Note that the dataset field used has to be a date field.
 
 .. code-block:: bash
 
