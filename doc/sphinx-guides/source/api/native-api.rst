@@ -1002,9 +1002,21 @@ The fully expanded example above (without environment variables) looks like this
 Revert Citation Date Field to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body::
+Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body:
 
-    DELETE http://$SERVER/api/datasets/$id/citationdate?key=$apiKey
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/citationdate
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/citationdate
 
 List Role Assignments for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
