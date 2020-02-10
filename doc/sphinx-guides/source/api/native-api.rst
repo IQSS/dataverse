@@ -995,7 +995,7 @@ Delete the assignment whose id is ``$id``:
   export ID=2347
   export ASSIGNMENT_ID=6
 
-  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/dataverses/$ID/assignments/$ASSIGNMENT_ID
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE $SERVER_URL/api/datasets/$ID/assignments/$ASSIGNMENT_ID
 
 The fully expanded example above (without environment variables) looks like this:
 
