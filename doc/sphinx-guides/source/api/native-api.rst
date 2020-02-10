@@ -1283,58 +1283,109 @@ The fully expanded example above (without environment variables) looks like this
 Dataset Locks
 ~~~~~~~~~~~~~
 
-To check if a dataset is locked:: 
+To check if a dataset is locked:
 
-    curl "$SERVER_URL/api/datasets/{database_id}/locks
+.. code-block:: bash
 
-Optionally, you can check if there's a lock of a specific type on the dataset:: 
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
 
-    curl "$SERVER_URL/api/datasets/{database_id}/locks?type={lock_type}
+  curl $SERVER_URL/api/datasets/$ID/locks
 
-Currently implemented lock types are ``Ingest, Workflow, InReview, DcmUpload, pidRegister, and EditInProgress``. 
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/datasets/24/locks
+
+Optionally, you can check if there's a lock of a specific type on the dataset:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LOCK_TYPE=Ingest
+
+  curl "$SERVER_URL/api/datasets/$ID/locks?type=$LOCK_TYPE"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/datasets/24/locks?type=Ingest"
+
+Currently implemented lock types are ``Ingest``, ``Workflow``, ``InReview``, ``DcmUpload``, ``pidRegister``, and ``EditInProgress``.
 
 The API will output the list of locks, for example:: 
 
-    {"status":"OK","data":
-	[
-		{
-		 "lockType":"Ingest",
-		 "date":"Fri Aug 17 15:05:51 EDT 2018",
-		 "user":"dataverseAdmin"
-		},
-		{
-		 "lockType":"Workflow",
-		 "date":"Fri Aug 17 15:02:00 EDT 2018",
-		 "user":"dataverseAdmin"
-		}
-	]
-    }
+  {"status":"OK","data":
+    [
+      {
+        "lockType":"Ingest",
+        "date":"Fri Aug 17 15:05:51 EDT 2018",
+        "user":"dataverseAdmin"
+      },
+      {
+        "lockType":"Workflow",
+        "date":"Fri Aug 17 15:02:00 EDT 2018",
+        "user":"dataverseAdmin"
+      }
+    ]
+  }
 
 If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
 
-The following API end point will lock a Dataset with a lock of specified type::
+The following API end point will lock a Dataset with a lock of specified type:
 
-    POST /api/datasets/{database_id}/lock/{lock_type}
+.. code-block:: bash
 
-For example::
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LOCK_TYPE=Ingest
 
-    curl -X POST "$SERVER_URL/api/datasets/1234/lock/Ingest?key=$ADMIN_API_TOKEN"
-    or 
-    curl -X POST -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/lock/Ingest?persistentId=$DOI_OR_HANDLE_OF_DATASET"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X POST $SERVER_URL/api/datasets/$ID/lock/$LOCK_TYPE
 
-Use the following API to unlock the dataset, by deleting all the locks currently on the dataset::
+The fully expanded example above (without environment variables) looks like this:
 
-    DELETE /api/datasets/{database_id}/locks
+.. code-block:: bash
 
-Or, to delete a lock of the type specified only::
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/datasets/24/lock/Ingest
 
-    DELETE /api/datasets/{database_id}/locks?type={lock_type}
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset:
 
-For example::
+.. code-block:: bash
 
-    curl -X DELETE -H "X-Dataverse-key: $ADMIN_API_TOKEN" "$SERVER_URL/api/datasets/1234/locks?type=pidRegister"
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
 
-If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/locks
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks
+
+Or, to delete a lock of the type specified only:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export LOCK_TYPE=pidRegister
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/locks?type=$LOCK_TYPE
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks?type=pidRegister
+
+If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message.
 
 (Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
 
