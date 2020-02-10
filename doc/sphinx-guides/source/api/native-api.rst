@@ -1059,9 +1059,21 @@ The fully expanded example above (without environment variables) looks like this
 Get the Private URL for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get a Private URL from a dataset (if available)::
+Get a Private URL from a dataset (if available):
 
-    GET http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/$ID/privateUrl
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/datasets/24/privateUrl
 
 Delete the Private URL from a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
