@@ -981,10 +981,23 @@ Set Citation Date Field for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
-To revert to the default logic, use ``:publicationDate`` as the ``$datasetFieldTypeName``.
-Note that the dataset field used has to be a date field::
+To revert to the default logic, use ``:publicationDate`` as the ``$DATASET_FIELD_TYPE_NAME``.
+Note that the dataset field used has to be a date field
 
-    PUT http://$SERVER/api/datasets/$id/citationdate?key=$apiKey --data "$datasetFieldTypeName"
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export DATASET_FIELD_TYPE_NAME=:publicationDate
+
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/$ID/citationdate --data "$DATASET_FIELD_TYPE_NAME"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":publicationDate"
 
 Revert Citation Date Field to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
