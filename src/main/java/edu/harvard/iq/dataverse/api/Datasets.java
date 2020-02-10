@@ -16,10 +16,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -82,6 +84,7 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
@@ -1124,6 +1127,25 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
             return ex.getResponse();
+        }
+    }
+    
+    @DELETE
+    @Path("{identifier}/assignments/{id}")
+    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
+        RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
+        if (ra != null) {
+            try {
+                findDatasetOrDie(dsId);
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                return ok("Role " + ra.getRole().getName()
+                        + " revoked for assignee " + ra.getAssigneeIdentifier()
+                        + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
+            }
+        } else {
+            return error(Status.NOT_FOUND, "Role assignment " + assignmentId + " not found");
         }
     }
 

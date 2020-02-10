@@ -1606,6 +1606,13 @@ public class UtilIT {
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
     }
     
+    static Response revokeRoleOnDataset(String definitionPoint, long doomed, String apiToken) {
+        
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("api/datasets/:persistentId/assignments/" + doomed + "?persistentId=" + definitionPoint);
+    }
+    
     static Response revokeFileAccess(String definitionPoint, String doomed, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

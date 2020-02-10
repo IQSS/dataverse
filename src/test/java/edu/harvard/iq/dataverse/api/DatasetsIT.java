@@ -1153,6 +1153,8 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
         assertEquals(200, giveRandoPermission.getStatusCode());
         
+        String idToDelete = JsonPath.from(giveRandoPermission.getBody().asString()).getString("data.id");                
+
         giveRandoPermission = UtilIT.grantRoleOnDataset(datasetPersistentId, "designatedHitter", "@" + randomUsername, apiToken);
                 giveRandoPermission.prettyPrint();
                         giveRandoPermission.then().assertThat()
@@ -1160,6 +1162,17 @@ public class DatasetsIT {
                 .body("message", containsString("Can't find role named 'designatedHitter' in dataverse "))
                 .statusCode(400);
         assertEquals(400, giveRandoPermission.getStatusCode());
+        
+        //Try to delete Role with Id saved above
+        //Fails for lack of perms
+        Response deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, new Long(idToDelete), randomUserApiToken);
+        deleteGrantedAccess.prettyPrint();
+        assertEquals(401, deleteGrantedAccess.getStatusCode());
+        
+        //Should be able to delete with proper apiToken
+        deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, new Long(idToDelete), apiToken);
+        deleteGrantedAccess.prettyPrint();
+        assertEquals(200, deleteGrantedAccess.getStatusCode());
         
        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
