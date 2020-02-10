@@ -1102,7 +1102,7 @@ public class Datasets extends AbstractApiBean {
             
             RoleAssignee assignee = findAssignee(ra.getAssignee());
             if (assignee == null) {
-                return error(Response.Status.BAD_REQUEST, "Assignee not found");
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.not.found.error"));
             }           
             
             DataverseRole theRole;
@@ -1118,16 +1118,19 @@ public class Datasets extends AbstractApiBean {
                 dv = dv.getOwner();
             }
             if (theRole == null) {
-                return error(Status.BAD_REQUEST, "Can't find role named '" + ra.getRole() + "' in dataverse " + dataset.getOwner());
+                List<String> args = Arrays.asList(ra.getRole(), dataset.getOwner().getDisplayName());
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.grant.role.not.found.error", args));
             }
 
             String privateUrlToken = null;
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
         } catch (WrappedResponse ex) {
-            logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+            List<String> args = Arrays.asList(ex.getMessage());
+            logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
             return ex.getResponse();
         }
+
     }
     
     @DELETE
@@ -1138,14 +1141,14 @@ public class Datasets extends AbstractApiBean {
             try {
                 findDatasetOrDie(dsId);
                 execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
-                return ok("Role " + ra.getRole().getName()
-                        + " revoked for assignee " + ra.getAssigneeIdentifier()
-                        + " in " + ra.getDefinitionPoint().accept(DvObject.NamePrinter));
+                List<String> args = Arrays.asList(ra.getRole().getName(), ra.getAssigneeIdentifier(), ra.getDefinitionPoint().accept(DvObject.NamePrinter));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.revoke.role.success", args));
             } catch (WrappedResponse ex) {
                 return ex.getResponse();
             }
         } else {
-            return error(Status.NOT_FOUND, "Role assignment " + assignmentId + " not found");
+            List<String> args = Arrays.asList(Long.toString(assignmentId));
+            return error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.revoke.role.not.found.error", args));
         }
     }
 

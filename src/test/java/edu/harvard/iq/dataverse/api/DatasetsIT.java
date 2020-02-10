@@ -1159,7 +1159,7 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
                         giveRandoPermission.then().assertThat()
                 .contentType(ContentType.JSON)
-                .body("message", containsString("Can't find role named 'designatedHitter' in dataverse "))
+                .body("message", containsString("Cannot find role named 'designatedHitter' in dataverse "))
                 .statusCode(400);
         assertEquals(400, giveRandoPermission.getStatusCode());
         
