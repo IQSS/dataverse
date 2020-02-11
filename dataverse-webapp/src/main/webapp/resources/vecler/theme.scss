@@ -835,7 +835,28 @@ input.fancy-checkbox[type=checkbox] {
 			cursor: default;
 		}
 	}
+
+	.ui-tabs-panel {
+		padding: 1em 0;
+	}
 }
+
+div[id$="notifications"].ui-tabs-panel {
+	div.notification-item:last-child div.notification-item-cell {
+		border-bottom: none;
+	}
+
+	div.notification-item-cell {
+		padding: 0.8em;
+
+		.text-icon-inline {
+			position: relative;
+			top: 0.2em;
+		}
+	}
+}
+
+div[id$="notifications"].ui-tabs-panel 
 
 /* Tables */
 
@@ -1286,6 +1307,9 @@ div.panelSearchForm input.search-input {
 		margin-left: 4px;
 	}
 
+	.ui-datalist-item hr {
+		margin: 0 0 28px 0;
+	}
 }
 
 .facetTypeChBox.facetLink {
@@ -1310,6 +1334,10 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 }
 
 /* Search results */
+
+.card-content-container {
+	margin-left: 60px;
+}
 
 #resultsCountPaginatorBlock {
 	margin-bottom: 8px;
@@ -1395,16 +1423,22 @@ table[id$="resultsTable"] {
 		}
 	}
 
-	span.label {
-		position: relative;
-		top: -8px;
-		line-height: 12px;
+	.label-container {
+		margin-top: -8px;
+
+		span.label {
+			line-height: 12px;
+		}
 	}
 
 	.file-tags-block {
 		position: relative;
 		top: 15px;
 		margin-bottom: 15px;
+	}
+
+	.resultDatasetCitationBlock {
+		margin-left: 0;
 	}
 }
 

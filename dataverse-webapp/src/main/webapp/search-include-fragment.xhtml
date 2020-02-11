@@ -451,55 +451,59 @@
                             </h:outputLink>
                         </div>
 
-                        <div class="card-title-icon-block">
-                            <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
-                            <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
-                            <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
-                            <c:set var="dvUrl" value="/dataverse/#{result.dataverseAlias}"/>
-                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                            </h:outputLink>
-                            <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
-                            <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
-                            <h:outputText value="#{result.userRole}" styleClass="label label-primary pull-right" rendered="#{!empty result.userRole}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning pull-right" rendered="#{result.unpublishedState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary pull-right" rendered="#{result.draftState}"/>
-                        </div>
-
-                        <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
-
-                        <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')}"/>
-                        </h:outputLink>
-
-                        <hr style="margin:.5em;border:0;"/>
-
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
-
-                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
-                                   rendered="#{result.descriptionSnippets.size() gt 0}">
-                            <h:outputText value="#{snippet}" escape="false"/>
-                            <h:outputText value="... " rendered="#{varStatus.last != true}"/>
-                        </ui:repeat>
-
-                        <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
-                            <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
-                            <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
-                                <h:outputText value="#{field}"/>
-                                <h:outputText value=", " rendered="#{varStatus.last != true}"/>
-                            </ui:repeat>
-                        </ui:fragment>
-
-                        <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() gt 0}">
-                            <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                <div>
-                                    <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
-                                    <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                        <div class="card-content-container">
+                            <div class="card-title-icon-block">
+                                <span class="icon-dataverse text-brand pull-right" title="#{bundle.dataverse}"/>
+                                <span class="glyphicon glyphicon-new-window text-brand pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                                <span class="glyphicon glyphicon-link text-brand pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
+                                <div class="label-container pull-right">
+                                    <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                                 </div>
+                                <c:set var="dvUrl" value="/dataverse/#{result.dataverseAlias}"/>
+                                <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                </h:outputLink>
+                                <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
+                                <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
+                            </div>
+    
+                            <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
+    
+                            <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                <h:outputText value="#{result.parent.get('name')}"/>
+                            </h:outputLink>
+    
+                            <hr style="margin:.5em;border:0;"/>
+    
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+    
+                            <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                       rendered="#{result.descriptionSnippets.size() gt 0}">
+                                <h:outputText value="#{snippet}" escape="false"/>
+                                <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                             </ui:repeat>
-                        </ui:repeat>
+    
+                            <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                                <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
+                                <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                    <h:outputText value="#{field}"/>
+                                    <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                </ui:repeat>
+                            </ui:fragment>
+    
+                            <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() gt 0}">
+                                <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                    <div>
+                                        <h:outputText value="#{highlight.solrField.nameSearchable}: #{snippet}" escape="false"/>
+                                        <ui:param value="#{highlight.solrField.nameFacetable}:intentional" name="unfriendly"/>
+                                    </div>
+                                </ui:repeat>
+                            </ui:repeat>
+                        </div>
                     </div>
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATASETS}">
@@ -510,59 +514,63 @@
                             </a>
                         </div>
 
-                        <div class="card-title-icon-block">
-                            <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
-                            <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
-                            <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
-                            </a>
-                            <h:outputText value="#{result.userRole}" styleClass="label label-primary pull-right" rendered="#{!empty result.userRole}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger pull-right" rendered="#{result.deaccessionedState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning pull-right" rendered="#{result.unpublishedState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success pull-right" rendered="#{result.inReviewState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary pull-right" rendered="#{result.draftState}"/>
-                        </div>
-
-                        <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
-
-                        <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
-                        
-                        <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')}"/>
-                        </h:outputLink>
-
-                        <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
-                            <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
-                        </div>
-                        
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
-
-                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
-                                   rendered="#{result.descriptionSnippets.size() gt 0}">
-                            <h:outputText value="... #{snippet} ..." escape="false"/>
-                        </ui:repeat>
-
-                        <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
-                            <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
-                            <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
-                                <h:outputText value="#{field}"/>
-                                <h:outputText value=", " rendered="#{varStatus.last != true}"/>
-                            </ui:repeat>
-                        </ui:fragment>
-
-                        <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
-                            <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                <div>
-                                    <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                        <div class="card-content-container">
+                            <div class="card-title-icon-block">
+                                <span class="icon-dataset text-info pull-right" title="#{bundle.dataset}"/>
+                                <span class="glyphicon glyphicon-new-window text-info pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                                <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
+                                <div class="label-container pull-right">
+                                    <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                                 </div>
+                                <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                    <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
+                                </a>
+                            </div>
+    
+                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
+    
+                            <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
+                            
+                            <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                <h:outputText value="#{result.parent.get('name')}"/>
+                            </h:outputLink>
+    
+                            <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                                <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
+                            </div>
+                            
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+    
+                            <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                       rendered="#{result.descriptionSnippets.size() gt 0}">
+                                <h:outputText value="... #{snippet} ..." escape="false"/>
                             </ui:repeat>
-                        </ui:repeat>
-
-                        <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
-                            <h:outputText value="#{result.harvestingDescription}"/>
+    
+                            <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                                <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
+                                <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
+                                    <h:outputText value="#{field}"/>
+                                    <h:outputText value=", " rendered="#{varStatus.last != true}"/>
+                                </ui:repeat>
+                            </ui:fragment>
+    
+                            <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
+                                <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                    <div>
+                                        <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                    </div>
+                                </ui:repeat>
+                            </ui:repeat>
+    
+                            <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
+                                <h:outputText value="#{result.harvestingDescription}"/>
+                            </div>
                         </div>
                     </div>
                     <!--FILE CARDS-->
@@ -575,72 +583,76 @@
                             </a>
                         </div>
 
-                        <div class="card-title-icon-block">
-                            <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
-                            <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
-                            <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
-
-                            <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.fileAccess eq 'Restricted' and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                            <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.fileAccess eq 'Restricted' and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                            </a>
-                            <h:outputText value="#{result.userRole}" styleClass="label label-primary pull-right" rendered="#{!empty result.userRole}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning pull-right" rendered="#{result.unpublishedState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success pull-right" rendered="#{result.inReviewState}"/>
-                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary pull-right" rendered="#{result.draftState}"/>
-                        </div>
-
-                        <div>
-                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                <h:outputText value="#{result.parent.get('name')}"/></a>
-                        </div>
-
-                        <div>
-                            <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
-                            <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
-                            <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
-
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
-
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}"/>
-
-                            <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
-                                            rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
-                        </div>
-
-                        <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
-                            <ui:repeat value="#{result.fileCategories}" var="cat">
-                                <h:outputText value="#{cat}" styleClass="label label-default"/>
-                            </ui:repeat>
-                            <ui:repeat value="#{result.tabularDataTags}" var="tag">
-                                <h:outputText value="#{tag}" styleClass="label label-info"/>
-                            </ui:repeat>
-                        </div>
-
-                        <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
-
-                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
-                                   rendered="#{result.descriptionSnippets.size() gt 0}">
-                            <h:outputText value="#{snippet}" escape="false"/>
-                            <h:outputText value="... " rendered="#{varStatus.last != true}"/>
-                        </ui:repeat>
-
-                        <div jsf:rendered="#{result.highlightsAsList.size() > 0}">
-                            <ui:repeat value="#{result.highlightsAsList}" var="highlight">
-                                <ui:repeat value="#{highlight.snippets}" var="snippet">
-                                    <div>
-                                        <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
-                                    </div>
+                        <div class="card-content-container">
+                            <div class="card-title-icon-block">
+                                <span class="icon-file text-muted pull-right" title="#{bundle.file}"/>
+                                <span class="glyphicon glyphicon-new-window text-muted pull-right" title="#{bundle.harvested}" jsf:rendered="#{result.harvested}"/>
+                                <span class="glyphicon glyphicon-link text-muted pull-right" title="#{bundle.linked}" jsf:rendered="#{!SearchIncludeFragment.rootDv and !result.isInTree}"/>
+    
+                                <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.fileAccess eq 'Restricted' and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                                <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.fileAccess eq 'Restricted' and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                                <div class="label-container pull-right">
+                                    <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
+                                    <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
+                                </div>
+                                <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                </a>
+                            </div>
+    
+                            <div>
+                                <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                                <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                                    <h:outputText value="#{result.parent.get('name')}"/></a>
+                            </div>
+    
+                            <div>
+                                <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
+                                <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
+                                <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
+    
+                                <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
+    
+                                <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}"/>
+    
+                                <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
+                                <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
+                                                rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
+                            </div>
+    
+                            <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
+                                <ui:repeat value="#{result.fileCategories}" var="cat">
+                                    <h:outputText value="#{cat}" styleClass="label label-default"/>
                                 </ui:repeat>
+                                <ui:repeat value="#{result.tabularDataTags}" var="tag">
+                                    <h:outputText value="#{tag}" styleClass="label label-info"/>
+                                </ui:repeat>
+                            </div>
+    
+                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+    
+                            <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                                       rendered="#{result.descriptionSnippets.size() gt 0}">
+                                <h:outputText value="#{snippet}" escape="false"/>
+                                <h:outputText value="... " rendered="#{varStatus.last != true}"/>
                             </ui:repeat>
-                        </div>
-
-                        <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}">
-                            <h:outputText value="#{result.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+    
+                            <div jsf:rendered="#{result.highlightsAsList.size() > 0}">
+                                <ui:repeat value="#{result.highlightsAsList}" var="highlight">
+                                    <ui:repeat value="#{highlight.snippets}" var="snippet">
+                                        <div>
+                                            <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
+                                        </div>
+                                    </ui:repeat>
+                                </ui:repeat>
+                            </div>
+    
+                            <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}">
+                                <h:outputText value="#{result.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+                            </div>
                         </div>
                     </div>
                 </h:column>
