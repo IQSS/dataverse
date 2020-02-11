@@ -1022,13 +1022,17 @@ List Role Assignments in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all the role assignments at the given dataset:
+.. code-block:: bash
 
 export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 export SERVER_URL=https://demo.dataverse.org
 export ID=2347
 
 curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/$ID/assignments
+
 The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
 
 curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/2347/assignments
     
