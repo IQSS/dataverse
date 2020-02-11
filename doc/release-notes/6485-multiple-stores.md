@@ -16,6 +16,7 @@ For a file store:
 
     ./asadmin create-jvm-options "\-Ddataverse.files.file.type=file"
     ./asadmin create-jvm-options "\-Ddataverse.files.file.label=file"
+    ./asadmin create-jvm-options "\-Ddataverse.files.file.directory=<your directory>"
     
 For an s3 store:
 
@@ -27,3 +28,5 @@ For an s3 store:
 Any additional S3 options you have set will need to be replaced as well, following the pattern in the last two lines above - delete the option including a '-' after 's3' and creating the same option with the '-' replaced by a '.', using the same value you currently have configured.  
 
 Once these options are set, restarting the glassfish service is all that is needed to complete the change.  
+
+Note that the "\-Ddataverse.files.file.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
