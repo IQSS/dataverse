@@ -1031,13 +1031,13 @@ Lists all role assignments on a given dataset:
   export SERVER_URL=https://demo.dataverse.org
   export ID=2347
 
-  curl -H X-Dataverse-key:$API_TOKEN -X GET $SERVER_URL/api/datasets/$ID/assignments
+  curl -H X-Dataverse-key:$API_TOKEN -X $SERVER_URL/api/datasets/$ID/assignments
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X GET https://demo.dataverse.org/api/datasets/2347/assignments 
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X https://demo.dataverse.org/api/datasets/2347/assignments 
   
 .. _assign-role-on-a-dataset-api:
 
