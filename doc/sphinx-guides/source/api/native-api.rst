@@ -1023,22 +1023,22 @@ The fully expanded example above (without environment variables) looks like this
 List Role Assignments in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List all the role assignments at the given dataset:
+Lists all role assignments on a given dataset:
 
 .. code-block:: bash
 
-export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export SERVER_URL=https://demo.dataverse.org
-export ID=2347
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=2347
 
-curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/$ID/assignments
+  curl -H X-Dataverse-key:$API_TOKEN -X GET $SERVER_URL/api/datasets/$ID/assignments
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/2347/assignments
-    
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X GET https://demo.dataverse.org/api/datasets/2347/assignments 
+  
 .. _assign-role-on-a-dataset-api:
 
 Assign a New Role on a Dataset
@@ -1050,7 +1050,7 @@ Assigns a new role, based on the POSTed JSON:
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=xxxxxx
+  export ID=2347
 
   curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/datasets/$ID/assignments --upload-file role.json
 
@@ -1058,7 +1058,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/xxxxxx/assignments --upload-file role.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/2347/assignments --upload-file role.json
 
 POSTed JSON example (the content of ``role.json`` file)::
 
