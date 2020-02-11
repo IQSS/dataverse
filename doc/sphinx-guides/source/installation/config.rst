@@ -236,6 +236,8 @@ To support multiple stores, Dataverse now requires an id, type, and label for ea
 
 Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
 
+Note that the "\-Ddataverse.files.directory=<file directory>" continues to exist, but now only controls where temporary files are stored (in the /temp subdirectory of the one specified).
+
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
 ::
@@ -243,6 +245,16 @@ If you wish to change which store is used by default, you'll need to delete the 
   ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
+File Storage
+++++++++++++
+
+File stores have one option - the directory where files should be stored. This can be set using
+
+.. code-block:: none
+
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.directory=<file directory>"
+    
+Multiple file stores should specify different directories (which would nominally be the reason to use multiple file stores), but one may share the same directory as "\-Ddataverse.files.directory" option - this would result in temp files being stored in the /temp subdirectory within the file store's root directory.
 
 Swift Storage
 +++++++++++++

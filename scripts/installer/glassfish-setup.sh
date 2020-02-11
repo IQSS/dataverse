@@ -76,6 +76,7 @@ function preliminary_setup()
   # Backward compatible file store configuration
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.type=file"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.label=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.directory=${FILES_DIR}"
   # Rserve-related JVM options: 
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
