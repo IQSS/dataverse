@@ -130,9 +130,12 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileAccessRequestMap.clear();        
                
         for (DataFile file : dataset.getFiles()) {
-            // only include if the file is restricted (or it's draft version is restricted)
+            // only include if the file is restricted (or its draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 
-                if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
+            //for 6587 make sure that a file is in the current version befor adding to the fileMap SEK 2/11/2020
+                if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())
+                    && ((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
+                    || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())))) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
