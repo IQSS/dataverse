@@ -1,0 +1,1 @@
+As reported in https://github.com/IQSS/dataverse/issues/6570 the affiliation for dataset contacts has been wrapped in parentheses in the JSON output from the Search API. These parentheses have now been removed. This is a backward incompatible change but it is hoped that it won't cause any problems for integrations and API users.
