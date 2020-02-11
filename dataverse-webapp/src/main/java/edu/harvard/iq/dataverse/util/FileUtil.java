@@ -29,8 +29,8 @@ import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
@@ -63,7 +63,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -165,39 +165,16 @@ public class FileUtil implements java.io.Serializable {
     public static String getFacetFileType(DataFile dataFile) {
         String fileType = dataFile.getContentType();
 
-        if (!StringUtil.isEmpty(fileType)) {
-            if (fileType.contains(";")) {
-                fileType = fileType.substring(0, fileType.indexOf(";"));
-            }
-
-            try {
-                return BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets");
-            } catch (MissingResourceException e) {
-                // if there's no defined "facet-friendly" form of this mime type
-                // we'll truncate the available type by "/", e.g., all the 
-                // unknown image/* types will become "image"; many other, quite
-                // different types will all become "application" this way - 
-                // but it is probably still better than to tag them all as 
-                // "uknown". 
-                // -- L.A. 4.0 alpha 1
-                //
-                // UPDATE, MH 4.9.2
-                // Since production is displaying both "tabulardata" and "Tabular Data"
-                // we are going to try to add capitalization here to this function
-                // in order to capitalize all the unknown types that are not called
-                // out in MimeTypeFacets.properties
-                String typeClass = fileType.split("/")[0];
-                return Character.toUpperCase(typeClass.charAt(0)) + typeClass.substring(1);
-            }
-        } else {
-            try {
-                return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets");
-            } catch (MissingResourceException ex) {
-                logger.warning("Could not find \"" + fileType + "\" in bundle file: ");
-                logger.log(Level.CONFIG, ex.getMessage(), ex);
-                return null;
-            }
+        if (fileType.contains(";")) {
+            fileType = fileType.substring(0, fileType.indexOf(";"));
         }
+        if(fileType.split("/")[0].isEmpty()) {
+            return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets");
+        }
+
+        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets"))
+                .filter(bundleName -> !bundleName.isEmpty())
+                .orElse(fileType.split("/")[0]);
     }
 
     public static String retestIngestableFileType(File file, String fileType) {

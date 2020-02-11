@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.common.files.mime.ShapefileMimeType;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.MissingResourceException;
+import java.util.Optional;
 
 public class FriendlyFileTypeUtil {
 
@@ -17,11 +17,10 @@ public class FriendlyFileTypeUtil {
         if (fileType.contains(";")) {
             fileType = fileType.substring(0, fileType.indexOf(";"));
         }
-        try {
-            return BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay");
-        } catch (MissingResourceException e) {
-            return fileType;
-        }
+
+        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay"))
+                .filter(bundleName -> !bundleName.isEmpty())
+                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay"));
     }
     
     
@@ -36,11 +35,10 @@ public class FriendlyFileTypeUtil {
             if (fileType.contains(";")) {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
-            try {
-                return BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay");
-            } catch (MissingResourceException e) {
-                return fileType;
-            }
+
+            return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay"))
+                    .filter(bundleName -> !bundleName.isEmpty())
+                    .orElse(fileType);
         }
 
         return "UNKNOWN";
