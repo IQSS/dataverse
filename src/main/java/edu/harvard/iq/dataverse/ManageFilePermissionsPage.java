@@ -83,7 +83,16 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     Dataset dataset = new Dataset(); 
     private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
     private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
-    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();    
+    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();  
+    private boolean showDeleted = false;
+
+    public boolean isShowDeleted() {
+        return showDeleted;
+    }
+
+    public void setShowDeleted(boolean showDeleted) {
+        this.showDeleted = showDeleted;
+    }
 
     public Dataset getDataset() {
         return dataset;
@@ -130,12 +139,14 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileAccessRequestMap.clear();        
                
         for (DataFile file : dataset.getFiles()) {
+            
+            boolean fileIsDeleted = ((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
+                    || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())));
             // only include if the file is restricted (or its draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 
             //for 6587 make sure that a file is in the current version befor adding to the fileMap SEK 2/11/2020
                 if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())
-                    && ((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
-                    || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())))) {
+                    && (!fileIsDeleted || isShowDeleted())) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
