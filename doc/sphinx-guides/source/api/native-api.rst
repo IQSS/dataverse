@@ -1018,13 +1018,19 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/citationdate
 
-List Role Assignments for a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Role Assignments in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all the role assignments at the given dataset:
 
+export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export SERVER_URL=https://demo.dataverse.org
+export ID=2347
 
-    GET http://$SERVER/api/datasets/$id/assignments?key=$apiKey
+curl -H X-Dataverse-key:$API_TOKEN $SERVER_URL/api/datasets/$ID/assignments
+The fully expanded example above (without environment variables) looks like this:
+
+curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/2347/assignments
     
 .. _assign-role-on-a-dataverse-api:
 
