@@ -52,77 +52,79 @@
         </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <f:loadBundle basename="Bundle" var="bundle"/>
-	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>
-        <ui:include src="dataverse_header.xhtml">
-            <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>
-            <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
-            <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
-            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
-        </ui:include>
-        <div class="container" id="content">
-            <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
-        </div>
-        <!-- FOOTER BLOCK -->
-        <ui:include src="dataverse_footer.xhtml">
-            <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/>
-            <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
-        </ui:include>
-        <p:ajaxStatus id="ajaxStatusPanel">
-            <f:facet name="start">
-                <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />
-            </f:facet>
-            <f:facet name="complete">
-                <!-- DO NOTHING -->
-            </f:facet>
-        </p:ajaxStatus>
-        <ui:include src="contactFormFragment.xhtml">
-        </ui:include>
-        <p:dialog id="statusInfo" styleClass="smallPopUp"
-                  header="#{settingsWrapper.getSettingValue(':StatusMessageHeader')}"
-                  widgetVar="statusInfo" modal="true">
-            <p><h:outputText value="#{settingsWrapper.getSettingValue(':StatusMessageText')}" escape="false"/></p>
-            <div class="button-block">
-                <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
-                    #{bundle.close}
-                </button>
+        <div id="body-wrapper">
+            <f:loadBundle basename="Bundle" var="bundle"/>
+        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
+            <ui:include src="dataverse_header.xhtml">
+                <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>
+                <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
+                <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
+                <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
+            </ui:include>
+            <div class="container" id="content">
+                <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
             </div>
-        </p:dialog>
-        <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
-        <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
-        <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
-            <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
-        </ui:fragment>
-        <script>
-            //<![CDATA[
-            $(document).ready(function () {
-                // Navbar Search Toggle
-                $(document).on('click', '#navbar-search-toggle', function (e) {
-                    $(this).parent("li").hide();
-                    $("form.navbar-form[role='search']").show();
-                });
-                $('body').click(function (e) {
-                    if (!$(e.target).closest("form.navbar-form[role='search']").length) {
-                        $("form.navbar-form[role='search']").hide();
-                        $("#navbar-search-toggle").parent("li").show();
-                    }
-                    ;
-                });
+            <!-- FOOTER BLOCK -->
+            <ui:include src="dataverse_footer.xhtml">
+                <ui:param name="widgetView" value="#{widgetWrapper.widgetView}"/>
+                <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
+            </ui:include>
+            <p:ajaxStatus id="ajaxStatusPanel">
+                <f:facet name="start">
+                    <h:graphicImage value="/resources/images/ajax-loading.gif" alt="Loading" />
+                </f:facet>
+                <f:facet name="complete">
+                    <!-- DO NOTHING -->
+                </f:facet>
+            </p:ajaxStatus>
+            <ui:include src="contactFormFragment.xhtml">
+            </ui:include>
+            <p:dialog id="statusInfo" styleClass="smallPopUp"
+                    header="#{settingsWrapper.getSettingValue(':StatusMessageHeader')}"
+                    widgetVar="statusInfo" modal="true">
+                <p><h:outputText value="#{settingsWrapper.getSettingValue(':StatusMessageText')}" escape="false"/></p>
+                <div class="button-block">
+                    <button type="button" onclick="PF('statusInfo').hide()" class="btn btn-default" value="#{bundle.close}">
+                        #{bundle.close}
+                    </button>
+                </div>
+            </p:dialog>
+            <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
+            <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
+                <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
+            </ui:fragment>
+            <script>
+                //<![CDATA[
+                $(document).ready(function () {
+                    // Navbar Search Toggle
+                    $(document).on('click', '#navbar-search-toggle', function (e) {
+                        $(this).parent("li").hide();
+                        $("form.navbar-form[role='search']").show();
+                    });
+                    $('body').click(function (e) {
+                        if (!$(e.target).closest("form.navbar-form[role='search']").length) {
+                            $("form.navbar-form[role='search']").hide();
+                            $("#navbar-search-toggle").parent("li").show();
+                        }
+                        ;
+                    });
 
-                bind_bsui_components();
-
-                $(document).on('pfAjaxComplete', function () {
                     bind_bsui_components();
-                })
-            });
 
-            //]]>
-        </script>
+                    $(document).on('pfAjaxComplete', function () {
+                        bind_bsui_components();
+                    })
+                });
+
+                //]]>
+            </script>
+        </div>
     </h:body>
 </f:view>
 </html>

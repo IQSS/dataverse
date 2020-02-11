@@ -40,6 +40,13 @@ function bind_bsui_components(){
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
+
+        $(window).on("resize", null, {dialog_id: dialog_id}, fixBodyWidth);
+    }
+    PrimeFaces.widget.Dialog.prototype.onHide = function() {
+        fixBodyWidth(false);
+
+        $(window).off("resize", fixBodyWidth);
     }
 }
 
@@ -168,61 +175,90 @@ function selectText(ele) {
 /*
  * Dialog Height-Scrollable
  */
-function handleResizeDialog(dialog) {
-        var el = $('div[id$="' + dialog + '"]');
-        var doc = $('body');
-        var win = $(window);
-        var elPos = '';
-        
-        function calculateResize() {
-            var overlay = $('#' + dialog + '_modal');
-            var bodyHeight = '';
-            var bodyWidth = '';
-        
-            // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
-            if (el.height() > win.height()) {
-                bodyHeight = el.height() + 'px';
-                elPos = 'absolute';
-            }
-            if (el.width() > win.width()) {
-                bodyWidth = el.width() + 'px';
-                elPos = 'absolute';
-            }
-            el.css('position', elPos);
-            doc.css('width', bodyWidth);
-            doc.css('height', bodyHeight);
-            
-            var pos = el.offset();
-            if (pos.top + el.height() > doc.height()) {
-                    pos.top = doc.height() - el.height();
-                    overlay.css('height', bodyHeight);
-                }
-            if (pos.left + el.width() > doc.width()) {
-                    pos.left = doc.width() - el.width();
-                    overlay.css('width', bodyWidth);
-                }
-            var offsetX = 0;
-            var offsetY = 0;
-            if (elPos != 'absolute') {
-                offsetX = $(window).scrollLeft();
-                offsetY = $(window).scrollTop();
-            }
-            // scroll fix for position fixed
-            if (pos.left < offsetX)
-                pos.left = offsetX;
-            if (pos.top < offsetY)
-                pos.top = offsetY;
-            el.offset(pos);
+function handleResizeDialog(dialogElement) {
+    var dialog = $('div[id$="' + dialogElement + '"]');
+    var doc = $('body');
+    var win = $(window);
+    var dialogPos = '';
+    
+    function calculateResize() {
+        var overlay = $('#' + dialogElement + '_modal');
+        var bodyHeight = '';
+        var bodyWidth = '';
+    
+        // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
+        if (dialog.height() > win.height()) {
+            bodyHeight = dialog.height() + 'px';
+            dialogPos = 'absolute';
         }
+        if (dialog.width() > win.width()) {
+            bodyWidth = dialog.width() + 'px';
+            dialogPos = 'absolute';
+        }
+        dialog.css('position', dialogPos);
+        doc.css('width', bodyWidth);
+        doc.css('height', bodyHeight);
         
-        calculateResize();
-        
-        el.find('textarea').each(function(index){
-            $(this).on('keyup change cut paste focus', function(){
-                calculateResize();
-            });
+        var pos = dialog.offset();
+        if (pos.top + dialog.height() > doc.height()) {
+                pos.top = doc.height() - dialog.height();
+                overlay.css('height', bodyHeight);
+            }
+        if (pos.left + dialog.width() > doc.width()) {
+                pos.left = doc.width() - dialog.width();
+                overlay.css('width', bodyWidth);
+            }
+        var offsetX = 0;
+        var offsetY = 0;
+        if (dialogPos != 'absolute') {
+            offsetX = $(window).scrollLeft();
+            offsetY = $(window).scrollTop();
+        }
+        // scroll fix for position fixed
+        if (pos.left < offsetX)
+            pos.left = offsetX;
+        if (pos.top < offsetY)
+            pos.top = offsetY;
+            dialog.offset(pos);
+    }
+    
+    calculateResize();
+    
+    el.find('textarea').each(function(index){
+        $(this).on('keyup change cut paste focus', function(){
+            calculateResize();
         });
+    });
+
+    fixBodyWidth(dialog);
 }
+
+/*
+ * fixes body style attribute being set incorrectly and/or nor removed when closing modal
+ */
+function fixBodyWidth(dialogElement) {
+    if (typeof dialogElement === 'string') {
+        var dialog = $('div[id$="' + dialogElement + '"]');
+    }
+    else if (typeof dialogElement === 'object') {
+        var dialog = $('div[id$="' + dialogElement.data.dialog_id + '"]');
+    }
+
+    var doc = $('body');
+    var win = $(window);
+    var wrapper = $('#body-wrapper');
+
+    if (!dialogElement || dialog.width() < win.width()) {
+        // if no modal is shown or it fits on the screen, remove the values
+        doc.css('width', '');
+        wrapper.css('max-width', '');
+    }
+    else {
+        doc.css('width', dialog.width() + 'px');
+        wrapper.css('max-width', document.documentElement.clientWidth + 'px');
+    }
+}
+
 
 /*
  * fixes autoComplete dropdown in popups not moving with page scroll
