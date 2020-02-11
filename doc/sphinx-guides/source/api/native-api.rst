@@ -1018,6 +1018,8 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/citationdate
 
+.. _list-roles-on-a-dataset-api:
+
 List Role Assignments in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1037,7 +1039,7 @@ The fully expanded example above (without environment variables) looks like this
 
 curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/2347/assignments
     
-.. _assign-role-on-a-dataverse-api:
+.. _assign-role-on-a-dataset-api:
 
 Assign a New Role on a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
