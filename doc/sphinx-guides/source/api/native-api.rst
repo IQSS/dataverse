@@ -1022,6 +1022,7 @@ List Role Assignments in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all the role assignments at the given dataset:
+
 .. code-block:: bash
 
 export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
