@@ -751,6 +751,10 @@ public class DataFile extends DvObject implements Comparable {
        return getLatestFileMetadata().getLabel(); 
     }
     
+    public String getDirectoryLabel() {
+       return getLatestFileMetadata().getDirectoryLabel();
+    }
+    
     @Override 
     public String getCurrentName(){
         return getLatestFileMetadata().getLabel();
