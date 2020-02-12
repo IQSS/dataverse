@@ -1052,13 +1052,13 @@ Assigns a new role, based on the POSTed JSON:
   export SERVER_URL=https://demo.dataverse.org
   export ID=2347
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/datasets/$ID/assignments --upload-file role.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-Type: application/json" $SERVER_URL/api/datasets/$ID/assignments --upload-file role.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/datasets/2347/assignments --upload-file role.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-Type: application/json" https://demo.dataverse.org/api/datasets/2347/assignments --upload-file role.json
 
 POSTed JSON example (the content of ``role.json`` file)::
 
