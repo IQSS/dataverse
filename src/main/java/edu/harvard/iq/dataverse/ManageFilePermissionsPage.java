@@ -140,7 +140,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                
         for (DataFile file : dataset.getFiles()) {
             
-            boolean fileIsDeleted = ((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
+            boolean fileIsDeleted = !((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
                     || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())));
             // only include if the file is restricted (or its draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 

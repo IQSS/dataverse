@@ -25,6 +25,11 @@
             <ui:param name="showMessagePanel" value="false"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm" styleClass="margin-top">
+                    <div>
+                    <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}" >
+                        <p:ajax update="@form" />
+                    </p:selectBooleanCheckbox>
+                    </div>
                     <div class="panel-group">
                         <!-- Users/Groups Access Panel -->
                         <div class="panel panel-default">
