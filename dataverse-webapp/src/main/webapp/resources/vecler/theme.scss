@@ -323,7 +323,7 @@ tr.ui-state-highlight .ui-icon {
 }
 
 .ui-button.ui-state-default {
-	&[id*="Cancel"], &[id*="cancel"] {
+	&[id*="Cancel"], &[id*="cancel"], &[class="button-cancel"] {
 		border: none;
 		box-shadow: none;
 	}
@@ -1767,7 +1767,7 @@ div.filesTable {
 }
 
 .form-horizontal .button-block {
-	button, a {
+	button.button-cancel, a.button-cancel {
 		padding: 6px 12px;
 		color: $link-color;
 
