@@ -11,10 +11,13 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import io.vavr.Tuple2;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.simplejavamail.email.Email;
 import org.simplejavamail.email.EmailBuilder;
+import org.simplejavamail.email.EmailPopulatingBuilder;
+import org.simplejavamail.email.Recipient;
 import org.simplejavamail.mailer.Mailer;
 import org.simplejavamail.mailer.MailerBuilder;
 
@@ -22,6 +25,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import java.util.Locale;
@@ -129,7 +133,7 @@ public class MailService implements java.io.Serializable {
      */
     public boolean sendMail(String recipientsEmails, EmailContent emailContent) {
 
-        Email email = EmailBuilder.startingBlank()
+        Email email = newMailWithOverseerIfExists()
                 .from(getSystemAddress())
                 .withRecipients(mailMessageCreator.createRecipients(recipientsEmails, StringUtils.EMPTY))
                 .withSubject(emailContent.getSubject())
@@ -149,7 +153,7 @@ public class MailService implements java.io.Serializable {
      */
     public boolean sendMail(String replyEmail, String recipientsEmails, String subject, String messageText) {
 
-        Email email = EmailBuilder.startingBlank()
+        Email email = newMailWithOverseerIfExists()
                 .from(getSystemAddress())
                 .withRecipients(mailMessageCreator.createRecipients(recipientsEmails, StringUtils.EMPTY))
                 .withSubject(subject)
@@ -170,6 +174,21 @@ public class MailService implements java.io.Serializable {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private EmailPopulatingBuilder newMailWithOverseerIfExists() {
+        EmailPopulatingBuilder builder = EmailBuilder.startingBlank();
+        Option<Recipient> overseer = createOverseerRecipient();
+        return overseer.isDefined()
+                ? builder.bcc(overseer.get())
+                : builder;
+    }
+
+    private Option<Recipient> createOverseerRecipient() {
+        String overseerEmail = settingsService.getValueForKey(Key.MailOverseerAddress);
+        return StringUtils.isNotBlank(overseerEmail)
+                ? Option.some(new Recipient(null, overseerEmail, Message.RecipientType.BCC))
+                : Option.none();
+    }
 
     private InternetAddress getSystemAddress() {
         String systemEmail = settingsService.getValueForKey(Key.SystemEmail);

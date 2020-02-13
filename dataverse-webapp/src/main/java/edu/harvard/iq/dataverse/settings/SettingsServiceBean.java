@@ -481,7 +481,15 @@ public class SettingsServiceBean {
          * Application wide format for dates.
          * Use this whenever you want to print date on GUI.
          */
-        DefaultDateFormat
+        DefaultDateFormat,
+
+        /**
+         * Email of mail overseer: if present, a copy of every mail sent by the application
+         * will be sent to that address.
+         *
+         * By default it is not set, so the feature is turned off.
+         */
+        MailOverseerAddress
         ;
 
         @Override
