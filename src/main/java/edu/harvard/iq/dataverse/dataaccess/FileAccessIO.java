@@ -410,7 +410,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             Path testPath = getFileSystemPath();
             if (testPath != null) {
-                return "file://" + testPath.toString();
+                return this.driverId + "://" + testPath.toString();
             }
         } catch (IOException ioex) {
             // just return null, below:
