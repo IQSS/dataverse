@@ -1333,8 +1333,6 @@ To delete language specific option,
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
 
-Unfortunately, in most cases, the text file will probably be too big to upload (>1024 characters) due to a bug. A workaround has been posted to https://github.com/IQSS/dataverse/issues/2669
-
 :ApplicationPrivacyPolicyUrl
 ++++++++++++++++++++++++++++
 
