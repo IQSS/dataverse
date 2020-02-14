@@ -9,7 +9,7 @@ General information about this capability can be found in the <a href="http://gu
 
 Multistore support requires that each store be assigned a label, id, and type - see the documentation for a more complete explanation. For an existing store, the recommended upgrade path is to assign the store id based on it's type, i.e. a 'file' store would get id 'file', an 's3' store would have the id 's3'. 
 
-With this choice, no changes to datafile 'storageidentifier' entries are needed in the database. (If you do not name your existing store using this convention, you will need to edit the database to maintain access to existing files!).
+With this choice, no manual changes to datafile 'storageidentifier' entries are needed in the database. (If you do not name your existing store using this convention, you will need to edit the database to maintain access to existing files!).
 
 The following set of commands to change the Glassfish JVM options will adapt an existing file or s3 store for this upgrade:
 For a file store:
@@ -29,4 +29,4 @@ Any additional S3 options you have set will need to be replaced as well, followi
 
 Once these options are set, restarting the glassfish service is all that is needed to complete the change.  
 
-Note that the "\-Ddataverse.files.file.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
