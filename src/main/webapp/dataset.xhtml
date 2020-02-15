@@ -597,6 +597,19 @@
                                 </p:commandButton>
                             </div>
                         </div>
+                        <div class="form-group" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">
+                            <label class="col-md-3 control-label">
+                                #{bundle.identifier}
+                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.identifier.tip']}"></span>
+                            </label>
+                            <div class="col-md-7">
+                                <p:inputText
+                                        styleClass="form-control"
+                                        value="#{DatasetPage.dataset.identifier}">
+                                </p:inputText>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
                         </div>

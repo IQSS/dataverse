@@ -232,7 +232,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {
-            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
+//            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
             return true;
         } catch (Exception e) {
             logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
