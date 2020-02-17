@@ -224,7 +224,7 @@ function handleResizeDialog(dialogElement) {
     
     calculateResize();
     
-    el.find('textarea').each(function(index){
+    dialog.find('textarea').each(function(index){
         $(this).on('keyup change cut paste focus', function(){
             calculateResize();
         });
