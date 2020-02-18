@@ -25,11 +25,11 @@
             <ui:param name="showMessagePanel" value="false"/>
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm" styleClass="margin-top">
-                    <div>
+                    <div class="panel-group">
                     <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}" >
                         <p:ajax update="@form" />
                     </p:selectBooleanCheckbox>
-                    </div>
+                    </div>  
                     <div class="panel-group">
                         <!-- Users/Groups Access Panel -->
                         <div class="panel panel-default">
@@ -233,7 +233,8 @@
                                     <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/> <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                 </p:column>
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}" rendered="#{!empty manageFilePermissionsPage.selectedRoleAssignee}">
-                                    <h:outputText value="#{roleAssignment.definitionPoint.displayName}"/>
+                                    <h:outputText value="#{roleAssignment.definitionPoint.displayName}"/>  #{roleAssignment.deleted}
+                                    <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{roleAssignment.deleted}"/>
                                 </p:column>
                             </p:dataTable>
                         </div>
@@ -320,11 +321,11 @@
                                     <p:ajax event="toggleSelect"  update=":rolesPermissionsForm:selectionCounter" />
 
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
-                                    <p:column headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
+                                    <p:column width="75.5%"  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
                                         <h:outputText rendered="#{!empty file.directoryLabel}"  value="#{file.directoryLabel}/"/>
                                         <h:outputText value="#{file.displayName}"/>
                                     </p:column>
-                                    <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.publishedRestrictedState']}" rendered="#{manageFilePermissionsPage.dataset.released}">
+                                    <p:column  class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.publishedRestrictedState']}" rendered="#{manageFilePermissionsPage.dataset.released}">
                                         <c:set var="fileVersionCount" value="#{file.fileMetadatas.size()}" />
                                         <c:set var="fileVersion" value="#{file.fileMetadata.datasetVersion.id}" />
                                         <c:set var="dsPublishedVersion" value="#{manageFilePermissionsPage.dataset.releasedVersion.id}" />
@@ -333,7 +334,7 @@
                                         <h:outputText value="#{bundle['dataverse.permissionsFiles.files.restricted']}" rendered="#{fileRestricted and fileVersion ge dsPublishedVersion}"/>
                                         <h:outputText value="#{bundle['dataverse.permissionsFiles.files.public']}" rendered="#{!fileRestricted and fileVersionCount ne 1}"/>
                                     </p:column>
-                                    <p:column width="10%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.draftRestrictedState']}" rendered="#{manageFilePermissionsPage.dataset.latestVersion.draft}">
+                                    <p:column  class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.draftRestrictedState']}" rendered="#{manageFilePermissionsPage.dataset.latestVersion.draft}">
                                         <c:set var="fileVersion" value="#{file.fileMetadata.datasetVersion.id}" />
                                         <c:set var="dsPublishedVersion" value="#{manageFilePermissionsPage.dataset.releasedVersion.id}" />
                                         <c:set var="dsLatestVersion" value="#{manageFilePermissionsPage.dataset.latestVersion.id}" />

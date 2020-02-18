@@ -150,11 +150,11 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
-                for (RoleAssignment ra : ras) {
+                for (RoleAssignment ra : ras) {;
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier(), true).getDisplayInfo()));                   
-                        addFileToRoleAssignee(ra);                    
+                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier(), true).getDisplayInfo(), fileIsDeleted));                   
+                        addFileToRoleAssignee(ra, fileIsDeleted);                    
                     }
                 }
                 
@@ -180,7 +180,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return AuthenticationProvider.getFriendlyName(authProviderId);
     }
     
-    private void addFileToRoleAssignee(RoleAssignment assignment) {
+    private void addFileToRoleAssignee(RoleAssignment assignment, boolean fileDeleted) {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
@@ -188,7 +188,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             roleAssigneeMap.put(ra, assignments);
         }
         
-        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo()));
+        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo(), fileDeleted));
     }
 
     /* 
@@ -480,11 +480,29 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
         private final RoleAssignment ra;
+            //Used when a file to which there has been a role assignment added is deleted    
+
+        private final boolean deleted;
+
+        public boolean isDeleted() {
+            return deleted;
+        }
 
         public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
             this.ra = anRa;
             this.assigneeDisplayInfo = disInf;
-        }        
+            this.deleted = false;
+        }
+
+        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf, boolean deleted) {
+
+            this.ra = anRa;
+            this.assigneeDisplayInfo = disInf;
+            this.deleted = deleted;
+            if(deleted){
+                System.out.print(ra.getDefinitionPoint().getDisplayName() + " (Deleted)");
+            }
+        } 
         
 
         public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
@@ -499,6 +517,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         public Long getId() {
             return ra.getId();
         }
+        
     
     }   
 }
