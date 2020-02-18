@@ -405,7 +405,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public String getStorageLocation() {
         // For a local file, the "storage location" is a complete, absolute
-        // filesystem path, with the "file://" prefix:
+        // filesystem path, with the "<driverId>://" prefix:
         
         try {
             Path testPath = getFileSystemPath();
