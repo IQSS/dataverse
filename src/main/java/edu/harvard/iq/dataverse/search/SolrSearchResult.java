@@ -596,7 +596,7 @@ public class SolrSearchResult {
                 if (!dv.getDatasetContacts().isEmpty()) {
                     JsonArrayBuilder contacts = Json.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
-                    for (String contact[] : dv.getDatasetContacts()) {                       
+                    for (String contact[] : dv.getDatasetContacts(false)) {
                         nullSafeJsonBuilderInner.add("name", contact[0]);
                         nullSafeJsonBuilderInner.add("affiliation", contact[1]);
                         contacts.add(nullSafeJsonBuilderInner);
