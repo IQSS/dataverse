@@ -150,7 +150,7 @@ Certain file types in Dataverse are supported by additional functionality, which
 File Previews
 -------------
 
-Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files.
+Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
 
 Tabular Data Files
 ------------------
