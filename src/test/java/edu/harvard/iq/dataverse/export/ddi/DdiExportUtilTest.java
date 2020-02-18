@@ -35,6 +35,18 @@ public class DdiExportUtilTest {
         assertEquals(datasetAsDdi, result);
     }
 
+  /*  @Test
+    public void testJson2DdiNoFiles2() throws Exception {
+        File datasetVersionJson = new File("dataset.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        File ddiFile = new File("exportfull.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+        logger.info(datasetAsDdi);
+        String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
+        logger.info(result);
+        assertEquals(datasetAsDdi, result);
+    }*/
+
     @Test
     public void testJson2ddiHasFiles() throws Exception {
         /**

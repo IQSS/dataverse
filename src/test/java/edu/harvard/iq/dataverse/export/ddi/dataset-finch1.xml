@@ -34,9 +34,9 @@
     <stdyInfo>
       <subject>
         <keyword>Medicine, Health and Life Sciences</keyword>
-        <keyword vocab="Keyword Vocabulary" URI="http://www.keyword.com/one">Keyword Value 1</keyword>
-        <keyword vocab="Keyword Vocabulary" URI="http://www.keyword.com/one">Keyword Value Two</keyword>
-        <topcClas vocab="TC Vocabulary" URI="http://www.topicClass.com/one">TC Value 1</topcClas>
+        <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value 1</keyword>
+        <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value Two</keyword>
+        <topcClas vocab="TC Vocabulary" vocabURI="http://www.topicClass.com/one">TC Value 1</topcClas>
       </subject>
       <abstract>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
       <sumDscr>
@@ -45,14 +45,16 @@
         <collDate cycle="P1" event="start" date="20070831">20070831</collDate>
         <collDate cycle="P1" event="end" date="20130630">20130630</collDate>
         <dataKind>Kind of Data</dataKind>
-        <geogCover>Cambridge</geogCover>
         <nation>USA</nation>
+        <geogCover>Cambridge</geogCover>
         <geogCover>MA</geogCover>
         <geogCover>Other Geographic Coverage</geogCover>
-        <southBL>41.6</southBL>
-        <westBL>60.3</westBL>
-        <eastBL>59.8</eastBL>
-        <northBL>43.8</northBL>
+        <geoBndBox>
+          <southBL>41.6</southBL>
+          <westBL>60.3</westBL>
+          <eastBL>59.8</eastBL>
+          <northBL>43.8</northBL>
+        </geoBndBox>
       </sumDscr>
     </stdyInfo>
     <method>

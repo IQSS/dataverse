@@ -194,7 +194,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("distStmt");
         writeDistributorsElement(xmlw, version);
         writeContactsElement(xmlw, version);
-        writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
+        writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
         writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));
         writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));
 
@@ -422,26 +422,46 @@ public class DdiExportUtil {
             if("geospatial".equals(key)){                
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
+
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            HashMap<String, String> geoMap = new HashMap<>();
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "nation", next.getSinglePrimitive());
+                                    geoMap.put("country", next.getSinglePrimitive());
+                                    //writeFullElement(xmlw, "nation", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.city.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
+                                    geoMap.put("city", next.getSinglePrimitive());
+                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.state.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
+                                    geoMap.put("state", next.getSinglePrimitive());
+                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 } 
                                 if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
+                                    geoMap.put("otherGeographicCoverage", next.getSinglePrimitive());
+                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 } 
+                            }
+                            if (geoMap.get("country") != null) {
+                                writeFullElement(xmlw, "nation", geoMap.get("country"));
+                            }
+                            if (geoMap.get("city") != null) {
+                                writeFullElement(xmlw, "geogCover", geoMap.get("city"));
+                            }
+                            if (geoMap.get("state") != null) {
+                                writeFullElement(xmlw, "geogCover", geoMap.get("state"));
+                            }
+                            if (geoMap.get("otherGeographicCoverage") != null) {
+                                writeFullElement(xmlw, "geogCover", geoMap.get("otherGeographicCoverage"));
                             }
                         }
                     }
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
+
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            xmlw.writeStartElement("geoBndBox");
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
@@ -458,7 +478,9 @@ public class DdiExportUtil {
                                 }                               
 
                             }
+                            xmlw.writeEndElement();
                         }
+
                     }
                 }
                     writeFullElementList(xmlw, "geogUnit", dto2PrimitiveList(datasetVersionDTO, DatasetFieldConstant.geographicUnit));
@@ -519,7 +541,7 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "resInstru", dto2Primitive(version, DatasetFieldConstant.researchInstrument)); 
         writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation)); 
         writeFullElement(xmlw, "actMin", dto2Primitive(version, DatasetFieldConstant.actionsToMinimizeLoss));
-        writeFullElement(xmlw, "conOps", dto2Primitive(version, DatasetFieldConstant.controlOperations));  
+        writeFullElement(xmlw, "conOps", dto2Primitive(version, DatasetFieldConstant.controlOperations));
         writeFullElement(xmlw, "weight", dto2Primitive(version, DatasetFieldConstant.weighting));  
         writeFullElement(xmlw, "cleanOps", dto2Primitive(version, DatasetFieldConstant.cleaningOperations));
 
@@ -527,7 +549,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("anlyInfo");
         //writeFullElement(xmlw, "anylInfo", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
         writeFullElement(xmlw, "respRate", dto2Primitive(version, DatasetFieldConstant.responseRate));  
-        writeFullElement(xmlw, "estSmpErr", dto2Primitive(version, DatasetFieldConstant.samplingErrorEstimates));  
+        writeFullElement(xmlw, "EstSmpErr", dto2Primitive(version, DatasetFieldConstant.samplingErrorEstimates));
         writeFullElement(xmlw, "dataAppr", dto2Primitive(version, DatasetFieldConstant.otherDataAppraisal)); 
         xmlw.writeEndElement(); //anlyInfo
         writeNotesElement(xmlw, version);
@@ -576,7 +598,7 @@ public class DdiExportUtil {
                                    writeAttribute(xmlw,"vocab",keywordVocab); 
                                 }
                                 if(!keywordURI.isEmpty()){
-                                   writeAttribute(xmlw,"URI",keywordURI); 
+                                   writeAttribute(xmlw,"vocabURI",keywordURI);
                                 } 
                                 xmlw.writeCharacters(keywordValue);
                                 xmlw.writeEndElement(); //Keyword
@@ -607,7 +629,7 @@ public class DdiExportUtil {
                                    writeAttribute(xmlw,"vocab",topicClassificationVocab); 
                                 } 
                                 if(!topicClassificationURI.isEmpty()){
-                                   writeAttribute(xmlw,"URI",topicClassificationURI); 
+                                   writeAttribute(xmlw,"vocabURI",topicClassificationURI);
                                 } 
                                 xmlw.writeCharacters(topicClassificationValue);
                                 xmlw.writeEndElement(); //topcClas

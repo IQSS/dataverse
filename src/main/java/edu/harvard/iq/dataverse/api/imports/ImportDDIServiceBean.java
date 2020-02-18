@@ -418,10 +418,10 @@ public class ImportDDIServiceBean {
                     publications.add(set);
 
 
-                } else if (xmlr.getLocalName().equals("otherRefs")) {
+                } else if (xmlr.getLocalName().equals("othRefs")) {
 
                     List<String> otherRefs = new ArrayList<>();
-                    otherRefs.add(parseText(xmlr, "otherRefs"));
+                    otherRefs.add(parseText(xmlr, "othRefs"));
                     getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO(DatasetFieldConstant.otherReferences, otherRefs));
 
                 }
@@ -620,6 +620,42 @@ public class ImportDDIServiceBean {
             this.addNote(formattedNotes, dvDTO);
         }
     }
+
+    private void processNotesSocialScience(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        //String formattedNotes = this.formatNotesfromXML(xmlr);
+        if (xmlr==null){
+            throw new NullPointerException("XMLStreamReader xmlr cannot be null");
+        }
+        FieldDTO notesSubject = null;
+        String attrVal;
+
+        // Check for "subject"
+        attrVal = xmlr.getAttributeValue(null, "subject");
+        if (attrVal != null){
+            notesSubject = FieldDTO.createPrimitiveFieldDTO("socialScienceNotesSubject", attrVal);
+        }
+
+        FieldDTO notesType = null;
+        // Check for "type"
+        attrVal = xmlr.getAttributeValue(null, "type");
+        if (attrVal != null){
+            notesType = FieldDTO.createPrimitiveFieldDTO("socialScienceNotesType", attrVal);
+        }
+
+        FieldDTO notesText = null;
+        // Add notes, if they exist
+        attrVal = parseText(xmlr, "notes");
+        if ((attrVal != null) && (!attrVal.isEmpty())){
+            notesText  = FieldDTO.createPrimitiveFieldDTO("socialScienceNotesText", attrVal);
+        }
+
+        if (notesSubject != null || notesType != null || notesText != null ){
+
+            //this.addNoteSocialScience(formattedNotes, dvDTO);
+
+            getSocialScience(dvDTO).addField(FieldDTO.createCompoundFieldDTO("socialScienceNotes", notesSubject, notesType, notesText ));
+        }
+    }
     
     private void addNote(String noteText, DatasetVersionDTO dvDTO ) {
         MetadataBlockDTO citation = getCitation(dvDTO);
@@ -640,6 +676,8 @@ public class ImportDDIServiceBean {
         List<String> kindOfData = new ArrayList<>();
         List<HashSet<FieldDTO>> geoBoundBox = new ArrayList<>();
         List<HashSet<FieldDTO>> geoCoverages = new ArrayList<>();
+        List<FieldDTO> timePeriod = new ArrayList<>();
+        List<FieldDTO> dateOfCollection = new ArrayList<>();
         FieldDTO timePeriodStart = null;
         FieldDTO timePeriodEnd = null;
         FieldDTO dateOfCollectionStart = null;
@@ -654,6 +692,8 @@ public class ImportDDIServiceBean {
                         timePeriodStart = FieldDTO.createPrimitiveFieldDTO("timePeriodCoveredStart", parseDate(xmlr, "timePrd"));
                     } else if (EVENT_END.equals(eventAttr)) {
                         timePeriodEnd = FieldDTO.createPrimitiveFieldDTO("timePeriodCoveredEnd", parseDate(xmlr, "timePrd"));
+                        timePeriod.add(FieldDTO.createMultipleCompoundFieldDTO("timePeriodCovered", timePeriodStart, timePeriodEnd));
+
                     }                   
                 } else if (xmlr.getLocalName().equals("collDate")) {
                     String eventAttr = xmlr.getAttributeValue(null, "event");
@@ -661,6 +701,7 @@ public class ImportDDIServiceBean {
                         dateOfCollectionStart = FieldDTO.createPrimitiveFieldDTO("dateOfCollectionStart", parseDate(xmlr, "collDate"));
                     } else if (EVENT_END.equals(eventAttr)) {
                         dateOfCollectionEnd = FieldDTO.createPrimitiveFieldDTO("dateOfCollectionEnd", parseDate(xmlr, "collDate"));
+                        dateOfCollection.add(FieldDTO.createMultipleCompoundFieldDTO("dateOfCollection", dateOfCollectionStart, dateOfCollectionEnd ));
                     }
                    
                 } else if (xmlr.getLocalName().equals("nation")) {
@@ -684,11 +725,11 @@ public class ImportDDIServiceBean {
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("sumDscr")) {
-                    if (timePeriodStart!=null || timePeriodEnd!=null) {
-                        getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO("timePeriodCovered", timePeriodStart, timePeriodEnd));
+                    for  (FieldDTO time : timePeriod) {
+                        getCitation(dvDTO).addField( time);
                     }
-                    if (dateOfCollectionStart!=null || dateOfCollectionEnd!=null) {
-                        getCitation(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO("dateOfCollection", dateOfCollectionStart, dateOfCollectionEnd));
+                    for (FieldDTO date : dateOfCollection) {
+                        getCitation(dvDTO).addField(date);
                     }
                   
                     if (geoUnit.size() > 0) {
@@ -748,7 +789,7 @@ public class ImportDDIServiceBean {
                     if (NOTE_TYPE_EXTENDED_METADATA.equalsIgnoreCase(noteType) ) {
                         processCustomField(xmlr, dvDTO);                       
                     } else {
-                        processNotes(xmlr, dvDTO);
+                        processNotesSocialScience(xmlr, dvDTO);
 //                        addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
                        
                     }
@@ -959,8 +1000,8 @@ public class ImportDDIServiceBean {
                      socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("dataCollectionSituation", parseText( xmlr, "collSitu" )));
                 } else if (xmlr.getLocalName().equals("actMin")) {
                       socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("actionsToMinimizeLoss", parseText( xmlr, "actMin" )));
-                } else if (xmlr.getLocalName().equals("ConOps")) {
-                       socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("controlOperations", parseText( xmlr, "ConOps" )));
+                } else if (xmlr.getLocalName().equals("conOps")) {
+                       socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("controlOperations", parseText( xmlr, "conOps" )));
                 } else if (xmlr.getLocalName().equals("weight")) {
                     String thisValue = parseText( xmlr, "weight" );
                     if (!StringUtil.isEmpty(thisValue)) {
@@ -972,6 +1013,8 @@ public class ImportDDIServiceBean {
                     //socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("weighting", parseText( xmlr, "weight" )));
                 } else if (xmlr.getLocalName().equals("cleanOps")) {
                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("cleaningOperations", parseText( xmlr, "cleanOps" )));
+                } else if (xmlr.getLocalName().equals("collectorTraining")) {
+                        socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("collectorTraining", parseText( xmlr, "collectorTraining" )));
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("dataColl")) {
@@ -987,6 +1030,7 @@ public class ImportDDIServiceBean {
                     if (!StringUtil.isEmpty(dataCollector)) {
                         socialScience.getFields().add(FieldDTO.createPrimitiveFieldDTO("dataCollector", dataCollector));
                     }
+
                     return;
                 }
             }
@@ -1192,11 +1236,9 @@ public class ImportDDIServiceBean {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set, "distributorAbbreviation", xmlr.getAttributeValue(null, "abbr"));
                     addToSet(set, "distributorAffiliation", xmlr.getAttributeValue(null, "affiliation"));
-
-                    Map<String, String> distDetails = parseCompoundText(xmlr, "distrbtr");
-                    addToSet(set, "distributorName", distDetails.get("name"));
-                    addToSet(set, "distributorURL", distDetails.get("url"));
-                    addToSet(set, "distributorLogoURL", distDetails.get("logo"));
+                    addToSet(set, "distributorURL",  xmlr.getAttributeValue(null, "URI"));
+                    addToSet(set, "distributorLogoURL", xmlr.getAttributeValue(null, "role"));
+                    addToSet(set, "distributorName", xmlr.getElementText());
                     distributors.add(set);
 
                 } else if (xmlr.getLocalName().equals("contact")) {
@@ -1240,11 +1282,9 @@ public class ImportDDIServiceBean {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"producerAbbreviation", xmlr.getAttributeValue(null, "abbr"));
                     addToSet(set,"producerAffiliation", xmlr.getAttributeValue(null, "affiliation"));
-                    
-                    Map<String, String> prodDetails = parseCompoundText(xmlr, "producer");
-                    addToSet(set,"producerName", prodDetails.get("name"));
-                    addToSet(set,"producerURL", prodDetails.get("url" ));
-                    addToSet(set,"producerLogoURL", prodDetails.get("logo"));
+                    addToSet(set,"producerLogoURL", xmlr.getAttributeValue(null, "role"));
+                    addToSet(set,"producerURL", xmlr.getAttributeValue(null, "URI"));
+                    addToSet(set,"producerName", xmlr.getElementText());
                     if (!set.isEmpty())
                         producers.add(set);
                 } else if (xmlr.getLocalName().equals("prodDate")) {
@@ -1254,7 +1294,7 @@ public class ImportDDIServiceBean {
                 } else if (xmlr.getLocalName().equals("software")) {
                     HashSet<FieldDTO> set = new HashSet<>();
                     addToSet(set,"softwareVersion", xmlr.getAttributeValue(null, "version"));
-                    addToSet(set,"softwareName", xmlr.getAttributeValue(null, "version"));
+                    addToSet(set,"softwareName",  parseText(xmlr));
                     if (!set.isEmpty()) {
                         software.add(set);
                     }
