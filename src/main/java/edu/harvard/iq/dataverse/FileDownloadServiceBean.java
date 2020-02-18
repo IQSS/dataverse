@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -13,6 +14,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -63,7 +66,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
-    
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+
     @Inject
     DataverseSession session;
     
@@ -251,6 +256,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     //No un-expired token
                     apiToken = authService.generateApiTokenForUser(authenticatedUser);
                 }
+            } else if (user instanceof PrivateUrlUser) {
+                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+                apiToken = new ApiToken();
+                apiToken.setTokenString(privateUrl.getToken());
             }
         }
         DataFile dataFile = null;
