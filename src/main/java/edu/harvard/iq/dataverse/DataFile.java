@@ -46,6 +46,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -227,8 +228,24 @@ public class DataFile extends DvObject implements Comparable {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
     }
-    
-    
+
+    /*
+    Used in manage file permissions UI 
+    to easily display those files that have been deleted in the current draft 
+    or previous version which may have roles assigned or pending requests for access
+    */
+   
+    @Transient
+    private boolean deleted;
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+       
     /**
      * All constructors should use this method
      * to initialize this file replace attributes

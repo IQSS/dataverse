@@ -158,6 +158,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                     }
                 }
                 
+                file.setDeleted(fileIsDeleted);
+                
                 fileMap.put(file, raList);
                 
                 // populate the file access requests map
