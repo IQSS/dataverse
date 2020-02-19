@@ -65,7 +65,7 @@
         <repository>
             <id>prime-repo</id>
             <name>PrimeFaces Maven Repository</name>
-            <url>http://repository.primefaces.org</url>
+            <url>https://repository.primefaces.org</url>
             <layout>default</layout>
         </repository>
         <repository>
@@ -314,7 +314,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.3.1</version>
+            <version>7.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

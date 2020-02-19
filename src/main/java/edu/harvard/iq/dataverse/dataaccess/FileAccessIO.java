@@ -88,12 +88,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         
         if (dvObject instanceof DataFile) {
             dataFile = this.getDataFile();
-
+            String storageIdentifier = dataFile.getStorageIdentifier();
             if (req != null && req.getParameter("noVarHeader") != null) {
                 this.setNoVarHeader(true);
             }
 
-            if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
+            if (storageIdentifier == null || "".equals(storageIdentifier)) {
                 throw new IOException("Data Access: No local storage identifier defined for this datafile.");
             }
 
@@ -132,6 +132,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
                 this.setOutputStream(fout);
                 setChannel(fout.getChannel());
+                if (!storageIdentifier.startsWith(this.driverId + "://")) {
+                    dvObject.setStorageIdentifier(this.driverId + "://" + storageIdentifier);
+                }
             }
 
             this.setMimeType(dataFile.getContentType());
@@ -161,7 +164,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             	  if (datasetPath != null && !Files.exists(datasetPath)) {
             		  Files.createDirectories(datasetPath);
             	  }
-                dataset.setStorageIdentifier(this.driverId + "://"+dataset.getAuthority()+"/"+dataset.getIdentifier());
+                dataset.setStorageIdentifier(this.driverId + "://"+dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage());
             }
 
         } else if (dvObject instanceof Dataverse) {
@@ -402,12 +405,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public String getStorageLocation() {
         // For a local file, the "storage location" is a complete, absolute
-        // filesystem path, with the "file://" prefix:
+        // filesystem path, with the "<driverId>://" prefix:
         
         try {
             Path testPath = getFileSystemPath();
             if (testPath != null) {
-                return "file://" + testPath.toString();
+                return this.driverId + "://" + testPath.toString();
             }
         } catch (IOException ioex) {
             // just return null, below:

@@ -39,6 +39,8 @@ public class FileAccessIOTest {
     private Dataset dataset;
     private DataFile dataFile;
 
+    private String dummyDriverId = "dummmy";
+    
     private Path fileSystemPath = new File("/tmp/files/tmp/dataset/Dataset").toPath();
 
     public FileAccessIOTest() {
@@ -56,7 +58,7 @@ public class FileAccessIOTest {
         dataFile = MocksFactory.makeDataFile();
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("DataFile");
-        String dummyDriverId = "dummmy";
+        
         datasetAccess = new FileAccessIO<>(dataset,null, dummyDriverId);
         dataFileAccess = new FileAccessIO<>(dataFile, null, dummyDriverId);
         dataverseAccess = new FileAccessIO<>(dataverse, null, dummyDriverId);
@@ -209,7 +211,7 @@ public class FileAccessIOTest {
      */
     @Test
     public void testGetStorageLocation() {
-        String expResult = "file:///tmp/files/tmp/dataset/Dataset";
+        String expResult = dummyDriverId + ":///tmp/files/tmp/dataset/Dataset";
         String result = datasetAccess.getStorageLocation();
         assertEquals(expResult, result);
     }

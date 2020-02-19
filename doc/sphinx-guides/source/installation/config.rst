@@ -236,7 +236,7 @@ To support multiple stores, Dataverse now requires an id, type, and label for ea
 
 Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
 
-Note that the "\-Ddataverse.files.directory=<file directory>" continues to exist, but now only controls where temporary files are stored (in the /temp subdirectory of the one specified).
+Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
@@ -1384,8 +1384,6 @@ To upload a language specific Terms of Use file,
 To delete language specific option,
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
-
-Unfortunately, in most cases, the text file will probably be too big to upload (>1024 characters) due to a bug. A workaround has been posted to https://github.com/IQSS/dataverse/issues/2669
 
 :ApplicationPrivacyPolicyUrl
 ++++++++++++++++++++++++++++

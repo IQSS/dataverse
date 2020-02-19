@@ -85,7 +85,7 @@ public class DataAccess {
         // "storage identifier".
         // -- L.A. 4.0.2
 
-
+        logger.warning("Could not find storage driver for: " + storageIdentifier);
         throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
 
@@ -105,6 +105,7 @@ public class DataAccess {
         case "swift":
             return new SwiftAccessIO<>(storageLocation, storageDriverId);
         default:
+        	logger.warning("Could not find storage driver for: " + fullStorageLocation);
         	throw new IOException("getDirectStorageIO: Unsupported storage method.");
         }
     }
@@ -152,7 +153,7 @@ public class DataAccess {
         }
 
         StorageIO<T> storageIO = null;
-
+        
         dvObject.setStorageIdentifier(storageTag);
 
         if (StringUtils.isEmpty(storageDriverId)) {
@@ -170,9 +171,12 @@ public class DataAccess {
         	storageIO = new S3AccessIO<>(dvObject, null, storageDriverId);
         	break;
         default:
+        	logger.warning("Could not find storage driver for: " + storageTag);
         	throw new IOException("createDataAccessObject: Unsupported storage method " + storageDriverId);
         }
-
+        // Note: All storageIO classes must assure that dvObject instances' storageIdentifiers are prepended with 
+        // the <driverId>:// + any additional storageIO type information required (e.g. the bucketname for s3/swift)
+        // This currently happens when the storageIO is opened for write access
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
