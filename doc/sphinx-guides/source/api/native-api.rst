@@ -1855,15 +1855,44 @@ Currently the following methods are used to detect file types:
 Replacing Files
 ~~~~~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced::
+Replace an existing file where ``ID`` is the database id of the file to replace or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced.
 
-    POST -F 'file=@file.extension' -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+A curl example using an ``ID``
 
-Example::
+.. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
-  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
-  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' $SERVER_URL/api/files/$ID/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
+    -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
+    https://demo.dataverse.org/api/files/24/replace
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' \
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
+    -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
 
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
