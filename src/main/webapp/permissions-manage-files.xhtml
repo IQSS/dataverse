@@ -322,7 +322,6 @@
 
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                     <p:column width="98%"  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
-                                        <h:outputText rendered="#{!empty file.directoryLabel}"  value="#{file.directoryLabel}/"/>
                                         <h:outputText value="#{file.displayName}"/>
                                         <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{file.deleted}"/>
                                     </p:column>
