@@ -26,11 +26,6 @@
             <ui:define name="body">
                 <h:form id="rolesPermissionsForm" styleClass="margin-top">
                     <div class="panel-group">
-                    <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}" >
-                        <p:ajax update="@form" />
-                    </p:selectBooleanCheckbox>
-                    </div>  
-                    <div class="panel-group">
                         <!-- Users/Groups Access Panel -->
                         <div class="panel panel-default">
                             <div data-toggle="collapse" data-target="#panelCollapseUsersGroups" class="panel-heading text-info">
@@ -45,6 +40,7 @@
                                             <iqbs:messages collapsible="true" rendered="#{manageFilePermissionsPage.renderUserGroupMessages}"/>
                                         </div>
                                     </p:fragment>
+                                    <p:fragment id="usersGroups">
                                     <div class="margin-bottom text-right">
                                         <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                        actionListener="#{manageFilePermissionsPage.initAssignDialog}"
@@ -53,12 +49,16 @@
                                             <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
                                         </p:commandLink>
                                     </div>
+                                    <div class="panel-group">
+                                        <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}" >
+                                            <p:ajax update="filesFragment, usersGroups" />
+                                        </p:selectBooleanCheckbox>
+                                    </div> 
                                     <div>
                                         <p:fragment id="userGroupsRequests" rendered="#{!empty manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                             <p>
                                                 <span class="highlightBold">#{manageFilePermissionsPage.fileAccessRequestMap.size()} #{bundle['dataverse.permissions.requests']} </span>
-                                            </p>
-                                            
+                                            </p> 
                                             <p:dataTable id="fileAccessRequests" styleClass="margin-bottom" var="access" value="#{manageFilePermissionsPage.fileAccessRequestMap.entrySet().toArray()}">
                                                 <p:column width="25%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" >
                                                     <h:outputText value="#{access.key.displayInfo.title}"/>
@@ -137,6 +137,7 @@
                                             </p:dataTable>
                                         </p:fragment>
                                     </div>
+                                    </p:fragment>
                                 </div>
                             </div>
                         </div>
@@ -154,13 +155,17 @@
                                             <iqbs:messages  collapsible="true" rendered="#{manageFilePermissionsPage.renderFileMessages}"/>
                                         </div>
                                     </p:fragment>
-                                    
+                                    <p:fragment id="filesFragment" >
                                     <p>
                                         <h:outputFormat styleClass="highlightBold" value="#{manageFilePermissionsPage.fileMap.size()} #{bundle['dataverse.permissionsFiles.files.label']}">
                                             <f:param value="#{manageFilePermissionsPage.fileMap.size()}"/>
                                         </h:outputFormat>
                                     </p>
-                                    
+                                    <div class="panel-group">
+                                        <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}" >
+                                            <p:ajax update="filesFragment, usersGroups" />
+                                        </p:selectBooleanCheckbox>
+                                    </div>  
                                     <p:dataTable id="restrictedFiles" var="fileEntry" value="#{manageFilePermissionsPage.fileMap.entrySet().toArray()}"
                                                  emptyMessage="#{bundle['dataverse.permissionsFiles.files.invalidMsg']}">
                                         <p:column width="40%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}">
@@ -202,6 +207,7 @@
                                                            oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
                                         </p:column>
                                     </p:dataTable>
+                                    </p:fragment>    
                                 </div>
                             </div>
                         </div>
