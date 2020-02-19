@@ -232,9 +232,9 @@
                                 <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.usersOrGroups.tabHeader.userOrGroup']}" rendered="#{!empty manageFilePermissionsPage.selectedFile}">
                                     <h:outputText value="#{roleAssignment.assigneeDisplayInfo.title}"/> <h:outputText value=" (#{roleAssignment.assigneeDisplayInfo.affiliation})" rendered="#{!empty roleAssignment.assigneeDisplayInfo.affiliation}"/>
                                 </p:column>
-                                <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}" rendered="#{!empty manageFilePermissionsPage.selectedRoleAssignee}">
+                                <p:column width="98%" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.fileName']}" rendered="#{!empty manageFilePermissionsPage.selectedRoleAssignee}">                                   
+                                    <h:outputText value="#{roleAssignment.definitionPoint.displayName}"/>
                                     <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{roleAssignment.deleted}"/>
-                                    <h:outputText value="#{roleAssignment.definitionPoint.displayName}"/>  #{roleAssignment.deleted}
                                 </p:column>
                             </p:dataTable>
                         </div>
@@ -322,9 +322,9 @@
 
                                     <p:column selectionMode="multiple" style="width:2%;text-align:center"/>
                                     <p:column width="98%"  headerText="#{bundle['dataverse.permissionsFiles.assignDialog.fileName']}">
-                                        <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{file.deleted}"/>
                                         <h:outputText rendered="#{!empty file.directoryLabel}"  value="#{file.directoryLabel}/"/>
                                         <h:outputText value="#{file.displayName}"/>
+                                        <h:outputText value=" (#{bundle['dataverse.permissionsFiles.files.deleted']}) " rendered="#{file.deleted}"/>
                                     </p:column>
                                 </p:dataTable>
                             </div>
