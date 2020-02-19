@@ -116,6 +116,7 @@ https://demo.dataverse.org/api/search?q=trees
                        "Astronomy and Astrophysics",
                        "Other"
                     ],
+                    "fileCount":3,
                     "versionId":1260,
                     "versionState":"RELEASED",
                     "majorVersion":3,
@@ -291,6 +292,7 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "subjects": [
                         "Medicine, Health and Life Sciences"
                     ],
+                    "fileCount":6,
                     "versionId": 53001,
                     "versionState": "RELEASED",
                     "majorVersion": 1,
@@ -323,6 +325,7 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "subjects": [
                         "Medicine, Health and Life Sciences"
                     ],
+                    "fileCount":9,
                     "versionId": 53444,
                     "versionState": "RELEASED",
                     "majorVersion": 1,
