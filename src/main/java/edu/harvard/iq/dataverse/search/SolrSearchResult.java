@@ -584,6 +584,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
+                nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if(this.isPublishedState()){
