@@ -84,7 +84,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
     private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
     private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();  
-    private boolean showDeleted = false;
+    private boolean showDeleted = true;
 
     public boolean isShowDeleted() {
         return showDeleted;

@@ -44,7 +44,7 @@
                                         <div class="margin-bottom text-right">
                                             <p:commandLink id="userGroupsAdd" styleClass="btn btn-default"
                                                            actionListener="#{manageFilePermissionsPage.initAssignDialog}"
-                                                           update="assignDialog"
+                                                           update="assignDialog, filesFragment, usersGroups"
                                                            oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();">
                                                 <span class="glyphicon glyphicon-user"/> #{bundle['dataverse.permissionsFiles.usersOrGroups.assignBtn']}
                                             </p:commandLink>
@@ -202,7 +202,7 @@
                                             <p:column width="22%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.access']}">
                                                 <p:commandLink styleClass="btn btn-default" rendered="#{!fileEntry.key.deleted}"
                                                                actionListener="#{manageFilePermissionsPage.initAssignDialogByFile(fileEntry.key)}"
-                                                               update=":#{p:resolveClientId('rolesPermissionsForm:assignDialog', view)}"
+                                                               update=":#{p:resolveClientId('rolesPermissionsForm:assignDialog', view)}, :#{p:resolveClientId('rolesPermissionsForm:filesFragment', view)}, :#{p:resolveClientId('rolesPermissionsForm:usersGroups', view)}"
                                                                oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
                                             </p:column>
                                         </p:dataTable>
