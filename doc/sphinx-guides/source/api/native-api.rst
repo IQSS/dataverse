@@ -1782,7 +1782,7 @@ Example::
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
 
-Provides a json representation of the file metadata for an existing file where ``ID`` is the database id of the file to replace or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file
+Provides a json representation of the file metadata for an existing file where ``ID`` is the database id of the file to get metadata from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
 
 A curl example using an ``ID``
 
