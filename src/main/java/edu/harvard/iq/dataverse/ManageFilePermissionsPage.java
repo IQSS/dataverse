@@ -315,6 +315,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
 
     public void initAssignDialog(ActionEvent ae) {
+
+        showDeleted = false;
+        initMaps();
+
         fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
@@ -322,6 +326,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initAssignDialogByFile(DataFile file) {
+        showDeleted = false;
+        initMaps();
         fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
@@ -501,9 +507,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             this.ra = anRa;
             this.assigneeDisplayInfo = disInf;
             this.deleted = deleted;
-            if(deleted){
-                System.out.print(ra.getDefinitionPoint().getDisplayName() + " (Deleted)");
-            }
+
         } 
         
 

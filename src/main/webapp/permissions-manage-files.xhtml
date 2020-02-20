@@ -201,7 +201,7 @@
                                             <h:outputText rendered="#{fileEntry.value.size() == 0}" value="#{fileEntry.value.size()} #{bundle['dataverse.permissionsFiles.files.roleAssignees']}"/>
                                         </p:column>
                                         <p:column width="22%" class="text-center" headerText="#{bundle['dataverse.permissionsFiles.files.tabHeader.access']}">
-                                            <p:commandLink styleClass="btn btn-default"
+                                            <p:commandLink styleClass="btn btn-default" rendered="#{!fileEntry.key.deleted}"
                                                            actionListener="#{manageFilePermissionsPage.initAssignDialogByFile(fileEntry.key)}"
                                                            update=":#{p:resolveClientId('rolesPermissionsForm:assignDialog', view)}"
                                                            oncomplete="PF('assignWidget').show();handleResizeDialog('assignDialog');bind_bsui_components();"><span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.permissionsFiles.files.assignBtn']}</p:commandLink>
