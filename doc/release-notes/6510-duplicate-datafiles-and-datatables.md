@@ -6,7 +6,7 @@ DataFile (https://github.com/IQSS/dataverse/issues/6510). This issue impacted ap
 
 To see if any datasets in your installation have been impacted by this data integrity issue, we've provided a diagnostic script here:
 
-https://github.com/IQSS/dataverse/raw/6510-repeated-ingests/scripts/issues/6510/check_datafiles_6522_6510.sh
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/6510/check_datafiles_6522_6510.sh
 
 The script relies on the PostgreSQL utility psql to access the
 database. You will need to edit the credentials at the top of the script
