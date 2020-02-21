@@ -2,7 +2,7 @@ We recently discovered a *potential* data integrity issue in
 Dataverse databases.  One manifests itself as duplicate DataFile
 objects created for the same uploaded file (https://github.com/IQSS/dataverse/issues/6522); the other as duplicate
 DataTable (tabular metadata) objects linked to the same
-DataFile (https://github.com/IQSS/dataverse/issues/6510). This issue impacted approximately .0003% of datasets in Harvard's Dataverse.  
+DataFile (https://github.com/IQSS/dataverse/issues/6510). This issue impacted approximately .03% of datasets in Harvard's Dataverse.  
 
 To see if any datasets in your installation have been impacted by this data integrity issue, we've provided a diagnostic script here:
 
