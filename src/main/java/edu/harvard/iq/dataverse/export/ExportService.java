@@ -253,7 +253,7 @@ public class ExportService {
             // to save the output into a temp file, and then copy it over to the 
             // permanent storage using the IO "save" command: 
             try {
-                storageIO = DataAccess.createNewStorageIO(dataset, "placeholder");
+                storageIO = DataAccess.getStorageIO(dataset);
                 Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
                 outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
             } catch (IOException ioex) {
