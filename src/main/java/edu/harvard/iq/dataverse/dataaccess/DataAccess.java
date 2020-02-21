@@ -156,7 +156,8 @@ public class DataAccess {
          * Since PR #6488 for multi-store - this can return a clone using a different store than the original (e.g. if the default store changes) which causes errors
          * This if will catch any cases where that's attempted.
          */
-        if(dvObject.getStorageIdentifier().contains("://")) {
+        // Tests send objects with no storageIdentifier set
+        if(!dvObject.getStorageIdentifier().isEmpty() && dvObject.getStorageIdentifier().contains("://")) {
         	throw new IOException("Attempt to create new StorageIO for already stored object: " + dvObject.getStorageIdentifier());
         }
 
