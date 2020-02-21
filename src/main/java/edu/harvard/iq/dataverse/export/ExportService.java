@@ -240,58 +240,56 @@ public class ExportService {
     // This method runs the selected metadata exporter, caching the output 
     // in a file in the dataset directory / container based on its DOI:
     private void cacheExport(DatasetVersion version, String format, JsonObject datasetAsJson, Exporter exporter) throws ExportException {
-        boolean tempFileRequired = false;
-        File tempFile = null;
-        OutputStream outputStream = null;
-        Dataset dataset = version.getDataset();
-        StorageIO<Dataset> storageIO = null;
-        try {
-            // With some storage drivers, we can open a WritableChannel, or OutputStream 
-            // to directly write the generated metadata export that we want to cache; 
-            // Some drivers (like Swift) do not support that, and will give us an
-            // "operation not supported" exception. If that's the case, we'll have 
-            // to save the output into a temp file, and then copy it over to the 
-            // permanent storage using the IO "save" command: 
-            try {
-                storageIO = DataAccess.getStorageIO(dataset);
-                Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
-                outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
-            } catch (IOException ioex) {
-                tempFileRequired = true;
-                tempFile = File.createTempFile("tempFileToExport", ".tmp");
-                outputStream = new FileOutputStream(tempFile);
-            }
+    	boolean tempFileUsed = false;
+    	File tempFile = null;
+    	OutputStream outputStream = null;
+    	Dataset dataset = version.getDataset();
+    	StorageIO<Dataset> storageIO = null;
+    	try {
+    		// With some storage drivers, we can open a WritableChannel, or OutputStream 
+    		// to directly write the generated metadata export that we want to cache; 
+    		// Some drivers (like Swift) do not support that, and will give us an
+    		// "operation not supported" exception. If that's the case, we'll have 
+    		// to save the output into a temp file, and then copy it over to the 
+    		// permanent storage using the IO "save" command: 
+    		try {
+    			storageIO = DataAccess.getStorageIO(dataset);
+    			Channel outputChannel = storageIO.openAuxChannel("export_" + format + ".cached", DataAccessOption.WRITE_ACCESS);
+    			outputStream = Channels.newOutputStream((WritableByteChannel) outputChannel);
+    		} catch (IOException ioex) {
+    			// A common case = an IOException in openAuxChannel which is not supported by S3 stores for WRITE_ACCESS
+    			tempFileUsed = true;
+    			tempFile = File.createTempFile("tempFileToExport", ".tmp");
+    			outputStream = new FileOutputStream(tempFile);
+    		}
 
-            try {
-                Path cachedMetadataFilePath = Paths.get(version.getDataset().getFileSystemDirectory().toString(), "export_" + format + ".cached");
+    		try {
+    			// Write the metadata export file to the outputStream, which may be the final location or a temp file
+    			exporter.exportDataset(version, datasetAsJson, outputStream);
+    			outputStream.flush();
+    			outputStream.close();
+    			if(tempFileUsed) {                  
+    				logger.fine("Saving export_" + format + ".cached aux file from temp file: " + Paths.get(tempFile.getAbsolutePath()));
+    				storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
+    				boolean tempFileDeleted = tempFile.delete();
+    				logger.fine("tempFileDeleted: " + tempFileDeleted);
+    			}
+    		} catch (ExportException exex) {
+    			/*This exception is from the particular exporter and may not affect other exporters (versus other exceptions in this method which are from the basic mechanism to create a file)
+    			 * So we'll catch it here and report so that loops over other exporters can continue. 
+    			 * Todo: Might be better to create a new exception subtype and send it upward, but the callers currently just log and ignore beyond terminating any loop over exporters.
+    			 */
+    			logger.warning("Exception thrown while creating export_" + format + ".cached : " + exex.getMessage());
+    		} catch (IOException ioex) {
+    			throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
+    		}
 
-                if (!tempFileRequired) {
-                    FileOutputStream cachedExportOutputStream = new FileOutputStream(cachedMetadataFilePath.toFile());
-                    exporter.exportDataset(version, datasetAsJson, cachedExportOutputStream);
-                    cachedExportOutputStream.flush();
-                    cachedExportOutputStream.close();
-                    outputStream.close();
-                } else {
-                    // this method copies a local filesystem Path into this DataAccess Auxiliary location:
-                    exporter.exportDataset(version, datasetAsJson, outputStream);
-                    outputStream.flush();
-                    outputStream.close();
-                    
-                    logger.fine("Saving path as aux for temp file in: " + Paths.get(tempFile.getAbsolutePath()));
-                    storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), "export_" + format + ".cached");
-                    boolean tempFileDeleted = tempFile.delete();
-                    logger.fine("tempFileDeleted: " + tempFileDeleted);
-                }
-
-            } catch (IOException ioex) {
-                throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
-            }
-
-        } catch (IOException ioex) {
-            throw new ExportException("IO Exception thrown exporting as " + "export_" + format + ".cached");
-        } finally {
-            IOUtils.closeQuietly(outputStream);
-        }
+    	} catch (IOException ioex) {
+    		//This catches any problem creating a local temp file in the catch clause above
+    		throw new ExportException("IO Exception thrown before exporting as " + "export_" + format + ".cached");
+    	} finally {
+    		IOUtils.closeQuietly(outputStream);
+    	}
 
     }
 
