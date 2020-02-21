@@ -504,6 +504,10 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
+    /*Only used with packageFiles after the implementation of multi-store in #6488
+     * 
+     */
+    @Deprecated 
     public Path getFileSystemDirectory() {
         Path studyDir = null;
 

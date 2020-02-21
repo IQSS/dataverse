@@ -529,7 +529,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return out;
     }
     
-    private String getDatasetDirectory() throws IOException {
+    public String getDatasetDirectory() throws IOException {
         if (dvObject == null) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
@@ -587,7 +587,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         
             baseName = stripDriverId(this.getDataFile().getStorageIdentifier());
 
-            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+            datasetDirectoryPath = Paths.get(getDatasetDirectory());
         }
 
         if (datasetDirectoryPath == null) {
