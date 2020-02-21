@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # begin config
 # PostgresQL credentials:
