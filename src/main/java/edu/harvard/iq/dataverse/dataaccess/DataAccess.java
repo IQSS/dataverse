@@ -157,7 +157,7 @@ public class DataAccess {
          * This if will catch any cases where that's attempted.
          */
         // Tests send objects with no storageIdentifier set
-        if(!dvObject.getStorageIdentifier().isEmpty() && dvObject.getStorageIdentifier().contains("://")) {
+        if((dvObject.getStorageIdentifier()!=null) && dvObject.getStorageIdentifier().contains("://")) {
         	throw new IOException("Attempt to create new StorageIO for already stored object: " + dvObject.getStorageIdentifier());
         }
 
