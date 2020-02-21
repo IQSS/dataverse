@@ -221,48 +221,7 @@ public class DdiExportUtil {
         writeDataAccess(xmlw , version);
         writeOtherStudyMaterial(xmlw , version);
 
-        /*
-        writeRelPublElement(xmlw, version);
-
-        writeOtherIdElement(xmlw, version);
-        writeDistributorsElement(xmlw, version);
-        writeContactsElement(xmlw, version);
-        writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));    
-        writeFullElement(xmlw, "depDate", dto2Primitive(version, DatasetFieldConstant.dateOfDeposit));  
-        
-        writeFullElementList(xmlw, "relMat", dto2PrimitiveList(version, DatasetFieldConstant.relatedMaterial));
-        writeFullElementList(xmlw, "relStdy", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
-        writeFullElementList(xmlw, "othRefs", dto2PrimitiveList(version, DatasetFieldConstant.otherReferences));
-        writeSeriesElement(xmlw, version);
-        writeSoftwareElement(xmlw, version);
-        writeFullElementList(xmlw, "dataSrc", dto2PrimitiveList(version, DatasetFieldConstant.dataSources));
-        writeFullElement(xmlw, "srcOrig", dto2Primitive(version, DatasetFieldConstant.originOfSources)); 
-        writeFullElement(xmlw, "srcChar", dto2Primitive(version, DatasetFieldConstant.characteristicOfSources)); 
-        writeFullElement(xmlw, "srcDocu", dto2Primitive(version, DatasetFieldConstant.accessToSources)); 
-        xmlw.writeEndElement(); // stdyInfo
-        // End Info Block
-        
-        //Social Science Metadata block
-               
-        writeMethodElement(xmlw, version);
-        
-        //Terms of Use and Access
-        writeFullElement(xmlw, "useStmt", version.getTermsOfUse()); 
-        writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration()); 
-        writeFullElement(xmlw, "specPerm", version.getSpecialPermissions()); 
-        writeFullElement(xmlw, "restrctn", version.getRestrictions()); 
-        writeFullElement(xmlw, "citeReq", version.getCitationRequirements()); 
-        writeFullElement(xmlw, "deposReq", version.getDepositorRequirements()); 
-        writeFullElement(xmlw, "dataAccs", version.getTermsOfAccess()); 
-        writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace()); 
-        writeFullElement(xmlw, "conditions", version.getConditions()); 
-        writeFullElement(xmlw, "disclaimer", version.getDisclaimer()); 
-        writeFullElement(xmlw, "origArch", version.getOriginalArchive()); 
-        writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus()); 
-        writeFullElement(xmlw, "contact", version.getContactForAccess()); 
-        writeFullElement(xmlw, "collSize", version.getSizeOfCollection()); 
-        writeFullElement(xmlw, "complete", version.getStudyCompletion()); 
-        */
+        writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.datasetLevelErrorNotes));
         
         xmlw.writeEndElement(); // stdyDscr
 
@@ -430,21 +389,18 @@ public class DdiExportUtil {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
                                     geoMap.put("country", next.getSinglePrimitive());
-                                    //writeFullElement(xmlw, "nation", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.city.equals(next.getTypeName())) {
                                     geoMap.put("city", next.getSinglePrimitive());
-                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 }
                                 if (DatasetFieldConstant.state.equals(next.getTypeName())) {
                                     geoMap.put("state", next.getSinglePrimitive());
-                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 } 
                                 if (DatasetFieldConstant.otherGeographicCoverage.equals(next.getTypeName())) {
                                     geoMap.put("otherGeographicCoverage", next.getSinglePrimitive());
-                                    //writeFullElement(xmlw, "geogCover", next.getSinglePrimitive());
                                 } 
                             }
+
                             if (geoMap.get("country") != null) {
                                 writeFullElement(xmlw, "nation", geoMap.get("country"));
                             }
@@ -457,6 +413,7 @@ public class DdiExportUtil {
                             if (geoMap.get("otherGeographicCoverage") != null) {
                                 writeFullElement(xmlw, "geogCover", geoMap.get("otherGeographicCoverage"));
                             }
+
                         }
                     }
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {

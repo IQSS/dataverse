@@ -27,6 +27,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
+
+import edu.harvard.iq.dataverse.util.json.ControlledVocabularyException;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -344,7 +346,8 @@ public class ImportDDIServiceBean {
                 else if (xmlr.getLocalName().equals("stdyInfo")) processStdyInfo(xmlr, datasetDTO.getDatasetVersion());
                 else if (xmlr.getLocalName().equals("method")) processMethod(xmlr, datasetDTO.getDatasetVersion());
                 
-                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, datasetDTO.getDatasetVersion()); 
+                else if (xmlr.getLocalName().equals("dataAccs")) processDataAccs(xmlr, datasetDTO.getDatasetVersion());
+                else if (xmlr.getLocalName().equals("notes")) processStdyNotes(xmlr, datasetDTO.getDatasetVersion());
                   
              else if (xmlr.getLocalName().equals("othrStdyMat")) processOthrStdyMat(xmlr, datasetDTO.getDatasetVersion());
                 else if (xmlr.getLocalName().equals("notes")) processNotes(xmlr, datasetDTO.getDatasetVersion());
@@ -620,6 +623,16 @@ public class ImportDDIServiceBean {
             this.addNote(formattedNotes, dvDTO);
         }
     }
+    private void processStdyNotes(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
+        FieldDTO notesText = null;
+        // Add notes, if they exist
+        String attrVal = parseText(xmlr, "notes");
+        if ((attrVal != null) && (!attrVal.isEmpty())){
+            notesText  = FieldDTO.createPrimitiveFieldDTO("datasetLevelErrorNotes", attrVal);
+            getSocialScience(dvDTO).addField(notesText);
+        }
+    }
+
 
     private void processNotesSocialScience(XMLStreamReader xmlr, DatasetVersionDTO dvDTO) throws XMLStreamException {
         //String formattedNotes = this.formatNotesfromXML(xmlr);
@@ -683,7 +696,10 @@ public class ImportDDIServiceBean {
         FieldDTO dateOfCollectionStart = null;
         FieldDTO dateOfCollectionEnd = null;
 
+        HashSet<FieldDTO> geoCoverageSet = null;
+        String otherGeographicCoverage = null;
         for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
+
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("timePrd")) {
                     
@@ -705,13 +721,28 @@ public class ImportDDIServiceBean {
                     }
                    
                 } else if (xmlr.getLocalName().equals("nation")) {
-                     HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createVocabFieldDTO("country", parseText(xmlr)));
-                    geoCoverages.add(set);
+                    if (otherGeographicCoverage != null && !otherGeographicCoverage.equals("")) {
+                        geoCoverageSet.add(FieldDTO.createPrimitiveFieldDTO("otherGeographicCoverage", otherGeographicCoverage));
+                        otherGeographicCoverage = null;
+                    }
+                    if (geoCoverageSet != null && geoCoverageSet.size() > 0) {
+                        geoCoverages.add(geoCoverageSet);
+                    }
+                    geoCoverageSet = new HashSet<>();
+                    //HashSet<FieldDTO> set = new HashSet<>();
+                    //set.add(FieldDTO.createVocabFieldDTO("country", parseText(xmlr)));
+                    geoCoverageSet.add(FieldDTO.createVocabFieldDTO("country", parseText(xmlr)));
+
                 } else if (xmlr.getLocalName().equals("geogCover")) {
-                    HashSet<FieldDTO> set = new HashSet<>();
-                    set.add(FieldDTO.createPrimitiveFieldDTO("otherGeographicCoverage", parseText(xmlr)));
-                    geoCoverages.add(set);
+                    if (geoCoverageSet == null) {
+                        geoCoverageSet = new HashSet<>();
+                    }
+                    if (otherGeographicCoverage != null) {
+                        otherGeographicCoverage = otherGeographicCoverage + "; " + parseText(xmlr);
+                    } else {
+                        otherGeographicCoverage = parseText(xmlr);
+                    }
+
                 } else if (xmlr.getLocalName().equals("geogUnit")) {
                     geoUnit.add(parseText(xmlr));
                 } else if (xmlr.getLocalName().equals("geoBndBox")) {
@@ -744,8 +775,15 @@ public class ImportDDIServiceBean {
                     if (kindOfData.size() > 0) {
                         getCitation(dvDTO).addField(FieldDTO.createMultiplePrimitiveFieldDTO("kindOfData", kindOfData));
                     }
-                    if (geoCoverages.size()>0) {
-                        getGeospatial(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO("geographicCoverage", geoCoverages));
+                    if (otherGeographicCoverage != null && !otherGeographicCoverage.equals("") ) {
+                        geoCoverageSet.add(FieldDTO.createPrimitiveFieldDTO("otherGeographicCoverage", otherGeographicCoverage));
+                    }
+                    if (geoCoverageSet != null && geoCoverageSet.size() > 0) {
+                        //FieldDTO geoCoverageDTO = FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverageList);
+                        geoCoverages.add(geoCoverageSet);
+                    }
+                    if (geoCoverages.size() > 0) {
+                        getGeospatial(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverages));
                     }
                     if (geoBoundBox.size()>0) {
                         getGeospatial(dvDTO).addField(FieldDTO.createMultipleCompoundFieldDTO("geographicBoundingBox", geoBoundBox));
@@ -755,8 +793,6 @@ public class ImportDDIServiceBean {
             }
         }
     }
-    
-    
     
  private HashSet<FieldDTO> processGeoBndBox(XMLStreamReader xmlr) throws XMLStreamException {
        HashSet<FieldDTO> set = new HashSet<>();
