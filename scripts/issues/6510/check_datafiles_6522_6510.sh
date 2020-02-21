@@ -72,7 +72,7 @@ else
     echo "(output saved in /tmp/duplicates_info.tmp)"
 
     echo 
-    echo "Please send the output above to Dataverse support." 
+    echo "Please send the output above to Dataverse support at support@dataverse.org." 
     echo "We will assist you in the process of cleaning up the affected files above."
     echo "We apologize for any inconvenience."
     echo 
@@ -125,7 +125,7 @@ done | tee /tmp/multiple_ingests_info.tmp
 echo "(output saved in /tmp/multiple_ingests_info.tmp)"
 
 echo 
-echo "Please send the output above to Dataverse support." 
+echo "Please send the output above to Dataverse support at support@dataverse.org." 
 echo "We will assist you in fixing this issue in your Dataverse database."
 echo "We apologize for any inconvenience."
 echo 
