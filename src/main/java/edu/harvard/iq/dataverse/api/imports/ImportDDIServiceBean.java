@@ -779,7 +779,6 @@ public class ImportDDIServiceBean {
                         geoCoverageSet.add(FieldDTO.createPrimitiveFieldDTO("otherGeographicCoverage", otherGeographicCoverage));
                     }
                     if (geoCoverageSet != null && geoCoverageSet.size() > 0) {
-                        //FieldDTO geoCoverageDTO = FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverageList);
                         geoCoverages.add(geoCoverageSet);
                     }
                     if (geoCoverages.size() > 0) {
@@ -826,8 +825,6 @@ public class ImportDDIServiceBean {
                         processCustomField(xmlr, dvDTO);                       
                     } else {
                         processNotesSocialScience(xmlr, dvDTO);
-//                        addNote("Subject: Study Level Error Note, Notes: "+ parseText( xmlr,"notes" ) +";", dvDTO);
-                       
                     }
                 } else if (xmlr.getLocalName().equals("anlyInfo")) {
                     processAnlyInfo(xmlr, getSocialScience(dvDTO));
