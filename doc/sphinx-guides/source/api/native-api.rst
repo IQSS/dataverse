@@ -1970,13 +1970,47 @@ Note: The ``id`` returned in the json response is the id of the file metadata ve
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want::
+Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-    POST -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+A curl example using an ``ID``
 
-Example::
+.. code-block:: bash
 
-    curl -H "X-Dataverse-key:{apiKey}" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    $SERVER_URL/api/files/$ID/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    http://demo.dataverse.org/api/files/24/metadata
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
@@ -1985,11 +2019,24 @@ Also note that dataFileTags are not versioned and changes to these will update t
 Editing Variable Level Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file id::
+Updates variable level metadata using ddi xml ``FILE``, where ``ID`` is file id.
 
-    PUT https://$SERVER/api/edit/$id --upload-file $file
+A curl example using an ``ID``
 
-Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export FILE=dct.xml
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT $SERVER_URL/api/edit/$ID --upload-file $FILE
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/edit/24 --upload-file dct.xml
 
 You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
 
