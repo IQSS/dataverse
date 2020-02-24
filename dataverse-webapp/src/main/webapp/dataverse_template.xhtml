@@ -54,7 +54,7 @@
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <div id="body-wrapper">
             <f:loadBundle basename="Bundle" var="bundle"/>
-        <a href="#content" class="sr-only">#{bundle['body.skip']}</a>
+        <a href="#content" class="sr-only impaired-navigation">#{bundle['body.skip']}</a>
             <ui:include src="dataverse_header.xhtml">
                 <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>
                 <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>

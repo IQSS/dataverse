@@ -116,6 +116,29 @@ body {
 	color: $main-text-color;
 }
 
+/* "Skip to content" label */
+.sr-only.impaired-navigation:focus {
+	top: -1px;
+	left: 0;
+	right: 0;
+	z-index: 931;
+	
+	margin: 0 auto;
+	padding: 0.3em 1em;
+
+	height: auto;
+	width: 15em;
+	clip: unset;
+
+	border-radius: 0 0 0.5em 0.5em;
+	border: 1px solid #fff;
+	outline: none;
+	
+	background: $icon-color;
+	color: #fff;
+	text-align: center;
+}
+
 .btn {
 	font-size: 15px;
 }
