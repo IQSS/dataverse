@@ -46,10 +46,10 @@ ${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
 
-${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.2.jar
+${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.9.jar
 	@echo copying postgres driver
 	@mkdir -p ${POSTGRES_DRIVERS}
-	/bin/cp pgdriver/postgresql-42.2.2.jar ${INSTALLER_ZIP_DIR}/pgdriver
+	/bin/cp pgdriver/postgresql-42.2.9.jar ${INSTALLER_ZIP_DIR}/pgdriver
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data
 	@echo copying api scripts
@@ -71,15 +71,15 @@ ${JHOVE_SCHEMA}:	../../conf/jhove/jhoveConfig.xsd
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/jhove/jhoveConfig.xsd ${INSTALLER_ZIP_DIR}
 
-${SOLR_SCHEMA}:		../../conf/solr/7.3.1/schema.xml ../../conf/solr/7.3.1/schema_dv_mdb_fields.xml ../../conf/solr/7.3.1/schema_dv_mdb_copies.xml ../../conf/solr/7.3.1/updateSchemaMDB.sh
+${SOLR_SCHEMA}:		../../conf/solr/7.7.2/schema.xml ../../conf/solr/7.7.2/schema_dv_mdb_fields.xml ../../conf/solr/7.7.2/schema_dv_mdb_copies.xml ../../conf/solr/7.7.2/updateSchemaMDB.sh
 	@echo copying Solr schema file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.3.1/schema*.xml ../../conf/solr/7.3.1/updateSchemaMDB.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.7.2/schema*.xml ../../conf/solr/7.7.2/updateSchemaMDB.sh ${INSTALLER_ZIP_DIR}
 
-${SOLR_CONFIG}:		../../conf/solr/7.3.1/solrconfig.xml
+${SOLR_CONFIG}:		../../conf/solr/7.7.2/solrconfig.xml
 	@echo copying Solr config file
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp ../../conf/solr/7.3.1/solrconfig.xml ${INSTALLER_ZIP_DIR}
+	/bin/cp ../../conf/solr/7.7.2/solrconfig.xml ${INSTALLER_ZIP_DIR}
 
 ${PYTHON_FILES}: README_python.txt install.py installConfig.py installGlassfish.py installUtils.py requirements.txt default.config interactive.config
 	@echo copying Python installer files

@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.18.1</version>
+    <version>4.19</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -39,6 +39,20 @@
         -->
         <jacoco.version>0.8.1</jacoco.version>
     </properties>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
@@ -300,7 +314,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.3.1</version>
+            <version>7.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

@@ -26,6 +26,7 @@
                     <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
+                    <f:viewParam name="datasetVersionId" value="#{FilePage.datasetVersionId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{FilePage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
@@ -308,11 +309,11 @@
                                                     #{bundle['metrics.file.title']}
                                                     <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                            data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
+                                                            data-trigger="hover" data-original-title="#{bundle['metrics.file.tip.default']}"></span>
                                                     </ui:fragment>
                                                     <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
                                                         <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
-                                                            data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
+                                                            data-trigger="focus" data-html="true" data-content="#{bundle['metrics.file.tip.makedatacount']}"></a>
                                                     </ui:fragment>
                                                 </div>
                                                 <div id="metrics-body">
@@ -370,10 +371,10 @@
                                 </ui:include>
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
-                                   rendered="#{FilePage.publiclyDownloadable and (FilePage.toolsWithPreviews.size() > 0) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.fileMetadata.datasetVersion.isPublished()}">
+                                   rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                    <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
                                         <button type="button" id="selectTool" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-eye-open"/> #{bundle['file.previewTab.button.label']} <span class="caret"></span>
                                         </button>
@@ -444,7 +445,7 @@
                                     </div>
                                 </div>
                                 <!-- FRAME -->
-                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                             </p:tab>

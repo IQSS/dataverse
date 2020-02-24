@@ -11,6 +11,8 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _securing-your-installation:
+
 Securing Your Installation
 --------------------------
 
@@ -49,17 +51,18 @@ Out of the box, Dataverse will list email addresses of the contacts for datasets
 
 Additional Recommendations
 ++++++++++++++++++++++++++
-Run Glassfish as a User Other Than Root
-+++++++++++++++++++++++++++++++++++++++
 
-See the Glassfish section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
+Run Glassfish as a User Other Than Root
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See the :ref:`glassfish` section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
 
 Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
 
 Enforce Strong Passwords for User Accounts
-++++++++++++++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the :ref:`auth-modes` section below for more on login options.
 
 Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
 
@@ -73,6 +76,8 @@ Password complexity rules for "builtin" accounts can be adjusted with a variety 
 - :ref:`:PVDictionaries`
 - :ref:`:PVGoodStrength`
 - :ref:`:PVCustomPasswordResetAlertMessage`
+
+.. _network-ports:
 
 Network Ports
 -------------
@@ -179,6 +184,8 @@ Here are the configuration options for handles:
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
+.. _auth-modes:
+
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
 
@@ -208,10 +215,46 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Local Filesystem vs. Swift vs. S3
------------------------------------------------
+File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
+---------------------------------------------------------------------------
 
-By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+
+Dataverse can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-dataverse basis.
+
+The following sections describe how to set up various types of stores and how to configure for multiple stores.
+
+Multi-store Basics
++++++++++++++++++
+
+To support multiple stores, Dataverse now requires an id, type, and label for each store (even for a single store configuration). These are configured by defining two required jvm options:
+
+.. code-block:: none
+
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=<type>"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
+
+Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
+
+Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
+
+If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
+
+::
+
+  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+
+File Storage
+++++++++++++
+
+File stores have one option - the directory where files should be stored. This can be set using
+
+.. code-block:: none
+
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.directory=<file directory>"
+    
+Multiple file stores should specify different directories (which would nominally be the reason to use multiple file stores), but one may share the same directory as "\-Ddataverse.files.directory" option - this would result in temp files being stored in the /temp subdirectory within the file store's root directory.
 
 Swift Storage
 +++++++++++++
@@ -224,12 +267,13 @@ First, run all the following create commands with your Swift endpoint informatio
 
 .. code-block:: none
 
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.defaultEndpoint=endpoint1"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.authType.endpoint1=your-auth-type"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.authUrl.endpoint1=your-auth-url"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.tenant.endpoint1=your-tenant-name"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.username.endpoint1=your-username"
-    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift.endpoint.endpoint1=your-swift-endpoint"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=swift"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.defaultEndpoint=endpoint1"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.authType.endpoint1=your-auth-type"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.authUrl.endpoint1=your-auth-url"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.tenant.endpoint1=your-tenant-name"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.username.endpoint1=your-username"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.endpoint.endpoint1=your-swift-endpoint"
 
 ``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that looks something like ``http://rdgw.swift.example.org/swift/v1``.
 
@@ -267,8 +311,8 @@ You also have the option to set a custom expiration length, in seconds, for a ge
 In this example, you would be setting the expiration length for one hour.
 
 
-Setting up Compute
-+++++++++++++++++++
+Setting up Compute with Swift
+#############################
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
@@ -299,9 +343,7 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-For institutions and organizations looking to use some kind of S3-based object storage for files uploaded to Dataverse,
-this is entirely possible. You can either use Amazon Web Services or use some other, even on-site S3-compatible
-storage (like Minio, Ceph RADOS S3 Gateway and many more). 
+Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse. 
 
 The Dataverse S3 driver supports multipart upload for files over 4 GB.
 
@@ -365,24 +407,6 @@ Please make note of the following details:
 
     * Example: *dataverse*
 
-
-Reported Working S3-Compatible Storage
-######################################
-
-`Minio v2018-09-12 <http://minio.io>`_
-  Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
-  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
-  possibly slow) https://play.minio.io:9000 service.
-
-`Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
-  Set ``dataverse.files.s3-payload-signing=true`` and ``dataverse.files.s3-chunked-encoding=false`` to use Surf Object
-  Store.
-
-**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
-`open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
-We will be glad to add it here.
-
-
 Manually Set Up Credentials File
 ################################
 
@@ -401,6 +425,19 @@ While using Amazon's service, you must also specify the AWS region in the ``~/.a
 
   [default]
   region = us-east-1
+
+
+Additional profiles can be added to these files by appending the relevant information in additional blocks:
+
+::
+
+  [default]
+  aws_access_key_id = <insert key, no brackets>
+  aws_secret_access_key = <insert secret key, no brackets>
+
+  [profilename2]
+  aws_access_key_id = <insert key, no brackets>
+  aws_secret_access_key = <insert secret key, no brackets>
 
 Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish
 instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_:
@@ -429,26 +466,29 @@ The subsequent config steps after the access keys are up to you. For reference, 
 Second: Configure Dataverse to use S3 Storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-With access to your bucket in place, we'll want to navigate to ``/usr/local/glassfish4/glassfish/bin/``
-and execute the following ``asadmin`` commands to set up the proper JVM options. Recall that out of the box, Dataverse
-is configured to use local file storage. You'll need to delete the existing storage driver before setting the new one.
+To set up an S3 store, you must define the id, type, and label as for any store:
+.. code-block:: none
 
-::
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=s3"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
 
-  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=s3"
+ 
+Then, we'll need to identify which S3 bucket we're using. Replace ``<your_bucket_name>`` with, of course, your bucket:
 
-Then, we'll need to identify which S3 bucket we're using. Replace ``your_bucket_name`` with, of course, your bucket:
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.bucket-name=<your_bucket_name>"``
 
-``./asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=your_bucket_name"``
+Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Glassfish to your users. To accomplish this, set ``dataverse.files.<id>.download-redirect`` to ``true`` like this:
 
-Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Glassfish to your users. To accomplish this, set ``dataverse.files.s3-download-redirect`` to ``true`` like this:
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
 
-``./asadmin create-jvm-options "-Ddataverse.files.s3-download-redirect=true"``
+If you enable ``dataverse.files.<id>.download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.<id>.url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
 
-If you enable ``dataverse.files.s3-download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.url-expiration-minutes=120"``
 
-``./asadmin create-jvm-options "-Ddataverse.files.s3-url-expiration-minutes=120"``
+By default, your store will use the [default] profile in you .aws configuration files. To use a different profile, which would be necessary if you have two s3 stores at different locations, you can specify the profile to use:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.profile=<profilename>"``
+ 
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
@@ -459,19 +499,36 @@ Lastly, go ahead and restart your glassfish server. With Dataverse deployed and 
 S3 Storage Options
 ##################
 
-=========================================  ==================  ==================================================================  =============
-JVM Option                                 Value               Description                                                         Default value
-=========================================  ==================  ==================================================================  =============
-dataverse.files.storage-driver-id          s3                  Enable S3 storage driver.                                           ``file``
-dataverse.files.s3-bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.s3-download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
-dataverse.files.s3-custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.s3-custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.s3-path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.s3-payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.s3-chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-=========================================  ==================  ==================================================================  =============
+=========================================    ==================  ==================================================================  =============
+JVM Option                                   Value               Description                                                         Default value
+=========================================    ==================  ==================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
+=========================================    ==================  ==================================================================  =============
+
+Reported Working S3-Compatible Storage
+######################################
+
+`Minio v2018-09-12 <http://minio.io>`_
+  Set ``dataverse.files.<id>.path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
+  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
+  possibly slow) https://play.minio.io:9000 service.
+
+`Surf Object Store v2019-10-30 <https://www.surf.nl/en>`_
+  Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
+  Store.
+
+**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+`open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
+We will be glad to add it here.
+
 
 .. _Branding Your Installation:
 
@@ -850,10 +907,12 @@ Setting Up Integrations
 
 Before going live, you might want to consider setting up integrations to make it easier for your users to deposit or explore data. See the :doc:`/admin/integrations` section of the Admin Guide for details.
 
+.. _jvm-options:
+
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+JVM stands for Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
@@ -1067,6 +1126,8 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+.. _database-settings:
 
 Database Settings
 -----------------
@@ -1322,8 +1383,6 @@ To delete language specific option,
 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:ApplicationTermsOfUse/lang/fr``
 
-Unfortunately, in most cases, the text file will probably be too big to upload (>1024 characters) due to a bug. A workaround has been posted to https://github.com/IQSS/dataverse/issues/2669
-
 :ApplicationPrivacyPolicyUrl
 ++++++++++++++++++++++++++++
 
@@ -1335,7 +1394,7 @@ Specify a URL where users can read your Privacy Policy, linked from the bottom o
 ++++++++++++++
 
 Specify a URL where users can read your API Terms of Use.
-API users can retrieve this URL from the SWORD Service Document or the "info" section of our :doc:`/api/native-api` documentation.
+API users can retrieve this URL from the SWORD Service Document or the :ref:`info` section of our :doc:`/api/native-api` documentation.
 
 ``curl -X PUT -d https://dataverse.org/best-practices/harvard-api-tou http://localhost:8080/api/admin/settings/:ApiTermsOfUse``
 
@@ -1350,6 +1409,12 @@ See also :ref:`Privacy Considerations <PrivacyConsiderations>` above.
 Set ``:ExcludeEmailFromExport`` to prevent email addresses for contacts from being exposed in XML or JSON representations of dataset and dataverse metadata. For a list exported formats such as DDI, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExcludeEmailFromExport``
+
+Note: After making a change to this setting, a reExportAll needs to be run before the changes will be reflected in the exports:
+
+``curl http://localhost:8080/api/admin/metadata/reExportAll``
+
+This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
 
 :NavbarAboutUrl
 +++++++++++++++
@@ -1515,6 +1580,8 @@ Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect 
 Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
+
+.. _:DatasetPublishPopupCustomText:
 
 :DatasetPublishPopupCustomText
 ++++++++++++++++++++++++++++++
@@ -1761,7 +1828,7 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 This setting controls which upload methods are available to users of your installation of Dataverse. The following upload methods are available:
 
 - ``native/http``: Corresponds to "Upload with HTTP via your browser" and APIs that use HTTP (SWORD and native).
-- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Dev Guide.
+- ``dcm/rsync+ssh``: Corresponds to "Upload with rsync+ssh via Data Capture Module (DCM)". A lot of setup is required, as explained in the :doc:`/developers/big-data-support` section of the Developer Guide.
 
 Out of the box only ``native/http`` is enabled and will work without further configuration. To add multiple upload method, separate them using a comma like this:
 
@@ -1815,7 +1882,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
-.. _MDCLogPath:
+.. _:MDCLogPath:
 
 :MDCLogPath
 +++++++++++
@@ -1823,6 +1890,8 @@ Sets how long a cached metrics result is used before re-running the query for a 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
 ``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+
+.. _:DisplayMDCMetrics:
 
 :DisplayMDCMetrics
 ++++++++++++++++++

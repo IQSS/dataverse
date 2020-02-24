@@ -584,6 +584,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
+                nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if(this.isPublishedState()){
@@ -596,7 +597,7 @@ public class SolrSearchResult {
                 if (!dv.getDatasetContacts().isEmpty()) {
                     JsonArrayBuilder contacts = Json.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
-                    for (String contact[] : dv.getDatasetContacts()) {                       
+                    for (String contact[] : dv.getDatasetContacts(false)) {
                         nullSafeJsonBuilderInner.add("name", contact[0]);
                         nullSafeJsonBuilderInner.add("affiliation", contact[1]);
                         contacts.add(nullSafeJsonBuilderInner);
@@ -1117,7 +1118,11 @@ public class SolrSearchResult {
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
 
         if (parentDatasetGlobalId != null) {
-            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            if (isDraftState()) {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId + "&version=DRAFT";
+            } else {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            }
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.UserNotification.Type;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -35,10 +36,14 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.component.UIComponent;
@@ -110,11 +115,17 @@ public class DataversePage implements java.io.Serializable {
     @Inject PermissionsWrapper permissionsWrapper;
     @Inject DataverseHeaderFragment dataverseHeaderFragment; 
 
-    private Dataverse dataverse = new Dataverse();
+    private Dataverse dataverse = new Dataverse();  
+
+    /**
+     * View parameters
+     */
+    private Long id = null;
+    private String alias = null;
+    private Long ownerId = null;    
     private EditMode editMode;
     private LinkMode linkMode;
 
-    private Long ownerId;
     private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
     private List<Dataverse> dataversesForLinking;
@@ -266,6 +277,12 @@ public class DataversePage implements java.io.Serializable {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
+    
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getAlias() { return this.alias; }
+    public void setAlias(String alias) { this.alias = alias; }    
 
     public EditMode getEditMode() {
         return editMode;
@@ -298,11 +315,11 @@ public class DataversePage implements java.io.Serializable {
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
-        if (dataverse.getAlias() != null || dataverse.getId() != null || ownerId == null) {// view mode for a dataverse
-            if (dataverse.getAlias() != null) {
-                dataverse = dataverseService.findByAlias(dataverse.getAlias());
-            } else if (dataverse.getId() != null) {
-                dataverse = dataverseService.find(dataverse.getId());
+        if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
+            if (this.getAlias() != null) {
+                dataverse = dataverseService.findByAlias(this.getAlias());
+            } else if (this.getId() != null) {
+                dataverse = dataverseService.find(this.getId());
             } else {
                 try {
                     dataverse = dataverseService.findRootDataverse();
@@ -323,7 +340,7 @@ public class DataversePage implements java.io.Serializable {
             ownerId = dataverse.getOwner() != null ? dataverse.getOwner().getId() : null;
         } else { // ownerId != null; create mode for a new child dataverse
             editMode = EditMode.CREATE;
-            dataverse.setOwner(dataverseService.find(ownerId));
+            dataverse.setOwner(dataverseService.find( this.getOwnerId()));
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
@@ -731,13 +748,8 @@ public class DataversePage implements java.io.Serializable {
     public String resetToInherit() {
 
         setInheritMetadataBlockFromParent(true);
-        if (editMode.equals(DataversePage.EditMode.CREATE)) {;
-            refreshAllMetadataBlocks();
-            return null;
-        } else {
-            String retVal = save();
-            return retVal;
-        }
+        refreshAllMetadataBlocks();
+        return null;
     }
 
     public void cancelMetadataBlocks() {
@@ -1196,5 +1208,32 @@ public class DataversePage implements java.io.Serializable {
         } else {
             return null;
         }
+    }
+    
+    public Set<Entry<String, String>> getStorageDriverOptions() {
+    	HashMap<String, String> drivers =new HashMap<String, String>();
+    	drivers.putAll(DataAccess.getStorageDriverLabels());
+    	//Add an entry for the default (inherited from an ancestor or the system default)
+    	drivers.put(getDefaultStorageDriverLabel(), "");
+    	return drivers.entrySet();
+    }
+    
+    public String getDefaultStorageDriverLabel() {
+    	String storageDriverId = DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+    	Dataverse parent = dataverse.getOwner();
+    	if(parent != null) {
+    		storageDriverId = parent.getEffectiveStorageDriverId();
+    	}
+    	boolean fromAncestor=false;
+   		if(!storageDriverId.equals(DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER)) {
+    			fromAncestor = true;
+    	}
+   		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
+   		if(fromAncestor) {
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+   		} else {
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+   		}
+   		return label;
     }
 }

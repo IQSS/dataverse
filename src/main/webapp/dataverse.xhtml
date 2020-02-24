@@ -14,15 +14,16 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+            <ui:param name="editModeDataverse" value="#{DataversePage.editMode}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
             </ui:define>
             <ui:define name="body">
                 <f:metadata>
-                    <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
-                    <f:viewParam name="alias" value="#{DataversePage.dataverse.alias}"/>
+                    <f:viewParam name="id" value="#{DataversePage.id}"/>
+                    <f:viewParam name="alias" value="#{DataversePage.alias}"/>
                     <f:viewParam name="ownerId" value="#{DataversePage.ownerId}"/>
-                    <f:viewParam name="editMode" value="#{DataversePage.editMode}"/>
+                    <o:viewParam name="editMode" value="#{DataversePage.editMode}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
@@ -139,6 +140,20 @@
                                     <p:message for="identifier" display="text"/>
                                 </div>
                             </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser}">
+                                <h:outputLabel for="dataverseStorage" styleClass="control-label">
+                                    #{bundle.storage} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.storage.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId}">
+                                              <f:selectItem itemLabel="#{bundle['dataverse.storage.usedefault']}"/>
+                                              <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseStorage" display="text"/>
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">
@@ -250,7 +265,8 @@
                                         </p:commandButton>
                                         <p:commandButton value="Direct" id="resetToInherit"
                                                          style="display:none"
-                                                         update="@all"
+                                                         update="@widgetVar(optionBlock)" 
+                                                         process="@this @widgetVar(optionBlock)"
                                                          action="#{DataversePage.resetToInherit()}">
                                         </p:commandButton>
                                         <ui:repeat value="#{DataversePage.allMetadataBlocks}" var="mdb">
@@ -370,7 +386,7 @@
                         </p:panel>
                         <!-- Save / Cancel Button Panel -->
                         <div class="button-block">
-                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@all">
+                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@form :messagePanel">
                                 <f:ajax onerror="window.scrollTo(0, 0)" />
                             </p:commandButton>
                             <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
