@@ -83,7 +83,16 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     Dataset dataset = new Dataset(); 
     private final TreeMap<RoleAssignee,List<RoleAssignmentRow>> roleAssigneeMap = new TreeMap<>();
     private final TreeMap<DataFile,List<RoleAssignmentRow>> fileMap = new TreeMap<>();
-    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();    
+    private final TreeMap<AuthenticatedUser,List<DataFile>> fileAccessRequestMap = new TreeMap<>();  
+    private boolean showDeleted = true;
+
+    public boolean isShowDeleted() {
+        return showDeleted;
+    }
+
+    public void setShowDeleted(boolean showDeleted) {
+        this.showDeleted = showDeleted;
+    }
 
     public Dataset getDataset() {
         return dataset;
@@ -130,19 +139,26 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         fileAccessRequestMap.clear();        
                
         for (DataFile file : dataset.getFiles()) {
-            // only include if the file is restricted (or it's draft version is restricted)
+            
+            boolean fileIsDeleted = !((dataset.getLatestVersion().isDraft() && file.getFileMetadata().getDatasetVersion().isDraft())
+                    || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())));
+            // only include if the file is restricted (or its draft version is restricted)
             //Added a null check in case there are files that have no metadata records SEK 
-                if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())) {
+            //for 6587 make sure that a file is in the current version befor adding to the fileMap SEK 2/11/2020
+                if (file.getFileMetadata() != null && (file.isRestricted() || file.getFileMetadata().isRestricted())
+                    && (!fileIsDeleted || isShowDeleted())) {
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
                 List<RoleAssignmentRow> raList = new ArrayList<>(ras.size());
                 for (RoleAssignment ra : ras) {
                     // for files, only show role assignments which can download
                     if (ra.getRole().permissions().contains(Permission.DownloadFile)) {
-                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier(), true).getDisplayInfo()));                   
-                        addFileToRoleAssignee(ra);                    
+                        raList.add(new RoleAssignmentRow(ra, roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier(), true).getDisplayInfo(), fileIsDeleted));                   
+                        addFileToRoleAssignee(ra, fileIsDeleted);                    
                     }
                 }
+                
+                file.setDeleted(fileIsDeleted);
                 
                 fileMap.put(file, raList);
                 
@@ -166,7 +182,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         return AuthenticationProvider.getFriendlyName(authProviderId);
     }
     
-    private void addFileToRoleAssignee(RoleAssignment assignment) {
+    private void addFileToRoleAssignee(RoleAssignment assignment, boolean fileDeleted) {
         RoleAssignee ra = roleAssigneeService.getRoleAssignee(assignment.getAssigneeIdentifier());
         List<RoleAssignmentRow> assignments = roleAssigneeMap.get(ra);
         if (assignments == null) {
@@ -174,7 +190,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             roleAssigneeMap.put(ra, assignments);
         }
         
-        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo()));
+        assignments.add(new RoleAssignmentRow(assignment, ra.getDisplayInfo(), fileDeleted));
     }
 
     /* 
@@ -299,6 +315,10 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
 
     public void initAssignDialog(ActionEvent ae) {
+
+        showDeleted = false;
+        initMaps();
+
         fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
@@ -306,6 +326,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     public void initAssignDialogByFile(DataFile file) {
+        showDeleted = false;
+        initMaps();
         fileRequester = null;
         selectedRoleAssignees = null;
         selectedFiles.clear();
@@ -466,11 +488,27 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
         private final RoleAssigneeDisplayInfo assigneeDisplayInfo;
         private final RoleAssignment ra;
+            //Used when a file to which there has been a role assignment added is deleted    
+
+        private final boolean deleted;
+
+        public boolean isDeleted() {
+            return deleted;
+        }
 
         public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf) {
             this.ra = anRa;
             this.assigneeDisplayInfo = disInf;
-        }        
+            this.deleted = false;
+        }
+
+        public RoleAssignmentRow(RoleAssignment anRa, RoleAssigneeDisplayInfo disInf, boolean deleted) {
+
+            this.ra = anRa;
+            this.assigneeDisplayInfo = disInf;
+            this.deleted = deleted;
+
+        } 
         
 
         public RoleAssigneeDisplayInfo getAssigneeDisplayInfo() {
@@ -485,6 +523,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         public Long getId() {
             return ra.getId();
         }
+        
     
     }   
 }
