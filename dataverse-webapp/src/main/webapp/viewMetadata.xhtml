@@ -13,9 +13,9 @@
         <ui:repeat value="#{metadataBlocks}"
                    var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default">
-                <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
+                <a data-toggle="collapse" href="#panelCollapse#{block.index}" class="panel-heading text-info" tabindex="0">
                     #{metadataBlockVal.key.localeDisplayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
-                </div>
+                </a>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first?'in':''}">
                     <div class="panel-body metadata-panel-body">
                         <ui:fragment rendered="#{block.first}">

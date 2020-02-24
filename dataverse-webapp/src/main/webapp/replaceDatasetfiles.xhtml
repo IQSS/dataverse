@@ -73,12 +73,13 @@
                                  id="replaceFileForm:tabView:dataFilesTab">
                                 <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}"
                                      class="panel panel-default">
-                                    <div role="tab" id="headingHTTP" data-toggle="collapse"
-                                         data-target="#panelCollapseHTTP"
+                                    <a role="tab" id="headingHTTP" data-toggle="collapse"
+                                         href="#panelCollapseHTTP"
                                          class="panel-heading text-info"
-                                         aria-controls="panelCollapseHTTP">
+                                         aria-controls="panelCollapseHTTP"
+                                         tabindex="0">
                                         #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                                    </div>
+                                    </a>
                                     <div id="panelCollapseHTTP" class="panel-collapse collapse in" role="tabpanel"
                                          aria-labelledby="headingHTTP">
                                         <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage"

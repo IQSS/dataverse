@@ -33,12 +33,12 @@
                     </div>
                     <!-- Dataverses Block -->
                     <div class="panel panel-default">
-                        <div data-toggle="collapse" data-target="#panelCollapseDataversesFieldList"
-                             class="panel-heading">
+                        <a data-toggle="collapse" href="#panelCollapseDataversesFieldList"
+                             class="panel-heading" tabindex="0">
                             <h:outputText
                                     value="#{AdvancedSearchPage.dataversesSearchBlock.blockDisplayName}"/> &#160;<span
                                 class="glyphicon glyphicon-chevron-up"/>
-                        </div>
+                        </a>
                         <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
                             <ui:repeat value="#{AdvancedSearchPage.dataversesSearchBlock.searchFields}"
                                        var="searchField">
@@ -74,13 +74,13 @@
                     <ui:repeat value="#{AdvancedSearchPage.metadataSearchBlocks}" var="mdb" varStatus="status">
                         <div class="panel panel-default"
                              jsf:rendered="#{not empty mdb}">
-                            <div data-toggle="collapse"
-                                 data-target="#panelCollapseCitationFieldList#{status.index}"
-                                 class="panel-heading">
+                            <a data-toggle="collapse"
+                                 href"#panelCollapseCitationFieldList#{status.index}"
+                                 class="panel-heading" tabindex="0">
                                 <h:outputText
                                         value="#{bundle['advanced.search.header.datasets']}: #{mdb.blockDisplayName}"/> &#160;<span
                                     class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
-                            </div>
+                            </a>
                             <div id="panelCollapseCitationFieldList#{status.index}"
                                  class="collapse #{status.first?'in':''} panel-body form-horizontal">
 
@@ -131,10 +131,10 @@
                     </ui:repeat>
 
                     <div class="panel panel-default">
-                        <div data-toggle="collapse" data-target="#panelCollapseFilesFieldList" class="panel-heading">
+                        <a data-toggle="collapse" href="#panelCollapseFilesFieldList" class="panel-heading">
                             <h:outputText value="#{AdvancedSearchPage.filesSearchBlock.blockDisplayName}"/> &#160;<span
                                 class="glyphicon glyphicon-chevron-up"/>
-                        </div>
+                        </a>
                         <div id="panelCollapseFilesFieldList" class="panel-body form-horizontal collapse in">
                             <ui:repeat value="#{AdvancedSearchPage.filesSearchBlock.searchFields}"
                                        var="fileSearchFields">

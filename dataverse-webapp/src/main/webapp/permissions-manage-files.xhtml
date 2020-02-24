@@ -29,11 +29,11 @@
                     <div class="panel-group">
                         <!-- Users/Groups Access Panel -->
                         <div class="panel panel-default">
-                            <div data-toggle="collapse" data-target="#panelCollapseUsersGroups" class="panel-heading text-info">
+                            <a data-toggle="collapse" href="#panelCollapseUsersGroups" class="panel-heading text-info" tabindex="0">
                                 #{bundle['dataverse.permissionsFiles.usersOrGroups']} <span class="glyphicon glyphicon-chevron-up"/>
                                 
                                 <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.usersOrGroups.description']}</span>
-                            </div>
+                            </a>
                             <div id="panelCollapseUsersGroups" class="collapse in">
                                 <div class="panel-body">
                                     <p:fragment id="userGroupMessages">
@@ -139,11 +139,11 @@
                         </div>
                         <!-- Files (Restricted) Panel -->
                         <div class="panel panel-default">
-                            <div data-toggle="collapse" data-target="#panelCollapseFiles" class="panel-heading text-info">
+                            <a data-toggle="collapse" href="#panelCollapseFiles" class="panel-heading text-info" tabindex="0">
                                 #{bundle['dataverse.permissionsFiles.files']} <span class="glyphicon glyphicon-chevron-down"/>
                                 
                                 <span class="text-muted small pull-right">#{bundle['dataverse.permissionsFiles.files.description']}</span>
-                            </div>
+                            </a>
                             <div id="panelCollapseFiles" class="collapse">
                                 <div class="panel-body">
                                     <p:fragment id="filesMessages">

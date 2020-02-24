@@ -1045,7 +1045,8 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	margin: 0 5px 0 1px;
 }
 
-.panel-default > div.panel-heading {
+.panel-default > .panel-heading {
+	display: block;
 	padding: 16px 20px 14px 20px;
 	border-bottom: 1px solid $gray-border-color;
 	background: $search-result-desc-color;

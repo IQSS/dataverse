@@ -46,10 +46,10 @@
                      id="fileUploadFragment" jsf:rendered="#{showFileUpload}">
 
                     <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}" class="panel panel-default">
-                        <div role="tab" id="headingHTTP" data-toggle="collapse" data-target="#panelCollapseHTTP"
-                             class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP">
+                        <a role="tab" id="headingHTTP" data-toggle="collapse" href="#panelCollapseHTTP"
+                             class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseHTTP" tabindex="0">
                             #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
-                        </div>
+                        </a>
                         <div id="panelCollapseHTTP" class="panel-collapse collapse in" role="tabpanel"
                              aria-labelledby="headingHTTP">
                             <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage"
@@ -189,11 +189,11 @@
                          jsf:rendered="#{settingsWrapper.rsyncUpload and !EditDatafilesPage.fileReplaceOperation}"
                          class="panel panel-default">
                         <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
-                        <div role="tab" id="headingRsync" data-toggle="collapse" data-target="#panelCollapseRsync"
-                             class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync">
+                        <a role="tab" id="headingRsync" data-toggle="collapse" href="#panelCollapseRsync"
+                             class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync" tabindex="0">
                             #{bundle['file.fromRsync']} &#160;<span
                                 class="glyphicon #{!settingsWrapper.HTTPUpload ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
-                        </div>
+                        </a>
                         <!-- NOTE: conditional logic for 'in' style class opens the rsync panel if HTTP is off, but isn't scalable when a third upload mode is added -->
                         <div id="panelCollapseRsync"
                              class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel"

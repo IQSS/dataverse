@@ -678,8 +678,8 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
-div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
-div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
+.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 /* overwrite Bootstrap code red style */
 .ui-widget-content code {background-color: #F0F0F0; color: #333333;}
