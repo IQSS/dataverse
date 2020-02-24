@@ -674,7 +674,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         this.initialSettingsValidated = false;
         this.newOaiSet = "";
         this.newMetadataFormat = "";
-        this.newHarvestingStyle = HarvestingClient.HARVEST_STYLE_DATAVERSE;
+        this.newHarvestingStyle = "";
         
         this.harvestTypeRadio = harvestTypeRadioOAI;
         this.harvestingScheduleRadio = harvestingScheduleRadioNone; 
