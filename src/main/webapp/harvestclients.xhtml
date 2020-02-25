@@ -320,7 +320,7 @@
                                             <f:selectItems value="#{harvestingClientsPage.oaiSetsSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="serverOaiSets"/>
-                                        <!-- a readonly label, in "edit existing client" mode: -->
+                                        <!-- a readonly label, in "edit existing client" mode: (No longer needed, since we now allow editing sets in existing clients! -->
                                         <p:inputText rendered="#{false}"
                                                      readonly="true"
                                                      styleClass="form-control"
@@ -339,7 +339,7 @@
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['harvestclients.newClientDialog.oaiMetadataFormat.tip']}"></span>
                                     </label>
                                     <div class="col-sm-6">
-                                        <!-- select menu, shown in "create new client" mode, after the server has been contacted and we got the list of available metadata formats: -->
+                                        <!-- select menu; it's populated by contacting the remote server and obtaining the list of available metadata formats: -->
                                         <p:selectOneMenu id="oaiMetadataFormat"
                                                          binding="#{harvestingClientsPage.metadataFormatMenu}"
                                                          styleClass="form-control"
@@ -350,11 +350,11 @@
                                             <f:selectItems value="#{harvestingClientsPage.oaiMetadataFormatSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="oaiMetadataFormat"/>
-                                        <!-- a readonly label, in "edit existing client" mode: -->
-                                        <p:inputText rendered="#{harvestingClientsPage.editMode}"
-                                                     readonly="true"
+                                        <!-- a readonly label, in "edit existing client" mode: (No longer needed! - since we now allow formats to be edited) -->
+                                        <!-- p:inputText rendered="#{harvestingClientsPage.editMode}"
+                                                     readonly="false" 
                                                      styleClass="form-control"
-                                                     value="#{harvestingClientsPage.selectedClient.metadataPrefix}"/>
+                                                     value="#{harvestingClientsPage.selectedClient.metadataPrefix}"/ -->
                                     </div>
                                 </div>
 
@@ -487,8 +487,12 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:selectOneMenu id="harvestingStyle"
-                                                         styleClass="form-control" value="#{harvestingClientsPage.newHarvestingStyle}"
-                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}">
+                                                         binding="#{harvestingClientsPage.remoteArchiveStyleMenu}"
+                                                         styleClass="form-control" 
+                                                         value="#{harvestingClientsPage.newHarvestingStyle}"
+                                                         rendered="#{harvestingClientsPage.initialSettingsValidated}"
+                                                         validator="#{harvestingClientsPage.validateRemoteArchiveStyle}">
+                                            <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                             <f:selectItems value="#{harvestingClientsPage.harvestingStylesSelectItems}" />
                                         </p:selectOneMenu>
                                         <p:message for="harvestingStyle"/>
@@ -547,7 +551,9 @@
                                                        value="#{bundle['harvestclients.viewEditDialog.btn.save']}"
                                                        update="newHarvestingClientDialogContent :messagePanel :harvestingClientsForm clientsTable emptyClientsTable"
                                                        actionListener="#{harvestingClientsPage.saveClient}"
-                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();"/>
+                                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('newHarvestingClientForm').hide(); else PF('newHarvestingClientForm').show();bind_bsui_components();">
+                                            <f:param name="DO_VALIDATION" value="true"/>
+                                        </p:commandLink>
                                         <button class="btn btn-link" jsf:rendered="#{harvestingClientsPage.initialSettingsValidated}" onclick="PF('newHarvestingClientForm').hide()" type="button">
                                             #{bundle.cancel}
                                         </button>

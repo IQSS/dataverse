@@ -157,7 +157,9 @@ public class OaiHandler implements Serializable {
         
         List<String> sets = new ArrayList<>();
 
+        int count = 0;
         while ( setIter.hasNext()) {
+            count++;
             Set set = setIter.next();
             String setSpec = set.getSpec();
             /*
@@ -166,6 +168,8 @@ public class OaiHandler implements Serializable {
                 
             }
             */
+            System.out.println("on set " + count + ", name: " + setSpec);
+             
             if (!StringUtils.isEmpty(setSpec)) {
                 sets.add(setSpec);
             }

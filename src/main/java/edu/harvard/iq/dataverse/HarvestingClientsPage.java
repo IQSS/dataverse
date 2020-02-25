@@ -492,6 +492,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
         }
     }
     
+    public void validateRemoteArchiveStyle(FacesContext context, UIComponent toValidate, Object rawValue) {
+        String value = (String) rawValue;
+        UIInput input = (UIInput) toValidate;
+        input.setValid(true); // Optimistic approach
+        
+        // the only validation we want is to make sure the select one of the 
+        // values from the menu. 
+        if (context.getExternalContext().getRequestParameterMap().get("DO_VALIDATION") != null
+                && StringUtils.isEmpty(value)) {
+
+            input.setValid(false);
+            context.addMessage(toValidate.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("harvestclients.newClientDialog.harvestingStyle.required")));
+
+        }
+    }
+    
     public boolean validateNickname() {
 
         if ( !StringUtils.isEmpty(getNewNickname()) ) {
@@ -643,7 +660,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     UIInput newClientNicknameInputField;
     UIInput newClientUrlInputField;
     UIInput hiddenInputField; 
-    /*UISelectOne*/ UIInput metadataFormatMenu; 
+    /*UISelectOne*/ UIInput metadataFormatMenu;
+    UIInput remoteArchiveStyleMenu;
     UIInput selectedDataverseMenu;
     
     private String newNickname = "";
@@ -838,6 +856,14 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public void setMetadataFormatMenu(UIInput metadataFormatMenu) {
         this.metadataFormatMenu = metadataFormatMenu;
+    }
+    
+    public UIInput getRemoteArchiveStyleMenu() {
+        return remoteArchiveStyleMenu;
+    }
+
+    public void setRemoteArchiveStyleMenu(UIInput remoteArchiveStyleMenu) {
+        this.remoteArchiveStyleMenu = remoteArchiveStyleMenu;
     }
     
     public UIInput getSelectedDataverseMenu() {
