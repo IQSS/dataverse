@@ -55,6 +55,16 @@ public class LicenseReorderPage implements Serializable {
         return StringUtils.EMPTY;
     }
 
+    public void moveUp(int licenseIndex) {
+        LicenseSimpleDto licenseToMove = licenses.remove(licenseIndex);
+        licenses.add(licenseIndex - 1, licenseToMove);
+    }
+
+    public void moveDown(int licenseIndex) {
+        LicenseSimpleDto licenseToMove = licenses.remove(licenseIndex);
+        licenses.add(licenseIndex + 1, licenseToMove);
+    }
+
     /**
      * Saves new positions of the licenses.
      *

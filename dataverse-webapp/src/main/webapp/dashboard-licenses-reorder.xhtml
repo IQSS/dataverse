@@ -9,7 +9,9 @@
 </h:head>
 
 <h:body>
+    
     <f:metadata>
+        <ui:param name="pageTitle" value="#{bundle['license.reorder.pageTitle']}" />
         <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
         <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
         <f:viewAction action="#{LicenseReorderPage.init}"/>
@@ -22,14 +24,41 @@
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['license.reorder.header'])}"/>
     </f:metadata>
     <ui:composition template="/dataverse_template.xhtml">
+        
         <ui:define name="body">
 
             <h:form>
-                <p:dataTable var="license" value="#{LicenseReorderPage.licenses}" draggableRows="true"
+                <p:dataTable id="licenseTable" var="license" value="#{LicenseReorderPage.licenses}"
+                             widgetVar="licenseTable"
+                             rowIndexVar="rowIndex" draggableRows="true"
                              style="width: 80%">
-                    <p:column headerText="#{bundle['dashboard.license.header']}">
+                             
+                    <p:ajax event="rowReorder" update="licenseTable" />
+                    
+                    <p:column headerText="#{bundle['license.reorder.license.header']}">
                         <h:outputText value="#{license.localizedText}"/>
                     </p:column>
+                    
+                    <p:column headerText="#{bundle['license.reorder.actions.header']}"
+                              styleClass="text-center" width="120">
+                        <p:commandLink title="#{bundle['license.reorder.moveUp']}"
+                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-up-button"
+                                       actionListener="#{LicenseReorderPage.moveUp(rowIndex)}"
+                                       rendered="#{(rowIndex gt 0)}"
+                                       update="licenseTable"
+                                       >
+                            <span class="glyphicon glyphicon-chevron-up no-text"/>
+                        </p:commandLink>
+                        <p:commandLink title="#{bundle['license.reorder.moveDown']}"
+                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-down-button"
+                                       actionListener="#{LicenseReorderPage.moveDown(rowIndex)}"
+                                       rendered="#{rowIndex lt LicenseReorderPage.licenses.size()-1}"
+                                       update="licenseTable"
+                                       >
+                            <span class="glyphicon glyphicon-chevron-down no-text"/>
+                        </p:commandLink>
+                    </p:column>
+                    
                 </p:dataTable>
                 <div class="container">
                     <div class="row text-left">
@@ -44,6 +73,7 @@
                     </div>
                 </div>
             </h:form>
+            
         </ui:define>
     </ui:composition>
 </h:body>
