@@ -27,7 +27,7 @@
                                         <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
                                             #{dsf.datasetFieldType.localeTitle}
                                             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{dsf.required  or dsf.datasetFieldType.hasRequiredChildren }" />
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </label>
                                         <!-- Primitive fields -->
@@ -109,7 +109,7 @@
                                                                     <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
                                                                         #{subdsf.datasetFieldType.localeTitle}
                                                                         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{subdsf.required}" />
-                                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                                        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
                                                                     </label>
                                                                     <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">

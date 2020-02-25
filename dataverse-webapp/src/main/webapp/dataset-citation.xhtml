@@ -14,11 +14,11 @@
                     <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                         <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                     </span>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" 
+                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" jsf:rendered="#{!DatasetPage.dataset.released}" 
                           data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
+                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
                           data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
+                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
                           data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                 </div>
                 <div class="col-xs-5 col-md-4 text-right citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">

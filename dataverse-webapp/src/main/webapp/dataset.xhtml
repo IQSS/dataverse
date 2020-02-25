@@ -444,7 +444,7 @@
                                              jsf:rendered="#{!empty DatasetPage.keywordsDisplaySummary and dsf.datasetFieldType.name=='keyword'}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.keywordDisplay.title']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
@@ -455,7 +455,7 @@
                                                 dsf.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
                                                 #{dsf.datasetFieldType.localeTitle}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
@@ -485,7 +485,7 @@
                                             <label for="metadata_#{dsf.datasetFieldType.name}"
                                                    class="col-sm-3 control-label">
                                                 #{dsf.datasetFieldType.localeTitle}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                             </label>
@@ -501,7 +501,7 @@
                                         <div class="form-group">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.license']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
@@ -516,7 +516,7 @@
                                              jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.license']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
@@ -528,7 +528,7 @@
                                              jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.termsOfAccess']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
@@ -540,7 +540,7 @@
                                              jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.termsOfAccess']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{bundle['dataset.files.termsOfAccess.description']}"></span>
                                             </label>
@@ -561,7 +561,7 @@
                                     <div class="form-group" >
                                         <label class="col-sm-3 control-label">
                                             #{bundle['dataset.embargo.datasetSummary.title']}
-                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                   data-toggle="tooltip" data-placement="auto right"
                                                   data-original-title="#{bundle['dataset.embargo.datasetSummary.tip']}"></span>
                                         </label>
@@ -716,7 +716,7 @@
                         </p>
                         <div jsf:rendered="#{DatasetPage.isUserAbleToSetOrUpdateEmbargo()}">
                             <p:outputLabel for="embargoDatePicker" value="#{bundle['dataset.embargo.calendar.label']}" />
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                   data-toggle="tooltip" data-placement="auto right"
                                   data-original-title="#{bundle['dataset.embargo.calendar.label.tip']}"></span>
                             <p:calendar

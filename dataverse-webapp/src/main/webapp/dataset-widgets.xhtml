@@ -28,7 +28,7 @@
                             <div class="form-group" jsf:rendered="#{true or themeWidgetFragment.editDv.themeRoot}">
                                 <label class="col-sm-3 control-label" for="logoFormat">
                                     #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.title']}"></span>
                                 </label>
                                 <div class="col-sm-9">
@@ -52,7 +52,7 @@
                                         <div class="form-group" jsf:rendered="#{not empty DatasetWidgetsPage.datasetThumbnails}">
                                             <label for="selectThumbnail" class="control-label">
                                                 #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.selectAvailable.title']}"></span>
                                             </label>
                                             <div>
@@ -62,7 +62,7 @@
                                         <div class="form-group">
                                             <label for="uploadThumbnail" class="control-label">
                                                 #{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew']}
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.uploadNew.title']}"></span>
                                             </label>
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
