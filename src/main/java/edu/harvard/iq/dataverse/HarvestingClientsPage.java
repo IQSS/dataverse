@@ -77,6 +77,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId = null;
     private HarvestingClient selectedClient;
+    private boolean setListTruncated = false; 
     
     //private static final String solrDocIdentifierDataset = "dataset_";
     
@@ -206,6 +207,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
         return CreateStep.FOUR == this.createStep;
     }
     
+    public boolean isSetListTruncated() {
+        return setListTruncated;
+    }
     
     public void runHarvest(HarvestingClient harvestingClient) {
         try {
@@ -593,6 +597,9 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
 
             if (success) {
+                if (oaiHandler.isSetListTruncated()) {
+                    setListTruncated = true; 
+                }
                 return true;
             }
 

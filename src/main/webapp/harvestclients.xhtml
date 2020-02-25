@@ -327,6 +327,11 @@
                                                      value="#{harvestingClientsPage.newOaiSet}"/>
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode and !empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext']}</p>
                                         <p class="help-block" jsf:rendered="#{harvestingClientsPage.createMode and empty harvestingClientsPage.oaiSetsSelectItems}">#{bundle['harvestclients.newClientDialog.oaiSets.helptext.noset']}</p>
+                                        
+                                        <p class="help-block" jsf:rendered="#{harvestingClientsPage.setListTruncated}">
+                                            <span class="glyphicon glyphicon-warning-sign text-warning"/>
+                                            #{bundle['harvestclients.newClientDialog.oaiSets.listTruncated']}
+                                        </p>
                                     </div>
                                 </div>
 

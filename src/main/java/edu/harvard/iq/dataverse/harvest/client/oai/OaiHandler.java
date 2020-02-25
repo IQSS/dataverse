@@ -82,6 +82,7 @@ public class OaiHandler implements Serializable {
     private String metadataPrefix; // = harvestingClient.getMetadataPrefix();
     private String setName; 
     private Date   fromDate;
+    private Boolean setListTruncated = false;
     
     private ServiceProvider serviceProvider; 
     
@@ -123,6 +124,9 @@ public class OaiHandler implements Serializable {
         this.harvestingClient = harvestingClient; 
     }
     
+    public boolean isSetListTruncated() {
+        return setListTruncated;
+    }
     
     private ServiceProvider getServiceProvider() throws OaiHandlerException {
         if (serviceProvider == null) {
@@ -147,6 +151,8 @@ public class OaiHandler implements Serializable {
         
         Iterator<Set> setIter;
         
+        long startMilSec = new Date().getTime();
+        
         try {
             setIter = sp.listSets();
         } catch (NoSetHierarchyException nshe) {
@@ -158,6 +164,7 @@ public class OaiHandler implements Serializable {
         List<String> sets = new ArrayList<>();
 
         int count = 0;
+        
         while ( setIter.hasNext()) {
             count++;
             Set set = setIter.next();
@@ -168,7 +175,20 @@ public class OaiHandler implements Serializable {
                 
             }
             */
-            System.out.println("on set " + count + ", name: " + setSpec);
+            
+            Date now = new Date(); 
+            long seconds = (now.getTime() - startMilSec) / 1000;
+            
+            if (count >= 100) {
+                // Have we been waiting more than 30 seconds?
+                if (new Date().getTime() - startMilSec > 30000) {
+                    System.out.println("EXITING on set " + count + ", name: " + setSpec + "seconds: "+seconds);
+                    setListTruncated = true;
+                    break; 
+                }
+            }
+            
+            System.out.println("on set " + count + ", name: " + setSpec + "seconds: "+seconds);
              
             if (!StringUtils.isEmpty(setSpec)) {
                 sets.add(setSpec);
