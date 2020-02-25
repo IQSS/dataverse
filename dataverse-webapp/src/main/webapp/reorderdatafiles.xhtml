@@ -6,11 +6,15 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
 >
+
+<f:view locale="#{dataverseSession.localeCode}" />
+
 <h:head>
 </h:head>
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['file.reorderFiles']} - #{ReorderDataFilesPage.datasetVersion.title}"/>
         <ui:param name="fileMetadatas" value="#{ReorderDataFilesPage.fileMetadatas}"/>
         <ui:define name="body">
             <f:metadata>
@@ -27,11 +31,15 @@
                              value="#{ReorderDataFilesPage.fileMetadatas}"
                              sortOrder="ascending"
                              var="fileMetadata" widgetVar="filesTable"
+                             rowIndexVar="rowIndex"
                              draggableRows="true"
                              emptyMessage="#{bundle['file.notFound.tip']}"
                              styleClass="filesTable"
                 >
-                    <p:column class="col-file-metadata" headerText="File">
+                
+                    <p:ajax event="rowReorder" update="filesTable" />
+                
+                    <p:column headerText="#{bundle.file}">
 
                         <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
                             <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
@@ -89,15 +97,36 @@
                             </ui:fragment>
                         </div>
                     </p:column>
+                    
+                    <p:column headerText="#{bundle['file.reorder.action.header']}"
+                              styleClass="text-center" width="120">
+                        <p:commandLink title="#{bundle['file.reorder.moveUp']}"
+                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
+                                       actionListener="#{ReorderDataFilesPage.moveUp(rowIndex)}"
+                                       rendered="#{(rowIndex gt 0)}"
+                                       update="filesTable"
+                                       >
+                            <span class="glyphicon glyphicon-chevron-up no-text"/>
+                        </p:commandLink>
+                        <p:commandLink title="#{bundle['file.reorder.moveDown']}"
+                                       styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
+                                       actionListener="#{ReorderDataFilesPage.moveDown(rowIndex)}"
+                                       rendered="#{rowIndex lt ReorderDataFilesPage.fileMetadatas.size()-1}"
+                                       update="filesTable"
+                                       >
+                            <span class="glyphicon glyphicon-chevron-down no-text"/>
+                        </p:commandLink>
+                    </p:column>
+                    
                 </p:dataTable>
                 <p:fragment id="editDataFilesButtons">
                     <div class="button-block">
                         <p:outputPanel id="filesButtons">
                             <div>
-                                <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}"
+                                <p:commandButton id="save" value="#{bundle.saveChanges}"
                                                  action="#{ReorderDataFilesPage.saveFileOrder}"
                                                  onclick="PF('blockFileForm').show();"/>
-                                <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}"
+                                <p:commandButton id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReorderDataFilesPage.returnToPreviousPage}" process="@this"
                                                  update="@form"
                                                  oncomplete="javascript:post_cancel_edit_files_or_metadata()">

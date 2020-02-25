@@ -59,6 +59,16 @@ public class ReorderDataFilesPage implements java.io.Serializable {
         return null;
     }
 
+    public void moveUp(int fileIndex) {
+        FileMetadata fileToMove = fileMetadatasCopy.remove(fileIndex);
+        fileMetadatasCopy.add(fileIndex - 1, fileToMove);
+    }
+    
+    public void moveDown(int fileIndex) {
+        FileMetadata fileToMove = fileMetadatasCopy.remove(fileIndex);
+        fileMetadatasCopy.add(fileIndex + 1, fileToMove);
+    }
+    
     /**
      * Reorders files display order if any were reordered, saves the changes to the database
      * and returns to the previous page.
