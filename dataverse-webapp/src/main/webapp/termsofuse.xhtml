@@ -12,7 +12,7 @@
         </label>
         <div class="col-sm-9">
             <div id="terms-agreement-block" class="well">
-                <h:outputText value="#{systemConfig.applicationTermsOfUse}" escape="false"/>
+                <h:outputText value="#{systemConfig.getApplicationTermsOfUse(dataverseSession.locale)}" escape="false"/>
             </div>
             <div class="checkbox">
               <p:selectBooleanCheckbox id="terms" required="true" 

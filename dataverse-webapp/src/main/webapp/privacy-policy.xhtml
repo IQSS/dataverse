@@ -21,7 +21,7 @@
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(),bundle['privacy.policy.page.title'])}"/>
             </f:metadata>
             <div>
-                <h:outputText value="#{systemConfig.privacyPolicy}" escape="false"/>
+                <h:outputText value="#{systemConfig.getPrivacyPolicy(dataverseSession.locale)}" escape="false"/>
             </div>
         </ui:define>
     </ui:composition>

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
@@ -16,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -209,16 +211,16 @@ public class SystemConfig {
         return isThumbnailGenerationDisabledForType("PDF");
     }
 
-    public String getApplicationTermsOfUse() {
-        return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.ApplicationTermsOfUse, "system.app.terms");
+    public String getApplicationTermsOfUse(Locale locale) {
+        return getFromBundleIfEmptyLocalizedProperty(SettingsServiceBean.Key.ApplicationTermsOfUse, locale, "system.app.terms");
     }
 
     public String getApiTermsOfUse() {
         return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.ApiTermsOfUse, "system.api.terms");
     }
 
-    public String getPrivacyPolicy() {
-        return getFromBundleIfEmptyProperty(SettingsServiceBean.Key.PrivacyPolicy, "system.privacy.policy");
+    public String getPrivacyPolicy(Locale locale) {
+        return getFromBundleIfEmptyLocalizedProperty(SettingsServiceBean.Key.PrivacyPolicy, locale, "system.privacy.policy");
     }
 
     public long getTabularIngestSizeLimit() {
@@ -496,6 +498,12 @@ public class SystemConfig {
         return configuredLocales;
     }
 
+    private String getFromBundleIfEmptyLocalizedProperty(Key key, Locale locale, String bundleKey) {
+        String result = settingsService.getValueForKeyWithPostfix(key, locale.toLanguageTag());
+        
+        return result.isEmpty() ? getFromBundleIfEmptyProperty(key, bundleKey) : result;
+    }
+    
     private String getFromBundleIfEmptyProperty(SettingsServiceBean.Key key, String bundleKey) {
         String result = settingsService.getValueForKey(key);
 
