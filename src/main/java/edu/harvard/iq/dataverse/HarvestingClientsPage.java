@@ -582,6 +582,11 @@ public class HarvestingClientsPage implements java.io.Serializable {
             // And if that worked, the list of sets provided:
 
             ArrayList<String> sets = null;
+            
+            // reset the sets menu:
+            setOaiSetsSelectItems(null);
+            setListTruncated = false;
+            
             if (success) {
                 try {
                     sets = oaiHandler.runListSets();
