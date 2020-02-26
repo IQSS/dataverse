@@ -188,6 +188,11 @@ Solr
 
 The Dataverse search index is powered by Solr.
 
+Supported Versions
+==================
+
+Dataverse has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (eg. 8.x) are not supported.
+
 Installing Solr
 ===============
 
