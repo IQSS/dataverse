@@ -529,7 +529,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         return out;
     }
     
-    public String getDatasetDirectory() throws IOException {
+    private String getDatasetDirectory() throws IOException {
         if (dvObject == null) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
