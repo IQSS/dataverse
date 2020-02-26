@@ -9,13 +9,17 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -26,6 +30,7 @@ import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.ByteArrayOutputStream;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /*
@@ -64,15 +69,28 @@ public class Meta {
     DataFileServiceBean datafileService;
 
     @EJB
+    private VariableServiceBean dataVariableService;
+
+    @EJB
+    private PermissionServiceBean permissionService;
+
+    @Inject
+    private EmbargoAccessService embargoAccessService;
+
+    @EJB
     DatasetDao datasetDao;
+
 
     @Deprecated
     @Path("variable/{varId}")
     @GET
     @Produces({"application/xml"})
-
     public String variable(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
+
+        getDatasetFromDataVariable(varId)
+                .filter(dt -> embargoAccessService.isRestrictedByEmbargo(dt))
+                .ifPresent(dt -> { throw new ForbiddenException(); });
 
         ByteArrayOutputStream outStream = null;
         try {
@@ -115,6 +133,10 @@ public class Meta {
             throw new NotFoundException();
         }
 
+        if(embargoAccessService.isRestrictedByEmbargo(dataFile.getOwner())) {
+            throw new ForbiddenException();
+        }
+
         String fileName = dataFile.getFileMetadata().getLabel().replaceAll("\\.tab$", "-ddi.xml");
         response.setHeader("Content-disposition", "attachment; filename=\"" + fileName + "\"");
         response.setHeader("Content-Type", "application/xml; name=\"" + fileName + "\"");
@@ -154,6 +176,10 @@ public class Meta {
             throw new NotFoundException();
         }
 
+        if(embargoAccessService.isRestrictedByEmbargo(dataset)) {
+            throw new ForbiddenException();
+        }
+
         String retValue = "";
 
         ByteArrayOutputStream outStream = null;
@@ -179,4 +205,7 @@ public class Meta {
         return retValue;
     }
 
+    private Optional<Dataset> getDatasetFromDataVariable(Long dataVariableId) {
+        return Optional.ofNullable(dataVariableService.find(dataVariableId).getDataTable().getDataFile().getOwner());
+    }
 }

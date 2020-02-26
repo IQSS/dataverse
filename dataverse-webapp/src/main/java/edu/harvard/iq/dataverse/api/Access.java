@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import com.amazonaws.services.glacier.model.MissingParameterValueException;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
@@ -22,7 +23,6 @@ import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -59,6 +59,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
+import io.vavr.control.Try;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -94,6 +95,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,6 +149,8 @@ public class Access extends AbstractApiBean {
     PermissionsWrapper permissionsWrapper;
     @EJB
     private FilePermissionsService filePermissionsService;
+    @Inject
+    private EmbargoAccessService embargoAccessService;
 
 
     private static final String API_KEY_HEADER = "X-Dataverse-key";
@@ -174,7 +178,7 @@ public class Access extends AbstractApiBean {
 
         if (gbrecs == null && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
-            User apiTokenUser = findAPITokenUser(apiToken);
+            User apiTokenUser = getApiTokenUser(apiToken).orElse(null);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
             guestbookResponseService.save(gbr);
         }
@@ -248,7 +252,7 @@ public class Access extends AbstractApiBean {
 
         if (gbrecs == null && df.isReleased()) {
             // Write Guestbook record if not done previously and file is released
-            User apiTokenUser = findAPITokenUser(apiToken);
+            User apiTokenUser = getApiTokenUser(apiToken).orElse(null);
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
         }
 
@@ -370,13 +374,16 @@ public class Access extends AbstractApiBean {
     public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
-        DataFile dataFile = null;
-
+        DataFile dataFile;
 
         dataFile = findDataFileOrDieWrapper(fileId);
 
         if (!dataFile.isTabularData()) {
             throw new BadRequestException("tabular data required");
+        }
+
+        if(embargoAccessService.isRestrictedByEmbargo(dataFile.getOwner())) {
+            throw new ForbiddenException();
         }
 
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
@@ -412,9 +419,12 @@ public class Access extends AbstractApiBean {
     @Path("variable/{varId}/metadata/ddi")
     @GET
     @Produces({"application/xml"})
-
     public String dataVariableMetadataDDI(@PathParam("varId") Long varId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
+
+        getDatasetFromDataVariable(varId)
+                .filter(dt -> embargoAccessService.isRestrictedByEmbargo(dt))
+                .ifPresent(dt -> { throw new ForbiddenException(); });
 
         ByteArrayOutputStream outStream = null;
         try {
@@ -447,7 +457,6 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata/preprocessed")
     @GET
     @Produces({"text/xml"})
-
     public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
 
         DataFile df = findDataFileOrDieWrapper(fileId);
@@ -506,7 +515,7 @@ public class Access extends AbstractApiBean {
                 ? headers.getHeaderString(API_KEY_HEADER)
                 : apiTokenParam;
 
-        User apiTokenUser = findAPITokenUser(apiToken); //for use in adding gb records if necessary
+        User apiTokenUser = getApiTokenUser(apiToken).orElse(null); //for use in adding gb records if necessary
 
         Boolean getOrig = false;
         for (String key : uriInfo.getQueryParameters().keySet()) {
@@ -601,6 +610,16 @@ public class Access extends AbstractApiBean {
 
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
+                                } else if (embargoAccessService.isRestrictedByEmbargo(file.getOwner())) {
+                                    if (zipper == null) {
+                                        fileManifest = fileManifest + "File with id=" + file.getId() +
+                                                " IS EMBARGOED UNTILL "+ file.getOwner().getEmbargoDate().getOrElseThrow(() ->
+                                                new MissingParameterValueException("[Couldn't retrive embargo date for file id=]" + file.getId())).toInstant() + "\r\n";
+                                    } else {
+                                        zipper.addToManifest("File with id=" + file.getId() +
+                                                " IS EMBARGOED UNTILL "+ file.getOwner().getEmbargoDate().getOrElseThrow(() ->
+                                                new MissingParameterValueException("[Couldn't retrive embargo date for file id=]" + file.getId())).toInstant() + "\r\n");
+                                    }
                                 } else if (file.getFileMetadata().getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
                                     if (zipper == null) {
                                         fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
@@ -629,7 +648,7 @@ public class Access extends AbstractApiBean {
                     // If the DataFileZipper object is still NULL, it means that 
                     // there were file ids supplied - but none of the corresponding 
                     // files were accessible for this user. 
-                    // In which casew we don't bother generating any output, and 
+                    // In which case we don't bother generating any output, and
                     // just give them a 403:
                     throw new ForbiddenException();
                 }
@@ -668,6 +687,11 @@ public class Access extends AbstractApiBean {
 
         if (df == null) {
             logger.warning("Preview: datafile service could not locate a DataFile object for id " + fileId + "!");
+            return null;
+        }
+
+        if(embargoAccessService.isRestrictedByEmbargo(df.getOwner())) {
+            logger.warning("Preview: datafile id[" + fileId + "] is restricted by embargo");
             return null;
         }
 
@@ -1276,9 +1300,17 @@ public class Access extends AbstractApiBean {
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
         // First, check if the file belongs to a released Dataset version:
 
-        boolean published = false; 
-        
-        
+        boolean published = false;
+
+        Optional<User> apiTokenUser = getApiTokenUser(apiToken);
+        boolean isRestrictedByEmbargo = apiTokenUser
+                    .map(user -> embargoAccessService.isRestrictedByEmbargo(df.getOwner()))
+                    .orElse(false);
+
+        if(isRestrictedByEmbargo) {
+            return false;
+        }
+
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
             to which this file is attached check to see if at least one is  RELEASED
@@ -1362,20 +1394,6 @@ public class Access extends AbstractApiBean {
             logger.fine("Session is null.");
         }
 
-        User apiTokenUser = null;
-
-        if ((apiToken != null) && (apiToken.length() != 64)) {
-            // We'll also try to obtain the user information from the API token, 
-            // if supplied: 
-
-            try {
-                logger.fine("calling apiTokenUser = findUserOrDie()...");
-                apiTokenUser = findUserOrDie();
-            } catch (WrappedResponse wr) {
-                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-            }
-        }
-
         // OK, let's revisit the case of non-restricted files, this time in        
         // an unpublished version:         
         // (if (published) was already addressed above)
@@ -1394,10 +1412,10 @@ public class Access extends AbstractApiBean {
                 }
             }
 
-            if (apiTokenUser != null) {
+            if (apiTokenUser.isPresent()) {
                 // used in an API context
-                if (permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                if (permissionService.requestOn(createDataverseRequest(apiTokenUser.get()), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.get().getIdentifier());
                     return true;
                 }
             }
@@ -1425,7 +1443,7 @@ public class Access extends AbstractApiBean {
                 // User from the Session object, just like in the code fragment
                 // above. That's why it's not passed along as an argument.
                 hasAccessToRestrictedBySession = true;
-            } else if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df).has(Permission.DownloadFile)) {
+            } else if (apiTokenUser.isPresent() && permissionService.requestOn(createDataverseRequest(apiTokenUser.get()), df).has(Permission.DownloadFile)) {
                 hasAccessToRestrictedByToken = true;
             }
 
@@ -1438,7 +1456,7 @@ public class Access extends AbstractApiBean {
                             logger.fine("Session-based auth: guest user is granted access to the restricted, published datafile.");
                         }
                     } else {
-                        logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, published datafile.", apiTokenUser.getIdentifier());
+                        logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, published datafile.", apiTokenUser.get().getIdentifier());
                     }
                     return true;
                 } else {
@@ -1458,8 +1476,8 @@ public class Access extends AbstractApiBean {
                             return true;
                         }
                     } else {
-                        if (apiTokenUser != null && permissionService.requestOn(createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                            logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                        if (apiTokenUser.isPresent() && permissionService.requestOn(createDataverseRequest(apiTokenUser.get()), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                            logger.log(Level.FINE, "Token-based auth: user {0} is granted access to the restricted, unpublished datafile.", apiTokenUser.get().getIdentifier());
                             return true;
                         }
                     }
@@ -1531,37 +1549,18 @@ public class Access extends AbstractApiBean {
             logger.log(Level.FINE, "Session-based auth: user {0} has NO access rights on the requested datafile.", user.getIdentifier());
         }
 
-        if (apiTokenUser != null) {
-            logger.log(Level.FINE, "Token-based auth: user {0} has NO access rights on the requested datafile.", apiTokenUser.getIdentifier());
-        }
-
-        if (user == null && apiTokenUser == null) {
-            logger.fine("Unauthenticated access: No guest access to the datafile.");
-        }
+        apiTokenUser.ifPresent(tokenUser -> logger.log(Level.FINE, "Token-based auth: user {0} has NO access rights on the requested datafile.", tokenUser.getIdentifier()));
 
         return false;
     }
 
-
-    private User findAPITokenUser(String apiToken) {
-        User apiTokenUser = null;
-
-        if ((apiToken != null) && (apiToken.length() != 64)) {
-            // We'll also try to obtain the user information from the API token, 
-            // if supplied: 
-
-            try {
-                logger.fine("calling apiTokenUser = findUserOrDie()...");
-                apiTokenUser = findUserOrDie();
-                return apiTokenUser;
-            } catch (WrappedResponse wr) {
-                logger.log(Level.FINE, "Message from findUserOrDie(): {0}", wr.getMessage());
-                return null;
-            }
-
-        }
-        return apiTokenUser;
+    private Optional<User> getApiTokenUser(String apiToken) {
+        return Try.of(this::findUserOrDie)
+                .onFailure(throwable -> logger.log(Level.FINE, "Failed finding user for apiToken: " + apiToken, throwable))
+                .toJavaOptional();
     }
 
-
+    private Optional<Dataset> getDatasetFromDataVariable(Long dataVariableId) {
+        return Optional.ofNullable(variableService.find(dataVariableId).getDataTable().getDataFile().getOwner());
+    }
 }

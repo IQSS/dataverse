@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -33,6 +34,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -178,6 +180,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetFieldServiceBean datasetFieldSvc;
+
+    @EJB
+    protected VariableServiceBean dataVariableSvc;
 
     @EJB
     protected MetadataBlockDao metadataBlockSvc;
@@ -555,6 +560,10 @@ public abstract class AbstractApiBean {
     protected DatasetFieldType findDatasetFieldType(String idtf) throws NumberFormatException {
         return isNumeric(idtf) ? datasetFieldSvc.find(Long.parseLong(idtf))
                 : datasetFieldSvc.findByNameOpt(idtf);
+    }
+
+    protected DataVariable findDataVariable(Long id) {
+        return dataVariableSvc.find(id);
     }
 
     /* =================== *\
