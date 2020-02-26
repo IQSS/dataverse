@@ -176,20 +176,14 @@ public class OaiHandler implements Serializable {
             }
             */
             
-            Date now = new Date(); 
-            long seconds = (now.getTime() - startMilSec) / 1000;
-            
             if (count >= 100) {
                 // Have we been waiting more than 30 seconds?
                 if (new Date().getTime() - startMilSec > 30000) {
-                    System.out.println("EXITING on set " + count + ", name: " + setSpec + "seconds: "+seconds);
                     setListTruncated = true;
                     break; 
                 }
             }
-            
-            System.out.println("on set " + count + ", name: " + setSpec + "seconds: "+seconds);
-             
+                         
             if (!StringUtils.isEmpty(setSpec)) {
                 sets.add(setSpec);
             }
