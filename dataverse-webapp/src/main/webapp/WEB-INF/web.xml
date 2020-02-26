@@ -68,7 +68,11 @@
     </filter>
     <filter>
         <filter-name>Blocker</filter-name>
-        <filter-class>edu.harvard.iq.dataverse.api.ApiBlockingFilter</filter-class>
+        <filter-class>edu.harvard.iq.dataverse.api.filters.ApiBlockingFilter</filter-class>
+    </filter>
+    <filter>
+        <filter-name>Authorizer</filter-name>
+        <filter-class>edu.harvard.iq.dataverse.api.filters.ApiAuthorizationFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>Router</filter-name>
@@ -78,6 +82,12 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>Blocker</filter-name>
+        <url-pattern>/api/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>Authorizer</filter-name>
         <url-pattern>/api/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
