@@ -358,7 +358,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean directUploadEnabled() {
-    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getStorageDriverId() + ".upload-redirect");
+    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
     }
     
     public void reset() {
