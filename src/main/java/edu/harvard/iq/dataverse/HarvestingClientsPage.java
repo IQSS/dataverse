@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -250,7 +251,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // and if not, what do we do? 
         // alternatively, should we make these 2 fields not editable at all?
         
-        this.newOaiSet = !StringUtils.isEmpty(harvestingClient.getHarvestingSet()) ? harvestingClient.getHarvestingSet() : "none";
+        this.newOaiSet = !StringUtils.isEmpty(harvestingClient.getHarvestingSet()) ? harvestingClient.getHarvestingSet() : "";
         this.newMetadataFormat = harvestingClient.getMetadataPrefix();
         this.newHarvestingStyle = harvestingClient.getHarvestStyle();
         
@@ -580,10 +581,10 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
             // And if that worked, the list of sets provided:
 
+            ArrayList<String> sets = null;
             if (success) {
                 try {
-                    List<String> sets = oaiHandler.runListSets();
-                    createOaiSetsSelectItems(sets);
+                    sets = oaiHandler.runListSets();
                 } catch (Exception ex) {
                     //success = false; 
                     // ok - we'll try and live without sets for now... 
@@ -597,8 +598,23 @@ public class HarvestingClientsPage implements java.io.Serializable {
             }
 
             if (success) {
-                if (oaiHandler.isSetListTruncated()) {
-                    setListTruncated = true; 
+                if (sets != null) {
+                    if (oaiHandler.isSetListTruncated()) {
+                        // If it was taking too long to retrieve the full list 
+                        // of sets (oai.datacite.org/oai - looking at you! -
+                        // and we had to truncate it:
+                        setListTruncated = true;
+
+                        // And if we are re-configuring an existing client, with 
+                        // a specific set in place - let's make sure it's on the pull down 
+                        // menu list; even if we have failed to retrieve it from the server. 
+                        if (StringUtil.nonEmpty(this.newOaiSet)) {
+                            if (!sets.contains(this.newOaiSet)) {
+                                sets.add(0, this.newOaiSet);
+                            }
+                        }
+                    }
+                    createOaiSetsSelectItems(sets);
                 }
                 return true;
             }

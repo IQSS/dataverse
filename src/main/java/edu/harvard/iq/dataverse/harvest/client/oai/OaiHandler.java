@@ -145,7 +145,7 @@ public class OaiHandler implements Serializable {
         return serviceProvider;
     }
     
-    public List<String> runListSets() throws OaiHandlerException {
+    public ArrayList<String> runListSets() throws OaiHandlerException {
     
         ServiceProvider sp = getServiceProvider(); 
         
@@ -161,7 +161,7 @@ public class OaiHandler implements Serializable {
             throw new OaiHandlerException("No valid response received from the OAI server.");
         }
         
-        List<String> sets = new ArrayList<>();
+        ArrayList<String> sets = new ArrayList<>();
 
         int count = 0;
         
