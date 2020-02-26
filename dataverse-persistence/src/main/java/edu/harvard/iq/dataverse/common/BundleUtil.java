@@ -112,7 +112,7 @@ public class BundleUtil {
         try {
             return bundle.getString(bundleKey);
         } catch (Exception ex) {
-            logger.warning("Could not find key \"" + bundleKey + "\" in bundle file: ");
+            logger.warning("Could not find key \"" + bundleKey + "\" in bundle file: " + bundleName);
             return StringUtils.EMPTY;
         }
     }

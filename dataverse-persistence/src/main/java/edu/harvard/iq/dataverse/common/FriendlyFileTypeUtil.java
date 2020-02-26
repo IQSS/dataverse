@@ -4,11 +4,29 @@ import edu.harvard.iq.dataverse.common.files.mime.ShapefileMimeType;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
 import java.util.Optional;
 
 public class FriendlyFileTypeUtil {
 
     public static String getUserFriendlyFileType(DataFile dataFile) {
+        return getUserFriendlyFileTypeForDisplay(dataFile.getContentType());
+    }
+
+    public static String getUserFriendlyFileTypeForDisplay(String dataFileContentType) {
+        if (dataFileContentType.equalsIgnoreCase(ShapefileMimeType.SHAPEFILE_FILE_TYPE.getMimeValue())) {
+            return ShapefileMimeType.SHAPEFILE_FILE_TYPE.getFriendlyName();
+        }
+        if (dataFileContentType.contains(";")) {
+            dataFileContentType = dataFileContentType.substring(0, dataFileContentType.indexOf(";"));
+        }
+
+        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(dataFileContentType, "MimeTypeDisplay"))
+                .filter(bundleName -> !bundleName.isEmpty())
+                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay"));
+    }
+
+    public static String getUserFriendlyFileType(DataFile dataFile, Locale locale) {
         String fileType = dataFile.getContentType();
 
         if (fileType.equalsIgnoreCase(ShapefileMimeType.SHAPEFILE_FILE_TYPE.getMimeValue())) {
@@ -18,9 +36,9 @@ public class FriendlyFileTypeUtil {
             fileType = fileType.substring(0, fileType.indexOf(";"));
         }
 
-        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay"))
+        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets", locale))
                 .filter(bundleName -> !bundleName.isEmpty())
-                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay"));
+                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale));
     }
     
     
@@ -41,6 +59,6 @@ public class FriendlyFileTypeUtil {
                     .orElse(fileType);
         }
 
-        return "UNKNOWN";
+        return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay");
     }
 }

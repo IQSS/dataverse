@@ -62,6 +62,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -162,19 +163,19 @@ public class FileUtil implements java.io.Serializable {
         }
     }
 
-    public static String getFacetFileType(DataFile dataFile) {
+    public static String getFacetFileTypeForIndex(DataFile dataFile, Locale locale) {
         String fileType = dataFile.getContentType();
 
         if (fileType.contains(";")) {
             fileType = fileType.substring(0, fileType.indexOf(";"));
         }
         if(fileType.split("/")[0].isEmpty()) {
-            return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets");
+            return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale);
         }
 
-        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets"))
+        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets", locale))
                 .filter(bundleName -> !bundleName.isEmpty())
-                .orElse(fileType.split("/")[0]);
+                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale));
     }
 
     public static String retestIngestableFileType(File file, String fileType) {

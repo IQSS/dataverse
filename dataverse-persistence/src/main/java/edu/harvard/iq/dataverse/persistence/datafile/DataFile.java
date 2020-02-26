@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -391,6 +392,10 @@ public class DataFile extends DvObject implements Comparable {
 
     public String getFriendlyType() {
         return FriendlyFileTypeUtil.getUserFriendlyFileType(this);
+    }
+
+    public String getFriendlyTypeForIndex(Locale locale) {
+        return FriendlyFileTypeUtil.getUserFriendlyFileType(this, locale);
     }
 
     @Override

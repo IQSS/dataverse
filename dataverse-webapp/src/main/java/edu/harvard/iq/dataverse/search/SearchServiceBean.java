@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.FriendlyFileTypeUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -530,7 +531,7 @@ public class SearchServiceBean {
 //                solrSearchResult.setApiUrl(baseUrl + "/api/meta/datafile/" + entityid);
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/fileCardImage/" + entityid);
                 solrSearchResult.setName(name);
-                solrSearchResult.setFiletype(filetype);
+                solrSearchResult.setFiletype(FriendlyFileTypeUtil.getUserFriendlyFileTypeForDisplay(fileContentType));
                 solrSearchResult.setFileContentType(fileContentType);
                 Object fileSizeInBytesObject = solrDocument.getFieldValue(SearchFields.FILE_SIZE_IN_BYTES);
                 if (fileSizeInBytesObject != null) {
