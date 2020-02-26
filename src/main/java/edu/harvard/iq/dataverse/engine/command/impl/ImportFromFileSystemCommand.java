@@ -74,7 +74,7 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             // TODO: 
             // The above goes directly to the filesystem directory configured by the 
             // old "dataverse.files.directory" JVM option (otherwise used for temp
-            // files only, after the Multistore implementatoin (#6488). 
+            // files only, after the Multistore implementation (#6488). 
             // We probably want package files to be able to use specific stores instead.
             // More importantly perhaps, the approach above does not take into account
             // if the dataset may have an AlternativePersistentIdentifier, that may be 
