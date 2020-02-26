@@ -384,6 +384,7 @@ public class SearchIT {
         search2.prettyPrint();
         search2.then().assertThat()
                 .body("data.items[0].name", CoreMatchers.equalTo("Darwin's Finches"))
+                .body("data.items[0].fileCount", CoreMatchers.equalTo(1))
                 .statusCode(200);
 
         //Unpublished datafiles no longer populate the dataset thumbnail
