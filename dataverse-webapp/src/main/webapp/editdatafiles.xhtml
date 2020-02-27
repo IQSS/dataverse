@@ -58,16 +58,16 @@
                         <div  class="button-block">
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
-                                    <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}"
+                                    <p:commandButton id="save" value="#{bundle.saveChanges}"
                                             onclick="PF('blockFileForm').show();"
                                             action="#{EditDatafilesPage.save}"
                                             update="@form,:messagePanel"
                                             oncomplete="$(document).scrollTop(0);" />
-                                    <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
+                                    <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
                                     </p:commandButton>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
+                                    <p:commandButton id="doneFilesButton" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
                                     </p:commandButton>
 
                                 </div>

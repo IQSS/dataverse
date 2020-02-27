@@ -385,10 +385,10 @@ Form buttons typically appear at the bottom of a form, aligned to the left. They
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 	  	<div class="button-block">
-	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Save Changes</span>
 	  		</button>
-	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" type="submit" role="button" aria-disabled="false">
 	  			<span class="ui-button-text ui-c">Cancel</span>
 	  		</button>
   		</div>

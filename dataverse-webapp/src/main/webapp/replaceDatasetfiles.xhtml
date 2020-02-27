@@ -393,7 +393,7 @@
                     <div class="button-block">
                         <p:outputPanel id="filesButtons">
                             <div jsf:rendered="#{!(empty ReplaceDatafilesPage.fileMetadatas)}">
-                                <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}"
+                                <p:commandButton id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
                                 >
@@ -404,7 +404,7 @@
                                                  action="#{ReplaceDatafilesPage.saveReplacement()}"/>
                             </div>
                             <div jsf:rendered="#{empty ReplaceDatafilesPage.fileMetadatas}">
-                                <p:commandButton tabindex="1000" id="doneFilesButton" value="#{bundle.done}"
+                                <p:commandButton id="doneFilesButton" value="#{bundle.done}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
                                 >

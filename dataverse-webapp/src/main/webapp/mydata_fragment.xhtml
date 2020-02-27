@@ -59,7 +59,7 @@
             <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" tabindex="-1"
                                   styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES) ? 'facetSelected': ''}"
                                   disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
@@ -99,7 +99,7 @@
                 </div>
                 <!--DATASETS TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" tabindex="-1"
                                   styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS) ? 'facetSelected': ''}"
                                   disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
@@ -139,7 +139,7 @@
                 </div>
                 <!--FILES TOGGLE-->
                 <div class="clearfix">
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}"
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" tabindex="-1"
                                   styleClass="facetTypeChBox facetLink #{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES) ? 'facetSelected': ''}"
                                   disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}">
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
@@ -375,7 +375,7 @@
                     <!--DATAVERSE CARDS-->
                     <div class="dataverseResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATAVERSES}">
                         <div class="card-preview-icon-block text-center">
-                            <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
+                            <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" tabindex="-1">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
                             </h:outputLink>
@@ -442,7 +442,7 @@
                     <!--DATASET CARDS-->
                     <div class="datasetResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.DATASETS}">
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" tabindex="-1">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
@@ -514,7 +514,7 @@
                     <!--FILE CARDS-->
                     <div class="fileResult clearfix #{result.unpublishedState ? 'unpublished' : ''}" jsf:rendered="#{result.type eq searchObjectTypeEnum.FILES}">
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                            <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" tabindex="-1">
                                 <h:graphicImage value="#{result.imageUrl}" rendered="#{!empty result.imageUrl}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileClass(result.entity)} text-muted h1"
                                       jsf:rendered="#{empty result.imageUrl}"/>
