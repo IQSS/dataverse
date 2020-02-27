@@ -44,7 +44,13 @@ public class IngestMessage implements Serializable {
         this.messageLevel = messageLevel;
         datafile_ids = new ArrayList<Long>();
     }
-   
+
+    public IngestMessage(int messageLevel, Long authenticatedUserId) {
+        this.messageLevel = messageLevel;
+        this.authenticatedUserId = authenticatedUserId;
+        datafile_ids = new ArrayList<Long>();
+    }
+
     private int messageLevel = INGEST_MESAGE_LEVEL_INFO;
     
     private Long datasetId;
@@ -52,6 +58,7 @@ public class IngestMessage implements Serializable {
     private String versionNote;
     private String datasetVersionNumber;
     private List<Long> datafile_ids;
+    private Long authenticatedUserId;
 
     public String getVersionNote() {
         return versionNote;
@@ -111,5 +118,9 @@ public class IngestMessage implements Serializable {
     
     public void addFileId(Long file_id) {
         datafile_ids.add(file_id);
+    }
+
+    public Long getAuthenticatedUserId() {
+        return authenticatedUserId;
     }
 }

@@ -181,7 +181,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 
         ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
-        exportMetadata(ctxt.settings());
+        exportMetadata(dataset, ctxt.settings());
+        ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
         return retVal;
     }
 
@@ -189,11 +190,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(SettingsServiceBean settingsServiceBean) {
+    private void exportMetadata(Dataset dataset, SettingsServiceBean settingsServiceBean) {
 
         try {
             ExportService instance = ExportService.getInstance(settingsServiceBean);
-            instance.exportAllFormats(getDataset());
+            instance.exportAllFormats(dataset);
 
         } catch (ExportException ex) {
             // Something went wrong!

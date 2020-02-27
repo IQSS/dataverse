@@ -18,10 +18,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -79,9 +81,14 @@ import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDvObjectPIDMetadataCommand;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
@@ -94,6 +101,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -110,6 +118,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -146,6 +155,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -237,10 +247,11 @@ public class Datasets extends AbstractApiBean {
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(id)));
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             final JsonObjectBuilder jsonbuilder = json(retrieved);
-
-            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
-            mdcLogService.logEntry(entry);
-            
+            //Report MDC if this is a released version (could be draft if user has access, or user may not have access at all and is not getting metadata beyond the minimum)
+            if((latest != null) && latest.isReleased()) {
+                MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, retrieved);
+                mdcLogService.logEntry(entry);
+            }
             return ok(jsonbuilder.add("latestVersion", (latest != null) ? json(latest) : null));
         });
     }
@@ -267,7 +278,7 @@ public class Datasets extends AbstractApiBean {
             InputStream is = instance.getExport(dataset, exporter);
            
             String mediaType = instance.getMediaType(exporter);
-            
+            //Export is only possible for released (non-draft) dataset versions so we can log without checking to see if this is a request for a draft 
             MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, dataset);
             mdcLogService.logEntry(entry);
             
@@ -1135,30 +1146,66 @@ public class Datasets extends AbstractApiBean {
     }
 
     /**
-     * @todo Make this real. Currently only used for API testing. Copied from
-     * the equivalent API endpoint for dataverses and simplified with values
-     * hard coded.
+     * Add a given assignment to a given user or group
+     * @param ra role assignment DTO
+     * @param id dataset id
+     * @param apiKey
      */
     @POST
     @Path("{identifier}/assignments")
-    public Response createAssignment(String userOrGroup, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
-        boolean apiTestingOnly = true;
-        if (apiTestingOnly) {
-            return error(Response.Status.FORBIDDEN, "This is only for API tests.");
-        }
+    public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            RoleAssignee assignee = findAssignee(userOrGroup);
+            
+            RoleAssignee assignee = findAssignee(ra.getAssignee());
             if (assignee == null) {
-                return error(Response.Status.BAD_REQUEST, "Assignee not found");
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.grant.role.assignee.not.found.error"));
+            }           
+            
+            DataverseRole theRole;
+            Dataverse dv = dataset.getOwner();
+            theRole = null;
+            while ((theRole == null) && (dv != null)) {
+                for (DataverseRole aRole : rolesSvc.availableRoles(dv.getId())) {
+                    if (aRole.getAlias().equals(ra.getRole())) {
+                        theRole = aRole;
+                        break;
+                    }
+                }
+                dv = dv.getOwner();
             }
-            DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
+            if (theRole == null) {
+                List<String> args = Arrays.asList(ra.getRole(), dataset.getOwner().getDisplayName());
+                return error(Status.BAD_REQUEST, BundleUtil.getStringFromBundle("datasets.api.grant.role.not.found.error", args));
+            }
+
             String privateUrlToken = null;
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee, theRole, dataset, createDataverseRequest(findUserOrDie()), privateUrlToken))));
         } catch (WrappedResponse ex) {
-            logger.log(Level.WARNING, "Can''t create assignment: {0}", ex.getMessage());
+            List<String> args = Arrays.asList(ex.getMessage());
+            logger.log(Level.WARNING, BundleUtil.getStringFromBundle("datasets.api.grant.role.cant.create.assignment.error", args));
             return ex.getResponse();
+        }
+
+    }
+    
+    @DELETE
+    @Path("{identifier}/assignments/{id}")
+    public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dsId) {
+        RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
+        if (ra != null) {
+            try {
+                findDatasetOrDie(dsId);
+                execCommand(new RevokeRoleCommand(ra, createDataverseRequest(findUserOrDie())));
+                List<String> args = Arrays.asList(ra.getRole().getName(), ra.getAssigneeIdentifier(), ra.getDefinitionPoint().accept(DvObject.NamePrinter));
+                return ok(BundleUtil.getStringFromBundle("datasets.api.revoke.role.success", args));
+            } catch (WrappedResponse ex) {
+                return ex.getResponse();
+            }
+        } else {
+            List<String> args = Arrays.asList(Long.toString(assignmentId));
+            return error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("datasets.api.revoke.role.not.found.error", args));
         }
     }
 
@@ -1350,11 +1397,12 @@ public class Datasets extends AbstractApiBean {
             if ("validation passed".equals(statusMessageFromDcm)) {
                logger.log(Level.INFO, "Checksum Validation passed for DCM."); 
 
-                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
+                String storageDriver = dataset.getDataverseContext().getEffectiveStorageDriverId();
                 String uploadFolder = jsonFromDcm.getString("uploadFolder");
                 int totalSize = jsonFromDcm.getInt("totalSize");
+                String storageDriverType = System.getProperty("dataverse.file." + storageDriver + ".type");
                 
-                if (storageDriver.equals("file")) {
+                if (storageDriverType.equals("file")) {
                     logger.log(Level.INFO, "File storage driver used for (dataset id={0})", dataset.getId());
 
                     ImportMode importMode = ImportMode.MERGE;
@@ -1370,7 +1418,7 @@ public class Datasets extends AbstractApiBean {
                         String message = wr.getMessage();
                         return error(Response.Status.INTERNAL_SERVER_ERROR, "Uploaded files have passed checksum validation but something went wrong while attempting to put the files into Dataverse. Message was '" + message + "'.");
                     }
-                } else if(storageDriver.equals("s3")) {
+                } else if(storageDriverType.equals("s3")) {
                     
                     logger.log(Level.INFO, "S3 storage driver used for DCM (dataset id={0})", dataset.getId());
                     try {
@@ -1813,10 +1861,10 @@ public class Datasets extends AbstractApiBean {
         if ( dsv == null || dsv.getId() == null ) {
             throw new WrappedResponse( notFound("Dataset version " + versionNumber + " of dataset " + ds.getId() + " not found") );
         }
-        
-        MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
-        mdcLogService.logEntry(entry);
-        
+        if (dsv.isReleased()) {
+            MakeDataCountLoggingServiceBean.MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, ds);
+            mdcLogService.logEntry(entry);
+        }
         return dsv;
     }
     
@@ -1980,6 +2028,24 @@ public class Datasets extends AbstractApiBean {
     public Response getMakeDataCountMetricCurrentMonth(@PathParam("id") String idSupplied, @PathParam("metric") String metricSupplied, @QueryParam("country") String country) {
         String nullCurrentMonth = null;
         return getMakeDataCountMetric(idSupplied, metricSupplied, nullCurrentMonth, country);
+    }
+    
+    @GET
+    @Path("{identifier}/storagesize")
+    public Response getStorageSize(@PathParam("identifier") String dvIdtf,  @QueryParam("includeCached") boolean includeCached,  
+        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
+      
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"),
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), includeCached,GetDatasetStorageSizeCommand.Mode.STORAGE, null)))));
+    }
+    
+    @GET
+    @Path("{identifier}/versions/{versionId}/downloadsize")
+    public Response getDownloadSize(@PathParam("identifier") String dvIdtf, @PathParam("versionId") String version,   
+        @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {       
+      
+        return response(req -> ok(MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"),
+                execCommand(new GetDatasetStorageSizeCommand(req, findDatasetOrDie(dvIdtf), false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, getDatasetVersionOrDie(req, version , findDatasetOrDie(dvIdtf), uriInfo, headers))))));
     }
 
     @GET

@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
@@ -261,6 +262,9 @@ public class JsonPrinter {
         if (dv.getDataverseTheme() != null) {
             bld.add("theme", JsonPrinter.json(dv.getDataverseTheme()));
         }
+        if(dv.getStorageDriverId() != null) {
+        	bld.add("storageDriverLabel", DataAccess.getStorageDriverLabelFor(dv.getStorageDriverId()));
+        }
 
         return bld;
     }
@@ -314,6 +318,8 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DatasetVersion dsv) {
         JsonObjectBuilder bld = jsonObjectBuilder()
                 .add("id", dsv.getId())
+                .add("datasetId", dsv.getDataset().getId())
+                .add("datasetPersistentId", dsv.getDataset().getGlobalId().asString())
                 .add("storageIdentifier", dsv.getDataset().getStorageIdentifier())
                 .add("versionNumber", dsv.getVersionNumber())
                 .add("versionMinorNumber", dsv.getMinorVersionNumber())

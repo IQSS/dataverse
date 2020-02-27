@@ -71,7 +71,7 @@ If all this is working and you want to send data to the test instance of the Dat
 
 ``curl --header "Content-Type: application/json; Accept: application/json" -H "Authorization: Bearer $JSON_WEB_TOKEN" -X POST https://api.test.datacite.org/reports/ -d @sushi_report.json``
 
-For how to put citations into your dev database and how to get them out again, see "Configuring Dataverse for Make Data Count Citations" in the :doc:`/admin/make-data-count` section of the Admin Guide.
+For how to put citations into your dev database and how to get them out again, see :ref:`MDC-updateCitationsForDataset` section in Make Data Count of the Admin Guide.
 
 Testing Make Data Count and Dataverse
 -------------------------------------
@@ -87,6 +87,8 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.0.1/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
+
+You can compare the MDC metrics display with Dataverse's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
 
 Resources
 ---------

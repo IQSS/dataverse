@@ -112,14 +112,12 @@
                                             <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                             <f:param value="#{systemConfig.guidesVersion}"/>
                                         </h:outputFormat>
-                                        <h:outputText value="#{bundle['login.institution.support.beforeLink']} " />
-                                        <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                        </p:commandLink>
-                                        <h:outputText value=" #{bundle['login.institution.support.afterLink']}" escape="false"/>
+                                        <h:outputFormat value="#{bundle['login.institution.support.blurbwithLink']}" escape="false">
+                                            <o:param>      
+                                                <p:commandLink value="#{settingsWrapper.supportTeamName}" onclick ="clickSupportLink();" >
+                                                </p:commandLink>
+                                            </o:param>
+                                        </h:outputFormat>
                                     </p>
                                 </h:form>
 
@@ -136,8 +134,30 @@
 
                                 <script>
                                     shibRedirectPage = '';
-                                </script>
+                                    shibLang = "#{facesContext.viewRoot.locale}";
+                                    shibLangBundle = {};
+                                    shibLangBundle["fatal.divMissing"] = "#{bundle['idp.fatal.divMissing']}";
+                                    shibLangBundle["fatal.noXMLHttpRequest"] = "#{bundle['idp.fatal.noXMLHttpRequest']}";
+                                    shibLangBundle["fatal.wrongProtocol"] = "#{bundle['idp.fatal.wrongProtocol']}";
+                                    shibLangBundle["fatal.wrongEntityId"] = "#{bundle['idp.fatal.wrongEntityId']}";
+                                    shibLangBundle["fatal.noData"] = "#{bundle['idp.fatal.noData']}";
+                                    shibLangBundle["fatal.loadFailed"] = "#{bundle['idp.fatal.loadFailed']}";
+                                    shibLangBundle["fatal.noparms"] = "#{bundle['idp.fatal.noparms']}";
+                                    shibLangBundle["fatal.noReturnURL"] = "#{bundle['idp.fatal.noReturnURL']}";
+                                    shibLangBundle["fatal.badProtocol"] = "#{bundle['idp.fatal.badProtocol']}";
+                                    shibLangBundle["idpPreferred.label"] = "#{bundle['idp.idpPreferred.label']}";
+                                    shibLangBundle["idpEntry.label"] = "#{bundle['idp.idpEntry.label']}";
+                                    shibLangBundle["idpEntry.NoPreferred.label"] = "#{bundle['idp.idpEntry.NoPreferred.label']}";
+                                    shibLangBundle["idpList.label"] = "#{bundle['idp.idpList.label']}";
+                                    shibLangBundle["idpList.NoPreferred.label"] = "#{bundle['idp.idpList.NoPreferred.label']}";
+                                    shibLangBundle["idpList.defaultOptionLabel"] = "#{bundle['idp.idpList.defaultOptionLabel']}";
+                                    shibLangBundle["idpList.showList"] = "#{bundle['idp.idpList.showList']}";
+                                    shibLangBundle["idpList.showSearch"] = "#{bundle['idp.idpList.showSearch']}";
+                                    shibLangBundle["submitButton.label"] = "#{bundle['idp.submitButton.label']}";
+                                    shibLangBundle["helpText"] = "#{bundle['idp.helpText']}";
+                                    shibLangBundle["defaultLogoAlt"] = "#{bundle['idp.defaultLogoAlt']}";
 
+                                </script>
                                 <script src="/resources/js/shib/idpselect_config.js"></script>
                                 <script src="/resources/js/shib/idpselect.js"></script>
                                 <script src="/resources/js/shib/idpselect_style.js"></script>
@@ -166,8 +186,8 @@
                                     <div class="col-sm-12">
                                         <h:outputLink styleClass="btn btn-default" value="#{OAuth2Page.linkFor(LoginPage.authProvider.id, LoginPage.redirectPage)}">
                                             <h:graphicImage rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="/resources/images/orcid_16x16.png" height="16" width="16" alt="#{of:format1(bundle['alt.logo'], bundle['auth.providers.title.orcid'])}"/>
-					    <h:outputFormat rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
-					    <h:outputFormat rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{bundle['login.button.orcid']}"/>
+					    <h:outputText rendered="#{not fn:contains(LoginPage.authProvider.id, 'orcid')}" value="#{LoginPage.getLoginButtonText()}"/>
+					    <h:outputText rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}" value=" #{bundle['login.button.orcid']}"/>
                                         </h:outputLink>
                                         <ui:fragment rendered="#{fn:contains(LoginPage.authProvider.id, 'orcid')}">
                                             <p class="help-block small" style="margin-top:1em;">
@@ -198,6 +218,14 @@
                                         </h:outputFormat>
                                     </p>
                                 </div>
+                            </div>
+                            
+                            <div id="signUpLink">
+                                <p class="help-block margin-top">
+                                    <h:outputFormat value="#{bundle['login.signup.blurb']}" escape="false">
+                                        <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
+                                    </h:outputFormat>
+                                </p>
                             </div>
                         </div>
                     </div>

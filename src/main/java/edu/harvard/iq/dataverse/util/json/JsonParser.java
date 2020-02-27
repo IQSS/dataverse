@@ -111,6 +111,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+      
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;

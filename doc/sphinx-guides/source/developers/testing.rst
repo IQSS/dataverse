@@ -105,6 +105,26 @@ Unfortunately, the term "integration tests" can mean different things to differe
 - Integration tests operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
 - Integration tests are written using REST Assured.
 
+Running the Full API Test Suite Using EC2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run the API test suite on EC2 you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
+
+Then read the instructions in https://github.com/IQSS/dataverse-sample-data for EC2 but be sure to make the adjustments below.
+
+Edit ``ec2config.yaml`` to change ``test_suite`` to ``true``.
+
+Pass in the repo and branch you are testing. You should also specify a local directory where server.log and other useful information will be written so you can start debugging any failures.
+
+.. code-block:: bash
+
+  export REPO=https://github.com/IQSS/dataverse.git
+  export BRANCH=123-my-branch
+  export LOGS=/tmp/123
+
+  mkdir $LOGS
+  ./ec2-create-instance.sh -g ec2config.yaml -r $REPO -b $BRANCH -l $LOGS
+
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -145,7 +165,7 @@ The root dataverse must be published for some of the REST Assured tests to run.
 dataverse.siteUrl
 ^^^^^^^^^^^^^^^^^
 
-When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See "JVM Options" under the :doc:`/installation/config` section of the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
+When run locally (as opposed to a remote server), some of the REST Assured tests require the ``dataverse.siteUrl`` JVM option to be set to ``http://localhost:8080``. See :ref:`jvm-options` section in the Installation Guide for advice changing JVM options. First you should check to check your JVM options with:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 

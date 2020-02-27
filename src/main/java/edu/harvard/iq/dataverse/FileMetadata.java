@@ -511,56 +511,20 @@ public class FileMetadata implements Serializable {
         
         return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
-
-    /* 
-     * An experimental method for comparing 2 file metadatas *by content*; i.e., 
-     * this would be for checking 2 metadatas from 2 different versions, to 
-     * determine if any of the actual metadata fields have changed between 
-     * versions. 
-    */
-    public boolean contentEquals(FileMetadata other) {
-        if (other == null) {
-            return false; 
-        }
-        
-        if (this.getLabel() != null) {
-            if (!this.getLabel().equals(other.getLabel())) {
-                return false;
-            }
-        } else if (other.getLabel() != null) {
-            return false;
-        }
-
-        if (this.getDirectoryLabel() != null) {
-            if (!this.getDirectoryLabel().equals(other.getDirectoryLabel())) {
-                return false;
-            }
-        } else if (other.getDirectoryLabel() != null) {
-            return false;
-        }
-        
-        if (this.getDescription() != null) {
-            if (!this.getDescription().equals(other.getDescription())) {
-                return false;
-            }
-        } else if (other.getDescription() != null) {
-            return false;
-        }
-        List<String> categoryNames =this.getCategoriesByName();
-        List<String> otherCategoryNames =other.getCategoriesByName();
-        if(!categoryNames.isEmpty()) {
-            categoryNames.sort(null);
-            otherCategoryNames.sort(null);
-            if (!categoryNames.equals(otherCategoryNames)) {
-                return false;
-            }
-        } else if(!otherCategoryNames.isEmpty()) {
-            return false;
-        }
-        
-        return true;
-    }
     
+    public boolean contentEquals(FileMetadata other) {
+    /* 
+       This method now invokes the logic contained in the FileVersionDifference compareMetadata method
+       so that the logic is in a single place
+    */
+        return compareContent(other);
+    }
+
+    
+    public boolean compareContent(FileMetadata other){
+         FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
+         return diffObj.compareMetadata(this, other);
+    }
     
     @Override
     public String toString() {
