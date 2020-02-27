@@ -176,9 +176,21 @@
                                     <div id="file-title-block" class="row margin-bottom-half">
                                         <div class="col-xs-12">
                                             <!-- Restricted File Icon -->
+<div class="file-icon-restricted-block"
+    jsf:rendered="#{!FilePage.fileMetadata.dataFile.notaryServiceBound}">
+                                            
+                                            
                                             <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
                                             <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
 
+</div>
+                                            
+                                            
+        <div class="file-icon-restricted-block" jsf:rendered="#{FilePage.fileMetadata.dataFile.notaryServiceBound }">
+            <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
+        </div>
+                                            
+                                            
                                             <!-- Title/Label -->
                                             <h:outputText value="#{FilePage.fileMetadata.label}" styleClass="file-title-label"/>
 
