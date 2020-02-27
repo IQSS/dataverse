@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
@@ -54,6 +55,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -66,6 +68,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -1647,5 +1650,82 @@ public class Admin extends AbstractApiBean {
                 "InheritParentRoleAssignments does not list any roles on this instance");
     }
     
+    @GET
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response getStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	//Note that this returns what's set directly on this dataverse. If null, the user would have to recurse the chain of parents to find the effective storageDriver
+    	return ok(dataverse.getStorageDriverId());
+    }
+    
+    @PUT
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response setStorageDriver(@PathParam("alias") String alias, String label) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
+    		if(store.getKey().equals(label)) {
+    			dataverse.setStorageDriverId(store.getValue());
+    			return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
+    		}
+    	}
+    	return error(Response.Status.BAD_REQUEST,
+    			"No Storage Driver found for : " + label);
+    }
 
+    @DELETE
+    @Path("/dataverse/{alias}/storageDriver")
+    public Response resetStorageDriver(@PathParam("alias") String alias) throws WrappedResponse {
+    	Dataverse dataverse = dataverseSvc.findByAlias(alias);
+    	if (dataverse == null) {
+    		return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+    	}
+    	try {
+    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	dataverse.setStorageDriverId("");
+    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+    
+    @GET
+    @Path("/dataverse/storageDrivers")
+    public Response listStorageDrivers() throws WrappedResponse {
+    	try {
+    		AuthenticatedUser user = findAuthenticatedUserOrDie();
+    		if (!user.isSuperuser()) {
+    			return error(Response.Status.FORBIDDEN, "Superusers only.");
+    		}
+    	} catch (WrappedResponse wr) {
+    		return wr.getResponse();
+    	}
+    	JsonObjectBuilder bld = jsonObjectBuilder();
+    	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
+		return ok(bld);
+    }
 }

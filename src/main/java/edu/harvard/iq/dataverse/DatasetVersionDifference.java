@@ -125,7 +125,7 @@ public final class DatasetVersionDifference {
                         changedFileMetadata.add(fmdo);
                         changedFileMetadata.add(fmdn);
                     }
-                    if (!compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
+                    if (!variableMetadataUtil.compareVariableMetadata(fmdo,fmdn) || !compareVarGroup(fmdo, fmdn)) {
                         changedVariableMetadata.add(fmdo);
                         changedVariableMetadata.add(fmdn);
                     }
@@ -522,33 +522,6 @@ public final class DatasetVersionDifference {
         noteArray[2] = deleted;
         noteArray[3] = changed;
         summaryDataForNote.add(noteArray);
-    }
-
-    private boolean compareVariableMetadata(FileMetadata fmdo, FileMetadata fmdn) {
-        Collection<VariableMetadata> vmlo = fmdo.getVariableMetadatas();
-        Collection<VariableMetadata> vmln = fmdn.getVariableMetadatas();
-
-        int count = 0;
-        if (vmlo.size() != vmln.size()) {
-            return false;
-        } else {
-            for (VariableMetadata vmo : vmlo) {
-                for (VariableMetadata vmn : vmln) {
-                    if (vmo.getDataVariable().getId().equals(vmn.getDataVariable().getId())) {
-                        count++;
-                        if (!variableMetadataUtil.compareVarMetadata(vmo, vmn)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        if (count == vmlo.size()) {
-            return true;
-        } else {
-            return false;
-        }
-
     }
 
     private boolean compareVarGroup(FileMetadata fmdo, FileMetadata fmdn) {
@@ -1619,6 +1592,7 @@ public final class DatasetVersionDifference {
         }
         
         public String getFileRest1() {
+            if(fileRest1 == null) return fileRest1;
             String localeFileRest1 = BundleUtil.getStringFromBundle(fileRest1.toLowerCase().replace(" ", "_"));
             return localeFileRest1;
         }
@@ -1628,6 +1602,7 @@ public final class DatasetVersionDifference {
         }
 
         public String getFileRest2() {
+            if(fileRest2 == null) return fileRest2;
             String localeFileRest2 = BundleUtil.getStringFromBundle(fileRest2.toLowerCase().replace(" ", "_"));
             return localeFileRest2;
         }

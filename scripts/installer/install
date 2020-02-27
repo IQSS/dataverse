@@ -84,7 +84,8 @@ else
 
 	'DOI_USERNAME',
 	'DOI_PASSWORD',
-	'DOI_BASEURL'
+	'DOI_BASEURL',
+	'DOI_MDCBASEURL'
 
 	);
 }
@@ -114,6 +115,7 @@ my %CONFIG_DEFAULTS = (
     'DOI_USERNAME',    'dataciteuser',
     'DOI_PASSWORD',    'datacitepassword',
     'DOI_BASEURL',     'https://mds.test.datacite.org',
+    'DOI_MDCBASEURL',  'https://api.test.datacite.org',
 
 );
 
@@ -140,7 +142,8 @@ my %CONFIG_PROMPTS = (
 
     'DOI_USERNAME',    'Datacite username',
     'DOI_PASSWORD',    'Datacite password',
-    'DOI_BASEURL',    'Datacite URL'
+    'DOI_BASEURL',    'Datacite URL',
+    'DOI_MDCBASEURL', 'Datacite MakeDataCount URL'
 
 );
 
@@ -168,7 +171,8 @@ my %CONFIG_COMMENTS = (
 
     'DOI_USERNAME',    'DataCite or EZID username. Only necessary for publishing / minting DOIs.',
     'DOI_PASSWORD',    'DataCite or EZID account password.',
-    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org'
+    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org',
+    'DOI_MDCBASEURL',    'DataCite Make Data Count API base URL. Probably https://api.datacite.org'
 
 );
 
@@ -178,7 +182,7 @@ my $API_URL = "http://localhost:8080/api";
 # jodbc.postgresql.org recommends 4.2 for Java 8.
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
-my $postgres_jdbc = "postgresql-42.2.2.jar";
+my $postgres_jdbc = "postgresql-42.2.9.jar";
 
 # 0. A few preliminary checks:
 
@@ -212,8 +216,6 @@ elsif ( $uname_tokens[0] eq "Linux" ) {
     print "DVN Installers Guide for more information.\n\n";
 
     $WORKING_OS = "Unknown";
-
-    my $yesnocont;
 
     unless ($noninteractive) {
         exit 0;
@@ -433,6 +435,29 @@ else {
     print "PostgreSQL database for use by the Dataverse application.\n";
 }
 
+my $yesno;
+
+unless ($noninteractive) 
+{
+    print "\nATTENTION: As of Dataverse v.4.19, we are offering a new, experimental \n";
+    print "version of the installer script, implemented in Python. It will eventually \n";
+    print "replace this script (implemented in Perl). Consult the file README_python.txt \n";
+    print "for more information on how to run it. \n";
+
+    print "\nWould you like to exit and use the new installer instead? [y/n] ";
+    $yesno = <>;
+    chop $yesno;
+
+    while ( $yesno ne "y" && $yesno ne "n" ) {
+	print "Please enter 'y' or 'n'!\n";
+	print "(or ctrl-C to exit the installer)\n";
+	$yesno = <>;
+	chop $yesno;
+    }
+
+    exit 0 if  $yesno eq "y";
+}
+
 ENTERCONFIG:
 
 print "\n";
@@ -565,7 +590,6 @@ for my $ENTRY (@CONFIG_VARIABLES) {
     print $CONFIG_PROMPTS{$ENTRY} . ": " . $CONFIG_DEFAULTS{$ENTRY} . "\n";
 }
 
-my $yesno;
 if ($noninteractive) {
     $yesno = "y";
 }
@@ -1097,7 +1121,11 @@ sub run_asadmin_script {
     $ENV{'RSERVE_PORT'} = $CONFIG_DEFAULTS{'RSERVE_PORT'};
     $ENV{'RSERVE_USER'} = $CONFIG_DEFAULTS{'RSERVE_USER'};
     $ENV{'RSERVE_PASS'} = $CONFIG_DEFAULTS{'RSERVE_PASSWORD'};
-
+    $ENV{'DOI_BASEURL'} = $CONFIG_DEFAULTS{'DOI_BASEURL'};
+    $ENV{'DOI_USERNAME'} = $CONFIG_DEFAULTS{'DOI_USERNAME'};
+    $ENV{'DOI_PASSWORD'} = $CONFIG_DEFAULTS{'DOI_PASSWORD'};
+    $ENV{'DOI_MDCBASEURL'} = $CONFIG_DEFAULTS{'DOI_MDCBASEURL'};
+    
     $ENV{'HOST_ADDRESS'} = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 
     my ($mail_server_host, $mail_server_port) = split (":", $CONFIG_DEFAULTS{'MAIL_SERVER'});

@@ -22,12 +22,13 @@ Dataverse has been configured for one or more of the following log in options:
 - Username/Email and Password
 - Institutional Log In
 - ORCID
+- Microsoft Azure AD
 - GitHub
 - Google
 
 Please note that once you create your Dataverse account, it will be associated with only one of the log in options above.
 
-The Institutional Log In, ORCID, GitHub, and Google options are described in more detail below under "Remote Authentication."
+The Institutional Log In, ORCID, Microsoft, GitHub, and Google options are described in more detail below under "Remote Authentication."
 
 Create Account
 ~~~~~~~~~~~~~~
@@ -65,6 +66,8 @@ Remote Authentication
 ---------------------
 
 Too many passwords? You can set up your Dataverse account to use log in credentials from one of the following remote authentication providers. This way, you can log in using your existing credentials from another service.
+
+.. _institutional-log-in:
 
 Institutional Log In
 ~~~~~~~~~~~~~~~~~~~~
@@ -134,19 +137,19 @@ Convert your Dataverse account away from ORCID for log in
 
 If you don't want to log in to Dataverse using ORCID any more, you will want to convert your Dataverse account to the Dataverse Username/Email log in option. To do this, you will need to contact support for the Dataverse installation you are using. On your account page, there is a link that will open a popup form to contact support for assistance.
 
-GitHub and Google Log In
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Microsoft Azure AD, GitHub, and Google Log In
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can also convert your Dataverse account to use authentication provided by GitHub or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
+You can also convert your Dataverse account to use authentication provided by GitHub, Microsoft, or Google. These options may be found in the "Other options" section of the log in page, and function similarly to how ORCID is outlined above. If you would like to convert your account away from using one of these services for log in, then you can follow the same steps as listed above for converting away from the ORCID log in.
 
 My Data
 -------
 
-The My Data section of your account page displays a listing of all the dataverses, datasets, and files you have either created, uploaded or that you have a role assigned on. If you see unexpected dataverses or datasets in your My Data page, it might be because someone has assigned your account a role on those dataverses or datasets. For example, some institutions automatically assign the "File Downloader" role on their datasets to all accounts using their institutional login.
+The My Data section of your account page displays a listing of all the dataverses, datasets, and files you have either created, uploaded or that you have a role assigned on. You are able to filter through all the dataverses, datasets, and files listed on your My Data page using the filter box. You may also use the facets on the left side to only view a specific Publication Status or Role.
 
+.. note:: If you see unexpected dataverses or datasets in your My Data page, it might be because someone has assigned your account a role on those dataverses or datasets. For example, some institutions automatically assign the "File Downloader" role on their datasets to all accounts using their institutional login.
 
-You are able to filter through all the dataverses, datasets, and files listed on your My Data page using the filter box. You may also use the facets on the left side to only view a specific Publication Status or Role.
-
+You can use the Add Data button to create a new dataverse or dataset. By default, the new dataverse or dataset will be created in the root dataverse, but from the create form you can use the Host Dataverse dropdown menu to choose a different dataverse, for which you have the proper access privileges. However, you will not be able to change this selection after you create your dataverse or dataset.
 
 Notifications
 -------------
@@ -158,6 +161,7 @@ You will receive a notification when:
 - You've created your account
 - You've created a dataverse or added a dataset
 - Another Dataverse user has requested access to a restricted file in one of your datasets
+- A file in one of your datasets has finished the ingest process
 
 Notifications will only be emailed one time even if you haven't read the notification on the Dataverse site.
 
@@ -169,7 +173,7 @@ What APIs Are and Why They Are Useful
 
 API stands for "Application Programming Interface" and Dataverse APIs allow you to take advantage of integrations with other software that may have been set up by admins of your installation of Dataverse. See the :doc:`/admin/external-tools` and :doc:`/admin/integrations` sections of the Admin Guide for examples of software that is commonly integrated with Dataverse.
 
-Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the  :doc:`/api/getting-started` section of the API Guide for details.
+Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the :doc:`/api/getting-started` section of the API Guide for details.
 
 How Your API Token Is Like a Password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

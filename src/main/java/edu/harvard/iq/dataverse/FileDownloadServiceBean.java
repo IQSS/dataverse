@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -13,6 +14,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -32,7 +35,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.primefaces.PrimeFaces;
-import org.primefaces.context.RequestContext;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -63,7 +66,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
-    
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+
     @Inject
     DataverseSession session;
     
@@ -247,9 +252,15 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             if (user instanceof AuthenticatedUser) {
                 AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
                 apiToken = authService.findApiTokenByUser(authenticatedUser);
-                if ((apiToken == null) || (apiToken.getExpireTime().before(new Date()))) {
+                if (apiToken == null) {
+                    //No un-expired token
                     apiToken = authService.generateApiTokenForUser(authenticatedUser);
                 }
+            } else if (user instanceof PrivateUrlUser) {
+                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+                apiToken = new ApiToken();
+                apiToken.setTokenString(privateUrl.getToken());
             }
         }
         DataFile dataFile = null;
@@ -476,7 +487,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor);
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
 
     }    
