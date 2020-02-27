@@ -21,18 +21,16 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DvObject;
-
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Properties;
 /**
-*
-* @author Leonid Andreev
-*/
+ *
+ * @author Leonid Andreev
+ */
 
 
 public class DataAccess {
@@ -43,8 +41,8 @@ public class DataAccess {
 
     };
 
-
-    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    //Default is only for tests
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id", "file");
 
     // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -157,7 +155,8 @@ public class DataAccess {
          * Since PR #6488 for multi-store - this can return a clone using a different store than the original (e.g. if the default store changes) which causes errors
          * This if will catch any cases where that's attempted.
          */
-        if(dvObject.getStorageIdentifier().contains("://")) {
+        // Tests send objects with no storageIdentifier set
+        if((dvObject.getStorageIdentifier()!=null) && dvObject.getStorageIdentifier().contains("://")) {
         	throw new IOException("Attempt to create new StorageIO for already stored object: " + dvObject.getStorageIdentifier());
         }
 
@@ -165,7 +164,7 @@ public class DataAccess {
         
         dvObject.setStorageIdentifier(storageTag);
 
-        if (StringUtils.isEmpty(storageDriverId)) {
+        if (StringUtils.isBlank(storageDriverId)) {
         	storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER;
         }
         String storageType = getDriverType(storageDriverId);
@@ -196,7 +195,7 @@ public class DataAccess {
     	if (drivers==null) {
     		populateDrivers();
     	}
-    	if(StringUtils.isEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    	if(!StringUtils.isBlank(driverLabel) && drivers.containsKey(driverLabel)) {
     		return drivers.get(driverLabel);
     	} 
     	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;

@@ -55,6 +55,7 @@ public class DataAccessTest {
   @Test
   void testCreateNewStorageIO_createsFileAccessIObyDefault() throws IOException {
 	System.setProperty("dataverse.files.file.type", "file");
+	System.setProperty("dataverse.files.storage-driver-id", "file");
     StorageIO<Dataset> storageIo = DataAccess.createNewStorageIO(dataset, "valid-tag");
     assertTrue(storageIo.getClass().equals(FileAccessIO.class));
   }
