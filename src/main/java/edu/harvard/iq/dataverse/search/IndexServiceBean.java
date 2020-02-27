@@ -27,6 +27,7 @@ import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
+import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -41,6 +42,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -258,21 +260,23 @@ public class IndexServiceBean {
         for (String dvPath : linkingDataversePaths) {
             dataversePaths.add(dvPath);
         }
-
         //Get Linking Dataverses to see if I need to reindex my children
-        if (hasAnyLinkingDataverses(dataverse)) {
-            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
-                //if this dataverse or any of its ancestors is linked and contains datasets then
-                // the datasets must be reindexed to get the new paths added
-                indexDataset(dv, true);
-            }
+        if (hasAnyLinkingDataverses(dataverse)) {            
             for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
                 //if this dataverse or any of its ancestors is linked and contains dataverses then
                 // the dataverses must be reindexed to get the new paths added
+                //We're sticking with the re-index here so that the dataverses datasets will also 
+                //get their paths updated
                 indexDataverse(dv);
             }
+            
+            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
+                //if this dataverse or any of its ancestors is linked and contains datasets then
+                // the datasets must get the new paths added
+                // changed from a full re-index for efficiency wrt issue 6665
+                updatePathForExistingSolrDocs(dv);
+            }
         }
-       
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -694,29 +698,6 @@ public class IndexServiceBean {
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
-        List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
-        List<String> dataverseSegments = new ArrayList<>();
-        try {
-            dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
-        } catch (Exception ex) {
-            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
-        }
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
-        // Add Paths for linking dataverses
-        for (Dataverse linkingDataverse : dsLinkingService.findLinkingDataverses(dataset.getId())) {
-            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
-            for (String dvPath : linkingDataversePaths) {
-                dataversePaths.add(dvPath);
-            }
-        }
-               
-        //Add paths for my linking dataverses
-        List<String> linkingDataversePaths = findLinkingDataversePaths(dataset.getOwner());
-        for (String dvPath : linkingDataversePaths) {
-            dataversePaths.add(dvPath);
-        }
         
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
@@ -898,6 +879,7 @@ public class IndexServiceBean {
             }
         }
         
+        List<String> dataversePaths = retrieveDatasetPaths(dataset);        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -1416,6 +1398,61 @@ public class IndexServiceBean {
 
     public static String getDEACCESSIONED_STRING() {
         return DEACCESSIONED_STRING;
+    }
+    
+    
+    
+    private void updatePathForExistingSolrDocs(DvObject object) throws SolrServerException, IOException {
+        SolrQuery solrQuery = new SolrQuery();
+
+        solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, object.getId().toString()));
+
+        QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
+
+        if (res.getResults().isEmpty()) {
+            //nothing to update - 
+        } else {
+            SolrDocument doc = res.getResults().get(0);
+            SolrInputDocument tmp = new SolrInputDocument();
+
+            for (String fieldName : doc.getFieldNames()) {
+                tmp.addField(fieldName, doc.getFieldValue(fieldName));
+            }
+            Dataset ds = datasetService.find(object.getId());
+            tmp.removeField(SearchFields.SUBTREE);
+            tmp.addField(SearchFields.SUBTREE, retrieveDatasetPaths(ds));
+            UpdateResponse addResponse = solrClientService.getSolrClient().add(tmp);
+            UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+        }
+
+    }
+    
+    
+    private List<String> retrieveDatasetPaths(Dataset dataset) {
+        List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
+        List<String> dataverseSegments = new ArrayList<>();
+        try {
+            dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
+        } catch (Exception ex) {
+            logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
+        }
+        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        // Add Paths for linking dataverses
+        for (Dataverse linkingDataverse : dsLinkingService.findLinkingDataverses(dataset.getId())) {
+            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
+            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
+            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
+            for (String dvPath : linkingDataversePaths) {
+                dataversePaths.add(dvPath);
+            }
+        }
+
+        //Add paths for my linking dataverses
+        List<String> linkingDataversePaths = findLinkingDataversePaths(dataset.getOwner());
+        for (String dvPath : linkingDataversePaths) {
+            dataversePaths.add(dvPath);
+        }
+        return dataversePaths;
     }
 
     public String delete(Dataverse doomed) {
