@@ -1,0 +1,1 @@
+Note for integrators - the role alias has changed, so if anything was hard-coded to "editor" instead of "contributor" it'll need to be updated. 
