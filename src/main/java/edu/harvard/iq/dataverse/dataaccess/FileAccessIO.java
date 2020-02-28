@@ -587,7 +587,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         
             baseName = stripDriverId(this.getDataFile().getStorageIdentifier());
 
-            datasetDirectoryPath = this.getDataFile().getOwner().getFileSystemDirectory();
+            datasetDirectoryPath = Paths.get(getDatasetDirectory());
         }
 
         if (datasetDirectoryPath == null) {

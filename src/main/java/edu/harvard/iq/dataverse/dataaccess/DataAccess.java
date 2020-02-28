@@ -42,8 +42,8 @@ public class DataAccess {
 
     };
 
-
-    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    //Default is only for tests
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id", "file");
 
     // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
@@ -62,7 +62,7 @@ public class DataAccess {
         }
         String storageIdentifier = dvObject.getStorageIdentifier();
         int separatorIndex = storageIdentifier.indexOf("://");
-    	String storageDriverId = "file"; //default
+    	String storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER; //default
         if(separatorIndex>0) {
         	storageDriverId = storageIdentifier.substring(0,separatorIndex);
         }
@@ -141,6 +141,7 @@ public class DataAccess {
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
+                
         return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getEffectiveStorageDriverId());
     }
 
@@ -150,13 +151,22 @@ public class DataAccess {
                 || storageTag.isEmpty()) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
+        
+        /* Prior versions sometimes called createNewStorageIO(object, "placeholder") with an existing object to get a ~clone for use in storing/reading Aux files
+         * Since PR #6488 for multi-store - this can return a clone using a different store than the original (e.g. if the default store changes) which causes errors
+         * This if will catch any cases where that's attempted.
+         */
+        // Tests send objects with no storageIdentifier set
+        if((dvObject.getStorageIdentifier()!=null) && dvObject.getStorageIdentifier().contains("://")) {
+        	throw new IOException("Attempt to create new StorageIO for already stored object: " + dvObject.getStorageIdentifier());
+        }
 
         StorageIO<T> storageIO = null;
         
         dvObject.setStorageIdentifier(storageTag);
 
         if (StringUtils.isEmpty(storageDriverId)) {
-        	storageDriverId = "file";
+        	storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER;
         }
         String storageType = getDriverType(storageDriverId);
         switch(storageType) {
