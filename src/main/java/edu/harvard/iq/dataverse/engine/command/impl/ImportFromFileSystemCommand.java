@@ -71,6 +71,16 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             }
             File directory = new File(System.getProperty("dataverse.files.directory")
                     + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier());
+            // TODO: 
+            // The above goes directly to the filesystem directory configured by the 
+            // old "dataverse.files.directory" JVM option (otherwise used for temp
+            // files only, after the Multistore implementation (#6488). 
+            // We probably want package files to be able to use specific stores instead.
+            // More importantly perhaps, the approach above does not take into account
+            // if the dataset may have an AlternativePersistentIdentifier, that may be 
+            // designated isStorageLocationDesignator() - i.e., if a different identifer
+            // needs to be used to name the storage directory, instead of the main/current
+            // persistent identifier above. 
             if (!isValidDirectory(directory)) {
                 String error = "Dataset directory is invalid. " + directory;
                 logger.info(error);
@@ -86,6 +96,8 @@ public class ImportFromFileSystemCommand extends AbstractCommand<JsonObject> {
             File uploadDirectory = new File(System.getProperty("dataverse.files.directory")
                     + File.separator + dataset.getAuthority() + File.separator + dataset.getIdentifier()
                     + File.separator + uploadFolder);
+            // TODO: 
+            // see the comment above. 
             if (!isValidDirectory(uploadDirectory)) {
                 String error = "Upload folder is not a valid directory.";
                 logger.info(error);
