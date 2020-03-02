@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.UserUtil;
 import edu.harvard.iq.dataverse.persistence.config.LocaleConverter;
 import edu.harvard.iq.dataverse.persistence.config.ValidateEmail;
+import edu.harvard.iq.dataverse.persistence.consent.AcceptedConsent;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
@@ -26,6 +27,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -110,6 +112,9 @@ public class AuthenticatedUser implements User, Serializable {
     @Column(nullable = false)
     @Convert(converter = LocaleConverter.class)
     private Locale notificationsLanguage = Locale.ENGLISH;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<AcceptedConsent> acceptedConsents = new ArrayList<>();
 
     private boolean superuser;
 
@@ -278,6 +283,14 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setNotificationsLanguage(Locale notificationsLanguage) {
         this.notificationsLanguage = notificationsLanguage;
+    }
+
+    /**
+     * Consents that were accepted by user.
+     * This is history table so no element should be removed from this list.
+     */
+    public List<AcceptedConsent> getAcceptedConsents() {
+        return acceptedConsents;
     }
 
     @Override
