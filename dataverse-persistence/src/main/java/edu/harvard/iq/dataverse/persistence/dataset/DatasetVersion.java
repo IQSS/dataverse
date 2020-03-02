@@ -424,7 +424,7 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isReleased() {
-        return versionState.equals(VersionState.RELEASED);
+        return VersionState.RELEASED.equals(versionState);
     }
 
     public boolean isPublished() {
@@ -432,23 +432,23 @@ public class DatasetVersion implements Serializable {
     }
 
     public boolean isDraft() {
-        return versionState.equals(VersionState.DRAFT);
+        return VersionState.DRAFT.equals(versionState);
     }
 
     public boolean isWorkingCopy() {
-        return versionState.equals(VersionState.DRAFT);
+        return VersionState.DRAFT.equals(versionState);
     }
 
     public boolean isArchived() {
-        return versionState.equals(VersionState.ARCHIVED);
+        return VersionState.ARCHIVED.equals(versionState);
     }
 
     public boolean isDeaccessioned() {
-        return versionState.equals(VersionState.DEACCESSIONED);
+        return VersionState.DEACCESSIONED.equals(versionState);
     }
 
     public boolean isRetiredCopy() {
-        return (versionState.equals(VersionState.ARCHIVED) || versionState.equals(VersionState.DEACCESSIONED));
+        return (VersionState.ARCHIVED.equals(versionState) || VersionState.DEACCESSIONED.equals(versionState));
     }
 
     public boolean isMinorUpdate() {

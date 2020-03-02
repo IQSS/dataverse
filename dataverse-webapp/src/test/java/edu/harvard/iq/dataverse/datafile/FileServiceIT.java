@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -27,14 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static edu.harvard.iq.dataverse.datafile.DatasetIntegrationTestsHelper.DRAFT_DATASET_WITH_FILES_ID;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -42,7 +40,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
 public class FileServiceIT extends WebappArquillianDeployment {
-    private static final long DRAFT_DATASET_WITH_FILES_ID = 52;
 
     @EJB
     private FileService fileService;
@@ -222,33 +219,7 @@ public class FileServiceIT extends WebappArquillianDeployment {
     }
 
     private void publishDataset(Long datasetId) {
-        Timestamp currentTimestamp = Timestamp.from(Instant.now());
-        Dataset dataset = datasetDao.find(datasetId);
-        dataset.setPublicationDate(currentTimestamp);
-        dataset.setModificationTime(currentTimestamp);
-        dataset.setReleaseUser(authenticationServiceBean.getAdminUser());
-
-        DatasetVersion version = dataset.getLatestVersion();
-        version.setVersion(13L);
-        version.setVersionNumber(1L);
-        version.setMinorVersionNumber(0L);
-        version.setVersionState(VersionState.RELEASED);
-        version.setLastUpdateTime(currentTimestamp);
-        version.setReleaseTime(currentTimestamp);
-
-        Dataverse owner = dataset.getOwner();
-        owner.setPublicationDate(currentTimestamp);
-        owner.setModificationTime(currentTimestamp);
-
-        for (DataFile dataFile : dataset.getFiles()) {
-            dataFile.setPublicationDate(currentTimestamp);
-            // Following line is required because, when the fileMetadata
-            // are not included in persistence context, then on deletion
-            // JPA provider tries to delete entities in wrong order, and
-            // that causes sql error (more precisely: it starts removing
-            // from FileTermsOfUse entities instead of FileMetadata).
-            dataFile.getFileMetadata();
-        }
+        DatasetIntegrationTestsHelper.publishDataset(datasetDao.find(datasetId), authenticationServiceBean.getAdminUser());
     }
 
     private List<FileMetadata> extractFileListMetadata(Dataset dataset) {
