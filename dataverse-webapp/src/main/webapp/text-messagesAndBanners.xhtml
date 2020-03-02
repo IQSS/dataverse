@@ -7,7 +7,7 @@
     <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
     <c:set var="messages" value="#{MessagesAndBannersFragment.textMessages(dataverse.id)}"/>
     <c:set var="banners" value="#{MessagesAndBannersFragment.banners(dataverse.id)}"/>
-    <h:form>
+    <h:form class="top-messages">
         <div class="alert alert-info p-grid" jsf:rendered="#{messages.size() > 0}">
             <ui:repeat value="#{messages}" var="message">
                 <div class="p-col" style="text-align: center;">

@@ -14,40 +14,51 @@
 
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
 
-    <div id="dataverse-header-block">
-        <!-- Navbar Panel -->
-        <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
-                        <span class="sr-only">#{bundle.toggleNavigation}</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="/">
-                        <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
-                            <span class="navbar-brand" tabindex="1"><i id="icon-dataverse" class="icon-dataverse"></i> #{bundle.dataverse}</span>
-                        </ui:fragment>
-                        <h:graphicImage rendered="#{!empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
-                                        url="#{settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
-                                        styleClass="navbar-brand custom-logo"/>
-                    </a>
-                </div>
-                <div id="cookie-banner" jsf:rendered="#{empty cookie['ConsentCookie']}">
-                    <h:form>
-                        #{bundle['header.cookie.consent.text']}
-                        <h:outputLink value="/privacy-policy.xhtml">
-                            <h:outputText value="#{bundle['header.cookie.consent.privacy.policy.link']}"/>
-                        </h:outputLink>.
-                        <p:commandButton id="hide-cookie-banner"
-                                         value="#{bundle['header.cookie.consent.button']}"
-                                         action="#{cookieConsent.addCookie()}"
-                                         oncomplete="document.getElementById('cookie-banner').style.display='none'"/>
-                    </h:form>
-                </div>
-                <div class="collapse navbar-collapse" id="topNavBar">
-                    <ul class="nav navbar-nav navbar-right">
+    <!-- Navbar Panel -->
+    <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
+        <div id="navbar-underline"></div>
+        <div id="cookie-banner" jsf:rendered="#{empty cookie['ConsentCookie']}">
+            <h:form class="container">
+                #{bundle['header.cookie.consent.text']}
+                <h:outputLink value="/privacy-policy.xhtml">
+                    <h:outputText value="#{bundle['header.cookie.consent.privacy.policy.link']}"/>
+                </h:outputLink>.
+                <p:commandButton id="hide-cookie-banner"
+                                    value="#{bundle['header.cookie.consent.button']}"
+                                    action="#{cookieConsent.addCookie()}"
+                                    oncomplete="document.getElementById('cookie-banner').style.display='none'"/>
+            </h:form>
+        </div>
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
+                    <span class="sr-only">#{bundle.toggleNavigation}</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/" tabindex="-1">
+                    <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
+                        <span class="navbar-brand" tabindex="1">
+                            <i id="site-logo" class="icon-dataverse"></i> 
+                            <div>
+                                <div id="site-title">
+                                    #{bundle['header.repod']}
+                                </div>
+                                <div id="site-subtitle">
+                                    #{bundle['header.repod.subtitle']}
+                                </div>
+                            </div>
+                        </span>
+                    </ui:fragment>
+                    <h:graphicImage rendered="#{!empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
+                                    url="#{settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
+                                    styleClass="navbar-brand custom-logo"/>
+                </a>
+            </div>
+            <div class="collapse navbar-collapse" id="topNavBar">
+                <div class="pull-right">
+                    <ul class="nav navbar-nav">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul id="navbarsearch-modal" class="dropdown-menu" style="padding:12px;min-width:350px;">
@@ -65,27 +76,27 @@
                                 </form>
                             </ul>
                         </li>
-
+    
                         <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarAboutUrl')}">
                             <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarAboutUrl')}" target="_blank">
                                 <h:outputText value="#{bundle['header.about']}"/>
                             </h:outputLink>
                         </li>
-
+    
                         <li>
                             <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user"
-                                          target="_blank">
+                                            target="_blank">
                                 <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
                         </li>
-
+    
                         <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
                             <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarSupportUrl')}"
-                                          target="_blank">
+                                            target="_blank">
                                 <h:outputText value="#{bundle['header.support']}"/>
                             </h:outputLink>
                         </li>
-
+    
                         <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
                             <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
                                 <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
@@ -97,22 +108,22 @@
                                 </p:commandLink>
                             </o:form>
                         </ui:fragment>
-
+    
                         <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">
-                                <img alt="Current language flag" src="#{resource['images/flags/'
+                                <img alt="Current language flag" class="header-flag" src="#{resource['images/flags/'
                                     .concat(dataverseSession.getLocale().toLanguageTag()).concat('.svg')]}" height="20px" width="20px" />
-                                #{dataverseSession.localeTitle}<b class="caret"></b>
+                                #{dataverseSession.localeTitle} <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
                                 <h:form class="form-inline">
                                     <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
                                         <li class="#{dataverseSession.localeTitle == language.value ? 'active' : ''}">
                                             <h:commandLink rendered="#{language.value ne dataverseSession.localeTitle}"
-                                                           value="#{language.value}"
-                                                           actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}"
-                                                           action="submit()"
-                                                           style="padding: 3px 20px;
+                                                            value="#{language.value}"
+                                                            actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}"
+                                                            action="submit()"
+                                                            style="padding: 3px 20px;
                                                                     clear: both;
                                                                     font-weight: 400;
                                                                     line-height: 1.42857143;
@@ -127,11 +138,11 @@
                                 </h:form>
                             </ul>
                         </li>
-
+    
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
-                                              value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
+                                                value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}">
                                     #{bundle['header.signUp']}
                                 </h:outputLink>
                             </li>
@@ -141,7 +152,7 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
-
+    
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
@@ -150,7 +161,7 @@
                                     </ui:fragment>
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                  value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
+                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li tabindex="-1">
@@ -164,7 +175,7 @@
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
                                             <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                          value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
+                                                            value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
                                         </h:outputLink>
                                     </li>
                                     <ui:remove>
@@ -207,7 +218,10 @@
                     </ul>
                 </div>
             </div>
-        </nav>
+        </div>
+    </nav>
+
+    <div id="dataverse-header-block">
         <ui:include src="text-messagesAndBanners.xhtml">
 
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>

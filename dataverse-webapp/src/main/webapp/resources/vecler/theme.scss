@@ -29,7 +29,8 @@ $search-result-desc-color: #f2f8fa;
 $table-row-hover: #e6eff2;
 $table-row-highlight: #fff5e0;
 $focus-color: #de8800;
-$primefaces_main: "img/primefaces-main-repod.png";
+$main-logo: "img/logo-repod.svg";
+$primefaces-main: "img/primefaces-main-repod.png";
 $dataverse-icon: "img/dataverse-icon-repod.svg";
 $ajax_spinner_filter: saturate(2);
 
@@ -44,7 +45,8 @@ $search-result-desc-color: #fff4f4;
 $table-row-hover: #ffdddd;
 $table-row-highlight: #fff5e0;
 $focus-color: #de8800;
-$primefaces_main: "img/primefaces-main-mxrdr.png";
+$main-logo: "img/logo-mxrdr.svg";
+$primefaces-main: "img/primefaces-main-mxrdr.png";
 $dataverse-icon: "img/dataverse-icon-mxrdr.svg";
 $ajax_spinner_filter: hue-rotate(140deg) saturate(2);
 */
@@ -60,7 +62,8 @@ $search-result-desc-color: #fff5ea;
 $table-row-hover: #f7e8d8;
 $table-row-highlight: #ffd7af;
 $focus-color: #de8800;
-$primefaces_main: "img/primefaces-main-rds.png";
+$main-logo: "img/logo-rds.svg";
+$primefaces-main: "img/primefaces-main-rds.png";
 $dataverse-icon: "img/dataverse-icon-rds.svg";
 $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 */
@@ -228,7 +231,7 @@ body {
 		color: $main-text-color;
 	
 		.ui-icon {
-			background-image: url($primefaces_main);
+			background-image: url($primefaces-main);
 		}
 	}
 
@@ -1141,6 +1144,160 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	color: #fff;
 }
 
+/* Top navbar */
+
+$navbar-height: 6.8em;
+
+#navbarFixed {
+	position: sticky;
+	background: #fff;
+	box-shadow: none;
+	border-top: 4px solid $icon-color;
+	border-bottom: none;
+
+	#cookie-banner {
+		padding: 6px 0 10px 0;
+		background: $icon-color;
+		color: #fff;
+		text-align: center;
+
+		form {
+			margin: 0 auto;
+
+			button {
+				margin-left: 15px;
+				background: $icon-color;
+				border-color: #fff;
+				color: #fff;
+				text-shadow: none;
+
+				&:hover {
+					background: #fff;
+					color: $icon-color;
+				}
+			}
+		}
+	}
+
+	.navbar-brand {
+		position: relative;
+		height: $navbar-height;
+		margin-left: -0.333em;
+		padding: 0.333em 0.333em 0.333em 0;
+		display: table;
+
+		font-size: 1em;
+
+		#site-logo {
+			top: 0.188em;
+			left: 0.35em;
+			display: inline-block;
+			height: 1em;
+
+			font-size: 5.333em;
+			background: url($main-logo);
+			background-size: contain;
+			background-repeat: no-repeat;
+			background-position: center center;
+	
+			&.icon-dataverse {	
+				&::before {
+					background: none;
+				}
+			}
+
+			+ div {
+				padding-left: 6.267em;
+				display: table-cell;
+				vertical-align: middle;
+			}
+		}
+
+		#site-title {
+			font-size: 1.2em;
+			font-weight: bold;
+			color: $icon-color;
+		}
+
+		#site-subtitle {
+			margin-top: 0.2em;
+			font-size: 0.8em;
+			line-height: 1.2em;
+			color: $main-text-color;
+		}
+	}
+
+	#navbar-underline {
+		position: absolute;
+		left: 8px;
+		right: 8px;
+		height: 100%;
+		border-bottom: 1px solid $gray-border-color;
+		z-index: -1;
+	}
+}
+
+.navbar-default #topNavBar .navbar-nav {
+	> li,  > form {
+		a {
+			color: $main-text-color;
+			border-radius: $border-radius;
+
+			.caret {
+				color: $icon-color;
+			}
+		}
+	}
+
+	> form {
+		position: relative;
+		bottom: 1px;
+	}
+
+	.header-flag {
+		position: relative;
+		bottom: 2px;
+		margin-right: 3px;
+	}
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	#navbarFixed .navbar-brand {
+		margin-left: 0.666em;
+	}
+	.navbar-default #topNavBar .pull-right {
+		width: 100%;
+	}
+}
+@media screen and (min-width: $screen-sm-min) {
+	.navbar-default #topNavBar .navbar-nav {
+		display: table-cell;
+		vertical-align: middle;
+		float: none;
+		height: $navbar-height;
+
+	}
+}
+
+.navbar-default .navbar-toggle {
+	margin: 1.8em;
+
+	.icon-bar {
+		width: 2em;
+		height: 0.4em;
+		border-radius: 0.6em;
+		background-color: $icon-color;
+	}
+}
+
+#dataverse-header-block {
+	padding-top: 0;
+}
+
+.top-messages {
+	margin: 8px;
+}
+
 /* Main page */
 
 #dataverseForm {
@@ -1152,7 +1309,6 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	margin-left: 15px;
 	width: 100%;
 	padding-top: 15px;
-	text-align: justify;
 }
 
 #searchResults {
@@ -1779,7 +1935,7 @@ div.filesTable {
 	}
 
 	.ui-icon {
-		background-image: url($primefaces_main);
+		background-image: url($primefaces-main);
 	}
 
 	.ui-state-default, a.btn {
