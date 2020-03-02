@@ -1409,22 +1409,35 @@ public class IndexServiceBean {
 
         QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
 
-        if (res.getResults().isEmpty()) {
-            //nothing to update - 
-        } else {
+        if (!res.getResults().isEmpty()) {
             SolrDocument doc = res.getResults().get(0);
-            SolrInputDocument tmp = new SolrInputDocument();
+            SolrInputDocument sid = new SolrInputDocument();
 
             for (String fieldName : doc.getFieldNames()) {
-                tmp.addField(fieldName, doc.getFieldValue(fieldName));
+                sid.addField(fieldName, doc.getFieldValue(fieldName));
             }
             Dataset ds = datasetService.find(object.getId());
-            tmp.removeField(SearchFields.SUBTREE);
-            tmp.addField(SearchFields.SUBTREE, retrieveDatasetPaths(ds));
-            UpdateResponse addResponse = solrClientService.getSolrClient().add(tmp);
+            sid.removeField(SearchFields.SUBTREE);
+            List<String> paths = retrieveDatasetPaths(ds);
+            sid.addField(SearchFields.SUBTREE, paths);
+            UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
+            for (DataFile df : ds.getFiles()) {
+                solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
+                res = solrClientService.getSolrClient().query(solrQuery);
+                if (!res.getResults().isEmpty()) {
+                    doc = res.getResults().get(0);
+                    sid = new SolrInputDocument();
+                    for (String fieldName : doc.getFieldNames()) {
+                        sid.addField(fieldName, doc.getFieldValue(fieldName));
+                    }
+                    sid.removeField(SearchFields.SUBTREE);
+                    sid.addField(SearchFields.SUBTREE, paths);
+                    addResponse = solrClientService.getSolrClient().add(sid);
+                    commitResponse = solrClientService.getSolrClient().commit();
+                }
+            }
         }
-
     }
     
     
