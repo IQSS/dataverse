@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.util.json;
 
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +18,14 @@ import java.util.List;
 public class CompoundVocabularyException extends JsonParseException {
     private String message;
     private List<ControlledVocabularyException> exList = new ArrayList<>();
-    private List<DatasetFieldCompoundValue> validValues;
+    private List<DatasetField> validValues;
 
 
     public CompoundVocabularyException(String message) {
         super(message);
     }
 
-    public CompoundVocabularyException(String message, List<ControlledVocabularyException> cause, List<DatasetFieldCompoundValue> vals) {
+    public CompoundVocabularyException(String message, List<ControlledVocabularyException> cause, List<DatasetField> vals) {
         super(message);
         exList = cause;
         this.message = message;
@@ -44,7 +44,7 @@ public class CompoundVocabularyException extends JsonParseException {
         return message;
     }
 
-    public List<DatasetFieldCompoundValue> getValidValues() {
+    public List<DatasetField> getValidValues() {
         return validValues;
     }
 }

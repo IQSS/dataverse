@@ -7,40 +7,39 @@
     xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <!-- input text start -->
-    <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/>
+    <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
 
-    <p:inputText value="#{dsfv.valueForEdit}" id="inputText" 
-                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton  ? 'datasetfield-title' : ''}"
-                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
-                             and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
-                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL'
+    <p:inputText value="#{datasetField.value}" id="inputText"
+                 styleClass="form-control #{datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton  ? 'datasetfield-title' : ''}"
+                 rendered="#{!datasetField.datasetFieldType.controlledVocabulary
+                             and (datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or datasetField.datasetFieldType.fieldType == 'INT'
+                             or datasetField.datasetFieldType.fieldType == 'FLOAT'
+                             or datasetField.datasetFieldType.fieldType == 'URL'
+                             or datasetField.datasetFieldType.fieldType == 'DATE'
+                             or datasetField.datasetFieldType.fieldType == 'EMAIL'
                              )}"/>
 
-    <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" 
+    <p:watermark for="inputText" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
+
+    <p:inputTextarea value="#{datasetField.value}" id="description"
                      rows="5" cols="60" styleClass="form-control"
-                     rendered="#{dsfv.datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
+                     rendered="#{datasetField.datasetFieldType.fieldType == 'TEXTBOX'}" />
 
-    <p:watermark for="description" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{dsfvIndex eq 0 and !empty dsfv.datasetField.validationMessage}">
-        <span class="ui-message-error-detail">#{dsfv.datasetField.validationMessage}</span>
-    </div>
+    <p:watermark for="description" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
-    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsfv.validationMessage}">
-        <span class="ui-message-error-detail">#{dsfv.validationMessage}</span>
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty datasetField.validationMessage}">
+        <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
     </div>
 
     <!-- This button / script is for replication data for the title field and is client side only -->
-    <ui:fragment rendered="#{dsfv.datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton }">
-        <input type="button" id="replicationDataButton" 
+    <ui:fragment rendered="#{datasetField.datasetFieldType.name == 'title' and showAddReplicationForTitleButton }">
+        <input type="button" id="replicationDataButton"
                class="btn btn-default" value="#{bundle['dataset.AddReplication']}"
                onclick="replicationFor();return false;"/>
+
 
         <script type="text/javascript">
             function replicationFor() {

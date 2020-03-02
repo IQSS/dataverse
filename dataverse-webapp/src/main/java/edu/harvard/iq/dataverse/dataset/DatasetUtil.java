@@ -8,6 +8,9 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
@@ -28,8 +31,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 public class DatasetUtil {
@@ -391,24 +396,23 @@ public class DatasetUtil {
         return false;
     }
 
-    public static List<DatasetField> getDatasetSummaryFields(DatasetVersion datasetVersion, List<String> customFieldList) {
+    public static List<DatasetFieldsByType> getDatasetSummaryFields(DatasetVersion datasetVersion, List<String> customFieldList) {
 
-        List<DatasetField> datasetFields = new ArrayList<>();
+        Map<String, DatasetFieldsByType> allFieldsByType = DatasetFieldUtil.groupByType(datasetVersion.getFlatDatasetFields())
+                .stream()
+                .collect(HashMap::new,
+                        (map, fieldsByType) -> map.put(fieldsByType.getDatasetFieldType().getName(), fieldsByType),
+                        (map1, map2) -> map1.putAll(map2));
 
-        Map<String, DatasetField> DatasetFieldsSet = new HashMap<>();
-
-        for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
-            DatasetFieldsSet.put(dsf.getDatasetFieldType().getName(), dsf);
-        }
-
-        for (String cfl : customFieldList) {
-            DatasetField df = DatasetFieldsSet.get(cfl);
-            if (df != null) {
-                datasetFields.add(df);
+        List<DatasetFieldsByType> datasetFieldsByTypes = new ArrayList<>();
+        
+        for (String summaryField: customFieldList) {
+            if (allFieldsByType.containsKey(summaryField)) {
+                datasetFieldsByTypes.add(allFieldsByType.get(summaryField));
             }
         }
 
-        return datasetFields;
+        return datasetFieldsByTypes;
     }
 
 }

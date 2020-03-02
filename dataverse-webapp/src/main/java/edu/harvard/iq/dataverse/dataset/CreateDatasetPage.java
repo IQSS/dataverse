@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
@@ -24,12 +25,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
@@ -79,7 +80,7 @@ public class CreateDatasetPage implements Serializable {
     private List<Template> dataverseTemplates = new ArrayList<>();
     private Template selectedTemplate;
 
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocksForEdit = new HashMap<>();
+    private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocksForEdit = new HashMap<>();
 
 
     public String init() {
@@ -139,7 +140,7 @@ public class CreateDatasetPage implements Serializable {
         return selectedTemplate;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocksForEdit() {
+    public Map<MetadataBlock, List<DatasetFieldsByType>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
     }
 
@@ -151,6 +152,7 @@ public class CreateDatasetPage implements Serializable {
     }
 
     public String save() {
+        workingVersion.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(metadataBlocksForEdit));
 
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -196,22 +198,17 @@ public class CreateDatasetPage implements Serializable {
     private void resetDatasetFields() {
         List<DatasetField> datasetFields = new ArrayList<>();
 
-        datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
-
         if (selectedTemplate != null) {
-            datasetFields = DatasetFieldUtil.mergeDatasetFields(
-                                datasetFields,
-                                DatasetFieldUtil.copyDatasetFields(selectedTemplate.getDatasetFields()));
-
-            datasetFieldsInitializer.updateDatasetFieldIncludeFlag(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
+            datasetFields = DatasetFieldUtil.copyDatasetFields(selectedTemplate.getDatasetFields());
         }
+
+        datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
 
         if (session.getUser().isAuthenticated()) {
             userDataFieldFiller.fillUserDataInDatasetFields(datasetFields, (AuthenticatedUser) session.getUser());
         }
 
-        workingVersion.setDatasetFields(datasetFields);
-        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(datasetFields);
+        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
     }
 
     private void mapTermsOfUseInFiles(List<DataFile> files) {

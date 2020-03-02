@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 
@@ -132,8 +131,8 @@ public class FeedbackUtil {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
                 String contactName = null;
                 String contactEmail = null;
-                for (DatasetFieldCompoundValue datasetContactValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : datasetContactValue.getChildDatasetFields()) {
+
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
                             contactName = subField.getValue();
                             logger.fine("contactName: " + contactName);
@@ -142,13 +141,12 @@ public class FeedbackUtil {
                             contactEmail = subField.getValue();
                             logger.fine("contactEmail: " + contactEmail);
                         }
+
                     }
-                    if (contactEmail != null) {
-                        DvObjectContact datasetContact = new DvObjectContact(contactName, contactEmail);
-                        datasetContacts.add(datasetContact);
-                    } else {
-                        logger.warning("email missing for contact in dataset " + dataset.getIdentifier());
-                    }
+
+                if (contactEmail != null) {
+                    DvObjectContact datasetContact = new DvObjectContact(contactName, contactEmail);
+                    datasetContacts.add(datasetContact);
                 }
 
             }

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
@@ -8,13 +9,10 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetDistributor;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -39,7 +37,6 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
@@ -56,9 +53,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Deque;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +118,8 @@ public class JsonPrinter {
                 .add("createdTime", authenticatedUser.getCreatedTime())
                 .add("lastLoginTime", authenticatedUser.getLastLoginTime())
                 .add("lastApiUseTime", authenticatedUser.getLastApiUseTime())
-                .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
+                .add("authenticationProviderId",
+                     authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
 
     public static JsonObjectBuilder json(RoleAssignment ra) {
@@ -330,7 +326,10 @@ public class JsonPrinter {
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
                 .add("releaseTime", format(dsv.getReleaseTime()))
                 .add("createTime", format(dsv.getCreateTime()))
-                .add("license", dsv.getTermsOfUseAndAccess().getLicense() != null ? dsv.getTermsOfUseAndAccess().getLicense().toString() : null)
+                .add("license",
+                     dsv.getTermsOfUseAndAccess().getLicense() != null ?
+                             dsv.getTermsOfUseAndAccess().getLicense().toString() :
+                             null)
                 .add("termsOfUse", getLicenseInfo(dsv))
                 .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
                 .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
@@ -390,7 +389,8 @@ public class JsonPrinter {
     }
 
     private static String getLicenseInfo(DatasetVersion dsv) {
-        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
+        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(
+                TermsOfUseAndAccess.License.CC0)) {
             return "CC0 Waiver";
         }
         return dsv.getTermsOfUseAndAccess().getTermsOfUse();
@@ -471,11 +471,10 @@ public class JsonPrinter {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getLocaleDisplayName());
-        final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-        DatasetFieldWalker.walk(fields, new DatasetFieldsToJson(fieldsArray), excludeEmailFromExport);
+        JsonArrayBuilder parsedFields = new DatasetFieldParser().parseDatasetFields(fields, excludeEmailFromExport);
 
-        blockBld.add("fields", fieldsArray);
+        blockBld.add("fields", parsedFields);
         return blockBld;
     }
 
@@ -493,8 +492,8 @@ public class JsonPrinter {
         if (dfv.isEmpty()) {
             return null;
         } else {
-            JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray));
+            JsonArrayBuilder fieldArray = new DatasetFieldParser().parseDatasetFields(Lists.newArrayList(dfv),
+                                                                                            true);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
         }
@@ -656,70 +655,6 @@ public class JsonPrinter {
         return tabularTags;
     }
 
-    private static class DatasetFieldsToJson implements DatasetFieldWalker.Listener {
-
-        Deque<JsonObjectBuilder> objectStack = new LinkedList<>();
-
-        Deque<JsonArrayBuilder> valueArrStack = new LinkedList<>();
-        JsonObjectBuilder result = null;
-        DatasetFieldsToJson(JsonArrayBuilder result) {
-            valueArrStack.push(result);
-        }
-
-        @Override
-        public void startField(DatasetField f) {
-            objectStack.push(jsonObjectBuilder());
-            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
-            valueArrStack.push(Json.createArrayBuilder());
-
-            DatasetFieldType typ = f.getDatasetFieldType();
-            objectStack.peek().add("typeName", typ.getName());
-            objectStack.peek().add("multiple", typ.isAllowMultiples());
-            objectStack.peek().add("typeClass", typeClassString(typ));
-        }
-
-        @Override
-        public void endField(DatasetField f) {
-            JsonObjectBuilder jsonField = objectStack.pop();
-            JsonArray jsonValues = valueArrStack.pop().build();
-            if (!jsonValues.isEmpty()) {
-                jsonField.add("value",
-                              f.getDatasetFieldType().isAllowMultiples() ? jsonValues
-                                      : jsonValues.get(0));
-                valueArrStack.peek().add(jsonField);
-            }
-        }
-
-        @Override
-        public void primitiveValue(DatasetFieldValue dsfv) {
-            if (dsfv.getValue() != null) {
-                valueArrStack.peek().add(dsfv.getValue());
-            }
-        }
-
-        @Override
-        public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-            valueArrStack.peek().add(cvv.getStrValue());
-        }
-
-        @Override
-        public void startCompoundValue(DatasetFieldCompoundValue dsfcv) {
-            valueArrStack.push(Json.createArrayBuilder());
-        }
-
-        @Override
-        public void endCompoundValue(DatasetFieldCompoundValue dsfcv) {
-            JsonArray jsonValues = valueArrStack.pop().build();
-            if (!jsonValues.isEmpty()) {
-                JsonObjectBuilder jsonField = jsonObjectBuilder();
-                for (JsonObject jobj : jsonValues.getValuesAs(JsonObject.class)) {
-                    jsonField.add(jobj.getString("typeName"), jobj);
-                }
-                valueArrStack.peek().add(jsonField);
-            }
-        }
-
-    }
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
                 .add("id", aRow.getId())

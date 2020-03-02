@@ -8,13 +8,14 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import javax.faces.view.ViewScoped;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -35,7 +36,7 @@ public class DatasetMetadataTab implements Serializable {
 
     private Dataset dataset;
     private boolean isDatasetLocked;
-    private Map<MetadataBlock, List<DatasetField>> metadataBlocks;
+    private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocks;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -69,7 +70,7 @@ public class DatasetMetadataTab implements Serializable {
     /**
      * Metadata blocks meant for view.
      */
-    public Map<MetadataBlock, List<DatasetField>> getMetadataBlocks() {
+    public Map<MetadataBlock, List<DatasetFieldsByType>> getMetadataBlocks() {
         return metadataBlocks;
     }
 
@@ -81,7 +82,7 @@ public class DatasetMetadataTab implements Serializable {
         this.isDatasetLocked = isDatasetLocked;
         
         List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForView(datasetVersion.getDatasetFields());
-        this.metadataBlocks = DatasetFieldUtil.groupByBlock(datasetFields);
+        this.metadataBlocks = DatasetFieldUtil.groupByBlockAndType(datasetFields);
     }
 
     public boolean canUpdateDataset() {

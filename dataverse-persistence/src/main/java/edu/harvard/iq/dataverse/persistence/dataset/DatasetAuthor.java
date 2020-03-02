@@ -6,6 +6,8 @@
 
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Comparator;
 import java.util.regex.Pattern;
 
@@ -90,8 +92,8 @@ public class DatasetAuthor {
     }
 
     public boolean isEmpty() {
-        return ((affiliation == null || affiliation.getValue().trim().equals(""))
-                && (name == null || name.getValue().trim().equals(""))
+        return ((affiliation == null || StringUtils.isBlank(affiliation.getValue()))
+                && (name == null || StringUtils.isBlank(name.getValue()))
         );
     }
 
@@ -116,7 +118,7 @@ public class DatasetAuthor {
 
     public String getIdentifierAsUrl() {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
-            DatasetFieldValueValidator datasetFieldValueValidator = new DatasetFieldValueValidator();
+            DatasetFieldValidator datasetFieldValueValidator = new DatasetFieldValidator();
             switch (idType) {
                 case "ORCID":
                     if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ORCID))) {

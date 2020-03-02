@@ -4,18 +4,15 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.export.ExporterType;
-import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -92,11 +89,10 @@ public class OREMap {
                     }
                 } else {
                     // ToDo: Needs to be recursive (as in JsonPrinter?)
-                    for (DatasetFieldCompoundValue dscv : field.getDatasetFieldCompoundValues()) {
                         // compound values are of different types
                         JsonObjectBuilder child = Json.createObjectBuilder();
 
-                        for (DatasetField dsf : dscv.getChildDatasetFields()) {
+                        for (DatasetField dsf : field.getDatasetFieldsChildren()) {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
                             if (excludeEmail && FieldType.EMAIL.equals(dsft.getFieldType())) {
                                 continue;
@@ -127,7 +123,6 @@ public class OREMap {
                             }
                         }
                         vals.add(child);
-                    }
                 }
                 // Add metadata value to aggregation, suppress array when only one value
                 JsonArray valArray = vals.build();
@@ -377,14 +372,12 @@ public class OREMap {
         for (DatasetField dsf : version.getDatasetFields()) {
             DatasetFieldType dsft = dsf.getDatasetFieldType();
             if (dsft.getName().equals(type)) {
-                for (DatasetFieldCompoundValue dscv : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : dscv.getChildDatasetFields()) {
+                    for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         DatasetFieldType subFieldType = subField.getDatasetFieldType();
                         if (subFieldType.getName().equals(subType)) {
                             return getTermFor(dsft, subFieldType);
                         }
                     }
-                }
             }
         }
         return null;

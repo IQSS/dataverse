@@ -92,36 +92,30 @@ INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber
     VALUES (41, 1, 66, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (44, '2019-09-26 11:43:58.194', 1, 41);
 
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (655, 29, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (656, 8, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (657, 17, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (658, 13, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (659, 20, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (662, 58, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (668, 1, 41, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (669, 57, 41, NULL, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (668, NULL, 41, 1, 0, 'Draft only dataset');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (655, NULL, 41, 29, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (670, 655, NULL, 31, 0, NULL);
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (656, NULL, 41, 8, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (660, 656, NULL, 11, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (663, 656, NULL, 9, 0, 'Some author name');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (665, 656, NULL, 10, 0, 'author affiliation');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (657, NULL, 41, 17, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (664, 657, NULL, 18, 0, 'draft only description');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (658, NULL, 41, 13, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (666, 658, NULL, 14, 0, 'Some contact name');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (661, 658, NULL, 15, 0, 'contact affiliation');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (667, 658, NULL, 16, 0, 'fk2.qtvqkl.contact@mailinator.com');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (659, NULL, 41, 20, 0, NULL);
 INSERT INTO datasetfield_controlledvocabularyvalue (datasetfield_id, controlledvocabularyvalues_id) VALUES (659, 4);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (169, 0, 655);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (170, 0, 656);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (171, 0, 657);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (172, 0, 658);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (660, 11, NULL, 170, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (661, 15, NULL, 172, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (663, 9, NULL, 170, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (664, 18, NULL, 171, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (665, 10, NULL, 170, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (666, 14, NULL, 172, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (667, 16, NULL, 172, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (670, 31, NULL, 169, NULL);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (385, 0, 'Some contact name', 666);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (386, 0, 'draft only description', 664);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (387, 0, 'fk2.qtvqkl.contact@mailinator.com', 667);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (388, 0, 'author affiliation', 665);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (389, 0, 'Some depositor name', 669);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (390, 0, 'contact affiliation', 661);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (391, 0, 'Some author name', 663);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (392, 0, 'Draft only dataset', 668);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (393, 0, '2019-09-26', 662);
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (662, NULL, 41, 58, 0, '2019-09-26');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (669, NULL, 41, 57, 0, 'Some depositor name');
+
 
 --- DV:unreleased -> Draft with files ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
@@ -138,28 +132,25 @@ INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (38, '2019-08-22 08:23:02.738', 2, 36);
 INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datasetversion_id) VALUES (39, '2019-09-27 12:00:43.188', 1, 36);
 
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (564, 8, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (565, 13, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (566, 17, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (570, 20, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (571, 1, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (573, 57, 36, NULL, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (575, 58, 36, NULL, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (571, NULL, 36, 1, 0, 'Draft with files');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (564, NULL, 36, 8, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (568, 564, NULL, 9, 0, 'Some author name');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (565, NULL, 36, 13, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (574, 565, NULL, 14, 0, 'Some contact name');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (569, 565, NULL, 16, 0, 'fk2.mlxk1n.contact@mailinator.com');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (566, NULL, 36, 17, 0, NULL);
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (572, 566, NULL, 18, 0, 'draft with files description');
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (570, NULL, 36, 20, 0, NULL);
 INSERT INTO datasetfield_controlledvocabularyvalue (datasetfield_id, controlledvocabularyvalues_id) VALUES (570, 3);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (142, 0, 564);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (143, 0, 565);
-INSERT INTO datasetfieldcompoundvalue (id, displayorder, parentdatasetfield_id) VALUES (144, 0, 566);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (568, 9, NULL, 142, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (569, 16, NULL, 143, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (572, 18, NULL, 144, NULL);
-INSERT INTO datasetfield (id, datasetfieldtype_id, datasetversion_id, parentdatasetfieldcompoundvalue_id, template_id) VALUES (574, 14, NULL, 143, NULL);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (339, 0, 'Draft with files', 571);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (338, 0, '2019-08-22', 575);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (340, 0, 'draft with files description', 572);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (341, 0, 'Some author name', 568);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (342, 0, 'fk2.mlxk1n.contact@mailinator.com', 569);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (343, 0, 'Some contact name', 574);
-INSERT INTO datasetfieldvalue (id, displayorder, value, datasetfield_id) VALUES (344, 0, 'Some depositor name', 573);
+
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (573, NULL, 36, 57, 0, 'Some depositor name');
+INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (575, NULL, 36, 58, 0, '2019-08-22');
+
+
 
 --- DV:ownmetadatablocks -> Dataset with Versions (last version is draft) ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
@@ -263,9 +254,7 @@ SELECT setval('termsofuse_id_seq', COALESCE((SELECT MAX(id)+1 FROM filetermsofus
 SELECT setval('filemetadata_id_seq', COALESCE((SELECT MAX(id)+1 FROM filemetadata), 1), false);
 SELECT setval('termsofuseandaccess_id_seq', COALESCE((SELECT MAX(id)+1 FROM termsofuseandaccess), 1), false);
 SELECT setval('template_id_seq', COALESCE((SELECT MAX(id)+1 FROM template), 1), false);
-SELECT setval('datasetfieldcompoundvalue_id_seq', COALESCE((SELECT MAX(id)+1 FROM datasetfieldcompoundvalue), 1), false);
 SELECT setval('datasetfield_id_seq', COALESCE((SELECT MAX(id)+1 FROM datasetfield), 1), false);
-SELECT setval('datasetfieldvalue_id_seq', COALESCE((SELECT MAX(id)+1 FROM datasetfieldvalue), 1), false);
 SELECT setval('explicitgroup_id_seq', COALESCE((SELECT MAX(id)+1 FROM explicitgroup), 1), false);
 SELECT setval('guestbook_id_seq', COALESCE((SELECT MAX(id)+1 FROM guestbook), 1), false);
 SELECT setval('customquestion_id_seq', COALESCE((SELECT MAX(id)+1 FROM customquestion), 1), false);

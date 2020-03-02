@@ -7,35 +7,39 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
 
-    <!--@elvariable id="metadataBlocks" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock>"-->
-    <!--@elvariable id="datasetField" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetField>"-->
-    <!--@elvariable id="datasetFieldType" type="java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType>"-->
+    <!--@elvariable id="fieldsByType" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType"-->
 
-    <!-- Primitive datasetFields -->
-    <div class="col-sm-9" jsf:rendered="#{datasetField.datasetFieldType.primitive}">
-        <h:outputText value="#{datasetField.displayValue}" rendered="#{!datasetField.datasetFieldType.allowMultiples}"
-                      escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
-        <ui:repeat value="#{datasetField.values}" var="value" varStatus="loop" rendered="#{datasetField.datasetFieldType.allowMultiples}">
-            <h:outputText value="#{loop.first?'':'; '}#{ value }"
-                          escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
-        </ui:repeat>
-    </div>
-    <!-- Compound datasetFields -->
-    <div class="col-sm-9" jsf:rendered="#{datasetField.datasetFieldType.compound}">
-        <ui:fragment rendered="#{datasetField.datasetFieldType.name == 'datasetContact'}">
+    <div class="col-sm-9">
+        <ui:fragment rendered="#{fieldsByType.datasetFieldType.name == 'datasetContact'}">
             <p class="help-block">
                 <h:outputText value="#{bundle['dataset.contact.tip']}"/>
             </p>
         </ui:fragment>
-        <ui:repeat value="#{datasetField.datasetFieldCompoundValues}" var="compoundValue">
-            <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
-                <h:outputText value="#{datasetField.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                <h:outputText value="#{cvPart.value}"
-                              escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+        
+        <!--@elvariable id="datasetField" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetField"-->
+        <ui:repeat var="datasetField" value="#{fieldsByType.datasetFields}" varStatus="fieldsLoop">
+            <ui:fragment rendered="#{!fieldsLoop.first and fieldsByType.datasetFieldType.compound}">
+                <br/>
+            </ui:fragment>
+            <h:outputText rendered="#{!fieldsLoop.first and !fieldsByType.datasetFieldType.compound}"
+                value="; " />
+            
+            
+            <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
+                <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
+                              escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
             </ui:repeat>
-            <br/>
+            
+            <!--@elvariable id="childField" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetField"-->
+            <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
+                <h:outputText value=" " rendered="#{!childLoop.first}" />
+                <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
+                    <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
+                                escape="#{childField.datasetFieldType.isEscapeOutputText()}"/>
+                </ui:repeat>
+            </ui:repeat>
+            
         </ui:repeat>
     </div>
-
 
 </ui:composition>

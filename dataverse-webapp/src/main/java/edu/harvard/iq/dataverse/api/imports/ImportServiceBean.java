@@ -25,7 +25,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -283,7 +282,7 @@ public class ImportServiceBean {
                 // For migration and harvest, add NA for missing required values
                 for (ConstraintViolation<DatasetField> v : violations) {
                     DatasetField f = v.getRootBean();
-                    f.setSingleValue(DatasetField.NA_VALUE);
+                    f.setFieldValue(DatasetField.NA_VALUE);
                 }
             }
 
@@ -294,8 +293,8 @@ public class ImportServiceBean {
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             Validator validator = factory.getValidator();
             if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
-                    DatasetFieldValue f = v.getRootBean();
+                for (ConstraintViolation<DatasetField> v : invalidViolations) {
+                    DatasetField f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
                     // TODO: Is this scrubbing something we want to continue doing? 
@@ -303,17 +302,17 @@ public class ImportServiceBean {
                         fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
                         converted = true;
                         if (fixed) {
-                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            Set<ConstraintViolation<DatasetField>> scrubbedViolations = validator.validate(f);
                             if (!scrubbedViolations.isEmpty()) {
                                 fixed = false;
                             }
                         }
                     }
                     if (!fixed) {
-                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetFieldType().getDisplayName() + "; "
                                 + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
                         cleanupLog.println(msg);
-                        f.setValue(DatasetField.NA_VALUE);
+                        f.setFieldValue(DatasetField.NA_VALUE);
 
                     }
                 }
@@ -444,7 +443,7 @@ public class ImportServiceBean {
                     // For migration and harvest, add NA for missing required values
                     for (ConstraintViolation<DatasetField> v : violations) {
                         DatasetField f = v.getRootBean();
-                        f.setSingleValue(DatasetField.NA_VALUE);
+                        f.setFieldValue(DatasetField.NA_VALUE);
                     }
                 } else {
                     // when importing a new dataset, the import will fail
@@ -464,8 +463,8 @@ public class ImportServiceBean {
             ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             Validator validator = factory.getValidator();
             if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation<DatasetFieldValue> v : invalidViolations) {
-                    DatasetFieldValue f = v.getRootBean();
+                for (ConstraintViolation<DatasetField> v : invalidViolations) {
+                    DatasetField f = v.getRootBean();
                     boolean fixed = false;
                     boolean converted = false;
                     if (importType.equals(ImportType.HARVEST) &&
@@ -473,7 +472,7 @@ public class ImportServiceBean {
                         fixed = processMigrationValidationError(f, cleanupLog, fileName);
                         converted = true;
                         if (fixed) {
-                            Set<ConstraintViolation<DatasetFieldValue>> scrubbedViolations = validator.validate(f);
+                            Set<ConstraintViolation<DatasetField>> scrubbedViolations = validator.validate(f);
                             if (!scrubbedViolations.isEmpty()) {
                                 fixed = false;
                             }
@@ -481,10 +480,10 @@ public class ImportServiceBean {
                     }
                     if (!fixed) {
                         if (importType.equals(ImportType.HARVEST)) {
-                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetFieldType().getDisplayName() + "; "
                                     + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
                             cleanupLog.println(msg);
-                            f.setValue(DatasetField.NA_VALUE);
+                            f.setFieldValue(DatasetField.NA_VALUE);
 
                         } else {
                             String msg = " Validation error for ";
@@ -542,45 +541,45 @@ public class ImportServiceBean {
         return Json.createObjectBuilder().add("message", status);
     }
 
-    private boolean processMigrationValidationError(DatasetFieldValue f, PrintWriter cleanupLog, String fileName) {
-        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
+    private boolean processMigrationValidationError(DatasetField f, PrintWriter cleanupLog, String fileName) {
+        if (f.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
             //Try to convert it based on the errors we've seen
             String convertedVal = convertInvalidEmail(f.getValue());
             if (!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetFieldType().getDisplayName() + "; "
                         + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + convertedVal + "'";
                 cleanupLog.println(msg);
-                f.setValue(convertedVal);
+                f.setFieldValue(convertedVal);
                 return true;
             }
             //if conversion fails set to NA
             String msg = "Data modified - File: " + fileName + "; Field: Dataset Contact Email; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
             cleanupLog.println(msg);
-            f.setValue(DatasetField.NA_VALUE);
+            f.setFieldValue(DatasetField.NA_VALUE);
             return true;
         }
-        if (f.getDatasetField().getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
+        if (f.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerURL)) {
             if (f.getValue().equals("PRODUCER URL")) {
                 String msg = "Data modified - File: " + fileName + "; Field: Producer URL; " + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
                 cleanupLog.println(msg);
-                f.setValue(DatasetField.NA_VALUE);
+                f.setFieldValue(DatasetField.NA_VALUE);
                 return true;
             }
         }
-        if (f.getDatasetField().getDatasetFieldType().getFieldType().equals(FieldType.DATE)) {
+        if (f.getDatasetFieldType().getFieldType().equals(FieldType.DATE)) {
             if (f.getValue().toUpperCase().equals("YYYY-MM-DD")) {
-                String msg = "Data modified - File: " + fileName + "; Field:" + f.getDatasetField().getDatasetFieldType().getDisplayName() + "; "
+                String msg = "Data modified - File: " + fileName + "; Field:" + f.getDatasetFieldType().getDisplayName() + "; "
                         + "Invalid value: '" + f.getValue() + "'" + " Converted Value: 'NA'";
                 cleanupLog.println(msg);
-                f.setValue(DatasetField.NA_VALUE);
+                f.setFieldValue(DatasetField.NA_VALUE);
                 return true;
             }
             String convertedVal = convertInvalidDateString(f.getValue());
             if (!(convertedVal == null)) {
-                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetField().getDatasetFieldType().getDisplayName() + ""
+                String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetFieldType().getDisplayName() + ""
                         + " Converted Value:" + convertedVal + "; Invalid value:  '" + f.getValue() + "'";
                 cleanupLog.println(msg);
-                f.setValue(convertedVal);
+                f.setFieldValue(convertedVal);
                 return true;
             }
         }

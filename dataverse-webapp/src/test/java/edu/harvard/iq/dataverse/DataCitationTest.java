@@ -4,9 +4,7 @@ import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -20,10 +18,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +39,10 @@ public class DataCitationTest {
      */
     @Test
     public void testProperties() throws ParseException {
+        //given
         DataCitation dataCitation = new DataCitation(createATestDatasetVersion("Dataset Title", true));
+
+        //when & then
         assertEquals("First Last", dataCitation.getAuthorsString());
         assertNull(dataCitation.getFileTitle());
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
@@ -62,8 +60,13 @@ public class DataCitationTest {
      */
     @Test
     public void testGetDataCiteMetadata() throws ParseException {
+        //given
         DataCitation dataCitation = new DataCitation(createATestDatasetVersion("Dataset Title", true));
+
+        //when
         Map<String, String> properties = dataCitation.getDataCiteMetadata();
+
+        //then
         assertEquals(4, properties.size());
         assertEquals(
                 "datacite.creator, datacite.publisher, datacite.title, datacite.publicationyear",
@@ -83,12 +86,16 @@ public class DataCitationTest {
      */
     @Test
     public void testWriteAsBibtexCitation() throws ParseException, IOException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
-
         DataCitation dataCitation = new DataCitation(datasetVersion);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        //when
         dataCitation.writeAsBibtexCitation(os);
         String out = new String(os.toByteArray(), StandardCharsets.UTF_8);
+
+        //then
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
                         + "author = {First Last},\r\n"
@@ -110,8 +117,11 @@ public class DataCitationTest {
      */
     @Test
     public void testToBibtexString() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
                         + "author = {First Last},\r\n"
@@ -134,8 +144,11 @@ public class DataCitationTest {
      */
     @Test
     public void testToBibtexString_withoutAuthor() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
                         + "author = {},\r\n"
@@ -158,9 +171,12 @@ public class DataCitationTest {
      */
     @Test
     public void testToBibtexString_withoutTitle() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
                         + "author = {First Last},\r\n"
@@ -183,9 +199,12 @@ public class DataCitationTest {
      */
     @Test
     public void testToBibtexString_withoutTitleAndAuthor() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "@data{LK0D1H_1955,\r\n"
                         + "author = {},\r\n"
@@ -202,8 +221,11 @@ public class DataCitationTest {
 
     @Test
     public void testToRISString_withTitleAndAuthor() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "Provider: LibraScholar\r\n" +
                         "Content: text/plain; charset=\"utf-8\"\r\n" +
@@ -223,9 +245,12 @@ public class DataCitationTest {
 
     @Test
     public void testToRISString_withoutTitleAndAuthor() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "Provider: LibraScholar\r\n" +
                         "Content: text/plain; charset=\"utf-8\"\r\n" +
@@ -244,8 +269,11 @@ public class DataCitationTest {
 
     @Test
     public void testToEndNoteString_withTitleAndAuthor() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "<?xml version='1.0' encoding='UTF-8'?>" +
                         "<xml>" +
@@ -271,9 +299,12 @@ public class DataCitationTest {
 
     @Test
     public void testToEndNoteString_withoutTitleAndAuthor() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "<?xml version='1.0' encoding='UTF-8'?>" +
                         "<xml>" +
@@ -297,8 +328,11 @@ public class DataCitationTest {
 
     @Test
     public void testToString_withTitleAndAuthor() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "First Last, 1955, \"Dataset Title\", https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
                 dataCitation.toString()
@@ -307,9 +341,12 @@ public class DataCitationTest {
 
     @Test
     public void testToString_withoutTitleAndAuthor() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "1955, https://doi.org/10.5072/FK2/LK0D1H, LibraScholar, V1",
                 dataCitation.toString()
@@ -318,8 +355,11 @@ public class DataCitationTest {
 
     @Test
     public void testToHtmlString_withTitleAndAuthor() throws ParseException {
+        //given
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "First Last, 1955, \"Dataset Title\"," +
                         " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
@@ -330,9 +370,12 @@ public class DataCitationTest {
 
     @Test
     public void testToHtmlString_withoutTitleAndAuthor() throws ParseException {
+        //given
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
+
+        //when & then
         assertEquals(
                 "1955," +
                         " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>," +
@@ -343,7 +386,10 @@ public class DataCitationTest {
 
     @Test
     public void testTitleWithQuotes() throws ParseException {
+        //given
         DataCitation dataCitation = new DataCitation(createATestDatasetVersion("This Title \"Has Quotes\" In It", true));
+
+        //when & then
         assertEquals("First Last", dataCitation.getAuthorsString());
         assertNull(dataCitation.getFileTitle());
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
@@ -408,14 +454,10 @@ public class DataCitationTest {
     private DatasetField createAuthorField(String value) {
         DatasetField author = new DatasetField();
         author.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.author, FieldType.TEXT, false));
-        List<DatasetFieldCompoundValue> compoundValues = new LinkedList<>();
-        DatasetFieldCompoundValue compoundValue = new DatasetFieldCompoundValue();
-        compoundValue.setParentDatasetField(author);
-        compoundValue.setChildDatasetFields(Arrays.asList(
-                constructPrimitive(DatasetFieldConstant.authorName, value)
-        ));
-        compoundValues.add(compoundValue);
-        author.setDatasetFieldCompoundValues(compoundValues);
+        DatasetField authorName = constructPrimitive(DatasetFieldConstant.authorName, value);
+        authorName.setDatasetFieldParent(author);
+        author.getDatasetFieldsChildren().add(authorName);
+
         return author;
     }
 
@@ -427,9 +469,7 @@ public class DataCitationTest {
         DatasetField field = new DatasetField();
         field.setDatasetFieldType(
                 new DatasetFieldType(fieldName, FieldType.TEXT, false));
-        field.setDatasetFieldValues(
-                Collections.singletonList(
-                        new DatasetFieldValue(field, value)));
+        field.setFieldValue(value);
         return field;
     }
 }

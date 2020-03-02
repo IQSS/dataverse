@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.faces.model.SelectItem;
 import javax.persistence.CascadeType;
@@ -23,6 +22,7 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,14 +115,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
 
     @Transient
-    private boolean requiredDV;
+    private boolean requiredInDataverse;
 
-    public void setRequiredDV(boolean requiredDV) {
-        this.requiredDV = requiredDV;
+    public void setRequiredInDataverse(boolean requiredInDataverse) {
+        this.requiredInDataverse = requiredInDataverse;
     }
 
-    public boolean isRequiredDV() {
-        return this.requiredDV;
+    public boolean isRequiredInDataverse() {
+        return this.requiredInDataverse;
     }
 
     @Transient
@@ -359,14 +359,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
      */
     @OneToMany(mappedBy = "parentDatasetFieldType", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("displayOrder ASC")
-    private Collection<DatasetFieldType> childDatasetFieldTypes;
+    private List<DatasetFieldType> childDatasetFieldTypes = new ArrayList<>();
 
-    public Collection<DatasetFieldType> getChildDatasetFieldTypes() {
+    public List<DatasetFieldType> getChildDatasetFieldTypes() {
         return this.childDatasetFieldTypes;
     }
 
     public void setChildDatasetFieldTypes(Collection<DatasetFieldType> childDatasetFieldTypes) {
-        this.childDatasetFieldTypes = childDatasetFieldTypes;
+        this.childDatasetFieldTypes = new ArrayList<>(childDatasetFieldTypes);
     }
 
     @ManyToOne(cascade = CascadeType.MERGE)
@@ -437,12 +437,16 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.advancedSearchFieldType = advancedSearchFieldType;
     }
 
+    /**
+     * Indicates if field is primitive (if {@link #allowMultiples} is true values will be placed in
+     * {@link DatasetField#getDatasetFieldsChildren()} otherwise in {@link DatasetField#getFieldValue()}).
+     */
     public boolean isPrimitive() {
-        return this.childDatasetFieldTypes.isEmpty();
+        return !isCompound();
     }
 
     public boolean isCompound() {
-        return !this.childDatasetFieldTypes.isEmpty();
+        return !getChildDatasetFieldTypes().isEmpty();
     }
 
     public boolean isChild() {
@@ -522,7 +526,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public String getDisplayName() {
         if (isHasParent() && !parentDatasetFieldType.getTitle().equals(title)) {
-            return Optional.ofNullable(getLocaleTitleWithParent()).filter(s -> !s.isEmpty()).orElse(parentDatasetFieldType.getLocaleTitle() + " " + getLocaleTitle());
+            return Optional.ofNullable(getLocaleTitleWithParent()).filter(s -> !s.isEmpty()).orElse(
+                    parentDatasetFieldType.getLocaleTitle() + " " + getLocaleTitle());
         } else {
             return getLocaleTitle();
         }
@@ -547,7 +552,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         } else {
             try {
                 return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".withParent.title",
-                        getMetadataBlock().getName());
+                                                            getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return title;
             }

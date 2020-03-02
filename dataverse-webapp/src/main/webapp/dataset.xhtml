@@ -440,23 +440,23 @@
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
                                                     (!empty DatasetPage.datasetSummaryFields or !empty DatasetPage.workingVersion.fileMetadatas) }">
                                 <div class="panel-body metadata-panel-body">
-                                    <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="dsf">
+                                    <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="fieldsByType">
 
                                         <div id="keywords" class="form-group"
-                                             jsf:rendered="#{!empty DatasetPage.keywordsDisplaySummary and dsf.datasetFieldType.name=='keyword'}">
+                                             jsf:rendered="#{!empty DatasetPage.keywordsDisplaySummary and fieldsByType.datasetFieldType.name=='keyword'}">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.keywordDisplay.title']}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
-                                                      data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
+                                                      data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-9">#{DatasetPage.keywordsDisplaySummary}</div>
                                         </div>
                                         <div id="publication" class="form-group"
                                              jsf:rendered="#{!empty DatasetPage.firstRelPublication and 
-                                                dsf.datasetFieldType.name=='publication'}">
+                                                fieldsByType.datasetFieldType.name=='publication'}">
                                             <label class="col-sm-3 control-label">
-                                                #{dsf.datasetFieldType.localeTitle}
+                                                #{fieldsByType.datasetFieldType.localeTitle}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
@@ -483,17 +483,17 @@
                                         </div>
 
                                         <div class="form-group"
-                                             jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'  }">
+                                             jsf:rendered="#{fieldsByType.datasetFieldType.name!='publication' and fieldsByType.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}"
                                                    class="col-sm-3 control-label">
-                                                #{dsf.datasetFieldType.localeTitle}
+                                                #{fieldsByType.datasetFieldType.localeTitle}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       data-toggle="tooltip" data-placement="auto right"
-                                                      data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
+                                                      data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                             </label>
 
                                             <ui:include src="viewMetadataField.xhtml">
-                                                <ui:param name="datasetField" value="#{dsf}"/>
+                                                <ui:param name="fieldsByType" value="#{fieldsByType}"/>
                                             </ui:include>
                                         </div>
                                     </ui:repeat>

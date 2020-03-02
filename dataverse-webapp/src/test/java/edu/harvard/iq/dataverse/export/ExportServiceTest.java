@@ -9,9 +9,7 @@ import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -306,32 +304,31 @@ public class ExportServiceTest {
     private void prepareDatasetFieldValues(DatasetVersion datasetVersion) {
         List<DatasetField> datasetFields = datasetVersion.getDatasetFields();
 
-        DatasetFieldValue titleValue = new DatasetFieldValue();
-        titleValue.setValue("Export test");
+        DatasetField titleValue = new DatasetField();
+        titleValue.setFieldValue("Export test");
         titleValue.setId(3L);
 
         datasetFields.stream()
                 .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.title))
-                .peek(titleValue::setDatasetField)
+                .peek(titleValue::setDatasetFieldParent)
                 .forEach(datasetField -> {
                     datasetField.getDatasetFieldType().setTitle("Title");
                     datasetField.getDatasetFieldType().setDisplayOrder(1);
                     datasetField.getDatasetFieldType().setUri("http://purl.org/dc/terms/title");
-                    datasetField.setDatasetFieldValues(Lists.newArrayList(titleValue));
                 });
 
-        DatasetFieldValue subjectValue = new DatasetFieldValue();
-        subjectValue.setValue("Agricultural Sciences");
+        DatasetField subjectValue = new DatasetField();
+        subjectValue.setFieldValue("Agricultural Sciences");
         subjectValue.setId(3L);
 
         datasetFields.stream()
                 .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject))
-                .peek(subjectValue::setDatasetField)
+                .peek(subjectValue::setDatasetFieldParent)
                 .forEach(datasetField -> {
                     datasetField.getDatasetFieldType().setTitle("Subject");
                     datasetField.getDatasetFieldType().setDisplayOrder(5);
                     datasetField.getDatasetFieldType().setUri("http://purl.org/dc/terms/subject");
-                    datasetField.setDatasetFieldValues(Lists.newArrayList(subjectValue));
+                    datasetField.setDatasetFieldsChildren(Lists.newArrayList(subjectValue));
                     datasetField.setSingleControlledVocabularyValue(
                             new ControlledVocabularyValue(13L, subjectValue.getValue(), datasetField.getDatasetFieldType()));
                 });
@@ -347,14 +344,12 @@ public class ExportServiceTest {
                 .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.author))
                 .findFirst().get();
 
-        DatasetFieldCompoundValue datasetFieldCompoundValue = authorField.getDatasetFieldCompoundValues().get(0);
-
         DatasetFieldType authorFieldType = authorField.getDatasetFieldType();
         authorFieldType.setTitle("Author");
         authorFieldType.setDisplayOrder(2);
         authorFieldType.setUri("http://purl.org/dc/terms/creator");
 
-        datasetFieldCompoundValue.setChildDatasetFields(Lists.newArrayList(setupNameOfAuthor(), setupAffiliationOfAuthor()));
+        authorField.setDatasetFieldsChildren(Lists.newArrayList(setupNameOfAuthor(), setupAffiliationOfAuthor()));
 
     }
 
@@ -364,7 +359,7 @@ public class ExportServiceTest {
 
         DatasetField authorAffiliationDf = new DatasetField();
         authorAffiliationDf.setDatasetFieldType(authorAffiliation);
-        authorAffiliationDf.setDatasetFieldValues(Lists.newArrayList(new DatasetFieldValue(authorAffiliationDf, "Dataverse.org")));
+        authorAffiliationDf.setFieldValue("Dataverse.org");
 
         return authorAffiliationDf;
     }
@@ -374,7 +369,7 @@ public class ExportServiceTest {
         authorName.setTitle("Name");
 
         DatasetField authorNameDF = new DatasetField();
-        authorNameDF.setDatasetFieldValues(Lists.newArrayList(new DatasetFieldValue(authorNameDF, "Admin, Dataverse")));
+        authorNameDF.setFieldValue("Admin, Dataverse");
         authorNameDF.setDatasetFieldType(authorName);
 
         return authorNameDF;
@@ -415,7 +410,8 @@ public class ExportServiceTest {
 
                 contactChild.setDatasetFields(Lists.newArrayList(dsContactName));
 
-                dsContactName.setDatasetFieldValues(Lists.newArrayList(new DatasetFieldValue(dsContactName, "Admin, Dataverse")));
+                dsContactName.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
+                .setDatasetFieldParent(dsContactName).setFieldValue("Admin, Dataverse")));
             }
 
             if (contactChild.getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
@@ -426,7 +422,8 @@ public class ExportServiceTest {
 
                 contactChild.setDatasetFields(Lists.newArrayList(dsContactAffiliation));
 
-                dsContactAffiliation.setDatasetFieldValues(Lists.newArrayList(new DatasetFieldValue(dsContactAffiliation, "Dataverse.org")));
+                dsContactAffiliation.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
+                .setDatasetFieldParent(dsContactAffiliation).setFieldValue("Dataverse.org")));
             }
 
             if (contactChild.getName().equals(DatasetFieldConstant.datasetContactEmail)) {
@@ -437,7 +434,8 @@ public class ExportServiceTest {
 
                 contactChild.setDatasetFields(Lists.newArrayList(dsContactEmail));
 
-                dsContactEmail.setDatasetFieldValues(Lists.newArrayList(new DatasetFieldValue(dsContactEmail, "dataverse@mailinator.com")));
+                dsContactEmail.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
+                .setDatasetFieldParent(dsContactEmail).setFieldValue("dataverse@mailinator.com")));
             }
         }
     }

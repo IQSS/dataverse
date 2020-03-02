@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -46,7 +47,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     private boolean inheritTemplatesAllowed = false;
 
     private Template selectedTemplate = null;
-    private Map<MetadataBlock, List<DatasetField>> mdbForView;
+    private Map<MetadataBlock, List<DatasetFieldsByType>> mdbForView;
 
     // -------------------- CONSTRUCTORS --------------------
     @Deprecated
@@ -89,7 +90,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         return inheritTemplatesAllowed;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMdbForView() {
+    public Map<MetadataBlock, List<DatasetFieldsByType>> getMdbForView() {
         return mdbForView;
     }
 
@@ -165,7 +166,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
         this.selectedTemplate = selectedTemplate;
 
         List<DatasetField> dsfForView = datasetFieldsInitializer.prepareDatasetFieldsForView(selectedTemplate.getDatasetFields());
-        mdbForView = DatasetFieldUtil.groupByBlock(dsfForView);
+        mdbForView = DatasetFieldUtil.groupByBlockAndType(dsfForView);
     }
 
     /**

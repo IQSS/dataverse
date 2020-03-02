@@ -59,9 +59,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -71,6 +69,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import io.vavr.control.Option;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
@@ -112,6 +111,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //import edu.harvard.iq.dvn.unf.*;
@@ -254,7 +254,8 @@ public class IngestServiceBean {
                 // we may as well save them, by moving these generated images to the permanent 
                 // dataset directory. We should also remember to delete any such files in the
                 // temp directory:
-                List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()), storageId);
+                List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
+                                                                       storageId);
                 if (generatedTempFiles != null) {
                     for (Path generated : generatedTempFiles) {
                         if (savedSuccess) { // no need to try to save this aux file permanently, if we've failed to save the main file!
@@ -265,7 +266,8 @@ public class IngestServiceBean {
                                 if (i > 1) {
                                     String extensionTag = generated.toString().substring(i);
                                     storageIO.savePathAsAux(generated, extensionTag);
-                                    logger.fine("Saved generated thumbnail as aux object. \"preview available\" status: " + dataFile.isPreviewImageAvailable());
+                                    logger.fine(
+                                            "Saved generated thumbnail as aux object. \"preview available\" status: " + dataFile.isPreviewImageAvailable());
                                 } else {
                                     logger.warning("Generated thumbnail file name does not match the expected pattern: " + generated.toString());
                                 }
@@ -437,7 +439,8 @@ public class IngestServiceBean {
                 try {
                     ingestSizeLimit = systemConfig.getTabularIngestSizeLimit(getTabDataReaderByMimeType(dataFile.getContentType()).getFormatName());
                 } catch (IOException ioex) {
-                    logger.warning("IO Exception trying to retrieve the ingestable format identifier from the plugin for type " + dataFile.getContentType() + " (non-fatal);");
+                    logger.warning(
+                            "IO Exception trying to retrieve the ingestable format identifier from the plugin for type " + dataFile.getContentType() + " (non-fatal);");
                 }
 
                 if (ingestSizeLimit == -1 || dataFile.getFilesize() < ingestSizeLimit) {
@@ -463,9 +466,9 @@ public class IngestServiceBean {
             String info = "Ingest of " + count + " tabular data file(s) is in progress.";
             logger.info(info);
             datasetDao.addDatasetLock(scheduledFiles.get(0).getOwner().getId(),
-                                          DatasetLock.Reason.Ingest,
-                                          (user != null) ? user.getId() : null,
-                                          info);
+                                      DatasetLock.Reason.Ingest,
+                                      (user != null) ? user.getId() : null,
+                                      info);
 
             // Sort ingest jobs by file size: 
             DataFile[] scheduledFilesArray = scheduledFiles.toArray(new DataFile[count]);
@@ -500,8 +503,11 @@ public class IngestServiceBean {
 
             } catch (JMSException ex) {
                 ex.printStackTrace();
-                logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
-                sb.append("Failed to queue the (re)ingest job for DataFile (JMS Exception)" + (ex.getMessage() != null ? ex.getMessage() : ""));
+                logger.warning(
+                        "Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
+                sb.append("Failed to queue the (re)ingest job for DataFile (JMS Exception)" + (ex.getMessage() != null ?
+                        ex.getMessage() :
+                        ""));
             } finally {
                 try {
 
@@ -515,7 +521,8 @@ public class IngestServiceBean {
                         conn.close();
                     }
                 } catch (Exception ex) {
-                    logger.warning("Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
+                    logger.warning(
+                            "Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
                     ex.printStackTrace();
                 }
             }
@@ -558,7 +565,8 @@ public class IngestServiceBean {
                 logger.fine("subsetting continuous vector");
 
                 if ("float".equals(dataFile.getDataTable().getDataVariables().get(i).getFormat())) {
-                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Float[] variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(
+                            generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Float vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -566,7 +574,8 @@ public class IngestServiceBean {
                     calculateUNF(dataFile, i, variableVector);
                     variableVector = null;
                 } else {
-                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                    Double[] variableVector = TabularSubsetGenerator.subsetDoubleVector(new FileInputStream(
+                            generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                     logger.fine("Calculating summary statistics on a Double vector;");
                     calculateContinuousSummaryStatistics(dataFile, i, variableVector);
                     // calculate the UNF while we are at it:
@@ -588,7 +597,9 @@ public class IngestServiceBean {
                     && dataFile.getDataTable().getDataVariables().get(i).isTypeNumeric()) {
                 logger.fine("subsetting discrete-numeric vector");
 
-                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile),
+                                                                                i,
+                                                                                dataFile.getDataTable().getCaseQuantity().intValue());
                 // We are discussing calculating the same summary stats for 
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
@@ -622,7 +633,8 @@ public class IngestServiceBean {
             if (dataFile.getDataTable().getDataVariables().get(i).isTypeCharacter()) {
 
                 logger.fine("subsetting character vector");
-                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
+                String[] variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(
+                        generatedTabularFile), i, dataFile.getDataTable().getCaseQuantity().intValue());
                 //calculateCharacterSummaryStatistics(dataFile, i, variableVector);
                 // calculate the UNF while we are at it:
                 logger.fine("Calculating UNF on a String vector");
@@ -650,9 +662,13 @@ public class IngestServiceBean {
             Object[] variableVector = null;
             if (cats.size() > 0) {
                 if (isNumeric) {
-                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                    variableVector = TabularSubsetGenerator.subsetFloatVector(new FileInputStream(generatedTabularFile),
+                                                                              i,
+                                                                              caseQuantity);
                 } else {
-                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile), i, caseQuantity);
+                    variableVector = TabularSubsetGenerator.subsetStringVector(new FileInputStream(generatedTabularFile),
+                                                                               i,
+                                                                               caseQuantity);
                 }
                 if (variableVector != null) {
                     Hashtable<Object, Double> freq = calculateFrequency(variableVector);
@@ -754,7 +770,8 @@ public class IngestServiceBean {
             // the next step if no ingest plugin is available. 
 
             dataFile.SetIngestProblem();
-            FileUtil.createIngestFailureReport(dataFile, "No ingest plugin found for file type " + dataFile.getContentType());
+            FileUtil.createIngestFailureReport(dataFile,
+                                               "No ingest plugin found for file type " + dataFile.getContentType());
             dataFile = fileService.save(dataFile);
             logger.warning("Ingest failure.");
             return false;
@@ -785,7 +802,8 @@ public class IngestServiceBean {
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
 
-            FileUtil.createIngestFailureReport(dataFile, "IO Exception occured while trying to open the file for reading.");
+            FileUtil.createIngestFailureReport(dataFile,
+                                               "IO Exception occured while trying to open the file for reading.");
             dataFile = fileService.save(dataFile);
 
             logger.warning("Ingest failure (No file produced).");
@@ -814,7 +832,8 @@ public class IngestServiceBean {
                 // If it's still null - give up!
 
                 dataFile.SetIngestProblem();
-                FileUtil.createIngestFailureReport(dataFile, "No ingest plugin found for file type " + dataFile.getContentType());
+                FileUtil.createIngestFailureReport(dataFile,
+                                                   "No ingest plugin found for file type " + dataFile.getContentType());
                 dataFile = fileService.save(dataFile);
                 logger.warning("Ingest failure: failed to detect ingest plugin (file type check forced)");
                 return false;
@@ -868,7 +887,9 @@ public class IngestServiceBean {
                 // and change the mime type to "Tabular Data" on the final datafile, 
                 // and replace (or add) the extension ".tab" to the filename: 
                 dataFile.setContentType(TextMimeType.TSV_ALT.getMimeValue());
-                IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+                IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(),
+                                                  dataFile.getFileMetadata(),
+                                                  FileUtil.replaceExtension(fileName, "tab"));
 
                 if (TextMimeType.CSV_ALT.getMimeValue().equals(dataFile.getContentType())) {
                     tabDataIngest.getDataTable().setOriginalFileFormat(TextMimeType.CSV.getMimeValue());
@@ -887,9 +908,14 @@ public class IngestServiceBean {
                 } catch (IOException postIngestEx) {
 
                     dataFile.SetIngestProblem();
-                    FileUtil.createIngestFailureReport(dataFile, "Ingest failed to produce Summary Statistics and/or UNF signatures; " + postIngestEx.getMessage());
+                    FileUtil.createIngestFailureReport(dataFile,
+                                                       "Ingest failed to produce Summary Statistics and/or UNF signatures; " + postIngestEx.getMessage());
 
-                    restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+                    restoreIngestedDataFile(dataFile,
+                                            tabDataIngest,
+                                            originalFileSize,
+                                            originalFileName,
+                                            originalContentType);
                     dataFile = fileService.save(dataFile);
 
                     logger.warning("Ingest failure: post-ingest tasks.");
@@ -927,15 +953,21 @@ public class IngestServiceBean {
                 } catch (Exception unknownEx) {
                     // this means that an error occurred while saving the datafile
                     // in the database. 
-                    logger.warning("Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
+                    logger.warning(
+                            "Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
                         dataFile.SetIngestProblem();
-                        FileUtil.createIngestFailureReport(dataFile, "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
+                        FileUtil.createIngestFailureReport(dataFile,
+                                                           "Ingest produced tabular data, but failed to save it in the database; " + unknownEx.getMessage() + " No further information is available.");
 
-                        restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+                        restoreIngestedDataFile(dataFile,
+                                                tabDataIngest,
+                                                originalFileSize,
+                                                originalFileName,
+                                                originalContentType);
 
                         dataFile = fileService.save(dataFile);
                     }
@@ -972,15 +1004,21 @@ public class IngestServiceBean {
 
                 } catch (Exception e) {
                     // this probably means that an error occurred while saving the file to the file system
-                    logger.warning("Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
+                    logger.warning(
+                            "Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
 
                     dataFile = fileService.find(datafile_id);
 
                     if (dataFile != null) {
                         dataFile.SetIngestProblem();
-                        FileUtil.createIngestFailureReport(dataFile, "Failed to save the tabular file produced by the ingest.");
+                        FileUtil.createIngestFailureReport(dataFile,
+                                                           "Failed to save the tabular file produced by the ingest.");
 
-                        restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+                        restoreIngestedDataFile(dataFile,
+                                                tabDataIngest,
+                                                originalFileSize,
+                                                originalFileName,
+                                                originalContentType);
 
                         dataFile = fileService.save(dataFile);
                     }
@@ -1213,32 +1251,36 @@ public class IngestServiceBean {
                                             // (all of these resolution.* fields have allowedMultiple set to FALSE, 
                                             // so there can be only one!)
                                             //logger.fine("Min value: "+minValue+", Max value: "+maxValue);
-                                            if (minValue != null && maxValue != null) {
+                                            if (minValue != null) {
                                                 Double storedMinValue = null;
                                                 Double storedMaxValue = null;
 
                                                 String storedValue = "";
 
-                                                if (dsf.getDatasetFieldValues() != null && dsf.getDatasetFieldValues().get(0) != null) {
-                                                    storedValue = dsf.getDatasetFieldValues().get(0).getValue();
+                                                if (dsf.getFieldValue().isDefined()) {
+                                                    storedValue = dsf.getFieldValue().get();
 
                                                     if (storedValue != null && !storedValue.equals("")) {
                                                         try {
 
-                                                            if (storedValue.indexOf(" - ") > -1) {
-                                                                storedMinValue = Double.parseDouble(storedValue.substring(0, storedValue.indexOf(" - ")));
-                                                                storedMaxValue = Double.parseDouble(storedValue.substring(storedValue.indexOf(" - ") + 3));
+                                                            if (storedValue.contains(" - ")) {
+                                                                storedMinValue = Double.parseDouble(storedValue.substring(
+                                                                        0,
+                                                                        storedValue.indexOf(" - ")));
+                                                                storedMaxValue = Double.parseDouble(storedValue.substring(
+                                                                        storedValue.indexOf(" - ") + 3));
                                                             } else {
                                                                 storedMinValue = Double.parseDouble(storedValue);
                                                                 storedMaxValue = storedMinValue;
                                                             }
-                                                            if (storedMinValue != null && storedMinValue.compareTo(minValue) < 0) {
+                                                            if (storedMinValue.compareTo(minValue) < 0) {
                                                                 minValue = storedMinValue;
                                                             }
-                                                            if (storedMaxValue != null && storedMaxValue.compareTo(maxValue) > 0) {
+                                                            if (storedMaxValue.compareTo(maxValue) > 0) {
                                                                 maxValue = storedMaxValue;
                                                             }
                                                         } catch (NumberFormatException e) {
+                                                            logger.log(Level.FINE, "", e);
                                                         }
                                                     } else {
                                                         storedValue = "";
@@ -1257,14 +1299,7 @@ public class IngestServiceBean {
 
                                                 // finally, compare it to the value we have now:
                                                 if (!storedValue.equals(newAggregateValue)) {
-                                                    if (dsf.getDatasetFieldValues() == null) {
-                                                        dsf.setDatasetFieldValues(new ArrayList<DatasetFieldValue>());
-                                                    }
-                                                    if (dsf.getDatasetFieldValues().get(0) == null) {
-                                                        DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
-                                                        dsf.getDatasetFieldValues().add(newDsfv);
-                                                    }
-                                                    dsf.getDatasetFieldValues().get(0).setValue(newAggregateValue);
+                                                    dsf.setFieldValue(newAggregateValue);
                                                 }
                                             }
                                             // Ouch. 
@@ -1277,24 +1312,14 @@ public class IngestServiceBean {
 
                                             for (String fValue : mValues) {
                                                 if (!dsft.isControlledVocabulary()) {
-                                                    Iterator<DatasetFieldValue> dsfvIt = dsf.getDatasetFieldValues().iterator();
-
-                                                    boolean valueExists = false;
+                                                    Iterator<DatasetField> dsfvIt = dsf.getDatasetFieldsChildren().iterator();
 
                                                     while (dsfvIt.hasNext()) {
-                                                        DatasetFieldValue dsfv = dsfvIt.next();
-                                                        if (fValue.equals(dsfv.getValue())) {
-                                                            logger.fine("Value " + fValue + " already exists for field " + dsfName);
-                                                            valueExists = true;
-                                                            break;
+                                                        DatasetField dsfv = dsfvIt.next();
+                                                        if (!fValue.equals(dsfv.getValue())) {
+                                                            logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
+                                                            dsfv.setFieldValue(fValue);
                                                         }
-                                                    }
-
-                                                    if (!valueExists) {
-                                                        logger.fine("Creating a new value for field " + dsfName + ": " + fValue);
-                                                        DatasetFieldValue newDsfv = new DatasetFieldValue(dsf);
-                                                        newDsfv.setValue(fValue);
-                                                        dsf.getDatasetFieldValues().add(newDsfv);
                                                     }
 
                                                 } else {
@@ -1332,7 +1357,8 @@ public class IngestServiceBean {
 
                                                         if (!valueExists) {
                                                             logger.fine("Adding controlled vocabulary value " + fValue + " to field " + dsfName);
-                                                            dsf.getControlledVocabularyValues().add(legitControlledVocabularyValue);
+                                                            dsf.getControlledVocabularyValues().add(
+                                                                    legitControlledVocabularyValue);
                                                         }
                                                     }
                                                 }
@@ -1348,8 +1374,8 @@ public class IngestServiceBean {
                         // make up this compound field; if we find at least one 
                         // of the child values in the map of extracted values, we'll 
                         // create a new compound field value and its child 
-                        // 
-                        DatasetFieldCompoundValue compoundDsfv = new DatasetFieldCompoundValue();
+                        //
+                        List<DatasetField> missingFields = new ArrayList<>();
                         int nonEmptyFields = 0;
                         for (DatasetFieldType cdsft : dsft.getChildDatasetFieldTypes()) {
                             String dsfName = cdsft.getName();
@@ -1366,13 +1392,9 @@ public class IngestServiceBean {
 
                                         DatasetField childDsf = new DatasetField();
                                         childDsf.setDatasetFieldType(cdsft);
+                                        childDsf.setFieldValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
 
-                                        DatasetFieldValue newDsfv = new DatasetFieldValue(childDsf);
-                                        newDsfv.setValue((String) fileMetadataMap.get(dsfName).toArray()[0]);
-                                        childDsf.getDatasetFieldValues().add(newDsfv);
-
-                                        childDsf.setParentDatasetFieldCompoundValue(compoundDsfv);
-                                        compoundDsfv.getChildDatasetFields().add(childDsf);
+                                        missingFields.add(childDsf);
 
                                         nonEmptyFields++;
                                     }
@@ -1381,31 +1403,30 @@ public class IngestServiceBean {
                         }
 
                         if (nonEmptyFields > 0) {
-                            // let's go through this dataset's fields and find the 
-                            // actual parent for this sub-field: 
-                            for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
+                            // let's go through this dataset's fields and find the
+                            // actual parent for this sub-field:
+                            for (DatasetField dsf : editVersion.getDatasetFields()) {
                                 if (dsf.getDatasetFieldType().equals(dsft)) {
 
                                     // Now let's check that the dataset version doesn't already have
-                                    // this compound value - we are only interested in aggregating 
-                                    // unique values. Note that we need to compare compound values 
-                                    // as sets! -- i.e. all the sub fields in 2 compound fields 
-                                    // must match in order for these 2 compounds to be recognized 
+                                    // this compound value - we are only interested in aggregating
+                                    // unique values. Note that we need to compare compound values
+                                    // as sets! -- i.e. all the sub fields in 2 compound fields
+                                    // must match in order for these 2 compounds to be recognized
                                     // as "the same":
 
                                     boolean alreadyExists = false;
-                                    for (DatasetFieldCompoundValue dsfcv : dsf.getDatasetFieldCompoundValues()) {
-                                        int matches = 0;
 
-                                        for (DatasetField cdsf : dsfcv.getChildDatasetFields()) {
-                                            String cdsfName = cdsf.getDatasetFieldType().getName();
-                                            String cdsfValue = cdsf.getDatasetFieldValues().get(0).getValue();
-                                            if (cdsfValue != null && !cdsfValue.equals("")) {
-                                                String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
-                                                logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
-                                                if (cdsfValue.equals(extractedValue)) {
-                                                    matches++;
-                                                }
+                                    int matches = 0;
+                                    for (DatasetField dsfcv : dsf.getDatasetFieldsChildren()) {
+
+                                        String cdsfName = dsfcv.getDatasetFieldType().getName();
+                                        Option<String> cdsfValue = dsfcv.getFieldValue();
+                                        if (cdsfValue.isDefined() && !cdsfValue.isEmpty()) {
+                                            String extractedValue = (String) fileMetadataMap.get(cdsfName).toArray()[0];
+                                            logger.fine("values: existing: " + cdsfValue + ", extracted: " + extractedValue);
+                                            if (cdsfValue.get().equals(extractedValue)) {
+                                                matches++;
                                             }
                                         }
                                         if (matches == nonEmptyFields) {
@@ -1415,10 +1436,12 @@ public class IngestServiceBean {
                                     }
 
                                     if (!alreadyExists) {
-                                        // save this compound value, by attaching it to the 
+                                        // save this compound value, by attaching it to the
                                         // version for proper cascading:
-                                        compoundDsfv.setParentDatasetField(dsf);
-                                        dsf.getDatasetFieldCompoundValues().add(compoundDsfv);
+                                        missingFields.forEach(missingField -> {
+                                            missingField.setDatasetFieldParent(dsf);
+                                            dsf.getDatasetFieldsChildren().add(missingField);
+                                        });
                                     }
                                 }
                             }
@@ -1483,9 +1506,11 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+            logger.warning(
+                    "exception thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
         } catch (Exception uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
+            logger.warning(
+                    "UNF Exception: thrown when attempted to calculate UNF signature for (numeric, continuous) variable " + varnum);
         }
 
         if (unf != null) {
@@ -1500,9 +1525,11 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+            logger.warning(
+                    "exception thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
         } catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
+            logger.warning(
+                    "UNF Exception: thrown when attempted to calculate UNF signature for (numeric, discrete) variable " + varnum);
         }
 
         if (unf != null) {
@@ -1625,9 +1652,11 @@ public class IngestServiceBean {
         try {
             unf = UNFUtil.calculateUNF(dataVector);
         } catch (IOException iex) {
-            logger.warning("exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable " + varnum);
+            logger.warning(
+                    "exception thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable " + varnum);
         } catch (UnfException uex) {
-            logger.warning("UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable" + varnum);
+            logger.warning(
+                    "UNF Exception: thrown when attempted to calculate UNF signature for numeric, \"continuous\" (float) variable" + varnum);
         }
 
         if (unf != null) {
@@ -1713,10 +1742,13 @@ public class IngestServiceBean {
                     if (savedOriginalFile == null) {
                         tempFileRequired = true;
 
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(
+                                FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                         savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
                         FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()));
+                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel,
+                                                              0,
+                                                              storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()));
 
                     }
                 } catch (Exception ex) {

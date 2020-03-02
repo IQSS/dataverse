@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
@@ -15,10 +17,10 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -67,7 +69,7 @@ public class TemplatePage implements java.io.Serializable {
     private EditMode editMode;
     private Long ownerId;
     private Long templateId;
-    private Map<MetadataBlock, List<DatasetField>> mdbForEdit;
+    private Map<MetadataBlock, List<DatasetFieldsByType>> mdbForEdit;
 
     public Long getTemplateId() {
         return templateId;
@@ -109,7 +111,7 @@ public class TemplatePage implements java.io.Serializable {
         this.ownerId = ownerId;
     }
 
-    public Map<MetadataBlock, List<DatasetField>> getMdbForEdit() {
+    public Map<MetadataBlock, List<DatasetFieldsByType>> getMdbForEdit() {
         return mdbForEdit;
     }
 
@@ -131,7 +133,7 @@ public class TemplatePage implements java.io.Serializable {
 
             List<DatasetField> dsfForEdit = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(dsfForEdit);
-            mdbForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(dsfForEdit);
+            mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(dsfForEdit, dataverse.getMetadataBlockRootDataverse());
 
             if (template.getTermsOfUseAndAccess() == null) {
                 template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
@@ -156,7 +158,7 @@ public class TemplatePage implements java.io.Serializable {
 
             List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(datasetFields);
-            mdbForEdit = datasetFieldsInitializer.groupAndUpdateEmptyAndRequiredFlag(datasetFields);
+            mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataverse.getMetadataBlockRootDataverse());
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
         }
@@ -165,6 +167,8 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save() {
+
+        template.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(mdbForEdit));
 
         Try<Template> templateOperation;
 

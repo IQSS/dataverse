@@ -1152,11 +1152,13 @@ public class IndexServiceBean {
      * Murray Research Archive uses "1 (Generations)" and "yes (Follow-up
      * permitted)".
      */
-    private String getTopicClassificationTermOrTermAndVocabulary(DatasetField topicClassDatasetField) {
+    private String getTopicClassificationTermOrTermAndVocabulary(DatasetField topicClassDatasetField) { //
         String finalValue = null;
         String topicClassVocab = null;
         String topicClassValue = null;
-        for (DatasetField sibling : topicClassDatasetField.getParentDatasetFieldCompoundValue().getChildDatasetFields()) {
+        for (DatasetField sibling : topicClassDatasetField.getDatasetFieldParent().
+                getOrElseThrow(() -> new IllegalStateException("There was no parent dataset field present."))
+                .getDatasetFieldsChildren()) {
             DatasetFieldType datasetFieldType = sibling.getDatasetFieldType();
             String name = datasetFieldType.getName();
             if (name.equals(DatasetFieldConstant.topicClassVocab)) {

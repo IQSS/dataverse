@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -40,6 +41,7 @@ public class WorkflowComment implements Serializable {
      * TODO: In the future, make this nullable=true for when entities other than
      * DatasetVersion are being discussed, such as DataFile or Dataset.
      */
+    @ManyToOne
     @JoinColumn(nullable = false)
     private DatasetVersion datasetVersion;
 

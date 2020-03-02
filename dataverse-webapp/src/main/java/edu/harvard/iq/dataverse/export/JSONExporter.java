@@ -43,7 +43,7 @@ public class JSONExporter implements Exporter {
                     .toString();
 
         } catch (Exception e) {
-            throw new ExportException("Unknown exception caught during JSON export.");
+            throw new ExportException("Unknown exception caught during JSON export.", e);
         }
     }
 

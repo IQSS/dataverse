@@ -647,9 +647,8 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
                 String descriptionString = "";
-                if (dsf.getDatasetFieldCompoundValues() != null && dsf.getDatasetFieldCompoundValues().get(0) != null) {
-                    DatasetFieldCompoundValue descriptionValue = dsf.getDatasetFieldCompoundValues().get(0);
-                    for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
+                if (!dsf.getDatasetFieldsChildren().isEmpty()) {
+                    for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
                             descriptionString = subField.getValue();
                         }
@@ -667,16 +666,15 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.description)) {
                 String descriptionString = "";
-                if (dsf.getDatasetFieldCompoundValues() != null && !dsf.getDatasetFieldCompoundValues().isEmpty()) {
-                    for (DatasetFieldCompoundValue descriptionValue : dsf.getDatasetFieldCompoundValues()) {
-                        for (DatasetField subField : descriptionValue.getChildDatasetFields()) {
-                            if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
-                                descriptionString = subField.getValue();
-                            }
+                if (!dsf.getDatasetFieldsChildren().isEmpty()) {
+                    for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.descriptionText) && !subField.isEmptyForDisplay()) {
+                            descriptionString = subField.getValue();
                         }
-                        logger.log(Level.FINE, "pristine description: {0}", descriptionString);
-                        descriptions.add(descriptionString);
                     }
+                    logger.log(Level.FINE, "pristine description: {0}", descriptionString);
+                    descriptions.add(descriptionString);
+
                 }
             }
         }
@@ -715,23 +713,21 @@ public class DatasetVersion implements Serializable {
             String contributorName = "";
             String contributorAffiliation = "";
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
-                            if (subField.isEmptyForDisplay()) {
-                                addContributor = false;
-                            }
-                            contributorName = subField.getDisplayValue();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
+                        if (subField.isEmptyForDisplay()) {
+                            addContributor = false;
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            contributorAffiliation = subField.getDisplayValue();
-                        }
+                        contributorName = subField.getDisplayValue();
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
+                        contributorAffiliation = subField.getDisplayValue();
+                    }
 
-                    }
-                    if (addContributor) {
-                        String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
-                        retList.add(datasetContributor);
-                    }
+                }
+                if (addContributor) {
+                    String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
+                    retList.add(datasetContributor);
                 }
             }
         }
@@ -745,23 +741,21 @@ public class DatasetVersion implements Serializable {
             String contributorName = "";
             String contributorAffiliation = "";
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
-                            if (subField.isEmptyForDisplay()) {
-                                addContributor = false;
-                            }
-                            contributorName = subField.getDisplayValue();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                        if (subField.isEmptyForDisplay()) {
+                            addContributor = false;
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
-                            contributorAffiliation = subField.getDisplayValue();
-                        }
+                        contributorName = subField.getDisplayValue();
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
+                        contributorAffiliation = subField.getDisplayValue();
+                    }
 
-                    }
-                    if (addContributor) {
-                        String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
-                        retList.add(datasetContributor);
-                    }
+                }
+                if (addContributor) {
+                    String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
+                    retList.add(datasetContributor);
                 }
             }
         }
@@ -774,28 +768,26 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    DatasetAuthor datasetAuthor = new DatasetAuthor();
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            if (subField.isEmptyForDisplay()) {
-                                addAuthor = false;
-                            }
-                            datasetAuthor.setName(subField);
+                DatasetAuthor datasetAuthor = new DatasetAuthor();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+                        if (subField.isEmptyForDisplay()) {
+                            addAuthor = false;
                         }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            datasetAuthor.setAffiliation(subField);
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
-                            datasetAuthor.setIdType(subField.getDisplayValue());
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
-                            datasetAuthor.setIdValue(subField.getDisplayValue());
-                        }
+                        datasetAuthor.setName(subField);
                     }
-                    if (addAuthor) {
-                        retList.add(datasetAuthor);
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+                        datasetAuthor.setAffiliation(subField);
                     }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
+                        datasetAuthor.setIdType(subField.getDisplayValue());
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
+                        datasetAuthor.setIdValue(subField.getDisplayValue());
+                    }
+                }
+                if (addAuthor) {
+                    retList.add(datasetAuthor);
                 }
             }
         }
@@ -807,33 +799,29 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributor)) {
                 boolean addFunder = false;
-                for (DatasetFieldCompoundValue contributorValue : dsf.getDatasetFieldCompoundValues()) {
-                    String contributorName = null;
-                    String contributorType = null;
-                    for (DatasetField subField : contributorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorName)) {
-                            contributorName = subField.getDisplayValue();
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
-                            contributorType = subField.getDisplayValue();
-                        }
+                String contributorName = null;
+                String contributorType = null;
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorName)) {
+                        contributorName = subField.getDisplayValue();
                     }
-                    //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
-                    // TODO: Consider how this will work in French, Chinese, etc.
-                    if ("Funder".equals(contributorType)) {
-                        retList.add(contributorName);
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
+                        contributorType = subField.getDisplayValue();
                     }
+                }
+                //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
+                // TODO: Consider how this will work in French, Chinese, etc.
+                if ("Funder".equals(contributorType)) {
+                    retList.add(contributorName);
                 }
             }
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumber)) {
-                for (DatasetFieldCompoundValue grantObject : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : grantObject.getChildDatasetFields()) {
-                        // It would be nice to do something with grantNumberValue (the actual number) but schema.org doesn't support it.
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
-                            String grantAgency = subField.getDisplayValue();
-                            if (grantAgency != null && !grantAgency.isEmpty()) {
-                                retList.add(grantAgency);
-                            }
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    // It would be nice to do something with grantNumberValue (the actual number) but schema.org doesn't support it.
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
+                        String grantAgency = subField.getDisplayValue();
+                        if (grantAgency != null && !grantAgency.isEmpty()) {
+                            retList.add(grantAgency);
                         }
                     }
                 }
@@ -846,34 +834,32 @@ public class DatasetVersion implements Serializable {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.timePeriodCovered)) {
-                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
-                    String start = "";
-                    String end = "";
-                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.timePeriodCoveredStart)) {
-                            if (subField.isEmptyForDisplay()) {
-                                start = null;
-                            } else {
-                                // we want to use "getValue()", as opposed to "getDisplayValue()" here -
-                                // as the latter method prepends the value with the word "Start:"!
-                                start = subField.getValue();
-                            }
+                String start = "";
+                String end = "";
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.timePeriodCoveredStart)) {
+                        if (subField.isEmptyForDisplay()) {
+                            start = null;
+                        } else {
+                            // we want to use "getValue()", as opposed to "getDisplayValue()" here -
+                            // as the latter method prepends the value with the word "Start:"!
+                            start = subField.getValue();
                         }
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
-                            if (subField.isEmptyForDisplay()) {
-                                end = null;
-                            } else {
-                                // see the comment above
-                                end = subField.getValue();
-                            }
+                    }
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.timePeriodCoveredEnd)) {
+                        if (subField.isEmptyForDisplay()) {
+                            end = null;
+                        } else {
+                            // see the comment above
+                            end = subField.getValue();
                         }
+                    }
 
-                    }
-                    if (start != null && end != null) {
-                        retList.add(start + "/" + end);
-                    }
+                }
+                if (start != null && end != null) {
+                    retList.add(start + "/" + end);
                 }
             }
         }
@@ -884,34 +870,32 @@ public class DatasetVersion implements Serializable {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfCollection)) {
-                for (DatasetFieldCompoundValue timePeriodValue : dsf.getDatasetFieldCompoundValues()) {
-                    String start = "";
-                    String end = "";
-                    for (DatasetField subField : timePeriodValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.dateOfCollectionStart)) {
-                            if (subField.isEmptyForDisplay()) {
-                                start = null;
-                            } else {
-                                // we want to use "getValue()", as opposed to "getDisplayValue()" here - 
-                                // as the latter method prepends the value with the word "Start:"!
-                                start = subField.getValue();
-                            }
+                String start = "";
+                String end = "";
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.dateOfCollectionStart)) {
+                        if (subField.isEmptyForDisplay()) {
+                            start = null;
+                        } else {
+                            // we want to use "getValue()", as opposed to "getDisplayValue()" here -
+                            // as the latter method prepends the value with the word "Start:"!
+                            start = subField.getValue();
                         }
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.dateOfCollectionEnd)) {
-                            if (subField.isEmptyForDisplay()) {
-                                end = null;
-                            } else {
-                                // see the comment above
-                                end = subField.getValue();
-                            }
+                    }
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.dateOfCollectionEnd)) {
+                        if (subField.isEmptyForDisplay()) {
+                            end = null;
+                        } else {
+                            // see the comment above
+                            end = subField.getValue();
                         }
+                    }
 
-                    }
-                    if (start != null && end != null) {
-                        retList.add(start + "/" + end);
-                    }
+                }
+                if (start != null && end != null) {
+                    retList.add(start + "/" + end);
                 }
             }
         }
@@ -981,38 +965,36 @@ public class DatasetVersion implements Serializable {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
-                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-                    List<String> coverage = new ArrayList<String>();
-                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.country)) {
-                            if (!subField.isEmptyForDisplay()) {
-                            } else {
-                                coverage.add(subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.state)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.city)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName()
-                                .equals(DatasetFieldConstant.otherGeographicCoverage)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverage.add(subField.getValue());
-                            }
+                List<String> coverage = new ArrayList<String>();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.country)) {
+                        if (!subField.isEmptyForDisplay()) {
+                        } else {
+                            coverage.add(subField.getValue());
                         }
                     }
-                    if (!coverage.isEmpty()) {
-                        retList.add(String.join(",", coverage));
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.state)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverage.add(subField.getValue());
+                        }
                     }
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.city)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverage.add(subField.getValue());
+                        }
+                    }
+                    if (subField.getDatasetFieldType().getName()
+                            .equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverage.add(subField.getValue());
+                        }
+                    }
+                }
+                if (!coverage.isEmpty()) {
+                    retList.add(String.join(",", coverage));
                 }
             }
         }
@@ -1023,37 +1005,35 @@ public class DatasetVersion implements Serializable {
         List<String> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
-                for (DatasetFieldCompoundValue geoValue : dsf.getDatasetFieldCompoundValues()) {
-                    Map<String, String> coverageHash = new HashMap<>();
-                    for (DatasetField subField : geoValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverageHash.put(DatasetFieldConstant.country, subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverageHash.put(DatasetFieldConstant.state, subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverageHash.put(DatasetFieldConstant.city, subField.getValue());
-                            }
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
-                            if (!subField.isEmptyForDisplay()) {
-                                coverageHash.put(DatasetFieldConstant.otherGeographicCoverage, subField.getValue());
-                            }
+                Map<String, String> coverageHash = new HashMap<>();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverageHash.put(DatasetFieldConstant.country, subField.getValue());
                         }
                     }
-                    if (!coverageHash.isEmpty()) {
-                        List<String> coverageSorted = sortSpatialCoverage(coverageHash);
-                        if (commaSeparated) {
-                            retList.add(String.join(", ", coverageSorted));
-                        } else {
-                            retList.addAll(coverageSorted);
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverageHash.put(DatasetFieldConstant.state, subField.getValue());
                         }
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverageHash.put(DatasetFieldConstant.city, subField.getValue());
+                        }
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                        if (!subField.isEmptyForDisplay()) {
+                            coverageHash.put(DatasetFieldConstant.otherGeographicCoverage, subField.getValue());
+                        }
+                    }
+                }
+                if (!coverageHash.isEmpty()) {
+                    List<String> coverageSorted = sortSpatialCoverage(coverageHash);
+                    if (commaSeparated) {
+                        retList.add(String.join(", ", coverageSorted));
+                    } else {
+                        retList.addAll(coverageSorted);
                     }
                 }
             }
@@ -1093,26 +1073,24 @@ public class DatasetVersion implements Serializable {
         List<DatasetRelPublication> relatedPublications = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.publication)) {
-                for (DatasetFieldCompoundValue publication : dsf.getDatasetFieldCompoundValues()) {
-                    DatasetRelPublication relatedPublication = new DatasetRelPublication();
-                    for (DatasetField subField : publication.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
-                            String citation = subField.getDisplayValue();
-                            relatedPublication.setText(citation);
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            String url = subField.getValue();
-                            relatedPublication.setUrl(url);
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                            relatedPublication.setIdNumber(subField.getValue());
-                        }
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                            relatedPublication.setIdType(subField.getValue());
-                        }
+                DatasetRelPublication relatedPublication = new DatasetRelPublication();
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
+                        String citation = subField.getDisplayValue();
+                        relatedPublication.setText(citation);
                     }
-                    relatedPublications.add(relatedPublication);
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
+                        String url = subField.getValue();
+                        relatedPublication.setUrl(url);
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
+                        relatedPublication.setIdNumber(subField.getValue());
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
+                        relatedPublication.setIdType(subField.getValue());
+                    }
                 }
+                relatedPublications.add(relatedPublication);
             }
         }
         return relatedPublications;
@@ -1155,16 +1133,14 @@ public class DatasetVersion implements Serializable {
         List<String> keywords = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(parentFieldName)) {
-                for (DatasetFieldCompoundValue keywordFieldValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : keywordFieldValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(childFieldName)) {
-                            String keyword = subField.getValue();
-                            // Field values should NOT be empty or, especially, null,
-                            // - in the ideal world. But as we are realizing, they CAN 
-                            // be null in real life databases. So, a check, just in case:
-                            if (!StringUtils.isBlank(keyword)) {
-                                keywords.add(subField.getValue());
-                            }
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(childFieldName)) {
+                        String keyword = subField.getValue();
+                        // Field values should NOT be empty or, especially, null,
+                        // - in the ideal world. But as we are realizing, they CAN
+                        // be null in real life databases. So, a check, just in case:
+                        if (!StringUtils.isBlank(keyword)) {
+                            keywords.add(subField.getValue());
                         }
                     }
                 }
@@ -1177,11 +1153,9 @@ public class DatasetVersion implements Serializable {
         List<String> producerNames = new ArrayList<String>();
         for (DatasetField dsf : this.getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.producer)) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
-                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
-                            producerNames.add(subField.getDisplayValue().trim());
-                        }
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerName)) {
+                        producerNames.add(subField.getDisplayValue().trim());
                     }
                 }
             }
@@ -1310,20 +1284,17 @@ public class DatasetVersion implements Serializable {
     // right now, only work for one level of compound objects
     private DatasetField initDatasetField(DatasetField dsf) {
         if (dsf.getDatasetFieldType().isCompound()) {
-            for (DatasetFieldCompoundValue cv : dsf.getDatasetFieldCompoundValues()) {
-                // for each compound value; check the datasetfieldTypes associated with its type
-                for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
-                    boolean add = true;
-                    for (DatasetField subfield : cv.getChildDatasetFields()) {
-                        if (dsfType.equals(subfield.getDatasetFieldType())) {
-                            add = false;
-                            break;
-                        }
+            for (DatasetFieldType dsfType : dsf.getDatasetFieldType().getChildDatasetFieldTypes()) {
+                boolean add = true;
+                for (DatasetField subfield : dsf.getDatasetFieldsChildren()) {
+                    if (dsfType.equals(subfield.getDatasetFieldType())) {
+                        add = false;
+                        break;
                     }
+                }
 
-                    if (add) {
-                        cv.getChildDatasetFields().add(DatasetField.createNewEmptyChildDatasetField(dsfType, cv));
-                    }
+                if (add) {
+                    dsf.getDatasetFieldsChildren().add(DatasetField.createNewEmptyChildDatasetField(dsfType, dsf));
                 }
             }
         }
@@ -1473,10 +1444,10 @@ public class DatasetVersion implements Serializable {
                 returnSet.add(constraintViolation);
                 break; // currently only support one message, so we can break out of the loop after the first constraint violation
             }
-            for (DatasetFieldValue dsfv : dsf.getDatasetFieldValues()) {
+            for (DatasetField dsfv : dsf.getDatasetFieldsChildren()) {
                 dsfv.setValidationMessage(null); // clear out any existing validation message
-                Set<ConstraintViolation<DatasetFieldValue>> constraintViolations2 = validator.validate(dsfv);
-                for (ConstraintViolation<DatasetFieldValue> constraintViolation : constraintViolations2) {
+                Set<ConstraintViolation<DatasetField>> constraintViolations2 = validator.validate(dsfv);
+                for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations2) {
                     dsfv.setValidationMessage(constraintViolation.getMessage());
                     returnSet.add(constraintViolation);
                     break; // currently only support one message, so we can break out of the loop after the first constraint violation                    

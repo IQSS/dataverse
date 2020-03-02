@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -1163,7 +1164,7 @@ public class DatasetPage implements java.io.Serializable {
      *
      * @return the dataset fields to be shown in the dataset summary
      */
-    public List<DatasetField> getDatasetSummaryFields() {
+    public List<DatasetFieldsByType> getDatasetSummaryFields() {
         List<String> customFields = settingsService.getValueForKeyAsList(SettingsServiceBean.Key.CustomDatasetSummaryFields);
 
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
@@ -1178,15 +1179,6 @@ public class DatasetPage implements java.io.Serializable {
         DatasetRelPublication firstRelPublication = datasetRelPublications.size() > 0 ? datasetRelPublications.get(0) : null;
         
         return firstRelPublication;
-    }
-
-    public boolean isTwoRavenAmongExternalTools(List<ExternalTool> externalTools) {
-        for (ExternalTool externalTool : externalTools) {
-            if (externalTool.getDisplayName().equals("TwoRavens")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public String redirectToMetrics() {

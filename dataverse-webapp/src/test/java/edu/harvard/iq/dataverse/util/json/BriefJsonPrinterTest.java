@@ -29,6 +29,7 @@ public class BriefJsonPrinterTest {
      */
     @Test
     public void testJson_DatasetVersion() {
+        //given
         Dataset ds = MocksFactory.makeDataset();
         DatasetVersion dsv = MocksFactory.makeDatasetVersion(ds.getCategories());
 
@@ -38,12 +39,14 @@ public class BriefJsonPrinterTest {
 
         DatasetField titleFld = new DatasetField();
         titleFld.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.title, FieldType.TEXT, false));
-        titleFld.setSingleValue("Dataset Title");
+        titleFld.setFieldValue("Dataset Title");
         dsv.setDatasetFields(Collections.singletonList(titleFld));
-
         BriefJsonPrinter sut = new BriefJsonPrinter();
+
+        //when
         JsonObject res = sut.json(dsv).build();
 
+        //then
         assertEquals("Dataset Title", res.getString("title"));
         assertEquals(DatasetVersion.VersionState.DEACCESSIONED.name(), res.getString("versionState"));
         assertEquals(1, res.getInt("id"));
@@ -54,14 +57,17 @@ public class BriefJsonPrinterTest {
      */
     @Test
     public void testJson_MetadataBlock() {
+        //given
         MetadataBlock mtb = new MetadataBlock();
         mtb.setId(1L);
         mtb.setName("metadata_block_name");
         mtb.setDisplayName("Metadata Block Name");
-
         BriefJsonPrinter sut = new BriefJsonPrinter();
+
+        //when
         JsonObject res = sut.json(mtb).build();
 
+        //then
         assertEquals("Metadata Block Name", res.getString("displayName"));
         assertEquals("metadata_block_name", res.getString("name"));
         assertEquals(1, res.getInt("id"));
@@ -73,13 +79,16 @@ public class BriefJsonPrinterTest {
      */
     @Test
     public void testJson_Workflow() {
+        //given
         Workflow wf = new Workflow();
         wf.setId(1l);
         wf.setName("Name");
-
         BriefJsonPrinter sut = new BriefJsonPrinter();
+
+        //when
         JsonObject res = sut.json(wf).build();
 
+        //then
         assertEquals("Name", res.getString("name"));
         assertEquals(1, res.getInt("id"));
         assertEquals(2, res.keySet().size());

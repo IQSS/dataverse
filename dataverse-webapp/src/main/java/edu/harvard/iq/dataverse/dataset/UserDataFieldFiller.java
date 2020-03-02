@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
@@ -39,40 +38,37 @@ public class UserDataFieldFiller {
         
         for (DatasetField dsf : datasetFields) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.depositor) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(userFullName);
+                dsf.setFieldValue(userFullName);
             }
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dateOfDeposit) && dsf.isEmpty()) {
-                dsf.getDatasetFieldValues().get(0).setValue(todayDate);
+                dsf.setFieldValue(todayDate);
             }
 
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContact) && dsf.isEmpty()) {
-                for (DatasetFieldCompoundValue contactValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : contactValue.getChildDatasetFields()) {
+                    for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactName)) {
-                            subField.getDatasetFieldValues().get(0).setValue(userFullName);
+                            subField.setFieldValue(userFullName);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            subField.getDatasetFieldValues().get(0).setValue(userAffiliation);
+                            subField.setFieldValue(userAffiliation);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactEmail)) {
-                            subField.getDatasetFieldValues().get(0).setValue(userEmail);
+                            subField.setFieldValue(userEmail);
                         }
                     }
-                }
             }
             
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author) && dsf.isEmpty()) {
-                for (DatasetFieldCompoundValue authorValue : dsf.getDatasetFieldCompoundValues()) {
-                    for (DatasetField subField : authorValue.getChildDatasetFields()) {
+                    for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
-                            subField.getDatasetFieldValues().get(0).setValue(userFullName);
+                            subField.setFieldValue(userFullName);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
-                            subField.getDatasetFieldValues().get(0).setValue(userAffiliation);
+                            subField.setFieldValue(userAffiliation);
                         }
                         if (userOrcidId != null) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
-                                subField.getDatasetFieldValues().get(0).setValue(userOrcidId);
+                                subField.setFieldValue(userOrcidId);
                             }
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
                                 DatasetFieldType authorIdTypeDatasetField = fieldService.findByName(DatasetFieldConstant.authorIdType);
@@ -81,7 +77,6 @@ public class UserDataFieldFiller {
                             }
                         }
                     }
-                }
             }
         }
         

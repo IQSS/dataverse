@@ -673,13 +673,12 @@ table.ui-picklist div.ui-picklist-filter-container {padding-bottom:5px;}
 .ui-tieredmenu.form-control {width:auto;height:auto;}
 
 .select-scroll-block {height:auto; max-height:120px; overflow-y:scroll; padding: 6px 12px;}
-.col-sm-9 > .select-scroll-block {margin: 4px 10px;}
 .select-scroll-block table.ui-selectmanycheckbox label {margin-left:5px; margin-top:0; font-weight:normal;}
 
 #contentTabs .ui-tabs .ui-tabs-panel {padding-left:0; padding-right:0;}
 
-.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
-.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
+div.panel-heading[data-toggle="collapse"] {cursor: pointer; cursor: hand;}
+div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 /* overwrite Bootstrap code red style */
 .ui-widget-content code {background-color: #F0F0F0; color: #333333;}

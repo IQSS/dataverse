@@ -12,7 +12,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({TYPE, ANNOTATION_TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {DatasetFieldValidator.class, DatasetFieldValueValidator.class})
+@Constraint(validatedBy = {DatasetFieldValidator.class})
 @Documented
 public @interface ValidateDatasetFieldType {
 

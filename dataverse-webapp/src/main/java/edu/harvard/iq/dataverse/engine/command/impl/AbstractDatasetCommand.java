@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionExcepti
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -20,6 +21,7 @@ import javax.validation.ConstraintViolation;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +38,7 @@ import static java.util.stream.Collectors.joining;
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     private static final Logger logger = Logger.getLogger(AbstractDatasetCommand.class.getName());
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
+    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 10;
     private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
 
@@ -103,7 +105,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
                         .map(cv -> ((DatasetField) cv.getRootBean()))
-                        .forEach(f -> f.setSingleValue(DatasetField.NA_VALUE));
+                        .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
@@ -122,20 +124,11 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param dsv the dataset version show fields we want to tidy up.
      */
     protected void tidyUpFields(DatasetVersion dsv) {
-        Iterator<DatasetField> dsfIt = dsv.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = dsv.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
-        Iterator<DatasetField> dsfItTrim = dsv.getDatasetFields().iterator();
-        while (dsfItTrim.hasNext()) {
-            dsfItTrim.next().trimTrailingSpaces();
-        }
+        removeBlankDatasetFields(dsv.getDatasetFields());
+        
+        updateDisplayOrder(dsv.getDatasetFields());
+        
+        dsv.getDatasetFields().forEach(field -> field.trimTrailingSpaces());
     }
 
     /**
@@ -218,5 +211,32 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+    
+    private void updateDisplayOrder(List<DatasetField> fields) {
+        DatasetFieldUtil.groupByType(fields).forEach(fieldsByType -> {
+            
+            List<DatasetField> singleTypeFields = fieldsByType.getDatasetFields();
+            
+            for (int i=0; i<singleTypeFields.size(); ++i) {
+                singleTypeFields.get(i).setDisplayOrder(i);
+                
+                updateDisplayOrder(singleTypeFields.get(i).getDatasetFieldsChildren());
+            }
+        });
+        
+    }
+    
+    private void removeBlankDatasetFields(List<DatasetField> fields) {
+        Iterator<DatasetField> dsfIt = fields.iterator();
+        while (dsfIt.hasNext()) {
+            DatasetField field = dsfIt.next();
+            
+            removeBlankDatasetFields(field.getDatasetFieldsChildren());
+            
+            if (field.isEmpty()) {
+                dsfIt.remove();
+            }
+        }
     }
 }

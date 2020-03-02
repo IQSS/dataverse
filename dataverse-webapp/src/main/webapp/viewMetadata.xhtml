@@ -50,16 +50,16 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
+                        <ui:repeat value="#{metadataBlockVal.value}" var="fieldsByType">
                             <div class="form-group">
-                                <label for="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label">
-                                    #{dsf.datasetFieldType.localeTitle}
+                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label">
+                                    #{fieldsByType.datasetFieldType.localeTitle}
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                 </label>
                                 
                                 <ui:include src="viewMetadataField.xhtml">
-                                    <ui:param name="datasetField" value="#{dsf}"/>
+                                    <ui:param name="fieldsByType" value="#{fieldsByType}"/>
                                 </ui:include>
                             </div>
                         </ui:repeat>
