@@ -774,11 +774,14 @@ public class Dataverse extends DvObjectContainer {
 	
 	
 	public String getStorageDriverId() {
+		if(storageDriver==null) {
+			return DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER;
+		}
 		return storageDriver;
 	}
 
 	public void setStorageDriverId(String storageDriver) {
-		if(storageDriver!=null&&storageDriver.equals("default")) {
+		if(storageDriver!=null&&storageDriver.equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
 			this.storageDriver=null;
 		} else {
 		  this.storageDriver = storageDriver;

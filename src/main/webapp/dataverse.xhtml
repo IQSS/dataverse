@@ -147,7 +147,7 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.storage.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                            <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId==null ? 'default' : DataversePage.dataverse.storageDriverId}">
+                                            <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId}">
                                               <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dataverseStorage" display="text"/>
