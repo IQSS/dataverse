@@ -7,10 +7,12 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectTaggingRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -851,6 +853,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         GeneratePresignedUrlRequest generatePresignedUrlRequest = 
         		new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
+        //Require user to add this header to indicate a temporary file
+        generatePresignedUrlRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+        
         URL presignedUrl; 
         try {
         	presignedUrl = s3.generatePresignedUrl(generatePresignedUrlRequest);
@@ -923,6 +928,29 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         s3profile = System.getProperty("dataverse.files." + this.driverId + ".profile","default");
        
         bucketName = System.getProperty("dataverse.files." + this.driverId + ".bucket-name");
+	}
+
+
+	public void removeTempTag() throws IOException {
+		if (!(dvObject instanceof DataFile)) {
+			logger.warning("Attempt to remove tag from non-file DVObject id: " + dvObject.getId());
+			throw new IOException("Attempt to remove temp tag from non-file S3 Object");
+		}
+		try {
+			
+			key = getMainFileKey();
+			DeleteObjectTaggingRequest deleteObjectTaggingRequest = new DeleteObjectTaggingRequest(bucketName, key);
+			//NOte - currently we only use one tag so delete is the fastest and cheapest way to get rid of that one tag 
+			//Otherwise you have to get tags, remove the one you don't want and post new tags and get charged for the operations
+            s3.deleteObjectTagging(deleteObjectTaggingRequest);
+         } catch (SdkClientException sce) {
+        	 logger.severe("Unable to remove temp tag from : " + bucketName + " : " + key);
+             throw new IOException("Cannot remove temp tag from S3 object " + bucketName + " : " + key + " ("+sce.getMessage()+")");
+         } catch (IOException e) {
+			logger.warning("Could not create key for S3 object." );
+			e.printStackTrace();
+		}
+		
 	}
 
 }

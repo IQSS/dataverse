@@ -51,6 +51,7 @@ function uploadFileDirectly(url, storageId) {
   $('.ui-fileupload-progress').append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
   $.ajax({
     url: url,
+    headers: {"x-amz-tagging":"dv-state=temp"},
     type: 'PUT',
     data: file,
     cache: false,

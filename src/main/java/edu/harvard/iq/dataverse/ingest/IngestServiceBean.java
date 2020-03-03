@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -301,6 +302,9 @@ public class IngestServiceBean {
 						dataAccess.open(DataAccessOption.READ_ACCESS);
 						//set file size
 						dataFile.setFilesize(dataAccess.getSize());
+						if(dataAccess instanceof S3AccessIO) {
+							((S3AccessIO<DvObject>)dataAccess).removeTempTag();
+						}
 					} catch (IOException ioex) {
 						logger.warning("Failed to get file size, storage id " + dataFile.getStorageIdentifier() + " ("
 								+ ioex.getMessage() + ")");
