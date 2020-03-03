@@ -37,6 +37,16 @@
                         </ui:fragment>
                     </span>
                 </div>
+                <div class="col-xs-7 small" jsf:rendered="#{systemConfig.showTermsOfUseFooterLinkRendered}">
+                    <h:outputLink value="/termsofuse.xhtml">
+                        <h:outputText value="#{bundle['footer.termsOfUse.link.name']}"/>
+                    </h:outputLink>
+                </div>
+                <div class="col-xs-7 small" jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered}">
+                    <h:outputLink value="/privacy-policy.xhtml">
+                        <h:outputText value="#{bundle['footer.privacyPolicy.link.name']}"/>
+                    </h:outputLink>
+                </div>
                 <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
                     <div class="poweredbylogo">
                         <span>#{bundle['footer.poweredby']}</span>

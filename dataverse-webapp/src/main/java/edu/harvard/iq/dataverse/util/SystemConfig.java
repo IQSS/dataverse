@@ -45,7 +45,6 @@ public class SystemConfig {
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
 
-
     @EJB
     private SettingsServiceBean settingsService;
 
@@ -498,6 +497,14 @@ public class SystemConfig {
         return configuredLocales;
     }
 
+    public boolean isShowPrivacyPolicyFooterLinkRendered() {
+        return settingsService.isTrueForKey(Key.ShowPrivacyPolicyFooterLink);
+    }
+
+    public boolean isShowTermsOfUseFooterLinkRendered() {
+        return settingsService.isTrueForKey(Key.ShowTermsOfUseFooterLink);
+    }
+
     private String getFromBundleIfEmptyLocalizedProperty(Key key, Locale locale, String bundleKey) {
         String result = settingsService.getValueForKeyWithPostfix(key, locale.toLanguageTag());
         
@@ -509,4 +516,6 @@ public class SystemConfig {
 
         return result.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle(bundleKey) : result;
     }
+
+
 }
