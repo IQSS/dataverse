@@ -977,19 +977,18 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/versions/:draft
 
-Set Citation Date Field for a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set Citation Date Field Type for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
-To revert to the default logic, use ``:publicationDate`` as the ``$DATASET_FIELD_TYPE_NAME``.
-Note that the dataset field used has to be a date field.
+Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default.
+Note that the dataset citation date field type must be a date field.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
-  export DATASET_FIELD_TYPE_NAME=:publicationDate
+  export DATASET_FIELD_TYPE_NAME=:dateOfDeposit
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/$ID/citationdate --data "$DATASET_FIELD_TYPE_NAME"
 
@@ -997,12 +996,12 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":publicationDate"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":dateOfDeposit"
 
-Revert Citation Date Field to Default for Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Revert Citation Date Field Type to Default for Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body:
+Restores the default citation date field type, ``:publicationDate``, for a given dataset.
 
 .. code-block:: bash
 
