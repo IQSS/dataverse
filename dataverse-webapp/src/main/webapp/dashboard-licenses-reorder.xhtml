@@ -28,12 +28,28 @@
         <ui:define name="body">
 
             <h:form>
+                
+                <!-- Last reorder undo -->
+                <p:panel id="undoLastReorder"
+                            rendered="#{LicenseReorderPage.lastReorderFromAndTo != null}">
+                    <h:outputFormat value="#{bundle['license.reorder.lastReorder']}" escape="false">
+                                    <f:param value="#{LicenseReorderPage.lastReorderLicense.localizedText}"/>
+                                    <f:param value="#{LicenseReorderPage.lastReorderFromAndTo._1() + 1}"/>
+                                    <f:param value="#{LicenseReorderPage.lastReorderFromAndTo._2() + 1}"/>
+                    </h:outputFormat>
+                    
+                    <p:commandButton styleClass="btn btn-default"
+                            value="#{bundle.undo}"
+                            actionListener="#{LicenseReorderPage.undoLastReorder()}"
+                            update="licenseTable @form" />
+                </p:panel>
+                
                 <p:dataTable id="licenseTable" var="license" value="#{LicenseReorderPage.licenses}"
                              widgetVar="licenseTable"
                              rowIndexVar="rowIndex" draggableRows="true"
                              style="width: 80%">
                              
-                    <p:ajax event="rowReorder" update="licenseTable" />
+                    <p:ajax event="rowReorder" listener="#{LicenseReorderPage.onRowReorder}" update="@form" />
                     
                     <p:column headerText="#{bundle['license.reorder.license.header']}">
                         <h:outputText value="#{license.localizedText}"/>
@@ -45,7 +61,7 @@
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-up-button"
                                        actionListener="#{LicenseReorderPage.moveUp(rowIndex)}"
                                        rendered="#{(rowIndex gt 0)}"
-                                       update="licenseTable"
+                                       update="licenseTable @form"
                                        >
                             <span class="glyphicon glyphicon-chevron-up no-text"/>
                         </p:commandLink>
@@ -53,14 +69,14 @@
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-down-button"
                                        actionListener="#{LicenseReorderPage.moveDown(rowIndex)}"
                                        rendered="#{rowIndex lt LicenseReorderPage.licenses.size()-1}"
-                                       update="licenseTable"
+                                       update="licenseTable @form"
                                        >
                             <span class="glyphicon glyphicon-chevron-down no-text"/>
                         </p:commandLink>
                     </p:column>
                     
                 </p:dataTable>
-                <div class="container">
+                
                     <div class="row text-left">
                         <div class="col" style="margin-top: 20px">
                             <p:commandButton styleClass="btn btn-primary"
@@ -71,7 +87,7 @@
                                              action="#{LicenseReorderPage.cancel()}"/>
                         </div>
                     </div>
-                </div>
+                
             </h:form>
             
         </ui:define>

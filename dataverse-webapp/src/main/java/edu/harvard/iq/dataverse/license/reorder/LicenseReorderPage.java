@@ -7,9 +7,12 @@ import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseSimpleDto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
+import org.primefaces.event.ReorderEvent;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -35,11 +38,22 @@ public class LicenseReorderPage implements Serializable {
     private LicenseMapper licenseMapper;
 
     private List<LicenseSimpleDto> licenses = new ArrayList<>();
+    
+    private Tuple2<Integer, Integer> lastReorderFromAndTo;
+    private LicenseSimpleDto lastReorderLicense;
 
     // -------------------- GETTERS --------------------
 
     public List<LicenseSimpleDto> getLicenses() {
         return licenses;
+    }
+
+    public Tuple2<Integer, Integer> getLastReorderFromAndTo() {
+        return lastReorderFromAndTo;
+    }
+
+    public LicenseSimpleDto getLastReorderLicense() {
+        return lastReorderLicense;
     }
 
     // -------------------- LOGIC --------------------
@@ -58,11 +72,30 @@ public class LicenseReorderPage implements Serializable {
     public void moveUp(int licenseIndex) {
         LicenseSimpleDto licenseToMove = licenses.remove(licenseIndex);
         licenses.add(licenseIndex - 1, licenseToMove);
+
+        lastReorderFromAndTo = Tuple.of(licenseIndex, licenseIndex - 1);
+        lastReorderLicense = licenseToMove;
     }
 
     public void moveDown(int licenseIndex) {
         LicenseSimpleDto licenseToMove = licenses.remove(licenseIndex);
         licenses.add(licenseIndex + 1, licenseToMove);
+
+        lastReorderFromAndTo = Tuple.of(licenseIndex, licenseIndex + 1);
+        lastReorderLicense = licenseToMove;
+    }
+
+    public void onRowReorder(ReorderEvent event) {
+        lastReorderFromAndTo = Tuple.of(event.getFromIndex(), event.getToIndex());
+        lastReorderLicense = licenses.get(event.getToIndex());
+    }
+
+    public void undoLastReorder() {
+        LicenseSimpleDto licenseMoved = licenses.remove(lastReorderFromAndTo._2().intValue());
+        licenses.add(lastReorderFromAndTo._1(), licenseMoved);
+
+        lastReorderFromAndTo = null;
+        lastReorderLicense = null;
     }
 
     /**

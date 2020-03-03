@@ -25,6 +25,22 @@
                 <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['file.reorderFiles'])}"/>
             </f:metadata>
             <h:form id="form">
+                
+                <!-- Last reorder undo -->
+                <p:panel id="undoLastReorder"
+                            rendered="#{ReorderDataFilesPage.lastReorderFromAndTo != null}">
+                    <h:outputFormat value="#{bundle['file.reorder.lastReorder']}" escape="false">
+                                    <f:param value="#{ReorderDataFilesPage.lastReorderFileMetadata.label}"/>
+                                    <f:param value="#{ReorderDataFilesPage.lastReorderFromAndTo._1() + 1}"/>
+                                    <f:param value="#{ReorderDataFilesPage.lastReorderFromAndTo._2() + 1}"/>
+                    </h:outputFormat>
+                    
+                    <p:commandButton styleClass="btn btn-default"
+                            value="#{bundle.undo}"
+                            actionListener="#{ReorderDataFilesPage.undoLastReorder()}"
+                            update="filesTable @form" />
+                </p:panel>
+            
                 <!-- Files Table -->
                 <p:dataTable id="filesTable"
                              style="margin-right:1px;"
@@ -37,7 +53,8 @@
                              styleClass="filesTable"
                 >
                 
-                    <p:ajax event="rowReorder" update="filesTable" />
+                    <p:ajax event="rowReorder" listener="#{ReorderDataFilesPage.onRowReorder}"
+                            update="@form" />
                 
                     <p:column headerText="#{bundle.file}">
 
@@ -104,7 +121,7 @@
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
                                        actionListener="#{ReorderDataFilesPage.moveUp(rowIndex)}"
                                        rendered="#{(rowIndex gt 0)}"
-                                       update="filesTable"
+                                       update="filesTable @form"
                                        >
                             <span class="glyphicon glyphicon-chevron-up no-text"/>
                         </p:commandLink>
@@ -112,7 +129,7 @@
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
                                        actionListener="#{ReorderDataFilesPage.moveDown(rowIndex)}"
                                        rendered="#{rowIndex lt ReorderDataFilesPage.fileMetadatas.size()-1}"
-                                       update="filesTable"
+                                       update="filesTable @form"
                                        >
                             <span class="glyphicon glyphicon-chevron-down no-text"/>
                         </p:commandLink>
@@ -135,6 +152,7 @@
                         </p:outputPanel>
                     </div>
                 </p:fragment>
+                
             </h:form>
             <script type="text/javascript">
                 function hideOrShowDetails(id) {
