@@ -64,6 +64,7 @@
       <anlyInfo/>
     </method>
     <dataAccs>
+      <setAvail/>
       <useStmt/>
     </dataAccs>
     <othrStdyMat/>

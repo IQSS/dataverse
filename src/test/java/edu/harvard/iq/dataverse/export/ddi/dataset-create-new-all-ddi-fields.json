@@ -17,6 +17,20 @@
     "createTime": "2015-09-24T16:47:51Z",
     "license": "CC0",
     "termsOfUse": "CC0 Waiver",
+    "termsOfAccess": "Terms of Access",
+    "dataAccessPlace": "Data Access Place",
+    "originalArchive": "Original Archive",
+    "availabilityStatus": "Availability Status",
+    "sizeOfCollection": "Size of Collection",
+    "studyCompletion": "Study Completion",
+    "confidentialityDeclaration": "Confidentiality Declaration",
+    "specialPermissions": "Special Permissions",
+    "restrictions": "Restrictions",
+    "contactForAccess": "Contact for Access",
+    "citationRequirements": "Citation Requirements",
+    "depositorRequirements": "Depositor Requirements",
+    "conditions": "Conditions ",
+    "disclaimer": "Disclaimer",
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
@@ -38,6 +52,41 @@
             "multiple": false,
             "typeClass": "primitive",
             "value": "Alternative Title"
+          },
+          {
+            "typeName": "otherId",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "otherIdAgency": {
+                  "typeName": "otherIdAgency",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "OtherIDAgency1"
+                },
+                "otherIdValue": {
+                  "typeName": "otherIdValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "OtherIDIdentifier1"
+                }
+              },
+              {
+                "otherIdAgency": {
+                  "typeName": "otherIdAgency",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "OtherIDAgency2"
+                },
+                "otherIdValue": {
+                  "typeName": "otherIdValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "OtherIDIdentifier2"
+                }
+              }
+            ]
           },
           {
             "typeName": "author",
@@ -361,6 +410,41 @@
             "multiple": false,
             "typeClass": "primitive",
             "value": "ProductionPlace"
+          },
+          {
+            "typeName": "contributor",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Data Collector"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "LastContributor1, FirstContributor1"
+                }
+              },
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Data Curator"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "LastContributor2, FirstContributor2"
+                }
+              }
+            ]
           },
           {
             "typeName": "grantNumber",

@@ -73,7 +73,9 @@ public class DdiExportUtil {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
     public static final String NOTE_TYPE_TERMS_OF_USE = "DVN:TOU";
-    public static final String NOTE_SUBJECT_TERMS_OF_USE = "Terms Of Use";
+    public static final String NOTE_TYPE_TERMS_OF_ACCESS = "DVN:TOA";
+    public static final String NOTE_TYPE_DATA_ACCESS_PLACE = "DVN:DAP";
+
 
     public static final String LEVEL_DV = "dv";
 
@@ -186,13 +188,19 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
         xmlw.writeEndElement(); // IDNo
-       
+        writeOtherIdElement(xmlw, version);
         xmlw.writeEndElement(); // titlStmt
 
         writeAuthorsElement(xmlw, version);
         writeProducersElement(xmlw, version);
         
         xmlw.writeStartElement("distStmt");
+        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+            xmlw.writeStartElement("distrbtr");
+            writeAttribute(xmlw, "source", "archive");
+            xmlw.writeCharacters(datasetDto.getPublisher());
+            xmlw.writeEndElement(); //distrbtr
+        }
         writeDistributorsElement(xmlw, version);
         writeContactsElement(xmlw, version);
         writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
@@ -245,23 +253,27 @@ public class DdiExportUtil {
             xmlw.writeCharacters(version.getTermsOfUse());
             xmlw.writeEndElement(); //notes
         }
-        /*else if (xmlr.getLocalName().equals("notes")) {
-            String noteType = xmlr.getAttributeValue(null, "type");
-            if (NOTE_TYPE_TERMS_OF_USE.equalsIgnoreCase(noteType) ) {
-                if ( LEVEL_DV.equalsIgnoreCase(xmlr.getAttributeValue(null, "level"))) {
-                    dvDTO.setTermsOfUse(parseText(xmlr, "notes"));
-                }*/
+        if (version.getTermsOfAccess() != null && !version.getTermsOfAccess().trim().equals("")) {
+            xmlw.writeStartElement("notes");
+            writeAttribute(xmlw, "type", NOTE_TYPE_TERMS_OF_ACCESS);
+            writeAttribute(xmlw, "level", LEVEL_DV);
+            xmlw.writeCharacters(version.getTermsOfAccess());
+            xmlw.writeEndElement(); //notes
+        }
+
+        xmlw.writeStartElement("setAvail");
         writeFullElement(xmlw, "accsPlac", version.getDataAccessPlace());
         writeFullElement(xmlw, "origArch", version.getOriginalArchive());
         writeFullElement(xmlw, "avlStatus", version.getAvailabilityStatus());
         writeFullElement(xmlw, "collSize", version.getSizeOfCollection());
         writeFullElement(xmlw, "complete", version.getStudyCompletion());
+        xmlw.writeEndElement(); //setAvail
         xmlw.writeStartElement("useStmt");
         writeFullElement(xmlw, "confDec", version.getConfidentialityDeclaration());
         writeFullElement(xmlw, "specPerm", version.getSpecialPermissions());
         writeFullElement(xmlw, "restrctn", version.getRestrictions());
         writeFullElement(xmlw, "contact", version.getContactForAccess());
-        writeFullElement(xmlw, "citeReq", version.getCitationRequirements());
+        writeFullElement(xmlw, "citReq", version.getCitationRequirements());
         writeFullElement(xmlw, "deposReq", version.getDepositorRequirements());
         writeFullElement(xmlw, "conditions", version.getConditions());
         writeFullElement(xmlw, "disclaimer", version.getDisclaimer());
@@ -293,10 +305,15 @@ public class DdiExportUtil {
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
-        xmlw.writeEndElement(); // IDNo      
+        xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
-        writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
+        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+            xmlw.writeStartElement("distrbtr");
+            writeAttribute(xmlw, "source", "archive");
+            xmlw.writeCharacters(datasetDto.getPublisher());
+            xmlw.writeEndElement(); // distrbtr
+        }
         writeFullElement(xmlw, "distDate", datasetDto.getPublicationDate());
         
         xmlw.writeEndElement(); // diststmt
@@ -606,9 +623,9 @@ public class DdiExportUtil {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
+                xmlw.writeStartElement("rspStmt");
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
-                        xmlw.writeStartElement("rspStmt");
                         String authorName = "";
                         String authorAffiliation = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
@@ -630,10 +647,34 @@ public class DdiExportUtil {
                                 xmlw.writeEndElement(); //AuthEnty
                             }
                         }
-                        xmlw.writeEndElement(); //rspStmt
+
+                    } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
+                        String contributorName = "";
+                        String contributorType = "";
+                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
+                                FieldDTO next = iterator.next();
+                                if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
+                                    contributorName =  next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.contributorType.equals(next.getTypeName())) {
+                                    contributorType =  next.getSinglePrimitive();
+                                }
+                            }
+                            if (!contributorName.isEmpty()){
+                                xmlw.writeStartElement("othId");
+                                if(!contributorType.isEmpty()){
+                                    writeAttribute(xmlw,"role", contributorType);
+                                }
+                                xmlw.writeCharacters(contributorName);
+                                xmlw.writeEndElement(); //othId
+                            }
+                        }
                     }
                 }
+                xmlw.writeEndElement(); //rspStmt
             }
+
         }
     }
     
@@ -832,12 +873,27 @@ public class DdiExportUtil {
                                     url =  next.getSinglePrimitive();
                                 }
                             }
-                            pubString = appendCommaSeparatedValue(citation, IDType);
-                            pubString = appendCommaSeparatedValue(pubString, IDNo);
-                            pubString = appendCommaSeparatedValue(pubString, url);
-                            if (!pubString.isEmpty()){
-                                xmlw.writeStartElement("relPubl"); 
-                                xmlw.writeCharacters(pubString);
+                            if (citation != null && !citation.trim().equals("")) {
+                                xmlw.writeStartElement("relPubl");
+                                xmlw.writeStartElement("citation");
+                                if (IDNo != null && !IDNo.trim().equals("")) {
+                                    xmlw.writeStartElement("titlStmt");
+                                    xmlw.writeStartElement("IDNo");
+                                    if (IDType != null && !IDType.trim().equals("")) {
+                                        xmlw.writeAttribute("agency", IDType );
+                                    }
+                                    xmlw.writeCharacters(IDNo);
+                                    xmlw.writeEndElement(); //IDNo
+                                    xmlw.writeEndElement(); // titlStmt
+                                }
+
+                                writeFullElement(xmlw,"biblCit",citation);
+                                xmlw.writeEndElement(); //citation
+                                if (url != null && !url.trim().equals("") ) {
+                                    xmlw.writeStartElement("ExtLink");
+                                    xmlw.writeAttribute("URI", url);
+                                    xmlw.writeEndElement(); //ExtLink
+                                }
                                 xmlw.writeEndElement(); //relPubl
                             }
                         }
