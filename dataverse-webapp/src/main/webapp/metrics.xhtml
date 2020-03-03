@@ -23,24 +23,25 @@
 
             <!-- Published Datasets Chart -->
             <h:form id="publishedDatasetsForm">
-                <h4><h:outputText value="#{bundle['metrics.chart.publishedDatasets.title']}" /></h4>
+                <h4><h:outputText value="#{bundle['metrics.section.datasets.title']}" /></h4>
                 <p:panelGrid>
                     <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
                         <p:selectOneRadio id="model" value="#{PublishedDatasetsChart.mode}" style="padding-left: 10px">
                             <p:ajax event="change" update="publishedDatasetsForm" listener="#{PublishedDatasetsChart.changeDatasetMetricsModel}"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.permonth']}" itemValue="MONTH"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasets.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasets.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasets.radiobutton.monthly.label']}" itemValue="MONTH"/>
                         </p:selectOneRadio>
                         <p:selectOneMenu id="years" value="#{PublishedDatasetsChart.selectedYear}" disabled="#{PublishedDatasetsChart.mode != 'MONTH'}">
                             <p:ajax event="change" update="publishedDatasetsForm" listener="#{PublishedDatasetsChart.changeDatasetMetricsModel}"/>
-                            <f:selectItems value="#{PublishedDatasetsChart.publishedDatasetsYearlyStats}" var="metrics"
+                            <f:selectItems value="#{PublishedDatasetsChart.yearlyStats}" var="metrics"
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
                     <p:chart id="newDatasetsChart"
                              type="bar"
-                             model="#{PublishedDatasetsChart.publishedDatasetsModel}"
-                             style="height:300px"
+                             model="#{PublishedDatasetsChart.chartModel}"
+                             style="height:300px; min-width: 500px"
                              responsive="true"
                     />
                 </p:panelGrid>
@@ -48,13 +49,14 @@
 
             <!-- Published Files Chart-->
             <h:form id="filesCountForm">
-                <h4><h:outputText value="#{bundle['metrics.chart.publishedFiles.title']}" /></h4>
+                <h4><h:outputText value="#{bundle['metrics.section.files.title']}" /></h4>
                 <p:panelGrid>
                     <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
                         <p:selectOneRadio id="files_mode" value="#{FilesChart.mode}" style="padding-left: 10px">
                             <p:ajax event="change" update="filesCountForm" listener="#{FilesChart.changeChartGrouping}"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.permonth']}" itemValue="MONTH"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.files.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.files.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.files.radiobutton.monthly.label']}" itemValue="MONTH"/>
                         </p:selectOneRadio>
                         <p:selectOneMenu id="files_years" value="#{FilesChart.selectedYear}" disabled="#{FilesChart.mode != 'MONTH'}">
                             <p:ajax event="change" update="filesCountForm" listener="#{FilesChart.changeChartGrouping}"/>
@@ -65,20 +67,21 @@
                     <p:chart id="newFilesChart"
                              type="bar"
                              model="#{FilesChart.chartModel}"
-                             style="height:300px"
+                             style="height:300px; min-width: 500px"
                              responsive="true" />
                 </p:panelGrid>
             </h:form>
 
             <!-- Published Files Storage Chart-->
             <h:form id="filesStorageCountForm">
-                <h4><h:outputText value="#{bundle['metrics.chart.publishedFilesStorage.title']}" /></h4>
+                <h4><h:outputText value="#{bundle['metrics.section.filesStorage.title']}" /></h4>
                 <p:panelGrid>
                     <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
                         <p:selectOneRadio id="filesStorage_mode" value="#{FilesStorageChart.mode}" style="padding-left: 10px">
                             <p:ajax event="change" update="filesStorageCountForm" listener="#{FilesStorageChart.changeChartGrouping}"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.permonth']}" itemValue="MONTH"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesStorage.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesStorage.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesStorage.radiobutton.monthly.label']}" itemValue="MONTH"/>
                         </p:selectOneRadio>
                         <p:selectOneMenu id="filesStorage_years" value="#{FilesStorageChart.selectedYear}" disabled="#{FilesStorageChart.mode != 'MONTH'}">
                             <p:ajax event="change" update="filesStorageCountForm" listener="#{FilesStorageChart.changeChartGrouping}"/>
@@ -89,31 +92,32 @@
                     <p:chart id="newFilesStorageChart"
                              type="bar"
                              model="#{FilesStorageChart.chartModel}"
-                             style="height:300px"
+                             style="height:300px; min-width: 500px"
                              responsive="true" />
                 </p:panelGrid>
             </h:form>
 
             <!-- Authenticated Users Chart-->
             <h:form id="usersCountForm">
-                <h4><h:outputText value="#{bundle['metrics.chart.authenticatedUsers.title']}" /></h4>
+                <h4><h:outputText value="#{bundle['metrics.section.users.title']}" /></h4>
                 <p:panelGrid>
                     <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
                         <p:selectOneRadio id="users_mode" value="#{UsersChart.mode}" style="padding-left: 10px">
                             <p:ajax event="change" update="usersCountForm" listener="#{UsersChart.changeChartGrouping}"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.peryear']}" itemValue="YEAR"/>
-                            <f:selectItem itemLabel="#{bundle['metrics.permonth']}" itemValue="MONTH"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.users.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.users.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.users.radiobutton.monthly.label']}" itemValue="MONTH"/>
                         </p:selectOneRadio>
                         <p:selectOneMenu id="users_years" value="#{UsersChart.selectedYear}" disabled="#{UsersChart.mode != 'MONTH'}">
                             <p:ajax event="change" update="usersCountForm" listener="#{UsersChart.changeChartGrouping}"/>
-                            <f:selectItems value="#{UsersChart.usersYearlyStats}" var="metrics"
+                            <f:selectItems value="#{UsersChart.yearlyStats}" var="metrics"
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
                     <p:chart id="newUsersChart"
                              type="bar"
-                             model="#{UsersChart.usersChart}"
-                             style="height:300px"
+                             model="#{UsersChart.chartModel}"
+                             style="height:300px; min-width: 500px"
                              responsive="true"
                     />
                 </p:panelGrid>

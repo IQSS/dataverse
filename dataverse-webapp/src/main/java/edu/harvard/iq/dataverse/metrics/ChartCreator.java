@@ -14,22 +14,41 @@ import java.util.List;
 @Stateless
 public class ChartCreator {
     private static int TICKS_COUNT = 5;
+    private static int MAX_YEARS_PER_CHART = 10;
 
     // -------------------- LOGIC --------------------
     public BarChartModel createYearlyChart(List<ChartMetrics> metrics, String chartType) {
         List<ChartMetrics> yearlyMetrics =
-                MetricsUtil.countMetricsPerYearAndFillMissingYears(metrics);
+                MetricsUtil.countMetricsPerYearAndFillMissingYears(metrics, MAX_YEARS_PER_CHART);
 
         if (yearlyMetrics.isEmpty()) {
             yearlyMetrics.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
         }
 
-        String xLabel = BundleUtil.getStringFromBundle("metrics.year");
-        String yLabel = BundleUtil.getStringFromBundle("metrics.chart.legend." + chartType + ".label");
-        String title = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".title");
+        String xLabel = BundleUtil.getStringFromBundle("metrics.chart.xAxis.year.label");
+        String yLabel = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".yAxis.label");
+        String title = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".yearly.title");
 
         BarChartModel model = createBarModel(yearlyMetrics, title, xLabel, yLabel);
         model.addSeries(createYearlySeries(yearlyMetrics, yLabel));
+
+        return model;
+    }
+
+    public BarChartModel createYearlyCumulativeChart(List<ChartMetrics> metrics, String chartType) {
+        List<ChartMetrics> yearlyCumulativeMetrics =
+                MetricsUtil.countCumulativeMetricsPerYearAndFillMissingYears(metrics, MAX_YEARS_PER_CHART);
+
+        if (yearlyCumulativeMetrics.isEmpty()) {
+            yearlyCumulativeMetrics.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+        }
+
+        String xLabel = BundleUtil.getStringFromBundle("metrics.chart.xAxis.year.label");
+        String yLabel = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".yAxis.label");
+        String title = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".yearlyCumulative.title");
+
+        BarChartModel model = createBarModel(yearlyCumulativeMetrics, title, xLabel, yLabel);
+        model.addSeries(createYearlySeries(yearlyCumulativeMetrics, yLabel));
 
         return model;
     }
@@ -38,9 +57,9 @@ public class ChartCreator {
         List<ChartMetrics> chartMetrics =
                 MetricsUtil.fillMissingMonthsForMetrics(metrics, year);
 
-        String xLabel = BundleUtil.getStringFromBundle("metrics.month");
-        String yLabel = BundleUtil.getStringFromBundle("metrics.chart.legend." + chartType + ".label");
-        String title = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".title");
+        String xLabel = BundleUtil.getStringFromBundle("metrics.chart.xAxis.month.label");
+        String yLabel = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".yAxis.label");
+        String title = BundleUtil.getStringFromBundle("metrics.chart." + chartType + ".monthly.title");
 
         BarChartModel model = createBarModel(chartMetrics, title, xLabel, yLabel);
         model.addSeries(createMonthlySeries(chartMetrics, yLabel));

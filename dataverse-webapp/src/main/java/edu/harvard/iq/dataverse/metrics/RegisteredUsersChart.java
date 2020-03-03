@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import javax.faces.view.ViewScoped;
 import org.primefaces.model.chart.BarChartModel;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -18,13 +18,13 @@ public class RegisteredUsersChart implements Serializable {
     private ChartCreator chartCreator;
     private MetricsServiceBean metricsService;
 
-    private final String CHART_TYPE = "authenticatedUsers";
+    private final String CHART_TYPE = "users";
 
-    private BarChartModel usersChart;
-    private List<ChartMetrics> usersYearlyStats = new ArrayList<>();
-    private List<ChartMetrics> usersMetrics = new ArrayList<>();
+    private BarChartModel chartModel;
+    private List<ChartMetrics> yearlyStats = new ArrayList<>();
+    private List<ChartMetrics> chartMetrics = new ArrayList<>();
 
-    private String mode = "YEAR";
+    private String mode = "YEAR_CUMULATIVE";
     private int selectedYear;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -39,12 +39,12 @@ public class RegisteredUsersChart implements Serializable {
     }
 
     // -------------------- GETTERS --------------------
-    public BarChartModel getUsersChart() {
-        return usersChart;
+    public BarChartModel getChartModel() {
+        return chartModel;
     }
 
-    public List<ChartMetrics> getUsersYearlyStats() {
-        return usersYearlyStats;
+    public List<ChartMetrics> getYearlyStats() {
+        return yearlyStats;
     }
 
     public String getMode() {
@@ -58,25 +58,26 @@ public class RegisteredUsersChart implements Serializable {
     // -------------------- LOGIC --------------------
     public void init() {
 
-        usersMetrics = metricsService.countAuthenticatedUsers();
+        chartMetrics = metricsService.countAuthenticatedUsers();
 
-        if (usersMetrics.isEmpty()) {
-            usersYearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+        if (chartMetrics.isEmpty()) {
+            yearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
             selectedYear = LocalDate.now().getYear();
         } else {
-            usersYearlyStats = MetricsUtil.countMetricsPerYearAndFillMissingYearsDescending(usersMetrics);
-            selectedYear = usersYearlyStats.get(0).getYear();
+            yearlyStats = MetricsUtil.countMetricsPerYearAndFillMissingYearsDescending(chartMetrics);
+            selectedYear = yearlyStats.get(0).getYear();
         }
 
-        usersChart = chartCreator.createYearlyChart(usersMetrics, CHART_TYPE);
+        chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
     }
 
     public void changeChartGrouping() {
         if (isYearlyChartSelected()) {
-            usersChart = chartCreator.createYearlyChart(usersMetrics, CHART_TYPE);
-
+            chartModel = chartCreator.createYearlyChart(chartMetrics, CHART_TYPE);
+        } else if (isYearlyCumulativeChartSelected()) {
+            chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
         } else if (isMonthlyChartSelected()) {
-            usersChart = chartCreator.createMonthlyChart(usersMetrics, selectedYear, CHART_TYPE);
+            chartModel = chartCreator.createMonthlyChart(chartMetrics, selectedYear, CHART_TYPE);
         }
     }
 
@@ -89,6 +90,10 @@ public class RegisteredUsersChart implements Serializable {
         return mode.equals("YEAR");
     }
 
+    private boolean isYearlyCumulativeChartSelected() {
+        return mode.equals("YEAR_CUMULATIVE");
+    }
+
     // -------------------- SETTERS --------------------
     public void setMode(String mode) {
         this.mode = mode;
@@ -98,7 +103,7 @@ public class RegisteredUsersChart implements Serializable {
         this.selectedYear = selectedYear;
     }
 
-    public void setUsersYearlyStats(List<ChartMetrics> usersYearlyStats) {
-        this.usersYearlyStats = usersYearlyStats;
+    public void setYearlyStats(List<ChartMetrics> yearlyStats) {
+        this.yearlyStats = yearlyStats;
     }
 }

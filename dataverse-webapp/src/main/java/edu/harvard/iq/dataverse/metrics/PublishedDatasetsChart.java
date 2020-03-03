@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import javax.faces.view.ViewScoped;
 import org.primefaces.model.chart.BarChartModel;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -18,13 +18,13 @@ public class PublishedDatasetsChart implements Serializable {
     private ChartCreator chartCreator;
     private MetricsServiceBean metricsService;
 
-    private final String CHART_TYPE = "publishedDatasets";
+    private final String CHART_TYPE = "datasets";
 
-    private BarChartModel publishedDatasetsModel;
-    private List<ChartMetrics> publishedDatasetsYearlyStats = new ArrayList<>();
-    private List<ChartMetrics> datasetsMetrics = new ArrayList<>();
+    private BarChartModel chartModel;
+    private List<ChartMetrics> yearlyStats = new ArrayList<>();
+    private List<ChartMetrics> chartMetrics = new ArrayList<>();
 
-    private String mode = "YEAR";
+    private String mode = "YEAR_CUMULATIVE";
     private int selectedYear;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -39,12 +39,12 @@ public class PublishedDatasetsChart implements Serializable {
     }
 
     // -------------------- GETTERS --------------------
-    public BarChartModel getPublishedDatasetsModel() {
-        return publishedDatasetsModel;
+    public BarChartModel getChartModel() {
+        return chartModel;
     }
 
-    public List<ChartMetrics> getPublishedDatasetsYearlyStats() {
-        return publishedDatasetsYearlyStats;
+    public List<ChartMetrics> getYearlyStats() {
+        return yearlyStats;
     }
 
     public String getMode() {
@@ -57,35 +57,40 @@ public class PublishedDatasetsChart implements Serializable {
 
     // -------------------- LOGIC --------------------
     public void init() {
-        datasetsMetrics = metricsService.countPublishedDatasets();
+        chartMetrics = metricsService.countPublishedDatasets();
 
-        if (datasetsMetrics.isEmpty()) {
-            publishedDatasetsYearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
+        if (chartMetrics.isEmpty()) {
+            yearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
             selectedYear = LocalDate.now().getYear();
         } else {
-            publishedDatasetsYearlyStats = MetricsUtil.countMetricsPerYearAndFillMissingYearsDescending(datasetsMetrics);
-            selectedYear = publishedDatasetsYearlyStats.get(0).getYear();
+            yearlyStats = MetricsUtil.countMetricsPerYearAndFillMissingYearsDescending(chartMetrics);
+            selectedYear = yearlyStats.get(0).getYear();
         }
 
-        publishedDatasetsModel = chartCreator.createYearlyChart(metricsService.countPublishedDatasets(), CHART_TYPE);
+        chartModel = chartCreator.createYearlyCumulativeChart(metricsService.countPublishedDatasets(), CHART_TYPE);
     }
 
     public void changeDatasetMetricsModel() {
-        if (shouldGenerateYearlyModel()) {
-            publishedDatasetsModel = chartCreator.createYearlyChart(datasetsMetrics, CHART_TYPE);
-
-        } else if (shouldGenerateMonthlyModel()) {
-            publishedDatasetsModel = chartCreator.createMonthlyChart(datasetsMetrics, selectedYear, CHART_TYPE);
+        if (isYearlyChartSelected()) {
+            chartModel = chartCreator.createYearlyChart(chartMetrics, CHART_TYPE);
+        } else if (isYearlyCumulativeChartSelected()) {
+            chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
+        } else if (isMonthlyChartSelected()) {
+            chartModel = chartCreator.createMonthlyChart(chartMetrics, selectedYear, CHART_TYPE);
         }
     }
 
     // -------------------- PRIVATE ---------------------
-    private boolean shouldGenerateMonthlyModel() {
+    private boolean isMonthlyChartSelected() {
         return selectedYear != 0;
     }
 
-    private boolean shouldGenerateYearlyModel() {
+    private boolean isYearlyChartSelected() {
         return mode.equals("YEAR");
+    }
+
+    private boolean isYearlyCumulativeChartSelected() {
+        return mode.equals("YEAR_CUMULATIVE");
     }
 
     // -------------------- SETTERS --------------------
@@ -97,7 +102,7 @@ public class PublishedDatasetsChart implements Serializable {
         this.selectedYear = selectedYear;
     }
 
-    public void setPublishedDatasetsYearlyStats(List<ChartMetrics> publishedDatasetsYearlyStats) {
-        this.publishedDatasetsYearlyStats = publishedDatasetsYearlyStats;
+    public void setYearlyStats(List<ChartMetrics> yearlyStats) {
+        this.yearlyStats = yearlyStats;
     }
 }

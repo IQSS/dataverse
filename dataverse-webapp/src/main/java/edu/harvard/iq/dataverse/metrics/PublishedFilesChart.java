@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import javax.faces.view.ViewScoped;
 import org.primefaces.model.chart.BarChartModel;
 
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -18,13 +18,13 @@ public class PublishedFilesChart implements Serializable {
     private ChartCreator chartCreator;
     private MetricsServiceBean metricsService;
 
-    private final String CHART_TYPE = "publishedFiles";
+    private final String CHART_TYPE = "files";
 
     private BarChartModel chartModel;
     private List<ChartMetrics> yearlyStats = new ArrayList<>();
     private List<ChartMetrics> chartMetrics = new ArrayList<>();
 
-    private String mode = "YEAR";
+    private String mode = "YEAR_CUMULATIVE";
     private int selectedYear;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -68,13 +68,14 @@ public class PublishedFilesChart implements Serializable {
             selectedYear = yearlyStats.get(0).getYear();
         }
 
-        chartModel = chartCreator.createYearlyChart(chartMetrics, CHART_TYPE);
+        chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
     }
 
     public void changeChartGrouping() {
         if (isYearlyChartSelected()) {
             chartModel = chartCreator.createYearlyChart(chartMetrics, CHART_TYPE);
-
+        } else if (isYearlyCumulativeChartSelected()) {
+            chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
         } else if (isMonthlyChartSelected()) {
             chartModel = chartCreator.createMonthlyChart(chartMetrics, selectedYear, CHART_TYPE);
         }
@@ -87,6 +88,10 @@ public class PublishedFilesChart implements Serializable {
 
     private boolean isYearlyChartSelected() {
         return mode.equals("YEAR");
+    }
+
+    private boolean isYearlyCumulativeChartSelected() {
+        return mode.equals("YEAR_CUMULATIVE");
     }
 
     // -------------------- SETTERS --------------------

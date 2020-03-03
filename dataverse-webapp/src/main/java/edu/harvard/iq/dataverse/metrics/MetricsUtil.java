@@ -172,8 +172,16 @@ public class MetricsUtil {
         return jab;
     }
 
-    public static List<ChartMetrics> countMetricsPerYearAndFillMissingYears(List<ChartMetrics> metrics) {
-        return fillMissingYearsForMetrics(countMetricsPerYear(metrics));
+    public static List<ChartMetrics> countMetricsPerYearAndFillMissingYears(List<ChartMetrics> metrics, int maxYearsPerChart) {
+        return fillMissingYearsForMetrics(countMetricsPerYear(metrics), maxYearsPerChart);
+    }
+
+    public static List<ChartMetrics> countCumulativeMetricsPerYearAndFillMissingYears(List<ChartMetrics> metrics, int maxYearsPerChart) {
+        List<ChartMetrics> accumulatedMetrics = accumulateMetrics(fillMissingYearsForMetrics(metrics));
+        int maxYear = LocalDate.now().getYear();
+        int minYear = calculateMinYearForMetrics(accumulatedMetrics, maxYearsPerChart, maxYear);
+
+        return accumulatedMetrics.subList(accumulatedMetrics.size() - (maxYear  - minYear) - 1, accumulatedMetrics.size());
     }
 
     public static List<ChartMetrics> countMetricsPerYearAndFillMissingYearsDescending(List<ChartMetrics> metrics) {
@@ -212,24 +220,41 @@ public class MetricsUtil {
 
     static List<ChartMetrics> fillMissingYearsForMetrics(List<ChartMetrics> missingYearsMetrics) {
         int currentYear = LocalDate.now().getYear();
-        int minYear = missingYearsMetrics.stream()
-                .mapToInt(ChartMetrics::getYear)
-                .min()
-                .orElse(currentYear);
 
-        List<Integer> years = getListWithYears(minYear, currentYear);
+        return fillMetricsFromMinToMaxYear(missingYearsMetrics, getMinYear(missingYearsMetrics, currentYear), currentYear);
+    }
+
+    static List<ChartMetrics> fillMissingYearsForMetrics(List<ChartMetrics> missingYearsMetrics, int maxYearsPerChart) {
+        int currentYear = LocalDate.now().getYear();
+        int minYear = calculateMinYearForMetrics(missingYearsMetrics, maxYearsPerChart, currentYear);
+
+        return fillMetricsFromMinToMaxYear(missingYearsMetrics, minYear, currentYear);
+    }
+
+    private static int calculateMinYearForMetrics(List<ChartMetrics> missingYearsMetrics, int maxYearsPerChart, int maxYearForMetrics) {
+        int minYear = getMinYear(missingYearsMetrics, maxYearForMetrics);
+
+        if(maxYearsPerChart < 1) {
+            maxYearsPerChart = 1;
+        }
+        minYear = (maxYearForMetrics - minYear) >= maxYearsPerChart ? maxYearForMetrics - maxYearsPerChart + 1 : minYear;
+        return minYear;
+    }
+
+    private static List<ChartMetrics> fillMetricsFromMinToMaxYear(List<ChartMetrics> missingYearsMetrics, int minYear, int maxYear) {
+        List<Integer> years = getListWithYears(minYear, maxYear);
         List<ChartMetrics> filledYearsMetrics = new ArrayList<>();
         years.forEach(year -> filledYearsMetrics.add(new ChartMetrics((double) year,
                 missingYearsMetrics.stream()
                         .filter(metric -> metric.getYear() == year)
-                        .findFirst()
-                        .map(ChartMetrics::getCount)
-                        .orElse(0L)
+                        .mapToLong(ChartMetrics::getCount)
+                        .sum()
         )));
 
         filledYearsMetrics.sort(Comparator.comparingLong(ChartMetrics::getYear));
         return filledYearsMetrics;
     }
+
 
     private static List<Integer> getListWithMonthsValues() {
         List<Integer> months = new ArrayList<>();
@@ -243,6 +268,22 @@ public class MetricsUtil {
 
     private static List<Integer> getListWithYears(int fromYear, int toYear) {
         return IntStream.rangeClosed(fromYear, toYear).boxed().collect(Collectors.toList());
+    }
+
+    private static int getMinYear(List<ChartMetrics> missingYearsMetrics, int currentYear) {
+        return missingYearsMetrics.stream()
+                .mapToInt(ChartMetrics::getYear)
+                .min()
+                .orElse(currentYear);
+    }
+
+    private static List<ChartMetrics> accumulateMetrics(List<ChartMetrics> metrics) {
+        long accumulator = 0;
+        for(int i=0; i < metrics.size(); i++) {
+            accumulator += metrics.get(i).getCount();
+            metrics.get(i).setCount(accumulator);
+        }
+        return  metrics;
     }
 }
 
