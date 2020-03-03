@@ -16,14 +16,14 @@
         <div class="card-title-icon-block" style="font-size: 110%;"> 
  {% if card_info.type == "dataverse" %}
             <span class="icon-dataverse text-brand pull-right" title="Dataverse"></span>
-            <a href="/dataverse/{{ card_info.identifier }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
+            <a href="/dataverse/{{ card_info.identifier }}"><span style="margin:4px 0;">{{ card_info.name }}</span></a>
            {# <span class="text-muted">(<em>Affiliation</em>)</span>#}
  {% elif card_info.type == "dataset" %}
             <span class="icon-dataset text-info pull-right" title="Dataset"></span>
-            <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
+            <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span style="margin:4px 0;">{{ card_info.name }}</span></a>
  {% elif card_info.type == "file" %}
             <span class="icon-file text-muted pull-right" title="File"></span>
-            <a href="/file.xhtml?fileId={{ card_info.entity_id }}"><span style="padding:4px 0;">{{ card_info.name }}</span></a>
+            <a href="/file.xhtml?fileId={{ card_info.entity_id }}"><span style="margin:4px 0;">{{ card_info.name }}</span></a>
  {% endif %}
         <!-- publication status -->
         {#({{ loop.index }})#} {% if card_info.is_draft_state %}<span class="label label-primary">Draft</span> {% endif %}

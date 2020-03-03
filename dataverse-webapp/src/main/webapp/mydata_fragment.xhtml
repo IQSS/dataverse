@@ -396,9 +396,9 @@
                                     </ui:repeat>
                                 </div>
                                 <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
+                                    <h:outputText value="#{result.name}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="margin:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
                                 </h:outputLink>
                                 <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
                                 <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
@@ -464,9 +464,9 @@
                                     </ui:repeat>
                                 </div>
                                 <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                    <h:outputText value="#{result.title}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.titleHighlightSnippet}" style="padding:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
-                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
+                                    <h:outputText value="#{result.title}" style="margin:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.titleHighlightSnippet}" style="margin:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="margin:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
                                 </a>
                             </div>
                            
@@ -539,9 +539,9 @@
                                     </ui:repeat>
                                 </div>
                                 <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                    <h:outputText value="#{result.name}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.nameHighlightSnippet}" style="padding:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
-                                    <h:outputText value=" (#{result.entityId})" style="padding:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
+                                    <h:outputText value="#{result.name}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value=" (#{result.entityId})" style="margin:4px 0;" rendered="#{MyDataSearchFragment.debug == true}"/>
                                 </a>
                             </div>
     

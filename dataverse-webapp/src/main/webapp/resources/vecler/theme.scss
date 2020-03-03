@@ -327,9 +327,13 @@ a,
 	}
 }
 
-span.glyphicon-question-sign.tooltip-icon::before {
-	margin-left: 8px;
-	color: #9cd7f0;
+span.glyphicon-question-sign.tooltip-icon {
+	margin-left: 0.3em;
+	top: 0.15em;
+
+	&::before {
+		color: #9cd7f0;
+	}
 }
 .glyphicon.glyphicon-asterisk.text-danger::before {
 	content: "*";
@@ -360,12 +364,53 @@ tr.ui-state-highlight .ui-icon {
 
 /* WCAG 2.4.7 focus outline */
 
-*:focus, .ui-selectonemenu.ui-state-focus {
-	outline: 3px dashed $focus-color !important;
-
-	.ui-selectonemenu-trigger {
-		outline: 3px dashed $focus-color !important;
+*:focus, a:focus {
+	outline: 2px dashed $focus-color !important;
+	outline-offset: 3px;
+}
+.ui-selectonemenu.ui-state-focus {
+	&, & .ui-selectonemenu-trigger {
+		outline: 2px dashed $focus-color !important;
 	}
+}
+
+#sharrre-block a {
+	&:focus {
+		outline-offset: 5px;
+	}
+}
+
+.button-block a,
+.dropdown-menu a,
+.panel-heading,
+.ui-selectonemenu.ui-state-focus {
+	&:focus {
+		outline-offset: 0;
+	}
+}
+
+button,
+a.btn, 
+.owl-item a,
+input,
+.navbar-brand,
+#topNavBar a,
+a.impaired-navigation,
+#datasetButtonBar a,
+textarea,
+.ui-picklist-list,
+.ui-tabs-header,
+.ui-sortable-column,
+.select-scroll-block {
+	&:focus {
+		outline-offset: -2px;
+	}
+}
+
+/* Remove default focus from inputs */
+.ui-inputfield.ui-state-focus, .ui-widget-content .ui-inputfield.ui-state-focus, .form-control:focus {
+	box-shadow: none;
+	border-color: $gray-border-color;
 }
 
 /* Custom bootstrap columns */
@@ -430,7 +475,7 @@ tr.ui-state-highlight .ui-icon {
 }
 
 div.field-add-delete {
-	margin-left: -1.2em;
+	margin-left: -1em;
 
 	a.btn {
 		margin-right: 0.6em;
@@ -462,6 +507,9 @@ input, textarea {
 	}
 }
 
+textarea {
+	resize: vertical;
+}
 .ui-widget textarea[readonly="readonly"] {
 	font-family: $font-monospace;
 }
@@ -507,6 +555,14 @@ div.edit-compound-field .ui-message, .ui-message-form {
 
 .form-group .ui-message.ui-message-error {
 	margin: 5px 0 0 0;
+}
+
+.ui-autocomplete-input-token {
+	padding-right: 6px;
+
+	input:focus {
+		outline-offset: 1px;
+	}
 }
 
 /* Checkboxes */
@@ -724,12 +780,26 @@ input.fancy-checkbox[type=checkbox] {
 			padding: 0 8px 0 13px;
 
 			button {
-				padding: 0 27px 0 30px
-			}
+				padding: 0 27px 0 30px;
 
-			.ui-button-text.ui-c {
-				padding: 0;
-				margin: 6px 0 5px 0;
+				&.ui-button-icon-only {
+					.ui-icon {
+						position: relative;
+						top: 0;
+						left: 50%;
+						margin: 0.533em 0 0.533em -0.533em;
+					}
+
+					.ui-button-text.ui-c {
+						position: absolute;
+						height: 1px;
+						width: 1px;
+						overflow: hidden;
+						clip: rect(1px 1px 1px 1px); /* IE compatibility */
+						clip: rect(1px, 1px, 1px, 1px);
+						text-indent: 0;
+					}
+				}
 			}
 		}
 	}
@@ -1823,8 +1893,16 @@ div.filesTable .ui-paginator {
 	padding: 44px 31px 48px 31px;
 }
 
-.glyphicon.glyphicon-question-sign.tooltip-icon {
+.glyphicon.glyphicon-question-sign, .glyphicon.glyphicon-question-sign.tooltip-icon {
 	margin-left: 4px;
+
+	&:focus {
+		outline: none !important;
+
+		&::before {
+			color: $focus-color;
+		}
+	}
 }
 
 div[id$="versionsTable"] td {
@@ -1844,8 +1922,12 @@ div.filesTable {
 		font-weight: normal;
 	}
 
-	.col-file-metadata:only-child {
-		padding: 10px 20px;
+	.col-file-metadata {
+		padding-left: 5px;
+
+		&:only-child {
+			padding: 10px 20px;
+		}
 	}
 }
 
@@ -1858,6 +1940,12 @@ div.filesTable {
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
 	font-family: $font-main;
 }
+
+.ui-state-default, .ui-widget-header, .ui-widget-content {
+	.ui-icon {
+		background-image: url($primefaces-main);
+	}
+} 
 
 .form-control {
 	border-color: $gray-border-color;
@@ -1934,16 +2022,12 @@ div.filesTable {
 		}
 	}
 
-	.ui-icon {
-		background-image: url($primefaces-main);
-	}
-
 	.ui-state-default, a.btn {
 		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
 			@include btn-access;
 			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
 
-			&:not([class^="ui-selectonemenu"]):last-child {
+			&:not([class^="ui-selectonemenu"]):not(.ui-button-icon-only):last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
 
