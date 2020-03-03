@@ -778,6 +778,10 @@ public class Dataverse extends DvObjectContainer {
 	}
 
 	public void setStorageDriverId(String storageDriver) {
-		this.storageDriver = storageDriver;
+		if(storageDriver!=null&&storageDriver.equals("default")) {
+			this.storageDriver=null;
+		} else {
+		  this.storageDriver = storageDriver;
+		}
 	}
 }

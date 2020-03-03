@@ -1214,7 +1214,7 @@ public class DataversePage implements java.io.Serializable {
     	HashMap<String, String> drivers =new HashMap<String, String>();
     	drivers.putAll(DataAccess.getStorageDriverLabels());
     	//Add an entry for the default (inherited from an ancestor or the system default)
-    	drivers.put(getDefaultStorageDriverLabel(), "");
+    	drivers.put(getDefaultStorageDriverLabel(), "default");
     	return drivers.entrySet();
     }
     
