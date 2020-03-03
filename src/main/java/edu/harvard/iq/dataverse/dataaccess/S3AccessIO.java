@@ -944,8 +944,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 			//Otherwise you have to get tags, remove the one you don't want and post new tags and get charged for the operations
             s3.deleteObjectTagging(deleteObjectTaggingRequest);
          } catch (SdkClientException sce) {
-        	 logger.severe("Unable to remove temp tag from : " + bucketName + " : " + key);
-             throw new IOException("Cannot remove temp tag from S3 object " + bucketName + " : " + key + " ("+sce.getMessage()+")");
+        	 if(sce.getMessage().contains("Status Code: 501")) {
+        		 // In this case, it's likely that tags are not implemented at all (e.g. by Minio) so no tag was set either and it's just something to be aware of
+        		 logger.warning("Temp tag not deleted: Object tags not supported by storage: " + driverId);
+        	 } else {
+        	   // In this case, the assumption is that adding tags has worked, so not removing it is a problem that should be looked into.
+        	   logger.severe("Unable to remove temp tag from : " + bucketName + " : " + key);
+        	 }
          } catch (IOException e) {
 			logger.warning("Could not create key for S3 object." );
 			e.printStackTrace();
