@@ -20,7 +20,8 @@
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.guestbookResponses.pageTitle']}"/>
-
+            <ui:param name="dataverse" value="#{guestbookResponsesPage.dataverse}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <h:form id="manageGuestbooksForm">
                     <p:fragment id="tooManyEntries" rendered="#{guestbookResponsesPage.guestbook.responseCount gt systemConfig.guestbookResponsesPageDisplayLimit}">
