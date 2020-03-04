@@ -1201,6 +1201,10 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	}
 }
 
+.files-table-right {
+	width: 8em;
+}
+
 /* AJAX loading spinner */
 
 #ajaxStatusPanel_start img {
@@ -1994,6 +1998,13 @@ div.filesTable {
 			clear: both;
 		}
 	}
+
+	.ui-state-default, a.btn {
+		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
+			@include btn-access;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+		}
+	}	
 	
 	.button-block {
 		border-top: 1px solid $gray-border-color;
@@ -2021,7 +2032,7 @@ div.filesTable {
 			}
 		}
 	}
-
+	
 	.ui-state-default, a.btn {
 		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
 			@include btn-access;
@@ -2030,13 +2041,17 @@ div.filesTable {
 			&:not([class^="ui-selectonemenu"]):not(.ui-button-icon-only):last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
-
+		
 				&:active {
 					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
 				}
 			}
-		}
-	}	
+		}	
+	}
+
+	.ui-icon {
+		background-image: url($primefaces_main);
+	}
 
 	.ui-picklist-list-wrapper {
 		input.ui-state-default {
