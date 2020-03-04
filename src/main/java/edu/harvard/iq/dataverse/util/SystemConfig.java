@@ -543,10 +543,6 @@ public class SystemConfig {
          return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }
     
-    public String getHumanMaxFileUploadSizeForStore(String driverId){
-         return bytesToHumanReadable(getMaxFileUploadSizeForStore(driverId));
-     }
-
     public Integer getSearchHighlightFragmentSize() {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {

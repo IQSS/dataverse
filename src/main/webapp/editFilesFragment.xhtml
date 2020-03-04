@@ -73,8 +73,8 @@
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
-                                                    rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                                        <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
+                                                    rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
+                                        <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
                                 </p>
                     

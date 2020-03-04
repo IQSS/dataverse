@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -311,6 +312,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public Long getMaxFileUploadSizeInBytes() {
         return this.maxFileUploadSizeInBytes;
+    }
+    
+    public String getHumanMaxFileUploadSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxFileUploadSizeInBytes);
     }
     
     public boolean isUnlimitedUploadFileSize() {

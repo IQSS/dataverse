@@ -515,7 +515,7 @@ public class SettingsServiceBean {
     			   }
 
     		   } catch (Exception e) {
-    			   logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
+    			   logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long: {2}", new Object[]{val, key.toString(), e.getMessage()});
     			   return null;
     		   }
     	   }
