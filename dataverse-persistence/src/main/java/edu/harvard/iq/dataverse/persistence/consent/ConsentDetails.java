@@ -61,4 +61,10 @@ public class ConsentDetails {
     public String getText() {
         return text;
     }
+
+    // -------------------- SETTERS --------------------
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

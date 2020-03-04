@@ -83,7 +83,9 @@
                                 </div>
                             </div>
 
-                            <ui:include src="termsofuse.xhtml"/>
+                            <ui:include src="termsofuse.xhtml">
+                                <ui:param name="consents" value="#{Shib.consents}"/>
+                            </ui:include>
 
                             <div class="form-group">
                                 <div class="col-sm-12 button-block">
@@ -149,7 +151,9 @@
                                 <p:message for="preferredLanguageDropdown" display="text" />
                             </div>
 
-                            <ui:include src="termsofuse.xhtml"/>
+                            <ui:include src="termsofuse.xhtml">
+                                <ui:param name="consents" value="#{Shib.consents}"/>
+                            </ui:include>
 
                             <div class="form-group">
                                 <div class="col-sm-12 button-block">

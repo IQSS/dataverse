@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.consent.ConsentDto;
+import edu.harvard.iq.dataverse.consent.ConsentService;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -63,8 +65,12 @@ public class Shib implements java.io.Serializable {
     @Inject
     private SettingsWrapper settingsWrapper;
 
-    HttpServletRequest request;
+    @Inject
+    private ConsentService consentService;
 
+    private List<ConsentDto> consents;
+
+    HttpServletRequest request;
     private String userPersistentId;
     private String internalUserIdentifer;
     AuthenticatedUserDisplayInfo displayInfo;
@@ -289,6 +295,7 @@ public class Shib implements java.io.Serializable {
             } else {
                 debugSummary = "Could not find an auth user based on email address";
             }
+            consents = consentService.prepareConsentsForView(session.getLocale());
 
         }
         logger.fine("Debug summary: " + debugSummary + " (state: " + state + ").");
@@ -318,6 +325,8 @@ public class Shib implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()),
                                                      NotificationType.CREATEACC);
+
+            consentService.saveAcceptedConsents(consents, au);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
@@ -338,6 +347,7 @@ public class Shib implements java.io.Serializable {
             if (au != null) {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);
+                consentService.saveAcceptedConsents(consents, au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
                 return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
@@ -569,6 +579,10 @@ public class Shib implements java.io.Serializable {
 
     public String getLocalizedDisplayNameForLanguage(String language) {
         return getLocalizedDisplayNameForLanguage(Locale.forLanguageTag(language));
+    }
+
+    public List<ConsentDto> getConsents() {
+        return consents;
     }
 
     public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {

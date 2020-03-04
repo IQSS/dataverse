@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.consent.ConsentDto;
+import edu.harvard.iq.dataverse.consent.ConsentService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
@@ -42,7 +44,6 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.TabChangeEvent;
 
 import javax.ejb.EJB;
@@ -51,9 +52,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
@@ -121,8 +122,8 @@ public class DataverseUserPage implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
 
-    @EJB
-    AuthenticationServiceBean authSvc;
+    @Inject
+    private ConsentService consentService;
 
     private AuthenticatedUser currentUser;
     private BuiltinUser builtinUser;
@@ -148,8 +149,10 @@ public class DataverseUserPage implements java.io.Serializable {
     private String username;
     boolean nonLocalLoginEnabled;
     private List<String> passwordErrors;
+    private List<ConsentDto> consents;
 
     public String init() {
+
 
         // prevent creating a user if signup not allowed.
         boolean signupAllowed = settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp);
@@ -164,8 +167,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
             } else {
                 // in create mode for new user
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.message.signup.label"), BundleUtil.getStringFromBundle("user.message.signup.tip"));
+                JH.addMessage(FacesMessage.SEVERITY_INFO,
+                              BundleUtil.getStringFromBundle("user.message.signup.label"),
+                              BundleUtil.getStringFromBundle("user.message.signup.tip"));
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
+                consents = consentService.prepareConsentsForView(session.getLocale());
+
                 return "";
             }
         }
@@ -228,21 +235,28 @@ public class DataverseUserPage implements java.io.Serializable {
 
         if (editMode == EditMode.CREATE && userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                    BundleUtil.getStringFromBundle("user.username.taken"),
+                                                    null);
             context.addMessage(toValidate.getClientId(context), message);
         }
 
         if (editMode == EditMode.CREATE && !userNameValid) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                    BundleUtil.getStringFromBundle("user.username.invalid"),
+                                                    null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
     public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {
-        if(Objects.isNull(value)) {
+        if (Objects.isNull(value)) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.notificationsLanguage.requiredMessage"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                    BundleUtil.getStringFromBundle(
+                                                            "user.notificationsLanguage.requiredMessage"),
+                                                    null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -252,7 +266,9 @@ public class DataverseUserPage implements java.io.Serializable {
         boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                    BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"),
+                                                    null);
             context.addMessage(toValidate.getClientId(context), message);
             logger.info("Email is not valid: " + userEmail);
             return;
@@ -275,7 +291,9 @@ public class DataverseUserPage implements java.io.Serializable {
         if (userEmailFound) {
             ((UIInput) toValidate).setValid(false);
 
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                    BundleUtil.getStringFromBundle("user.email.taken"),
+                                                    null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -288,7 +306,9 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"), BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
+                                                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"),
+                                                    BundleUtil.getStringFromBundle(
+                                                            "passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
@@ -306,9 +326,13 @@ public class DataverseUserPage implements java.io.Serializable {
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
             if (prv.isPasswordUpdateAllowed()) {
-                if (!prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), currentPassword)) {
+                if (!prv.verifyPassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(),
+                                        currentPassword)) {
                     FacesContext.getCurrentInstance().addMessage("currentPassword",
-                                                                 new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.wrongPassword"), null));
+                                                                 new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                                                  BundleUtil.getStringFromBundle(
+                                                                                          "user.error.wrongPassword"),
+                                                                                  null));
                     return null;
                 }
                 prv.updatePassword(currentUser.getAuthenticatedUserLookup().getPersistentUserId(), inputPassword);
@@ -316,8 +340,11 @@ public class DataverseUserPage implements java.io.Serializable {
 
             } else {
                 // erroneous state - we can't change the password for this user, so should not have gotten here. Log and bail out.
-                logger.log(Level.WARNING, "Attempt to change a password on {0}, whose provider ({1}) does not support password change", new Object[]{currentUser.getIdentifier(), prv});
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.error.cannotChangePassword"));
+                logger.log(Level.WARNING,
+                           "Attempt to change a password on {0}, whose provider ({1}) does not support password change",
+                           new Object[]{currentUser.getIdentifier(), prv});
+                JH.addMessage(FacesMessage.SEVERITY_ERROR,
+                              BundleUtil.getStringFromBundle("user.error.cannotChangePassword"));
                 return null;
             }
         }
@@ -334,7 +361,9 @@ public class DataverseUserPage implements java.io.Serializable {
             if (au == null) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                                        BundleUtil.getStringFromBundle("user.username.taken"),
+                                                        null);
                 FacesContext context = FacesContext.getCurrentInstance();
                 context.addMessage(getUsernameField().getClientId(context), message);
                 return null;
@@ -352,8 +381,9 @@ public class DataverseUserPage implements java.io.Serializable {
              */
             userNotificationService.sendNotification(au,
                                                      new Timestamp(new Date().getTime()),
-                                                     NotificationType.FILESYSTEMIMPORT.CREATEACC);
+                                                     NotificationType.CREATEACC);
 
+            consentService.saveAcceptedConsents(consents, au);
             // go back to where user came from
 
             // (but if they came from the login page, then send them to the 
@@ -387,13 +417,18 @@ public class DataverseUserPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         } else {
             String emailBeforeUpdate = currentUser.getEmail();
-            AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo, preferredNotificationsLanguage);
+            AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser,
+                                                                                        userDisplayInfo,
+                                                                                        preferredNotificationsLanguage);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
-            StringBuilder msg = new StringBuilder(passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged")
-                                                          : BundleUtil.getStringFromBundle("userPage.informationUpdated"));
+            StringBuilder msg = new StringBuilder(passwordChanged ?
+                                                          BundleUtil.getStringFromBundle("userPage.passwordChanged")
+                                                          :
+                                                          BundleUtil.getStringFromBundle("userPage.informationUpdated"));
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
-                String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
+                String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(
+                        SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
                 List<String> args = Arrays.asList(currentUser.getEmail(), expTime);
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
@@ -542,7 +577,8 @@ public class DataverseUserPage implements java.io.Serializable {
             List<String> args = Arrays.asList(
                     userEmail,
                     ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires)));
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success", args));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success",
+                                                                            args));
         } catch (ConfirmEmailException ex) {
             Logger.getLogger(DataverseUserPage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -564,11 +600,13 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public boolean isEmailIsVerified() {
 
-        return currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null;
+        return currentUser.getEmailConfirmed() != null &&
+                confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null;
     }
 
     public boolean isEmailNotVerified() {
-        return currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null;
+        return currentUser.getEmailConfirmed() == null ||
+                confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null;
     }
 
     public boolean isEmailGrandfathered() {
@@ -583,9 +621,12 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String getUserLocalizedNotificationsLanguageForDisplay() {
-        String displayLanguage = StringUtils.capitalize(currentUser.getNotificationsLanguage().getDisplayLanguage(session.getLocale()));
+        String displayLanguage = StringUtils
+                .capitalize(currentUser.getNotificationsLanguage().getDisplayLanguage(session.getLocale()));
 
-        return isUserLanguageConfigured() ? displayLanguage : displayLanguage + " " + BundleUtil.getStringFromBundle("user.notificationsLanguage.notSupported");
+        return isUserLanguageConfigured() ?
+                displayLanguage :
+                displayLanguage + " " + BundleUtil.getStringFromBundle("user.notificationsLanguage.notSupported");
     }
 
 
@@ -722,7 +763,9 @@ public class DataverseUserPage implements java.io.Serializable {
         if (notification.getRequestor() == null) {
             return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
         }
-        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ?
+                notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() :
+                BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 
     public String getRequestorEmail(UserNotification notification) {
@@ -732,7 +775,9 @@ public class DataverseUserPage implements java.io.Serializable {
         if (notification.getRequestor() == null) {
             return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
         }
-        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        return notification.getRequestor().getEmail() != null ?
+                notification.getRequestor().getEmail() :
+                BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 
     public List<String> getSupportedLanguages() {
@@ -749,6 +794,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String getLocalizedDisplayNameForLanguage(String language) {
         return getLocalizedDisplayNameForLanguage(Locale.forLanguageTag(language));
+    }
+
+    public List<ConsentDto> getConsents() {
+        return consents;
     }
 
     // -------------------- PRIVATE ---------------------

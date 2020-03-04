@@ -716,7 +716,9 @@
                                 </div>
                                 <ui:fragment rendered="#{DataverseUserPage.editMode == 'CREATE'}">
                                 <!-- Terms of Use -->
-                                    <ui:include src="termsofuse.xhtml"/>
+                                    <ui:include src="termsofuse.xhtml">
+                                        <ui:param name="consents" value="#{DataverseUserPage.consents}"/>
+                                    </ui:include>
                                 </ui:fragment>
                                 <div class="form-group">
                                     <div class="col-sm-12 button-block">
