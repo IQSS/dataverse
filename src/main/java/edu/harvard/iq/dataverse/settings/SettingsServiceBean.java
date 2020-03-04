@@ -1,9 +1,13 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +16,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -162,7 +168,7 @@ public class SettingsServiceBean {
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
         SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        /** Default Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
@@ -477,6 +483,44 @@ public class SettingsServiceBean {
         
     }
     
+       /**
+        * Attempt to convert a value in a compound key to a long
+        *  - Applicable for keys such as MaxFileUploadSizeInBytes after multistore capabilities were added in ~v4.20
+        *  backward compatible with a single value. For multi values, the key's value must be an object with param:value pairs.
+        *  A "default":value pair is allowed and will be returned for any param that doesn't have a defined value.   
+        * 
+        * On failure (key not found or string not convertible to a long), returns null
+        * @param key
+        * @return 
+        */
+       public Long getValueForCompoundKeyAsLong(Key key, String param){
+
+    	   String val = this.getValueForKey(key);
+
+    	   if (val == null){
+    		   return null;
+    	   }
+
+    	   try {
+    		   return Long.parseLong(val);
+    	   } catch (NumberFormatException ex) {
+    		   try ( StringReader rdr = new StringReader(val) ) {
+    			   JsonObject settings = Json.createReader(rdr).readObject();
+    			   if(settings.containsKey(param)) {
+    				   return Long.parseLong(settings.getString(param));
+    			   } else if(settings.containsKey("default")) {
+    				   return Long.parseLong(settings.getString("default"));
+    			   } else {
+    				   return null;
+    			   }
+
+    		   } catch (Exception e) {
+    			   logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
+    			   return null;
+    		   }
+    	   }
+
+       }
     
     /**
      * Return the value stored, or the default value, in case no setting by that

@@ -1774,7 +1774,7 @@ public class DatasetPage implements java.io.Serializable {
     private String init(boolean initFull) {
   
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();

@@ -714,7 +714,7 @@ public class FileUtil implements java.io.Serializable  {
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
         
-        Long fileSizeLimit = systemConfig.getMaxFileUploadSize();
+        Long fileSizeLimit = systemConfig.getMaxFileUploadSizeForStore(version.getDataset().getOwner().getEffectiveStorageDriverId());
         String finalType = null; 
 		if (newStorageIdentifier == null) {
 			if (getFilesTempDirectory() != null) {

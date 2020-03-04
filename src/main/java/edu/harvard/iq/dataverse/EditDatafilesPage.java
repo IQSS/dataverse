@@ -450,16 +450,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (version == null) {
             return permissionsWrapper.notFound();
         }
-        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-        
+
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
         newFiles = newFilesList;
         uploadedFiles = new ArrayList<>();
         selectedFiles = selectedFileMetadatasList;
+        
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
         
@@ -472,9 +472,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
-        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -490,7 +487,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-                
+
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+                       
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
