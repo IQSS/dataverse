@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -215,6 +216,20 @@ public class MailMessageCreatorTest {
         Assert.assertEquals("Root: Your dataset has been returned", messageAndSubject._2);
     }
 
+    @Test
+    public void getMessageAndSubject_ForDatasetVersion_SubmitForReviewWithMessage() {
+        //given
+        EmailNotificationDto testEmailNotificationDto = createSubmitForReviewNotificationDto();
+
+        //when
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
+                 MocksFactory.makeAuthenticatedUser("Leonardo", "Żółw nie malarz"));
+
+        //then
+        Assert.assertEquals(getSubmitForReviewMessage(), messageAndSubject._1);
+        Assert.assertEquals("Root: Your dataset has been submitted for review", messageAndSubject._2);
+    }
+
     private String getFooterMessage() {
         return "\n\nYou may contact us for support at " + SYSTEMEMAIL + ".\n\nThank you,\n" +
                 BrandingUtil.getSupportTeamName(MailUtil.parseSystemAddress(SYSTEMEMAIL), ROOTDVNAME);
@@ -247,6 +262,14 @@ public class MailMessageCreatorTest {
                 + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT&faces-redirect=true) was returned by the curator "
                 + "of rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse).\n\n"
                 + "Additional information:\n\nDataset returned to author message";
+    }
+
+    private String getSubmitForReviewMessage() {
+        return "Hello, \n"
+                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT&faces-redirect=true) was submitted for review to be published in "
+                + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
+                + "Don't forget to publish it or send it back to the contributor, Leonardo Żółw nie malarz (Leonardo.Żółw nie malarz@someU.edu)!\n\n"
+                + "Additional information:\n\nContributors message for curator";
     }
 
     private String getAssignRoleSubject() {
@@ -313,6 +336,16 @@ public class MailMessageCreatorTest {
                 NotificationObjectType.DATASET_VERSION,
                 new AuthenticatedUser(),
                 "Dataset returned to author message");
+    }
+
+    private EmailNotificationDto createSubmitForReviewNotificationDto() {
+        return new EmailNotificationDto(1L,
+                "useremail@test.com",
+                NotificationType.SUBMITTEDDS,
+                3L,
+                NotificationObjectType.DATASET_VERSION,
+                MocksFactory.makeAuthenticatedUser("Jurek","Kiler"),
+                "Contributors message for curator");
     }
 
     private Dataverse createRootDataverse(String rootdvname) {

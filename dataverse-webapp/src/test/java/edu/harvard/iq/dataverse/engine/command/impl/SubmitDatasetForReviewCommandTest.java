@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -145,7 +146,7 @@ public class SubmitDatasetForReviewCommandTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDatasetNull() {
-        new SubmitDatasetForReviewCommand(dataverseRequest, null);
+        new SubmitDatasetForReviewCommand(dataverseRequest, null, StringUtils.EMPTY);
     }
 
     @Test
@@ -154,7 +155,7 @@ public class SubmitDatasetForReviewCommandTest {
         String expected = "Latest version of dataset is already released. Only draft versions can be submitted for review.";
         String actual = null;
         try {
-            testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+            testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset, StringUtils.EMPTY));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -169,7 +170,7 @@ public class SubmitDatasetForReviewCommandTest {
 
         Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset, StringUtils.EMPTY));
         } catch (CommandException ex) {
             System.out.println("Error updating dataset: " + ex.getMessage());
         }
@@ -186,6 +187,6 @@ public class SubmitDatasetForReviewCommandTest {
         dataset.setVersions(Lists.newArrayList(datasetVersion));
 
         //when & then
-        testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+        testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset, StringUtils.EMPTY));
     }
 }

@@ -323,6 +323,9 @@ public class MailMessageCreator {
             String pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview",
                                                             notificationDto.getNotificationReceiver().getNotificationsLanguage());
 
+            pattern += addUserCustomMessage(notificationDto,
+                    BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationDto.getNotificationReceiver().getNotificationsLanguage()));
+
             messageText += MessageFormat.format(pattern,
                                                 version.getDataset().getDisplayName(),
                                                 getDatasetDraftLink(version.getDataset()),
@@ -373,11 +376,27 @@ public class MailMessageCreator {
                                                     version.getDataset().getOwner().getDisplayName(),
                                                     getDataverseLink(version.getDataset().getOwner()));
                 return messageText;
+            case SUBMITTEDDS:
+                pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview",
+                        notificationDto.getNotificationReceiver().getNotificationsLanguage());
+
+                pattern += addUserCustomMessage(notificationDto,
+                        BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationDto.getNotificationReceiver().getNotificationsLanguage()));
+
+                messageText += MessageFormat.format(pattern,
+                        version.getDataset().getDisplayName(),
+                        getDatasetDraftLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner()),
+                        "",
+                        "");
+                return messageText;
             case RETURNEDDS:
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer",
                                                          notificationDto.getNotificationReceiver().getNotificationsLanguage());
 
-                pattern += addReturnReasonMessage(notificationDto);
+                pattern += addUserCustomMessage(notificationDto,
+                        BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationDto.getNotificationReceiver().getNotificationsLanguage()));
 
                 messageText += MessageFormat.format(pattern,
                                                     version.getDataset().getDisplayName(),
@@ -412,12 +431,12 @@ public class MailMessageCreator {
         return StringUtils.EMPTY;
     }
 
-    private String addReturnReasonMessage(EmailNotificationDto notificationDto) {
-        if(StringUtils.isNotEmpty(notificationDto.getReturnToAuthorReason())) {
+    private String addUserCustomMessage(EmailNotificationDto notificationDto, String messagePrefix) {
+        if(StringUtils.isNotEmpty(notificationDto.getCustomUserMessage())) {
             return "\n\n"
-                    + BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationDto.getNotificationReceiver().getNotificationsLanguage())
+                    + messagePrefix
                     + "\n\n"
-                    + notificationDto.getReturnToAuthorReason();
+                    + notificationDto.getCustomUserMessage();
         }
          return StringUtils.EMPTY;
     }

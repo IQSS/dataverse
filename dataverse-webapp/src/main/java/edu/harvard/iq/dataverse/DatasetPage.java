@@ -148,6 +148,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean sameTermsOfUseForAllFiles;
     private String thumbnailString = null;
     private String returnToAuthorReason;
+    private String contributorMessageToCurator;
 
     private Date currentEmbargoDate;
 
@@ -489,6 +490,7 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 returnToAuthorReason = StringUtils.EMPTY;
+                contributorMessageToCurator = StringUtils.EMPTY;
 
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
@@ -573,15 +575,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String submitDataset() {
-        try {
-            Command<Dataset> cmd = new SubmitDatasetForReviewCommand(dvRequestService.getDataverseRequest(), dataset);
-            dataset = commandEngine.submit(cmd);
+        Try.of(() -> commandEngine.submit(new SubmitDatasetForReviewCommand(dvRequestService.getDataverseRequest(), dataset, contributorMessageToCurator)))
+                .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success")))
+                .onFailure(throwable -> logger.log(Level.SEVERE, "Submitting for review failed:", throwable))
+                .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(throwable.getMessage()))));
 
-        } catch (CommandException ex) {
-            String message = ex.getMessage();
-            logger.log(Level.SEVERE, "submitDataset: {0}", message);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(message)));
-        }
         return returnToLatestVersion();
     }
 
@@ -1140,6 +1138,14 @@ public class DatasetPage implements java.io.Serializable {
 
     /**
      *
+     * @return Comment written by dataset contributor with additional informations for curator
+     */
+    public String getContributorMessageToCurator() {
+        return contributorMessageToCurator;
+    }
+
+    /**
+     *
      * @return current embargo date set on dataset or [TODAY] whichever is greater
      */
     public Date getCurrentEmbargoDate() {
@@ -1215,6 +1221,10 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setReturnToAuthorReason(String returnToAuthorReason) {
         this.returnToAuthorReason = returnToAuthorReason;
+    }
+
+    public void setContributorMessageToCurator(String contributorMessageToCurator) {
+        this.contributorMessageToCurator = contributorMessageToCurator;
     }
 
     public void initCurrentEmbargo() {

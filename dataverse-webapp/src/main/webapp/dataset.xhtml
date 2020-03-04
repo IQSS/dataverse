@@ -238,7 +238,7 @@
                                             <button type="button"
                                                     class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}"
                                                     onclick="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'return false;' : 'sentToReview();'}">
-                                                <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                                <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitForReview.submitBtn']}
                                             </button>
                                         </ui:fragment>
     
@@ -936,16 +936,43 @@
                                  update=":messagePanel  @([id$=Messages])"
                                  actionListener="#{DatasetPage.saveLinkingDataverses}"/>
 
-                <p:dialog id="inreview" header="#{bundle['dataset.submitBtn']}" widgetVar="inreview" modal="true">
+                <p:dialog id="inreview" header="#{bundle['dataset.submitForReview.submitBtn']}" widgetVar="inreview" modal="true">
 
                     <p:outputPanel rendered="#{DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                         <p class="text-warning">
                             <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
                         </p>
+                        <div class="form-group">
+                            <label for="returnReasonTextArea" class="col-sm-3 control-label">#{bundle['dataset.reject.messageBox.label']}</label>
+                            <div class="col-sm-9">
+                                <p:fragment id="submitForReviewMessageFragment">
+                                    <p:inputTextarea id="submitForReviewCustomMessage"
+                                                     rows="3"
+                                                     value="#{DatasetPage.contributorMessageToCurator}"
+                                                     maxlength="255"
+                                                     cols="60"
+                                                     counter="submitForReviewCounter"
+                                                     counterTemplate="#{bundle['dataset.reject.messageBox.counter']}"
+                                                     autoResize="false"
+                                                     styleClass="form-control"
+                                    >
+                                    </p:inputTextarea>
+                                    <h:message for="submitForReviewCustomMessage" styleClass="bg-danger text-danger"/>
+                                    <p>
+                                        <h:outputText id="submitForReviewCounter"/>
+                                    </p>
+                                </p:fragment>
+                            </div>
+                            <p:watermark for="submitForReviewCustomMessage" value="#{bundle['dataset.submitForReview.customMessage.watermark']}"
+                                         id="submitForReviewWatermark"/>
+                        </div>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.submit}" onclick="PF('inreview').hide();"
-                                             action="#{DatasetPage.submitDataset}"
-                                             immediate="true"/>
+                            <p:commandLink value="#{bundle.submit}"
+                                           oncomplete="PF('inreview').hide();"
+                                           actionListener="#{DatasetPage.submitDataset()}"
+                                           update=":messagePanel topDatasetBlockFragment"
+                                           styleClass="btn btn-default btn-access"
+                            />
                             <p:commandButton value="#{bundle.cancel}"
                                              onclick="PF('inreview').hide();" type="button"
                                              immediate="true"/>
@@ -1155,7 +1182,7 @@
                     <div class="button-block">
                         <p:commandLink styleClass="btn btn-default btn-access"
                                        value="#{bundle.ok}"
-                                       update=":messagePanel returnReasonFragment"
+                                       update=":messagePanel returnReasonFragment topDatasetBlockFragment"
                                        oncomplete="if (args &amp;&amp; !args.validationFailed) PF('sendBackToContributor').hide();"
                                        actionListener="#{DatasetPage.sendBackToContributor()}"
                         >

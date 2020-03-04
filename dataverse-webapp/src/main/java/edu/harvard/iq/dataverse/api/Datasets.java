@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -1438,10 +1439,11 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @Path("{id}/submitForReview")
-    public Response submitForReview(@PathParam("id") String idSupplied) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response submitForReview(@PathParam("id") String idSupplied, SubmitForReviewDataDTO submitForReviewData) {
         try {
             Dataset updatedDataset = execCommand(new SubmitDatasetForReviewCommand(createDataverseRequest(findUserOrDie()),
-                                                                                   findDatasetOrDie(idSupplied)));
+                    findDatasetOrDie(idSupplied), submitForReviewData.getComment()));
             JsonObjectBuilder result = Json.createObjectBuilder();
 
             boolean inReview = updatedDataset.isLockedFor(DatasetLock.Reason.InReview);

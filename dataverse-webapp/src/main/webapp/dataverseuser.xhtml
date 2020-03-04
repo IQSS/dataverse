@@ -167,6 +167,11 @@
                                                         <o:param>
                                                             #{DataverseUserPage.getRequestorEmail(item)}
                                                         </o:param>
+                                                        <o:param rendered="#{not empty DataverseUserPage.getAdditionalMessage(item)}">
+                                                            #{bundle['notification.wasSubmittedForReview.contributorMessage.prefix']
+                                                                .concat(" ")
+                                                                .concat(DataverseUserPage.getAdditionalMessage(item))}
+                                                        </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{item.type == 'RETURNEDDS'}">
@@ -179,7 +184,7 @@
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            #{DataverseUserPage.getReasonForReturn(item)}
+                                                            #{DataverseUserPage.getAdditionalMessage(item)}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>

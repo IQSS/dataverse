@@ -13,7 +13,7 @@ public class EmailNotificationDto {
     private long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
-    private String returnToAuthorReason;
+    private String customUserMessage;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -26,18 +26,18 @@ public class EmailNotificationDto {
         this.dvObjectId = dvObjectId;
         this.notificationObjectType = notificationObjectType;
         this.notificationReceiver = notificationReceiver;
-        this.returnToAuthorReason = StringUtils.EMPTY;
+        this.customUserMessage = StringUtils.EMPTY;
     }
 
     public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
-                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String returnToAuthorReason) {
+                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String customUserMessage) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
         this.dvObjectId = dvObjectId;
         this.notificationObjectType = notificationObjectType;
         this.notificationReceiver = notificationReceiver;
-        this.returnToAuthorReason = returnToAuthorReason;
+        this.customUserMessage = customUserMessage;
     }
 
     // -------------------- GETTERS --------------------
@@ -66,7 +66,7 @@ public class EmailNotificationDto {
         return dvObjectId;
     }
 
-    public String getReturnToAuthorReason() {
-        return returnToAuthorReason;
+    public String getCustomUserMessage() {
+        return customUserMessage;
     }
 }

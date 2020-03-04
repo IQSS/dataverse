@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import io.vavr.control.Option;
 
 import java.sql.Timestamp;
@@ -21,8 +22,11 @@ import java.util.List;
 @RequiredPermissions(Permission.EditDataset)
 public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Dataset> {
 
-    public SubmitDatasetForReviewCommand(DataverseRequest aRequest, Dataset dataset) {
+    private final String comment;
+
+    public SubmitDatasetForReviewCommand(DataverseRequest aRequest, Dataset dataset, String comment) {
         super(aRequest, dataset);
+        this.comment = comment;
     }
 
     @Override
@@ -57,16 +61,16 @@ public class SubmitDatasetForReviewCommand extends AbstractDatasetCommand<Datase
 
         updateDatasetUser(ctxt);
 
-        AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
+        Option<AuthenticatedUser> requestorOption = Option.of(getUser())
+                .filter(User::isAuthenticated)
+                .map(user -> (AuthenticatedUser)user)
+                .orElse(Option.none());
+        List<AuthenticatedUser> curators = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
 
-        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
-        for (AuthenticatedUser au : authUsers) {
-
-            Option.of(requestor)
+        for (AuthenticatedUser au : curators) {
+            requestorOption
                     .peek(user -> ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
-                                                                                 savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, requestor))
-                    .onEmpty(() -> ctxt.notifications().sendNotificationWithEmail(au, new Timestamp(new Date().getTime()), NotificationType.SUBMITTEDDS,
-                                                                                  savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION));
+                                                                                 savedDataset.getLatestVersion().getId(), NotificationObjectType.DATASET_VERSION, user, comment));
         }
 
         boolean doNormalSolrDocCleanUp = true;

@@ -748,8 +748,8 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
-    public String getReasonForReturn(UserNotification notification) {
-        return notification.getReturnToAuthorReason();
+    public String getAdditionalMessage(UserNotification notification) {
+        return notification.getAdditionalMessage();
     }
 
     public String getPasswordRequirements() {
