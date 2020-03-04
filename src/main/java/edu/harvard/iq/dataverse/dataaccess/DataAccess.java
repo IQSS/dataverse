@@ -41,8 +41,8 @@ public class DataAccess {
 
     };
 
-
-    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
+    //Default to "file" is for tests only
+    public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id", "file");
     public static final String UNDEFINED_STORAGE_DRIVER_IDENTIFIER = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating a null driver/inheriting the default)
     
     // The getStorageIO() methods initialize StorageIO objects for
