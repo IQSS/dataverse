@@ -23,12 +23,16 @@ To configure these options, an administrator must set two JVM options for the Da
 
 With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.  
 
+It is also possible to set file upload size limits per store. See the :MaxFileUploadSizeInBytes setting described in the :doc:`/installation/config` guide.
+
 At present, one potential drawback for direct-upload is that files are only partially 'ingested', tabular and FITS files are processed, but zip files are not unzipped, and the file contents are not inspected to evaluate their mimetype. This could be appropriate for large files, or it may be useful to completely turn off ingest processing for performance reasons (ingest processing requires a copy of the file to be retrieved by Dataverse from the S3 store). A store using direct upload can be configured to disable all ingest processing for files above a given size limit:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
 
 One additional step that is required to enable direct download to work with previewers is to allow cross site (CORS) requests on your S3 store.
+
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-status":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in Dataverse. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used. 
 
 Data Capture Module (DCM)
 -------------------------
