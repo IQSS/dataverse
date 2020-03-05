@@ -89,7 +89,7 @@ dataverse:
   postgres:
     reporpm: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
     version: 9.6
-    jdbcurl: https://jdbc.postgresql.org/download/postgresql-42.2.8.jar
+    jdbcurl: https://jdbc.postgresql.org/download/postgresql-42.2.9.jar
     log_lock_waits: true
   previewers:
     enabled: true
@@ -112,7 +112,7 @@ dataverse:
     group: solr
     root: /usr/local/solr
     user: solr
-    version: 7.3.1
+    version: 7.7.2
   srcdir: /tmp/dataverse
   thumbnails: true
   unittests:

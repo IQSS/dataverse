@@ -574,7 +574,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         saveEnabled = true; 
-        if (mode == FileEditMode.UPLOAD && workingVersion.getFileMetadatas().isEmpty() && settingsWrapper.isRsyncUpload())  {
+        if (mode == FileEditMode.UPLOAD && workingVersion.getFileMetadatas().isEmpty() && rsyncUploadSupported())  {
             setUpRsync();
         }
 
@@ -2885,6 +2885,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         fileMetadataSelectedForIngestOptionsPopup = null;
     }
 
+    public boolean rsyncUploadSupported() {
+    	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+    	// When those restrictions are lifted/rsync can be configured per store, this test should check that setting
+    	// instead of testing for the 's3" store.
+    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    }
+    
+    
     private void populateFileMetadatas() {
         fileMetadatas = new ArrayList<>();
         if (selectedFileIdsList == null || selectedFileIdsList.isEmpty()) {

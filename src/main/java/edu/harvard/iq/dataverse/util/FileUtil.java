@@ -24,11 +24,13 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
@@ -83,6 +85,7 @@ import java.util.zip.ZipInputStream;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import org.apache.commons.io.FilenameUtils;
 
+import com.amazonaws.AmazonServiceException;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1300,12 +1303,15 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
-        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
-        String storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
+    	String driverId = dataFile.getDataverseContext().getEffectiveStorageDriverId();
+		
+        String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
+        String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
         dataFile.setStorageIdentifier(storageId);
     }
     
     public static void generateStorageIdentifier(DataFile dataFile) {
+    	//Is it true that this is only used for temp files and we could safely prepend "tmp://" to indicate that?
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }
     
@@ -1631,4 +1637,9 @@ public class FileUtil implements java.io.Serializable  {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
     }
 
+    public static String getStorageIdentifierFromLocation(String location) {
+    	int driverEnd = location.indexOf("://") + 3;
+    	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
+    	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
+    }
 }

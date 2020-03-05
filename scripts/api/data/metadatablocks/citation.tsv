@@ -36,7 +36,7 @@
 	city	City	The name of the city that the Data Project is about. Use GeoNames for correct spelling and avoid abbreviations.		text	32		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	geographicCoverage	citation
 	otherGeographicCoverage	Other	Other information on the geographic coverage of the data.		text	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicCoverage	citation
 	geographicUnit	Geographic Unit	Lowest level of geographic aggregation covered by the Data Project, e.g., village, county, region.		text	34		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		citation
-	publication	Related Publication	Publications that use the data from this Data Project.		none	35		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/isReferencedBy
+	publication	Related Publication	Publications that use the data from this Data Project. The full list of Related Publications will be displayed on the metadata tab.		none	35		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/isReferencedBy
 	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	36	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/dc/terms/bibliographicCitation
 	publicationIDType	Identifier Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI), URL).		text	37	#VALUE: 	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
 	publicationIDNumber	Identifier	The identifier for the selected ID type.		text	38	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	citation	http://purl.org/spar/datacite/ResourceIdentifier

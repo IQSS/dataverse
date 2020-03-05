@@ -14,6 +14,7 @@
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{empty DataversePage.dataverse.name ? bundle.new : DataversePage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+            <ui:param name="editModeDataverse" value="#{DataversePage.editMode}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
             </ui:define>
@@ -137,6 +138,20 @@
                                         <p:inputText id="identifier" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}" required="true"/>
                                     </div>
                                     <p:message for="identifier" display="text"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser}">
+                                <h:outputLabel for="dataverseStorage" styleClass="control-label">
+                                    #{bundle.storage} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.storage.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId}">
+                                              <f:selectItem itemLabel="#{bundle['dataverse.storage.usedefault']}"/>
+                                              <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseStorage" display="text"/>
                                 </div>
                             </div>
                         </div>

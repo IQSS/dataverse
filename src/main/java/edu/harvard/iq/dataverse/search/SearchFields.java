@@ -256,6 +256,13 @@ public class SearchFields {
 
     public static final String VARIABLE_NAME = "variableName";
     public static final String VARIABLE_LABEL = "variableLabel";
+    public static final String LITERAL_QUESTION = "literalQuestion";
+    public static final String INTERVIEW_INSTRUCTIONS = "interviewInstructions";
+    public static final String POST_QUESTION = "postQuestion";
+    public static final String VARIABLE_UNIVERSE = "variableUniverse";
+    public static final String VARIABLE_NOTES = "variableNotes";
+
+
 	public static final String FULL_TEXT = "fulltext";
 
 }

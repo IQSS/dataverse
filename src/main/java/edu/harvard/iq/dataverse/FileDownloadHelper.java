@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -441,7 +442,20 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
     }
-   
+
+     /**
+      * In Dataverse 4.19 and below file preview was determined by
+      * canDownloadFile. Now we always allow a PrivateUrlUser to preview files.
+      */
+     public boolean isPreviewAllowed(FileMetadata fileMetadata) {
+         if (session.getUser() instanceof PrivateUrlUser) {
+             // Always allow preview for PrivateUrlUser
+             return true;
+         } else {
+             return canDownloadFile(fileMetadata);
+         }
+     }
+
     public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
