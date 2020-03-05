@@ -1084,10 +1084,7 @@ public class FileUtil implements java.io.Serializable  {
 				}
 				return null;
 
-			} else {
-				// ToDo what subset of checks from determineFileType makes sense?
-				finalType = suppliedContentType;
-			}
+			} 
 		} else {
 			//Remote file, trust supplier
 			finalType = suppliedContentType;
