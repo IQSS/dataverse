@@ -463,8 +463,8 @@
                                 </div>
                                 <c:set var="dvUrl" value="/dataverse/#{result.dataverseAlias}"/>
                                 <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
-                                    <h:outputText value="#{result.name}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.nameHighlightSnippet}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value="#{result.name}" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 </h:outputLink>
                                 <h:outputText value="(#{result.dataverseAffiliation})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{!empty result.dataverseAffiliation and result.dataverseAffiliationHighlightSnippet == null}"/>
                                 <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
@@ -527,8 +527,8 @@
                                     <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
                                 </div>
                                 <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                    <h:outputText value="#{result.title}" style="margin:4px 0;" rendered="#{result.titleHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.titleHighlightSnippet}" style="margin:4px 0;" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value="#{result.title}" rendered="#{result.titleHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.titleHighlightSnippet}" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                 </a>
                             </div>
     
@@ -598,8 +598,8 @@
                                     <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                                 </div>
                                 <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                    <h:outputText value="#{result.name}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet == null}"/>
-                                    <h:outputText value="#{result.nameHighlightSnippet}" style="margin:4px 0;" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
+                                    <h:outputText value="#{result.name}" rendered="#{result.nameHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.nameHighlightSnippet}" rendered="#{result.nameHighlightSnippet != null}" escape="false"/>
                                 </a>
                             </div>
     

@@ -138,7 +138,6 @@ body {
 
 	border-radius: 0 0 0.5em 0.5em;
 	border: 1px solid #fff;
-	outline: none;
 	
 	background: $icon-color;
 	color: #fff;
@@ -287,6 +286,16 @@ body {
 	}
 }
 
+@mixin offscreen-outline-fix {
+	position: absolute;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(1px 1px 1px 1px); /* IE compatibility */
+	clip: rect(1px, 1px, 1px, 1px);
+	text-indent: 0;
+}
+
 a,
 .pagination > li > a,
 .ui-widget-content a,
@@ -401,9 +410,16 @@ textarea,
 .ui-picklist-list,
 .ui-tabs-header,
 .ui-sortable-column,
-.select-scroll-block {
+.select-scroll-block,
+ul.pagination a {
 	&:focus {
 		outline-offset: -2px;
+	}
+}
+
+a[tabindex="-1"] {
+	&:focus {
+		outline: none !important;
 	}
 }
 
@@ -791,13 +807,7 @@ input.fancy-checkbox[type=checkbox] {
 					}
 
 					.ui-button-text.ui-c {
-						position: absolute;
-						height: 1px;
-						width: 1px;
-						overflow: hidden;
-						clip: rect(1px 1px 1px 1px); /* IE compatibility */
-						clip: rect(1px, 1px, 1px, 1px);
-						text-indent: 0;
+						@include offscreen-outline-fix;
 					}
 				}
 			}
@@ -1313,7 +1323,7 @@ $navbar-height: 6.8em;
 
 .navbar-default #topNavBar .navbar-nav {
 	> li,  > form {
-		a {
+		> a {
 			color: $main-text-color;
 			border-radius: $border-radius;
 
@@ -1422,6 +1432,15 @@ div.panelSearchForm input.search-input {
 .pagination > .active > a {
 	border-color: $main-color;
 	background-color: $main-color;
+}
+.ui-paginator-first,
+.ui-paginator-prev,
+.ui-paginator-next,
+.ui-paginator-last {
+	.ui-icon {
+		text-indent: 0;
+		visibility: hidden;
+	}
 }
 
 #metrics-block.col-sm-4 {
@@ -1645,10 +1664,6 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 
 /* Search results */
 
-.card-content-container {
-	margin-left: 60px;
-}
-
 #resultsCountPaginatorBlock {
 	margin-bottom: 8px;
 
@@ -1684,17 +1699,43 @@ div.alert-info.bg-citation {
 }
 
 table[id$="resultsTable"] {
+	div[class*="Result"] {
+		font-size: inherit;
+		
+		> div.card-preview-icon-block {
+			font-size: inherit;
+		}
+	}
+
 	div.card-preview-icon-block {
-		margin-top: 6px;
+		width: unquote(calc(2em + 2px));
+		margin-top: 0.133em;
+		margin-left: 0.4em;
+
+		a {
+			height: auto;
+			line-height: inherit;
+
+			img {
+				margin-top: 0.133em;
+				width: 2em;
+			}
+		}
+
+		span[class^="icon"] {
+			font-size: 2em;
+		}
 	}
 
 	div.card-title-icon-block {
 		margin-top: -2px;
+		margin-bottom: -0.3em;
 
 		span[class^="icon"], span[class^="glyphicon"] {
 			position: relative;
 			top: -10px;
 			margin-left: 8px;
+			font-size: 1em;
 		}
 
 		span[class^="glyphicon"] {
@@ -1706,6 +1747,14 @@ table[id$="resultsTable"] {
 			color: $icon-color;
 		}
 	} 
+
+	.card-content-container {
+		margin-left: 3.333em;
+
+		> a, > span.text-muted {
+			font-size: 0.867em;
+		}
+	}
 
 	td  {
 		& > div {
@@ -1748,6 +1797,7 @@ table[id$="resultsTable"] {
 	}
 
 	.resultDatasetCitationBlock {
+		margin-top: 1em;
 		margin-left: 0;
 	}
 }
