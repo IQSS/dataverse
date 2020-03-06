@@ -1777,6 +1777,23 @@ You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
 
+:ShibAffiliationAttribute
++++++++++++++++++++++++++
+
+Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. "ou"). In case of Shibboleth affiliation string is read from the DiscoFeed at each login. ``:ShibAffiliationAttribute`` is a name of a Shibboleth attribute, which takes place in Shibboleth header, and Dataverse will read the affiliation string from that. If this value is not set or empty, Dataverse uses the DiscoFeed.
+
+To set ``:ShibAffiliationAttribute``:
+
+``curl -X PUT -d "ou" http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
+To delete ``:ShibAffiliationAttribute``:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
+To check the current value of ``:ShibAffiliationAttribute``:
+
+``curl -X GET http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
