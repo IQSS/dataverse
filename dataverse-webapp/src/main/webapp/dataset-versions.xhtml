@@ -34,7 +34,7 @@
                 </p:commandButton>
             </div>
 
-            <p:dataTable id="versionsTable" class="no-alternating-row-colors"
+            <p:dataTable id="versionsTable" rowSelectMode="checkbox" class="no-alternating-row-colors"
                          value="#{datasetVersionsTab.versionsSummary}" var="versionSummary" widgetVar="versionsTable"
                          rowKey="#{versionSummary.version}" selection="#{datasetVersionsTab.selectedVersions}"
                          disabledSelection="#{!versionSummary.canBeCompared}">

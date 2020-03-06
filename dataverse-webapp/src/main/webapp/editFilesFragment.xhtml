@@ -371,6 +371,7 @@
                                  rendered="#{!empty EditDatafilesPage.fileMetadatas or !EditDatafilesPage.showFileUploadFragment()}"
                                  rowIndexVar="rowNum"
                                  rowKey="#{fileMetadata.dataFile.storageIdentifier}"
+                                 rowSelectMode="checkbox"
                                  selection="#{EditDatafilesPage.selectedFiles}"
                                  var="fileMetadata"
                                  widgetVar="filesTable"

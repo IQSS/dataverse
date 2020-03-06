@@ -222,7 +222,7 @@
 
                             <!--@elvariable id="roleAssignment" type="edu.harvard.iq.dataverse.persistence.user.RoleAssignment"-->
                             <p:dataTable id="assignedRoles" var="roleAssignment" value="#{manageFilePermissionsPage.roleAssignments}"
-                                         selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}" 
+                                         selection="#{manageFilePermissionsPage.selectedRoleAssignmentRows}" rowKey="#{roleAssignment.id}" rowSelectMode="checkbox"
                                          sortBy="#{!empty manageFilePermissionsPage.selectedFile ? roleAssignment.assigneeDisplayInfo.title : roleAssignment.definitionPoint.displayName}"
                                          scrollable="true" scrollHeight="300" disabledSelection="false">
                                 
@@ -314,7 +314,7 @@
                                 <p:dataTable id="restrictedFilesForAccess" var="file"
                                              value="#{empty manageFilePermissionsPage.fileRequester ? Arrays:asList(manageFilePermissionsPage.fileMap.keySet().toArray()) :
                                                       manageFilePermissionsPage.fileAccessRequestMap.get(manageFilePermissionsPage.fileRequester)}"
-                                             selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" sortBy="#{file.displayName}"
+                                             selection="#{manageFilePermissionsPage.selectedFiles}" rowKey="#{file.id}" rowSelectMode="checkbox" sortBy="#{file.displayName}"
                                              scrollable="true" scrollHeight="300">
 
                                     <p:ajax event="rowSelectCheckbox"  update=":rolesPermissionsForm:selectionCounter" />

@@ -1068,7 +1068,7 @@ div[id$="notifications"].ui-tabs-panel {
 		}
 	}
 
-	&:not(.no-alternating-row-colors) .ui-datatable-odd {
+	&:not(.no-alternating-row-colors) .ui-datatable-odd:not(.ui-state-highlight):not(:hover) {
 		background: none;
 
 		 td {
@@ -1227,6 +1227,11 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	button {
 		margin-left: 1em;
 	}
+}
+
+/* Change cursor from pointer to default to avoid confusion */
+.ui-datatable-selectable td {
+	cursor: default;
 }
 
 /* AJAX loading spinner */
