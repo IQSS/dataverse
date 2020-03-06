@@ -27,7 +27,7 @@
             <h:form id="form">
                 
                 <!-- Last reorder undo -->
-                <p:panel id="undoLastReorder"
+                <p:panel id="undoLastReorder" class="undo-last-reorder-panel"
                             rendered="#{ReorderDataFilesPage.lastReorderFromAndTo != null}">
                     <h:outputFormat value="#{bundle['file.reorder.lastReorder']}" escape="false">
                                     <f:param value="#{ReorderDataFilesPage.lastReorderFileMetadata.label}"/>
@@ -116,7 +116,7 @@
                     </p:column>
                     
                     <p:column headerText="#{bundle['file.reorder.action.header']}"
-                              styleClass="text-center" width="120">
+                              styleClass="text-center change-order-buttons-cell" width="120">
                         <p:commandLink title="#{bundle['file.reorder.moveUp']}"
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip"
                                        actionListener="#{ReorderDataFilesPage.moveUp(rowIndex)}"

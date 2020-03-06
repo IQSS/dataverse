@@ -30,7 +30,7 @@
             <h:form>
                 
                 <!-- Last reorder undo -->
-                <p:panel id="undoLastReorder"
+                <p:panel id="undoLastReorder" class="undo-last-reorder-panel"
                             rendered="#{LicenseReorderPage.lastReorderFromAndTo != null}">
                     <h:outputFormat value="#{bundle['license.reorder.lastReorder']}" escape="false">
                                     <f:param value="#{LicenseReorderPage.lastReorderLicense.localizedText}"/>
@@ -56,7 +56,7 @@
                     </p:column>
                     
                     <p:column headerText="#{bundle['license.reorder.actions.header']}"
-                              styleClass="text-center" width="120">
+                              styleClass="text-center change-order-buttons-cell" width="120">
                         <p:commandLink title="#{bundle['license.reorder.moveUp']}"
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-up-button"
                                        actionListener="#{LicenseReorderPage.moveUp(rowIndex)}"

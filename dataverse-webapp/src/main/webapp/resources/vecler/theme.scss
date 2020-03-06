@@ -1137,8 +1137,14 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	@include link-color;
 }
 
-.ui-datatable-tablewrapper .col-manage-action .button-block div.btn-group {
-	margin: 0 5px 0 1px;
+.ui-datatable-tablewrapper {
+	.col-manage-action .button-block div.btn-group {
+		margin: 0 5px 0 1px;
+	}
+
+	.change-order-buttons-cell a.btn.btn-default + a.btn.btn-default {
+		margin-left: 0.3em;
+	}
 }
 
 .panel-default > .panel-heading {
@@ -1213,6 +1219,14 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 
 .files-table-right {
 	width: 8em;
+}
+
+.undo-last-reorder-panel {
+	margin-bottom: 1em;
+
+	button {
+		margin-left: 1em;
+	}
 }
 
 /* AJAX loading spinner */
