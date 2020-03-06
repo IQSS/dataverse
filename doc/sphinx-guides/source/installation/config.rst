@@ -1782,6 +1782,36 @@ You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or
 
 Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. "ou"). In case of Shibboleth affiliation string is read from the DiscoFeed at each login. ``:ShibAffiliationAttribute`` is a name of a Shibboleth attribute, which takes place in Shibboleth header, and Dataverse will read the affiliation string from that. If this value is not set or empty, Dataverse uses the DiscoFeed.
 
+If the attribute is not yet set for the Shibboleth, please consult the Shibboleth administrators how o set it. Typically it requires changing of `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
+
+```
+    <Attribute name="urn:oid:2.5.4.11" id="ou">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+```
+
+In order to take place the change, you should restart Shibboleth and Apache2 services:
+
+```
+sudo service shibd restart
+sudo service apache2 restart
+```
+
+To check if the attribute is sent, you should log in again to Dataverse and check Shibboleth's transaction log. You should see something like this:
+
+```
+INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
+INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
+INFO Shibboleth-TRANSACTION [25]: }
+```
+
+If you see the attribue you requested in this list, you can set the attribute in Dataverse.
+
 To set ``:ShibAffiliationAttribute``:
 
 ``curl -X PUT -d "ou" http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
