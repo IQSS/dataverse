@@ -10,7 +10,7 @@ Direct upload to S3 is enabled per store by one new jvm option:
 
     ./asadmin create-jvm-options "\-Ddataverse.files.<id>.upload-redirect=true"
     
-The existing :MaxFileUploadSizeInBytes property and dataverse.files.<id>.url-expiration-minutes jvm option for the same store also apply to direct upload.
+The existing :MaxFileUploadSizeInBytes property and "dataverse.files.<id>.url-expiration-minutes" jvm option for the same store also apply to direct upload.
 
 Direct upload via the Dataverse web interface is transparent to the user and handled automatically by the browser. Some minor differences in file upload exist: directly uploaded files are not unzipped and Dataverse does not scan their content to help in assigning a MIME type. Ingest of tabular files and metadata extraction from FITS files will occur, but can be turned off for files above a specified size limit through the new dataverse.files.<id>.ingestsizelimit jvm option.
 
