@@ -117,7 +117,7 @@
       var row = target.parents('tr')[0];
       if(row != null) {
         //finds the file id/DOI in the Dataset page
-        label = $(row).find('td.col-file-metadata  a').attr('href');
+        label = $(row).find('div.file-metadata-block > a').attr('href');
       } else {
         //finds the file id/DOI in the file page
         label = $('#fileForm').attr('action');
