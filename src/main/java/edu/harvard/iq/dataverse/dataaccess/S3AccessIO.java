@@ -866,9 +866,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String urlString = null;
         if (presignedUrl != null) {
         	String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
-        	logger.info("endpoint: " + endpoint);
         	String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
-        	logger.info("proxy: " + proxy);
         	if(proxy!=null) {
         		urlString = presignedUrl.toString().replace(endpoint, proxy);
         	} else {
