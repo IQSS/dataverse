@@ -1,21 +1,23 @@
 package edu.harvard.iq.dataverse.ingest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+
+import org.junit.Test;
+
+import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
-import org.junit.Test;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class IngestFrequencyTest {
 
@@ -27,9 +29,7 @@ public class IngestFrequencyTest {
      */
 
     public void testFrequency()  {
-
-        String fileNameSav = "src/test/resources/sav/frequency-test.sav";
-        DataFile dataFile = readFileCalcFreq(fileNameSav , "application/x-spss-sav" );
+        DataFile dataFile = readFileCalcFreq("sav/frequency-test.sav" , "application/x-spss-sav" );
 
         assertNotNull(dataFile);
 
@@ -48,7 +48,7 @@ public class IngestFrequencyTest {
         assertEquals(cats3.size(),2);
         thirdVariableTest(cats3);
 
-        DataFile dataFileDta = readFileCalcFreq("src/test/resources/dta/test_cat_values.dta" , "application/x-stata-14" );
+        DataFile dataFileDta = readFileCalcFreq("dta/test_cat_values.dta" , "application/x-stata-14");
         assertNotNull(dataFileDta);
 
         long varQuantDta = dataFileDta.getDataTable().getVarQuantity();
@@ -83,8 +83,9 @@ public class IngestFrequencyTest {
         BufferedInputStream fileInputStream = null;
 
         try {
-            fileInputStream = new BufferedInputStream(new FileInputStream(new File(fileName)));
-        } catch (FileNotFoundException notfoundEx) {
+            InputStream inputStream = new ByteArrayInputStream(UnitTestUtils.readFileToByteArray(fileName));
+            fileInputStream = new BufferedInputStream(inputStream);
+        } catch (IOException notfoundEx) {
             System.out.println("Cannot find file " + fileName);
             fileInputStream = null;
             assertNotNull(fileInputStream);

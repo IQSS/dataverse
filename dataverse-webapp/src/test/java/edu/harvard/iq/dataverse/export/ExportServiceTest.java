@@ -1,7 +1,36 @@
 package edu.harvard.iq.dataverse.export;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.ws.rs.core.MediaType;
+
 import com.google.common.collect.Lists;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -19,32 +48,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import io.vavr.control.Either;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -88,7 +91,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DATACITE);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/testDatacite.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/testDatacite.xml"), exportedDataset.get());
     }
 
     @Test
@@ -103,7 +106,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DCTERMS);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/dcterms.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/dcterms.xml"), exportedDataset.get());
     }
 
     @Test
@@ -118,7 +121,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DDI);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/ddi.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/ddi.xml"), exportedDataset.get());
 
         System.out.println(exportedDataset.get());
     }
@@ -137,7 +140,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DDI);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/ddiWithoutEmail.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/ddiWithoutEmail.xml"), exportedDataset.get());
     }
 
     @Test
@@ -152,7 +155,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.JSON);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/datasetInJson.json"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/datasetInJson.json"), exportedDataset.get());
     }
 
     @Test
@@ -167,7 +170,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.OAIORE);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/oai_ore.json"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/oai_ore.json"), exportedDataset.get());
     }
 
     @Test
@@ -182,7 +185,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.SCHEMADOTORG);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/schemaorg.json"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/schemaorg.json"), exportedDataset.get());
     }
 
     @Test
@@ -197,7 +200,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.OPENAIRE);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/openaire.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/openaire.xml"), exportedDataset.get());
     }
 
     @Test
@@ -212,7 +215,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DUBLINCORE);
 
         //then
-        Assert.assertEquals(readFileToString("exportdata/dublincore.xml"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/dublincore.xml"), exportedDataset.get());
     }
 
     @Test
@@ -500,9 +503,5 @@ public class ExportServiceTest {
 
         when(datasetFieldService.findByNameOpt(eq("depositor"))).thenReturn(depositorFieldType);
         when(datasetFieldService.findByNameOpt(eq("dateOfDeposit"))).thenReturn(dateOfDepositFieldType);
-    }
-
-    private String readFileToString(String resourcePath) throws IOException {
-        return IOUtils.resourceToString(resourcePath, StandardCharsets.UTF_8, getClass().getClassLoader());
     }
 }

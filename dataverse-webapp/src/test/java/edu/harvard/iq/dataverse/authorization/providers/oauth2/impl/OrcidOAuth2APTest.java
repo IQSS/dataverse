@@ -1,22 +1,24 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2.impl;
 
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 
 /**
  * @author michael
  * @author pameyer
  */
 public class OrcidOAuth2APTest extends OrcidOAuth2AP {
-    private static final String PERSON_FILE = "src/test/resources/xml/oauth2/orcid/v20_person.xml";
-    private static final String ACTIVITIES_FILE = "src/test/resources/xml/oauth2/orcid/v20_activities.xml";
+    private static final String PERSON_FILE = "xml/oauth2/orcid/v20_person.xml";
+    private static final String ACTIVITIES_FILE = "xml/oauth2/orcid/v20_activities.xml";
     private static final String PERSON;
     private static final String ACTIVITIES;
 
@@ -36,8 +38,7 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
     private static String loadResponseXML(String fname) {
         String txt = null;
         try {
-            java.io.File inp = new java.io.File(fname);
-            txt = org.apache.commons.io.FileUtils.readFileToString(inp);
+            txt = UnitTestUtils.readFileToString(fname);
         } catch (java.io.IOException ie) {
             // no-op; assert that the needed strings are not null in tests
         }

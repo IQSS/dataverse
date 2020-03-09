@@ -1,23 +1,27 @@
 package edu.harvard.iq.dataverse.datavariable;
 
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.CategoryMetadata;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VarGroup;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.FileInputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.junit.Test;
+
+import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.CategoryMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VarGroup;
+import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableMetadata;
 
 public class VariableMetadataDDIParserTest {
 
@@ -27,12 +31,13 @@ public class VariableMetadataDDIParserTest {
      */
     public void testDDIReader() {
 
-        String fileName = "src/test/resources/xml/dct.xml";
         XMLStreamReader xmlr = null;
 
         XMLInputFactory factory = XMLInputFactory.newInstance();
         try {
-            xmlr = factory.createXMLStreamReader(new FileInputStream(fileName));
+            String text = UnitTestUtils.readFileToString("xml/dct.xml");
+            Reader stringReader = new StringReader(text);
+            xmlr = factory.createXMLStreamReader(stringReader);
         } catch (Exception e) {
             xmlr = null;
             assertNotNull(xmlr);
