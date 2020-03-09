@@ -581,6 +581,41 @@ div.edit-compound-field .ui-message, .ui-message-form {
 	}
 }
 
+/* File uploader */
+
+.ui-fileupload {
+	&.disabled {
+		.ui-fileupload-content {
+			background: $gray-border-color;
+	
+			#dragdropMsg {
+				visibility: hidden;
+			}
+		}
+	}
+	&.upload-in-progress {
+		.ui-fileupload-choose {
+			opacity: 0.65;
+			pointer-events: none;
+		}
+
+		#dragdropMsg {
+			display: none;
+		}
+	}
+}
+
+
+.ui-fileupload-cancel {
+	position: relative;
+	top: -0.2em;
+	height: 2em;
+
+	.ui-button-text {
+		@include offscreen-outline-fix;
+	}
+}
+
 /* Checkboxes */
 
 @mixin checkbox {
@@ -1102,6 +1137,10 @@ div[id$="notifications"].ui-tabs-panel {
 		margin-bottom: 1em;
 		border-radius: $border-radius;
 	}
+}
+
+.ui-datatable.ui-widget table thead th.ui-state-default:last-child {
+	text-align: right;
 }
 
 tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-header tr.ui-state-highlight {

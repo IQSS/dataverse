@@ -205,6 +205,7 @@ public class ReplaceDatafilesPage implements Serializable {
     public void deleteReplacementFile() {
 
         fileToBeSaved = null;
+        uploadInProgress = false;
 
         String successMessage = BundleUtil.getStringFromBundle("file.deleted.replacement.success");
         logger.info(successMessage);

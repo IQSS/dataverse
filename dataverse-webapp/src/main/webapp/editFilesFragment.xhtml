@@ -145,6 +145,7 @@
                                 <!-- changes to this part of the fragment. -->
 
                                 <p:fileUpload id="fileUpload"
+                                              class="#{lockedFromEdits || fileUploadDisabled ? 'disabled' : ''}"
                                               dragDropSupport="true"
                                               auto="true"
                                               multiple="#{isMultiplyFilesUploadAllowed}"

@@ -108,14 +108,15 @@
                                             </p>
 
                                             <p:fileUpload id="fileUpload"
+                                                          class="#{(ReplaceDatafilesPage.lockedFromEdits || ReplaceDatafilesPage.fileToBeSaved != null ? 'disabled' : '')}"
                                                           dragDropSupport="true"
                                                           auto="true"
                                                           disabled="#{ReplaceDatafilesPage.lockedFromEdits || ReplaceDatafilesPage.fileToBeSaved != null}"
                                                           fileUploadListener="#{ReplaceDatafilesPage.handleFileUpload}"
                                                           update="@form"
                                                           label="#{bundle['file.selectToAddBtn']}"
-                                                          onstart="#{ReplaceDatafilesPage.uploadStarted()}"
-                                                          onerror="uploadFailure();"
+                                                          onstart="#{ReplaceDatafilesPage.uploadStarted()}; disableUploadButton();"
+                                                          onerror="uploadFailure(); enableUploadButton();"
                                                           sizeLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MaxFileUploadSizeInBytes)}"
                                                           fileLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MultipleUploadFilesLimit)}"
                                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"
@@ -129,6 +130,16 @@
                                                     if ($(fileUpload).children('#dragdropMsg').length === 0) {
                                                         $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
                                                     }
+                                                }
+
+                                                function disableUploadButton() {
+                                                    $('div[id*="fileUpload"]').addClass("upload-in-progress");
+                                                    $('div[id*="fileUpload"] .ui-fileupload-buttonbar .ui-button').attr("tabindex", "-1");
+                                                }
+
+                                                function enableUploadButton() {
+                                                    $('div[id*="fileUpload"]').removeClass("upload-in-progress");
+                                                    $('div[id*="fileUpload"] .ui-fileupload-buttonbar .ui-button').attr("tabindex", "0");
                                                 }
 
                                                 $(document).ready(function () {
@@ -394,15 +405,15 @@
                     <div class="button-block">
                         <p:outputPanel id="filesButtons">
                             <div jsf:rendered="#{!(empty ReplaceDatafilesPage.fileMetadatas)}">
+                                <p:commandButton value="#{bundle.saveChanges}" id="datasetSave"
+                                                 update="@form,:messagePanel"
+                                                 oncomplete="$(document).scrollTop(0);"
+                                                 action="#{ReplaceDatafilesPage.saveReplacement()}"/>
                                 <p:commandButton id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
                                 >
                                 </p:commandButton>
-                                <p:commandButton value="#{bundle.saveChanges}" id="datasetSave"
-                                                 update="@form,:messagePanel"
-                                                 oncomplete="$(document).scrollTop(0);"
-                                                 action="#{ReplaceDatafilesPage.saveReplacement()}"/>
                             </div>
                             <div jsf:rendered="#{empty ReplaceDatafilesPage.fileMetadatas}">
                                 <p:commandButton id="doneFilesButton" value="#{bundle.done}"
@@ -422,7 +433,7 @@
                             class="glyphicon glyphicon-warning-sign"/> #{ReplaceDatafilesPage.getDifferentContentTypeMessage()}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()"
+                        <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide();enableUploadButton();"
                                          action="#{ReplaceDatafilesPage.deleteFiles()}"
                                          update="@form"/>
                         <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()"
@@ -449,7 +460,7 @@
                     </ui:fragment>
                     <div class="button-block">
                         <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()"
-                                         oncomplete="window.scrollTo(0, 0);deleteFinished();"
+                                         oncomplete="window.scrollTo(0, 0);deleteFinished();enableUploadButton()"
                                          update="@form" action="#{ReplaceDatafilesPage.deleteFiles()}"/>
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()"
                                          type="button"/>
