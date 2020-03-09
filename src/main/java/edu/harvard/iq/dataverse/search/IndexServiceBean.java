@@ -163,10 +163,14 @@ public class IndexServiceBean {
     
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
-        return indexDataverse(dataverse);
+        return indexDataverse(dataverse, false);
+    }
+    
+    public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
+       return  indexDataverse(dataverse, true);
     }
 
-    public Future<String> indexDataverse(Dataverse dataverse) throws SolrServerException, IOException {
+    public Future<String> indexDataverse(Dataverse dataverse, boolean processPaths) throws SolrServerException, IOException {
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             // TODO: Investigate the root cause of this "unable to index dataverse"
@@ -260,23 +264,30 @@ public class IndexServiceBean {
         for (String dvPath : linkingDataversePaths) {
             dataversePaths.add(dvPath);
         }
-        //Get Linking Dataverses to see if I need to reindex my children
-        if (hasAnyLinkingDataverses(dataverse)) {            
-            for (Dataverse dv : dataverseService.findPublishedByOwnerId(dataverse.getId())) {
-                //if this dataverse or any of its ancestors is linked and contains dataverses then
-                // the dataverses must be reindexed to get the new paths added
-                //We're sticking with the re-index here so that the dataverses datasets will also 
-                //get their paths updated
-                indexDataverse(dv);
-            }
-            
-            for (Dataset dv : datasetService.findPublishedByOwnerId(dataverse.getId())) {
-                //if this dataverse or any of its ancestors is linked and contains datasets then
-                // the datasets must get the new paths added
-                // changed from a full re-index for efficiency wrt issue 6665
-                updatePathForExistingSolrDocs(dv);
+        //only do this if we're indexing an individual dataverse ie not full re-index
+        if (processPaths) {
+            //Get Linking Dataverses to see if I need to reindex my children
+            if (hasAnyLinkingDataverses(dataverse)) {
+                List<Dataverse> found = dataverseService.findByOwnerId(dataverse.getId());
+                if (!found.isEmpty()) {
+                    for (Dataverse dv : found) {
+                        //if this dataverse or any of its ancestors is linked and contains dataverses then
+                        // the dataverses must be reindexed to get the new paths added
+                        //We're sticking with the re-index here so that the dataverses datasets will also 
+                        //get their paths updated
+                        indexDataverseInNewTransaction(dv);
+                    }
+                }
+                List<Dataset> datasets = datasetService.findByOwnerId(dataverse.getId());
+                for (Dataset ds : datasets) {
+                    //if this dataverse or any of its ancestors is linked and contains datasets then
+                    // the datasets must get the new paths added
+                    // changed from a full re-index for efficiency wrt issue 6665
+                    updatePathForExistingSolrDocs(ds);
+                }
             }
         }
+        
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         docs.add(solrInputDocument);
 
@@ -306,7 +317,7 @@ public class IndexServiceBean {
         return new AsyncResult<>(msg);
 
     }
-
+    
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
@@ -1404,7 +1415,6 @@ public class IndexServiceBean {
     
     private void updatePathForExistingSolrDocs(DvObject object) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery();
-
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, object.getId().toString()));
 
         QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
@@ -1437,6 +1447,8 @@ public class IndexServiceBean {
                     commitResponse = solrClientService.getSolrClient().commit();
                 }
             }
+        } else {
+            indexDatasetInNewTransaction(object.getId());
         }
     }
     
