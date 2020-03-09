@@ -2228,11 +2228,38 @@ The fully expanded example above (without environment variables) looks like this
 Datafile Integrity
 ~~~~~~~~~~~~~~~~~~
 
-Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals::
+Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals:
 
-	    GET http://$SERVER/api/admin/datafiles/integrity/fixmissingoriginalsizes{?limit=N}
+.. code-block:: bash
+
+  export SERVER_URL=https://localhost
+
+  curl $SERVER_URL/api/admin/datafiles/integrity/fixmissingoriginalsizes
+
+with limit parameter:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://localhost
+  export LIMIT=10
+
+  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingoriginalsizes?limit=$LIMIT"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://localhost/api/admin/datafiles/integrity/fixmissingoriginalsizes"
+
+with limit parameter:
+
+.. code-block:: bash
+
+  curl https://localhost/api/admin/datafiles/integrity/fixmissingoriginalsizes?limit=10"
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
+
+By default the admin API calls are restricted to be called from the localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
 Users Token Management
 ----------------------
