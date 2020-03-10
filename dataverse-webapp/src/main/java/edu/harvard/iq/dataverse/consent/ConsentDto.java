@@ -14,12 +14,10 @@ public class ConsentDto {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public ConsentDto(long id, String name, ConsentDetailsDto consentDetails,
-                      List<ConsentActionDto> consentActions, int displayOrder, boolean required) {
+    public ConsentDto(long id, String name, ConsentDetailsDto consentDetails, int displayOrder, boolean required) {
         this.id = id;
         this.name = name;
         this.consentDetails = consentDetails;
-        this.consentActions = consentActions;
         this.displayOrder = displayOrder;
         this.required = required;
     }

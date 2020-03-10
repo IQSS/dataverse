@@ -32,17 +32,20 @@ public class ConsentMapper {
 
         ConsentDetailsDto consentDetailsDto = consentDetailsToConsentDetailsDto(consentWithUserLocale);
 
+
+        ConsentDto consentDto = new ConsentDto(consent.getId(),
+                                               consent.getName(),
+                                               consentDetailsDto,
+                                               consent.getDisplayOrder(),
+                                               consent.isRequired());
+
         List<ConsentActionDto> consentActionDtos = consent.getConsentActions().stream()
-                .map(this::consentActionToConsentActionDto)
+                .map(consentAction -> consentActionToConsentActionDto(consentAction, consentDto))
                 .collect(Collectors.toList());
 
+        consentDto.getConsentActions().addAll(consentActionDtos);
 
-        return new ConsentDto(consent.getId(),
-                              consent.getName(),
-                              consentDetailsDto,
-                              consentActionDtos,
-                              consent.getDisplayOrder(),
-                              consent.isRequired());
+        return consentDto;
     }
 
     public AcceptedConsent consentDtoToAcceptedConsent(ConsentDto consentDto, AuthenticatedUser user) {
@@ -63,9 +66,10 @@ public class ConsentMapper {
         return new ConsentDetailsDto(consentDetails.getId(), consentDetails.getLanguage(), consentDetails.getText());
     }
 
-    private ConsentActionDto consentActionToConsentActionDto(ConsentAction consentAction) {
+    private ConsentActionDto consentActionToConsentActionDto(ConsentAction consentAction, ConsentDto consentDto) {
         return new ConsentActionDto(consentAction.getId(),
                                     consentAction.getConsentActionType(),
-                                    consentAction.getActionOptions());
+                                    consentAction.getActionOptions(),
+                                    consentDto);
     }
 }

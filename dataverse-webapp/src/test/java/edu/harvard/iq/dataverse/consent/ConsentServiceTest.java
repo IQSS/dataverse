@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.consent;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.consent.action.ConsentActionFactory;
 import edu.harvard.iq.dataverse.persistence.consent.AcceptedConsent;
 import edu.harvard.iq.dataverse.persistence.consent.Consent;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentDetails;
@@ -23,6 +24,9 @@ class ConsentServiceTest {
     @Mock
     private ConsentDao consentDao;
 
+    @Mock
+    private ConsentActionFactory consentActionFactory;
+
     private ConsentMapper consentMapper = new ConsentMapper();
 
     @InjectMocks
@@ -32,7 +36,7 @@ class ConsentServiceTest {
 
     @BeforeEach
     void setUp() {
-        consentService = new ConsentService(consentDao, consentMapper);
+        consentService = new ConsentService(consentDao, consentMapper, consentActionFactory);
     }
 
     @Test
@@ -67,8 +71,8 @@ class ConsentServiceTest {
         List<ConsentDto> testDtoConsents = prepareTestDtoConsents();
 
         //when
-        List<AcceptedConsent> acceptedConsents = consentService.saveAcceptedConsents(testDtoConsents,
-                                                                                     authenticatedUser);
+        List<AcceptedConsent> acceptedConsents = consentService.executeActionsAndSaveAcceptedConsents(testDtoConsents,
+                                                                                                      authenticatedUser);
 
         //then
         Assertions.assertAll(() -> Assertions.assertEquals(1, acceptedConsents.size()),
@@ -85,14 +89,13 @@ class ConsentServiceTest {
 
     private List<ConsentDto> prepareTestDtoConsents() {
         ConsentDetailsDto englishCons = new ConsentDetailsDto(1L, Locale.ENGLISH, "english cons");
-        ConsentDto firstConsent = new ConsentDto(1L, "first consent", englishCons, Lists.newArrayList(), 0, true);
+        ConsentDto firstConsent = new ConsentDto(1L, "first consent", englishCons, 0, true);
         firstConsent.getConsentDetails().setAccepted(true);
 
         ConsentDetailsDto secondEnglishCons = new ConsentDetailsDto(1L, Locale.ENGLISH, "second english cons");
         ConsentDto secondConsent = new ConsentDto(2L,
                                                   "second consent",
                                                   secondEnglishCons,
-                                                  Lists.newArrayList(),
                                                   1,
                                                   true);
 

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.consent;
 
+import edu.harvard.iq.dataverse.consent.action.ConsentActionFactory;
 import edu.harvard.iq.dataverse.persistence.consent.AcceptedConsent;
 import edu.harvard.iq.dataverse.persistence.consent.Consent;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -16,6 +17,7 @@ public class ConsentService {
 
     private ConsentDao consentDao;
     private ConsentMapper consentMapper;
+    private ConsentActionFactory consentActionFactory;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -24,9 +26,10 @@ public class ConsentService {
     }
 
     @Inject
-    public ConsentService(ConsentDao consentDao, ConsentMapper consentMapper) {
+    public ConsentService(ConsentDao consentDao, ConsentMapper consentMapper, ConsentActionFactory consentActionFactory) {
         this.consentDao = consentDao;
         this.consentMapper = consentMapper;
+        this.consentActionFactory = consentActionFactory;
     }
 
     // -------------------- LOGIC --------------------
@@ -40,17 +43,34 @@ public class ConsentService {
                 .collect(Collectors.toList());
     }
 
-    public List<AcceptedConsent> saveAcceptedConsents(List<ConsentDto> consents, AuthenticatedUser consentAccepter){
+    /**
+     * Executes actions that were associated with consents if there were any and saves consents that were accepted.
+     */
+    public List<AcceptedConsent> executeActionsAndSaveAcceptedConsents(List<ConsentDto> consents, AuthenticatedUser consentAccepter) {
         List<ConsentDto> acceptedConsentsFromView = consents.stream()
                 .filter(consentDto -> consentDto.getConsentDetails().isAccepted())
                 .collect(Collectors.toList());
 
-        List<AcceptedConsent> acceptedConsents = acceptedConsentsFromView.stream()
+        List<ConsentDto> consentsAfterActionExecution = executeConsentActions(acceptedConsentsFromView, consentAccepter);
+
+        List<AcceptedConsent> acceptedConsents = consentsAfterActionExecution.stream()
                 .map(consentDto -> consentMapper.consentDtoToAcceptedConsent(consentDto, consentAccepter))
                 .collect(Collectors.toList());
 
         acceptedConsents.forEach(acceptedConsent -> consentDao.saveAcceptedConsent(acceptedConsent));
 
         return acceptedConsents;
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private List<ConsentDto> executeConsentActions(List<ConsentDto> consents, AuthenticatedUser registeredUser) {
+        consents.stream()
+                .flatMap(consentDto -> consentDto.getConsentActions().stream())
+                .forEach(consentActionDto -> consentActionFactory
+                        .retrieveAction(consentActionDto.getConsentActionType(), registeredUser)
+                        .executeAction(consentActionDto));
+
+        return consents;
     }
 }

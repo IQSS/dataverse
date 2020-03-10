@@ -234,6 +234,16 @@ INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionp
 INSERT INTO template (id, createtime, name, usagecount, dataverse_id, termsofuseandaccess_id)
  VALUES (1, '2019-08-22 08:23:02.738', 'testTemplate', 0, 1, NULL);
 
+-------------------- CONSENTS ---------------------
+INSERT INTO consent (id, name, displayorder, hidden, required)
+VALUES (1, 'root consent', 0, false, true);
+
+INSERT INTO consentdetails (id, text, language, consent_id)
+VALUES (1, 'Test english consent', 'en', 1);
+
+INSERT INTO consentaction (actionoptions, consentactiontype, consent_id)
+VALUES ('{"firstName": "John", "lastName": "Tester", "email": "test@gmail.com"}', 'SEND_NEWSLETTER_EMAIL', 1);
+
 -------------------- Fix sequences --------------------
 
 SELECT setval('authenticateduser_id_seq', COALESCE((SELECT MAX(id)+1 FROM authenticateduser), 1), false);

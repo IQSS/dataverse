@@ -107,14 +107,13 @@ class ConsentMapperTest {
 
     private List<ConsentDto> prepareTestDtoConsents() {
         ConsentDetailsDto englishCons = new ConsentDetailsDto(1L, Locale.ENGLISH, "english cons");
-        ConsentDto firstConsent = new ConsentDto(1L, "first consent", englishCons, Lists.newArrayList(), 0, true);
+        ConsentDto firstConsent = new ConsentDto(1L, "first consent", englishCons, 0, true);
         firstConsent.getConsentDetails().setAccepted(true);
 
         ConsentDetailsDto secondEnglishCons = new ConsentDetailsDto(1L, Locale.ENGLISH, "second english cons");
         ConsentDto secondConsent = new ConsentDto(2L,
                                                   "second consent",
                                                   secondEnglishCons,
-                                                  Lists.newArrayList(),
                                                   1,
                                                   true);
 

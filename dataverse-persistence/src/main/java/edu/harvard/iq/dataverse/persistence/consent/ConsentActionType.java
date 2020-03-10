@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.persistence.consent;
 
 public enum ConsentActionType {
-    SEND_EMAIL_NOTIFICATION
+    /**
+     * Json keys for this action type:
+     * {email}
+     */
+    SEND_NEWSLETTER_EMAIL
 }

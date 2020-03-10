@@ -383,7 +383,7 @@ public class DataverseUserPage implements java.io.Serializable {
                                                      new Timestamp(new Date().getTime()),
                                                      NotificationType.CREATEACC);
 
-            consentService.saveAcceptedConsents(consents, au);
+            consentService.executeActionsAndSaveAcceptedConsents(consents, au);
             // go back to where user came from
 
             // (but if they came from the login page, then send them to the 

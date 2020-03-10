@@ -326,7 +326,7 @@ public class Shib implements java.io.Serializable {
                                                      new Timestamp(new Date().getTime()),
                                                      NotificationType.CREATEACC);
 
-            consentService.saveAcceptedConsents(consents, au);
+            consentService.executeActionsAndSaveAcceptedConsents(consents, au);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
@@ -347,7 +347,7 @@ public class Shib implements java.io.Serializable {
             if (au != null) {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);
-                consentService.saveAcceptedConsents(consents, au);
+                consentService.executeActionsAndSaveAcceptedConsents(consents, au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
                 return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
