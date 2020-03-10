@@ -91,7 +91,7 @@ public class Dataset extends DvObjectContainer {
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.MERGE)
+    @OneToMany(mappedBy = "owner", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id")
     private List<DataFile> files = new ArrayList<>();
 

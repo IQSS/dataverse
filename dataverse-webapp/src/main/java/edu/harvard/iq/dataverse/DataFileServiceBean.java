@@ -1681,6 +1681,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
 
         DataFile datafile = new DataFile(contentType);
+        datafile.setCreateDate(new Timestamp(new Date().getTime()));
         datafile.setModificationTime(new Timestamp(new Date().getTime()));
         /**
          * @todo Think more about when permissions on files are modified.
