@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
@@ -238,6 +239,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     MetricsServiceBean metricsSvc;
+    
+    @EJB 
+    DvObjectServiceBean dvObjSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
