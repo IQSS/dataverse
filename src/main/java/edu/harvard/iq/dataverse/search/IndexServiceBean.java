@@ -890,7 +890,7 @@ public class IndexServiceBean {
             }
         }
         
-        List<String> dataversePaths = retrieveDatasetPaths(dataset);        
+        List<String> dataversePaths = retrieveDatasetPaths(dataset); 
         solrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
         // solrInputDocument.addField(SearchFields.HOST_DATAVERSE,
         // dataset.getOwner().getName());
@@ -938,7 +938,9 @@ public class IndexServiceBean {
                              * whether full text indexing is on now.
                              */
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(releasedFileMetadata) && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)) {
+                                if (fileMetadata.contentEquals(releasedFileMetadata)
+                                      //  && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
+                                        ) {
                                     indexThisMetadata = false;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                                 } else {
@@ -1170,7 +1172,7 @@ public class IndexServiceBean {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
 
-
+/*
                             List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(var.getId(), fileMetadata.getId());
                             VariableMetadata vm = null;
                             if (vmList != null && vmList.size() >0) {
@@ -1204,8 +1206,9 @@ public class IndexServiceBean {
                                 }
 
                             }
-
+*/
                         }
+                        
                         // TABULAR DATA TAGS:
                         // (not to be confused with the file categories, indexed above!)
                         for (DataFileTag tag : fileMetadata.getDataFile().getTags()) {
@@ -1447,8 +1450,8 @@ public class IndexServiceBean {
                     commitResponse = solrClientService.getSolrClient().commit();
                 }
             }
-        } else {
-            indexDatasetInNewTransaction(object.getId());
+        } else {            
+            indexDataset((Dataset) object, true);            
         }
     }
     
