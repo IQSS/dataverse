@@ -90,7 +90,7 @@ public class HarvestingClient implements Serializable {
     public static final String HARVEST_STYLE_DESCRIPTION_NESSTAR="Nesstar archive";
     public static final String HARVEST_STYLE_DESCRIPTION_ROPER="Roper Archive";
     public static final String HARVEST_STYLE_DESCRIPTION_HGL="HGL";
-    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI resource (DC)";
+    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI archive";
     
     
     public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_ICPSR, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
