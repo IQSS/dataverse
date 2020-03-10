@@ -1780,9 +1780,9 @@ You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or
 :ShibAffiliationAttribute
 +++++++++++++++++++++++++
 
-The Shibboleth affiliation attribute holds information about the affiliation of the user (e.g. "ou"). The Shibboleth affiliation string is read from the DiscoFeed at each login. ``:ShibAffiliationAttribute`` is a name of a Shibboleth attribute, which takes place in Shibboleth header, and Dataverse will read the affiliation string from that. If this value is not set or empty, Dataverse uses the DiscoFeed.
+The Shibboleth affiliation attribute holds information about the affiliation of the user (e.g. "OU") and is read from the DiscoFeed at each login. ``:ShibAffiliationAttribute`` is a name of a Shibboleth attribute in the Shibboleth header which Dataverse will read from instead of DiscoFeed. If this value is not set or empty, Dataverse uses the DiscoFeed.
 
-If the attribute is not yet set for the Shibboleth, please consult the Shibboleth administrators how to set it. Typically it requires changing of the `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
+If the attribute is not yet set for the Shibboleth, please consult the Shibboleth Administrators at your institution. Typically it requires changing of the `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
 
 ```
     <Attribute name="urn:oid:2.5.4.11" id="ou">
