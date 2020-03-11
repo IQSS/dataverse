@@ -20,9 +20,32 @@ Newly-supported use cases in this release include:
 
 ## Notes for Dataverse Installation Administrators
 
+### Potential Data Integrity Issue
+
+We recently discovered a *potential* data integrity issue in Dataverse databases.  One manifests itself as duplicate DataFile objects created for the same uploaded file (https://github.com/IQSS/dataverse/issues/6522); the other as duplicate DataTable (tabular metadata) objects linked to the same DataFile (https://github.com/IQSS/dataverse/issues/6510). This issue impacted approximately .03% of datasets in Harvard's Dataverse.  
+
+To see if any datasets in your installation have been impacted by this data integrity issue, we've provided a diagnostic script here:
+
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/6510/check_datafiles_6522_6510.sh
+
+The script relies on the PostgreSQL utility psql to access the database. You will need to edit the credentials at the top of the script to match your database configuration.
+
+If neither of the two issues is present in your database, you will see a message "... no duplicate DataFile objects in your database" and "no tabular files affected by this issue in your database".
+
+If either, or both kinds of duplicates are detected, the script will provide further instructions. We will need you to send us the produced output. We will then assist you in resolving the issues in your database.
+
+### Solr Update
+
+With this release we upgrade to the latest available stable release in the Solr 7.x branch. We recommend a fresh installation of Solr 7.7.2 (the index will be empty)
+followed by an "index all".
+
+Before you start the "index all", Dataverse will appear to be empty because
+the search results come from Solr. As indexing progresses, results will appear
+until indexing is complete.
+
 ### Dataverse Linking Fix
 
-The fix implemented for #6262 will display the datasets contained in linked dataverses in the linking dataverse. An index in place is recommended for these counts to be updated. This is mentioned in the step by step instructions below. Going forward, this will happen automatically whenever a dataverse is linked. 
+The fix implemented for #6262 will display the datasets contained in linked dataverses in the linking dataverse. The full reindex described above will correct these counts. Going forward, this will happen automatically whenever a dataverse is linked. 
 
 ### ... Metadata Block Updates 
 
@@ -32,7 +55,22 @@ We made changes to the JSON Export in this release (#xxx). If you'd like these c
 
 ## Notes for Tool Developers and Integrators
 
-### API Changes... 
+### Guestbook Column Changes
+
+Users of downloaded guestbooks should note that two new columns have been added:
+
+- Dataset PID
+- File PID
+
+If you are expecting column in the CSV file to be in a particular order, you will need to make adjustments. 
+
+Old columns: Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions
+
+New columns: Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions
+
+### API Changes
+
+As reported in #6570, the affiliation for dataset contacts has been wrapped in parentheses in the JSON output from the Search API. These parentheses have now been removed. This is a backward incompatible change but it's expected that this will not cause issues for integrators.
 
 ## Complete List of Changes
 
@@ -57,15 +95,24 @@ If this is a new installation, please see our <a href="http://guides.dataverse.o
 - remove the generated directory: rm -rf &lt;glassfish install path&gt;glassfish4/glassfish/domains/domain1/generated
 - service glassfish start
 
+3. Install and configure Solr v7.7.2
+
+See http://guides.dataverse.org/en/4.20/installation/prerequisites.html#installing-solr
+
 3. Deploy this version.
 
 - &lt;glassfish install path&gt;/glassfish4/bin/asadmin deploy &lt;path&gt;dataverse-4.19.war
 
 4. Restart glassfish.
 
-5. Kick off in place reindex
+5. Update Citation Metadata Block
 
-http://guides.dataverse.org/en/4.20/admin/solr-search-index.html#reindex-in-place
+- `wget https://github.com/IQSS/dataverse/releases/download/4.20/citation.tsv`
+- `curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @citation.tsv -H "Content-type: text/tab-separated-values"`
+
+6. Kick off full reindex
+
+http://guides.dataverse.org/en/4.20/admin/solr-search-index.html
 
 7. (Recommended) Run ReExportall to update JSON Exports  
 
