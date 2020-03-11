@@ -47,13 +47,19 @@ until indexing is complete.
 
 The fix implemented for #6262 will display the datasets contained in linked dataverses in the linking dataverse. The full reindex described above will correct these counts. Going forward, this will happen automatically whenever a dataverse is linked. 
 
-### ... Metadata Block Updates 
+### Google Analytics Download Tracking Bug
+
+The button tracking capability discussed in the installation guide (http://guides.dataverse.org/en/4.20/installation/config.html#id88) relies on an analytics-code.html file that must be configured using the :WebAnalyticsCode setting. The example file provided in the installation guide is no longer compatible with recent Dataverse releases (>v4.16). Installations using this feature should update their analytics-code.html file by following the installation instructions using the updated example file. Alternately, sites can modify their existing files to include the one-line change made in the example file at line 120.
 
 ### Run ReExportall
 
 We made changes to the JSON Export in this release (#xxx). If you'd like these changes to reflected in your JSON exports, you should run ReExportall as part of the upgrade process. We've included this in the step-by-step instructions below.
 
 ## Notes for Tool Developers and Integrators
+
+### Integration Test Coverage Reporting
+
+API-based integration tests are run every time a branch is merged to develop and the percentage of code covered by these integration tests is now shown on a badge at the bottom of the README.md file that serves as the homepage of Dataverse Github Repository.
 
 ### Guestbook Column Changes
 
@@ -71,6 +77,10 @@ New columns: Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, Fi
 ### API Changes
 
 As reported in #6570, the affiliation for dataset contacts has been wrapped in parentheses in the JSON output from the Search API. These parentheses have now been removed. This is a backward incompatible change but it's expected that this will not cause issues for integrators.
+
+### Role Name Change
+
+The role alias provided in API responses has changed, so if anything was hard-coded to "editor" instead of "contributor" it will need to be updated. 
 
 ## Complete List of Changes
 
