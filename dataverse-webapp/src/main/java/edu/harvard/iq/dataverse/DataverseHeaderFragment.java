@@ -86,8 +86,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         if (dvObject.getId() != null) {
             initBreadcrumbs(dvObject, null);
         } else {
-            initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? BundleUtil.getStringFromBundle("newDataverse") :
-                    dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset") : null);
+            initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? BundleUtil.getStringFromBundle("newDataverse", dataverseSession.getLocale()) :
+                    dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset", dataverseSession.getLocale()) : null);
         }
     }
 

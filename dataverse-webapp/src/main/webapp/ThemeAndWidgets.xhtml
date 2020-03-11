@@ -18,6 +18,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{themeWidgetFragment.editDv.id}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{themeWidgetFragment.initEditDv}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(themeWidgetFragment.editDv, bundle['dataverse.option.themeAndWidgets'])}"/>
                 </f:metadata>
