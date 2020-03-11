@@ -862,7 +862,7 @@ public class SystemConfig {
     /**
      * See FileUploadMethods.
      *
-     * TODO: Consider if dataverse.files.s3-download-redirect belongs here since
+     * TODO: Consider if dataverse.files.<id>.download-redirect belongs here since
      * it's a way to bypass Glassfish when downloading.
      */
     public enum FileDownloadMethods {

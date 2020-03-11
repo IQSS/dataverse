@@ -977,19 +977,18 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/versions/:draft
 
-Set Citation Date Field for a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set Citation Date Field Type for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the dataset field type to be used as the citation date for the given dataset (if the dataset does not include the dataset field type, the default logic is used). The name of the dataset field type should be sent in the body of the request.
-To revert to the default logic, use ``:publicationDate`` as the ``$DATASET_FIELD_TYPE_NAME``.
-Note that the dataset field used has to be a date field.
+Sets the dataset citation date field type for a given dataset. ``:publicationDate`` is the default.
+Note that the dataset citation date field type must be a date field.
 
 .. code-block:: bash
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
-  export DATASET_FIELD_TYPE_NAME=:publicationDate
+  export DATASET_FIELD_TYPE_NAME=:dateOfDeposit
 
   curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/$ID/citationdate --data "$DATASET_FIELD_TYPE_NAME"
 
@@ -997,12 +996,12 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":publicationDate"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":dateOfDeposit"
 
-Revert Citation Date Field to Default for Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Revert Citation Date Field Type to Default for Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Restores the default logic of the field type to be used as the citation date. Same as ``PUT`` with ``:publicationDate`` body:
+Restores the default citation date field type, ``:publicationDate``, for a given dataset.
 
 .. code-block:: bash
 
@@ -1812,11 +1811,39 @@ Redetect File Type
 
 Dataverse uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have Dataverse attempt to redetect the file type.
 
-When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change. In the example below, the file is identified by database id "42".
+When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change.
 
-``export FILE_ID=42``
+A curl example using an ``id``
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$FILE_ID/redetect?dryRun=true``
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/$ID/redetect?dryRun=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/24/redetect?dryRun=true"
+
+A curl example using a ``pid``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/:persistentId/redetect?persistentId=$PERSISTENT_ID&dryRun=true"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/:persistentId/redetect?persistentId=doi:10.5072/FK2/AAA000&dryRun=true"
 
 Currently the following methods are used to detect file types:
 
@@ -1827,39 +1854,162 @@ Currently the following methods are used to detect file types:
 Replacing Files
 ~~~~~~~~~~~~~~~
 
-Replace an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced::
+Replace an existing file where ``ID`` is the database id of the file to replace or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced.
 
-    POST -F 'file=@file.extension' -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+A curl example using an ``ID``
 
-Example::
+.. code-block:: bash
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' \
-  -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}'\
-  "https://demo.dataverse.org/api/files/$FILE_ID/replace"
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' $SERVER_URL/api/files/$ID/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
+    -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
+    https://demo.dataverse.org/api/files/24/replace
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' \
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
+    -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
 
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~
 
-Provides a json representation of the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file::
+Provides a json representation of the file metadata for an existing file where ``ID`` is the database id of the file to get metadata from or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file.
 
-    GET http://$SERVER/api/files/{id}/metadata
+A curl example using an ``ID``
 
-The current draft can also be viewed if you have permissions and pass your ``apiKey``::
+.. code-block:: bash
 
-    GET http://$SERVER/api/files/{id}/metadata/draft?key={apiKey}
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl $SERVER_URL/api/files/$ID/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/files/24/metadata
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
+
+The current draft can also be viewed if you have permissions and pass your API token
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/files/$ID/metadata/draft
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/24/metadata/draft
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/:persistentId/metadata/draft?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/metadata/draft?persistentId=doi:10.5072/FK2/AAA000"
 
 Note: The ``id`` returned in the json response is the id of the file metadata version.
 
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Updates the file metadata for an existing file where ``id`` is the database id of the file to replace or ``pid`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want::
+Updates the file metadata for an existing file where ``ID`` is the database id of the file to update or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires a ``jsonString`` expressing the new metadata. No metadata from the previous version of this file will be persisted, so if you want to update a specific field first get the json with the above command and alter the fields you want.
 
-    POST -F 'jsonData={json}' http://$SERVER/api/files/{id}/metadata?key={apiKey}
+A curl example using an ``ID``
 
-Example::
+.. code-block:: bash
 
-    curl -H "X-Dataverse-key:{apiKey}" -X POST -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' 'http://localhost:8080/api/files/264/metadata'
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    $SERVER_URL/api/files/$ID/metadata
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    http://demo.dataverse.org/api/files/24/metadata
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST \
+    -F 'jsonData={"description":"My description bbb.","provFreeform":"Test prov freeform","categories":["Data"],"restrict":false}' \
+    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
 
 Also note that dataFileTags are not versioned and changes to these will update the published version of the file.
 
@@ -1868,44 +2018,248 @@ Also note that dataFileTags are not versioned and changes to these will update t
 Editing Variable Level Metadata
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Updates variable level metadata using ddi xml ``$file``, where ``$id`` is file id::
+Updates variable level metadata using ddi xml ``FILE``, where ``ID`` is file id.
 
-    PUT https://$SERVER/api/edit/$id --upload-file $file
+A curl example using an ``ID``
 
-Example: ``curl -H "X-Dataverse-key:$API_TOKEN" -X PUT http://localhost:8080/api/edit/95 --upload-file dct.xml``
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export FILE=dct.xml
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X PUT $SERVER_URL/api/edit/$ID --upload-file $FILE
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/edit/24 --upload-file dct.xml
 
 You can download :download:`dct.xml <../../../../src/test/resources/xml/dct.xml>` from the example above to see what the XML looks like.
 
 Provenance
 ~~~~~~~~~~
-Get Provenance JSON for an uploaded file::
 
-    GET http://$SERVER/api/files/{id}/prov-json?key=$apiKey
+Get Provenance JSON for an uploaded file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Get Provenance Description for an uploaded file::
+A curl example using an ``ID``
 
-    GET http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey
+.. code-block:: bash
 
-Create/Update Provenance JSON and provide related entity name for an uploaded file::
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
 
-    POST http://$SERVER/api/files/{id}/prov-json?key=$apiKey&entityName=$entity -H "Content-type:application/json" --upload-file $filePath
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/files/$ID/prov-json
 
-Create/Update Provenance Description for an uploaded file. Requires a JSON file with the description connected to a key named "text"::
+The fully expanded example above (without environment variables) looks like this:
 
-    POST http://$SERVER/api/files/{id}/prov-freeform?key=$apiKey -H "Content-type:application/json" --upload-file $filePath
+.. code-block:: bash
 
-Delete Provenance JSON for an uploaded file::
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/24/prov-json
 
-    DELETE http://$SERVER/api/files/{id}/prov-json?key=$apiKey
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/:persistentId/prov-json?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/prov-json?persistentId=doi:10.5072/FK2/AAA000"
+
+Get Provenance Description for an uploaded file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/files/$ID/prov-freeform
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/files/24/prov-freeform
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/files/:persistentId/prov-freeform?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/files/:persistentId/prov-freeform?persistentId=doi:10.5072/FK2/AAA000"
+
+Create/Update Provenance JSON and provide related entity name for an uploaded file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export ENTITY_NAME="..."
+  export FILE_PATH=provenance.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$ID/prov-json?entityName=$ENTITY_NAME -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/24/prov-json?entityName=..." -H "Content-type:application/json" --upload-file provenance.json
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+  export ENTITY_NAME="..."
+  export FILE_PATH=provenance.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/:persistentId/prov-json?persistentId=$PERSISTENT_ID&entityName=$ENTITY_NAME" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/:persistentId/prov-json?persistentId=doi:10.5072/FK2/AAA000&entityName=..." -H "Content-type:application/json" --upload-file provenance.json
+
+Create/Update Provenance Description for an uploaded file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Requires a JSON file with the description connected to a key named "text"
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export FILE_PATH=provenance.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/files/$ID/prov-freeform -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/files/24/prov-freeform -H "Content-type:application/json" --upload-file provenance.json
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+  export FILE_PATH=provenance.json
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST "$SERVER_URL/api/files/:persistentId/prov-freeform?persistentId=$PERSISTENT_ID" -H "Content-type:application/json" --upload-file $FILE_PATH
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/files/:persistentId/prov-freeform?persistentId=doi:10.5072/FK2/AAA000" -H "Content-type:application/json" --upload-file provenance.json
+
+Delete Provenance JSON for an uploaded file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/files/$ID/prov-json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/files/24/prov-json
+
+A curl example using a ``PERSISTENT_ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.5072/FK2/AAA000
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/files/:persistentId/prov-json?persistentId=$PERSISTENT_ID"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/files/:persistentId/prov-json?persistentId=doi:10.5072/FK2/AAA000"
 
 Datafile Integrity
 ~~~~~~~~~~~~~~~~~~
 
-Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals::
+Starting the release 4.10 the size of the saved original file (for an ingested tabular datafile) is stored in the database. The following API will retrieve and permanently store the sizes for any already existing saved originals:
 
-	    GET http://$SERVER/api/admin/datafiles/integrity/fixmissingoriginalsizes{?limit=N}
+.. code-block:: bash
+
+  export SERVER_URL=https://localhost
+
+  curl $SERVER_URL/api/admin/datafiles/integrity/fixmissingoriginalsizes
+
+with limit parameter:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://localhost
+  export LIMIT=10
+
+  curl "$SERVER_URL/api/admin/datafiles/integrity/fixmissingoriginalsizes?limit=$LIMIT"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://localhost/api/admin/datafiles/integrity/fixmissingoriginalsizes"
+
+with limit parameter:
+
+.. code-block:: bash
+
+  curl https://localhost/api/admin/datafiles/integrity/fixmissingoriginalsizes?limit=10"
 
 Note the optional "limit" parameter. Without it, the API will attempt to populate the sizes for all the saved originals that don't have them in the database yet. Otherwise it will do so for the first N such datafiles. 
+
+By default, the admin API calls are blocked and can only be called from localhost. See more details in :ref:`:BlockedApiEndpoints <:BlockedApiEndpoints>` and :ref:`:BlockedApiPolicy <:BlockedApiPolicy>` settings in :doc:`/installation/config`.
 
 Users Token Management
 ----------------------

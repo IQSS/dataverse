@@ -228,7 +228,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
                     }
                 } else {
-                    if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && isRedirectToS3()) {
+                    if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
                         // definitely close the (still open) S3 input stream, 
                         // since we are not going to use it. The S3 documentation
                         // emphasizes that it is very important not to leave these
@@ -445,13 +445,4 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
         return -1;
     }
-    
-    private boolean isRedirectToS3() {
-        String optionValue = System.getProperty("dataverse.files.s3-download-redirect");
-        if ("true".equalsIgnoreCase(optionValue)) {
-            return true;
-        }
-        return false;
-    }
-
 }
