@@ -16,11 +16,13 @@ xxx
 
 Newly-supported use cases in this release include:
 
-- Case 1 (Issue #xxx, PR #xxx)
+- Users will now be able to see the number of linked datasets and dataverses accurately reflected in the facet counts on the Dataverse search page. (Issue #6564, PR #6262)
 
 ## Notes for Dataverse Installation Administrators
 
-### Note 1
+### Dataverse Linking Fix
+
+The fix implemented for #6262 will display the datasets contained in linked dataverses in the linking dataverse. An index in place is recommended for these counts to be updated. This is mentioned in the step by step instructions below. Going forward, this will happen automatically whenever a dataverse is linked. 
 
 ### ... Metadata Block Updates 
 
@@ -61,6 +63,10 @@ If this is a new installation, please see our <a href="http://guides.dataverse.o
 
 4. Restart glassfish.
 
+5. Kick off in place reindex
+
+http://guides.dataverse.org/en/4.20/admin/solr-search-index.html#reindex-in-place
+
 7. (Recommended) Run ReExportall to update JSON Exports  
 
-   <http://guides.dataverse.org/en/4.19/admin/metadataexport.html?highlight=export#batch-exports-through-the-api>
+   <http://guides.dataverse.org/en/4.20/admin/metadataexport.html?highlight=export#batch-exports-through-the-api>
