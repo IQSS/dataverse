@@ -706,8 +706,6 @@ public class IndexServiceBean {
     }
     
     private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
-        System.out.print("start index: " + Instant.now());
-        String startTime = Instant.now().toString();
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -925,12 +923,10 @@ public class IndexServiceBean {
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
-            System.out.print("before files: " + Instant.now());
             for (FileMetadata fileMetadata : fileMetadatas) {
                 
                 boolean indexThisMetadata = true;
                 if (checkForDuplicateMetadata) {
-                    System.out.print("check for duplticates");
                     
                     logger.fine("Checking if this file metadata is a duplicate.");
                     for (FileMetadata releasedFileMetadata : dataset.getReleasedVersion().getFileMetadatas()) {
@@ -945,7 +941,8 @@ public class IndexServiceBean {
                              */
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
                                 if (fileMetadata.contentEquals(releasedFileMetadata)
-                                        && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
+                                     /* SEK 3/12/2020 remove variable metadata indexing*/
+                                     //   && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
                                         ) {
                                     indexThisMetadata = false;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
@@ -964,7 +961,6 @@ public class IndexServiceBean {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = fileMetadata.getDataFile().getId();
-                            System.out.print("Indexing file: " + fileEntityId + " " + Instant.now());
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
@@ -1181,7 +1177,7 @@ public class IndexServiceBean {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
 
-
+/* SEK 3/12/2020 remove variable metadata indexing
                             List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(var.getId(), fileMetadata.getId());
                             VariableMetadata vm = null;
                             if (vmList != null && vmList.size() >0) {
@@ -1215,7 +1211,7 @@ public class IndexServiceBean {
                                 }
 
                             }
-
+*/
                         }
                         
                         // TABULAR DATA TAGS:
@@ -1233,7 +1229,7 @@ public class IndexServiceBean {
                 }
             }
         }
-System.out.print("After files: " + Instant.now());
+        
         try {
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
@@ -1256,11 +1252,6 @@ System.out.print("After files: " + Instant.now());
         dvObjectToModify = em.merge(dvObjectToModify);
         dvObjectToModify = null;
 
-        // return "indexed dataset " + dataset.getId() + " as " + solrDocId +
-        // "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();
-        System.out.print("Started: " + startTime);
-        System.out.print("Finished: " + Instant.now());
-        System.out.print("indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed.size());
         return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
