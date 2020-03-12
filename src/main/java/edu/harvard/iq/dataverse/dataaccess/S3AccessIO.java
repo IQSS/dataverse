@@ -213,14 +213,29 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
-        	//Direct access, e.g. for external upload - no associated DVobject yet, but we want to be abel to get the size
+        	// Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
+        	// With small files, it looks like we may call before S3 says it exists, so try some retries before failing
         	if(key!=null) {
         		 ObjectMetadata objectMetadata = null; 
-                 try {
-                     objectMetadata = s3.getObjectMetadata(bucketName, key);
-                 } catch (SdkClientException sce) {
-                     throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-                 }
+        		 int retries = 3;
+        		 while(retries > 0) {
+        			 try {
+        				 objectMetadata = s3.getObjectMetadata(bucketName, key);
+        				 retries = 0;
+        			 } catch (SdkClientException sce) {
+        				 if(retries > 1) {
+        					 retries--;
+        					 try {
+        						 Thread.sleep(1000);
+        					 } catch (InterruptedException e) {
+        						 e.printStackTrace();
+        					 }
+        					 logger.warning("Retrying after: " + sce.getMessage());
+        				 } else {
+        					 throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
+        				 }
+        			 }
+        		 }
                  this.setSize(objectMetadata.getContentLength());
         	}else {
             throw new IOException("Data Access: Invalid DvObject type");
