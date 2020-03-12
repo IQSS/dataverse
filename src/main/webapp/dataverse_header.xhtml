@@ -237,7 +237,10 @@
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
                 <div class="breadcrumbBlock">
-                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
+                    
+                    <!-- TO-DO, REMOVED HIGHLIGHTED CURRENT PAGE TITLE WITH false RENDER, NEED TO MOVE TO PGS...??? -->
+                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{false}"/>
+                    
                     <ui:fragment rendered="#{!status.last}">
                         <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and !breadcrumb.dvObject.instanceofDataFile and empty breadcrumb.url}"/>
                         <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">

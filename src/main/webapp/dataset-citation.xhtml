@@ -7,48 +7,63 @@
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
     
-    <div class="#{(widgetWrapper.widgetView or DatasetPage.workingVersion.deaccessioned) ? 'col-sm-12' : 'col-sm-9'} citation-block">
-        <div class="col-sm-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
-            <div class="row ">
-                <div class="col-sm-12 citation">
-                    <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                        <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                    </span>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+    <div class="citation-block">
+        <div class="col-xs-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+            <div class="row">
+                <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
+                <!-- TO-DO, REVIEW INCLUSION OF THUMBNAIL IN WIDGET VIEW -->
+                <div class="col-xs-2 col-sm-3 col-md-2 vcenter title-preview-icon-block">
+                    <img src="#{DatasetPage.thumbnailString}" style="height:114px;" jsf:rendered="#{!empty DatasetPage.thumbnailString}" alt="#{DatasetPage.datasetVersionUI.title.value}"/>
+                    <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                 </div>
-                <div class="col-sm-6 citation-download vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-default dropdown-toggle downloadCitation" data-toggle="dropdown">
-                            <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
-                                    #{bundle['dataset.cite.downloadBtn.xml']}
-                                </a>
-                            </li>
-                            <li>
-                                <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
-                                    #{bundle['dataset.cite.downloadBtn.ris']}
-                                </a>
-                            </li>
-                            <li>
-                                <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
-                                    #{bundle['dataset.cite.downloadBtn.bib']}
-                                </a>
-                            </li>
-                        </ul>
+                <div class="col-xs-10 col-sm-9 col-md-10 citation">
+                    <div class="row">
+                        <div class="col-xs-12 margin-bottom">
+                            <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
+                            </span>
+                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" 
+                                  data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
+                                  data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                            <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
+                                  data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
+                        <div class="col-xs-3 col-sm-4 col-md-3 citation-download vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                            <div class="btn-group">
+                                <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown">
+                                    #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li>
+                                        <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
+                                            #{bundle['dataset.cite.downloadBtn.xml']}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
+                                            #{bundle['dataset.cite.downloadBtn.ris']}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
+                                            #{bundle['dataset.cite.downloadBtn.bib']}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
+                        <div class="col-xs-9 col-sm-8 col-md-9 small text-muted citation-standards vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
+                            <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-6 text-right small text-muted citation-standards vcenter" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                    <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
-                </div>
             </div>
+            
         </div>
     </div>
 </ui:composition>

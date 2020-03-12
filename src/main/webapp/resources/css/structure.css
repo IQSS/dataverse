@@ -493,10 +493,13 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
-[id$='title-block'] div[class^='col'].vcenter {display:inline-block; vertical-align:middle; float:none; /*-- padding:0; --*/}
-[id$='title-block'] div.title-preview-icon-block {width:48px; font-size:110%; color:#428BCA;}
-[id$='title-block'] div.title-preview-icon-block img {margin:6px 0;}
-[id$='title-block'] div.title-preview-icon-block span[class^='icon'] {font-size:2.8em;}
+
+/*MOVED*/
+/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
+div.citation-block div.vcenter.title-preview-icon-block {/*display:inline-block; vertical-align:middle; float:none; padding:0;*/}
+div.citation-block div.title-preview-icon-block {/*width:48px;*/ font-size:275%; line-height:1.1; color:#428BCA;}
+div.citation-block div.title-preview-icon-block img {margin:6px 0;}
+div.citation-block div.title-preview-icon-block span[class^='icon'] {font-size:2.8em;}
 
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
@@ -618,16 +621,26 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 
 #title {font-size:1.5em;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
+
+/* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
+#dataset-colorder-block {height: 50px;}
+@media(min-width:768px){
+    #dataset-summary-metadata, #deaccession-reason-block {margin-top: -50px;}
+}
+
+/*TO-DO, NEEDS WORK TO ADD THUMBNAIL*/
 .citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
-.bg-citation {background:#ECF6FB;}
-.bg-citation-file {background:#f5f5f5; border: 1px solid #DDD;}
-.alert-danger.bg-danger {background:#F2DEDE;}
-div.alert-info.bg-citation, div.alert-danger.bg-danger {padding-top:4px; padding-bottom:4px; border-radius:0; color:#333;}
-.citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {padding-top:0; padding-bottom:0;}
+.bg-citation {background:#ECF6FB; border: 0;}
+.bg-citation-file {background:#f5f5f5; border: 0;}
+.alert-danger.bg-danger {background:#F2DEDE; border: 0;}
+div.alert-info.bg-citation, div.alert-danger.bg-danger {/*padding-top:4px; padding-bottom:4px;*/ border-radius:0; color:#333;}
+.citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {/*padding-top:0; padding-bottom:0;*/}
 .citation-select {/*-- display:inline-block; --*/}
-.citation, .citation-download, .citation-standards {padding:.5em;}
+.citation, .citation-download, .citation-standards {/*padding:.5em;*/}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
-.citation-block .vcenter {display: inline-block; vertical-align: middle; float: none;}
+/*COMMENTED OUT FOR THUMBNAILS*/
+/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
+.citation-block .vcenter {/*display: inline-block; vertical-align: middle; float: none;*/}
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
