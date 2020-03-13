@@ -333,7 +333,8 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
-
+    
+    @DELETE
     @Path("authenticatedUsers/id/{id}/")
     public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
         AuthenticatedUser user = authSvc.findByID(id);
@@ -836,7 +837,7 @@ public class Admin extends AbstractApiBean {
 		return ok(response);
 	}
 
-    @DELETE
+
 
 
 	@Path("roles")
