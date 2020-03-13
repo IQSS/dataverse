@@ -2982,16 +2982,6 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
     }
     
-    UIInput selectedLinkingDataverseMenu;
-    
-    public UIInput getSelectedDataverseMenu() {
-        return selectedLinkingDataverseMenu;
-    }
-
-    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
-        this.selectedLinkingDataverseMenu = selectedDataverseMenu;
-    }
-    
     private Boolean saveLink(Dataverse dataverse){
         boolean retVal = true;
         if (readOnly) {
