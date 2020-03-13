@@ -329,18 +329,38 @@ public class Admin extends AbstractApiBean {
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
         if (user != null) {
-            
-            if (!dvObjSvc.findByAuthenticatedUserId(user).isEmpty()){
-                return error(Status.BAD_REQUEST, "Could not delete AuthenticatedUser " + identifier + " because the user has created Dataverse object(s). " );
-            }
-            
-            authSvc.deleteAuthenticatedUser(user.getId());
-            return ok("AuthenticatedUser " + identifier + " deleted. ");
+            return deleteAuthenticatedUser(user);
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
+
+    @Path("authenticatedUsers/id/{id}/")
+    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deleteAuthenticatedUser(AuthenticatedUser au) {
+
+        if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments", Arrays.asList(au.getIdentifier())));
+        }        
         
-        
+        if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects", Arrays.asList(au.getIdentifier())));
+        }
+
+        if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps", Arrays.asList(au.getIdentifier())));
+        }
+
+        authSvc.deleteAuthenticatedUser(au.getId());
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
+
+    }   
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
@@ -817,19 +837,7 @@ public class Admin extends AbstractApiBean {
 	}
 
     @DELETE
-    @Path("authenticatedUsers/id/{id}/")
-    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
-        AuthenticatedUser user = authSvc.findByID(id);
-        if (user != null) {
-            if (!dvObjSvc.findByAuthenticatedUserId(user).isEmpty()) {
-                return error(Status.BAD_REQUEST, "Could not delete AuthenticatedUser " + user.getIdentifier() + " because the user has created Dataverse object(s). ");
-            }
 
-            authSvc.deleteAuthenticatedUser(user.getId());
-            return ok("AuthenticatedUser " + id + " deleted. ");
-        }
-        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
-    }
 
 	@Path("roles")
 	@POST
