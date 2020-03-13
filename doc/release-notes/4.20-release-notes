@@ -143,7 +143,21 @@ See http://guides.dataverse.org/en/4.20/installation/prerequisites.html#installi
 
 - &lt;glassfish install path&gt;/glassfish4/bin/asadmin deploy &lt;path&gt;dataverse-4.20.war
 
-5. Update JVM options for multiple stores...?
+5. The following set of commands to change the Glassfish JVM options will adapt an existing file or s3 store for this upgrade:
+For a file store:
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.file.type=file"
+    ./asadmin create-jvm-options "\-Ddataverse.files.file.label=file"
+    ./asadmin create-jvm-options "\-Ddataverse.files.file.directory=<your directory>"
+    
+For a s3 store:
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3.type=s3"
+    ./asadmin create-jvm-options "\-Ddataverse.files.s3.label=s3"
+    ./asadmin delete-jvm-options "-Ddataverse.files.s3-bucket-name=<your_bucket_name>"
+    ./asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=<your_bucket_name>"
+    
+Any additional S3 options you have set will need to be replaced as well, following the pattern in the last two lines above - delete the option including a '-' after 's3' and creating the same option with the '-' replaced by a '.', using the same value you currently have configured.
 
 6. Restart glassfish.
 
