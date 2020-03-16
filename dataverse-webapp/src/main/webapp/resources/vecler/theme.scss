@@ -21,18 +21,18 @@ $gray-border-color: #e8e8e8;
 
 /* RepOD color scheme */
 
-$main-color: #0086bc;
-$icon-color: #2ba7df;
-$link-color: #043e58;
-$border-color: #39b0e2;
-$search-result-desc-color: #f2f8fa;
-$table-row-hover: #e6eff2;
-$table-row-highlight: #fff5e0;
-$focus-color: #de8800;
-$main-logo: "img/logo-repod.svg";
-$primefaces-main: "img/primefaces-main-repod.png";
-$dataverse-icon: "img/dataverse-icon-repod.svg";
-$ajax_spinner_filter: saturate(2);
+$main-color: #0086bc !default;
+$icon-color: #2ba7df !default;
+$link-color: #043e58 !default;
+$border-color: #39b0e2 !default;
+$search-result-desc-color: #f2f8fa !default;
+$table-row-hover: #e6eff2 !default;
+$table-row-highlight: #fff5e0 !default;
+$focus-color: #de8800 !default;
+$main-logo: "img/logo-repod.svg" !default;
+$primefaces-main: "img/primefaces-main-repod.png" !default;
+$dataverse-icon: "img/dataverse-icon-repod.svg" !default;
+$ajax_spinner_filter: saturate(2) !default;
 
 /* MX-RDR color scheme */
 
@@ -349,11 +349,6 @@ span.glyphicon-question-sign.tooltip-icon {
 	font-family: $font-main;
 	font-size: 15px;
 	color: #de8800;
-}
-
-/* Missing checkbox tick fix */
-tr.ui-state-highlight .ui-icon {
-	background-image: url("img/primefaces-main-default.png");
 }
 
 *, ui-widget-content  {

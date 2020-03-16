@@ -140,6 +140,14 @@ public class SystemConfig {
         }
     }
 
+    public String getSiteName(Locale locale) {
+        return getLocalizedProperty(Key.SiteName, locale);
+    }
+
+    public String getSiteFullName(Locale locale) {
+        return getLocalizedProperty(Key.SiteFullName, locale);
+    }
+    
     public String getGuidesBaseUrl() {
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
         return guidesBaseUrl + "/en";
@@ -505,8 +513,12 @@ public class SystemConfig {
         return settingsService.isTrueForKey(Key.ShowTermsOfUseFooterLink);
     }
 
+    public String getCustomThemeCssFilename() {
+        return settingsService.getValueForKey(Key.CustomThemeCssFilename);
+    }
+    
     private String getFromBundleIfEmptyLocalizedProperty(Key key, Locale locale, String bundleKey) {
-        String result = settingsService.getValueForKeyWithPostfix(key, locale.toLanguageTag());
+        String result = getLocalizedProperty(key, locale);
         
         return result.isEmpty() ? getFromBundleIfEmptyProperty(key, bundleKey) : result;
     }
@@ -516,6 +528,11 @@ public class SystemConfig {
 
         return result.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle(bundleKey) : result;
     }
-
+    
+    private String getLocalizedProperty(Key key, Locale locale) {
+        String result = settingsService.getValueForKeyWithPostfix(key, locale.toLanguageTag());
+        
+        return result.isEmpty() ? settingsService.getValueForKey(key) : result;
+    }
 
 }

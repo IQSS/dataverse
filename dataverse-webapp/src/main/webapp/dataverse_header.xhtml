@@ -43,10 +43,10 @@
                             <i id="site-logo" class="icon-dataverse"></i> 
                             <div>
                                 <div id="site-title">
-                                    #{bundle['header.repod']}
+                                    <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
                                 </div>
                                 <div id="site-subtitle">
-                                    #{bundle['header.repod.subtitle']}
+                                    <h:outputText value="#{systemConfig.getSiteFullName(dataverseSession.locale)}" escape="false"/>
                                 </div>
                             </div>
                         </span>

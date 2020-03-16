@@ -6,6 +6,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="#{dataverseSession.localeCode}"
       xml:lang="#{dataverseSession.localeCode}">
 
@@ -35,9 +36,17 @@
         <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
         <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersion()}" />
+        
+        <ui:fragment rendered="#{empty systemConfig.customThemeCssFilename}">
+            <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersion()}" />
+        </ui:fragment>
+        <ui:fragment rendered="#{!empty systemConfig.customThemeCssFilename}">
+            <link type="text/css" rel="stylesheet" href="/assets/theme/#{systemConfig.customThemeCssFilename}" />
+        </ui:fragment>
+        
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" />
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700&amp;display=swap" /> 
+        
         <ui:fragment rendered="#{!widgetWrapper.widgetView}">
             <script>
                 // Break out of iframe
