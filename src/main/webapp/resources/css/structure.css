@@ -493,14 +493,6 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] div.card-preview-icon-block span[class^='icon'],
 [id$='resultsTable'] div.card-preview-icon-block span[class^='glyphicon'] {font-size:2.8em;}
 
-
-/*MOVED*/
-/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
-div.citation-block div.vcenter.title-preview-icon-block {/*display:inline-block; vertical-align:middle; float:none; padding:0;*/}
-div.citation-block div.title-preview-icon-block {/*width:48px;*/ font-size:275%; line-height:1.1; color:#428BCA;}
-div.citation-block div.title-preview-icon-block img {margin:6px 0;}
-div.citation-block div.title-preview-icon-block span[class^='icon'] {font-size:2.8em;}
-
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
 form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
@@ -624,7 +616,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
 #dataset-colorder-block {height: 50px;}
-@media(min-width:768px){
+@media(min-width:992px){
     #dataset-summary-metadata, #deaccession-reason-block {margin-top: -50px;}
 }
 
@@ -638,6 +630,14 @@ div.alert-info.bg-citation, div.alert-danger.bg-danger {/*padding-top:4px; paddi
 .citation-select {/*-- display:inline-block; --*/}
 .citation, .citation-download, .citation-standards {/*padding:.5em;*/}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
+
+/*MOVED*/
+/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
+/*div.citation-block div.vcenter.title-preview-icon-block {display:inline-block; vertical-align:middle; float:none; padding:0;}*/
+div.citation-block div.preview-icon-block {/*width:48px;*/}
+div.citation-block div.preview-icon-block img {/*margin:6px 0;*/}
+div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
+
 /*COMMENTED OUT FOR THUMBNAILS*/
 /*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
 .citation-block .vcenter {/*display: inline-block; vertical-align: middle; float: none;*/}

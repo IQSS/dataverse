@@ -12,8 +12,8 @@
             <div class="row">
                 <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
                 <!-- TO-DO, REVIEW INCLUSION OF THUMBNAIL IN WIDGET VIEW -->
-                <div class="col-xs-2 col-sm-3 col-md-2 vcenter title-preview-icon-block">
-                    <img src="#{DatasetPage.thumbnailString}" style="height:114px;" jsf:rendered="#{!empty DatasetPage.thumbnailString}" alt="#{DatasetPage.datasetVersionUI.title.value}"/>
+                <div class="col-xs-2 col-sm-3 col-md-2 center-block preview-icon-block">
+                    <img src="#{DatasetPage.thumbnailString}" class="img-responsive" style="min-height:114px;/*TO-DO, FIX SM THUMBNAIL HACK*/" jsf:rendered="#{!empty DatasetPage.thumbnailString}" alt="#{DatasetPage.datasetVersionUI.title.value}"/>
                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                 </div>
                 <div class="col-xs-10 col-sm-9 col-md-10 citation">

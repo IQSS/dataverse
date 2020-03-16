@@ -111,7 +111,7 @@
                                     <!-- START: NEW RESPONSIVE ABOVE FOLD BLOCK -->
                                     <div class="row">
                                         
-                                        <div class="col-xs-12 col-sm-9">
+                                        <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9">
                                             <!-- CITATION BLOCK -->
                                             <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                                 <ui:include src="dataset-citation.xhtml">
@@ -121,7 +121,7 @@
                                             <!-- END: CITATION BLOCK -->
                                         </div>
                                         
-                                        <div class="col-xs-12 col-sm-3 pull-right">
+                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right">
                                             <!-- ActionButtonBlock -->
                                             <div id="actionButtonBlock" jsf:rendered="#{!widgetWrapper.widgetView}">
 
@@ -429,7 +429,7 @@
                                             <!-- END: ActionButtonBlock -->
                                         </div>
                                         
-                                        <div class="col-xs-12 col-sm-3 pull-right" jsf:rendered="#{true}">
+                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right" jsf:rendered="#{true}">
                                             <!-- Metrics -->
                                             <div id="metrics-block" style="border:0;" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                                 <div id="metrics-headingXXX">
@@ -484,23 +484,23 @@
                                         </div>
                                         
                                         <!-- RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 -->
-                                        <div id="dataset-colorder-block" class="hidden-xs col-sm-9"><!--Hack--></div>
+                                        <div id="dataset-colorder-block" class="visible-md-block visible-lg-block col-md-8 col-lg-9"><!--Hack--></div>
                                         <!-- END: RESPONSIVE ORDER HACK BOOTSTRAP 3 -->
                                         
                                         <!-- DEACCESSION REASON -->
-                                        <div class="col-xs-12 col-sm-9 margin-bottom" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
-                                        <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
-                                            <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
-                                            <p>#{DatasetPage.workingVersion.versionNote}</p>
-                                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
-                                                <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
-                                            </ui:fragment>
-                                        </div>
+                                        <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9 margin-bottom" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
+                                            <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
+                                                <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
+                                                <p>#{DatasetPage.workingVersion.versionNote}</p>
+                                                <ui:fragment rendered="#{!empty DatasetPage.workingVersion.archiveNote}">
+                                                    <p>#{bundle['dataset.beAccessedAt']} <a href="#{DatasetPage.workingVersion.archiveNote}" target="_blank">#{DatasetPage.workingVersion.archiveNote}</a></p>
+                                                </ui:fragment>
+                                            </div>
                                         </div>
                                         <!-- END: DEACCESSION REASON -->
                                         
                                         <!-- BEGIN: DATASET SUMMARY -->
-                                        <div id="dataset-summary-metadata" class="col-xs-12 col-sm-9 metadata-container margin-bottom"
+                                        <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container margin-bottom"
                                              jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                              (!empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                              or !empty DatasetPage.datasetVersionUI.keywordDisplay
