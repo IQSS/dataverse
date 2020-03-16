@@ -7,57 +7,35 @@
 >
 
     <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
-        <div class="container">
+        <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
+
+        <div class="container footer-links">
             <div class="row">
-                <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
+                <div class="col-sm-9">
                     <p>
                         <h:outputFormat value="#{bundle['footer.copyright']}" escape="false" >
                             <o:param>#{of:formatDate(now, 'yyyy')}</o:param>
                         </h:outputFormat>
-                        <h:outputText value="#{settingsWrapper.getSettingValue(':FooterCopyright')}" escape="false"/>
-                        <ui:fragment rendered="#{!empty settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}">
-                            &#160;|&#160;
-                            <h:outputLink value="#{settingsWrapper.getSettingValue(':ApplicationPrivacyPolicyUrl')}"
-                                      target="_blank">#{bundle['footer.privacyPolicy']}</h:outputLink>
-                        </ui:fragment>
+                        <h:outputText value=" #{settingsWrapper.getSettingValue(':FooterCopyright')}" escape="false"/>
+                        <span jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered}">
+                            <h:outputLink value="/privacy-policy.xhtml">
+                                <h:outputText value="#{bundle['footer.privacyPolicy']}"/>
+                            </h:outputLink>
+                        </span>
+                        <span jsf:rendered="#{systemConfig.showTermsOfUseFooterLinkRendered}">
+                            <h:outputLink value="/termsofuse.xhtml">
+                                <h:outputText value="#{bundle['footer.termsOfUse.link.name']}"/>
+                            </h:outputLink>
+                        </span>
                     </p>
                 </div>
-                <div class="col-xs-7 small" jsf:rendered="#{widgetView}">
-                    <span class="widgetBrandMsg">
-                        <h:outputFormat value="#{bundle['footer.widget.datastored']}" escape="false">
-                            <o:param>
-                                <a href="/" target="_blank" title="#{dataverseDao.findRootDataverse().displayName}">#{dataverseDao.findRootDataverse().displayName}</a>
-                            </o:param>
-                        </h:outputFormat>
-
-                        <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
-                            <h:outputLink styleClass="margin-sides highlightBold" value="/loginpage.xhtml?#{loginRedirectPage}" target="_blank" title="#{bundle['footer.widget.login']} #{dataverseDao.findRootDataverse().displayName}">
-                                #{bundle.login}
-                            </h:outputLink>
-                        </ui:fragment>
-                    </span>
-                </div>
-                <div class="col-xs-7 small" jsf:rendered="#{systemConfig.showTermsOfUseFooterLinkRendered}">
-                    <h:outputLink value="/termsofuse.xhtml">
-                        <h:outputText value="#{bundle['footer.termsOfUse.link.name']}"/>
-                    </h:outputLink>
-                </div>
-                <div class="col-xs-7 small" jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered}">
-                    <h:outputLink value="/privacy-policy.xhtml">
-                        <h:outputText value="#{bundle['footer.privacyPolicy.link.name']}"/>
-                    </h:outputLink>
-                </div>
-                <div class="#{widgetView ? 'col-xs-5' : 'col-sm-4'} text-right">
+                <div class="col-sm-3 text-right">
                     <div class="poweredbylogo">
-                        <span>#{bundle['footer.poweredby']}</span>
-                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']}" target="_blank"><img src="/resources/images/dataverse_project_logo.svg" width="118" height="40" onerror="this.src='/resources/images/dataverseproject_logo.png'" alt="#{bundle['footer.dataverseProject']}" /></a>
-                        <h:outputText class="version" value="v. #{systemConfig.getVersion(true)}" rendered="#{!widgetView}"/>
+                        #{bundle['footer.poweredby']} #{bundle['footer.repod']}, #{bundle['footer.basedOn']}
+                        <a href="http://dataverse.org/" title="#{bundle['footer.dataverseProject']} #{bundle['opensInNewWindow']}" target="_blank" alt="">#{bundle['footer.dataverse']}</a> #{bundle['footer.dataverse.version']}
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
-    
+    </div>    
 </ui:composition>

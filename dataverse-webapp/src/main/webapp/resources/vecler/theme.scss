@@ -109,6 +109,7 @@ $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 
 
 body {
+	margin-bottom: 0;
 	font-family: $font-main;
 	font-size: 15px;
 	color: $main-text-color;
@@ -1434,6 +1435,37 @@ $navbar-height: 6.8em;
 
 .top-messages {
 	margin: 8px;
+}
+
+/* Footer */
+
+#footer {
+	position: static;
+	height: auto;
+	padding-bottom: 0;
+
+	.footer-links .row {
+		border-top: 1px solid $gray-border-color;
+		margin: 0;
+		padding-top: 1em;
+		font-size: 0.867em;
+
+		div[class^="col-"] {
+			padding: 0;
+
+			p span {
+				border-left: 1px solid $gray-border-color;
+				margin-left: 1em;
+				padding-left: 1em;
+			}
+		}
+	}
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	#footer div[class^="col-"] {
+		text-align: center;
+	}
 }
 
 /* Main page */
