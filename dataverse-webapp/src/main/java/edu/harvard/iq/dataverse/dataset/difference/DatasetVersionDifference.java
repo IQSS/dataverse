@@ -686,7 +686,6 @@ public final class DatasetVersionDifference {
         }
     }
 
-
     private void fillFileMetadataDifference(FileMetadataDifferenceItem fdi, FileMetadata fm1, FileMetadata fm2) {
 
         if (fm1 == null && fm2 == null) {

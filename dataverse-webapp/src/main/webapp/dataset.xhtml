@@ -235,11 +235,16 @@
                                                                     and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                     and DatasetPage.canUpdateDataset()
                                                                     and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                            <button type="button"
-                                                    class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}"
-                                                    onclick="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'return false;' : 'sentToReview();'}">
+
+                                            <p:commandLink
+                                                    styleClass="btn btn-default btn-access"
+                                                    disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
+                                                    oncomplete="PF('inreview').show();"
+                                                    actionListener="#{DatasetPage.loadFilesTermDiffs}"
+                                                    update="inreview"
+                                            >
                                                 <span class="glyphicon glyphicon-globe"/> #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitForReview.submitBtn']}
-                                            </button>
+                                            </p:commandLink>
                                         </ui:fragment>
     
                                         <!-- End: Submit for Review Button -->
@@ -936,14 +941,65 @@
                                  update=":messagePanel  @([id$=Messages])"
                                  actionListener="#{DatasetPage.saveLinkingDataverses}"/>
 
-                <p:dialog id="inreview" header="#{bundle['dataset.submitForReview.submitBtn']}" widgetVar="inreview" modal="true">
+                <p:dialog
+                        id="inreview"
+                        header="#{bundle['dataset.submitForReview.submitBtn']}"
+                        widgetVar="inreview"
+                        modal="true"
+                        styleClass="largePopUp"
+                >
 
                     <p:outputPanel rendered="#{DatasetPage.isLatestDatasetWithAnyFilesIncluded()}">
                         <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitMessage']}
+                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.submitForReview.submitMessage']}
                         </p>
+                        <div jsf:rendered="#{!empty(DatasetPage.fileTermDiffsWithLatestReleased)}">
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign"/>
+                                <h:outputText escape="false" value="#{bundle['dataset.submitForReview.licenseDiffMessage']}" />
+                            </p>
+                        </div>
+                        <div class="panel panel-default" jsf:rendered="#{!empty(DatasetPage.fileTermDiffsWithLatestReleased)}" >
+                            <p:dataTable id="termsDiffDataTable"
+                                         style="border-top:1px solid #ddd;"
+                                         value="#{DatasetPage.fileTermDiffsWithLatestReleased}"
+                                         var="termsDiff"
+                            >
+                                <f:facet name="header">
+                                    #{bundle['dataset.submitForReview.diffTable.title']}
+                                </f:facet>
+                                <p:column
+                                        styleClass="versionValue"
+                                        headerText="#{bundle['dataset.submitForReview.diffTable.filesColumn']}"
+                                >
+                                    <h:outputText value="#{bundle['dataset.submitForReview.diffTable.fileNameDetailTitle']}: #{DatasetPage.getWorkingVersionFileName(termsDiff.fileSummary.fileId)}"/>
+                                    <br/>
+                                    <h:outputText value="#{bundle['dataset.submitForReview.diffTable.fileId']}: #{termsDiff.fileSummary.fileId}"/>
+                                    <br/>
+                                    <h:outputText
+                                            value="#{termsDiff.fileSummary.fileChecksumType}: #{termsDiff.fileSummary.fileChecksumValue}"/>
+                                </p:column>
+                                <p:column
+                                        styleClass="versionDetails"
+                                        headerText="#{bundle['dataset.submitForReview.diffTable.version.lastreleased']}: #{DatasetPage.dataset.releasedVersion.semanticVersion}
+                                                    &lt;br/&gt;
+                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.dataset.releasedVersion.localeLastUpdateTime}"
+                                >
+                                    <dv:displayTermsOfUse termsOfUse="#{termsDiff.oldTerms}"/>
+                                </p:column>
+                                <p:column
+                                        styleClass="versionDetails"
+                                        headerText="#{bundle['dataset.submitForReview.diffTable.version.draft']}
+                                                    &lt;br/&gt;
+                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.workingVersion.localeLastUpdateTime}"
+                                >
+                                    <dv:displayTermsOfUse termsOfUse="#{termsDiff.newTerms}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+
                         <div class="form-group">
-                            <label for="returnReasonTextArea" class="col-sm-3 control-label">#{bundle['dataset.reject.messageBox.label']}</label>
+                            <label for="returnReasonTextArea" class="col-sm-3 control-label">#{bundle['dataset.submitForReview.messageBox.label']}</label>
                             <div class="col-sm-9">
                                 <p:fragment id="submitForReviewMessageFragment">
                                     <p:inputTextarea id="submitForReviewCustomMessage"
@@ -952,7 +1008,7 @@
                                                      maxlength="255"
                                                      cols="60"
                                                      counter="submitForReviewCounter"
-                                                     counterTemplate="#{bundle['dataset.reject.messageBox.counter']}"
+                                                     counterTemplate="#{bundle['dataset.submitForReview.messageBox.counter']}"
                                                      autoResize="false"
                                                      styleClass="form-control"
                                     >
@@ -1198,14 +1254,6 @@
 
 
             <ui:include src="dataset-deaccession-dialog.xhtml"/>
-
-
-            <script type="text/javascript">
-                /* using this function to prevent syntax errors on conditionally deciding onclick action */
-                function sentToReview() {
-                    PF('inreview').show();
-                }
-            </script>
 
             <script type="text/javascript">
                 PrimeFaces.locales['pl'] = {

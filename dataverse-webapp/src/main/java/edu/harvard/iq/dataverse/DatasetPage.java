@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
@@ -7,6 +8,8 @@ import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.difference.DatasetFileTermDifferenceItem;
+import edu.harvard.iq.dataverse.dataset.difference.LicenseDifferenceFinder;
 import edu.harvard.iq.dataverse.dataset.tab.DatasetFilesTab;
 import edu.harvard.iq.dataverse.dataset.tab.DatasetMetadataTab;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -32,12 +35,10 @@ import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
@@ -55,7 +56,6 @@ import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -63,6 +63,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
@@ -130,6 +131,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetFilesTab datasetFilesTab;
     @Inject
     private DatasetService datasetService;
+    @Inject
+    private LicenseDifferenceFinder licenseDifferenceFinder;
 
     private Dataset dataset = new Dataset();
 
@@ -149,6 +152,8 @@ public class DatasetPage implements java.io.Serializable {
     private String thumbnailString = null;
     private String returnToAuthorReason;
     private String contributorMessageToCurator;
+
+    private List<DatasetFileTermDifferenceItem> fileTermDiffsWithLatestReleased;
 
     private Date currentEmbargoDate;
 
@@ -491,6 +496,7 @@ public class DatasetPage implements java.io.Serializable {
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 returnToAuthorReason = StringUtils.EMPTY;
                 contributorMessageToCurator = StringUtils.EMPTY;
+                fileTermDiffsWithLatestReleased = Lists.newArrayList();
 
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
@@ -500,7 +506,6 @@ public class DatasetPage implements java.io.Serializable {
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
-
             }
         } else {
             return permissionsWrapper.notFound();
@@ -818,6 +823,19 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setSelectedDataverseForLinking(Dataverse sdvfl) {
         this.selectedDataverseForLinking = sdvfl;
+    }
+
+    public void loadFilesTermDiffs(ActionEvent ae) {
+        if(workingVersion.isDraft() && dataset.hasEverBeenPublished()) {
+            fileTermDiffsWithLatestReleased = licenseDifferenceFinder.getLicenseDifference(workingVersion.getFileMetadatas(), dataset.getReleasedVersion().getFileMetadatas());
+        }
+    }
+
+    public String getWorkingVersionFileName(String fileId) {
+        return fileTermDiffsWithLatestReleased.stream()
+                .filter(item -> item.getFileSummary().getFileId().equals(fileId))
+                .map(DatasetFileTermDifferenceItem::getFileName)
+                .findFirst().orElse(StringUtils.EMPTY);
     }
 
 
@@ -1185,6 +1203,10 @@ public class DatasetPage implements java.io.Serializable {
         DatasetRelPublication firstRelPublication = datasetRelPublications.size() > 0 ? datasetRelPublications.get(0) : null;
         
         return firstRelPublication;
+    }
+
+    public List<DatasetFileTermDifferenceItem> getFileTermDiffsWithLatestReleased() {
+        return fileTermDiffsWithLatestReleased;
     }
 
     public String redirectToMetrics() {
