@@ -219,72 +219,81 @@
                                                 </div>
                                                 <!-- END: DOWNLOAD/ACCESS DATASET -->
 
-                                                <!-- Publish -->
-                                                <div>
-                                                    <!-- Publish/Submit for Review/Return to Author Button Group -->
-                                                    <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                                                or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                                and DatasetPage.canUpdateDataset()
-                                                                                and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
-                                                        <!-- Publish Buttons -->
-                                                        <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
-                                                                       rendered="#{!DatasetPage.dataset.released
-                                                                                   and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                        <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
-                                                                       rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                        <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
-                                                        <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
-                                                                       rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                                                   and !DatasetPage.canPublishDataverse()}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                        <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
-                                                                       rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                                   and DatasetPage.canPublishDataverse()
-                                                                                   and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                        <p:commandLink styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
-                                                                       rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
-                                                                                   and DatasetPage.canPublishDataverse()
-                                                                                   and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
-                                                                       onclick="PF('maynotPublishParent').show()">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                        <!-- END: Publish Buttons -->
-                                                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
-                                                                                   and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                            <!-- Return to Author Button -->
-                                                            <button type="button" class="btn btn-default btn-access #{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
-                                                                                  onclick="PF('sendBackToContributor').show()">
-                                                                #{bundle['dataset.rejectBtn']}
-                                                            </button>
-                                                            <!-- END: Return to Author Button -->
-                                                        </ui:fragment>
-                                                        <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                                                and !DatasetPage.datasetLockedInWorkflow
-                                                                                and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                                and DatasetPage.canUpdateDataset()
-                                                                                and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                            <!-- Submit for Review Button -->
-                                                            <button type="button" class="btn btn-default btn-access #{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                                                  onclick="PF('inreview').show()">
-                                                                #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                                            </button>
-                                                            <!-- End: Submit for Review Button -->
-                                                        </ui:fragment>
-                                                    </ui:fragment>
-                                                    <!-- END: Publish/Submit for Review/Return to Author Button Group -->
+                                                <!-- PUBLISH DATASET -->
+                                                <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                                                                or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                                                                and DatasetPage.canUpdateDataset()
+                                                                                                and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            PUBLISH DATASET <span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu pull-right text-left">
+                                                            <!-- Publish LINKS x5 -->
+                                                            <li>
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
+                                                                               rendered="#{!DatasetPage.dataset.released
+                                                                                           and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                    #{bundle['dataset.publish.btn']}
+                                                                </p:commandLink>
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
+                                                                               rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                    #{bundle['dataset.publish.btn']}
+                                                                </p:commandLink>
+                                                                <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
+                                                                               rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                                                           and !DatasetPage.canPublishDataverse()}">
+                                                                    #{bundle['dataset.publish.btn']}
+                                                                </p:commandLink>
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
+                                                                               rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                                                           and DatasetPage.canPublishDataverse()
+                                                                                           and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                    #{bundle['dataset.publish.btn']}
+                                                                </p:commandLink>
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                                               rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
+                                                                                           and DatasetPage.canPublishDataverse()
+                                                                                           and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               onclick="PF('maynotPublishParent').show()">
+                                                                    #{bundle['dataset.publish.btn']}
+                                                                </p:commandLink>
+                                                            </li>
+                                                            <!-- END: Publish LINKS -->
+                                                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
+                                                                                       and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                <!-- Return to Author LINK -->
+                                                                <li>
+                                                                    <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                                          onclick="PF('sendBackToContributor').show()">
+                                                                        #{bundle['dataset.rejectBtn']}
+                                                                    </p:commandLink>
+                                                                </li>
+                                                                <!-- END: Return to Author LINK -->
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                                    and !DatasetPage.datasetLockedInWorkflow
+                                                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                                                    and DatasetPage.canUpdateDataset()
+                                                                                    and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                <!-- Submit for Review LINK -->
+                                                                <li>
+                                                                    <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
+                                                                                          onclick="PF('inreview').show()">
+                                                                        #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                                                    </p:commandLink>
+                                                                </li>
+                                                                <!-- End: Submit for Review LINK -->
+                                                            </ui:fragment>
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                                 <!-- END: Publish -->
 
