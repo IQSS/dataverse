@@ -958,7 +958,7 @@ public class IngestServiceBean {
                     dataFile = fileService.saveInTransaction(dataFile);
                     databaseSaveSuccessful = true;
 
-                    logger.info("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
+                    logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
 
                     if (additionalData != null) {
                         // remove the extra tempfile, if there was one:
@@ -982,7 +982,7 @@ public class IngestServiceBean {
                 }
 
                 if (!databaseSaveSuccessful) {
-                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
+                    logger.warning("Ingest failure (failed to save the tabular data in the database; file left intact as uploaded).");
                     return false;
                 }
 
@@ -996,7 +996,7 @@ public class IngestServiceBean {
                     // and we want to save the original of the ingested file: 
                     try {
                         dataAccess.backupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        logger.info("Saved the ingested original as a backup aux file "+FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        logger.fine("Saved the ingested original as a backup aux file "+FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                     } catch (IOException iox) {
                         logger.warning("Failed to save the ingested original! " + iox.getMessage());
                     }
@@ -1007,7 +1007,7 @@ public class IngestServiceBean {
                     dataFile.setFilesize(dataAccess.getSize());
                     
                     dataFile = fileService.save(dataFile);
-                    logger.info("saved data file after updating the size");
+                    logger.fine("saved data file after updating the size");
 
                     // delete the temp tab-file:
                     tabFile.delete();
