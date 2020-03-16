@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datafile.page.WholeDatasetDownloadLogger;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -39,6 +40,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Inject
     private DataConverter dataConverter;
 
+    @Inject
+    private WholeDatasetDownloadLogger datasetDownloadLogger;
+
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == DownloadInstance.class;
@@ -67,12 +72,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
     @Override
     public void writeTo(DownloadInstance di, Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream outstream) throws IOException, WebApplicationException {
-
-
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
 
             DataFile dataFile = di.getDownloadInfo().getDataFile();
             StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
+            boolean checkForWholeDatasetDownload = false;
 
             if (storageIO != null) {
                 try {
@@ -115,6 +119,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // tab files tagged as "geospatial"). We are going to assume that you can 
                         // do only ONE thing at a time - request the thumbnail for the file, or 
                         // request any tabular-specific services. 
+
+                        // For majority of the cases in this branch this should be enabled
+                        checkForWholeDatasetDownload = true;
 
                         if (di.getConversionParam().equals("noVarHeader")) {
                             logger.fine("tabular data with no var header requested");
@@ -175,6 +182,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 }
 
                                 if (variablePositionIndex.size() > 0) {
+                                    // As we're going to download subset of data, we don't check for whole dataset download
+                                    checkForWholeDatasetDownload = false;
 
                                     try {
                                         File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
@@ -221,6 +230,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
                     }
                 } else {
+                    // There's no conversion etc., so we should enable check
+                    checkForWholeDatasetDownload = true;
+
                     if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && isRedirectToS3()) {
                         // definitely close the (still open) S3 input stream, 
                         // since we are not going to use it. The S3 documentation
@@ -230,6 +242,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         try {
                             storageIO.getInputStream().close();
                         } catch (IOException ioex) {
+                            logger.log(Level.WARNING, "Exception during closing input stream: ", ioex);
                         }
                         // [attempt to] redirect: 
                         String redirect_url_str;
@@ -260,7 +273,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
                                 } catch (CommandException e) {
+                                    logger.log(Level.WARNING, "Exception during create guestbook response command: ", e);
                                 }
+                            }
+
+                            if (checkForWholeDatasetDownload) {
+                                datasetDownloadLogger.incrementLogIfDownloadingWholeDataset(Collections.singletonList(dataFile));
                             }
 
                             // finally, issue the redirect:
@@ -352,6 +370,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
                     } else {
                         logger.fine("not writing guestbook response");
+
+                        // If we're downloading preprocessed metadata then we should not check for whole dataset download
+                        checkForWholeDatasetDownload = false;
+                    }
+
+                    if (checkForWholeDatasetDownload) {
+                        datasetDownloadLogger.incrementLogIfDownloadingWholeDataset(Collections.singletonList(dataFile));
                     }
 
                     instream.close();
