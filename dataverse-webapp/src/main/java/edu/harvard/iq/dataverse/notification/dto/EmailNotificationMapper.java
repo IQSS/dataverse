@@ -22,8 +22,9 @@ public class EmailNotificationMapper {
     }
 
     public EmailNotificationDto toDto(UserNotification userNotification,
-                                      long dvObjectId,
+                                      Long dvObjectId,
                                       NotificationObjectType notificationObjectType, String returnReason) {
+
 
         return new EmailNotificationDto(userNotification.getId(),
                 userNotification.getUser().getDisplayInfo().getEmailAddress(),

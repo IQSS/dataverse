@@ -10,7 +10,7 @@ public class EmailNotificationDto {
     private long userNotificationId;
     private String userEmail;
     private NotificationType notificationType;
-    private long dvObjectId;
+    private Long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
     private String customUserMessage;
@@ -19,7 +19,7 @@ public class EmailNotificationDto {
 
 
     public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
-                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver) {
+                                Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
@@ -30,7 +30,7 @@ public class EmailNotificationDto {
     }
 
     public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
-                                long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String customUserMessage) {
+                                Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String customUserMessage) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
