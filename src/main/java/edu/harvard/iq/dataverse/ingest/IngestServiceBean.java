@@ -955,7 +955,7 @@ public class IngestServiceBean {
                             throw new EJBException("Deliberate database save failure");
                         }
                      */
-                    dataFile = fileService.save(dataFile);
+                    dataFile = fileService.saveInTransaction(dataFile);
                     databaseSaveSuccessful = true;
 
                     logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
