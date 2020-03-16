@@ -1,8 +1,7 @@
 package edu.harvard.iq.dataverse.common;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -10,6 +9,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DateUtilTest {
 
@@ -24,7 +25,7 @@ public class DateUtilTest {
         //when
         String formattedDate = DateUtil.formatDate(testDate, format);
         //then
-        Assert.assertEquals("2019-01-10 09:09", formattedDate);
+        assertEquals("2019-01-10 09:09", formattedDate);
     }
 
     @Test
@@ -35,7 +36,7 @@ public class DateUtilTest {
         //when
         String formattedDate = DateUtil.formatDate(null, format);
         //then
-        Assert.assertEquals(StringUtils.EMPTY, formattedDate);
+        assertEquals(StringUtils.EMPTY, formattedDate);
     }
 
     @Test
@@ -48,7 +49,7 @@ public class DateUtilTest {
         String formattedDate = isoFormatter.format(testDate.toInstant());
 
         //then
-        Assert.assertEquals("2019-07-23T08:38:40Z", formattedDate);
+        assertEquals("2019-07-23T08:38:40Z", formattedDate);
 
     }
 
@@ -62,7 +63,7 @@ public class DateUtilTest {
         String formattedDate = isoFormatter.format(testDate.toInstant());
 
         //then
-        Assert.assertEquals("2019-07-23T10:38:40+02:00", formattedDate);
+        assertEquals("2019-07-23T10:38:40+02:00", formattedDate);
 
     }
 }

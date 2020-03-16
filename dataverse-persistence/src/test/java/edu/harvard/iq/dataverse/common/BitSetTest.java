@@ -4,20 +4,16 @@
 
 package edu.harvard.iq.dataverse.common;
 
-import edu.harvard.iq.dataverse.common.BitSet;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author michael
@@ -28,41 +24,23 @@ public class BitSetTest {
         Hello, World, This, Is, A, Test
     }
 
-    public BitSetTest() {
-    }
+    private BitSet sut;
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    BitSet sut;
-
-    @Before
+    @BeforeEach
     public void setUp() {
         sut = new BitSet();
     }
 
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of set method, of class BitSet.
-     */
     @Test
-    public void testSet() {
-        for (short i : BitSet.allIndices()) {
+    public void set() {
+        for(short i : BitSet.allIndices()) {
             sut.set(i);
             assertTrue(sut.isSet(i));
         }
     }
 
     @Test
-    public void testSetByParameter() {
+    public void set_byParameter() {
         BitSet tSut = BitSet.emptySet();
         List<Integer> indices = Arrays.asList(0, 1, 4, 6, 7, 8, 20, 31);
         indices.forEach(i -> assertFalse(tSut.isSet(i)));
@@ -73,11 +51,8 @@ public class BitSetTest {
         assertTrue(tSut.isEmpty());
     }
 
-    /**
-     * Test of unset method, of class BitSet.
-     */
     @Test
-    public void testUnset() {
+    public void unset() {
         sut = BitSet.fullSet();
         for (short i : BitSet.allIndices()) {
             sut.unset(i);
@@ -85,85 +60,75 @@ public class BitSetTest {
         }
     }
 
-    /**
-     * Test of copy method, of class BitSet.
-     */
     @Test
-    public void testCopy() {
+    public void copy() {
         sut = new BitSet(new java.util.Random().nextLong());
         assertEquals(sut.getBits(), sut.copy().getBits());
     }
 
-    /**
-     * Test of union method, of class BitSet.
-     */
     @Test
-    public void testUnion() {
+    public void union() {
+        //GIVEN
         BitSet sut1 = randomSet();
         BitSet sut2 = randomSet();
+
+        //WHEN
         sut = sut1.copy().union(sut2);
+
+        //THEN
         for (short i : BitSet.allIndices()) {
-            if (sut.isSet(i)) {
-                assertTrue(sut1.isSet(i) || sut2.isSet(i));
-            } else {
-                assertFalse(sut1.isSet(i) && sut2.isSet(i));
-            }
+            assertEquals(sut1.isSet(i) || sut2.isSet(i), sut.isSet(i));
         }
     }
 
-    /**
-     * Test of intersect method, of class BitSet.
-     */
     @Test
-    public void testIntersect() {
+    public void intersect() {
+        //GIVEN
         BitSet sut1 = randomSet();
         BitSet sut2 = randomSet();
+
+        //WHEN
         sut = sut1.copy().intersect(sut2);
+
+        //THEN
         for (short i : BitSet.allIndices()) {
-            if (sut.isSet(i)) {
-                assertTrue("expected true at idx " + i, sut1.isSet(i) && sut2.isSet(i));
-            } else {
-                assertFalse("expected false at idx " + i, sut1.isSet(i) && sut2.isSet(i));
-            }
+            assertEquals(sut1.isSet(i) && sut2.isSet(i), sut.isSet(i));
         }
     }
 
-    /**
-     * Test of xor method, of class BitSet.
-     */
     @Test
-    public void testXor() {
+    public void xor() {
+        //GIVEN
         BitSet sut1 = randomSet();
         BitSet sut2 = randomSet();
+
+        //WHEN
         sut = sut1.copy().xor(sut2);
+
+        //THEN
         for (short i : BitSet.allIndices()) {
-            if (sut.isSet(i)) {
-                assertTrue("expected true at idx " + i, sut1.isSet(i) ^ sut2.isSet(i));
-            } else {
-                assertFalse("expected false at idx " + i, sut1.isSet(i) ^ sut2.isSet(i));
-            }
+            assertEquals(sut1.isSet(i) ^ sut2.isSet(i), sut.isSet(i));
         }
     }
 
     @Test
-    public void testAsEnumSet() {
+    public void from_enumSet() {
         EnumSet<TestEnum> est = EnumSet.of(TestEnum.Hello, TestEnum.This, TestEnum.Test);
 
         sut = BitSet.from(est);
         assertEquals(est, sut.asSetOf(TestEnum.class));
     }
 
-    /**
-     * Test of getBits method, of class BitSet.
-     */
     @Test
-    public void testGetBits() {
+    public void getBits() {
+        //GIVEN
         sut.set(0);
         sut.set(1);
         sut.set(2);
+
+        //WHEN & THEN
         assertEquals(0b111, sut.getBits());
     }
-
 
     private BitSet randomSet() {
         return new BitSet(new java.util.Random().nextLong());
