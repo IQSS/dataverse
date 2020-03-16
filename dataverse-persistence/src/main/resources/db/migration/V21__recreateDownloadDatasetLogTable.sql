@@ -6,4 +6,4 @@ CREATE TABLE downloaddatasetlog (
 );
 
 CREATE INDEX downloaddatasetlog_dataset_id_idx ON downloaddatasetlog (dataset_id);
-CREATE SEQUENCE downloaddatasetlog_id_seq AS bigint INCREMENT BY 50 MINVALUE 50;
+CREATE SEQUENCE downloaddatasetlog_id_seq INCREMENT BY 50 MINVALUE 50;
