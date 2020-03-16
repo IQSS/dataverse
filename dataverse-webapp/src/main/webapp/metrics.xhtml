@@ -14,6 +14,8 @@
         <f:viewAction action="#{UsersChart.init}" />
         <f:viewAction action="#{FilesChart.init}" />
         <f:viewAction action="#{FilesStorageChart.init}" />
+        <f:viewAction action="#{FilesDownloadedChart.init}" />
+        <f:viewAction action="#{DatasetsDownloadedChart.init}" />
         <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(), bundle['metrics.title'])}"/>
     </f:metadata>
 
@@ -94,6 +96,58 @@
                              model="#{FilesStorageChart.chartModel}"
                              style="height:300px; min-width: 500px"
                              responsive="true" />
+                </p:panelGrid>
+            </h:form>
+
+            <!-- Downloaded Files-->
+            <h:form id="filesDownloaded">
+                <h4><h:outputText value="#{bundle['metrics.section.filesDownloaded.title']}" /></h4>
+                <p:panelGrid>
+                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
+                        <p:selectOneRadio id="filesDownloaded_mode" value="#{FilesDownloadedChart.mode}" style="padding-left: 10px">
+                            <p:ajax event="change" update="filesDownloaded" listener="#{FilesDownloadedChart.changeChartGrouping}"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesDownloaded.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesDownloaded.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.filesDownloaded.radiobutton.monthly.label']}" itemValue="MONTH"/>
+                        </p:selectOneRadio>
+                        <p:selectOneMenu id="filesDownloaded_years" value="#{FilesDownloadedChart.selectedYear}" disabled="#{FilesDownloadedChart.mode != 'MONTH'}">
+                            <p:ajax event="change" update="filesDownloaded" listener="#{FilesDownloadedChart.changeChartGrouping}"/>
+                            <f:selectItems value="#{FilesDownloadedChart.yearlyStats}" var="metrics"
+                                           itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+                    <p:chart id="filesDownloadedChart"
+                             type="bar"
+                             model="#{FilesDownloadedChart.chartModel}"
+                             style="height:300px; min-width: 500px"
+                             responsive="true"
+                    />
+                </p:panelGrid>
+            </h:form>
+
+            <!-- Downloaded Datasets-->
+            <h:form id="datasetsDownloaded">
+                <h4><h:outputText value="#{bundle['metrics.section.datasetsDownloaded.title']}" /></h4>
+                <p:panelGrid>
+                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
+                        <p:selectOneRadio id="datasetsDownloaded_mode" value="#{DatasetsDownloadedChart.mode}" style="padding-left: 10px">
+                            <p:ajax event="change" update="datasetsDownloaded" listener="#{DatasetsDownloadedChart.changeChartGrouping}"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasetsDownloaded.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasetsDownloaded.radiobutton.yearly.label']}" itemValue="YEAR"/>
+                            <f:selectItem itemLabel="#{bundle['metrics.section.datasetsDownloaded.radiobutton.monthly.label']}" itemValue="MONTH"/>
+                        </p:selectOneRadio>
+                        <p:selectOneMenu id="datasetsDownloaded_years" value="#{DatasetsDownloadedChart.selectedYear}" disabled="#{DatasetsDownloadedChart.mode != 'MONTH'}">
+                            <p:ajax event="change" update="datasetsDownloaded" listener="#{DatasetsDownloadedChart.changeChartGrouping}"/>
+                            <f:selectItems value="#{DatasetsDownloadedChart.yearlyStats}" var="metrics"
+                                           itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
+                    <p:chart id="datasetsDownloadedChart"
+                             type="bar"
+                             model="#{DatasetsDownloadedChart.chartModel}"
+                             style="height:300px; min-width: 500px"
+                             responsive="true"
+                    />
                 </p:panelGrid>
             </h:form>
 

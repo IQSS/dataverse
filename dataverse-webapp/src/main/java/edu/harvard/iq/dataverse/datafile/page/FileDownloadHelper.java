@@ -124,7 +124,7 @@ public class FileDownloadHelper implements java.io.Serializable {
             return;
         }
         
-        if (fileMetadatas.get(0).getDatasetVersion().isDraft()) {
+        if (!fileMetadatas.get(0).getDatasetVersion().isDraft()) {
             GuestbookResponse downloadOnlyGuestbook = guestbookResponseService.initGuestbookResponseForFragment(fileMetadatas.get(0), session);
             writeGuestbookResponsesForFiles(fileMetadatas, fileFormat, downloadOnlyGuestbook);
         }
