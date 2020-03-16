@@ -74,6 +74,7 @@ import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -136,6 +137,11 @@ public class Admin extends AbstractApiBean {
         GroupServiceBean groupService;
         @EJB
         SettingsServiceBean settingsService;
+        @EJB
+        DatasetVersionServiceBean datasetVersionService;
+        @EJB
+        ExplicitGroupServiceBean explicitGroupService;
+        
 
 	// Make the session available
 	@Inject
@@ -348,8 +354,8 @@ public class Admin extends AbstractApiBean {
 
         if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
             return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments", Arrays.asList(au.getIdentifier())));
-        }        
-        
+        }
+
         if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
             return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects", Arrays.asList(au.getIdentifier())));
         }
@@ -358,10 +364,28 @@ public class Admin extends AbstractApiBean {
             return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps", Arrays.asList(au.getIdentifier())));
         }
 
+        if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser", Arrays.asList(au.getIdentifier())));
+        }
+
+        if (!explicitGroupService.findGroups(au).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.groupMember", Arrays.asList(au.getIdentifier())));
+        }
+
+        if (userHasPendingAccessRequests(au)) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.pendingRequests", Arrays.asList(au.getIdentifier())));
+        }
+
         authSvc.deleteAuthenticatedUser(au.getId());
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
 
-    }   
+    }  
+    
+    private boolean userHasPendingAccessRequests(AuthenticatedUser  au){
+        
+        return !em.createNativeQuery("select datafile_id from fileaccessrequests where authenticated_user_id  = "+au.getId()).getResultList().isEmpty();
+        
+    }
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
