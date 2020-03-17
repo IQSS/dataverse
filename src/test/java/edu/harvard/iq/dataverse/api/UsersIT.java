@@ -460,7 +460,7 @@ public class UsersIT {
         deleteUserCreateDV.prettyPrint();
         deleteUserCreateDV.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", contains("Could not delete Authenticated User @" + usernameForCreateDV + " because the user has created Dataverse object(s)."));
+                .body("message", equalTo("Could not delete Authenticated User @" + usernameForCreateDV + " because the user has created Dataverse object(s)."));
 
         Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, normalApiToken);
         deleteDataverse.prettyPrint();
