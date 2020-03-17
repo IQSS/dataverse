@@ -11,8 +11,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
@@ -23,9 +22,9 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -257,8 +256,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
     }
 
     public void resetForm() {
-        RequestContext context = RequestContext.getCurrentInstance();
-        context.reset(":dataverseForm:themeWidgetsTabView");
+        PrimeFaces.current().resetInputs(":dataverseForm:themeWidgetsTabView");
     }
 
     public String cancel() {

@@ -18,51 +18,55 @@
     <!--@elvariable id="globalMessage" type="javax.faces.application.FacesMessage"-->
     <o:importConstants type="javax.faces.application.FacesMessage"/>
 
-    <p:outputPanel autoUpdate="true">
-        <o:messages globalOnly="true" var="globalMessage">
 
-            <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_ERROR}">
-                <div class="alert alert-danger">
-                    <o:form useRequestURI="true">
-                        <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                        <h:outputText value="#{globalMessage.detail}" escape="false"/>
-                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
-                            <o:param>
-                                <p:commandLink value="#{installationConfig.supportTeamName}"
-                                               oncomplete="PF('contactForm').show()" update=":contactDialog"
-                                               actionListener="#{sendFeedbackDialog.initUserInput}">
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"
-                                                                 value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}"
-                                                                 value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                </p:commandLink>
-                            </o:param>
-                        </h:outputFormat>
-                    </o:form>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_INFO}">
-                <div class="alert alert-info">
-                    <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                    <h:outputText escape="false" value="#{globalMessage.detail} "/>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_WARN}">
-                <div class="alert alert-warning">
-                    <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                    <h:outputText escape="false" value="#{globalMessage.detail} "/>
-                </div>
-            </ui:fragment>
-            <ui:fragment rendered="#{facesContext.validationFailed}">
-                <div class="alert alert-danger">
-                    <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
-                </div>
-            </ui:fragment>
+    <p:outputPanel>
+        <p:autoUpdate/>
+            <o:messages globalOnly="true" var="globalMessage">
 
-        </o:messages>
+                <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_ERROR}">
+                    <div class="alert alert-danger">
+                        <o:form useRequestURI="true">
+                            <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                            <h:outputText value="#{globalMessage.detail}" escape="false"/>
+                            <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                                <o:param>
+                                    <p:commandLink value="#{installationConfig.supportTeamName}"
+                                                   oncomplete="PF('contactForm').show()" update=":contactDialog"
+                                                   actionListener="#{sendFeedbackDialog.initUserInput}">
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}"
+                                                                     value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}"
+                                                                     value="#{null}"/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}"
+                                                                     value=""/>
+                                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                    </p:commandLink>
+                                </o:param>
+                            </h:outputFormat>
+                        </o:form>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_INFO}">
+                    <div class="alert alert-info">
+                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                        <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_WARN}">
+                    <div class="alert alert-warning">
+                        <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                        <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                    </div>
+                </ui:fragment>
+                <ui:fragment rendered="#{facesContext.validationFailed}">
+                    <div class="alert alert-danger">
+                        <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
+                    </div>
+                </ui:fragment>
+
+            </o:messages>
     </p:outputPanel>
+
 
     <o:messages id="successMessage" var="message" showDetail="true"
                 rendered="#{not empty facesContext.getMessageList('successMessage')}" redisplay="false">

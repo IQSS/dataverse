@@ -24,21 +24,20 @@ import io.vavr.control.Try;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -170,9 +169,8 @@ public class ReplaceDatafilesPage implements Serializable {
         fileToBeSaved = dataFile.get();
 
         if (!uFile.getContentType().equals(fileToBeReplaced.getContentType())) {
-            RequestContext context = RequestContext.getCurrentInstance();
-            context.update("replaceFileForm:fileTypeDifferentPopup");
-            context.execute("PF('fileTypeDifferentPopup').show();");
+            PrimeFaces.current().ajax().update("replaceFileForm:fileTypeDifferentPopup");
+            PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
         }
 
         return StringUtils.EMPTY;

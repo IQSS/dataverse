@@ -7,12 +7,11 @@ import edu.harvard.iq.dataverse.dataset.difference.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import javax.faces.view.ViewScoped;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
 
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,10 +92,9 @@ public class DatasetVersionsTab implements Serializable {
     }
     
     public void updateVersionDiffForModalFromSelected() {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
         
         if (this.selectedVersions.size() != 2) {
-            requestContext.execute("PF('needTwoVersionsToCompare').show()");
+            PrimeFaces.current().executeScript("PF('needTwoVersionsToCompare').show()");
         } else {
             DatasetVersion newVersion;
             DatasetVersion oldVersion;

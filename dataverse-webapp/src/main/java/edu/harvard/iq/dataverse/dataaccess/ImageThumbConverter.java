@@ -22,7 +22,6 @@ package edu.harvard.iq.dataverse.dataaccess;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
-import org.primefaces.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
@@ -45,6 +44,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -523,10 +523,8 @@ public class ImageThumbConverter {
                 }
                 logger.fine("inside getImageThumbnailAsBase64FromInputStream; read " + total + " bytes of raw thumbnail image.");
 
-                if (buffer != null) {
-                    String imageDataBase64 = Base64.encodeToString(cachingByteStream.toByteArray(), false);
-                    return FileUtil.DATA_URI_SCHEME + imageDataBase64;
-                }
+                String imageDataBase64 = Base64.getEncoder().encodeToString(cachingByteStream.toByteArray());
+                return FileUtil.DATA_URI_SCHEME + imageDataBase64;
             }
         } catch (IOException ex) {
             logger.warning("getImageAsBase64FromFile: Failed to read data from input stream.");
