@@ -7,6 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui"
 >
+<p:importEnum type="edu.harvard.iq.dataverse.metrics.ChartMode" var="chartMode" allSuffix="ALL_ENUM_VALUES" />
+
 <f:view locale="#{dataverseSession.localeCode}">
 <h:body>
     <f:metadata>
@@ -47,6 +49,24 @@
                              responsive="true"
                     />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{PublishedDatasetsChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{PublishedDatasetsChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{PublishedDatasetsChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{PublishedDatasetsChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Published Files Chart-->
@@ -72,6 +92,24 @@
                              style="height:300px; min-width: 500px"
                              responsive="true" />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{FilesChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{FilesChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{FilesChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{FilesChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Published Files Storage Chart-->
@@ -97,6 +135,24 @@
                              style="height:300px; min-width: 500px"
                              responsive="true" />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{FilesStorageChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{FilesStorageChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{FilesStorageChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{FilesStorageChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Downloaded Files-->
@@ -123,6 +179,24 @@
                              responsive="true"
                     />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{FilesDownloadedChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{FilesDownloadedChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{FilesDownloadedChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{FilesDownloadedChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Downloaded Datasets-->
@@ -149,6 +223,24 @@
                              responsive="true"
                     />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{DatasetsDownloadedChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{DatasetsDownloadedChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{DatasetsDownloadedChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{DatasetsDownloadedChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Authenticated Users Chart-->
@@ -175,6 +267,24 @@
                              responsive="true"
                     />
                 </p:panelGrid>
+
+                <div class="visuallyhidden">
+                <p:dataTable
+                        var="dataRow"
+                        value="#{UsersChart.tableModel.dataRow}"
+                >
+                    <f:facet name="header">
+                        #{UsersChart.tableModel.title}
+                    </f:facet>
+                    <p:column headerText="#{UsersChart.tableModel.leftColumnName}">
+                        <h:outputText value="#{dataRow.left}" />
+                    </p:column>
+
+                    <p:column headerText="#{UsersChart.tableModel.rightColumnName}">
+                        <h:outputText value="#{dataRow.right}" />
+                    </p:column>
+                </p:dataTable>
+                </div>
             </h:form>
 
             <!-- Used in ChartCreator class as extender -->

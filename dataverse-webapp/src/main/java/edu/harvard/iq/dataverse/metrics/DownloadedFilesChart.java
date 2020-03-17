@@ -16,15 +16,17 @@ import java.util.List;
 public class DownloadedFilesChart implements Serializable {
 
     private ChartCreator chartCreator;
+    private ChartTableCreator chartTableCreator;
     private MetricsServiceBean metricsService;
 
-    private final String CHART_TYPE = "filesDownloaded";
+    private static final String CHART_TYPE = "filesDownloaded";
 
     private BarChartModel chartModel;
+    private ChartTableModel tableModel;
     private List<ChartMetrics> yearlyStats = new ArrayList<>();
     private List<ChartMetrics> chartMetrics = new ArrayList<>();
 
-    private String mode = "YEAR_CUMULATIVE";
+    private ChartMode mode;
     private int selectedYear;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -33,9 +35,10 @@ public class DownloadedFilesChart implements Serializable {
     }
 
     @Inject
-    public DownloadedFilesChart(ChartCreator chartCreator, MetricsServiceBean metricsService) {
+    public DownloadedFilesChart(ChartCreator chartCreator, MetricsServiceBean metricsService, ChartTableCreator chartTableCreator) {
         this.chartCreator = chartCreator;
         this.metricsService = metricsService;
+        this.chartTableCreator = chartTableCreator;
     }
 
     // -------------------- GETTERS --------------------
@@ -43,12 +46,16 @@ public class DownloadedFilesChart implements Serializable {
         return chartModel;
     }
 
+    public ChartTableModel getTableModel() {
+        return tableModel;
+    }
+
     public List<ChartMetrics> getYearlyStats() {
         return yearlyStats;
     }
 
     public String getMode() {
-        return mode;
+        return mode.toString();
     }
 
     public int getSelectedYear() {
@@ -57,8 +64,8 @@ public class DownloadedFilesChart implements Serializable {
 
     // -------------------- LOGIC --------------------
     public void init() {
-
         chartMetrics = metricsService.countDownloadedFiles();
+        mode = ChartMode.CUMULATIVE;
 
         if (chartMetrics.isEmpty()) {
             yearlyStats.add(new ChartMetrics((double) LocalDateTime.now().getYear(), 0L));
@@ -69,15 +76,19 @@ public class DownloadedFilesChart implements Serializable {
         }
 
         chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
+        tableModel = chartTableCreator.createChartTable(chartModel);
     }
 
     public void changeChartGrouping() {
         if (isYearlyChartSelected()) {
             chartModel = chartCreator.createYearlyChart(chartMetrics, CHART_TYPE);
+            tableModel = chartTableCreator.createChartTable(chartModel);
         } else if (isYearlyCumulativeChartSelected()) {
             chartModel = chartCreator.createYearlyCumulativeChart(chartMetrics, CHART_TYPE);
+            tableModel = chartTableCreator.createChartTable(chartModel);
         } else if (isMonthlyChartSelected()) {
             chartModel = chartCreator.createMonthlyChart(chartMetrics, selectedYear, CHART_TYPE);
+            tableModel = chartTableCreator.createMonthlyChartTable(chartModel, selectedYear);
         }
     }
 
@@ -87,16 +98,16 @@ public class DownloadedFilesChart implements Serializable {
     }
 
     private boolean isYearlyChartSelected() {
-        return mode.equals("YEAR");
+        return mode == ChartMode.YEARLY;
     }
 
     private boolean isYearlyCumulativeChartSelected() {
-        return mode.equals("YEAR_CUMULATIVE");
+        return mode == ChartMode.CUMULATIVE;
     }
 
     // -------------------- SETTERS --------------------
     public void setMode(String mode) {
-        this.mode = mode;
+        this.mode = ChartMode.of(mode);
     }
 
     public void setSelectedYear(int selectedYear) {
