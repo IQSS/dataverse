@@ -19,6 +19,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,11 +29,11 @@ public class UsersIT {
     @BeforeClass
     public static void setUp() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-        
+       /* 
         Response removeAllowApiTokenLookupViaApi = UtilIT.deleteSetting(SettingsServiceBean.Key.AllowApiTokenLookupViaApi);
         removeAllowApiTokenLookupViaApi.then().assertThat()
                 .statusCode(200);
-
+*/
     }
     
     @Test
@@ -429,6 +430,51 @@ public class UsersIT {
         getExpiration.prettyPrint();
         getExpiration.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode());
+        
+    }
+    
+    @Test
+    public void testDeleteAuthenticatedUser() {
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String usernameForCreateDV = UtilIT.getUsernameFromResponse(createUser);
+        String normalApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(normalApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        //if this fails likely one of the converts that said they failed actually didn't!
+        Response deleteUserCreateDV = UtilIT.deleteUser(usernameForCreateDV);
+
+        deleteUserCreateDV.prettyPrint();
+        deleteUserCreateDV.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", contains("Could not delete Authenticated User @" + usernameForCreateDV + " because the user has created Dataverse object(s)."));
+
+        Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, normalApiToken);
+        deleteDataverse.prettyPrint();
+        deleteDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response deleteUserAfterDeleteDV = UtilIT.deleteUser(usernameForCreateDV);
+        //Should be able to delete user after dv is deleted
+        deleteUserAfterDeleteDV.prettyPrint();
+        deleteUserAfterDeleteDV.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
+        assertEquals(200, deleteSuperuser.getStatusCode());
+
         
     }
 

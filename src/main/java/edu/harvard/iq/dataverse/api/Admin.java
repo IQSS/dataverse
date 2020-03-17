@@ -352,12 +352,13 @@ public class Admin extends AbstractApiBean {
 
     private Response deleteAuthenticatedUser(AuthenticatedUser au) {
 
-        if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments", Arrays.asList(au.getIdentifier())));
-        }
 
         if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
             return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects", Arrays.asList(au.getIdentifier())));
+        }
+        
+        if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments", Arrays.asList(au.getIdentifier())));
         }
 
         if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
