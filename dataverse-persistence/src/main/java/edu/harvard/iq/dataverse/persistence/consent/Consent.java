@@ -27,7 +27,7 @@ public class Consent {
     @OneToMany(mappedBy = "consent", cascade = CascadeType.ALL)
     private List<ConsentDetails> consentDetails = new ArrayList<>();
 
-    @OneToMany(mappedBy = "consent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "consent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsentAction> consentActions = new ArrayList<>();
 
     @Column(nullable = false)
@@ -113,5 +113,9 @@ public class Consent {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+    }
+
+    public void setConsentActions(List<ConsentAction> consentActions) {
+        this.consentActions = consentActions;
     }
 }

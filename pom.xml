@@ -183,6 +183,12 @@
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+    
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.11</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

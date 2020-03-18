@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -54,6 +55,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import io.vavr.control.Try;
+import org.apache.commons.lang.SerializationException;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -665,6 +668,19 @@ public abstract class AbstractApiBean {
         return Response.ok(Json.createObjectBuilder()
                                    .add("status", STATUS_OK)
                                    .add("data", bld).build()).build();
+    }
+
+    protected Response ok(Object objectToBeSerialized) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String serializedObj = Try.of(() -> objectMapper.writeValueAsString(objectToBeSerialized))
+                .getOrElseThrow(throwable -> new SerializationException("There was a problem with serializing object",
+                                                                        throwable));
+
+       return Response.status(Status.OK)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(serializedObj)
+                .build();
     }
 
     protected Response ok(JsonObjectBuilder bld) {

@@ -1,6 +1,9 @@
 package edu.harvard.iq.dataverse.persistence.consent;
 
+import edu.harvard.iq.dataverse.persistence.config.PostgresJsonConverter;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -28,6 +31,7 @@ public class ConsentAction {
     @Column(nullable = false)
     private ConsentActionType consentActionType;
 
+    @Convert(converter = PostgresJsonConverter.class)
     private String actionOptions;
 
     // -------------------- CONSTRUCTORS --------------------

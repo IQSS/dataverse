@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.authorization.UserIdentifier;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
@@ -21,6 +20,8 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
+import edu.harvard.iq.dataverse.consent.api.ConsentApiDto;
+import edu.harvard.iq.dataverse.consent.api.ConsentApiService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -40,6 +41,7 @@ import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.Setting;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
+import edu.harvard.iq.dataverse.persistence.consent.Consent;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -56,6 +58,8 @@ import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -118,17 +122,16 @@ public class Admin extends AbstractApiBean {
     @EJB
     DataFileServiceBean fileService;
     @EJB
-    DatasetDao datasetDao;
-    @EJB
     DatasetVersionServiceBean datasetversionService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
-    GroupServiceBean groupService;
-    @EJB
     SettingsServiceBean settingsService;
+
+    @Inject
+    private ConsentApiService consentApiService;
 
     // Make the session available
     @Inject
@@ -1392,4 +1395,76 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST,
                      "InheritParentRoleAssignments does not list any roles on this instance");
     }
+
+    @Path("/consents")
+    @GET
+    public Response listConsents() {
+        List<ConsentApiDto> consentApiDtos = consentApiService.listAvailableConsents();
+
+        return consentApiDtos.isEmpty() ?
+                error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("consent.api.consents.failure.noConsents"))
+                : ok(consentApiDtos);
+    }
+
+    @Path("/consents/{alias}")
+    @GET
+    public Response fetchConsent(@PathParam("alias") String alias) {
+        Option<ConsentApiDto> consent = consentApiService.fetchApiConsent(alias);
+
+        return consent
+                .map(this::ok)
+                .getOrElse(() -> error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("consent.api.consentsAlias.failure.noConsents", alias)));
+    }
+
+    @Path("/consents/{alias}")
+    @PUT
+    public Response editConsent(@PathParam("alias") String alias, String json) {
+        Option<Consent> consent = consentApiService.fetchConsent(alias);
+
+        if (consent.isEmpty()){
+            return error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("consent.api.consentsAlias.failure.noConsents", alias));
+        }
+
+        Try<ConsentApiDto> editedConsent = Try.of(() -> new ObjectMapper().readValue(json, ConsentApiDto.class));
+
+        if (editedConsent.isFailure()){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("consent.api.consentsAlias.failure.mappingFail"));
+        }
+
+        List<String> errors = consentApiService.validateUpdatedConsent(editedConsent.get(), consent.get());
+
+        if (!errors.isEmpty()){
+            String combinedErrors = String.join(", ", errors);
+
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("consent.api.consents.failure.validationFail") + combinedErrors);
+        }
+
+        consentApiService.saveEditedConsent(editedConsent.get(), consent.get());
+
+        return ok(BundleUtil.getStringFromBundle("consent.api.consentsAlias.success.consentEdited"));
+    }
+
+    @Path("/consents")
+    @POST
+    public Response createConsent(String json) {
+        Try<ConsentApiDto> createdConsent = Try.of(() -> new ObjectMapper().readValue(json, ConsentApiDto.class));
+
+        if (createdConsent.isFailure()){
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("consent.api.consentsAlias.failure.mappingFail"));
+        }
+
+        List<String> errors = consentApiService.validateCreatedConsent(createdConsent.get());
+
+        if (!errors.isEmpty()){
+            String combinedErrors = String.join(", ", errors);
+
+            return error(Status.CONFLICT, BundleUtil.getStringFromBundle("consent.api.consents.failure.validationFail") + combinedErrors);
+        }
+
+        consentApiService.saveNewConsent(createdConsent.get());
+
+        return ok(BundleUtil.getStringFromBundle("consent.api.consents.success.consentCreated"));
+
+    }
+
 }

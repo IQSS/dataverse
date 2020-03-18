@@ -27,6 +27,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -58,7 +59,7 @@ public class PasswordResetPage implements java.io.Serializable {
     @Inject
     private ConsentService consentService;
 
-    private List<ConsentDto> consents;
+    private List<ConsentDto> consents = new ArrayList<>();
 
     /**
      * The unique string used to look up a user and continue the password reset

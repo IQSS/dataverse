@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.consent.action;
 
-import com.amazonaws.thirdparty.jackson.databind.ObjectMapper;
-import com.amazonaws.util.json.Jackson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.consent.ConsentActionDto;
 import edu.harvard.iq.dataverse.consent.ConsentDetailsDto;
 import edu.harvard.iq.dataverse.mail.EmailContent;
@@ -36,7 +35,7 @@ class SendNewsletterEmailAction implements Action{
     // -------------------- PRIVATE --------------------
 
     private SendNewsletterEmailContent parseEmailActionContent(ConsentActionDto consentActionDto) {
-        ObjectMapper objectMapper = Jackson.getObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
         EmailField emailField = Try.of(() -> objectMapper.readValue(consentActionDto.getActionOptions(),
                                                                  EmailField.class))
                 .getOrElseThrow(throwable -> new RuntimeException(

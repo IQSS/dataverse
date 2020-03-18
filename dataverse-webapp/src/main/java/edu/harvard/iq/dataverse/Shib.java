@@ -68,7 +68,7 @@ public class Shib implements java.io.Serializable {
     @Inject
     private ConsentService consentService;
 
-    private List<ConsentDto> consents;
+    private List<ConsentDto> consents = new ArrayList<>();
 
     HttpServletRequest request;
     private String userPersistentId;
