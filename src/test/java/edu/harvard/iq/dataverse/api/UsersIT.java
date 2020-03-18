@@ -477,7 +477,7 @@ public class UsersIT {
         deleteUserCreateDV.prettyPrint();
         deleteUserCreateDV.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo("Could not delete Authenticated User @" + usernameForCreateDV + " because the user has created Dataverse object(s)."));
+                .body("message", equalTo("Could not delete Authenticated User @" + usernameForCreateDV + " because the user has created Dataverse object(s); the user is associated with role assignment record(s)."));
 
         Response deleteDataverse = UtilIT.deleteDataverse(dataverseAlias, normalApiToken);
         deleteDataverse.prettyPrint();

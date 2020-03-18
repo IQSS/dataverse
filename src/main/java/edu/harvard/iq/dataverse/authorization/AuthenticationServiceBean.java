@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.authorization;
 
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
@@ -9,6 +13,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -26,9 +31,11 @@ import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -102,6 +109,21 @@ public class AuthenticationServiceBean {
 
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
+    
+    @EJB
+    DvObjectServiceBean dvObjSvc;
+    
+    @EJB
+    RoleAssigneeServiceBean roleAssigneeSvc;
+    
+    @EJB
+    GuestbookResponseServiceBean gbRespSvc;
+    
+    @EJB
+    DatasetVersionServiceBean datasetVersionService;
+    
+    @EJB 
+    ExplicitGroupServiceBean explicitGroupService;
         
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -509,6 +531,70 @@ public class AuthenticationServiceBean {
         }
         
         return tkn.getAuthenticatedUser();
+    }
+    
+    /*
+    getDeleteUserErrorMessages( AuthenticatedUser au )
+    method which checks for reasons that a user may not be deleted
+    -has created dvObjects
+    -has roles
+    -has guestbook records
+    -etc.
+    An empty string is returned if the user is 'deletable'
+    */
+    
+    public String getDeleteUserErrorMessages(AuthenticatedUser au) {
+        String retVal = "";
+        if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects");
+        }
+
+        if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
+            if (!retVal.isEmpty()) {
+                retVal += "; ";
+            }
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments");
+        }
+
+        if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
+            if (!retVal.isEmpty()) {
+                retVal += "; ";
+            }
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps");
+        }
+
+        if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
+            if (!retVal.isEmpty()) {
+                retVal += "; ";
+            }
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser");
+        }
+
+        if (!explicitGroupService.findGroups(au).isEmpty()) {
+            if (!retVal.isEmpty()) {
+                retVal += "; ";
+            }
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.groupMember");
+        }
+
+        if (userHasPendingAccessRequests(au)) {
+            if (!retVal.isEmpty()) {
+                retVal += "; ";
+            }
+            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.pendingRequests");
+        }
+        if (!retVal.isEmpty()) {
+            //
+            retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier())) + " " + retVal + ".";
+        }
+
+        return retVal;
+    }
+    
+    private boolean userHasPendingAccessRequests(AuthenticatedUser  au){
+        
+        return !em.createNativeQuery("select datafile_id from fileaccessrequests where authenticated_user_id  = "+au.getId()).getResultList().isEmpty();
+        
     }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {

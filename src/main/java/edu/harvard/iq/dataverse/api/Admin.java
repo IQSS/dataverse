@@ -351,30 +351,9 @@ public class Admin extends AbstractApiBean {
     }
 
     private Response deleteAuthenticatedUser(AuthenticatedUser au) {
-
-
-        if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects", Arrays.asList(au.getIdentifier())));
-        }
-        
-        if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments", Arrays.asList(au.getIdentifier())));
-        }
-
-        if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps", Arrays.asList(au.getIdentifier())));
-        }
-
-        if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser", Arrays.asList(au.getIdentifier())));
-        }
-
-        if (!explicitGroupService.findGroups(au).isEmpty()) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.groupMember", Arrays.asList(au.getIdentifier())));
-        }
-
-        if (userHasPendingAccessRequests(au)) {
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.pendingRequests", Arrays.asList(au.getIdentifier())));
+        String errorMessages = authSvc.getDeleteUserErrorMessages(au);
+        if (!errorMessages.isEmpty()) {
+            return badRequest(errorMessages);
         }
 
         authSvc.deleteAuthenticatedUser(au.getId());
@@ -382,11 +361,7 @@ public class Admin extends AbstractApiBean {
 
     }  
     
-    private boolean userHasPendingAccessRequests(AuthenticatedUser  au){
-        
-        return !em.createNativeQuery("select datafile_id from fileaccessrequests where authenticated_user_id  = "+au.getId()).getResultList().isEmpty();
-        
-    }
+
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
