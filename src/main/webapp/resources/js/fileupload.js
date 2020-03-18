@@ -1,6 +1,7 @@
 var fileList = [];
 var observer2=null;
 var datasetId=null;
+var filesInProgress=0;
 
 function setupDirectUpload(enabled, theDatasetId) {
   if(enabled) {
@@ -40,13 +41,17 @@ function setupDirectUpload(enabled, theDatasetId) {
 function queueFileForDirectUpload(file, datasetId) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
-
-  requestDirectUploadUrl();
+  if(filesInProgress <5 ) {
+    filesInProgress= filesInProgress+1;
+    requestDirectUploadUrl();
+    
+  }
 }
 
 function uploadFileDirectly(url, storageId) {
   //Pick a pending file
   var file = fileList.pop();
+  filesInProgress=filesInProgress-1;
   $('.ui-fileupload-progress').html('');
   $('.ui-fileupload-progress').append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
   $.ajax({
@@ -165,6 +170,11 @@ function directUploadFinished() {
           observer.disconnect();
           observer=null;
         }
+    }  else {
+      if(filesInProgress <5 ) {
+        filesInProgress= filesInProgress+1;
+        requestDirectUploadUrl();
+      }
     } 
 }
 
