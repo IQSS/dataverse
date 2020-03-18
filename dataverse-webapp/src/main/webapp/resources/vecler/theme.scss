@@ -51,6 +51,7 @@ $dataverse-icon: "img/dataverse-icon-mxrdr.svg";
 $ajax_spinner_filter: hue-rotate(140deg) saturate(2);
 */
 
+
 /* RDS color scheme */
 
 /*
@@ -61,7 +62,7 @@ $border-color: #f6921e;
 $search-result-desc-color: #fff5ea;
 $table-row-hover: #f7e8d8;
 $table-row-highlight: #ffd7af;
-$focus-color: #de8800;
+$focus-color: #0086bc;
 $main-logo: "img/logo-rds.svg";
 $primefaces-main: "img/primefaces-main-rds.png";
 $dataverse-icon: "img/dataverse-icon-rds.svg";
@@ -282,7 +283,7 @@ body {
 @mixin link-color {
 	color: $link-color;
 	
-	&:hover {
+	&:hover, &:focus {
 		color: $main-color;
 	}
 }
@@ -1408,24 +1409,6 @@ $navbar-height: 6.8em;
 	}
 }
 
-@media screen and (max-width: $screen-xs-max) {
-	#navbarFixed .navbar-brand {
-		margin-left: 0.666em;
-	}
-	.navbar-default #topNavBar .pull-right {
-		width: 100%;
-	}
-}
-@media screen and (min-width: $screen-sm-min) {
-	.navbar-default #topNavBar .navbar-nav {
-		display: table-cell;
-		vertical-align: middle;
-		float: none;
-		height: $navbar-height;
-
-	}
-}
-
 .navbar-default .navbar-toggle {
 	margin: 1.8em;
 
@@ -1443,6 +1426,42 @@ $navbar-height: 6.8em;
 
 .top-messages {
 	margin: 8px;
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	$navbar-height-mobile: 4.65em;
+
+	#navbarFixed .navbar-brand {
+		height: $navbar-height-mobile;
+		margin-left: 0.666em;
+
+		#site-logo {
+			top: 0.288em;
+			left: 0.55em;
+			font-size: 3.333em;
+	
+			& + div {
+				padding-left: 4em;
+			}
+		}
+	}
+	.navbar-default {
+		.navbar-toggle {
+			margin: 0.8em;
+		}
+
+		#topNavBar .pull-right {
+			width: 100%;
+		}
+	}
+}
+@media screen and (min-width: $screen-sm-min) {
+	.navbar-default #topNavBar .navbar-nav {
+			display: table-cell;
+			vertical-align: middle;
+			float: none;
+			height: $navbar-height;
+	}
 }
 
 /* Footer */
@@ -1475,6 +1494,7 @@ $navbar-height: 6.8em;
 		text-align: center;
 	}
 }
+
 
 /* Main page */
 
@@ -1520,6 +1540,7 @@ $navbar-height: 6.8em;
 }
 
 div.panelSearchForm input.search-input {
+	max-width: calc(100% + 1em);
 	line-height: 23px;
 }
 
