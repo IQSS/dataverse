@@ -584,7 +584,6 @@ public class AuthenticationServiceBean {
             retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.pendingRequests");
         }
         if (!retVal.isEmpty()) {
-            //
             retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier())) + " " + retVal + ".";
         }
 

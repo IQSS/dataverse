@@ -351,7 +351,13 @@ public class Admin extends AbstractApiBean {
     }
 
     private Response deleteAuthenticatedUser(AuthenticatedUser au) {
+        
+        //getDeleteUserErrorMessages does all of the tests to see
+        //if the user is 'deletable' if it returns an empty string the user 
+        //can be safely deleted.
+        
         String errorMessages = authSvc.getDeleteUserErrorMessages(au);
+        
         if (!errorMessages.isEmpty()) {
             return badRequest(errorMessages);
         }
