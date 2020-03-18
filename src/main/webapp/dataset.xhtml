@@ -232,29 +232,33 @@
                                                         <ul class="dropdown-menu pull-right text-left">
                                                             <!-- Publish LINKS x5 -->
                                                             <li>
-                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishConfirm').show()"
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{!DatasetPage.dataset.released
                                                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               onclick="PF('publishConfirm').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
-                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('releaseDraft').show()"
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
-                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               onclick="PF('releaseDraft').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
                                                                 <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
-                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('mayNotRelease').show()"
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                                                           and !DatasetPage.canPublishDataverse()}">
+                                                                                           and !DatasetPage.canPublishDataverse()}"
+                                                                               onclick="PF('mayNotRelease').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
-                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" onclick="PF('publishParent').show()"
+                                                                <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                                            and DatasetPage.canPublishDataverse()
                                                                                            and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
-                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                                           and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               onclick="PF('publishParent').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
                                                                 <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
