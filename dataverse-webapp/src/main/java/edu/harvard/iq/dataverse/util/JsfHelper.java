@@ -57,11 +57,11 @@ public class JsfHelper {
                                                      new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, detail));
     }
 
-    public void addMessage(FacesMessage.Severity s, String summary, String details) {
+    public static void addMessage(FacesMessage.Severity s, String summary, String details) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, summary, details));
     }
 
-    public void addMessage(FacesMessage.Severity s, String summary) {
+    public static void addMessage(FacesMessage.Severity s, String summary) {
         addMessage(s, summary, "");
     }
 

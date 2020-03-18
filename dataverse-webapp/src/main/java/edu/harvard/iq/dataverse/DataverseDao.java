@@ -32,6 +32,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.io.File;
 import java.sql.Timestamp;
@@ -455,6 +456,11 @@ public class DataverseDao implements java.io.Serializable {
         }
 
         return dataverseList;
+    }
+
+    public Long countDataverses() {
+        TypedQuery<Long> countQuery = em.createQuery("SELECT count(dv) FROM Dataverse dv", Long.class);
+        return countQuery.getSingleResult();
     }
 
     /**

@@ -573,6 +573,11 @@ public class DatasetDao implements java.io.Serializable {
         return workflowComment;
     }
 
+    public Long countDatasets() {
+        TypedQuery<Long> countQuery = em.createQuery("SELECT count(ds) FROM Dataset ds", Long.class);
+        return countQuery.getSingleResult();
+    }
+
     @Asynchronous
     public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished)  {
 
