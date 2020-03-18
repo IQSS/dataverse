@@ -30,7 +30,7 @@ File Previewers
 
 File Previewers are tools that display the content of files - including audio, html, Hypothes.is annotations, images, PDF, text, video - allowing them to be viewed without downloading.
 
-https://github.com/QualitativeDataRepository/dataverse-previewers
+https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
 
 TwoRavens
 ~~~~~~~~~

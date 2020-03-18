@@ -70,7 +70,7 @@ RUN /tmp/dvinstall/glassfish-setup.sh
 ###glassfish-setup will handle everything in Dockerbuild
 
 ##install jdbc driver 
-RUN cp /tmp/dvinstall/pgdriver/postgresql-42.2.2.jar /usr/local/glassfish4/glassfish/domains/domain1/lib
+RUN cp /tmp/dvinstall/pgdriver/postgresql-42.2.9.jar /usr/local/glassfish4/glassfish/domains/domain1/lib
 
 # Customized persistence xml to avoid database recreation
 #RUN mkdir -p /tmp/WEB-INF/classes/META-INF/ 

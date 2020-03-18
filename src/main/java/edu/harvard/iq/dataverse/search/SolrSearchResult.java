@@ -584,6 +584,7 @@ public class SolrSearchResult {
                     subjects.add(subject);
                 }
                 nullSafeJsonBuilder.add("subjects", subjects);
+                nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
                 if(this.isPublishedState()){
@@ -596,7 +597,7 @@ public class SolrSearchResult {
                 if (!dv.getDatasetContacts().isEmpty()) {
                     JsonArrayBuilder contacts = Json.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
-                    for (String contact[] : dv.getDatasetContacts()) {                       
+                    for (String contact[] : dv.getDatasetContacts(false)) {
                         nullSafeJsonBuilderInner.add("name", contact[0]);
                         nullSafeJsonBuilderInner.add("affiliation", contact[1]);
                         contacts.add(nullSafeJsonBuilderInner);

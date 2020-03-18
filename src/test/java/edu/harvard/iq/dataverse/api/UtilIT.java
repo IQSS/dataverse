@@ -1059,6 +1059,12 @@ public class UtilIT {
                 .get("/api/admin/index/dataset?persistentId=" + persistentId);
         return response;
     }
+    
+    static Response reindexDataverse(String dvId) {
+        Response response = given()
+                .get("/api/admin/index/dataverses/" + dvId);
+        return response;
+    }
 
     static Response listAuthenticatedUsers(String apiToken) {
         Response response = given()
@@ -1587,16 +1593,30 @@ public class UtilIT {
     }
 
     static Response grantRoleOnDataset(String definitionPoint, String role, String roleAssignee, String apiToken) {
+
+        JsonObjectBuilder roleBuilder = Json.createObjectBuilder();
+        roleBuilder.add("assignee", roleAssignee);
+        roleBuilder.add("role", role);
+        
+        JsonObject roleObject = roleBuilder.build();
         logger.info("Granting role on dataset \"" + definitionPoint + "\": " + role);
         return given()
-                .body("@" + roleAssignee)
-                .post("api/datasets/" + definitionPoint + "/assignments?key=" + apiToken);
+                .body(roleObject.toString())
+                .contentType(ContentType.JSON)
+                .post("api/datasets/:persistentId/assignments?key=" + apiToken + "&persistentId=" + definitionPoint);
     }
 
     static Response revokeRole(String definitionPoint, long doomed, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("api/dataverses/" + definitionPoint + "/assignments/" + doomed);
+    }
+    
+    static Response revokeRoleOnDataset(String definitionPoint, long doomed, String apiToken) {
+        
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("api/datasets/:persistentId/assignments/" + doomed + "?persistentId=" + definitionPoint);
     }
     
     static Response revokeFileAccess(String definitionPoint, String doomed, String apiToken) {
@@ -2295,4 +2315,30 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/dataverses/" + dataverseId + "/storagesize");
     }
+    
+    
+    /**
+     * Determine the "payload" storage size of a dataverse
+     *
+     * @param dataverseId
+     * @param apiToken
+     * @return response
+     */
+    static Response findDatasetStorageSize(String datasetId, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/storagesize");
+    }
+    
+    static Response findDatasetDownloadSize(String datasetId) {
+        return given()
+                .get("/api/datasets/" + datasetId + "/versions/:latest/downloadsize");
+    }
+    
+    static Response findDatasetDownloadSize(String datasetId, String version,  String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
+    }
+    
 }
