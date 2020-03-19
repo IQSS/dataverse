@@ -955,7 +955,7 @@ public class IngestServiceBean {
                             throw new EJBException("Deliberate database save failure");
                         }
                      */
-                    dataFile = fileService.save(dataFile);
+                    dataFile = fileService.saveInTransaction(dataFile);
                     databaseSaveSuccessful = true;
 
                     logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
@@ -982,7 +982,7 @@ public class IngestServiceBean {
                 }
 
                 if (!databaseSaveSuccessful) {
-                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
+                    logger.warning("Ingest failure (failed to save the tabular data in the database; file left intact as uploaded).");
                     return false;
                 }
 
@@ -1005,6 +1005,9 @@ public class IngestServiceBean {
                     dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
                     // Reset the file size: 
                     dataFile.setFilesize(dataAccess.getSize());
+                    
+                    dataFile = fileService.save(dataFile);
+                    logger.fine("saved data file after updating the size");
 
                     // delete the temp tab-file:
                     tabFile.delete();
