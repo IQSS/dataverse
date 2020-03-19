@@ -174,4 +174,12 @@ public class BundleUtil {
 
         return new Locale("en");
     }
+
+    public static String getStringFromDefaultBundleEng(String key )  {
+        ResourceBundle bundle = getResourceBundle(defaultBundleFile, new Locale("en"));
+        if (bundle == null) {
+            return null;
+        }
+        return getStringFromBundleNoMissingCheck(key, null, bundle);
+    }
 }

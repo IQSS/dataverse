@@ -1308,7 +1308,7 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
-                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true">
+                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                         </ui:include>

@@ -31,7 +31,7 @@
                             action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
                             oncomplete="PF('configureToolPopup').show()">
                             <f:actionListener binding="#{configureFragmentBean.setConfigureIds(fileId,fileMetadata.id)}" />
-                            #{tool.displayName}
+                            #{tool.getDisplayNameLang()}
                         </p:commandLink>
                     </li>
                 </ui:repeat>
