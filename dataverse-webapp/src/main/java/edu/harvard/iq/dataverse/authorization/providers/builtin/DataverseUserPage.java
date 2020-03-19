@@ -785,7 +785,9 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String getPreferredNotificationsLanguage() {
-        return Option.of(preferredNotificationsLanguage).getOrElse(Locale.ROOT).getLanguage();
+        return Option.of(preferredNotificationsLanguage)
+                    .map(locale -> locale.getLanguage())
+                    .getOrNull();
     }
 
     public String getLocalizedPreferredNotificationsLanguage() {

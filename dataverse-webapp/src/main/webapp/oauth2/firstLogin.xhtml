@@ -143,16 +143,14 @@
                                                      styleClass="facet-category-default"
                                                      disabled="#{false}"
                                                      validator="#{OAuth2FirstLoginPage.validatePreferredNotificationsLanguage}"
-                                                     hideNoSelectionOption="true"
                                                      value="#{OAuth2FirstLoginPage.preferredNotificationsLanguage}"
                                                      required="#{true}"
                                     >
                                         <f:selectItem
                                                 itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                 noSelectionOption="true"
-                                                itemValue=""
+                                                itemValue="#{null}"
                                                 itemDisabled="true"
-                                                aria-hidden="true"
                                         />
                                         <f:selectItems value="#{OAuth2FirstLoginPage.getSupportedLanguages()}"
                                                        var="language"

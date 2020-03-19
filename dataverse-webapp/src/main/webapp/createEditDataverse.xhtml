@@ -92,12 +92,10 @@
                             </label>
                             <div class="col-sm-9 form-col-container">
                                 <p:selectOneMenu id="dataverseCategory" styleClass="form-control"
-                                                    value="#{CreateEditDataversePage.dataverse.dataverseType}"
-                                                    hideNoSelectionOption="true">
+                                                    value="#{CreateEditDataversePage.dataverse.dataverseType}">
                                     <f:selectItem id="dvSelect"
                                                     itemLabel="#{bundle['dataverse.type.selectTab.top']}"
                                                     itemValue="#{null}"
-                                                    aria-hidden="true"
                                                     noSelectionOption="true"
                                                     itemDisabled="true"/>
                                     <f:selectItem id="dvDepartment"

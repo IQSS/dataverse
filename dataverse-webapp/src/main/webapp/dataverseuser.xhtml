@@ -698,7 +698,6 @@
                                                          styleClass="facet-category-default"
                                                          disabled="#{false}"
                                                          validator="#{DataverseUserPage.validatePreferredNotificationsLanguage}"
-                                                         hideNoSelectionOption="true"
                                                          rendered="#{DataverseUserPage.editMode eq 'CREATE'}"
                                                          value="#{DataverseUserPage.preferredNotificationsLanguage}"
                                                          required="#{true}"
@@ -707,9 +706,8 @@
                                             <f:selectItem
                                                     itemLabel="#{bundle['user.notificationsLanguage.selectItem']}"
                                                     noSelectionOption="true"
-                                                    itemValue=""
+                                                    itemValue="#{null}"
                                                     itemDisabled="true"
-                                                    aria-hidden="true"
                                             />
                                             <f:selectItems value="#{DataverseUserPage.getSupportedLanguages()}"
                                                            var="language"
