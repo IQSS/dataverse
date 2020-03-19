@@ -8,11 +8,21 @@ This release brings new features, enhancements, and bug fixes to Dataverse. Than
 
 Dataverse can now be configured to store files in more than one place at the same time (multiple file, s3, and/or swift stores). 
 
-General information about this capability can be found in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
+General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
 
 ### Direct Upload to S3
 
-xxx
+To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads (10+ GB) over a more resilient transfer method. 
+
+General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a>.
+
+### API Test Coverage
+
+### New APIs
+
+New APIs for Role Management and Dataset Size have been added. Previously, managing roles at the dataset and file level was only possible through UI. API users can now also retrieve the size of a dataset through an API call, with specific parameters depending on the type of information needed. 
+
+More information can be found in the <a href="http://guides.dataverse.org/en/latest/api">API Guide</a>.
 
 ## Major Use Cases
 
