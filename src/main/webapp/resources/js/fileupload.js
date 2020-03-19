@@ -15,17 +15,26 @@ function setupDirectUpload(enabled, theDatasetId) {
     datasetId=theDatasetId;
     $('.ui-fileupload-upload').hide();
     $('.ui-fileupload-cancel').hide();
+    //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
     var fileInput=document.getElementById('datasetForm:fileUpload_input');
     fileInput.addEventListener('change', function(event) {
-      fileList=[];
-      for(var i=0;i<fileInput.files.length;i++) {
-        queueFileForDirectUpload(fileInput.files[i], datasetId);
-      }
-    }, {once:false});
+        fileList=[];
+        for(var i=0;i<fileInput.files.length;i++) {
+          queueFileForDirectUpload(fileInput.files[i], datasetId);
+        }
+      }, {once:false});
+    //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed  
+    var fileDropWidget=document.getElementById('datasetForm:fileUpload');                                                                                                                                 fileDropWidget.addEventListener('drop', function(event) {                                                                                                                                         console.log('Drop!');
+    fileDropWidget.addEventListener('drop', function(event) {                                                                                                                                         console.log('Drop!');
+        fileList=[];
+        for(var i=0;i<event.dataTransfer.files.length;i++) {                                                                                                                                                    queueFileForDirectUpload(event.dataTransfer.files[i], datasetId);                                                                                                                                   }
+      }, {once:false});
+
     var config={childList: true};
     var callback = function(mutations) {
       mutations.forEach(function(mutation) {
         for(i=0; i<mutation.addedNodes.length;i++) {
+          //Add a listener on any replacedment file 'select' widget
           if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
             fileInput=mutation.addedNodes[i];
             mutation.addedNodes[i].addEventListener('change', function(event) {
