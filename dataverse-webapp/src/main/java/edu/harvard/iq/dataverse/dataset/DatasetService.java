@@ -44,7 +44,7 @@ public class DatasetService {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
     private static final String DATASET_LOCKED_FOR_UPDATE_MESSAGE = "Update embargo date failed. Dataset is locked. ";
-    private static final String DATASET_IN_WRONG_STATE_MESSAGE = "Setting embargo date failed. Dataset is in wrong state.";
+    private static final String DATASET_IN_WRONG_STATE_MESSAGE = "Setting embargo date failed. Dataset is in a non-editable state.";
 
     private EjbDataverseEngine commandEngine;
     private UserNotificationService userNotificationService;

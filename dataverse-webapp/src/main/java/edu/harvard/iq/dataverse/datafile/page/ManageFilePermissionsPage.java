@@ -312,7 +312,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     }
     
     private void handlePermissionException(PermissionException ex, String operationErrorSummaryKey) {
-        Set<Permission> requiredPermissions = ex.getRequiredPermissions();
+        Set<Permission> requiredPermissions = ex.getMissingPermissions();
         JH.addMessage(FacesMessage.SEVERITY_ERROR,
                 BundleUtil.getStringFromBundle(operationErrorSummaryKey),
                 BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(requiredPermissions.toString())));

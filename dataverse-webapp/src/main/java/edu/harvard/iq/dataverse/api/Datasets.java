@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -26,6 +27,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AddLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -120,6 +122,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -197,6 +204,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     private ExportService exportService;
+
+    @Inject
+    private DatasetService datasetSvc;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -609,6 +619,50 @@ public class Datasets extends AbstractApiBean {
         DataverseRequest req = createDataverseRequest(findUserOrDie());
 
         return processDatasetFieldDataDelete(jsonBody, id, req);
+    }
+
+    @PUT
+    @Path("{id}/setEmbargo")
+    public Response setEmbargoDate(@PathParam("id") String id, @QueryParam("date") String date) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
+            Date embargoDate = dateFormat.parse(date);
+            validateEmbargoDate(embargoDate);
+
+            dataset = datasetSvc.setDatasetEmbargoDate(dataset, embargoDate);
+
+            return ok(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.success", dataset.getGlobalId(), dataset.getEmbargoDate().get().toInstant()));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        } catch (ParseException pe) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.format", settingsSvc.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat)));
+        } catch (EJBException ise) {
+            return badRequest(ise.getCause().getMessage());
+        } catch (PermissionException pe) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.missingPermissions", pe.getMissingPermissions().toString()));
+        } catch (Exception e) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.unknown", e.getMessage()));
+        }
+    }
+
+    @PUT
+    @Path("{id}/liftEmbargo")
+    public Response liftEmbargoDate(@PathParam("id") String id) {
+        try {
+            Dataset dataset = findDatasetOrDie(id);
+            dataset = datasetSvc.liftDatasetEmbargoDate(dataset);
+
+            return ok(BundleUtil.getStringFromBundle("datasets.api.liftEmbargo.success", dataset.getGlobalId()));
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        } catch (EJBException ise) {
+            return badRequest(ise.getCause().getMessage());
+        } catch (PermissionException pe) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.liftEmbargo.failure.missingPermissions", pe.getMissingPermissions().toString()));
+        } catch (Exception e) {
+            return badRequest(BundleUtil.getStringFromBundle("datasets.api.liftEmbargo.failure.unknown", e.getMessage()));
+        }
     }
 
     private Response processDatasetFieldDataDelete(String jsonBody, String id, DataverseRequest req) {
@@ -1799,6 +1853,32 @@ public class Datasets extends AbstractApiBean {
             }
 
         });
+    }
+
+    // -------------------- PRIVATE ---------------------
+    private void validateEmbargoDate(Date embargoDate) throws WrappedResponse {
+        if (embargoDate.toInstant().isBefore(getTomorrowsDateInstant())) {
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.notFuture")));
+        }
+        if (isMaximumEmbargoLengthSet() && embargoDate.toInstant().isAfter(getMaximumEmbargoDate())) {
+            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.tooLong",
+                    settingsSvc.getValueForKey(SettingsServiceBean.Key.MaximumEmbargoLength))));
+        }
+    }
+
+    private Instant getTomorrowsDateInstant() {
+        return Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)).toInstant();
+    }
+
+    private boolean isMaximumEmbargoLengthSet() {
+        return settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaximumEmbargoLength) > 0;
+    }
+
+    private Instant getMaximumEmbargoDate() {
+        return Date.from(Instant
+                .now().atOffset(ZoneOffset.UTC)
+                .plus(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength), ChronoUnit.MONTHS)
+                .toInstant()).toInstant();
     }
 
 }

@@ -72,12 +72,17 @@ public class RestrictedInterceptor {
     private PermissionException createMissingPermissionException(
             List<MissingPermissions> missingPermissions, Method method, DataverseRequest request) {
         MissingPermissions firstMissing = missingPermissions.get(0);
+        Set<Permission> allMissingPermissions = missingPermissions.stream()
+                .flatMap(mp -> mp.missing.stream())
+                .collect(Collectors.toSet())
+                ;
+
         return new PermissionException("Can't execute method " + method
                 + ", because request: " + request
                 + " is missing permissions: " + firstMissing.missing
                 + " on Object: [" + firstMissing.dvObjectName
                 + "]. All missing permissions: " + missingPermissions,
-                null, firstMissing.required, firstMissing.dvObject);
+                null, allMissingPermissions , firstMissing.dvObject);
     }
 
     private void logBasicInfo(InvocationContext ctx, Collection<RestrictedObject> restrictedObjects) {
@@ -153,6 +158,10 @@ public class RestrictedInterceptor {
             this.dvObjectName = extractSafelyObjectName(source.dvObject);
             this.required = source.required;
             this.missing = SetUtils.difference(source.required, source.granted);
+        }
+
+        public Set<Permission> getMissing() {
+            return missing;
         }
 
         @Override

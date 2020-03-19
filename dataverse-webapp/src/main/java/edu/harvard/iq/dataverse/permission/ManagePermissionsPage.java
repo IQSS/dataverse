@@ -633,7 +633,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if(throwable instanceof PermissionException) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getRequiredPermissions().toString())));
+                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
             logger.log(Level.SEVERE, "Error removing role assignment: " + throwable.getMessage(), throwable);
@@ -645,7 +645,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR,
                     BundleUtil.getStringFromBundle("permission.roleNotSaved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getRequiredPermissions().toString())));
+                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
             logger.log(Level.SEVERE, "Error saving role: " + throwable.getMessage(), throwable);
@@ -657,7 +657,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR,
                     BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getRequiredPermissions().toString())));
+                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
 
         } else if (throwable instanceof CommandException) {
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", messageDetails);
@@ -670,7 +670,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if(throwable instanceof PermissionException) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getRequiredPermissions().toString())));
+                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
             logger.log(Level.SEVERE, "Error assigning default permissions: " + throwable.getMessage(), throwable);
