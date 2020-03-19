@@ -1,7 +1,14 @@
 var fileList = [];
 var observer2=null;
 var datasetId=null;
+//How many files have started being processed but aren't yet being uploaded
 var filesInProgress=0;
+//The # of the current file being processed (total number of files for which upload has at least started)
+var curFile=0;
+//The number of upload ids that have been assigned in the files table
+var fileUpId=0;
+//How many files are completely done
+var filesFinished=0;
 
 function setupDirectUpload(enabled, theDatasetId) {
   if(enabled) {
@@ -41,19 +48,37 @@ function setupDirectUpload(enabled, theDatasetId) {
 function queueFileForDirectUpload(file, datasetId) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
-  if(filesInProgress <5 ) {
+  //Fire off the first 4 to start (0,1,2,3)
+  if(filesInProgress < 4 ) {
     filesInProgress= filesInProgress+1;
     requestDirectUploadUrl();
-    
   }
 }
 
 function uploadFileDirectly(url, storageId) {
-  //Pick a pending file
-  var file = fileList.pop();
+  //Pick the 'first-in' pending file 
+  var file = fileList.shift();
+  //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
+  var filerows =  $('.ui-fileupload-files .ui-fileupload-row');
+  //Add an id attribute to each entry so we can later match progress and errors with the right entry
+  for(i=0;i< filerows.length;i++) {
+    var upid=filerows[i].getAttribute('upid');
+    if(typeof upid === "undefined" || upid === null || upid === '') {
+      filerows[i].setAttribute('upid', fileUpId);
+      fileUpId = fileUpId+1;
+    }
+  }
+  //Get the list of files to upload
+  var files =  $('.ui-fileupload-files');
+  //Find the corresponding row (assumes that the file order and the order of rows is the same)
+  var fileNode = files.find("[upid='"+curFile+"']");
+  //Increment count of files being processed
+  curFile=curFile+1;
+  //Decrement number queued for processing
   filesInProgress=filesInProgress-1;
-  $('.ui-fileupload-progress').html('');
-  $('.ui-fileupload-progress').append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
+  var progBar = fileNode.find('.ui-fileupload-progress');
+  progBar.html('');
+  progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
   $.ajax({
     url: url,
     headers: {"x-amz-tagging":"dv-state=temp"},
@@ -62,7 +87,7 @@ function uploadFileDirectly(url, storageId) {
     cache: false,
     processData: false,
     success: function () {
-     reportUpload(storageId, file) 
+    reportUpload(storageId, file)
     },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('Failure: ' + jqXHR.status);
@@ -74,7 +99,7 @@ function uploadFileDirectly(url, storageId) {
         myXhr.upload.addEventListener('progress', function(e) {
           if(e.lengthComputable) {
             var doublelength = 2 * e.total;
-            $('progress').attr({
+            progBar.children('progress').attr({
               value:e.loaded,
               max:doublelength
             });
@@ -87,11 +112,11 @@ function uploadFileDirectly(url, storageId) {
 }
 
 function reportUpload(storageId, file){
-  
+
   getMD5(
     file,
     prog => {console.log("Progress: " + prog);
-    
+
     var current = 1 + prog;
     $('progress').attr({
               value:current,
@@ -119,36 +144,36 @@ function removeErrors() {
 var observer=null;
 
 function uploadStarted() {
-  	// If this is not the first upload, remove error messages since 
-  	// the upload of any files that failed will be tried again.
-  	removeErrors();
-  	var curId=0;
-  	//Find the upload table body
-  	var files =  $('.ui-fileupload-files .ui-fileupload-row');
-  	//Add an id attribute to each entry so we can later match errors with the right entry
-  	for(i=0;i< files.length;i++) {
-    	files[i].setAttribute('upid', curId);
-    	curId = curId+1;
-  	}
-  	//Setup an observer to watch for additional rows being added
-  	var config={childList: true};
-  	var callback = function(mutations) {
-		//Add an id attribute to all new entries  
-    	mutations.forEach(function(mutation) {
-    	for(i=0; i<mutation.addedNodes.length;i++) {
-      		mutation.addedNodes[i].setAttribute('upid',curId);
-      		curId=curId+1;
-    	}
-    	//Remove existing error messages since adding a new entry appears to cause a retry on previous entries
-    	removeErrors();
-  		});
-	};
-	//uploadStarted appears to be called only once, but, if not, we should stop any current observer
-	if(observer !=null) {
-  	  observer.disconnect();
-	}
-	observer = new MutationObserver(callback);
-	observer.observe(files[0].parentElement,config);
+  // If this is not the first upload, remove error messages since
+  // the upload of any files that failed will be tried again.
+  removeErrors();
+  var curId=0;
+  //Find the upload table body
+  var files =  $('.ui-fileupload-files .ui-fileupload-row');
+  //Add an id attribute to each entry so we can later match errors with the right entry
+  for(i=0;i< files.length;i++) {
+    files[i].setAttribute('upid', curId);
+    curId = curId+1;
+  }
+  //Setup an observer to watch for additional rows being added
+  var config={childList: true};
+  var callback = function(mutations) {
+    //Add an id attribute to all new entries
+    mutations.forEach(function(mutation) {
+      for(i=0; i<mutation.addedNodes.length;i++) {
+        mutation.addedNodes[i].setAttribute('upid',curId);
+        curId=curId+1;
+      }
+      //Remove existing error messages since adding a new entry appears to cause a retry on previous entries
+      removeErrors();
+    });
+  };
+  //uploadStarted appears to be called only once, but, if not, we should stop any current observer
+  if(observer !=null) {
+    observer.disconnect();
+  }
+  observer = new MutationObserver(callback);
+  observer.observe(files[0].parentElement,config);
 }
 
 function uploadFinished(fileupload) {
@@ -159,23 +184,26 @@ function uploadFinished(fileupload) {
           observer.disconnect();
           observer=null;
         }
-    } 
+    }
 }
 
 function directUploadFinished() {
+    filesFinished = filesFinished+1;
     if (fileList.length === 0) {
+      if(curFile === filesFinished) {
         $('button[id$="AllUploadsFinished"]').trigger('click');
         //stop observer when we're done
         if(observer !=null) {
           observer.disconnect();
           observer=null;
         }
+      }
     }  else {
-      if(filesInProgress <5 ) {
+      if((filesInProgress < 4) && (filesInProgress < fileList.length)) {
         filesInProgress= filesInProgress+1;
         requestDirectUploadUrl();
       }
-    } 
+    }
 }
 
 function uploadFailure(fileUpload) {
