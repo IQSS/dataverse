@@ -330,25 +330,21 @@ public class ExternalTool implements Serializable {
         }
     }
 
-  /*  public String getDescriptionLang() {
-        if (this != null) {
-            if (this.getDisplayName().equals(BundleUtil.getStringFromDefaultBundleEng("externaltools.dct.displayname"))) {
-                return (BundleUtil.getStringFromBundle("externaltools.dct.description"));
-            } else {
-                return this.getDescription();
-            }
-        } else return "";
+    public String getDescriptionLang() {
+        if (this.getDisplayName().equals(BundleUtil.getStringFromDefaultBundleEng("externaltools.dct.displayname"))) {
+            return (BundleUtil.getStringFromBundle("externaltools.dct.description"));
+        } else {
+            return this.getDescription();
+        }
     }
 
     public String getDisplayNameLang() {
-        if (this != null) {
-            if (this.getDisplayName().equals(BundleUtil.getStringFromDefaultBundleEng("externaltools.dct.displayname"))) {
-                return (BundleUtil.getStringFromBundle("externaltools.dct.displayname"));
-            } else {
-                return this.getDisplayName();
-            }
-        } else return "";
-    }*/
+        if (this.getDisplayName().equals(BundleUtil.getStringFromDefaultBundleEng("externaltools.dct.displayname"))) {
+            return (BundleUtil.getStringFromBundle("externaltools.dct.displayname"));
+        } else {
+            return this.getDisplayName();
+        }
+    }
 
 
 }
