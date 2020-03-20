@@ -69,6 +69,7 @@ function queueFileForDirectUpload(file, datasetId) {
 function uploadFileDirectly(url, storageId) {
   //Pick the 'first-in' pending file 
   var file = fileList.shift();
+  console.log('Uploading ' + file.name + ' as ' +storageId + ' to ' + url);
   //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
   var filerows =  $('.ui-fileupload-files .ui-fileupload-row');
   //Add an id attribute to each entry so we can later match progress and errors with the right entry
@@ -84,6 +85,7 @@ function uploadFileDirectly(url, storageId) {
   //Find the corresponding row (assumes that the file order and the order of rows is the same)
   var fileNode = files.find("[upid='"+curFile+"']");
   //Increment count of files being processed
+  var thisFile=curFile;
   curFile=curFile+1;
   //Decrement number queued for processing
   filesInProgress=filesInProgress-1;
@@ -101,7 +103,7 @@ function uploadFileDirectly(url, storageId) {
     reportUpload(storageId, file)
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      uploadFailure();
+      uploadFailure(jqXHR, thisFile);
     },
     xhr: function() {
       var myXhr = $.ajaxSettings.xhr();
@@ -122,10 +124,10 @@ function uploadFileDirectly(url, storageId) {
 }
 
 function reportUpload(storageId, file){
-
+  console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
   getMD5(
     file,
-    prog => {console.log("Progress: " + prog);
+    prog => {
 
     var current = 1 + prog;
     $('progress').attr({
@@ -216,7 +218,7 @@ function directUploadFinished() {
     }
 }
 
-function uploadFailure(fileUpload) {
+function uploadFailure(jqXHR, upid, filename) {
 	// This handles HTTP errors (non-20x reponses) such as 0 (no connection at all), 413 (Request too large),
 	// and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
 	// It notifies the user and provides info about the error (status, statusText)
@@ -225,20 +227,34 @@ function uploadFailure(fileUpload) {
 	// from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
 	
 	//Retrieve the error number (status) and related explanation (statusText)
-	var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
-    var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+	var status = null;
+  var statusText =null;
+  
+  // There are various metadata available about which file the error pertains to
+  // including the name and size. 
+  // However, since the table rows created by PrimeFaces only show name and approximate size, 
+  // these may not uniquely identify the affected file. Therefore, we set a unique upid attribute
+  // in uploadStarted (and the MutationObserver there) and look for that here. The files array has
+  // only one element and that element includes a description of the row involved, including it's upid.
+
+  var name = null;
+  var id=null;
+
+  if(!(typeof jqXHR !=='undefined')) {
+    status = jqXHR.status;
+    statusText=jqXHR.statusText;
+    id = upid;
+    name=filename;
+  } else {
+    status=arguments.callee.caller.caller.arguments[1].jqXHR.status;
+    statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+    name = arguments.callee.caller.caller.arguments[1].files[0].name;
+    id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
+  }
+   
     //statusText for error 0 is the unhelpful 'error'
     if(status == 0) statusText='Network Error';
     
-    // There are various metadata available about which file the error pertains to
-    // including the name and size. 
-    // However, since the table rows created by PrimeFaces only show name and approximate size, 
-    // these may not uniquely identify the affected file. Therefore, we set a unique upid attribute
-    // in uploadStarted (and the MutationObserver there) and look for that here. The files array has
-    // only one element and that element includes a description of the row involved, including it's upid.
-    
-    var name = arguments.callee.caller.caller.arguments[1].files[0].name;
-	var id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
 	//Log the error 
 	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
     //Find the table
