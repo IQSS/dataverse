@@ -6,9 +6,16 @@ var filesInProgress=0;
 //The # of the current file being processed (total number of files for which upload has at least started)
 var curFile=0;
 //The number of upload ids that have been assigned in the files table
-var fileUpId=0;
+var getUpId = (function () {
+  var counter = -1;
+  return function () {counter += 1; return counter}
+})();
 //How many files are completely done
-var filesFinished=0;
+var finishFile = (function () {
+  var counter = 0;
+  return function () {counter += 1; return counter}
+})();
+
 
 function setupDirectUpload(enabled, theDatasetId) {
   if(enabled) {
@@ -23,10 +30,10 @@ function setupDirectUpload(enabled, theDatasetId) {
           queueFileForDirectUpload(fileInput.files[i], datasetId);
         }
       }, {once:false});
-    //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed  
+    //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed
     var fileDropWidget=document.getElementById('datasetForm:fileUpload');
     fileDropWidget.addEventListener('drop', function(event) {
-	        fileList=[];
+        fileList=[];
         for(var i=0;i<event.dataTransfer.files.length;i++) {
           queueFileForDirectUpload(event.dataTransfer.files[i], datasetId);
         }
@@ -67,8 +74,11 @@ function queueFileForDirectUpload(file, datasetId) {
 }
 
 function uploadFileDirectly(url, storageId) {
-  //Pick the 'first-in' pending file 
+  var thisFile=curFile;
+  //Pick the 'first-in' pending file
   var file = fileList.shift();
+  //Increment count of files being processed
+  curFile=curFile+1;
   console.log('Uploading ' + file.name + ' as ' +storageId + ' to ' + url);
   //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
   var filerows =  $('.ui-fileupload-files .ui-fileupload-row');
@@ -76,17 +86,14 @@ function uploadFileDirectly(url, storageId) {
   for(i=0;i< filerows.length;i++) {
     var upid=filerows[i].getAttribute('upid');
     if(typeof upid === "undefined" || upid === null || upid === '') {
-      filerows[i].setAttribute('upid', fileUpId);
-      fileUpId = fileUpId+1;
+      var newUpId= getUpId();
+      filerows[i].setAttribute('upid', newUpId);
     }
   }
   //Get the list of files to upload
   var files =  $('.ui-fileupload-files');
   //Find the corresponding row (assumes that the file order and the order of rows is the same)
-  var fileNode = files.find("[upid='"+curFile+"']");
-  //Increment count of files being processed
-  var thisFile=curFile;
-  curFile=curFile+1;
+  var fileNode = files.find("[upid='"+thisFile+"']");
   //Decrement number queued for processing
   filesInProgress=filesInProgress-1;
   var progBar = fileNode.find('.ui-fileupload-progress');
@@ -103,6 +110,9 @@ function uploadFileDirectly(url, storageId) {
     reportUpload(storageId, file)
     },
     error: function(jqXHR, textStatus, errorThrown) {
+
+      console.log('Failure: ' + jqXHR.status);
+      console.log('Failure: ' + errorThrown);
       uploadFailure(jqXHR, thisFile);
     },
     xhr: function() {
@@ -200,9 +210,13 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
-    filesFinished = filesFinished+1;
-    if (fileList.length === 0) {
-      if(curFile === filesFinished) {
+    var numDone = finishFile();
+    var total = curFile;
+    var inProgress = filesInProgress;
+    var inList = fileList.length;
+    console.log(inList + ' : ' + numDone + ' : ' + total + ' : ' + inProgress);
+    if (inList === 0) {
+      if(total === numDone) {
         $('button[id$="AllUploadsFinished"]').trigger('click');
         //stop observer when we're done
         if(observer !=null) {
@@ -211,7 +225,7 @@ function directUploadFinished() {
         }
       }
     }  else {
-      if((filesInProgress < 4) && (filesInProgress < fileList.length)) {
+      if((inProgress < 4) && (inProgress < inList)) {
         filesInProgress= filesInProgress+1;
         requestDirectUploadUrl();
       }
@@ -219,20 +233,20 @@ function directUploadFinished() {
 }
 
 function uploadFailure(jqXHR, upid, filename) {
-	// This handles HTTP errors (non-20x reponses) such as 0 (no connection at all), 413 (Request too large),
-	// and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
-	// It notifies the user and provides info about the error (status, statusText)
-	// On some browsers, the status is available in an event: window.event.srcElement.status
-	// but others, (Firefox) don't support this. The calls below retrieve the status and other info 
-	// from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
-	
-	//Retrieve the error number (status) and related explanation (statusText)
-	var status = null;
+  // This handles HTTP errors (non-20x reponses) such as 0 (no connection at all), 413 (Request too large),
+  // and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
+  // It notifies the user and provides info about the error (status, statusText)
+  // On some browsers, the status is available in an event: window.event.srcElement.status
+  // but others, (Firefox) don't support this. The calls below retrieve the status and other info
+  // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
+
+  //Retrieve the error number (status) and related explanation (statusText)
+  var status = null;
   var statusText =null;
-  
+
   // There are various metadata available about which file the error pertains to
-  // including the name and size. 
-  // However, since the table rows created by PrimeFaces only show name and approximate size, 
+  // including the name and size.
+  // However, since the table rows created by PrimeFaces only show name and approximate size,
   // these may not uniquely identify the affected file. Therefore, we set a unique upid attribute
   // in uploadStarted (and the MutationObserver there) and look for that here. The files array has
   // only one element and that element includes a description of the row involved, including it's upid.
@@ -240,7 +254,7 @@ function uploadFailure(jqXHR, upid, filename) {
   var name = null;
   var id=null;
 
-  if(!(typeof jqXHR !=='undefined')) {
+  if((typeof jqXHR !=='undefined')) {
     status = jqXHR.status;
     statusText=jqXHR.statusText;
     id = upid;
@@ -251,12 +265,12 @@ function uploadFailure(jqXHR, upid, filename) {
     name = arguments.callee.caller.caller.arguments[1].files[0].name;
     id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
   }
-   
+
     //statusText for error 0 is the unhelpful 'error'
     if(status == 0) statusText='Network Error';
-    
-	//Log the error 
-	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
+
+    //Log the error
+    console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
     //Find the table
     var rows  =  $('.ui-fileupload-files .ui-fileupload-row');
     //Create an error element
@@ -269,25 +283,24 @@ function uploadFailure(jqXHR, upid, filename) {
     node.appendChild(textnode);
     //Add the error message to the correct row
     for(i=0;i<rows.length;i++) {
-       	if(rows[i].getAttribute('upid') == id) {
-       		//Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
-       		var err = rows[i].getElementsByClassName('ui-fileupload-error');
-       		if(err.length != 0) {
-       			err[0].remove();
-       		}
-         	rows[i].appendChild(node);
-         	break;
-       	}
+        if(rows[i].getAttribute('upid') == id) {
+                //Remove any existing error message/only show last error (have seen two error 0 from one network disconnect)
+                var err = rows[i].getElementsByClassName('ui-fileupload-error');
+                if(err.length != 0) {
+                        err[0].remove();
+                }
+                rows[i].appendChild(node);
+                break;
+        }
     }
 }
-
 //MD5 Hashing functions
 
 function readChunked(file, chunkCallback, endCallback) {
   var fileSize   = file.size;
   var chunkSize  = 64 * 1024 * 1024; // 64MB
   var offset     = 0;
-  
+
   var reader = new FileReader();
   reader.onload = function() {
     if (reader.error) {
@@ -297,7 +310,7 @@ function readChunked(file, chunkCallback, endCallback) {
     offset += reader.result.length;
     // callback for handling read chunk
     // TODO: handle errors
-    chunkCallback(reader.result, offset, fileSize); 
+    chunkCallback(reader.result, offset, fileSize);
     if (offset >= fileSize) {
       endCallback(null);
       return;
@@ -336,5 +349,3 @@ function getMD5(blob, cbProgress) {
     });
   });
 }
-
-
