@@ -310,8 +310,7 @@ public class IngestServiceBean {
 								+ ioex.getMessage() + ")");
 					}
 					savedSuccess = true;
-					logger.info("unattached: " + unattached);
-						dataFile.setOwner(null);
+					dataFile.setOwner(null);
 				}
 
 				logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
