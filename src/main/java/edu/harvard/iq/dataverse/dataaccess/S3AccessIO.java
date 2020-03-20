@@ -217,16 +217,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         	// With small files, it looks like we may call before S3 says it exists, so try some retries before failing
         	if(key!=null) {
         		 ObjectMetadata objectMetadata = null; 
-        		 int retries = 3;
+        		 int retries = 20;
         		 while(retries > 0) {
         			 try {
         				 objectMetadata = s3.getObjectMetadata(bucketName, key);
+        				 logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
         				 retries = 0;
         			 } catch (SdkClientException sce) {
         				 if(retries > 1) {
         					 retries--;
         					 try {
-        						 Thread.sleep(1000);
+        						 Thread.sleep(3000);
         					 } catch (InterruptedException e) {
         						 e.printStackTrace();
         					 }
