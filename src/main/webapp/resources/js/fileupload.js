@@ -24,10 +24,12 @@ function setupDirectUpload(enabled, theDatasetId) {
         }
       }, {once:false});
     //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed  
-    var fileDropWidget=document.getElementById('datasetForm:fileUpload');                                                                                                                                 fileDropWidget.addEventListener('drop', function(event) {                                                                                                                                         console.log('Drop!');
-    fileDropWidget.addEventListener('drop', function(event) {                                                                                                                                         console.log('Drop!');
-        fileList=[];
-        for(var i=0;i<event.dataTransfer.files.length;i++) {                                                                                                                                                    queueFileForDirectUpload(event.dataTransfer.files[i], datasetId);                                                                                                                                   }
+    var fileDropWidget=document.getElementById('datasetForm:fileUpload');
+    fileDropWidget.addEventListener('drop', function(event) {
+	        fileList=[];
+        for(var i=0;i<event.dataTransfer.files.length;i++) {
+          queueFileForDirectUpload(event.dataTransfer.files[i], datasetId);
+        }
       }, {once:false});
 
     var config={childList: true};
@@ -99,8 +101,7 @@ function uploadFileDirectly(url, storageId) {
     reportUpload(storageId, file)
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      console.log('Failure: ' + jqXHR.status);
-      console.log('Failure: ' + errorThrown);
+      uploadFailure();
     },
     xhr: function() {
       var myXhr = $.ajaxSettings.xhr();
