@@ -153,6 +153,18 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
            return (ControlledVocabAlternate) results.get(0);
         }
     }
+
+    public ControlledVocabularyValueDetail findControlledVocabularyValueDetailByControlledVocabularyValueAndStrValue(ControlledVocabularyValue cvv, String strValue){
+        TypedQuery<ControlledVocabularyValueDetail> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValueDetail AS o WHERE o.strValue = :strvalue AND o.controlledVocabularyValue = :cvv", ControlledVocabularyValueDetail.class);
+        typedQuery.setParameter("strvalue", strValue);
+        typedQuery.setParameter("cvv", cvv);
+        try {
+            ControlledVocabularyValueDetail cvvd = typedQuery.getSingleResult();
+            return cvvd;
+        } catch (NoResultException e){
+            return null;
+        }
+    }
     
     /**
      * @param dsft The DatasetFieldType in which to look up a

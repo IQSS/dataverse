@@ -14,7 +14,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -133,11 +134,41 @@ public class DatasetFieldCompoundValue implements Serializable {
         return compoundValue;
     }
 
+    final private static String REGEX_FIELD_NAME = "(##[a-z]+\\w*)";
+    static private Map<String, String> referencesMap = new LinkedHashMap<>();
+
+
     public Map<DatasetField,String> getDisplayValueMap() {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
         boolean fixTrailingComma = false;
+
+        Pattern pattern = Pattern.compile(REGEX_FIELD_NAME);
+        String fieldName = new String();
+        String fieldValue = new String();
+
+        for (DatasetField childDatasetField : childDatasetFields){
+            Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
+            while (matcher.find()){
+                referencesMap.put(matcher.group(0), null);
+            }
+        }
+
+        for (DatasetField childDatasetField : childDatasetFields) {
+            if (referencesMap.containsKey("##"+childDatasetField.getDatasetFieldType().getName())){
+                if (childDatasetField.getSingleControlledVocabularyValue() != null){
+                    if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getDisplayFormat().isEmpty()){
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getStrValue());
+                    } else {
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getStrValue());
+                    }
+                } else {
+                    referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
+                }
+            }
+        }
+
         for (DatasetField childDatasetField : childDatasetFields) {
             fixTrailingComma = false;
             // skip the value if it is empty or N/A
@@ -152,27 +183,37 @@ public class DatasetFieldCompoundValue implements Serializable {
                 }
                 //if a series of child values is comma delimited we want to strip off the final entry's comma
                 if (format.equals("#VALUE, ")) fixTrailingComma = true;
-                
+
+                Matcher matcher = pattern.matcher(childDatasetField.getDatasetFieldType().getDisplayFormat());
+                while (matcher.find()) {
+                    if (referencesMap.containsKey(matcher.group(0)) && referencesMap.get(matcher.group(0)) != null) {
+                        fieldName = matcher.group(0);
+                        fieldValue = referencesMap.get(fieldName);
+                    }
+                }
+
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
-
                 String displayValue = format
+                        .replaceAll(fieldName+"\\b", fieldValue)
                         .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())
                         //todo: this should be handled in more generic way for any other text that can then be internationalized
                         // if we need to use replaceAll for regexp, then make sure to use: java.util.regex.Matcher.quoteReplacement(<target string>)
                         .replace("#EMAIL", BundleUtil.getStringFromBundle("dataset.email.hiddenMessage"))
                         .replace("#VALUE",  sanitizedValue );
+
                 fieldMap.put(childDatasetField,displayValue);
+
             }
         }
-        
+
         if (fixTrailingComma) {
             return (removeLastComma(fieldMap));
         }
 
         return fieldMap;
     }
-    
+
     private Map<DatasetField, String> removeLastComma(Map<DatasetField, String> mapIn) {
 
         Iterator<Map.Entry<DatasetField, String>> itr = mapIn.entrySet().iterator();

@@ -16,15 +16,15 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.MissingResourceException;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Column;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
@@ -109,6 +109,17 @@ public class ControlledVocabularyValue implements Serializable  {
 
     public void setControlledVocabAlternates(Collection<ControlledVocabAlternate> controlledVocabAlternates) {
         this.controlledVocabAlternates = controlledVocabAlternates;
+    }
+
+    @OneToOne(mappedBy = "controlledVocabularyValue",cascade={ CascadeType.REMOVE, CascadeType.MERGE,CascadeType.PERSIST}, orphanRemoval=true)
+    private ControlledVocabularyValueDetail controlledVocabularyValueDetail;
+
+    public ControlledVocabularyValueDetail getControlledVocabularyValueDetail() {
+        return controlledVocabularyValueDetail;
+    }
+
+    public void setControlledVocabularyValueDetail(ControlledVocabularyValueDetail controlledVocabularyValueDetail) {
+        this.controlledVocabularyValueDetail = controlledVocabularyValueDetail;
     }
 
     public String getLocaleStrValue()
