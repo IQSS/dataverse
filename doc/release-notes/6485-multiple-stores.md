@@ -29,8 +29,4 @@ Any additional S3 options you have set will need to be replaced as well, followi
 
 Once these options are set, restarting the glassfish service is all that is needed to complete the change.  
 
-<<<<<<< HEAD
 Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
-=======
-Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
->>>>>>> branch 'IQSS/6485' of https://github.com/TexasDigitalLibrary/dataverse.git
