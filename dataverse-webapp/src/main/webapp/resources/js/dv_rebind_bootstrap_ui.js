@@ -39,9 +39,12 @@ function bind_bsui_components(){
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
+        var dialog_titlebar_el = document.getElementById(this.id).querySelector(".ui-dialog-title");
         handleResizeDialog(dialog_id);
 
         $(window).on("resize", null, {dialog_id: dialog_id}, fixBodyWidth);
+        dialog_titlebar_el.setAttribute("tabIndex", "0");
+        dialog_titlebar_el.focus();
     }
     PrimeFaces.widget.Dialog.prototype.onHide = function() {
         fixBodyWidth(false);
