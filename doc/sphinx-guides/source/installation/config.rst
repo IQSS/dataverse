@@ -192,89 +192,10 @@ Enabling a second authentication provider will result in the Log In page showing
 - ``:AllowSignUp`` is set to "false" per the :doc:`config` section to prevent users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint or scramble (or remove) the ``BuiltinUsers.KEY`` database setting per the :doc:`config` section. 
 - The "builtin" authentication provider has been disabled. Note that disabling the builting auth provider means that the API endpoint for converting an account from a remote auth provider will not work. This is the main reason why https://github.com/IQSS/dataverse/issues/2974 is still open. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to builtin. Then the user initiates a conversion from builtin to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
-File Storage: Local Filesystem vs. Swift vs. S3
+File Storage: Local Filesystem vs. S3
 -----------------------------------------------
 
 By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
-
-Swift Storage
-+++++++++++++
-
-Rather than storing data files on the filesystem, you can opt for an experimental setup with a `Swift Object Storage <http://swift.openstack.org>`_ backend. Each dataset that users create gets a corresponding "container" on the Swift side, and each data file is saved as a file within that container.
-
-**In order to configure a Swift installation,** there are two steps you need to complete:
-
-First, create a file named ``swift.properties`` as follows in the ``config`` directory for your installation of Glassfish (by default, this would be ``/usr/local/glassfish4/glassfish/domains/domain1/config/swift.properties``):
-
-.. code-block:: none
-
-    swift.default.endpoint=endpoint1
-    swift.auth_type.endpoint1=your-authentication-type
-    swift.auth_url.endpoint1=your-auth-url
-    swift.tenant.endpoint1=your-tenant-name
-    swift.username.endpoint1=your-username
-    swift.password.endpoint1=your-password
-    swift.swift_endpoint.endpoint1=your-swift-endpoint
-
-``auth_type`` can either be ``keystone``, ``keystone_v3``, or it will assumed to be ``basic``. ``auth_url`` should be your keystone authentication URL which includes the tokens (e.g. for keystone, ``https://openstack.example.edu:35357/v2.0/tokens`` and for keystone_v3, ``https://openstack.example.edu:35357/v3/auth/tokens``). ``swift_endpoint`` is a URL that look something like ``http://rdgw.swift.example.org/swift/v1``.
-
-Second, update the JVM option ``dataverse.files.storage-driver-id`` by running the delete command:
-
-``./asadmin $ASADMIN_OPTS delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
-
-Then run the create command:
-
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.storage-driver-id=swift"``
-
-You also have the option to set a **custom container name separator.** It is initialized to ``_``, but you can change it by running the create command:
-
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.swift-folder-path-separator=-"``
-
-By default, your Swift installation will be public-only, meaning users will be unable to put access restrictions on their data. If you are comfortable with this level of privacy, the final step in your setup is to set the  :ref:`:PublicInstall` setting to `true`.
-
-In order to **enable file access restrictions**, you must enable Swift to use temporary URLs for file access. To enable usage of temporary URLs, set a hash key both on your swift endpoint and in your swift.properties file. You can do so by adding 
-
-.. code-block:: none
-
-    swift.hash_key.endpoint1=your-hash-key
-
-to your swift.properties file.
-
-You also have the option to set a custom expiration length for a generated temporary URL. It is initialized to 60 seconds, but you can change it by running the create command:
-
-``./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.temp_url_expire=3600"``
-
-In this example, you would be setting the expiration length for one hour.
-
-
-Setting up Compute
-+++++++++++++++++++
-
-Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
-
-Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your cloud environment, validated users will have three options for accessing the computing environment:
-
-- Compute on a single dataset
-- Compute on multiple datasets
-- Compute on a single datafile
-
-The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute button will redirect to:
-
-``:ComputeBaseUrl?datasetPersistentId``
-
-If a user is computing on multiple datasets, the compute button will redirect to:
-
-``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
-
-If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to: 
-
-``:ComputeBaseUrl?datasetPersistentId=yourObject``
-
-if your installation's :ref:`:PublicInstall` setting is true, or:
-
-``:ComputeBaseUrl?datasetPersistentId=yourObject&temp_url_sig=yourTempUrlSig&temp_url_expires=yourTempUrlExpiry``
-
-You can configure this redirect properly in your cloud environment to generate a temporary URL for access to the Swift objects for computing.
 
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
@@ -1090,7 +1011,7 @@ If you don't want to register file-based PIDs for your installation, set:
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
 :IndependentHandleService
-+++++++++++++++++++++++++++
++++++++++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry). 
 By default this setting is absent and Dataverse assumes it to be false.
@@ -1476,24 +1397,6 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
-
-.. _:ComputeBaseUrl:
-
-:ComputeBaseUrl
-+++++++++++++++
-
-Set the base URL for the "Compute" button for a dataset.
-
-``curl -X PUT -d 'https://giji.massopencloud.org/application/dataverse' http://localhost:8080/api/admin/settings/:ComputeBaseUrl``
-
-.. _:CloudEnvironmentName:
-
-:CloudEnvironmentName
-+++++++++++++++++++++
-
-Set the name of the cloud environment you've integrated with your Dataverse installation.
-
-``curl -X PUT -d 'Massachusetts Open Cloud (MOC)' http://localhost:8080/api/admin/settings/:CloudEnvironmentName``
 
 .. _:PublicInstall:
 

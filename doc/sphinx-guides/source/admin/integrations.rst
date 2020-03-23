@@ -65,11 +65,6 @@ WorldMap helps researchers visualize and explore geospatial data by creating map
 
 For installation instructions, see :doc:`geoconnect-worldmap`.
 
-Compute Button
-++++++++++++++
-
-The "Compute" button is still highly experimental and has special requirements such as use of a Swift object store, but it is documented under "Setting up Compute" in the :doc:`/installation/config` section of the Installation Guide.
-
 Whole Tale
 ++++++++++
 
