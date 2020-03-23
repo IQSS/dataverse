@@ -1488,11 +1488,45 @@ $navbar-height: 6.8em;
 		}
 	}
 }
+.widget-view {
+	&#footer {
+		position: static;
+	}
+	#footer-logos {
+		display: none;
+	}
+}
 
 @media screen and (max-width: $screen-xs-max) {
-	#footer div[class^="col-"] {
-		text-align: center;
+	#footer {
+		&.widget-view .poweredbylogo {
+			text-align: inherit;
+		}
+		
+		div[class^="col-"] {
+			text-align: center;
+		}
 	}
+}
+
+/* Sticky footer fix */
+html, body {
+	height: 100%;
+
+	&, #body-wrapper {
+		min-height: 100%;
+	}
+}
+#body-wrapper {
+	display: flex;
+	flex-direction: column;
+}
+#content {
+	flex: 1 0 auto;
+	max-width: 100%;
+}
+#navbarFixed, #footer {
+	flex-shrink: 0;
 }
 
 
