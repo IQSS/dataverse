@@ -16,11 +16,13 @@ To support large data uploads, installations can now configure direct upload to 
 
 General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a>.
 
-### API Test Coverage
+### Integration Test Coverage Reporting
+
+The percentage of code covered by the API-based integration tests is now shown on a badge at the bottom of the README.md file that serves as the homepage of Dataverse Github Repository.
 
 ### New APIs
 
-New APIs for Role Management and Dataset Size have been added. Previously, managing roles at the dataset and file level was only possible through UI. API users can now also retrieve the size of a dataset through an API call, with specific parameters depending on the type of information needed. 
+New APIs for Role Management and Dataset Size have been added. Previously, managing roles at the dataset and file level was only possible through the UI. API users can now also retrieve the size of a dataset through an API call, with specific parameters depending on the type of information needed. 
 
 More information can be found in the <a href="http://guides.dataverse.org/en/latest/api">API Guide</a>.
 
