@@ -221,7 +221,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         		 while(retries > 0) {
         			 try {
         				 objectMetadata = s3.getObjectMetadata(bucketName, key);
-        				 logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
+        				 if(retries != 20) {
+        				   logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
+        				 }
         				 retries = 0;
         			 } catch (SdkClientException sce) {
         				 if(retries > 1) {
