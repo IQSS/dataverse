@@ -2818,7 +2818,7 @@ Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
     
-Note: If the user has performed certain actions such as creating or contributing to a Dataset they cannot be deleted.
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted.
     
     
 
