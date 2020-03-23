@@ -10,9 +10,13 @@ Dataverse can now be configured to store files in more than one place at the sam
 
 General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
 
-### Direct Upload to S3
+### S3 Direct Upload support
 
-To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads (10+ GB) over a more resilient transfer method. 
+S3 stores can now optionally be configured to support direct upload of files, as one option for supporting upload of larger files. This will allow for uploads of up to five GB for installations using AWS and more than five GB for installations using Minio or another S3 driver.
+
+General information about this capability can be found in the <a href="http://guides.dataverse.org/en/latest/developers/big-data-support.html">Big Data Support Guide</a> with specific information about how to enable it in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
+
+To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads  over a more resilient transfer method. 
 
 General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a>.
 
@@ -76,6 +80,18 @@ Once these options are set, restarting the Glassfish service is all that is need
 
 Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
 
+### Direct S3 Upload Changes
+
+Direct upload to S3 is enabled per store by one new jvm option:
+
+    ./asadmin create-jvm-options "\-Ddataverse.files.<id>.upload-redirect=true"
+    
+The existing :MaxFileUploadSizeInBytes property and ```dataverse.files.<id>.url-expiration-minutes``` jvm option for the same store also apply to direct upload.
+
+Direct upload via the Dataverse web interface is transparent to the user and handled automatically by the browser. Some minor differences in file upload exist: directly uploaded files are not unzipped and Dataverse does not scan their content to help in assigning a MIME type. Ingest of tabular files and metadata extraction from FITS files will occur, but can be turned off for files above a specified size limit through the new dataverse.files.<id>.ingestsizelimit jvm option.
+
+API calls to support direct upload also exist, and, if direct upload is enabled for a store in Dataverse, the latest DVUploader (v1.0.8) provides a'-directupload' flag that enables its use.
+
 ### Solr Update
 
 With this release we upgrade to the latest available stable release in the Solr 7.x branch. We recommend a fresh installation of Solr 7.7.2 (the index will be empty)
@@ -96,6 +112,11 @@ The button tracking capability discussed in the installation guide (http://guide
 ### Run ReExportall
 
 We made changes to the JSON Export in this release (#xxx). If you'd like these changes to reflected in your JSON exports, you should run ReExportall as part of the upgrade process. We've included this in the step-by-step instructions below.
+
+### New Database Settings and JVM options
+
+- The database setting :ShibAffiliationAttribute can now be set to prevent affiliations for Shibboleth users from being reset upon each log in.
+- 
 
 ## Notes for Tool Developers and Integrators
 
