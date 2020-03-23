@@ -434,6 +434,28 @@ Delete a Private URL from a dataset (if it exists)::
 
     DELETE http://$SERVER/api/datasets/$id/privateUrl?key=$apiKey
 
+Set Embargo date for a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set Embargo date for a Dataset (must be able to edit dataset)::
+
+    PUT http://$SERVER/api/datasets/{database_id}/setEmbargo?date=$date&key=$apiKey
+
+For example::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/setEmbargo?persistentId=$PID&date=$DATE"
+
+Lift Embargo date from a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lift Embargo date from a Dataset (must be able to edit dataset)::
+
+    PUT http://$SERVER/api/datasets/{database_id}/liftEmbargo?key=$apiKey
+
+For example::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/liftEmbargo?persistentId=$PID"
+
 Add a File to a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
