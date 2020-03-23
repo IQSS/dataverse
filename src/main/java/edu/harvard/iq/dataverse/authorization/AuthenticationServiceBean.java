@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
@@ -35,6 +36,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -47,6 +49,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -539,60 +542,65 @@ public class AuthenticationServiceBean {
     -has created dvObjects
     -has roles
     -has guestbook records
-    -etc.
+
     An empty string is returned if the user is 'deletable'
     */
     
     public String getDeleteUserErrorMessages(AuthenticatedUser au) {
         String retVal = "";
+        List<String> reasons= new ArrayList();
         if (!dvObjSvc.findByAuthenticatedUserId(au).isEmpty()) {
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects");
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.dvobjects"));
         }
 
         if (!roleAssigneeSvc.getAssignmentsFor(au.getIdentifier()).isEmpty()) {
-            if (!retVal.isEmpty()) {
-                retVal += "; ";
-            }
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments");
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.roleAssignments"));
         }
 
         if (!gbRespSvc.findByAuthenticatedUserId(au).isEmpty()) {
-            if (!retVal.isEmpty()) {
-                retVal += "; ";
-            }
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps");
+            reasons.add( BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.gbResps"));
         }
 
         if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
-            if (!retVal.isEmpty()) {
-                retVal += "; ";
-            }
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser");
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser"));
         }
+        
+        if (!reasons.isEmpty()) {
+            retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier()));
+            retVal += " " + reasons.stream().collect(Collectors.joining("; ")) + ".";
+        }
+        
 
-        if (!explicitGroupService.findGroups(au).isEmpty()) {
-            if (!retVal.isEmpty()) {
-                retVal += "; ";
-            }
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.groupMember");
-        }
-
-        if (userHasPendingAccessRequests(au)) {
-            if (!retVal.isEmpty()) {
-                retVal += "; ";
-            }
-            retVal += BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.pendingRequests");
-        }
-        if (!retVal.isEmpty()) {
-            retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier())) + " " + retVal + ".";
-        }
 
         return retVal;
     }
     
-    private boolean userHasPendingAccessRequests(AuthenticatedUser  au){
+    public void removeAuthentictedUserItems(AuthenticatedUser au){
+        /* if the user has pending access requests, is the member of a group or has a world map token 
+        we will delete them here 
+        */
+
+        deletePendingAccessRequests(au);
         
-        return !em.createNativeQuery("select datafile_id from fileaccessrequests where authenticated_user_id  = "+au.getId()).getResultList().isEmpty();
+        deleteWorldMapToken(au);
+        
+        if (!explicitGroupService.findGroups(au).isEmpty()) {
+            for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
+                explicitGroup.removeByRoleAssgineeIdentifier(au.getIdentifier());
+            }            
+        }
+        
+    }
+    
+    private void deletePendingAccessRequests(AuthenticatedUser  au){
+        
+       em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId());
+        
+    }
+    
+    private void deleteWorldMapToken(AuthenticatedUser  au){
+        
+       em.createNativeQuery("delete from worldmapauth_token where dataverseuser_id  = "+au.getId());
         
     }
     

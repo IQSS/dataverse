@@ -361,7 +361,10 @@ public class Admin extends AbstractApiBean {
         if (!errorMessages.isEmpty()) {
             return badRequest(errorMessages);
         }
-
+        
+        //if the user is deletable we will delete access requests, group membership and world map tokens
+        authSvc.removeAuthentictedUserItems(au);
+        
         authSvc.deleteAuthenticatedUser(au.getId());
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
 
