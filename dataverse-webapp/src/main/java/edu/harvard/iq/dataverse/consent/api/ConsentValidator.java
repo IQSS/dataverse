@@ -33,9 +33,6 @@ public class ConsentValidator {
         validateName(consentApiDto.getName(), consent.getName())
                 .peek(errors::add);
 
-        validateDisplayOrder(consentApiDto.getDisplayOrder(), consent.getDisplayOrder())
-                .peek(errors::add);
-
         errors.addAll(validateEditedConsentDetails(consentApiDto.getConsentDetails(), consent.getConsentDetails()));
 
         validateConsentActions(consentApiDto.getConsentActions())
@@ -64,14 +61,6 @@ public class ConsentValidator {
     private Option<String> validateName(String editedName, String originalName) {
         if (!editedName.equals(originalName)) {
             return Option.of(BundleUtil.getStringFromBundle("consent.validation.notEqualNames"));
-        }
-
-        return Option.none();
-    }
-
-    private Option<String> validateDisplayOrder(int editedDisplayOrder, int originalDisplayOrder) {
-        if (editedDisplayOrder != originalDisplayOrder) {
-            return Option.of(BundleUtil.getStringFromBundle("consent.validation.notEqualDisplayOrder"));
         }
 
         return Option.none();

@@ -45,9 +45,8 @@ class ConsentValidatorTest {
 
         //then
         Assert.assertFalse(errors.isEmpty());
-        Assertions.assertAll(() -> assertEquals(7, errors.size()),
+        Assertions.assertAll(() -> assertEquals(6, errors.size()),
                              () -> assertTrue(containsText("Consent names must be equal", errors)),
-                             () -> assertTrue(containsText("Consent display order must be equal", errors)),
                              () -> assertTrue(containsText("Consent details cannot be edited!", errors)),
                              () -> assertTrue(containsText("New consent detail text cannot be empty", errors)),
                              () -> assertTrue(containsText("Consent contains duplicated language", errors)),
