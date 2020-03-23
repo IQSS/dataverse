@@ -411,7 +411,13 @@ public class SettingsServiceBean {
          * Lifespan, in minutes, of a login user session 
          * (both DataverseSession and the underlying HttpSession)
          */
-        LoginSessionTimeout;
+        LoginSessionTimeout,
+
+        /**
+         * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
+         */
+        ShibAffiliationAttribute
+        ;
 
         @Override
         public String toString() {

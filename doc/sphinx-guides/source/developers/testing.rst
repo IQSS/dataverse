@@ -108,22 +108,33 @@ Unfortunately, the term "integration tests" can mean different things to differe
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the API test suite on EC2 you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
+To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
 
-Then read the instructions in https://github.com/IQSS/dataverse-sample-data for EC2 but be sure to make the adjustments below.
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo<https://github.com/IQSS/dataverse-ansible/>`_:
 
-Edit ``ec2config.yaml`` to change ``test_suite`` to ``true``.
+- `ec2-create-instance.sh<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
+- `main.yml<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_
 
-Pass in the repo and branch you are testing. You should also specify a local directory where server.log and other useful information will be written so you can start debugging any failures.
+Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
+
+- ``dataverse_repo: https://github.com/IQSS/dataverse.git``
+- ``dataverse_branch: develop``
+- ``dataverse.api.test_suite: true``
+- ``dataverse.sampledata.enabled: true``
+
+If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab glassfish, maven and other logs<https://github.com/IQSS/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+
+Finally, run the script:
 
 .. code-block:: bash
 
-  export REPO=https://github.com/IQSS/dataverse.git
-  export BRANCH=123-my-branch
-  export LOGS=/tmp/123
+  $ ./ec2-create-instance.sh -g main.yml -l log_dir
 
-  mkdir $LOGS
-  ./ec2-create-instance.sh -g ec2config.yaml -r $REPO -b $BRANCH -l $LOGS
+Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh<https://github.com/IQSS/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart glassfish. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
+
+.. code-block:: bash
+
+  $ ssh -i your_pem.pem user@ec2-host.aws.com /tmp/dataverse/redeploy.sh
 
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
