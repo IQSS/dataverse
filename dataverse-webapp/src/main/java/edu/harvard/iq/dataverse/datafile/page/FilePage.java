@@ -33,20 +33,20 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
-import javax.faces.view.ViewScoped;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
-import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ValidationException;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -508,7 +508,10 @@ public class FilePage implements java.io.Serializable {
             Optional.empty();
         }
         LicenseIcon licenseIcon = fileMetadata.getTermsOfUse().getLicense().getIcon();
-        return Optional.of(new ByteArrayContent(licenseIcon.getContent(), licenseIcon.getContentType()));
+        return Optional.of(DefaultStreamedContent.builder()
+                           .contentType(licenseIcon.getContentType())
+                           .stream(() -> new ByteArrayInputStream(licenseIcon.getContent()))
+                           .build());
     }
 
     private String returnToDatasetOnly(Dataset draftDataset) {

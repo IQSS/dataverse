@@ -6,13 +6,13 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
-import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +48,19 @@ public class OtherTermsOfUseTab implements Serializable {
 
         otherTermsOfUseDto.add(new OtherTermsOfUseDto(Key.AllRightsReservedTermsOfUseActive,
                                                       "All rights reserved",
-                                                      Boolean.valueOf(settingsServiceBean.getValueForKey(Key.AllRightsReservedTermsOfUseActive)),
-                                                      new ByteArrayContent(FileUtil.getFileFromResources("/images/allrightsreserved.png"))));
+                                                      Boolean.parseBoolean(settingsServiceBean.getValueForKey(Key.AllRightsReservedTermsOfUseActive)),
+                                                      DefaultStreamedContent.builder()
+                                                              .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                                                                      "/images/allrightsreserved.png")))
+                                                              .build()));
 
         otherTermsOfUseDto.add(new OtherTermsOfUseDto(Key.RestrictedAccessTermsOfUseActive,
                                                       "Restricted access",
-                                                      Boolean.valueOf(settingsServiceBean.getValueForKey(Key.RestrictedAccessTermsOfUseActive)),
-                                                      new ByteArrayContent(FileUtil.getFileFromResources("/images/restrictedaccess.png"))));
+                                                      Boolean.parseBoolean(settingsServiceBean.getValueForKey(Key.RestrictedAccessTermsOfUseActive)),
+                                                      DefaultStreamedContent.builder()
+                                                              .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                                                                      "/images/restrictedaccess.png")))
+                                                      .build()));
 
         return StringUtils.EMPTY;
     }

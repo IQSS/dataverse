@@ -68,7 +68,7 @@
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@all" 
                                                           sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
                                                            dragDropSupport="true" auto="true" multiple="false"
-                                                          fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
+                                                          listener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>
                                     </div>
                                 </div>

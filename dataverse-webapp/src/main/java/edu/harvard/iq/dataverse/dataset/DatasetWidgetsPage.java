@@ -14,14 +14,13 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.Lazy;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -149,7 +148,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
         try {
-            InputStream uploadedFileInputstream = uploadedFile.getInputstream();
+            InputStream uploadedFileInputstream = uploadedFile.getInputStream();
 
             thumbnailOperation = Option.of(Lazy.of(() -> datasetService.changeDatasetThumbnail(dataset, uploadedFileInputstream)));
         } catch (IOException ex) {
@@ -159,7 +158,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
         File file = null;
         try {
-            file = FileUtil.inputStreamToFile(uploadedFile.getInputstream());
+            file = FileUtil.inputStreamToFile(uploadedFile.getInputStream());
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
             return;

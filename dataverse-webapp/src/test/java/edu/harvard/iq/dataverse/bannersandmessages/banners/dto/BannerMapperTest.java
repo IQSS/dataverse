@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
-import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
+import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
+import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,16 +15,16 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.primefaces.model.ByteArrayContent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.file.UploadedFile;
 import org.springframework.util.StreamUtils;
 
-import edu.harvard.iq.dataverse.UnitTestUtils;
-import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerLimits;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
-import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseLocalizedBanner;
-import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
+
+import static edu.harvard.iq.dataverse.common.DateUtil.convertToDate;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BannerMapperTest {
@@ -48,7 +47,7 @@ public class BannerMapperTest {
         bannerFile = UnitTestUtils.readFileToByteArray("images/banner.png");
 
         Mockito.when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("pl", "pl", "en", "en"));
-        Mockito.when(uploadedFile.getContents()).thenReturn(bannerFile);
+        Mockito.when(uploadedFile.getContent()).thenReturn(bannerFile);
         Mockito.when(uploadedFile.getContentType()).thenReturn("image/jpeg");
     }
 
@@ -83,10 +82,11 @@ public class BannerMapperTest {
         //when
         DataverseLocalizedBannerDto localizedBannerDto = bannerDto.getDataverseLocalizedBanner().get(0);
         localizedBannerDto.setFile(uploadedFile);
-        localizedBannerDto.setDisplayedImage(new ByteArrayContent(
-                uploadedFile.getContents(),
-                uploadedFile.getContentType(),
-                uploadedFile.getFileName()));
+        localizedBannerDto.setDisplayedImage(DefaultStreamedContent.builder()
+                                                     .contentType(uploadedFile.getContentType())
+                                                     .name(uploadedFile.getFileName())
+                                                     .stream(() -> new ByteArrayInputStream(uploadedFile.getContent()))
+                                                     .build());
 
         DataverseBanner banner = bannerMapper.mapToEntity(bannerDto, dataverse);
         DataverseLocalizedBanner localizedBanner = banner.getDataverseLocalizedBanner().get(0);

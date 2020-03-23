@@ -143,7 +143,7 @@
                         </div>
                         <div style="grid-column: 2;">
                             <p:fileUpload id="licenseEditFileUpload" label="#{bundle.selectFile}"
-                                          fileUploadListener="#{LicenseListingPage.editLicenseImageEvent}"
+                                          listener="#{LicenseListingPage.editLicenseImageEvent}"
                                           mode="advanced" skinSimple="true" auto="true"/>
                         </div>
 
@@ -264,7 +264,7 @@
 
                         <div style="grid-column: 2;">
                             <p:fileUpload id="icon" label="#{bundle.selectFile}"
-                                          fileUploadListener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
+                                          listener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
                                           mode="advanced" skinSimple="true" auto="true" style="width: 77%"/>
                         </div>
                     </div>

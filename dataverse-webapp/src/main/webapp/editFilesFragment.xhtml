@@ -150,7 +150,7 @@
                                               auto="true"
                                               multiple="#{isMultiplyFilesUploadAllowed}"
                                               disabled="#{lockedFromEdits || fileUploadDisabled}"
-                                              fileUploadListener="#{EditDatafilesPage.handleFileUpload}"
+                                              listener="#{EditDatafilesPage.handleFileUpload}"
                                               process="filesTable"
                                               update=":datasetForm:filesTable, @([id$=filesButtons])"
                                               label="#{bundle['file.selectToAddBtn']}"
@@ -922,7 +922,7 @@
                                   update="messageForLabelsFileUpload"
                                   mode="advanced"
                                   auto="true"
-                                  fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
+                                  listener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
                 </div>
             </div>
         </div>

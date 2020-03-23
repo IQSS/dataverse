@@ -16,18 +16,17 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import org.apache.commons.io.IOUtils;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonObject;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -95,7 +94,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
         provJsonParsedEntities = new HashMap<>();
-        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputStream());
 
 
         if (!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
@@ -215,7 +214,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             popupDataFile.setProvEntityName(null);
         }
         if (null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
-            stagingEntry.setProvJson(Option.of(IOUtils.toString(jsonUploadedTempFile.getInputstream())));
+            stagingEntry.setProvJson(Option.of(IOUtils.toString(jsonUploadedTempFile.getInputStream())));
             stagingEntry.setDeleteJson(false);
 
             jsonUploadedTempFile = null;

@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners.dto;
 
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import java.util.Objects;
 

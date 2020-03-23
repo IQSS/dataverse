@@ -112,7 +112,7 @@
                                                           dragDropSupport="true"
                                                           auto="true"
                                                           disabled="#{ReplaceDatafilesPage.lockedFromEdits || ReplaceDatafilesPage.fileToBeSaved != null}"
-                                                          fileUploadListener="#{ReplaceDatafilesPage.handleFileUpload}"
+                                                          listener="#{ReplaceDatafilesPage.handleFileUpload}"
                                                           update="@form"
                                                           label="#{bundle['file.selectToAddBtn']}"
                                                           onstart="#{ReplaceDatafilesPage.uploadStarted()}; disableUploadButton();"

@@ -26,7 +26,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -158,7 +158,7 @@ public class ReplaceDatafilesPage implements Serializable {
         UploadedFile uFile = event.getFile();
 
         Try<DataFile> dataFile = Try.of(() -> replaceFileHandler.createDataFile(dataset,
-                                                                                uFile.getContents(),
+                                                                                uFile.getContent(),
                                                                                 uFile.getFileName(),
                                                                                 uFile.getContentType()));
 

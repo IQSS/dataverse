@@ -5,9 +5,10 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
 import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
-import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.Stateless;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -87,14 +88,17 @@ public class LicenseMapper {
 
     private LicenseIconDto mapToDto(LicenseIcon licenseIcon) {
         if (licenseIcon == null) {
-            return new LicenseIconDto(0L, new ByteArrayContent(new byte[0]));
+            return new LicenseIconDto(0L, DefaultStreamedContent.builder()
+                    .build());
         }
 
         return new LicenseIconDto(licenseIcon.getId(),
-                                  new ByteArrayContent(licenseIcon.getContent(),
-                                                       licenseIcon.getContentType(),
-                                                       licenseIcon.getLicense().getName(),
-                                                       licenseIcon.getContent().length));
+                                  DefaultStreamedContent.builder()
+                                          .contentType(licenseIcon.getContentType())
+                                          .name(licenseIcon.getLicense().getName())
+                                          .contentLength(licenseIcon.getContent().length)
+                                          .stream(() -> new ByteArrayInputStream(licenseIcon.getContent()))
+                                          .build());
     }
 
     private LocaleTextDto mapToDto(LocaleText localeText) {

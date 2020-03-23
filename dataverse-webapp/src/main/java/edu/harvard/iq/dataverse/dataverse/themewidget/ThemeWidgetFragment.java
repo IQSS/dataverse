@@ -13,7 +13,7 @@ import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
@@ -220,7 +220,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
                 uploadedFile.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputstream(), uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputStream(), uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 

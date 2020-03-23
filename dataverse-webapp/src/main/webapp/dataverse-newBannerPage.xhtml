@@ -46,7 +46,7 @@
                                     <p:message style="margin: auto" id="second-file-warning" for="upload"
                                                display="text"/>
                                 </div>
-                                <p:fileUpload id="upload" fileUploadListener="#{EditBannerPage.uploadFileEvent}"
+                                <p:fileUpload id="upload" listener="#{EditBannerPage.uploadFileEvent}"
                                               update="image" auto="true"
                                               mode="advanced" required="true">
                                     <f:attribute name="imageLocale" value="#{lm.locale}"/>

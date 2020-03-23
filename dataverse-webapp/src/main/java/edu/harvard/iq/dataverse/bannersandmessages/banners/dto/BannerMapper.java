@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.Dataver
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.imgscalr.Scalr;
-import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.DefaultStreamedContent;
 import org.springframework.util.StreamUtils;
 
 import javax.ejb.Stateless;
@@ -61,10 +61,16 @@ public class BannerMapper {
 
             ByteArrayOutputStream resizedImage = convertImageToMiniSize(dlb.getImage());
 
-            localBannerDto.setDisplayedImage(new ByteArrayContent(dlb.getImage(), dlb.getContentType(), dlb.getImageName()));
+            localBannerDto.setDisplayedImage(DefaultStreamedContent.builder()
+                                                     .contentType(dlb.getContentType())
+                                                     .name(dlb.getImageName())
+                                                     .stream(() -> new ByteArrayInputStream(dlb.getImage()))
+                                                     .build());
             localBannerDto.setMiniDisplayImage(
-                    new ByteArrayContent(resizedImage.toByteArray(),
-                                         "image/jpeg"));
+                    DefaultStreamedContent.builder()
+                            .contentType("image/jpeg")
+                            .stream(() -> new ByteArrayInputStream(resizedImage.toByteArray()))
+                            .build());
 
             dlbDto.add(localBannerDto);
         }

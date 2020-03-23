@@ -11,16 +11,16 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.ByteArrayContent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,8 +101,10 @@ public class LicenseListingPage implements Serializable {
      */
     public void uploadImageForNewLicenseEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
-        freshLicense.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
-                                                               uploadedImage.getContentType()));
+        freshLicense.getIcon().setContent(DefaultStreamedContent.builder()
+                .contentType(uploadedImage.getContentType())
+                                                  .stream(() -> new ByteArrayInputStream(uploadedImage.getContent()))
+                                          .build());
     }
 
     /**
@@ -112,8 +114,10 @@ public class LicenseListingPage implements Serializable {
      */
     public void editLicenseImageEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
-        licenseForEdit.getIcon().setContent(new ByteArrayContent(uploadedImage.getContents(),
-                                                                 uploadedImage.getContentType()));
+        licenseForEdit.getIcon().setContent(DefaultStreamedContent.builder()
+                                                    .contentType(uploadedImage.getContentType())
+                                                    .stream(() -> new ByteArrayInputStream(uploadedImage.getContent()))
+                                                    .build());
     }
 
     /**

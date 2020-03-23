@@ -9,18 +9,18 @@ import edu.harvard.iq.dataverse.bannersandmessages.validation.BannerErrorHandler
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.ByteArrayContent;
+import org.primefaces.model.DefaultStreamedContent;
 
 import javax.ejb.EJB;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
 @ViewScoped
@@ -89,9 +89,11 @@ public class NewBannerPage implements Serializable {
                 .forEach(dlb -> {
                     dlb.setFile(event.getFile());
                     dlb.setDisplayedImage(
-                            new ByteArrayContent(event.getFile().getContents(),
-                                                 event.getFile().getContentType(),
-                                                 event.getFile().getFileName()));
+                            DefaultStreamedContent.builder()
+                            .contentType(event.getFile().getContentType())
+                            .name(event.getFile().getFileName())
+                            .stream(() -> new ByteArrayInputStream(event.getFile().getContent()))
+                            .build());
                 });
     }
 

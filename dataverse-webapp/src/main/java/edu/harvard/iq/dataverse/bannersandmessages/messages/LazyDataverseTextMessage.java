@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseLocaliz
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
+import org.primefaces.model.FilterMeta;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -33,7 +34,7 @@ public class LazyDataverseTextMessage extends LazyDataModel<DataverseTextMessage
     private List<DataverseTextMessageDto> dataverseTextMessageDtos;
 
     @Override
-    public List<DataverseTextMessageDto> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
+    public List<DataverseTextMessageDto> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, FilterMeta> filters) {
         Optional<List<DataverseTextMessage>> dataverseTextMessages =
                 Optional.ofNullable(dataverseTextMessageService.fetchTextMessagesForDataverseWithPaging(dataverseId, first, pageSize));
 

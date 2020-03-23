@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.BannerMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseBannerDto;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalizedBannerDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import org.primefaces.model.FilterMeta;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -31,7 +32,7 @@ public class LazyBannerHistory extends LazyDataModel<DataverseBannerDto> {
     private List<DataverseBannerDto> dataverseBannerDtos;
 
     @Override
-    public List<DataverseBannerDto> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
+    public List<DataverseBannerDto> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, FilterMeta> filters) {
 
         List<DataverseBanner> dataverseTextMessages =
                 dao.fetchBannersForDataverseWithPaging(dataverseId, first, pageSize);
