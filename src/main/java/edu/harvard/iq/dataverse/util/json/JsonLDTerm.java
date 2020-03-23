@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class JsonLDTerm {
 
     JsonLDNamespace namespace = null;
