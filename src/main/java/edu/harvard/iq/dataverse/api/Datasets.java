@@ -115,6 +115,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -650,176 +651,189 @@ public class Datasets extends AbstractApiBean {
             		}
             	}
             }
-            
-            json.remove("@context");
-            List<DatasetField> dsfl = new ArrayList<DatasetField>();
+            //get existing ones?
+            List<DatasetField> dsfl = dsv.getDatasetFields();
+            Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
+            for(DatasetField dsf: dsfl) {
+            	fieldByTypeMap.put(dsf.getDatasetFieldType(),dsf);
+            }
             for(String key: json.keySet()) {
-            	if(dsftMap.containsKey(key)) {
-            	DatasetFieldType dsft = dsftMap.get(key);
-            	DatasetField dsf = new DatasetField();
-            	dsf.setDatasetFieldType(dsft);
-            	//Todo - normalize object vs. array
-            	JsonValue val = json.get(key);
-            	JsonArray valArray = null;
-            	if (val instanceof JsonArray) {
-            		if(!dsft.isAllowMultiples()) {
-            			error(Response.Status.BAD_REQUEST, "Array for single value notsupported: " + dsft.getName());
-            		} else {
-            			valArray = (JsonArray)val;
-            		}
-            	} 	else {
-            		valArray = Json.createArrayBuilder().add(val).build();
-            	}
-            	
-            	if (dsft.isCompound()) {
-/*                    List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
+            	if(!key.equals("@context")) {
+            		if(dsftMap.containsKey(key)) {
+            			DatasetFieldType dsft = dsftMap.get(key);
+            			
+            			DatasetField dsf = null;
+            			if(fieldByTypeMap.containsKey(dsft)) {
+            				dsf = fieldByTypeMap.get(dsft);
+            			} else {
+            				dsf = new DatasetField();
+            				dsfl.add(dsf);
+            			}
+  						dsf.setDatasetFieldType(dsft);
+            			//Todo - normalize object vs. array
+            			JsonValue val = json.get(key);
+            			JsonArray valArray = null;
+            			if (val instanceof JsonArray) {
+            				if(!dsft.isAllowMultiples()) {
+            					error(Response.Status.BAD_REQUEST, "Array for single value notsupported: " + dsft.getName());
+            				} else {
+            					valArray = (JsonArray)val;
+            				}
+            			} 	else {
+            				valArray = Json.createArrayBuilder().add(val).build();
+            			}
+
+            			if (dsft.isCompound()) {
+            				/*                    List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
                     for (DatasetFieldCompoundValue dsfcv : vals) {
                         dsfcv.setParentDatasetField(ret);
                     }
                     dsf.setDatasetFieldCompoundValues(vals);
-*/
-                } else if (dsft.isControlledVocabulary()) {
-                	
-                	List<ControlledVocabularyValue> vals = new LinkedList<>();
-                    for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-                        String strValue = strVal.getString();
-                        ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, strValue, true);
-                        if (cvv == null) {
-                            return error(Response.Status.BAD_REQUEST, "Unknown value for Controlled Vocab Field: " + dsft.getName() + " : " + strValue);
-                        }
-                        // Only add value to the list if it is not a duplicate 
-                        if (strValue.equals("Other")) {
-                            System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
-                        }
-                        if (!vals.contains(cvv)) {
-                            vals.add(cvv);
-                            cvv.setDatasetFieldType(dsft);
-                        }
-                    }
-                    dsf.setControlledVocabularyValues(vals);
+            				 */
+            			} else if (dsft.isControlledVocabulary()) {
 
-                } else {
-                	List<DatasetFieldValue> vals = new LinkedList<>();
-                    
-                	for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-                        String strValue = strVal.getString();
-                    
-                        DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-                        if(valArray.size()>1) {
-                        	datasetFieldValue.setDisplayOrder(vals.size() - 1);
-                        }
-                        datasetFieldValue.setValue(strValue.trim());
-                        vals.add(datasetFieldValue);
-                    }
-                    dsf.setDatasetFieldValues(vals);
+            				List<ControlledVocabularyValue> vals = new LinkedList<>();
+            				for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
+            					String strValue = strVal.getString();
+            					ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, strValue, true);
+            					if (cvv == null) {
+            						return error(Response.Status.BAD_REQUEST, "Unknown value for Controlled Vocab Field: " + dsft.getName() + " : " + strValue);
+            					}
+            					// Only add value to the list if it is not a duplicate 
+            					if (strValue.equals("Other")) {
+            						System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+            					}
+            					if (!vals.contains(cvv)) {
+            						vals.add(cvv);
+            						cvv.setDatasetFieldType(dsft);
+            					}
+            				}
+            				dsf.setControlledVocabularyValues(vals);
 
-            }
-            	
-            		//assemble new terms, add to existing
-            		//multivalue?
-            		//compound?
-            		//merge with existing dv metadata
-            	dsfl.add(dsf);
-            	} else {
-            		//Internal/non-metadatablock terms
-            		// Add metadata related to the Dataset/DatasetVersion
-                    
-                    //("@id", id) - check is equal to existing globalID?
-            		//Add to 'md on original' ?
-            		//(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                    //Citation metadata?
-            		//(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
-            		//(JsonLDTerm.schemaOrg("name").getLabel())
-                    //(JsonLDTerm.schemaOrg("dateModified").getLabel())
+            			} else {
+            				List<DatasetFieldValue> vals = new LinkedList<>();
 
-            		//Todo - handle non-CC0 licenses, without terms as an alternate field.
-                    TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                    if(json.containsKey(JsonLDTerm.schemaOrg("license").getLabel())) {
-                    	if(json.get(JsonLDTerm.schemaOrg("license").getLabel()).toString().equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
-                    		terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-                    	} else {
-                    		terms.setLicense(TermsOfUseAndAccess.License.NONE);
-                    	}
-                    } else {
-                    	if(json.containsKey(JsonLDTerm.termsOfUse.getLabel())) {
-                    		terms.setTermsOfUse(json.get(JsonLDTerm.termsOfUse.getLabel()).toString());
-                    	}
-                    }
-                    if(json.containsKey(JsonLDTerm.confidentialityDeclaration.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.specialPermissions.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.specialPermissions.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.restrictions.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.restrictions.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.citationRequirements.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.citationRequirements.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.depositorRequirements.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.depositorRequirements.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.conditions.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.conditions.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.disclaimer.getLabel())) {
-                    	terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.disclaimer.getLabel()));
-                    }
-                    if(json.containsKey(JsonLDTerm.fileTermsOfAccess.getLabel())) {
-                    	JsonObject fAccessObject = json.getJsonObject(JsonLDTerm.fileTermsOfAccess.getLabel());
-                    	if(fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.fileRequestAccess.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.originalArchive.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.originalArchive.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.availabilityStatus.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.contactForAccess.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getLabel()));
-                    	}
-                    	if(fAccessObject.containsKey(JsonLDTerm.studyCompletion.getLabel())) {
-                    		terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.studyCompletion.getLabel()));
-                    	}
-                    }
-                    dsv.setTermsOfUseAndAccess(terms);
-                    //move to new dataverse?
-                    //aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                    //        dataset.getDataverseContext().getDisplayName());
-                    
+            				for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
+            					String strValue = strVal.getString();
+
+            					DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
+            					if(valArray.size()>1) {
+            						datasetFieldValue.setDisplayOrder(vals.size() - 1);
+            					}
+            					datasetFieldValue.setValue(strValue.trim());
+            					vals.add(datasetFieldValue);
+            				}
+            				dsf.setDatasetFieldValues(vals);
+
+            			}
+
+            			//assemble new terms, add to existing
+            			//multivalue?
+            			//compound?
+            			//merge with existing dv metadata
+            			//dsfl.add(dsf);
+            		} else {
+            			//Internal/non-metadatablock terms
+            			// Add metadata related to the Dataset/DatasetVersion
+
+            			//("@id", id) - check is equal to existing globalID?
+            			//Add to 'md on original' ?
+            			//(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
+            			//Citation metadata?
+            			//(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
+            			//(JsonLDTerm.schemaOrg("name").getLabel())
+            			//(JsonLDTerm.schemaOrg("dateModified").getLabel())
+
+            			//Todo - handle non-CC0 licenses, without terms as an alternate field.
+            			TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+            			if(json.containsKey(JsonLDTerm.schemaOrg("license").getLabel())) {
+            				if(json.get(JsonLDTerm.schemaOrg("license").getLabel()).toString().equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
+            					terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+            				} else {
+            					terms.setLicense(TermsOfUseAndAccess.License.NONE);
+            				}
+            			} else {
+            				if(json.containsKey(JsonLDTerm.termsOfUse.getLabel())) {
+            					terms.setTermsOfUse(json.get(JsonLDTerm.termsOfUse.getLabel()).toString());
+            				}
+            			}
+            			if(json.containsKey(JsonLDTerm.confidentialityDeclaration.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.specialPermissions.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.specialPermissions.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.restrictions.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.restrictions.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.citationRequirements.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.citationRequirements.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.depositorRequirements.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.depositorRequirements.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.conditions.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.conditions.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.disclaimer.getLabel())) {
+            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.disclaimer.getLabel()));
+            			}
+            			if(json.containsKey(JsonLDTerm.fileTermsOfAccess.getLabel())) {
+            				JsonObject fAccessObject = json.getJsonObject(JsonLDTerm.fileTermsOfAccess.getLabel());
+            				if(fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getLabel())) {
+            					terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getLabel())) {
+            					terms.setFileAccessRequest(fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getLabel())) {
+            					terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.originalArchive.getLabel())) {
+            					terms.setOriginalArchive(fAccessObject.getString(JsonLDTerm.originalArchive.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getLabel())) {
+            					terms.setAvailabilityStatus(fAccessObject.getString(JsonLDTerm.availabilityStatus.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.contactForAccess.getLabel())) {
+            					terms.setContactForAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getLabel())) {
+            					terms.setSizeOfCollection(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getLabel()));
+            				}
+            				if(fAccessObject.containsKey(JsonLDTerm.studyCompletion.getLabel())) {
+            					terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getLabel()));
+            				}
+            			}
+            			dsv.setTermsOfUseAndAccess(terms);
+            			//move to new dataverse?
+            			//aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
+            			//        dataset.getDataverseContext().getDisplayName());
+
+            		}
+
             	}
-            	
             }
+            
             dsv.setDatasetFields(dsfl);
-            
-            
+
+
             DatasetVersion managedVersion;
             if ( updateDraft ) {
-                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-                managedVersion = managedDataset.getEditVersion();
+            	Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+            	managedVersion = managedDataset.getEditVersion();
             } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            	managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
             }
             String info = updateDraft ? "Version Updated" : "Version Created";
             return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
-                    
+
         } catch (JsonParsingException ex) {
-            logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
-            return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
+        	logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
+        	return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
         } catch (WrappedResponse ex) {
-            return ex.getResponse();
-            
+        	return ex.getResponse();
+
         }
     }
     
