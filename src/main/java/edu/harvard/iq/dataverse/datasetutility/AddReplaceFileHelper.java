@@ -502,10 +502,12 @@ public class AddReplaceFileHelper{
             return false;
             
         }
-        
-        if(optionalFileParams.hasCheckSum()) {
-        	newCheckSum = optionalFileParams.getCheckSum();
+        if(optionalFileParams != null) {
+        	if(optionalFileParams.hasCheckSum()) {
+        		newCheckSum = optionalFileParams.getCheckSum();
+        	}
         }
+
         msgt("step_030_createNewFilesViaIngest");
         if (!this.step_030_createNewFilesViaIngest()){
             return false;
