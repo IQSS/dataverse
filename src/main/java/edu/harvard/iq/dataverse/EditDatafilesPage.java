@@ -7,13 +7,19 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.datasetutility.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.FileReplacePageHelper;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
@@ -32,6 +38,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -306,6 +314,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         return this.maxFileUploadSizeInBytes;
     }
     
+    public String getHumanMaxFileUploadSizeInBytes() {
+        return FileSizeChecker.bytesToHumanReadable(this.maxFileUploadSizeInBytes);
+    }
+    
     public boolean isUnlimitedUploadFileSize() {
         
         return this.maxFileUploadSizeInBytes == null;
@@ -348,6 +360,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         // return true/false
         return hasPermission;
+    }
+    
+    public boolean directUploadEnabled() {
+    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
     }
     
     public void reset() {
@@ -439,16 +455,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (version == null) {
             return permissionsWrapper.notFound();
         }
-        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-        
+
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
         newFiles = newFilesList;
         uploadedFiles = new ArrayList<>();
         selectedFiles = selectedFileMetadatasList;
+        
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
         
@@ -461,9 +477,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
-        
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -479,7 +492,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-                
+
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
+                       
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         if (workingVersion == null || !workingVersion.isDraft()) {
@@ -954,42 +970,64 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 
     private void deleteTempFile(DataFile dataFile) {
-                        // Before we remove the file from the list and forget about 
-                        // it:
-                        // The physical uploaded file is still sitting in the temporary
-                        // directory. If it were saved, it would be moved into its 
-                        // permanent location. But since the user chose not to save it,
-                        // we have to delete the temp file too. 
-                        // 
-                        // Eventually, we will likely add a dedicated mechanism
-                        // for managing temp files, similar to (or part of) the storage 
-                        // access framework, that would allow us to handle specialized
-                        // configurations - highly sensitive/private data, that 
-                        // has to be kept encrypted even in temp files, and such. 
-                        // But for now, we just delete the file directly on the 
-                        // local filesystem: 
+    	// Before we remove the file from the list and forget about 
+    	// it:
+    	// The physical uploaded file is still sitting in the temporary
+    	// directory. If it were saved, it would be moved into its 
+    	// permanent location. But since the user chose not to save it,
+    	// we have to delete the temp file too. 
+    	// 
+    	// Eventually, we will likely add a dedicated mechanism
+    	// for managing temp files, similar to (or part of) the storage 
+    	// access framework, that would allow us to handle specialized
+    	// configurations - highly sensitive/private data, that 
+    	// has to be kept encrypted even in temp files, and such. 
+    	// But for now, we just delete the file directly on the 
+    	// local filesystem: 
 
-                        try {
-            List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
-                    Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
-            if (generatedTempFiles != null) {
-                for (Path generated : generatedTempFiles) {
-                    logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
-                    try {
-                        Files.delete(generated);
-                    } catch (IOException ioex) {
-                        logger.warning("Failed to delete generated file " + generated.toString());
-                    }
-                }
-            }
-            Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
-                        } catch (IOException ioEx) {
-                            // safe to ignore - it's just a temp file. 
-            logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
-                    + dataFile.getStorageIdentifier());
-        }
-                        }
-                        
+    	try {
+    		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+    				Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
+    		if (generatedTempFiles != null) {
+    			for (Path generated : generatedTempFiles) {
+    				logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+    				try {
+    					Files.delete(generated);
+    				} catch (IOException ioex) {
+    					logger.warning("Failed to delete generated file " + generated.toString());
+    				}
+    			}
+    		}
+    		String si = dataFile.getStorageIdentifier();
+    		if (si.contains("://")) {
+    			//Direct upload files will already have a store id in their storageidentifier
+    			//but they need to be associated with a dataset for the overall storagelocation to be calculated
+    			//so we temporarily set the owner
+    			if(dataFile.getOwner()!=null) {
+    				logger.warning("Datafile owner was not null as expected");
+    			}
+    			dataFile.setOwner(dataset);
+    			//Use one StorageIO to get the storageLocation and then create a direct storage storageIO class to perform the delete 
+    			// (since delete is forbidden except for direct storage)
+    			String sl = DataAccess.getStorageIO(dataFile).getStorageLocation();
+    			DataAccess.getDirectStorageIO(sl).delete();
+    			dataFile.setOwner(null);
+    		} else {
+    			//Temp files sent to this method have no prefix, not even "tmp://"
+    			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
+    		}
+    	} catch (IOException ioEx) {
+    		// safe to ignore - it's just a temp file. 
+    		logger.warning(ioEx.getMessage());
+    		if(dataFile.getStorageIdentifier().contains("://")) {
+    			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
+    		} else {
+    			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+    					+ dataFile.getStorageIdentifier());
+    		}
+    	}
+    }
+
     private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
         Iterator<FileMetadata> fmit = fmds.iterator();
         while (fmit.hasNext()) {
@@ -1559,7 +1597,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", systemConfig);
+                datafiles = FileUtil.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream", null,null, systemConfig);
                 
             } catch (IOException ex) {
                 this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -1717,6 +1755,31 @@ public class EditDatafilesPage implements java.io.Serializable {
         return rsyncScriptFilename;
     }
 
+    public void requestDirectUploadUrl() {
+        
+    	//Need to assign an identifier at this point if direct upload is used.
+        if ( isEmpty(dataset.getIdentifier()) ) {
+        	CommandContext ctxt = commandEngine.getContext();
+        	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+            dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
+        }
+        
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
+        	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
+        }
+        String url = null;
+        String storageIdentifier = null;
+        try {
+        	url = s3io.generateTemporaryS3UploadUrl();
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+       	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
+       }
+
+    	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
+    }
     
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
@@ -1808,7 +1871,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         uploadComponentId = event.getComponent().getClientId();
         
-        if (fileReplacePageHelper.handleNativeFileUpload(inputStream,
+        if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
                                     contentType
                                 )){
@@ -1866,12 +1929,31 @@ public class EditDatafilesPage implements java.io.Serializable {
             //    new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", uploadWarningMessage));
         }
     }
+    
+    private void handleReplaceFileUpload(String fullStorageLocation, 
+    		String fileName, 
+    		String contentType){
+
+    	fileReplacePageHelper.resetReplaceFileHelper();
+    	saveEnabled = false;
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation, fileName, contentType)){
+    		saveEnabled = true;
+
+    		/**
+    		 * If the file content type changed, let the user know
+    		 */
+    		if (fileReplacePageHelper.hasContentTypeWarning()){
+    			//Add warning to popup instead of page for Content Type Difference
+    			setWarningMessageForPopUp(fileReplacePageHelper.getContentTypeWarning());
+    		}
+    	} else {
+    		uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
+    	}
+    }
 
     private String uploadWarningMessage = null; 
     private String uploadSuccessMessage = null; 
     private String uploadComponentId = null; 
-    
-    
     
     /**
      * Handle native file replace
@@ -1922,7 +2004,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), systemConfig);
+            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
             
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
@@ -1955,6 +2037,108 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     /**
+     * Using information from the DropBox choose, ingest the chosen files
+     *  https://www.dropbox.com/developers/dropins/chooser/js
+     * 
+     * @param event
+     */
+    public void handleExternalUpload() {
+    	Map<String,String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+    	
+    	this.uploadComponentId = paramMap.get("uploadComponentId");
+        String fullStorageIdentifier = paramMap.get("fullStorageIdentifier");
+        String fileName = paramMap.get("fileName");
+        String contentType = paramMap.get("contentType");
+        String checksumType = paramMap.get("checksumType");
+        String checksumValue = paramMap.get("checksumValue");
+        
+        int lastColon = fullStorageIdentifier.lastIndexOf(':');
+        String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+    	if (!uploadInProgress) {
+    		uploadInProgress = true;
+    	}
+    	logger.fine("handleExternalUpload");
+    	
+    	StorageIO<DvObject> sio;
+    	String localWarningMessage = null;
+    	try {
+    		sio = DataAccess.getDirectStorageIO(storageLocation);
+
+    		//Populate metadata
+    		sio.open(DataAccessOption.READ_ACCESS);
+    		//get file size
+    		long fileSize = sio.getSize();
+
+    		/* ----------------------------
+                Check file size
+                - Max size NOT specified in db: default is unlimited
+                - Max size specified in db: check too make sure file is within limits
+            // ---------------------------- */
+    		if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
+    			String warningMessage = "Uploaded file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
+    			sio.delete();
+    			localWarningMessage = warningMessage;
+    		} else {
+    			// -----------------------------------------------------------
+    			// Is this a FileReplaceOperation?  If so, then diverge!
+    			// -----------------------------------------------------------
+    			if (this.isFileReplaceOperation()){
+    				this.handleReplaceFileUpload(storageLocation, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT);
+    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+    				return;
+    			}
+    			// -----------------------------------------------------------
+    			List<DataFile> datafiles = new ArrayList<>(); 
+
+    			// -----------------------------------------------------------
+    			// Send it through the ingest service
+    			// -----------------------------------------------------------
+    			try {
+
+    				// Note: A single uploaded file may produce multiple datafiles - 
+    				// for example, multiple files can be extracted from an uncompressed
+    				// zip file.
+    				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
+    				if(StringUtils.isEmpty(contentType)) {
+    					contentType = "application/octet-stream";
+    				}
+    				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
+    					String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
+    					localWarningMessage = warningMessage;
+    				}
+    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
+    			} catch (IOException ex) {
+    				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
+    			}
+
+    			if (datafiles == null){
+    				logger.log(Level.SEVERE, "Failed to create DataFile for file {0}", new Object[]{fileName});
+    			}else{    
+    				// -----------------------------------------------------------
+    				// Check if there are duplicate files or ingest warnings
+    				// -----------------------------------------------------------
+    				uploadWarningMessage = processUploadedFileList(datafiles);
+    			}
+    			if(!uploadInProgress) {
+    				logger.warning("Upload in progress cancelled");
+    				for (DataFile newFile : datafiles) {
+    					deleteTempFile(newFile);
+    				}
+    			}
+    		}
+    	} catch (IOException e) {
+    		logger.log(Level.SEVERE, "Failed to create DataFile for file {0}: {1}", new Object[]{fileName, e.getMessage()});
+    	}
+    	if (localWarningMessage != null) {
+    		if (uploadWarningMessage == null) {
+    			uploadWarningMessage = localWarningMessage;
+    		} else {
+    			uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
+    		}
+    	}
+    }
+    
+    /**
      *  After uploading via the site or Dropbox, 
      *  check the list of DataFile objects
      * @param dFileList 
@@ -1967,7 +2151,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
-        
         if (dFileList == null) {
             return null;
         }
