@@ -44,6 +44,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.SummaryStatistic;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
@@ -72,6 +73,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
@@ -175,16 +177,16 @@ public class IngestServiceBean {
 					dataFile.setOwner(dataset);
 				}
 
-
-
 				String[] storageInfo = DataAccess.getDriverIdAndStorageLocation(dataFile.getStorageIdentifier());
 				String driverType = DataAccess.getDriverType(storageInfo[0]);
 				String storageLocation = storageInfo[1];
+				String tempFileLocation = null;
+				Path tempLocationPath = null;
 				if (driverType.equals("tmp")) {  //"tmp" is the default if no prefix or the "tmp://" driver
-					String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
+					tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + storageLocation;
 
 					// Try to save the file in its permanent location:
-					Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageLocation);
+					tempLocationPath = Paths.get(tempFileLocation);
 					WritableByteChannel writeChannel = null;
 					FileChannel readChannel = null;
 
@@ -293,53 +295,6 @@ public class IngestServiceBean {
 					}
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
-
-					if (savedSuccess) {
-						// These are all brand new files, so they should all have
-						// one filemetadata total. -- L.A.
-						FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
-						String fileName = fileMetadata.getLabel();
-
-						boolean metadataExtracted = false;
-						if (FileUtil.canIngestAsTabular(dataFile)) {
-							/*
-							 * Note that we don't try to ingest the file right away - instead we mark it as
-							 * "scheduled for ingest", then at the end of the save process it will be queued
-							 * for async. ingest in the background. In the meantime, the file will be
-							 * ingested as a regular, non-tabular file, and appear as such to the user,
-							 * until the ingest job is finished with the Ingest Service.
-							 */
-							dataFile.SetIngestScheduled();
-						} else if (fileMetadataExtractable(dataFile)) {
-
-							try {
-								// FITS is the only type supported for metadata
-								// extraction, as of now. -- L.A. 4.0
-								dataFile.setContentType("application/fits");
-								metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
-							} catch (IOException mex) {
-								logger.severe("Caught exception trying to extract indexable metadata from file "
-										+ fileName + ",  " + mex.getMessage());
-							}
-							if (metadataExtracted) {
-								logger.fine("Successfully extracted indexable metadata from file " + fileName);
-							} else {
-								logger.fine("Failed to extract indexable metadata from file " + fileName);
-							}
-                        } else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
-                            // Make sure no *uningested* tab-delimited files are saved with the type "text/tab-separated-values"!
-                            // "text/tsv" should be used instead: 
-                            dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
-						}
-					}
-					// ... and let's delete the main temp file:
-					try {
-						logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
-						Files.delete(tempLocationPath);
-					} catch (IOException ex) {
-						// (non-fatal - it's just a temp file.)
-						logger.warning("Failed to delete temp file " + tempLocationPath.toString());
-					}
 				} else {
 					try {
 						StorageIO<DvObject> dataAccess = DataAccess.getStorageIO(dataFile);
@@ -347,18 +302,74 @@ public class IngestServiceBean {
 						dataAccess.open(DataAccessOption.READ_ACCESS);
 						//set file size
 						dataFile.setFilesize(dataAccess.getSize());
+						if(dataAccess instanceof S3AccessIO) {
+							  ((S3AccessIO<DvObject>)dataAccess).removeTempTag();
+						}
 					} catch (IOException ioex) {
 						logger.warning("Failed to get file size, storage id " + dataFile.getStorageIdentifier() + " ("
 								+ ioex.getMessage() + ")");
 					}
 					savedSuccess = true;
-					logger.info("unattached: " + unattached);
-						dataFile.setOwner(null);
-					
+					dataFile.setOwner(null);
 				}
 
 				logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
+				boolean belowLimit = false;
 
+				try {
+					belowLimit = dataFile.getStorageIO().isBelowIngestSizeLimit();
+				} catch (IOException e) {
+					logger.warning("Error getting ingest limit for file: " + dataFile.getIdentifier() + " : " + e.getMessage());
+				} 
+
+				if (savedSuccess && belowLimit) {
+					// These are all brand new files, so they should all have
+					// one filemetadata total. -- L.A.
+					FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
+					String fileName = fileMetadata.getLabel();
+
+					boolean metadataExtracted = false;
+					if (FileUtil.canIngestAsTabular(dataFile)) {
+						/*
+						 * Note that we don't try to ingest the file right away - instead we mark it as
+						 * "scheduled for ingest", then at the end of the save process it will be queued
+						 * for async. ingest in the background. In the meantime, the file will be
+						 * ingested as a regular, non-tabular file, and appear as such to the user,
+						 * until the ingest job is finished with the Ingest Service.
+						 */
+						dataFile.SetIngestScheduled();
+					} else if (fileMetadataExtractable(dataFile)) {
+
+						try {
+							// FITS is the only type supported for metadata
+							// extraction, as of now. -- L.A. 4.0
+							dataFile.setContentType("application/fits");
+							metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
+						} catch (IOException mex) {
+							logger.severe("Caught exception trying to extract indexable metadata from file "
+									+ fileName + ",  " + mex.getMessage());
+						}
+						if (metadataExtracted) {
+							logger.fine("Successfully extracted indexable metadata from file " + fileName);
+						} else {
+							logger.fine("Failed to extract indexable metadata from file " + fileName);
+						}
+					} else if (FileUtil.MIME_TYPE_INGESTED_FILE.equals(dataFile.getContentType())) {
+                        // Make sure no *uningested* tab-delimited files are saved with the type "text/tab-separated-values"!
+                        // "text/tsv" should be used instead: 
+                        dataFile.setContentType(FileUtil.MIME_TYPE_TSV);
+                    }
+				}
+				// ... and let's delete the main temp file if it exists:
+				if(tempLocationPath!=null) {
+    				try {
+	    				logger.fine("Will attempt to delete the temp file " + tempLocationPath.toString());
+			    		Files.delete(tempLocationPath);
+				    } catch (IOException ex) {
+					    // (non-fatal - it's just a temp file.)
+    					logger.warning("Failed to delete temp file " + tempLocationPath.toString());
+	    			}				
+				}
 				if (savedSuccess) {
 					// temp dbug line
 					// System.out.println("ADDING FILE: " + fileName + "; for dataset: " +
@@ -955,7 +966,7 @@ public class IngestServiceBean {
                             throw new EJBException("Deliberate database save failure");
                         }
                      */
-                    dataFile = fileService.save(dataFile);
+                    dataFile = fileService.saveInTransaction(dataFile);
                     databaseSaveSuccessful = true;
 
                     logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
@@ -982,7 +993,7 @@ public class IngestServiceBean {
                 }
 
                 if (!databaseSaveSuccessful) {
-                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
+                    logger.warning("Ingest failure (failed to save the tabular data in the database; file left intact as uploaded).");
                     return false;
                 }
 
@@ -1005,6 +1016,9 @@ public class IngestServiceBean {
                     dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
                     // Reset the file size: 
                     dataFile.setFilesize(dataAccess.getSize());
+                    
+                    dataFile = fileService.save(dataFile);
+                    logger.fine("saved data file after updating the size");
 
                     // delete the temp tab-file:
                     tabFile.delete();
@@ -1146,12 +1160,17 @@ public class IngestServiceBean {
     public boolean extractMetadata(String tempFileLocation, DataFile dataFile, DatasetVersion editVersion) throws IOException {
         boolean ingestSuccessful = false;
 
-        FileInputStream tempFileInputStream = null; 
-        
-        try {
-            tempFileInputStream = new FileInputStream(new File(tempFileLocation));
-        } catch (FileNotFoundException notfoundEx) {
-            throw new IOException("Could not open temp file "+tempFileLocation);
+        InputStream tempFileInputStream = null; 
+        if(tempFileLocation == null) {
+        	StorageIO<DataFile> sio = dataFile.getStorageIO();
+        	sio.open(DataAccessOption.READ_ACCESS);
+        	tempFileInputStream = sio.getInputStream();
+        } else {
+        	try {
+        		tempFileInputStream = new FileInputStream(new File(tempFileLocation));
+        	} catch (FileNotFoundException notfoundEx) {
+        		throw new IOException("Could not open temp file "+tempFileLocation);
+        	}
         }
         
         // Locate metadata extraction plugin for the file format by looking

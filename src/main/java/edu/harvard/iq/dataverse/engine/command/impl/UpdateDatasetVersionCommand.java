@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.validation.ConstraintViolationException;
+
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -124,7 +127,13 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             if (editVersion.getId() == null || editVersion.getId() == 0L) {
                 ctxt.em().persist(editVersion);
             } else {
-                ctxt.em().merge(editVersion);
+            	try {
+            		ctxt.em().merge(editVersion);
+            	} catch (ConstraintViolationException e) {
+            		logger.log(Level.SEVERE,"Exception: ");
+            		e.getConstraintViolations().forEach(err->logger.log(Level.SEVERE,err.toString()));
+            		throw e;
+            	}
             }
 
             for (DataFile dataFile : theDataset.getFiles()) {

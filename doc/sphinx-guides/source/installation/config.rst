@@ -244,6 +244,8 @@ If you wish to change which store is used by default, you'll need to delete the 
 
   ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+  
+  It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
 File Storage
 ++++++++++++
@@ -505,7 +507,9 @@ JVM Option                                   Value               Description    
 dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
 dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
 dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
 dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
 dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
@@ -1474,7 +1478,14 @@ Alongside the ``:StatusMessageHeader`` you need to add StatusMessageText for the
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
-Set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB.
+This setting controls the maximum size of uploaded files. 
+- To have one limit for all stores, set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB:
+
+``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
+
+- To have limits per store with an optional default, use a serialized json object for the value of `MaxFileUploadSizeInBytes` with an entry per store, as in the following example, which maintains a 2 GB default and adds higher limits for stores with ids "fileOne" and "s3".
+ 
+``curl -X PUT -d '{"default":"2147483648","fileOne":"4000000000","s3":"8000000000"}' http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
 Notes:
 
@@ -1484,7 +1495,7 @@ Notes:
 
 - For larger file upload sizes, you may need to configure your reverse proxy timeout. If using apache2 (httpd) with Shibboleth, add a timeout to the ProxyPass defined in etc/httpd/conf.d/ssl.conf (which is described in the :doc:`/installation/shibboleth` setup).
 
-``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
+
 
 :ZipDownloadLimit
 +++++++++++++++++
@@ -1776,6 +1787,53 @@ It is recommended that you configure additional error handling for your Service 
 You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or any other page on your site that is accessible to anonymous users and will have the isPassive.js file loaded.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:ShibPassiveLoginEnabled``
+
+:ShibAffiliationAttribute
++++++++++++++++++++++++++
+
+The Shibboleth affiliation attribute holds information about the affiliation of the user (e.g. "OU") and is read from the DiscoFeed at each login. ``:ShibAffiliationAttribute`` is a name of a Shibboleth attribute in the Shibboleth header which Dataverse will read from instead of DiscoFeed. If this value is not set or empty, Dataverse uses the DiscoFeed.
+
+If the attribute is not yet set for the Shibboleth, please consult the Shibboleth Administrators at your institution. Typically it requires changing of the `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
+
+```
+    <Attribute name="urn:oid:2.5.4.11" id="ou">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+```
+
+In order to implement the change, you should restart Shibboleth and Apache2 services:
+
+```
+sudo service shibd restart
+sudo service apache2 restart
+```
+
+To check if the attribute is sent, you should log in again to Dataverse and check Shibboleth's transaction log. You should see something like this:
+
+```
+INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
+INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
+INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
+INFO Shibboleth-TRANSACTION [25]: }
+```
+
+If you see the attribue you requested in this list, you can set the attribute in Dataverse.
+
+To set ``:ShibAffiliationAttribute``:
+
+``curl -X PUT -d "ou" http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
+To delete ``:ShibAffiliationAttribute``:
+
+``curl -X DELETE http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
+To check the current value of ``:ShibAffiliationAttribute``:
+
+``curl -X GET http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
 
 .. _:ComputeBaseUrl:
 
