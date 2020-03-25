@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -137,19 +138,28 @@ public class AuthenticatedUser implements User, Serializable {
         this.worldMapTokens = worldMapTokens;
     }
     
-    /*
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
+    private List<UserNotification> notifications;
+
+    public List<UserNotification> getUserNotifications() {
+        return notifications;
+    }
+
+    public void setUserNotifications(List<UserNotification> notifications) {
+        this.notifications = notifications;
+    }
     
-    @OneToMany(mappedBy = "authenticatedUser", cascade={CascadeType.REMOVE})
-    private List<AccessRequest> fileAccessRequests;
+    @OneToMany(mappedBy = "requestor", cascade={CascadeType.REMOVE})
+    private List<UserNotification> requests;
 
-    public List<AccessRequest> getAccessRequests() {
-        return fileAccessRequests;
+    public List<UserNotification> getUserRequests() {
+        return requests;
     }
 
-    public void setFileAccessRequests(List<AccessRequest> fileAccessRequests) {
-        this.fileAccessRequests = fileAccessRequests;
+    public void setUserRequestss(List<UserNotification> requests) {
+        this.requests = requests;
     }
-    */
+
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;

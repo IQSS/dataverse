@@ -593,15 +593,10 @@ public class AuthenticationServiceBean {
     
     private void deletePendingAccessRequests(AuthenticatedUser  au){
         
-       em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId());
+       em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId()).executeUpdate();
         
     }
     
-    private void deleteWorldMapToken(AuthenticatedUser  au){
-        
-       em.createNativeQuery("delete from worldmapauth_token where dataverseuser_id  = "+au.getId());
-        
-    }
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         em.persist(user);
