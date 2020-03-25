@@ -24,12 +24,14 @@ function setupDirectUpload(enabled, theDatasetId) {
     $('.ui-fileupload-cancel').hide();
     //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
     var fileInput=document.getElementById('datasetForm:fileUpload_input');
-    fileInput.addEventListener('change', function(event) {
+    if(fileInput !==null) {
+      fileInput.addEventListener('change', function(event) {
         fileList=[];
         for(var i=0;i<fileInput.files.length;i++) {
           queueFileForDirectUpload(fileInput.files[i], datasetId);
         }
       }, {once:false});
+    }  
     //Add support for drag and drop. Since the fileUploadForm is not replaced by PF, catching changes with a mutationobserver isn't needed
     var fileDropWidget=document.getElementById('datasetForm:fileUpload');
     fileDropWidget.addEventListener('drop', function(event) {
