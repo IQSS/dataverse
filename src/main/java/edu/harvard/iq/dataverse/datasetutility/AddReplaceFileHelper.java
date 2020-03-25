@@ -952,9 +952,7 @@ public class AddReplaceFileHelper{
 			if (storageIdentifier == null) {
 				this.addErrorSevere(getBundleErr("file_upload_failed"));
 				return false;
-			} else { 
-				newStorageIdentifier = storageIdentifier;
-			}	
+			} 
 		} 
 		
         newFileName = fileName;
