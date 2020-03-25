@@ -16,7 +16,7 @@ S3 stores can now optionally be configured to support direct upload of files, as
 
 General information about this capability can be found in the <a href="http://guides.dataverse.org/en/latest/developers/big-data-support.html">Big Data Support Guide</a> with specific information about how to enable it in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
 
-To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads  over a more resilient transfer method. 
+To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads over a more resilient transfer method. 
 
 General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a>.
 
@@ -35,6 +35,12 @@ More information can be found in the <a href="http://guides.dataverse.org/en/lat
 Newly-supported use cases in this release include:
 
 - Users will now be able to see the number of linked datasets and dataverses accurately reflected in the facet counts on the Dataverse search page. (Issue #6564, PR #6262)
+- Administrators will be able to configure multiple stores per Dataverse installation, which allow dataverse-level setting of storage location, upload size limits, and supported data transfer methods (Issue #6485, PR #6488)
+- Direct upload... (Issue #6489, PR #6490)
+- Administrators and integrators will be able to manage roles using a new API.
+- Administrators and integrators will be able to determine a dataset's size. 
+- Integrators will now be able to retrieve the number of files in a dataset as part of a single API call instead of needing to count the number of files in the response. ()
+- Users will be able to see the PIDs of datasets and files in the Guestbook export.
 
 ## Notes for Dataverse Installation Administrators
 
@@ -80,6 +86,8 @@ Once these options are set, restarting the Glassfish service is all that is need
 
 Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
 
+Also note that the :MaxFileUploadSizeInBytes property has a new option to provide independent limits for each store instead of a single value for the whole installation. The default is to apply any existing limit defined by this property to all stores.
+
 ### Direct S3 Upload Changes
 
 Direct upload to S3 is enabled per store by one new jvm option:
@@ -117,25 +125,13 @@ We made changes to the JSON Export in this release (#xxx). If you'd like these c
 
 ## New JVM Options for S3 storage
 
-=========================================    ==================  ==================================================================  =============
-JVM Option                                   Value               Description                                                         Default value
-=========================================    ==================  ==================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-=========================================    ==================  ==================================================================  =============
+- The JVM option dataverse.files.file.directory=<your directory> controls where temporary files are stored (in the /temp subdir of the defined directory), independent of the location of any 'file' store defined above.
+- The JVM option dataverse.files.<id>.upload-redirect enables direct upload of files added to a dataset to the S3 store.
+- The JVM option dataverse.files.<id>.ingestsizelimit controls the maximum size of files (uploaded via directupload) for which ingest will be attempted.
 
 ## New Database Settings for Shibboleth
 
-The database setting :ShibAffiliationAttribute can now be set to prevent affiliations for Shibboleth users from being reset upon each log in.
+- The database setting :ShibAffiliationAttribute can now be set to prevent affiliations for Shibboleth users from being reset upon each log in.
 
 ## Notes for Tool Developers and Integrators
 
