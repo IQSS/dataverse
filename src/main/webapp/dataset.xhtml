@@ -87,11 +87,11 @@
 
                             <div id="datasetVersionBlock" class="row">
                                 <div class="col-xs-12">
-                                    <div id="title-block" class="row margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                                    <div class="row">
                                         
                                         <!-- REMOVED THUMBNAIL -->
                                         
-                                        <div class="col-xs-12 vcenter">
+                                        <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                             <span id="title" style="font-size:36px !important;line-height:1.1;">#{DatasetPage.datasetVersionUI.title.value}</span>
                                             <div id="title-label-block" class="margin-top-half">
                                                 <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-default" rendered="#{DatasetPage.workingVersion.draft}"/>
@@ -121,7 +121,7 @@
                                             <!-- END: CITATION BLOCK -->
                                         </div>
                                         
-                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right">
+                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom">
                                             <!-- ActionButtonBlock -->
                                             <div id="actionButtonBlock" jsf:rendered="#{!widgetWrapper.widgetView}">
 
@@ -433,7 +433,7 @@
                                             <!-- END: ActionButtonBlock -->
                                         </div>
                                         
-                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right" jsf:rendered="#{true}">
+                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" style="margin-top:6px;" jsf:rendered="#{true}">
                                             <!-- Metrics -->
                                             <div id="metrics-block" style="border:0;" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                                 <div id="metrics-headingXXX">
@@ -447,7 +447,7 @@
                                                             data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
                                                     </ui:fragment>
                                                 </div>
-                                                <div id="metrics-body" style="border-width:1px 0 0 0;">
+                                                <div id="metrics-body" style="border-width:1px 0 0 0;padding-left:0;padding-right:0;">
                                                     <!-- Classic downloads -->
                                                     <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
                                                         <h:outputFormat value="{0} #{bundle['metrics.downloads']}">
@@ -504,7 +504,7 @@
                                         <!-- END: DEACCESSION REASON -->
                                         
                                         <!-- BEGIN: DATASET SUMMARY -->
-                                        <div id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container margin-bottom"
+                                        <div style="padding:0;" id="dataset-summary-metadata" class="col-xs-12 col-sm-12 col-md-8 col-lg-9 metadata-container margin-bottom"
                                              jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and 
                                                              (!empty DatasetPage.datasetVersionUI.descriptionDisplay
                                                              or !empty DatasetPage.datasetVersionUI.keywordDisplay

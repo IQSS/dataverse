@@ -367,7 +367,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
 
 /* Buttons */
-#actionButtonBlock {margin-bottom:1em; margin-top:0;}
+#actionButtonBlock {/*margin-bottom:1em; margin-top:0;*/}
 #dataverse-info-dropdown {padding:.5em 1em .25em 1em; overflow:hidden; width:400px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon {width:40px; float:left; margin-right:12px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon .icon-dataverse {font-size:40px; line-height:40px;}
@@ -433,10 +433,7 @@ a[id$='advsearchlink'] {margin-left:1em;}
 #dv-main {}
 #dv-main.nofacets {width:100%;float:none;}
 
-/*
- * Off Canvas
- * --------------------------------------------------
- */
+/* Off Canvas */
 @media screen and (max-width: 767px) {
   .row-offcanvas {
     position: relative;
@@ -577,13 +574,11 @@ div.popupSubTabParent > div.ui-tabs-panels > div.ui-tabs-panel.ui-widget-content
 div.ui-tabs-panels .ui-tabs .ui-tabs-nav.ui-widget-header li {border:0;}
 div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bottom:0;}
 
-/* -------- ADVANCED -------- */
-
 /* -------- PERMISSIONS -------- */
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
 
 /* -------- METRICS -------- */
-#metrics-block {margin-bottom:20px;}
+#metrics-block {/*margin-bottom:20px;*/}
 
 /* -- OLD LAYOUT -- */
 #metrics-block {border:1px solid #eee; padding:0;}
@@ -631,27 +626,16 @@ div.alert-info.bg-citation, div.alert-danger.bg-danger {/*padding-top:4px; paddi
 .citation, .citation-download, .citation-standards {/*padding:.5em;*/}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 
-/*MOVED*/
-/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
-/*div.citation-block div.vcenter.title-preview-icon-block {display:inline-block; vertical-align:middle; float:none; padding:0;}*/
 div.citation-block div.preview-icon-block {/*width:48px;*/}
 div.citation-block div.preview-icon-block img {/*margin:6px 0;*/}
 div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
 
-/*COMMENTED OUT FOR THUMBNAILS*/
-/*TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL*/
-.citation-block .vcenter {/*display: inline-block; vertical-align: middle; float: none;*/}
-.waiver-CC0-inline {display:inline-block; margin-left:1em;}
-
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
-div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
 
 /* Buttons */
 .button-block.form-top {border-top: 1px solid #dddddd; padding:1em 0;}
 span[id$='editDataSet'] .ui-button-text {white-space: nowrap;}
 #replicationDataButton {margin-top:5px;}
-
-#deaccession-reason-block {}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size:.5em; vertical-align:text-top;}
 #datasetForm .form-group, #templateForm .form-group {overflow: hidden;}
@@ -723,15 +707,14 @@ div.panel-heading.text-info[data-toggle="collapse"] {color: #31708F;}
 
 .btn-sm.ui-button {padding: 5px 10px;}
 
-#dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
-
 div.popover.thumb-preview.fade.top.in, div.popover.thumb-preview.fade.bottom.in {max-width: none;}
 div.popover.thumb-preview.fade.top.in div.popover-content, div.popover.thumb-preview.fade.bottom.in div.popover-content {text-align:center; vertical-align: middle; display:table-cell; width:428px; height:418px;}
 a.popoverHTML {display:inline-block;}
 
+/* TERMS */
+.waiver-CC0-inline {display:inline-block; margin-left:1em;}
 
-div[id$="versionsTable"] th.col-select-width * {display:none;}
-
+/* FILES */
 div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
 div[id$="filesTable"].ui-datatable.ui-widget table {table-layout: fixed;}
@@ -830,7 +813,17 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
 span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
-span.ingest-warning span.glyphicon {top:3px} 
+span.ingest-warning span.glyphicon {top:3px}
+
+/* DOWNLOAD POPUP */
+div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
+
+/* UPLOAD FILES */
+#dragdropMsg {padding:20px;font-size:1.3em;color:#808080;text-align:center;}
+.dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
+
+/* VERSIONS */
+div[id$="versionsTable"] th.col-select-width * {display:none;}
 
 #version-details-block > div {width:35%; padding:4px 10px; border: 1px solid #DDDDDD;}
 #version-details-block > div:first-of-type {width:30%; border:0;}
@@ -846,8 +839,6 @@ div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionValue {widt
 div.dvnDifferanceTable div.ui-datatable-tablewrapper table td.versionDetails {width:35%;}
 
 div.dvnDifferanceTable .diffDetailBlock {display:block;}
-
-.dropin-btn-status.ui-icon {background: url("https://www.dropbox.com/static/images/widgets/dbx-saver-status.png") no-repeat;}
 
 /* MANAGE TABLE + DROPDOWN BUTTON */
 div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}

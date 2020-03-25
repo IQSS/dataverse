@@ -10,7 +10,6 @@
     <div class="citation-block">
         <div class="col-xs-12 #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
             <div class="row">
-                <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
                 <!-- TO-DO, REVIEW INCLUSION OF THUMBNAIL IN WIDGET VIEW -->
                 <div class="col-xs-2 center-block preview-icon-block" style="padding:0;">
                     <!-- TO-DO, FIX THUMBNAIL SIZE, MIN-HEIGHT HACK TO FIX RESPONSIVE ORDER HACK -->
@@ -46,7 +45,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
                 <div class="col-xs-12 col-sm-4 col-md-3 citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <div class="btn-group">
                         <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown">
@@ -74,7 +72,6 @@
                 <!-- BOOTSTRAP 3 CLEARFIX SPACER -->
                 <div class="clearfix visible-xs" style="line-height:.5;">&#160;</div>
                 <!-- END: BOOTSTRAP 3 CLEARFIX SPACER -->
-                <!-- TO-DO, REVIEW USE OF vcenter CLASS IN CITATION VS THUMBNAIL -->
                 <div class="col-xs-12 col-sm-8 col-md-7 small text-muted citation-standards"
                      style="line-height:2.1;"
                      jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
