@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.datafile.file.exception.ProvenanceChangeException;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -44,6 +44,9 @@ public class SingleFileFacadeTest {
     private GenericDao genericDao;
 
     @Mock
+    private DatasetVersionServiceBean datasetVersionService;
+
+    @Mock
     private DataverseRequestServiceBean dvRequestService;
 
     @Test
@@ -56,6 +59,13 @@ public class SingleFileFacadeTest {
         dataFile.setProvEntityName("");
         FileMetadata fileToSave = new FileMetadata();
         fileToSave.setDataFile(dataFile);
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setId(1L);
+        Dataset dataset = new Dataset();
+        dataset.setId(1L);
+        dsv.setDataset(dataset);
+        dataset.setVersions(Lists.newArrayList(dsv));
+        fileToSave.setDatasetVersion(dsv);
 
         String provFreeForm = "provFree";
         HashMap<String, UpdatesEntry> provenanceUpdates = of(checksum, new UpdatesEntry(dataFile, "prov", false, provFreeForm))
@@ -78,9 +88,11 @@ public class SingleFileFacadeTest {
         dataFile.setProvEntityName("");
         FileMetadata fileToSave = new FileMetadata();
         fileToSave.setDataFile(dataFile);
+        fileToSave.setId(1L);
         DatasetVersion dsv = new DatasetVersion();
         dsv.setId(1L);
         Dataset dataset = new Dataset();
+        dataset.setId(1L);
         dsv.setDataset(dataset);
         dataset.setVersions(Lists.newArrayList(dsv));
         fileToSave.setDatasetVersion(dsv);
@@ -91,14 +103,12 @@ public class SingleFileFacadeTest {
 
         //when
         Mockito.when(settingsService.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)).thenReturn(true);
-        Mockito.when(commandEngine.submit(Mockito.any(UpdateDatasetVersionCommand.class))).thenReturn(dataset);
         Mockito.when(fileMetadataService.manageProvJson(Mockito.any(Boolean.TYPE), Mockito.any())).then(Answers.RETURNS_MOCKS);
-        Mockito.when(genericDao.find(Mockito.anyLong(), Mockito.eq(DatasetVersion.class))).thenReturn(new DatasetVersion());
 
         singleFileFacade.saveFileChanges(fileToSave, provenanceUpdates);
 
         //then
-        Mockito.verify(commandEngine, Mockito.times(1)).submit(Mockito.any(UpdateDatasetVersionCommand.class));
+        Mockito.verify(datasetVersionService, Mockito.times(1)).updateDatasetVersion(Mockito.any(DatasetVersion.class), Mockito.eq(true));
         Mockito.verify(fileMetadataService, Mockito.times(1)).manageProvJson(Mockito.eq(false), Mockito.any());
     }
 }
