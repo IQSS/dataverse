@@ -119,7 +119,7 @@ The button tracking capability discussed in the installation guide (http://guide
 
 ### Run ReExportall
 
-We made changes to the JSON Export in this release (#xxx). If you'd like these changes to reflected in your JSON exports, you should run ReExportall as part of the upgrade process. We've included this in the step-by-step instructions below.
+We made changes to the JSON Export in this release (Issue 6650, PR #6669). If you'd like these changes to reflected in your JSON exports, you should run ReExportall as part of the upgrade process. We've included this in the step-by-step instructions below.
 
 ### New JVM Options and Database Settings
 
