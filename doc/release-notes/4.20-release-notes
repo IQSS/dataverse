@@ -116,7 +116,8 @@ We made changes to the JSON Export in this release (#xxx). If you'd like these c
 ### New Database Settings and JVM options
 
 - The database setting :ShibAffiliationAttribute can now be set to prevent affiliations for Shibboleth users from being reset upon each log in.
-- 
+- The new JVM option
+
 
 ## Notes for Tool Developers and Integrators
 
