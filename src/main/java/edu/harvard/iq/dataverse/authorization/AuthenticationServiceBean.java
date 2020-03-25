@@ -576,13 +576,12 @@ public class AuthenticationServiceBean {
     }
     
     public void removeAuthentictedUserItems(AuthenticatedUser au){
-        /* if the user has pending access requests, is the member of a group or has a world map token 
+        /* if the user has pending access requests, is the member of a group or 
         we will delete them here 
         */
 
         deletePendingAccessRequests(au);
         
-        deleteWorldMapToken(au);
         
         if (!explicitGroupService.findGroups(au).isEmpty()) {
             for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
