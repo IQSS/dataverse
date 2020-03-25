@@ -8,17 +8,17 @@ This release brings new features, enhancements, and bug fixes to Dataverse. Than
 
 Dataverse can now be configured to store files in more than one place at the same time (multiple file, s3, and/or swift stores). 
 
-General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
+General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/4.20/installation/config.html">Configuration Guide</a> - File Storage section.
 
 ### S3 Direct Upload support
 
 S3 stores can now optionally be configured to support direct upload of files, as one option for supporting upload of larger files. This will allow for uploads of up to five GB for installations using AWS and more than five GB for installations using Minio or another S3 driver.
 
-General information about this capability can be found in the <a href="http://guides.dataverse.org/en/latest/developers/big-data-support.html">Big Data Support Guide</a> with specific information about how to enable it in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> - File Storage section.
+General information about this capability can be found in the <a href="http://guides.dataverse.org/en/4.20/developers/big-data-support.html">Big Data Support Guide</a> with specific information about how to enable it in the <a href="http://guides.dataverse.org/en/4.20/installation/config.html">Configuration Guide</a> - File Storage section.
 
 To support large data uploads, installations can now configure direct upload to S3, bypassing the application server. This will allow for larger uploads over a more resilient transfer method. 
 
-General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a>.
+General information about this capability can be found below and in the <a href="http://guides.dataverse.org/en/4.20/installation/config.html">Configuration Guide</a>.
 
 ### Integration Test Coverage Reporting
 
@@ -28,19 +28,19 @@ The percentage of code covered by the API-based integration tests is now shown o
 
 New APIs for Role Management and Dataset Size have been added. Previously, managing roles at the dataset and file level was only possible through the UI. API users can now also retrieve the size of a dataset through an API call, with specific parameters depending on the type of information needed. 
 
-More information can be found in the <a href="http://guides.dataverse.org/en/latest/api">API Guide</a>.
+More information can be found in the <a href="http://guides.dataverse.org/en/4.20/api">API Guide</a>.
 
 ## Major Use Cases
 
 Newly-supported use cases in this release include:
 
 - Users will now be able to see the number of linked datasets and dataverses accurately reflected in the facet counts on the Dataverse search page. (Issue #6564, PR #6262)
+- Users will be able to upload large files directly to S3. (Issue #6489, PR #6490)
+- Users will be able to see the PIDs of datasets and files in the Guestbook export. (Issue #6534, PR #6628)
 - Administrators will be able to configure multiple stores per Dataverse installation, which allow dataverse-level setting of storage location, upload size limits, and supported data transfer methods (Issue #6485, PR #6488)
-- Direct upload... (Issue #6489, PR #6490)
-- Administrators and integrators will be able to manage roles using a new API.
-- Administrators and integrators will be able to determine a dataset's size. 
-- Integrators will now be able to retrieve the number of files in a dataset as part of a single API call instead of needing to count the number of files in the response. ()
-- Users will be able to see the PIDs of datasets and files in the Guestbook export.
+- Administrators and integrators will be able to manage roles using a new API. (Issue #6290, PR #6622)
+- Administrators and integrators will be able to determine a dataset's size. (Issue #6524, PR #6609) 
+- Integrators will now be able to retrieve the number of files in a dataset as part of a single API call instead of needing to count the number of files in the response. (Issue #6601, PR #6623)
 
 ## Notes for Dataverse Installation Administrators
 
@@ -62,7 +62,7 @@ If either, or both kinds of duplicates are detected, the script will provide fur
 
 **Existing installations will need to make configuration changes to adopt this version, regardless of whether additional stores are to be added or not.**
 
-Multistore support requires that each store be assigned a label, id, and type - see the <a href="http://guides.dataverse.org/en/latest/installation/config.html">Configuration Guide</a> for a more complete explanation. For an existing store, the recommended upgrade path is to assign the store id based on it's type, i.e. a 'file' store would get id 'file', an 's3' store would have the id 's3'. 
+Multistore support requires that each store be assigned a label, id, and type - see the <a href="http://guides.dataverse.org/en/4.20/installation/config.html">Configuration Guide</a> for a more complete explanation. For an existing store, the recommended upgrade path is to assign the store id based on it's type, i.e. a 'file' store would get id 'file', an 's3' store would have the id 's3'. 
 
 With this choice, no manual changes to datafile 'storageidentifier' entries are needed in the database. If you do not name your existing store using this convention, you will need to edit the database to maintain access to existing files.
 
