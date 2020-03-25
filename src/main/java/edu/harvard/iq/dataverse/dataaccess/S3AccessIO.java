@@ -180,8 +180,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             		}
             	} // else we're OK (assumes bucket name in storageidentifier matches the driver's bucketname)
             } else {
-            	//No driver id or bucket (presumably - we don't expect cases where there's no driver id but a bucket is listed - could add a check)
-            	newStorageIdentifier= this.driverId + "://" + bucketName + ":" + storageIdentifier;
+            	if(!storageIdentifier.substring((this.driverId + "://").length()).contains(":")) {
+            		//No driver id or bucket 
+            		newStorageIdentifier= this.driverId + "://" + bucketName + ":" + storageIdentifier;
+            	} else {
+            		//Just the bucketname
+            		newStorageIdentifier= this.driverId + "://" + storageIdentifier;
+            	}
             }
             if(newStorageIdentifier != null) {
         		//Fixup needed:
