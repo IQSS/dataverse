@@ -107,7 +107,6 @@
                                         </div>
                                     </div>
                                     
-                                    
                                     <!-- START: NEW RESPONSIVE ABOVE FOLD BLOCK -->
                                     <div class="row">
                                         
@@ -412,7 +411,7 @@
 
                                                 <!-- Contact/Share Button Group -->
                                                 <div class="btn-group btn-group-justified">
-                                                    <p:commandLink style="font-size:12px !important;" styleClass="text-buttonXXX btn btn-default btn-xs bootstrap-button-tooltipXXX" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                                    <p:commandLink style="font-size:12px !important;" styleClass="btn btn-default btn-xs" title="#{bundle['dataset.email.datasetContactBtn']}"
                                                                    update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -420,7 +419,7 @@
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
                                                         #{bundle['contact.contact']} OWNER
                                                     </p:commandLink>
-                                                    <p:commandLink style="font-size:12px !important;" styleClass="text-buttonXXX btn btn-default btn-xs bootstrap-button-tooltipXXX" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
+                                                    <p:commandLink style="font-size:12px !important;" styleClass="btn btn-default btn-xs" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                                    title="#{bundle['dataset.share.datasetShare']}"
                                                                    oncomplete="PF('shareDialog').show();sharrre();">
                                                         #{bundle['share']}
@@ -433,9 +432,11 @@
                                             <!-- END: ActionButtonBlock -->
                                         </div>
                                         
-                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" style="margin-top:6px;" jsf:rendered="#{true}">
+                                        <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
+                                             style="margin-top:6px;"
+                                             jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                             <!-- Metrics -->
-                                            <div id="metrics-block" style="border:0;" jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
+                                            <div id="metrics-block" style="border:0;">
                                                 <div id="metrics-headingXXX">
                                                     #{bundle['metrics.dataset.title']}
                                                     <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">

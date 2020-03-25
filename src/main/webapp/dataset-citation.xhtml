@@ -32,7 +32,7 @@
                 </div>
                 <div class="col-xs-10 citation">
                     <div class="row">
-                        <div class="col-xs-12 margin-bottom" style="word-wrap:break-word;">
+                        <div class="col-xs-12 #{DatasetPage.workingVersion.deaccessioned ? '' : 'margin-bottom'}" style="word-wrap:break-word;">
                             <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                                 <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                             </span>
