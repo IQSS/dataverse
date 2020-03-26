@@ -10,11 +10,10 @@ import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.FilePage;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetProvJsonCommand;
@@ -39,6 +38,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.json.JsonObject;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  * This bean contains functionality for the provenance json pop up
@@ -92,7 +92,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         jsonUploadedTempFile = event.getFile();
         provJsonParsedEntities = new HashMap<>();
-        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+        provJsonState = IOUtils.toString(jsonUploadedTempFile.getInputStream());
         
         
         if(!provUtil.isProvValid(provJsonState)) { //if uploaded prov-json does not comply with schema
@@ -214,7 +214,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             popupDataFile.setProvEntityName(null); 
         }        
         if(null != jsonUploadedTempFile && "application/json".equalsIgnoreCase(jsonUploadedTempFile.getContentType())) { //delete and create again can both happen at once
-            stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputstream());
+            stagingEntry.provJson = IOUtils.toString(jsonUploadedTempFile.getInputStream());
             stagingEntry.deleteJson = false;
 
             jsonUploadedTempFile = null;
