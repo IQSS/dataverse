@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -397,6 +398,29 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return null;
+    }
+    
+    public String getOriginalFileName() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileName() != null ? dataTable.getOriginalFileName()
+                        : getDerivedOriginalFileName();
+            }
+        }
+        return null;
+    }
+
+    private String getDerivedOriginalFileName() {
+        FileMetadata fm = getFileMetadata();
+        String filename = fm.getLabel();
+        String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
+        String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
+        if (StringUtil.nonEmpty(extensionToRemove)) {
+            String newFileName = filename.replace(extensionToRemove, originalExtension);
+            return newFileName;
+        }
+        return filename;
     }
 
     @Override

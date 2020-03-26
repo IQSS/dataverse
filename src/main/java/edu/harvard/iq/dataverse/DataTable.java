@@ -112,7 +112,7 @@ public class DataTable implements Serializable {
     /**
      * originalFileName: the file name upon upload/ingest
      */
-    @Column( nullable = false )
+    @Column( nullable = true )
     private String originalFileName;
     
     /*
