@@ -122,6 +122,11 @@ public class DataAccess {
     }
     
     public static String getStorarageIdFromLocation(String location) {
+    	if(location.contains("://")) {
+    		//It's a full location with a driverId, so strip and reapply the driver id
+    		//NOte that this will strip the bucketname out (which s3 uses) but the S3IOStorage class knows to look at re-insert it
+    		return location.substring(0,location.indexOf("://") +3) + location.substring(location.lastIndexOf('/')+1); 
+    	}
     	return location.substring(location.lastIndexOf('/')+1);
     }
     
