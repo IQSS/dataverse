@@ -12,7 +12,7 @@ General information about this capability can be found below and in the <a href=
 
 ### S3 Direct Upload support
 
-S3 stores can now optionally be configured to support direct upload of files, as one option for supporting upload of larger files. This will allow for uploads of up to five GB for installations using AWS and more than five GB for installations using Minio or another S3 service provider.
+S3 stores can now optionally be configured to support direct upload of files, as one option for supporting upload of larger files. In the current implementation the file size is still limited to 5 GB when using AWS. With Minio the limit appears to be 5 TB (theoretically; in practice other factors such as network timeouts may prevent a successful upload a multi-TB file. 50 GB file uploads have been tested successfully). No other S3 service providers have been tested as of yet, but it is reasonable to expect that the 5 GB limit is unique to AWS. 
 
 General information about this capability can be found in the <a href="http://guides.dataverse.org/en/4.20/developers/big-data-support.html">Big Data Support Guide</a> with specific information about how to enable it in the <a href="http://guides.dataverse.org/en/4.20/installation/config.html">Configuration Guide</a> - File Storage section.
 
