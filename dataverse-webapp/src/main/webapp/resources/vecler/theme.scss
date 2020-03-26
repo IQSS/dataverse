@@ -2144,6 +2144,18 @@ div.filesTable {
 	padding: 0 4px;
 }
 
+/* Fix submenu entries not accessible by keyboard */
+.dropdown-submenu {
+	.dropdown-menu {
+		display: block;
+	}
+
+	&:not(:hover):not(:focus-within) .dropdown-menu {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
 /* Modal */
 
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {

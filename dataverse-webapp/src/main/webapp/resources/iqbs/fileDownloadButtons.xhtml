@@ -186,8 +186,8 @@
                                />
             </li>
             <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
-                <ul class="dropdown-menu">
+                <a tabindex="-1" class="no-focus">#{bundle['file.downloadBtn.format.citation']}</a>
+                <ul class="dropdown-menu" role="menu">
                     <li>
                         <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}">
                             <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />

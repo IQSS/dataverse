@@ -303,9 +303,8 @@
                                                     rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
                                                 <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
                                                     <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                        <a tabindex="-1"
-                                                           href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                                        <ul class="dropdown-menu">
+                                                        <a tabindex="-1" class="no-focus">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                        <ul class="dropdown-menu" role="menu">
                                                             <li>
                                                                 <h:link id="manageDatasetPermissions"
                                                                         styleClass="ui-commandlink ui-widget"
