@@ -96,14 +96,14 @@ public class FileReplacePageHelper {
      * Handle native file replace
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fileName, String fileContentType) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType) {
                 
         phase1Success = false;
         
         // Preliminary sanity check
         //
-        if (inputStream == null){
-            throw new NullPointerException("inputStream cannot be null");
+        if ((inputStream == null)&&(fullStorageId==null)){
+            throw new NullPointerException("inputStream and storageId cannot both be null");
         }
         if (fileName == null){
             throw new NullPointerException("fileName cannot be null");
@@ -118,6 +118,7 @@ public class FileReplacePageHelper {
                 fileName,
                 fileContentType,
                 inputStream,
+                fullStorageId,
                 null
         );
         

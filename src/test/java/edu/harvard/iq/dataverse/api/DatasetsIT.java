@@ -446,9 +446,9 @@ public class DatasetsIT {
          */
         boolean nameRequiredForContactToAppear = true;
         if (nameRequiredForContactToAppear) {
-            assertEquals("Finch, Fiona", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+            assertEquals("Finch, Fiona", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact"));
         } else {
-            assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
+            assertEquals("finch@mailinator.com", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
         }
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
@@ -659,10 +659,10 @@ public class DatasetsIT {
         exportDatasetAsDdi.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact"));
+        assertEquals("Dataverse, Admin", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact"));
         // no "sammi@sample.com" to be found https://github.com/IQSS/dataverse/issues/3443
-        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@email"));
-        assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.stdyInfo.contact.@affiliation"));
+        assertEquals("[]", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@email"));
+        assertEquals("Sample Datasets, inc.", XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.stdyDscr.citation.distStmt.contact.@affiliation"));
         assertEquals(datasetPersistentId, XmlPath.from(exportDatasetAsDdi.body().asString()).getString("codeBook.docDscr.citation.titlStmt.IDNo"));
 
         List<JsonObject> datasetContactsFromNativeGet = with(getDatasetJsonAfterPublishing.body().asString()).param("datasetContact", "datasetContact")
