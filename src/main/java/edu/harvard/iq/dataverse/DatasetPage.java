@@ -1734,7 +1734,6 @@ public class DatasetPage implements java.io.Serializable {
     private String init(boolean initFull) {
   
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
@@ -1786,6 +1785,8 @@ public class DatasetPage implements java.io.Serializable {
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
             } 
+            this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+
 
             if (retrieveDatasetVersionResponse == null) {
                 return permissionsWrapper.notFound();
@@ -3009,16 +3010,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setLinkingDataverseErrorMessage(String linkingDataverseErrorMessage) {
         this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
-    }
-    
-    UIInput selectedLinkingDataverseMenu;
-    
-    public UIInput getSelectedDataverseMenu() {
-        return selectedLinkingDataverseMenu;
-    }
-
-    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
-        this.selectedLinkingDataverseMenu = selectedDataverseMenu;
     }
     
     

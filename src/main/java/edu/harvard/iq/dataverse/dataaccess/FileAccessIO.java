@@ -147,7 +147,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataset) {
             //This case is for uploading a dataset related auxiliary file 
             //e.g. image thumbnails/metadata exports
-            //TODO: do we really need to do anything here? should we return the dataset directory?
             dataset = this.getDataset();
             if (isReadAccess) {
                 //TODO: Not necessary for dataset as there is no files associated with this
@@ -229,10 +228,19 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
-
+      
         Path auxPath = getAuxObjectAsPath(auxItemTag);
 
         if (isWriteAccessRequested(options)) {
+            if (dvObject instanceof Dataset && !this.canWrite()) {
+                // If this is a dataset-level auxilary file (a cached metadata export,
+                // dataset logo, etc.) there's a chance that no "real" files 
+                // have been saved for this dataset yet, and thus the filesystem 
+                // directory does not exist yet. Let's force a proper .open() on 
+                // this StorageIO, that will ensure it is created:
+                open(DataAccessOption.WRITE_ACCESS);
+            }
+
             FileOutputStream auxOut = new FileOutputStream(auxPath.toFile());
 
             if (auxOut == null) {
@@ -287,7 +295,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         String datasetDirectory = getDatasetDirectory();
-
+        
         if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
             throw new IOException("Data Access: No local storage identifier defined for this datafile.");
         }
@@ -325,6 +333,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     @Override
     public void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException {
+        if (dvObject instanceof Dataset && !this.canWrite()) {
+            // see the comment in openAuxChannel()
+            open(DataAccessOption.WRITE_ACCESS);
+        }
         // quick Files.copy method: 
         try {
             Path auxPath = getAuxObjectAsPath(auxItemTag);
@@ -340,7 +352,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
-        
+        if (dvObject instanceof Dataset && !this.canWrite()) {
+            // see the comment in openAuxChannel()
+            open(DataAccessOption.WRITE_ACCESS);
+        }
         // Since this is a local fileystem file, we can use the
         // quick NIO Files.copy method: 
 

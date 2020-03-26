@@ -1262,3 +1262,12 @@ span.label-primary { background-color: #4b75ff; }
 .pagination > li > a.skip.next {background-image: url(/resources/images/arrow_icon.svg); transform: scaleX(-1);}
 .pagination > li > a.skip.bottom {background-image: url(/resources/images/skip_icon.svg); transform: scaleX(-1);}
 
+
+/*Direct upload progress bar*/
+progress::-webkit-progress-bar {
+  background-color:white;
+}
+
+progress::-webkit-progress-value {
+  background-color:green;
+}

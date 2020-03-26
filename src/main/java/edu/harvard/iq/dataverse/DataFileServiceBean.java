@@ -29,6 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -942,6 +944,17 @@ public class DataFileServiceBean implements java.io.Serializable {
         } 
     }
     
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public DataFile saveInTransaction(DataFile dataFile) {
+
+        if (dataFile.isMergeable()) {   
+            DataFile savedDataFile = em.merge(dataFile);
+            return savedDataFile;
+        } else {
+            throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
+        } 
+    }
+    
     private void msg(String m){
         System.out.println(m);
     }
@@ -1578,7 +1591,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
                     + "(id: " + dataFileId + ", location: " + storageLocation);
         }
-        logger.info("deleting: " + storageLocation);
         StorageIO<DvObject> directStorageAccess = DataAccess.getDirectStorageIO(storageLocation);
         directStorageAccess.delete();
     }

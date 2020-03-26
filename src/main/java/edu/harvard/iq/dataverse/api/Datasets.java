@@ -1481,6 +1481,43 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+@GET
+@Path("{id}/uploadsid")
+public Response getUploadUrl(@PathParam("id") String idSupplied) {
+	try {
+		Dataset dataset = findDatasetOrDie(idSupplied);
+
+		boolean canUpdateDataset = false;
+		try {
+			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
+		} catch (WrappedResponse ex) {
+			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+		}
+		if (!canUpdateDataset) {
+            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+        }
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
+        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
+		}
+		String url = null;
+        String storageIdentifier = null;
+		try {
+			url = s3io.generateTemporaryS3UploadUrl();
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
+		}
+        
+		JsonObjectBuilder response = Json.createObjectBuilder()
+	            .add("url", url)
+	            .add("storageIdentifier", storageIdentifier );
+		return ok(response);
+	} catch (WrappedResponse wr) {
+		return wr.getResponse();
+	}
+}
     /**
      * Add a File to an existing Dataset
      * 
@@ -1542,15 +1579,6 @@ public class Datasets extends AbstractApiBean {
             }
         }
 
-        // -------------------------------------
-        // (3) Get the file name and content type
-        // -------------------------------------
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
-        }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
-
         // (2a) Load up optional params via JSON
         // ---------------------------------------
         OptionalFileParams optionalFileParams = null;
@@ -1561,6 +1589,31 @@ public class Datasets extends AbstractApiBean {
         } catch (DataFileTagException ex) {
             return error(Response.Status.BAD_REQUEST, ex.getMessage());
         }
+
+        // -------------------------------------
+        // (3) Get the file name and content type
+        // -------------------------------------
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+		if (null == contentDispositionHeader) {
+			if (optionalFileParams.hasStorageIdentifier()) {
+				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+				// ToDo - check that storageIdentifier is valid
+				if (optionalFileParams.hasFileName()) {
+					newFilename = optionalFileParams.getFileName();
+					if (optionalFileParams.hasMimetype()) {
+						newFileContentType = optionalFileParams.getMimeType();
+					}
+				}
+			} else {
+				return error(BAD_REQUEST,
+						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
+			}
+		} else {
+			newFilename = contentDispositionHeader.getFileName();
+			newFileContentType = formDataBodyPart.getMediaType().toString();
+		}
 
         // -------------------
         // (3) Create the AddReplaceFileHelper object
@@ -1582,6 +1635,7 @@ public class Datasets extends AbstractApiBean {
         addFileHelper.runAddFileByDataset(dataset,
                 newFilename,
                 newFileContentType,
+                newStorageIdentifier,
                 fileInputStream,
                 optionalFileParams);
 
