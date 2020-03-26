@@ -1594,7 +1594,12 @@ div.panelSearchForm input.search-input {
 .ui-paginator-last {
 	.ui-icon {
 		text-indent: 0;
-		visibility: hidden;
+		color: transparent;
+		text-shadow: none;
+	}
+
+	&.ui-state-disabled {
+		filter: saturate(0);
 	}
 }
 
