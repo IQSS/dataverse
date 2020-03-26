@@ -123,11 +123,12 @@ We made changes to the JSON Export in this release (Issue 6650, PR #6669). If yo
 
 ### New JVM Options and Database Settings
 
-## New JVM Options for S3 storage
+## New JVM Options for file storage drivers
 
 - The JVM option dataverse.files.file.directory=<your directory> controls where temporary files are stored (in the /temp subdir of the defined directory), independent of the location of any 'file' store defined above.
-- The JVM option dataverse.files.<id>.upload-redirect enables direct upload of files added to a dataset to the S3 store.
-- The JVM option dataverse.files.<id>.ingestsizelimit controls the maximum size of files (uploaded via directupload) for which ingest will be attempted.
+- The JVM option dataverse.files.<id>.upload-redirect enables direct upload of files added to a dataset to the S3 bucket. (S3 stores only!)
+- The JVM option dataverse.files.<id>.MaxFileUploadSizeInBytes controls the maximum size of file uploads allowed for the given file store. 
+- The JVM option dataverse.files.<id>.ingestsizelimit controls the maximum size of files for which ingest will be attempted, for the given file store. 
 
 ## New Database Settings for Shibboleth
 
