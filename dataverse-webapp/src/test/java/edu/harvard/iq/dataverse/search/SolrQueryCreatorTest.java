@@ -29,6 +29,19 @@ class SolrQueryCreatorTest {
     }
 
     @Test
+    public void constructQuery_TextQueryWithLongText() {
+        //given
+        List<SearchField> textSearchFields = createLongTextSearchFields();
+
+        SearchBlock searchBlock = new SearchBlock("TEST", "TEST", textSearchFields);
+        //when
+        String result = solrQueryCreator.constructQuery(Lists.newArrayList((searchBlock)));
+        //then
+        Assert.assertEquals("text1:very AND text1:long AND text1:text AND text1:one AND " +
+                                    "text2:very AND text2:long AND text2:text AND text2:two", result);
+    }
+
+    @Test
     public void constructQuery_BothNumbersQuery() {
         //given
         SearchBlock searchBlock = new SearchBlock("TEST", "TEST", createBothNumbersSearchFields());
@@ -111,6 +124,16 @@ class SolrQueryCreatorTest {
 
         TextSearchField testValue2 = new TextSearchField("text2", "text2", "desc");
         testValue2.setFieldValue("testValue2");
+
+        return Lists.newArrayList(testValue1, testValue2);
+    }
+
+    private List<SearchField> createLongTextSearchFields() {
+        TextSearchField testValue1 = new TextSearchField("text1", "text1", "desc");
+        testValue1.setFieldValue("very long text one");
+
+        TextSearchField testValue2 = new TextSearchField("text2", "text2", "desc");
+        testValue2.setFieldValue("very long text two");
 
         return Lists.newArrayList(testValue1, testValue2);
     }

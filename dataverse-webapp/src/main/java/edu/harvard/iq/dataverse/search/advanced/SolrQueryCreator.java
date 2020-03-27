@@ -63,7 +63,7 @@ public class SolrQueryCreator {
 
         fieldValues.forEach(fieldValue ->
                                     textQueryBuilder
-                                            .append(textQueryBuilder.length() == 0 ? StringUtils.EMPTY : " ")
+                                            .append(textQueryBuilder.length() == 0 ? StringUtils.EMPTY : " AND ")
                                             .append(textSearchField.getName())
                                             .append(":")
                                             .append(fieldValue));
