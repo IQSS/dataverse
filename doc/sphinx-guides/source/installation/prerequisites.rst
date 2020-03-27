@@ -47,59 +47,40 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Glassfish
 ---------
 
-Glassfish Version 4.1 is required. There are known issues with newer versions of the Glassfish 4.x series so it should be avoided. For details, see https://github.com/IQSS/dataverse/issues/2628 . The issue we are using the track support for Glassfish 5 is https://github.com/IQSS/dataverse/issues/4248 .
+Glassfish Version 4.1.2 is required.
 
 Installing Glassfish
 ====================
 
 **Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
 
-- Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
+- Download and install Glassfish (installed in ``/usr/local/glassfish4.1.2`` in the example commands below)::
 
-	# wget http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
-	# unzip glassfish-4.1.zip
-	# mv glassfish4 /usr/local
+	# wget https://dlc-cdn.sun.com/glassfish/4.1.2/release/glassfish-4.1.2.zip
+	# unzip glassfish-4.1.2.zip
+	# mv glassfish4.1.2 /usr/local
 
 If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the below directories:
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/glassfish4
-	# chown glassfish /usr/local/glassfish4/glassfish/lib
-	# chown -R glassfish:glassfish /usr/local/glassfish4/glassfish/domains/domain1
+	# chown -R root:root /usr/local/glassfish4.1.2
+	# chown glassfish /usr/local/glassfish4.1.2/glassfish/lib
+	# chown -R glassfish:glassfish /usr/local/glassfish4.1.2/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
-
-Once Glassfish is installed, you'll need a newer version of the Weld library (v2.2.10.SP1) to fix a serious issue in the library supplied with Glassfish 4.1 (see https://github.com/IQSS/dataverse/issues/647 for details). If you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
-
-- Remove the stock Weld jar; download Weld v2.2.10.SP1 and install it in the modules folder::
-
-	# cd /usr/local/glassfish4/glassfish/modules
-	# rm weld-osgi-bundle.jar
-	# wget http://central.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/2.2.10.SP1/weld-osgi-bundle-2.2.10.SP1-glassfish4.jar
-
-- Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
-
-	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
-
-This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
-
-- Start Glassfish and verify the Weld version::
-
-	# /usr/local/glassfish4/bin/asadmin start-domain
-	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
 
 The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
 
 - The actual expiration date is August 22, 2018, which you can see with the following command::
 
-	# keytool -list -v -keystore /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+	# keytool -list -v -keystore /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
 
 - Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
 
-	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
-	# /usr/local/glassfish4/bin/asadmin stop-domain
-	# /usr/local/glassfish4/bin/asadmin start-domain
+	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
+	# /usr/local/glassfish4.1.2/bin/asadmin stop-domain
+	# /usr/local/glassfish4.1.2/bin/asadmin start-domain
 
 Launching Glassfish on system boot
 ==================================
@@ -124,7 +105,7 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.x is required. Previous versions have not been tested.
+Version 9.6 is required. Previous versions have not been tested.
 
 Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 
@@ -134,7 +115,7 @@ Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
-	
+
 Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
 	# service postgresql-9.6 initdb
@@ -292,6 +273,21 @@ If the installed location of the convert executable is different from ``/usr/bin
 
 (see the :doc:`config` section for more information on the JVM options)
 
+Maven
+----------------
+
+Maven is a tool for managing developer dependencies in various projects. It is needed in order to create war package that will be deployed::
+
+    # yum install maven
+
+
+Git
+--------------
+
+Git is used for cloning a project from our sources::
+
+    # yum install git
+
 R
 -
 
@@ -388,18 +384,18 @@ damage through unauthorized access. It is however still a good idea
 documentation <https://rforge.net/Rserve/doc.html>`_ for more
 information on password encryption and access security.
 
-You should already have the following 4 JVM options added to your
-:fixedwidthplain:`domain.xml` by the Dataverse installer::
+You should have the following 5 file options::
 
-        <jvm-options>-Ddataverse.rserve.host=localhost</jvm-options>
-        <jvm-options>-Ddataverse.rserve.port=6311</jvm-options>
-        <jvm-options>-Ddataverse.rserve.user=rserve</jvm-options>
-        <jvm-options>-Ddataverse.rserve.password=rserve</jvm-options>
+        RserveHost=localhost
+        RservePort=6311
+        RserveUser=rserve
+        RservePassword=rserve
+        RserveConfigured=true
 
 If you have changed the password, make sure it is correctly specified
-in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
+in the :fixedwidthplain:`RservePassword` option above.  If
 Rserve is running on a host that's different from your Dataverse
-server, change the :fixedwidthplain:`dataverse.rserve.host` option
+server, change the :fixedwidthplain:`RserveHost` option
 above as well (and make sure the port 6311 on the Rserve host is not
 firewalled from your Dataverse host).
 

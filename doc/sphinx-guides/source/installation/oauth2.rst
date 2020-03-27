@@ -26,7 +26,7 @@ Obtain Client ID and Client Secret
 
 Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID, on the other hand, does not have an automated system for requesting these credentials, and it is not free to use the ORCID authentication service.
 
-URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal ORCID, GitHub, or Google account:
+URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``SystemEmail`` you've configured for Dataverse, rather than your own personal ORCID, GitHub, or Google account:
 
 - ORCID: https://orcid.org/content/register-client-application-production-trusted-party
 - GitHub: https://github.com/settings/applications/new via https://developer.github.com/v3/oauth/
@@ -63,7 +63,7 @@ Edit the JSON template and replace the two "FIXME" values with the Client ID and
 
 After restarting Glassfish you should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account` section of the User Guide.
 
-By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
+By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
 
 ORCID Sandbox
 ^^^^^^^^^^^^^

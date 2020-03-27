@@ -18,15 +18,20 @@ As mentioned in the :doc:`prerequisites` section, RHEL/CentOS is the recommended
 
 Generally, the installer has a better chance of succeeding if you run it against a freshly installed Glassfish node that still has all the default configuration settings. In any event, please make sure that it is still configured to accept http connections on port 8080 - because that's where the installer expects to find the application once it's deployed.
 
-You should have already downloaded the installer from https://github.com/IQSS/dataverse/releases when setting up and starting Solr under the :doc:`prerequisites` section. Again, it's a zip file with "dvinstall" in the name.
+You should clone the project from https://github.com/CeON/dataverse ::
 
-Unpack the zip file - this will create the directory ``dvinstall``.
+    $ cd ~
+    $ git clone https://github.com/CeON/dataverse
+
+when setting up and starting Solr under the :doc:`prerequisites` section.
+
+Cloning the version this will create the directory ``dataverse``.
 
 **Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
 
 Execute the installer script like this (but first read the note below about not running the installer as root)::
 
-        $ cd dvinstall
+        $ cd ~/dataverse/scripts/installer
         $ ./install
 
 
@@ -34,8 +39,8 @@ Execute the installer script like this (but first read the note below about not 
 
 Just make sure the user running the installer has write permission to:
 
-- /usr/local/glassfish4/glassfish/lib
-- /usr/local/glassfish4/glassfish/domains/domain1
+- /usr/local/glassfish4.1.2/glassfish/lib
+- /usr/local/glassfish4.1.2/glassfish/domains/domain1
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
@@ -44,7 +49,7 @@ The only reason to run Glassfish as root would be to allow Glassfish itself to l
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
-- Glassfish Directory: /usr/local/glassfish4
+- Glassfish Directory: /usr/local/glassfish4.1.2
 - Glassfish User: current user running the installer script
 - Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
@@ -105,8 +110,6 @@ Superuser Account
 
 We'll use the superuser account created by the installer to make sure you can log into Dataverse. For more on the difference between being a superuser and having the "Admin" role, read about configuring the root dataverse in the :doc:`config` section.
 
-(The ``dvinstall/setup-all.sh`` script, which is called by the installer sets the password for the superuser account account and the username and email address come from a file it references at ``dvinstall/data/user-admin.json``.)
-
 Use the following credentials to log in:
 
 - URL: http://localhost:8080
@@ -122,12 +125,12 @@ Next you'll want to check out the :doc:`config` section, especially the section 
 Troubleshooting
 ---------------
 
-If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
+If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4.1.2/glassfish/domains/domain1/logs/server.log`` for debugging.
 
 Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``dataverse.fqdn`` JVM option after the fact per the :doc:`config` section.
+Check to make sure you used a fully qualified domain name when installing Dataverse. You can change the ``SiteUrl`` File setting after the fact per the :doc:`config` section.
 
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^

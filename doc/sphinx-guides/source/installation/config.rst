@@ -24,7 +24,7 @@ Blocking API Endpoints
 
 The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
 
-By default, all APIs can be operated on remotely and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, but until then it is very important to block both the "admin" endpoint (and at least consider blocking ``builtin-users``). For details please see also the section on ``:BlockedApiPolicy`` below.
+By default, all APIs can be accessed locally and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, until then by default `admin` and `test` endpoints are blocked. For details please see also the section on ``BlockedApiPolicy`` below.
 
 It's also possible to prevent file uploads via API by adjusting the ``UploadMethods`` file setting.
 
@@ -604,7 +604,8 @@ File Settings
 -------------
 Database settings and most JVM options were moved to the file based configuration in order to simplify usage.
 
-In order to edit the options you should move dataverse.default.properties file to {HOME_DIR}/.dataverse and rename it to dataverse.properties.
+In order to edit the options you should move dataverse.default.properties file located in {PROJECT_DIR}/dataverse/dataverse-webapp/src/main/resources/config/dataverse.default.properties
+to {HOME_DIR}/.dataverse and rename it to dataverse.properties.
 Now you can edited the desired options and you need to restart the application in order to apply them.
 
 SiteUrl
