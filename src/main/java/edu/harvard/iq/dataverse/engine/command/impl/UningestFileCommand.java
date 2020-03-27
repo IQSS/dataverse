@@ -138,9 +138,15 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // Modify the file name - which is stored in FileMetadata, and there
         // could be more than one: 
         
-        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        
+       // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
+        String originalFileName = uningest.getOriginalFileName();
         for (FileMetadata fm : uningest.getFileMetadatas()) {
+            
+            fm.setLabel(originalFileName);
+            ctxt.em().merge(fm);
+            
+            /* 
+            getOriginalFileName method replaces this code
             String filename = fm.getLabel();
             String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
             if (StringUtil.nonEmpty(extensionToRemove)) {
@@ -148,6 +154,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
                 fm.setLabel(newFileName);
                 ctxt.em().merge(fm);
             }
+             */
             
             DatasetVersion dv = fm.getDatasetVersion();
             
