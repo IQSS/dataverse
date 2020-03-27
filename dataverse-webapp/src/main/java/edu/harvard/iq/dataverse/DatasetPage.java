@@ -59,6 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
+import javax.faces.application.FacesMessage.Severity;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
@@ -1338,5 +1339,15 @@ public class DatasetPage implements java.io.Serializable {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.embargo.validate.min.failureMessage"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
+    }
+    
+    /*
+     * Informs that current dataset status has changed and dataset view can be refreshed. Auto-refresh cannot be used according to WCAG rule
+     * that changes of content should be initiated by user.  
+     */
+    public void showDatasetUnlockedInfo() {
+    	if (dataset.getLatestVersion().isDraft() && !permissionsWrapper.canIssuePublishDatasetCommand(dataset)) {
+    		JsfHelper.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
+    	}
     }
 }
