@@ -30,9 +30,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.Future;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrServerException;
+
 
 /**
  *
@@ -127,6 +134,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
 		// some imported datasets may already be released.
+                
+                // validate the physical files (verify checksums):
+                validateDataFiles(theDataset, ctxt);
+                
 		if (!datasetExternallyReleased){
 			publicizeExternalIdentifier(theDataset, ctxt);
 		}
@@ -225,6 +236,52 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
+    private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
+        try {
+            for (DataFile dataFile : dataset.getFiles()) {
+                logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
+                
+                // systemConfig.getFileFixityChecksumAlgorithm()
+                DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+                if (checksumType == null) {
+                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString())));
+                }
+                
+                StorageIO<DataFile> storage = dataFile.getStorageIO();
+                storage.open(DataAccessOption.READ_ACCESS);
+                InputStream in = null;
+                
+                if (!dataFile.isTabularData()) {
+                    in = storage.getInputStream();
+                } else {
+                    // if this is a tabular file, read the preserved original "auxiliary file"
+                    // instead:
+                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                }
+                
+                if (in == null) {
+                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString())));
+                }
+                
+                String recalculatedChecksum = null; 
+                try {
+                    FileUtil.calculateChecksum(in, checksumType);
+                } catch (RuntimeException rte) {
+                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString())));
+                } finally {
+                    IOUtils.closeQuietly(in);
+                }
+                
+                if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString())));
+                }
+            }
+        } catch (Throwable e) {
+            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
+            throw new CommandException(e.getMessage(), this);
+        }
+    }
+    
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
