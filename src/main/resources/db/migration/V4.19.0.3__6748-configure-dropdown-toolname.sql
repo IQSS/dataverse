@@ -1,0 +1,2 @@
+ALTER TABLE externaltool
+ADD COLUMN IF NOT EXISTS  toolname VARCHAR(255);

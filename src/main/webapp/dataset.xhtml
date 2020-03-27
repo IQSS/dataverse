@@ -283,7 +283,7 @@
                                                     <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
                                                         <li>
                                                             <h:commandLink action="#{DatasetPage.explore(tool)}">
-                                                                <h:outputText value="#{tool.displayName}"/>
+                                                                <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                             </h:commandLink>
                                                         </li>
                                                     </ui:repeat>

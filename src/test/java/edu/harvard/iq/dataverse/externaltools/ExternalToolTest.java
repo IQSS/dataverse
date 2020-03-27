@@ -12,16 +12,18 @@ public class ExternalToolTest {
     public void testToJson() {
         System.out.println("toJson");
         String displayName = "myDisplayName";
+        String toolName = "explorer";
         String description = "myDescription";
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;
         ExternalTool.Scope scope = ExternalTool.Scope.FILE;
         String toolUrl = "http://example.com";
         String toolParameters = "{}";
-        ExternalTool externalTool = new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, DataFileServiceBean.MIME_TYPE_TSV_ALT);
+        ExternalTool externalTool = new ExternalTool(displayName, toolName, description, type, scope, toolUrl, toolParameters, DataFileServiceBean.MIME_TYPE_TSV_ALT);
         externalTool.setId(42l);
         JsonObject jsonObject = externalTool.toJson().build();
         System.out.println("result: " + jsonObject);
         assertEquals("testToJson() with ExternalTool.DISPLAY_NAME", "myDisplayName", jsonObject.getString(ExternalTool.DISPLAY_NAME));
+        assertEquals("testToJson() with ExternalTool.TOOL_NAME", "explorer", jsonObject.getString(ExternalTool.TOOL_NAME));
         assertEquals("testToJson() with ExternalTool.DESCRIPTION", "myDescription", jsonObject.getString(ExternalTool.DESCRIPTION));
         assertEquals("testToJson() with ExternalTool.TYPE", "explore", jsonObject.getString(ExternalTool.TYPE));
         assertEquals("testToJson() with ExternalTool.TOOL_URL", "http://example.com", jsonObject.getString(ExternalTool.TOOL_URL));
