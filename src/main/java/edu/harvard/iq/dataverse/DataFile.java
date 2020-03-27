@@ -405,12 +405,24 @@ public class DataFile extends DvObject implements Comparable {
             DataTable dataTable = getDataTable();
             if (dataTable != null) {
                 return dataTable.getOriginalFileName() != null ? dataTable.getOriginalFileName()
-                        : getFileMetadata().getLabel().replaceAll(".tab$", FileUtil.generateOriginalExtension(getOriginalFileFormat()));
+                        : getDerivedOriginalFileName();
             }
         }
         return null;
     }
 
+    
+    private String getDerivedOriginalFileName() {
+        FileMetadata fm = getFileMetadata();
+        String filename = fm.getLabel();
+        String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
+        String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
+        if (StringUtil.nonEmpty(extensionToRemove)) {
+            return filename.replaceAll(extensionToRemove + "$", originalExtension);
+        } else{
+            return filename + originalExtension ;
+        }        
+    }
 
     @Override
     public boolean isAncestorOf( DvObject other ) {
