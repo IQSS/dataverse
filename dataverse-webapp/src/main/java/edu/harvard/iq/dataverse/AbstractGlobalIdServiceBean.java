@@ -12,6 +12,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +28,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
     @EJB
     DataverseDao dataverseDao;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     EjbDataverseEngine commandEngine;

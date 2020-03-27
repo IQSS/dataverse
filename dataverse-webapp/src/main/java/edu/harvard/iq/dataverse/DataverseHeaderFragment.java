@@ -37,7 +37,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     @EJB
     DataverseDao dataverseDao;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

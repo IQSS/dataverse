@@ -33,7 +33,6 @@ public class DashboardUsersPage implements java.io.Serializable {
     private DataverseSession session;
     private PermissionsWrapper permissionsWrapper;
     private DashboardUsersService dashboardUsersService;
-    @EJB
     private SettingsServiceBean settingsService;
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
@@ -53,11 +52,13 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     @Inject
     public DashboardUsersPage(UserServiceBean userService, DataverseSession session,
-                              PermissionsWrapper permissionsWrapper, DashboardUsersService dashboardUsersService) {
+                              PermissionsWrapper permissionsWrapper, DashboardUsersService dashboardUsersService,
+                              SettingsServiceBean settingsService) {
         this.userService = userService;
         this.session = session;
         this.permissionsWrapper = permissionsWrapper;
         this.dashboardUsersService = dashboardUsersService;
+        this.settingsService = settingsService;
     }
 
     // -------------------- GETTERS --------------------

@@ -43,6 +43,8 @@ import org.apache.commons.lang.NotImplementedException;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.InetAddress;
@@ -67,7 +69,7 @@ import java.util.logging.Logger;
 @Stateless
 public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
     private static final Logger logger = Logger.getLogger(HandlenetServiceBean.class.getCanonicalName());

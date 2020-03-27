@@ -48,7 +48,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

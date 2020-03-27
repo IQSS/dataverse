@@ -239,6 +239,9 @@ public class DatasetField implements Serializable {
         }
     }
 
+    /**
+     * Returns raw value or first controlled vocab value (raw name)
+     */
     public String getValue() {
         if (!getFieldValue().isEmpty()) {
             return fieldValue;
@@ -298,7 +301,8 @@ public class DatasetField implements Serializable {
     }
 
     /**
-     * despite the name, this returns a list of display values; not a list of values
+     * Returns display value (fully formatted)
+     * or controlled vocab value list (fully formatted)
      */
     public List<String> getValues() {
         List<String> returnList = new ArrayList<>();
@@ -314,7 +318,7 @@ public class DatasetField implements Serializable {
         return returnList;
     }
 
-    public List<String> getRawValuesList() {
+    private List<String> getRawValuesList() {
         List<String> returnList = new ArrayList<>();
         if (getFieldValue().isDefined()) {
             returnList.add(getUnsanitizedDisplayValue());
@@ -399,7 +403,7 @@ public class DatasetField implements Serializable {
         return retVal;
     }
 
-    public String getUnsanitizedDisplayValue() {
+    private String getUnsanitizedDisplayValue() {
         String retVal = "";
         if (!StringUtils.isBlank(this.getValue()) && !DatasetField.NA_VALUE.equals(this.getValue())) {
             String format = getDatasetFieldType().getDisplayFormat();
@@ -487,27 +491,6 @@ public class DatasetField implements Serializable {
             .forEach(child -> child.trimTrailingSpaces());
         fieldValue = StringUtils.trim(fieldValue);
     }
-
-
-    /**
-     * If this is a FieldType.TEXT or FieldType.TEXTBOX, then run it through the markup checker
-     *
-     * @return
-     */
-    public boolean needsTextCleaning() {
-
-
-        if (this.getDatasetFieldType() == null || this.getDatasetFieldType().getFieldType() == null) {
-            return false;
-        }
-
-        if (this.datasetFieldType.getFieldType().equals(FieldType.TEXT)) {
-            return true;
-        } else {
-            return this.datasetFieldType.getFieldType().equals(FieldType.TEXTBOX);
-        }
-
-    } // end: needsTextCleaning
 
 
 }

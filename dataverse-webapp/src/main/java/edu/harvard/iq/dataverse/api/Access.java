@@ -131,7 +131,7 @@ public class Access extends AbstractApiBean {
     DataverseDao dataverseDao;
     @EJB
     VariableServiceBean variableService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     DDIExportServiceBean ddiExportService;

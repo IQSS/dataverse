@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 
+import javax.enterprise.inject.spi.InterceptionType;
 import javax.faces.model.SelectItem;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -105,12 +106,14 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFieldTypeInputLevel> dataverseFieldTypeInputLevels;
 
-    @Transient
-    private String searchValue;
-
-    @Transient
-    private List<String> listValues;
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private InputRendererType inputRendererType;
+    
+    @Column(nullable = false)
+    private String inputRendererOptions;
+    
+    
     @Transient
     private Map<String, ControlledVocabularyValue> controlledVocabularyValuesByStrValue;
 
@@ -123,28 +126,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public boolean isRequiredInDataverse() {
         return this.requiredInDataverse;
-    }
-
-    @Transient
-    private boolean include;
-
-    public void setInclude(boolean include) {
-        this.include = include;
-    }
-
-    public boolean isInclude() {
-        return this.include;
-    }
-
-    @Transient
-    private List<SelectItem> optionSelectItems;
-
-    public List<SelectItem> getOptionSelectItems() {
-        return optionSelectItems;
-    }
-
-    public void setOptionSelectItems(List<SelectItem> optionSelectItems) {
-        this.optionSelectItems = optionSelectItems;
     }
 
 
@@ -397,22 +378,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         this.dataverseFieldTypeInputLevels = dataverseFieldTypeInputLevels;
     }
 
-    public String getSearchValue() {
-        return searchValue;
-    }
-
-    public void setSearchValue(String searchValue) {
-        this.searchValue = searchValue;
-    }
-
-    public List<String> getListValues() {
-        return listValues;
-    }
-
-    public void setListValues(List<String> listValues) {
-        this.listValues = listValues;
-    }
-
     /**
      * Determines whether fields of this field type are always required. A
      * dataverse may set some fields required, but only if this is false.
@@ -595,6 +560,32 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private boolean isParentAllowsMutlipleValues() {
         return getParentDatasetFieldType() != null &&
                 getParentDatasetFieldType().isAllowMultiples();
+    }
+
+    /**
+     * Returns value that defines what component should
+     * be used when editing dataset field with this type.
+     * 
+     * @see InputRendererType
+     */
+    public InputRendererType getInputRendererType() {
+        return inputRendererType;
+    }
+
+    public void setInputRendererType(InputRendererType inputRendererType) {
+        this.inputRendererType = inputRendererType;
+    }
+
+    /**
+     * Returns string in form of a json that
+     * defines options specific for each {@link InputRendererType}.
+     */
+    public String getInputRendererOptions() {
+        return inputRendererOptions;
+    }
+
+    public void setInputRendererOptions(String inputRendererOptions) {
+        this.inputRendererOptions = inputRendererOptions;
     }
 
     @Override

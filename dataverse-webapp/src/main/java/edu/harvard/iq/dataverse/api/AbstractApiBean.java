@@ -60,6 +60,7 @@ import org.apache.commons.lang.SerializationException;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -196,7 +197,7 @@ public abstract class AbstractApiBean {
     @EJB
     protected DataverseRoleServiceBean rolesSvc;
 
-    @EJB
+    @Inject
     protected SettingsServiceBean settingsSvc;
 
     @EJB

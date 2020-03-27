@@ -76,7 +76,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
     @EJB
     MailService mailService;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

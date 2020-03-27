@@ -57,7 +57,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     IngestServiceBean ingestService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsSvc;
     @EJB
     SystemConfig systemConfig;

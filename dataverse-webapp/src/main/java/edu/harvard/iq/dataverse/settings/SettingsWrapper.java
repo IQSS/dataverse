@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.util.LinkedHashMap;
@@ -19,7 +20,7 @@ import java.util.Map;
 @Named
 public class SettingsWrapper implements java.io.Serializable {
 
-    @EJB
+    @Inject
     SettingsServiceBean settingService;
 
     @EJB

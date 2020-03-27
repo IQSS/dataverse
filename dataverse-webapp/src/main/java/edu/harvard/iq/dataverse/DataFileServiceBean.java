@@ -92,7 +92,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     DvObjectServiceBean dvObjectService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @Inject
     private TermsOfUseFactory termsOfUseFactory;

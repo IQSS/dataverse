@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,7 +38,7 @@ public class ShibServiceBean {
     AuthTestDataServiceBean authTestDataService;
     @EJB
     SystemConfig systemConfig;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     /**

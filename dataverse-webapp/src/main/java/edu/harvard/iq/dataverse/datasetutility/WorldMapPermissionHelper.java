@@ -50,7 +50,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
     @Inject
     SettingsWrapper settingsWrapper;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @Inject
     MapLayerMetadataServiceBean mapLayerMetadataService;

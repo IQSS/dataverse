@@ -111,7 +111,7 @@ public class IndexServiceBean {
     DatasetLinkingServiceBean dsLinkingService;
     @EJB
     DataverseLinkingDao dvLinkingService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     private SolrFieldFactory solrFieldFactory;

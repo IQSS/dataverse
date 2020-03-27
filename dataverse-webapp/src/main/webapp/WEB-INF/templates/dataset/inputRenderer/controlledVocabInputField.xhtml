@@ -1,0 +1,36 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+    
+    <p:outputLabel styleClass="control-label" for="#{datasetField.datasetFieldType.allowMultiples ? 'multiVocabularySelect' : 'singleVocabularySelect'}"
+                rendered="#{!hiddenLabel}">
+        #{datasetField.datasetFieldType.localeTitle}
+        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
+              data-toggle="tooltip" data-placement="auto right" data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
+    </p:outputLabel>
+    
+    <p:selectOneMenu id="singleVocabularySelect"
+                     value="#{datasetField.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
+                     rendered="#{!datasetField.datasetFieldType.allowMultiples}">
+        <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
+        <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+    </p:selectOneMenu>
+    <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{datasetField.datasetFieldType.allowMultiples}">
+        <p:selectManyCheckbox id="multiVocabularySelect"
+                value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                layout="pageDirection">
+            <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
+            <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+        </p:selectManyCheckbox>
+    </div>
+    <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty datasetField.validationMessage}">
+        <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
+    </div>
+
+</ui:composition>

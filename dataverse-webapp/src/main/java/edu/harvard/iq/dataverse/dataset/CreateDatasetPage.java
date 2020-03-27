@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRenderer;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendererManager;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
@@ -14,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -57,7 +60,7 @@ public class CreateDatasetPage implements Serializable {
     private DataverseDao dataverseDao;
     @Inject
     private PermissionsWrapper permissionsWrapper;
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
     @Inject
     private DatasetFieldsInitializer datasetFieldsInitializer;
@@ -69,6 +72,8 @@ public class CreateDatasetPage implements Serializable {
     private UserDataFieldFiller userDataFieldFiller;
     @EJB
     private DatasetService DatasetService;
+    @EJB
+    private InputFieldRendererManager inputFieldRendererManager;
 
     private Dataset dataset;
     private Long ownerId;
@@ -81,7 +86,7 @@ public class CreateDatasetPage implements Serializable {
     private Template selectedTemplate;
 
     private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocksForEdit = new HashMap<>();
-
+    private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
 
     public String init() {
 
@@ -137,11 +142,15 @@ public class CreateDatasetPage implements Serializable {
     }
 
     public Template getSelectedTemplate() {
-        return selectedTemplate;
+        return selectedTemplate; 
     }
 
     public Map<MetadataBlock, List<DatasetFieldsByType>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
+    }
+
+    public Map<DatasetFieldType, InputFieldRenderer> getInputRenderersByFieldType() {
+        return inputRenderersByFieldType;
     }
 
 
@@ -208,9 +217,12 @@ public class CreateDatasetPage implements Serializable {
             userDataFieldFiller.fillUserDataInDatasetFields(datasetFields, (AuthenticatedUser) session.getUser());
         }
 
-        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
-    }
+        inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
 
+        metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
+        
+    }
+    
     private void mapTermsOfUseInFiles(List<DataFile> files) {
         for (DataFile file : files) {
             TermsOfUseForm termsOfUseForm = file.getFileMetadata().getTermsOfUseForm();

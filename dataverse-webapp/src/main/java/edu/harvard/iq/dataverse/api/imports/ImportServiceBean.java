@@ -41,6 +41,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -90,7 +91,7 @@ public class ImportServiceBean {
 
     @EJB
     MetadataBlockDao metadataBlockService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

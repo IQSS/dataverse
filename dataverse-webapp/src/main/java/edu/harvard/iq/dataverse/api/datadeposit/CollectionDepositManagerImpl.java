@@ -57,7 +57,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     ImportGenericServiceBean importGenericService;
     @EJB
     SwordServiceBean swordService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     private HttpServletRequest request;

@@ -1,106 +1,106 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	customPSI		PSI Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	psiBehavior	Behavior	Behavior		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiDonor	Donor	Donor		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiHealthArea	Health Area	Health Area		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiIntervention	Intervention	Intervention		text	3		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiPopulation	Population	Population		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiProductsServices	Products/Services	Products/Services		text	5		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiStudyDesignElement	Study Design Element	Study Design Element		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-	psiStudyType	Study Type	Study Type		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customPSI
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	psiBehavior	Abstinence		0											
-	psiBehavior	Birth spacing		1											
-	psiBehavior	Cervical cancer screening		2											
-	psiBehavior	Condom use		3											
-	psiBehavior	FGM		4											
-	psiBehavior	HIV risk behaviors		5											
-	psiBehavior	HIV/STI testing		6											
-	psiBehavior	LLIN use		7											
-	psiBehavior	Male circumcision		8											
-	psiBehavior	Modern contraceptive use		9											
-	psiBehavior	ORS use		10											
-	psiBehavior	Partner reduction		11											
-	psiBehavior	Referral uptake		12											
-	psiBehavior	Treatment adherence		13											
-	psiBehavior	Water treatment		14											
-	psiDonor	CDC		0											
-	psiDonor	DFID		1											
-	psiDonor	Dutch		2											
-	psiDonor	Gates Foundation		3											
-	psiDonor	Global Fund		4											
-	psiDonor	KfW		5											
-	psiDonor	LAD		6											
-	psiDonor	Other		7											
-	psiDonor	PEPFAR		8											
-	psiDonor	UNFPA		9											
-	psiDonor	USAID		10											
-	psiHealthArea	Diarrhea		0											
-	psiHealthArea	GBV		1											
-	psiHealthArea	HIV		2											
-	psiHealthArea	ICM		3											
-	psiHealthArea	Malaria		4											
-	psiHealthArea	NCDs		5											
-	psiHealthArea	Nutrition		6											
-	psiHealthArea	Pneumonia		7											
-	psiHealthArea	Reproductive health		8											
-	psiHealthArea	TB		9											
-	psiIntervention	BCC		0											
-	psiIntervention	IPC		1											
-	psiIntervention	Medical detailing		2											
-	psiIntervention	mHealth		3											
-	psiIntervention	Provider training		4											
-	psiIntervention	Social franchising		5											
-	psiPopulation	Caregivers		0											
-	psiPopulation	Couples		1											
-	psiPopulation	FSW		2											
-	psiPopulation	General population		3											
-	psiPopulation	IDUs		4											
-	psiPopulation	MARPs		5											
-	psiPopulation	Men		6											
-	psiPopulation	MSM		7											
-	psiPopulation	PLHIV		8											
-	psiPopulation	Providers		9											
-	psiPopulation	Truck drivers		10											
-	psiPopulation	Women		11											
-	psiPopulation	WRA		12											
-	psiPopulation	Youth		13											
-	psiProductsServices	ACT		0											
-	psiProductsServices	ANC		1											
-	psiProductsServices	Antibiotics		2											
-	psiProductsServices	ART		3											
-	psiProductsServices	Clean delivery kit		4											
-	psiProductsServices	Condoms		5											
-	psiProductsServices	Household water treatment		6											
-	psiProductsServices	HTC		7											
-	psiProductsServices	LLIN		8											
-	psiProductsServices	Long-term Methods		9											
-	psiProductsServices	Medicated Abortion		10											
-	psiProductsServices	Misoprostol		11											
-	psiProductsServices	Multivitamin		12											
-	psiProductsServices	Needle and syringe		13											
-	psiProductsServices	Nevirapine		14											
-	psiProductsServices	ORS		15											
-	psiProductsServices	PMTCT		16											
-	psiProductsServices	Short-term methods		17											
-	psiProductsServices	STI kit		18											
-	psiProductsServices	TB DOTS		19											
-	psiProductsServices	VMC		20											
-	psiProductsServices	Zinc		21											
-	psiStudyDesignElement	CEM		0											
-	psiStudyDesignElement	Client exit interview		1											
-	psiStudyDesignElement	Control group		2											
-	psiStudyDesignElement	Cross-sectional		3											
-	psiStudyDesignElement	Focus group		4											
-	psiStudyDesignElement	In-depth interview		5											
-	psiStudyDesignElement	Longitudinal		6											
-	psiStudyDesignElement	LQAS		7											
-	psiStudyDesignElement	Mystery client		8											
-	psiStudyDesignElement	Pretesting		9											
-	psiStudyDesignElement	TRaC		10											
-	psiStudyType	MAP		0											
-	psiStudyType	Mixed Methods		1											
-	psiStudyType	Qualitative		2											
-	psiStudyType	Quantitative		3											
-	psiStudyType	Retail audit		4											
+#metadataBlock	name	dataverseAlias	displayName														
+	customPSI		PSI Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
+	psiBehavior	Behavior	Behavior		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiDonor	Donor	Donor		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiHealthArea	Health Area	Health Area		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiIntervention	Intervention	Intervention		text	3		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiPopulation	Population	Population		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiProductsServices	Products/Services	Products/Services		text	5		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiStudyDesignElement	Study Design Element	Study Design Element		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+	psiStudyType	Study Type	Study Type		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSI
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	psiBehavior	Abstinence		0													
+	psiBehavior	Birth spacing		1													
+	psiBehavior	Cervical cancer screening		2													
+	psiBehavior	Condom use		3													
+	psiBehavior	FGM		4													
+	psiBehavior	HIV risk behaviors		5													
+	psiBehavior	HIV/STI testing		6													
+	psiBehavior	LLIN use		7													
+	psiBehavior	Male circumcision		8													
+	psiBehavior	Modern contraceptive use		9													
+	psiBehavior	ORS use		10													
+	psiBehavior	Partner reduction		11													
+	psiBehavior	Referral uptake		12													
+	psiBehavior	Treatment adherence		13													
+	psiBehavior	Water treatment		14													
+	psiDonor	CDC		0													
+	psiDonor	DFID		1													
+	psiDonor	Dutch		2													
+	psiDonor	Gates Foundation		3													
+	psiDonor	Global Fund		4													
+	psiDonor	KfW		5													
+	psiDonor	LAD		6													
+	psiDonor	Other		7													
+	psiDonor	PEPFAR		8													
+	psiDonor	UNFPA		9													
+	psiDonor	USAID		10													
+	psiHealthArea	Diarrhea		0													
+	psiHealthArea	GBV		1													
+	psiHealthArea	HIV		2													
+	psiHealthArea	ICM		3													
+	psiHealthArea	Malaria		4													
+	psiHealthArea	NCDs		5													
+	psiHealthArea	Nutrition		6													
+	psiHealthArea	Pneumonia		7													
+	psiHealthArea	Reproductive health		8													
+	psiHealthArea	TB		9													
+	psiIntervention	BCC		0													
+	psiIntervention	IPC		1													
+	psiIntervention	Medical detailing		2													
+	psiIntervention	mHealth		3													
+	psiIntervention	Provider training		4													
+	psiIntervention	Social franchising		5													
+	psiPopulation	Caregivers		0													
+	psiPopulation	Couples		1													
+	psiPopulation	FSW		2													
+	psiPopulation	General population		3													
+	psiPopulation	IDUs		4													
+	psiPopulation	MARPs		5													
+	psiPopulation	Men		6													
+	psiPopulation	MSM		7													
+	psiPopulation	PLHIV		8													
+	psiPopulation	Providers		9													
+	psiPopulation	Truck drivers		10													
+	psiPopulation	Women		11													
+	psiPopulation	WRA		12													
+	psiPopulation	Youth		13													
+	psiProductsServices	ACT		0													
+	psiProductsServices	ANC		1													
+	psiProductsServices	Antibiotics		2													
+	psiProductsServices	ART		3													
+	psiProductsServices	Clean delivery kit		4													
+	psiProductsServices	Condoms		5													
+	psiProductsServices	Household water treatment		6													
+	psiProductsServices	HTC		7													
+	psiProductsServices	LLIN		8													
+	psiProductsServices	Long-term Methods		9													
+	psiProductsServices	Medicated Abortion		10													
+	psiProductsServices	Misoprostol		11													
+	psiProductsServices	Multivitamin		12													
+	psiProductsServices	Needle and syringe		13													
+	psiProductsServices	Nevirapine		14													
+	psiProductsServices	ORS		15													
+	psiProductsServices	PMTCT		16													
+	psiProductsServices	Short-term methods		17													
+	psiProductsServices	STI kit		18													
+	psiProductsServices	TB DOTS		19													
+	psiProductsServices	VMC		20													
+	psiProductsServices	Zinc		21													
+	psiStudyDesignElement	CEM		0													
+	psiStudyDesignElement	Client exit interview		1													
+	psiStudyDesignElement	Control group		2													
+	psiStudyDesignElement	Cross-sectional		3													
+	psiStudyDesignElement	Focus group		4													
+	psiStudyDesignElement	In-depth interview		5													
+	psiStudyDesignElement	Longitudinal		6													
+	psiStudyDesignElement	LQAS		7													
+	psiStudyDesignElement	Mystery client		8													
+	psiStudyDesignElement	Pretesting		9													
+	psiStudyDesignElement	TRaC		10													
+	psiStudyType	MAP		0													
+	psiStudyType	Mixed Methods		1													
+	psiStudyType	Qualitative		2													
+	psiStudyType	Quantitative		3													
+	psiStudyType	Retail audit		4													

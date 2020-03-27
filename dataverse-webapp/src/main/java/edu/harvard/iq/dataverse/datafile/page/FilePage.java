@@ -84,7 +84,7 @@ public class FilePage implements java.io.Serializable {
 
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     SystemConfig systemConfig;

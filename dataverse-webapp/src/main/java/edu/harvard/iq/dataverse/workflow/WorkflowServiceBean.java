@@ -59,7 +59,7 @@ public class WorkflowServiceBean {
     @EJB
     DatasetDao datasets;
 
-    @EJB
+    @Inject
     SettingsServiceBean settings;
 
     @EJB

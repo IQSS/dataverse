@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonValue;
 import javax.ws.rs.GET;
@@ -13,7 +14,7 @@ import javax.ws.rs.core.Response;
 @Path("info")
 public class Info extends AbstractApiBean {
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

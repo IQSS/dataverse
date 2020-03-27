@@ -54,7 +54,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     EjbDataverseEngine engineService;
     @EJB
     SystemConfig systemConfig;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @Inject

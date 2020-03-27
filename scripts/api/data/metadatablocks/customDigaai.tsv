@@ -1,47 +1,47 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	customDigaai		Digaai Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	titulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		customDigaai
-	numero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	datadePublicao	Data de Publicação	Entrar dia/mes/ano.	dia/mes/ano	text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	localdePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-	proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		customDigaai
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	titulo	Achei USA		0											
-	titulo	Acontece Magazine		1											
-	titulo	A Notícia		2											
-	titulo	Brasil Best		3											
-	titulo	Brasileiros & Brasileiras		4											
-	titulo	Brasil USA		5											
-	titulo	Brazil Explore		6											
-	titulo	Brazilian Press		7											
-	titulo	Brazilian Voice		8											
-	titulo	Brazil News		9											
-	titulo	Brazuca		10											
-	titulo	Cia Brasil		11											
-	titulo	Comunidade News		12											
-	titulo	Diário do Brasil		13											
-	titulo	FaceBrasil		14											
-	titulo	Green and Yellow News		15											
-	titulo	Jornal dos Sports		16											
-	titulo	Jornal Moderno		17											
-	titulo	Metropolitan		18											
-	titulo	National		19											
-	titulo	Negócio Fechado		20											
-	titulo	Nossa Gente		21											
-	titulo	Nossa Terra		22											
-	titulo	O Brasileirinho		23											
-	titulo	O Imigrante Cristão		24											
-	titulo	O Jornal Brasileiro		25
-	titulo	O Novo Mundo		26									
-	titulo	O Popular		27											
-	titulo	Revista Linha Aberta		28											
-	titulo	Revista MASSA		29											
-	titulo	Revista Tititi		30											
-	titulo	Sucesso USA		31											
-	titulo	Ta na Mão		32											
-	titulo	TC Brazil		33											
-	titulo	Texas Magazine		34											
-	titulo	The Brazilian Journal		35											
-	titulo	Today Magazine		36											
-	titulo	Viver Magazine		37											
+#metadataBlock	name	dataverseAlias   displayName															
+	customDigaai		Digaai Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
+	titulo	Título	Título do jornal ou revista.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customDigaai
+	numero	Número	Número do jornal ou revista.		text	1		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	customDigaai
+	datadePublicao	Data de Publicação	Entrar dia/mes/ano.	dia/mes/ano	text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	customDigaai
+	localdePublicao	Local de Publicação	Local de Publicação.		text	3		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	customDigaai
+	proprietrio	Proprietário	Proprietário		text	4		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	customDigaai
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	titulo	Achei USA		0													
+	titulo	Acontece Magazine		1													
+	titulo	A Notícia		2													
+	titulo	Brasil Best		3													
+	titulo	Brasileiros & Brasileiras		4													
+	titulo	Brasil USA		5													
+	titulo	Brazil Explore		6													
+	titulo	Brazilian Press		7													
+	titulo	Brazilian Voice		8													
+	titulo	Brazil News		9													
+	titulo	Brazuca		10													
+	titulo	Cia Brasil		11													
+	titulo	Comunidade News		12													
+	titulo	Diário do Brasil		13													
+	titulo	FaceBrasil		14													
+	titulo	Green and Yellow News		15													
+	titulo	Jornal dos Sports		16													
+	titulo	Jornal Moderno		17													
+	titulo	Metropolitan		18													
+	titulo	National		19													
+	titulo	Negócio Fechado		20													
+	titulo	Nossa Gente		21													
+	titulo	Nossa Terra		22													
+	titulo	O Brasileirinho		23													
+	titulo	O Imigrante Cristão		24													
+	titulo	O Jornal Brasileiro		25													
+	titulo	O Novo Mundo		26													
+	titulo	O Popular		27													
+	titulo	Revista Linha Aberta		28													
+	titulo	Revista MASSA		29													
+	titulo	Revista Tititi		30													
+	titulo	Sucesso USA		31													
+	titulo	Ta na Mão		32													
+	titulo	TC Brazil		33													
+	titulo	Texas Magazine		34													
+	titulo	The Brazilian Journal		35													
+	titulo	Today Magazine		36													
+	titulo	Viver Magazine		37													

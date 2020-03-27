@@ -3,9 +3,12 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRenderer;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendererManager;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -23,6 +26,7 @@ import javax.inject.Named;
 import javax.validation.ValidationException;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -40,6 +44,8 @@ public class EditDatasetMetadataPage implements Serializable {
     private DatasetDao datasetDao;
     @EJB
     private DatasetVersionServiceBean datasetVersionService;
+    @EJB
+    private InputFieldRendererManager inputFieldRendererManager;
     @Inject
     private PermissionsWrapper permissionsWrapper;
     @Inject
@@ -53,6 +59,7 @@ public class EditDatasetMetadataPage implements Serializable {
     private Dataset dataset;
     private DatasetVersion workingVersion;
     private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocksForEdit;
+    private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
 
     // -------------------- GETTERS --------------------
 
@@ -74,6 +81,10 @@ public class EditDatasetMetadataPage implements Serializable {
 
     public Map<MetadataBlock, List<DatasetFieldsByType>> getMetadataBlocksForEdit() {
         return metadataBlocksForEdit;
+    }
+
+    public Map<DatasetFieldType, InputFieldRenderer> getInputRenderersByFieldType() {
+        return inputRenderersByFieldType;
     }
 
     // -------------------- LOGIC --------------------
@@ -104,6 +115,9 @@ public class EditDatasetMetadataPage implements Serializable {
         List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(workingVersion.getDatasetFields(),
                 dataset.getOwner().getMetadataBlockRootDataverse());
         workingVersion.setDatasetFields(datasetFields);
+
+        inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
+
         metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
 
         JH.addMessage(FacesMessage.SEVERITY_INFO,

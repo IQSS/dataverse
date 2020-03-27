@@ -83,7 +83,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

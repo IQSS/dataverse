@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -48,7 +49,7 @@ public class DOIDataCiteRegisterService {
     @EJB
     DOIDataCiteServiceBean doiDataCiteServiceBean;
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
 

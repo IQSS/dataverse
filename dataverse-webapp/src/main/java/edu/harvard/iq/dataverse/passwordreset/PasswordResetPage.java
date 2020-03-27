@@ -47,7 +47,7 @@ public class PasswordResetPage implements java.io.Serializable {
     AuthenticationServiceBean authSvc;
     @Inject
     DataverseSession session;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

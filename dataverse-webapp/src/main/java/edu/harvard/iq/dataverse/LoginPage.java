@@ -83,7 +83,7 @@ public class LoginPage implements java.io.Serializable {
     @EJB
     AuthenticationServiceBean authSvc;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @Inject

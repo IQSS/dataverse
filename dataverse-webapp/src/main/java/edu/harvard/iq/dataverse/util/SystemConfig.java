@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.net.MalformedURLException;
@@ -45,7 +46,7 @@ public class SystemConfig {
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
 

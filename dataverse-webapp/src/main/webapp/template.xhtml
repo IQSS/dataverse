@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
 >
     <h:head>
@@ -14,6 +15,7 @@
             <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
             <ui:param name="template" value="#{TemplatePage.template}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
+            
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
@@ -52,10 +54,12 @@
                                 <ui:param name="showAllBlocks" value="#{true}"/>
                                 <ui:param name="showAllFields" value="#{true}"/>
                                 <ui:param name="expandAllBlocks" value="#{false}"/>
-                                <ui:param name="showAddReplicationForTitleButton" value="#{false}" />
 
                                 <ui:param name="metadataBlocks"
                                           value="#{TemplatePage.mdbForEdit.entrySet().toArray()}"/>
+                                <ui:param name="inputRenderersByFieldType" value="#{TemplatePage.inputRenderersByFieldType}" />
+                                <ui:param name="operation" value="#{TemplatePage.editMode == 'CREATE' ? 
+                                                                    'CREATE_TEMPLATE' : 'EDIT_TEMPLATE'}" />
                             </ui:include>  
                         </ui:fragment>
 

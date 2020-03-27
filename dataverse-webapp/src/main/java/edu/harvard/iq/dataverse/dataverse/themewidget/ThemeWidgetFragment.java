@@ -57,7 +57,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
 
     @EJB
     DataverseDao dataverseDao;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @Inject
     private ThemeWidgetService themeWidgetService;

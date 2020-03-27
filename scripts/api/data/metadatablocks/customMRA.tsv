@@ -1,16 +1,16 @@
-#metadataBlock	name	dataverseAlias   displayName													
-	customMRA		MRA Metadata													
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	mraCollection	Murray Research Archive Collection	Browse the Murray Research Archive collection with the following terms.		text	0		FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		customMRA
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	mraCollection	Diversity samples: Race, Ethnicity, Sexual Orientation, Religion	MRA0	0											
-	mraCollection	Early Head Start Research and Evaluation Project, 1996 - 2001	MRA1	1											
-	mraCollection	Economic Theory and Demography	MRA2	2											
-	mraCollection	Education	MRA3	3											
-	mraCollection	Family. Marriage. Women	MRA4	4											
-	mraCollection	Health	MRA5	5											
-	mraCollection	Politics and Government	MRA6	6											
-	mraCollection	Replications, Extensions and Followups	MRA7	7											
-	mraCollection	Studies with Audio Data	MRA8	8											
-	mraCollection	Studies with Video Data	MRA9	9											
-	mraCollection	Work	MRA10	10											
+#metadataBlock	name	dataverseAlias   displayName															
+	customMRA		MRA Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
+	mraCollection	Murray Research Archive Collection	Browse the Murray Research Archive collection with the following terms.		text	0		FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	customMRA
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	mraCollection	Diversity samples: Race, Ethnicity, Sexual Orientation, Religion	MRA0	0													
+	mraCollection	Early Head Start Research and Evaluation Project, 1996 - 2001	MRA1	1													
+	mraCollection	Economic Theory and Demography	MRA2	2													
+	mraCollection	Education	MRA3	3													
+	mraCollection	Family. Marriage. Women	MRA4	4													
+	mraCollection	Health	MRA5	5													
+	mraCollection	Politics and Government	MRA6	6													
+	mraCollection	Replications, Extensions and Followups	MRA7	7													
+	mraCollection	Studies with Audio Data	MRA8	8													
+	mraCollection	Studies with Video Data	MRA9	9													
+	mraCollection	Work	MRA10	10													

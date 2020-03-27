@@ -1,38 +1,38 @@
-#metadataBlock	name	dataverseAlias	displayName												
-	customPSRI		Political Science Replication Initiative Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	PSRI1	Are the original data publicly available?	Select from the list of options.		text	0		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI2	Is the original code available?	Select from the list of options.		text	1		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI3	Where are the original data archived (name and url)?	Answer if the data are publicly available.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI4	Where is the original code publicly archived (name and url)?	Answer if the code is publicly available.		text	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI5	Will you submit your replication code to this Dataverse (This is a PSRI requirement)?	Select from the list of options.		text	4		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI6	Will you submit your replication write-up to this Dataverse (This is a PSRI requirement)?	Select from the list of options.		text	5		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI7	Did you send the replication materials to the original author(s) and notify them that you'd be posting your replication on PSRI?	Select from the list of options.		text	6		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI8	Was the replication done in a course? (If so, please continue to answer the subsequent questions, and if not, select N/A)	Select from the list of options.		text	7		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI9	Did another student attempt to replicate the replication in the class?	Select from the list of options.		text	8		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI10	Did another student replicate this replication successfully?	Select from the list of options.		text	9		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-	PSRI11	Did a professor read/review a draft before the final version?	Select from the list of options.		text	10		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		customPSRI
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	PSRI1	No		0											
-	PSRI1	Yes		1											
-	PSRI2	No		0											
-	PSRI2	Yes		1											
-	PSRI2	NA		2											
-	PSRI5	No		0											
-	PSRI5	Yes		1											
-	PSRI6	No		0											
-	PSRI6	Yes		1											
-	PSRI7	No		0											
-	PSRI7	Yes		1											
-	PSRI8	No		0											
-	PSRI8	Yes		1											
-	PSRI8	NA		2											
-	PSRI9	NA		0											
-	PSRI9	No		1											
-	PSRI9	Yes		2											
-	PSRI10	NA		0											
-	PSRI10	No		1											
-	PSRI10	Yes		2											
-	PSRI11	NA		0											
-	PSRI11	No		1											
-	PSRI11	Yes		2											
+#metadataBlock	name	dataverseAlias	displayName														
+	customPSRI		Political Science Replication Initiative Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
+	PSRI1	Are the original data publicly available?	Select from the list of options.		text	0		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI2	Is the original code available?	Select from the list of options.		text	1		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI3	Where are the original data archived (name and url)?	Answer if the data are publicly available.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	customPSRI
+	PSRI4	Where is the original code publicly archived (name and url)?	Answer if the code is publicly available.		text	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	customPSRI
+	PSRI5	Will you submit your replication code to this Dataverse (This is a PSRI requirement)?	Select from the list of options.		text	4		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI6	Will you submit your replication write-up to this Dataverse (This is a PSRI requirement)?	Select from the list of options.		text	5		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI7	Did you send the replication materials to the original author(s) and notify them that you'd be posting your replication on PSRI?	Select from the list of options.		text	6		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI8	Was the replication done in a course? (If so, please continue to answer the subsequent questions, and if not, select N/A)	Select from the list of options.		text	7		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI9	Did another student attempt to replicate the replication in the class?	Select from the list of options.		text	8		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI10	Did another student replicate this replication successfully?	Select from the list of options.		text	9		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+	PSRI11	Did a professor read/review a draft before the final version?	Select from the list of options.		text	10		FALSE	TRUE	FALSE	FALSE	FALSE	FALSE		VOCABULARY_SELECT	{}	customPSRI
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	PSRI1	No		0													
+	PSRI1	Yes		1													
+	PSRI2	No		0													
+	PSRI2	Yes		1													
+	PSRI2	NA		2													
+	PSRI5	No		0													
+	PSRI5	Yes		1													
+	PSRI6	No		0													
+	PSRI6	Yes		1													
+	PSRI7	No		0													
+	PSRI7	Yes		1													
+	PSRI8	No		0													
+	PSRI8	Yes		1													
+	PSRI8	NA		2													
+	PSRI9	NA		0													
+	PSRI9	No		1													
+	PSRI9	Yes		2													
+	PSRI10	NA		0													
+	PSRI10	No		1													
+	PSRI10	Yes		2													
+	PSRI11	NA		0													
+	PSRI11	No		1													
+	PSRI11	Yes		2													

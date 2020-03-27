@@ -118,7 +118,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     IngestServiceBean ingestService;
     @Inject
     DataverseSession session;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     SystemConfig systemConfig;

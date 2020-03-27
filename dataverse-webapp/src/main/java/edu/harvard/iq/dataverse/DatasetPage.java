@@ -112,7 +112,7 @@ public class DatasetPage implements java.io.Serializable {
     DataverseSession session;
     @EJB
     MapLayerMetadataServiceBean mapLayerMetadataService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     GuestbookResponseServiceBean guestbookResponseService;

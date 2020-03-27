@@ -1,0 +1,34 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                >
+
+    <p class="help-block">
+        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
+            <f:param value="#{bundle.htmlAllowedTags}"/>
+        </h:outputFormat>
+    </p>
+
+    <p:outputLabel styleClass="control-label" for="textarea" rendered="#{!hiddenLabel}">
+        #{datasetField.datasetFieldType.localeTitle}
+        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
+              data-toggle="tooltip" data-placement="auto right" data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
+    </p:outputLabel>
+
+    <p:inputTextarea value="#{datasetField.value}" id="textarea"
+                     rows="5" cols="60" styleClass="form-control" />
+                     
+
+    <p:watermark for="textarea" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
+
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty datasetField.validationMessage}">
+        <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
+    </div>
+
+</ui:composition>

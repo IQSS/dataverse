@@ -30,6 +30,7 @@ public class DatabaseCleaner {
      */
     public void cleanupDatabase() {
         dropAllTables();
+        dropAllSequences();
         startupFlywayMigrator.migrateDatabase();
     }
 
@@ -43,5 +44,15 @@ public class DatabaseCleaner {
                                      "        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';\n" +
                                      "    END LOOP;\n" +
                                      "END $$;").executeUpdate();
+    }
+    
+    private void dropAllSequences() {
+        em.createNativeQuery("DO $$ DECLARE\n" + 
+                             "    r RECORD;\n" + 
+                             "BEGIN\n" + 
+                             "    FOR r IN (SELECT relname FROM pg_class c WHERE (c.relkind = 'S')) LOOP\n" + 
+                             "        EXECUTE 'DROP SEQUENCE ' || quote_ident(r.relname);\n" + 
+                             "    END LOOP;\n" + 
+                             "END $$;").executeUpdate();
     }
 }

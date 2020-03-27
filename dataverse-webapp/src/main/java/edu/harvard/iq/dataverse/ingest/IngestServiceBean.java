@@ -79,6 +79,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -136,7 +137,7 @@ public class IngestServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
     @Resource(mappedName = "jms/DataverseIngest")

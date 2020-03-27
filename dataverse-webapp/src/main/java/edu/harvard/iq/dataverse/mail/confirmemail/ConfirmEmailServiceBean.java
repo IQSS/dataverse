@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -45,7 +46,7 @@ public class ConfirmEmailServiceBean {
     @EJB
     MailService mailService;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

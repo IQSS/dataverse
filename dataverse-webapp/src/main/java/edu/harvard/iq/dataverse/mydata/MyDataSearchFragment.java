@@ -66,7 +66,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
     DvObjectServiceBean dvObjectService;
     @Inject
     DataverseSession session;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;

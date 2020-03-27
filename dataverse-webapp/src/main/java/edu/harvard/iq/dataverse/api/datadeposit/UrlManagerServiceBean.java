@@ -21,9 +21,6 @@ public class UrlManagerServiceBean {
     private UrlManager urlManager = new UrlManager();
 
     @Inject
-    private SettingsServiceBean settingsService;
-
-    @Inject
     private SystemConfig systemConfig;
 
     // -------------------- GETTERS --------------------

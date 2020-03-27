@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.mail.internet.InternetAddress;
 import java.io.Serializable;
 
@@ -18,7 +19,7 @@ import java.io.Serializable;
 @Stateless
 public class InstallationConfigService implements Serializable {
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingService;
 
     @EJB

@@ -27,7 +27,7 @@ public class OtherTermsOfUseTab implements Serializable {
     @Inject
     private PermissionsWrapper permissionsWrapper;
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsServiceBean;
 
     private List<OtherTermsOfUseDto> otherTermsOfUseDto = new ArrayList<>();

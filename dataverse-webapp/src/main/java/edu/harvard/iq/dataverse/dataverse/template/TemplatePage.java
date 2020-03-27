@@ -6,8 +6,11 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRenderer;
+import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendererManager;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
@@ -24,6 +27,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -57,6 +61,9 @@ public class TemplatePage implements java.io.Serializable {
 
     @Inject
     private TemplateService templateService;
+    
+    @EJB
+    private InputFieldRendererManager inputFieldRendererManager;
 
     private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
@@ -70,6 +77,7 @@ public class TemplatePage implements java.io.Serializable {
     private Long ownerId;
     private Long templateId;
     private Map<MetadataBlock, List<DatasetFieldsByType>> mdbForEdit;
+    private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
 
     public Long getTemplateId() {
         return templateId;
@@ -115,6 +123,10 @@ public class TemplatePage implements java.io.Serializable {
         return mdbForEdit;
     }
 
+    public Map<DatasetFieldType, InputFieldRenderer> getInputRenderersByFieldType() {
+        return inputRenderersByFieldType;
+    }
+
     public String init() {
 
         if (isEditingTemplate()) {
@@ -133,6 +145,7 @@ public class TemplatePage implements java.io.Serializable {
 
             List<DatasetField> dsfForEdit = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(dsfForEdit);
+            inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(dsfForEdit);
             mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(dsfForEdit, dataverse.getMetadataBlockRootDataverse());
 
             if (template.getTermsOfUseAndAccess() == null) {
@@ -158,6 +171,7 @@ public class TemplatePage implements java.io.Serializable {
 
             List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
             template.setDatasetFields(datasetFields);
+            inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
             mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataverse.getMetadataBlockRootDataverse());
         } else {
             throw new RuntimeException("On Template page without id or ownerid."); // improve error handling

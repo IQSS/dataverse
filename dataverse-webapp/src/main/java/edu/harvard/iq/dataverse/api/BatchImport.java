@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,7 +35,7 @@ public class BatchImport extends AbstractApiBean {
     DatasetFieldServiceBean datasetfieldService;
     @EJB
     MetadataBlockDao metadataBlockService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     ImportServiceBean importService;

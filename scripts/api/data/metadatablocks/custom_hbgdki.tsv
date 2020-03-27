@@ -1,72 +1,72 @@
-#metadataBlock	name	dataverseAlias	displayName												
-	custom_hbgdki	HBGDki	HBGDki Custom Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiStudyRegistry	Study Registry	Which study registry was used?		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiStudyRegistryType	ID Type	Which study registry was used?		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	custom_hbgdki
-	hbgdkiStudyRegistryNumber	ID Number	ID number for the study per the registry.		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	custom_hbgdki
-	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		custom_hbgdki
-	hbgdkiIntervention	Intervention	If an interventional study, describe the interventions.		textbox	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiLowerLimitAge	Lower limit of age at enrollment	Lower limit of age at enrollment.		int	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiUnitsLowerLimitAge	Units for lower age limit	Units for lower age limit.		text	7		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiUpperLimitAge	Upper limit of age at enrollment	Upper limit of age at enrollment.		int	8		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiUnitsUpperLimitAge	Units for upper age limit	Units for upper age limit.		text	9		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiOther	Other entry criteria	Other entry criteria.		textbox	10		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiBiosampleType	Types of biosamples collected, if any	Types of biosamples used (e.g., Blood, Stool,...).		text	11		TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		custom_hbgdki
-	hbgdkiGestationalAge	Gestational age	Gestational age		text	12		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiAnthropometry	Anthropometry	Anthropometry		text	13		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiBirthWeight	Birth weight	Birth weight		text	14		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiNeurocognitiveDev	Neurocognitive development	Neurocognitive development		text	15		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiMaternalChar	Maternal characteristics	Dataset parameters can include: age, height, weight, obstetric history.		text	16		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiPregnancyBirth	Pregnancy and birth	Dataset parameters can include: Morbidity, nutrition, ANC, delivery method and setting.		text	17		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiSocioeconomicChar	Socioeconomic characteristics	Socioeconomic characteristics		text	18		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiFeedingCare	Feeding care & practice	Feeding care & practice		text	19		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiImmunizations	Immunizations	Immunizations		text	20		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiInfantChildhoodMorbidity	Morbidity in infancy and childhood	Morbidity in infancy and childhood		text	21		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-	hbgdkiWaterSanHygiene	Water, sanitation and hygiene standards	Water, sanitation and hygiene standards		text	22		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		custom_hbgdki
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	hbgdkiStudyRegistryType	International Clinical Trials Registry Platform (ICTRP)	hbgdki_study_registry_type_ICTRP	0											
-	hbgdkiStudyRegistryType	Australian New Zealand Clinical Trials Registry (ANZCTR)	hbgdki_study_registry_type_ANZCTR	1											
-	hbgdkiStudyRegistryType	Brazilian Clinical Trials Registry (ReBec)	hbgdki_study_registry_type_ReBec	2											
-	hbgdkiStudyRegistryType	Chinese Clinical Trial Registry (ChiCTR)	hbgdki_study_registry_type_ChiCTR	3											
-	hbgdkiStudyRegistryType	Clinical Research Information Service (CRiS), Republic of Korea	hbgdki_study_registry_type_CRiS	4											
-	hbgdkiStudyRegistryType	Clinical Trials Registry - India (CTRI)	hbgdki_study_registry_type_CTRI	5											
-	hbgdkiStudyRegistryType	Cuban Public Registry of Clinical Trials (RPCEC)	hbgdki_study_registry_type_RPCEC	6											
-	hbgdkiStudyRegistryType	EU Clinical Trials Register (EU-CTR)	hbgdki_study_registry_type_EU-CTR	7											
-	hbgdkiStudyRegistryType	German Clinical Trials Register (DRKS)	hbgdki_study_registry_type_DRKS	8											
-	hbgdkiStudyRegistryType	Iranian Registry of Clinical Trials (IRCT)	hbgdki_study_registry_type_IRCT	9											
-	hbgdkiStudyRegistryType	ISRCTN	hbgdki_study_registry_type_ISRCTN	10											
-	hbgdkiStudyRegistryType	Japan Primary Registries Network (JPRN)	hbgdki_study_registry_type_JPRN	11											
-	hbgdkiStudyRegistryType	Pan African Clinical Trial Registry (PACTR)	hbgdki_study_registry_type_PACTR	12											
-	hbgdkiStudyRegistryType	Sri Lanka Clinical Trials Registry (SLCTR)	hbgdki_study_registry_type_SLCTR	13											
-	hbgdkiStudyRegistryType	Thai Clinical Trials Registry (TCTR)	hbgdki_study_registry_type_TCTR	14											
-	hbgdkiStudyRegistryType	The Netherlands National Trial Register (NTR)	hbgdki_study_registry_type_NTR	15											
-    	hbgdkiStudyRegistryType	US Clinical Trials Registry (clinicaltrials.gov)	hbgdki_study_registry_type_USCTR	16											
-	hbgdkiStudyType	Interventional	hbgdki_interventional	0											
-	hbgdkiStudyType	Observational	hbgdki_observational	1											
-	hbgdkiStudyType	Case Control	hbgdki_case_control	2											
-	hbgdkiStudyType	Meta-analysis	hbgdki_meta_analysis	3											
-	hbgdkiStudyType	Demographic & Health Survey	hbgdki_demographic_health_survey	4											
-	hbgdkiStudyType	Other Survey	hbgdki_other_survey	5											
-	hbgdkiGestationalAge	Yes	hbgdki_gestation_y	0											
-	hbgdkiGestationalAge	No	hbgdki_gestation_n	1											
-	hbgdkiAnthropometry	Yes	hbgdki_anthropometry_y	0											
-	hbgdkiAnthropometry	No	hbgdki_anthropometry_n	1											
-	hbgdkiBirthWeight	Yes	hbgdki_birth_weight_y	0											
-	hbgdkiBirthWeight	No	hbgdki_birth_weight_n	1											
-	hbgdkiNeurocognitiveDev	Yes	hbgdki_neurocognitive_dev_y	0											
-	hbgdkiNeurocognitiveDev	No	hbgdki_neurocognitive_dev_n	1											
-	hbgdkiMaternalChar	Yes	hbgdki_maternal_char_y	0											
-	hbgdkiMaternalChar	No	hbgdki_maternal_char_ n	1											
-	hbgdkiPregnancyBirth	Yes	hbgdki_pregnancy_birth_y	0											
-	hbgdkiPregnancyBirth	No	hbgdki_pregnancy_birth_ n	1											
-	hbgdkiSocioeconomicChar	Yes	hbgdki_socioeconomic_char_y	0											
-	hbgdkiSocioeconomicChar	No	hbgdki_socioeconomic_char_n	1											
-	hbgdkiFeedingCare	Yes	hbgdki_feeding_care_y	0											
-	hbgdkiFeedingCare	No	hbgdki_feeding_care_n	1											
-	hbgdkiImmunizations	Yes	hbgdki_immunizations_y	0											
-	hbgdkiImmunizations	No	hbgdki_immunizations_n	1											
-	hbgdkiInfantChildhoodMorbidity	Yes	hbgdki_infant_childhood_morbidity_y	0											
-	hbgdkiInfantChildhoodMorbidity	No	hbgdki_infant_childhood_morbidity_n	1											
-	hbgdkiWaterSanHygiene	Yes	hbgdki_water_san_hygiene_y	0											
-	hbgdkiWaterSanHygiene	No	hbgdki_water_san_hygiene_n	1											
+#metadataBlock	name	dataverseAlias	displayName														
+	custom_hbgdki	HBGDki	HBGDki Custom Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
+	hbgdkiStudyName	Name of Study	Name of the study.	Limit to 20 characters.	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiStudyRegistry	Study Registry	Which study registry was used?		none	1		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiStudyRegistryType	ID Type	Which study registry was used?		text	2		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiStudyRegistryNumber	ID Number	ID number for the study per the registry.		text	3		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	hbgdkiStudyRegistry	TEXT	{}	custom_hbgdki
+	hbgdkiStudyType	Type of study	Type of study.		text	4		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiIntervention	Intervention	If an interventional study, describe the interventions.		textbox	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	custom_hbgdki
+	hbgdkiLowerLimitAge	Lower limit of age at enrollment	Lower limit of age at enrollment.		int	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiUnitsLowerLimitAge	Units for lower age limit	Units for lower age limit.		text	7		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiUpperLimitAge	Upper limit of age at enrollment	Upper limit of age at enrollment.		int	8		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiUnitsUpperLimitAge	Units for upper age limit	Units for upper age limit.		text	9		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiOther	Other entry criteria	Other entry criteria.		textbox	10		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	custom_hbgdki
+	hbgdkiBiosampleType	Types of biosamples collected, if any	Types of biosamples used (e.g., Blood, Stool,...).		text	11		TRUE	FALSE	TRUE	TRUE	TRUE	FALSE		TEXT	{}	custom_hbgdki
+	hbgdkiGestationalAge	Gestational age	Gestational age		text	12		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiAnthropometry	Anthropometry	Anthropometry		text	13		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiBirthWeight	Birth weight	Birth weight		text	14		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiNeurocognitiveDev	Neurocognitive development	Neurocognitive development		text	15		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiMaternalChar	Maternal characteristics	Dataset parameters can include: age, height, weight, obstetric history.		text	16		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiPregnancyBirth	Pregnancy and birth	Dataset parameters can include: Morbidity, nutrition, ANC, delivery method and setting.		text	17		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiSocioeconomicChar	Socioeconomic characteristics	Socioeconomic characteristics		text	18		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiFeedingCare	Feeding care & practice	Feeding care & practice		text	19		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiImmunizations	Immunizations	Immunizations		text	20		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiInfantChildhoodMorbidity	Morbidity in infancy and childhood	Morbidity in infancy and childhood		text	21		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+	hbgdkiWaterSanHygiene	Water, sanitation and hygiene standards	Water, sanitation and hygiene standards		text	22		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		VOCABULARY_SELECT	{}	custom_hbgdki
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	hbgdkiStudyRegistryType	International Clinical Trials Registry Platform (ICTRP)	hbgdki_study_registry_type_ICTRP	0													
+	hbgdkiStudyRegistryType	Australian New Zealand Clinical Trials Registry (ANZCTR)	hbgdki_study_registry_type_ANZCTR	1													
+	hbgdkiStudyRegistryType	Brazilian Clinical Trials Registry (ReBec)	hbgdki_study_registry_type_ReBec	2													
+	hbgdkiStudyRegistryType	Chinese Clinical Trial Registry (ChiCTR)	hbgdki_study_registry_type_ChiCTR	3													
+	hbgdkiStudyRegistryType	Clinical Research Information Service (CRiS), Republic of Korea	hbgdki_study_registry_type_CRiS	4													
+	hbgdkiStudyRegistryType	Clinical Trials Registry - India (CTRI)	hbgdki_study_registry_type_CTRI	5													
+	hbgdkiStudyRegistryType	Cuban Public Registry of Clinical Trials (RPCEC)	hbgdki_study_registry_type_RPCEC	6													
+	hbgdkiStudyRegistryType	EU Clinical Trials Register (EU-CTR)	hbgdki_study_registry_type_EU-CTR	7													
+	hbgdkiStudyRegistryType	German Clinical Trials Register (DRKS)	hbgdki_study_registry_type_DRKS	8													
+	hbgdkiStudyRegistryType	Iranian Registry of Clinical Trials (IRCT)	hbgdki_study_registry_type_IRCT	9													
+	hbgdkiStudyRegistryType	ISRCTN	hbgdki_study_registry_type_ISRCTN	10													
+	hbgdkiStudyRegistryType	Japan Primary Registries Network (JPRN)	hbgdki_study_registry_type_JPRN	11													
+	hbgdkiStudyRegistryType	Pan African Clinical Trial Registry (PACTR)	hbgdki_study_registry_type_PACTR	12													
+	hbgdkiStudyRegistryType	Sri Lanka Clinical Trials Registry (SLCTR)	hbgdki_study_registry_type_SLCTR	13													
+	hbgdkiStudyRegistryType	Thai Clinical Trials Registry (TCTR)	hbgdki_study_registry_type_TCTR	14													
+	hbgdkiStudyRegistryType	The Netherlands National Trial Register (NTR)	hbgdki_study_registry_type_NTR	15													
+    	hbgdkiStudyRegistryType	US Clinical Trials Registry (clinicaltrials.gov)	hbgdki_study_registry_type_USCTR	16													
+	hbgdkiStudyType	Interventional	hbgdki_interventional	0													
+	hbgdkiStudyType	Observational	hbgdki_observational	1													
+	hbgdkiStudyType	Case Control	hbgdki_case_control	2													
+	hbgdkiStudyType	Meta-analysis	hbgdki_meta_analysis	3													
+	hbgdkiStudyType	Demographic & Health Survey	hbgdki_demographic_health_survey	4													
+	hbgdkiStudyType	Other Survey	hbgdki_other_survey	5													
+	hbgdkiGestationalAge	Yes	hbgdki_gestation_y	0													
+	hbgdkiGestationalAge	No	hbgdki_gestation_n	1													
+	hbgdkiAnthropometry	Yes	hbgdki_anthropometry_y	0													
+	hbgdkiAnthropometry	No	hbgdki_anthropometry_n	1													
+	hbgdkiBirthWeight	Yes	hbgdki_birth_weight_y	0													
+	hbgdkiBirthWeight	No	hbgdki_birth_weight_n	1													
+	hbgdkiNeurocognitiveDev	Yes	hbgdki_neurocognitive_dev_y	0													
+	hbgdkiNeurocognitiveDev	No	hbgdki_neurocognitive_dev_n	1													
+	hbgdkiMaternalChar	Yes	hbgdki_maternal_char_y	0													
+	hbgdkiMaternalChar	No	hbgdki_maternal_char_ n	1													
+	hbgdkiPregnancyBirth	Yes	hbgdki_pregnancy_birth_y	0													
+	hbgdkiPregnancyBirth	No	hbgdki_pregnancy_birth_ n	1													
+	hbgdkiSocioeconomicChar	Yes	hbgdki_socioeconomic_char_y	0													
+	hbgdkiSocioeconomicChar	No	hbgdki_socioeconomic_char_n	1													
+	hbgdkiFeedingCare	Yes	hbgdki_feeding_care_y	0													
+	hbgdkiFeedingCare	No	hbgdki_feeding_care_n	1													
+	hbgdkiImmunizations	Yes	hbgdki_immunizations_y	0													
+	hbgdkiImmunizations	No	hbgdki_immunizations_n	1													
+	hbgdkiInfantChildhoodMorbidity	Yes	hbgdki_infant_childhood_morbidity_y	0													
+	hbgdkiInfantChildhoodMorbidity	No	hbgdki_infant_childhood_morbidity_n	1													
+	hbgdkiWaterSanHygiene	Yes	hbgdki_water_san_hygiene_y	0													
+	hbgdkiWaterSanHygiene	No	hbgdki_water_san_hygiene_n	1													

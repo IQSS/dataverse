@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,7 +20,7 @@ import java.io.IOException;
  * @author skraffmi
  */
 public class HomepageServlet extends HttpServlet {
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     /**

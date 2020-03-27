@@ -1,295 +1,295 @@
-#metadataBlock	name	dataverseAlias	displayName												
-	biomedical		Life Sciences Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		biomedical
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
-	studyDesignType	Case Control	EFO_0001427	0											
-	studyDesignType	Cross Sectional	EFO_0001428	1											
-	studyDesignType	Cohort Study	OCRE100078	2											
-	studyDesignType	Nested Case Control Design	NCI_C48202	3											
-	studyDesignType	Not Specified	OTHER_DESIGN	4											
-	studyDesignType	Parallel Group Design	OBI_0500006	5											
-	studyDesignType	Perturbation Design	OBI_0001033	6											
-	studyDesignType	Randomized Controlled Trial	MESH_D016449	7											
-	studyDesignType	Technological Design	TECH_DESIGN	8											
-	studyFactorType	Age	EFO_0000246	0											
-	studyFactorType	Biomarkers	BIOMARKERS	1											
-	studyFactorType	Cell Surface Markers	CELL_SURFACE_M	2											
-	studyFactorType	Cell Type/Cell Line	EFO_0000324;EFO_0000322	3											
-	studyFactorType	Developmental Stage	EFO_0000399	4											
-	studyFactorType	Disease State	OBI_0001293	5											
-	studyFactorType	Drug Susceptibility	IDO_0000469	6											
-	studyFactorType	Extract Molecule	FBcv_0010001	7											
-	studyFactorType	Genetic Characteristics	OBI_0001404	8											
-	studyFactorType	Immunoprecipitation Antibody	OBI_0000690	9											
-	studyFactorType	Organism	OBI_0100026	10											
-	studyFactorType	Other	OTHER_FACTOR	11											
-	studyFactorType	Passages	PASSAGES_FACTOR	12											
-	studyFactorType	Platform	OBI_0000050	13											
-	studyFactorType	Sex	EFO_0000695	14											
-	studyFactorType	Strain	EFO_0005135	15											
-	studyFactorType	Time Point	EFO_0000724	16											
-	studyFactorType	Tissue Type	BTO_0001384	17											
-	studyFactorType	Treatment Compound	EFO_0000369	18											
-	studyFactorType	Treatment Type	EFO_0000727	19											
-	studyAssayMeasurementType	cell counting	ERO_0001899	0											
-	studyAssayMeasurementType	cell sorting	CHMO_0001085	1											
-	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2											
-	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3											
-	studyAssayMeasurementType	DNA methylation profiling	OBI_0000634	4											
-	studyAssayMeasurementType	DNA methylation profiling (Bisulfite-Seq)	OBI_0000748	5											
-	studyAssayMeasurementType	DNA methylation profiling (MeDIP-Seq)	_OBI_0000634	6											
-	studyAssayMeasurementType	drug susceptibility	_IDO_0000469	7											
-	studyAssayMeasurementType	environmental gene survey	ENV_GENE_SURVEY	8											
-	studyAssayMeasurementType	genome sequencing	ERO_0001183	9											
-	studyAssayMeasurementType	hematology	OBI_0000630	10											
-	studyAssayMeasurementType	histology	OBI_0600020	11											
-	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	OBI_0002017	12											
-	studyAssayMeasurementType	loss of heterozygosity profiling	SO_0001786	13											
-	studyAssayMeasurementType	metabolite profiling	OBI_0000366	14											
-	studyAssayMeasurementType	metagenome sequencing	METAGENOME_SEQ	15											
-	studyAssayMeasurementType	protein expression profiling	OBI_0000615	16											
-	studyAssayMeasurementType	protein identification	ERO_0000346	17											
-	studyAssayMeasurementType	protein-DNA binding site identification	PROTEIN_DNA_BINDING	18											
-	studyAssayMeasurementType	protein-protein interaction detection	OBI_0000288	19											
-	studyAssayMeasurementType	protein-RNA binding (RIP-Seq)	PROTEIN_RNA_BINDING	20											
-	studyAssayMeasurementType	SNP analysis	OBI_0000435	21											
-	studyAssayMeasurementType	targeted sequencing	TARGETED_SEQ	22											
-	studyAssayMeasurementType	transcription factor binding (ChIP-Seq)	OBI_0002018	23											
-	studyAssayMeasurementType	transcription factor binding site identification	OBI_0000291	24											
-	studyAssayMeasurementType	transcription profiling	OBI_0000424	25											
-	studyAssayMeasurementType	transcription profiling	EFO_0001032	26											
-	studyAssayMeasurementType	transcription profiling (Microarray)	TRANSCRIPTION_PROF	27											
-	studyAssayMeasurementType	transcription profiling (RNA-Seq)	OBI_0001271	28											
-	studyAssayMeasurementType	TRAP translational profiling	TRAP_TRANS_PROF	29											
-	studyAssayMeasurementType	Other	OTHER_MEASUREMENT	30											
-	studyAssayOrganism	Arabidopsis thaliana	NCBITaxon_3702	0											
-	studyAssayOrganism	Bos taurus	NCBITaxon_9913	1											
-	studyAssayOrganism	Caenorhabditis elegans	NCBITaxon_6239	2											
-	studyAssayOrganism	Chlamydomonas reinhardtii	NCBITaxon_3055	3											
-	studyAssayOrganism	Danio rerio (zebrafish)	NCBITaxon_7955	4											
-	studyAssayOrganism	Dictyostelium discoideum	NCBITaxon_44689	5											
-	studyAssayOrganism	Drosophila melanogaster	NCBITaxon_7227	6											
-	studyAssayOrganism	Escherichia coli	NCBITaxon_562	7											
-	studyAssayOrganism	Hepatitis C virus	NCBITaxon_11103	8											
-	studyAssayOrganism	Homo sapiens	NCBITaxon_9606	9											
-	studyAssayOrganism	Mus musculus	NCBITaxon_10090	10											
-	studyAssayOrganism	Mycobacterium africanum	NCBITaxon_33894	11											
-	studyAssayOrganism	Mycobacterium canetti	NCBITaxon_78331	12											
-	studyAssayOrganism	Mycobacterium tuberculosis	NCBITaxon_1773	13											
-	studyAssayOrganism	Mycoplasma pneumoniae	NCBITaxon_2104	14											
-	studyAssayOrganism	Oryza sativa	NCBITaxon_4530	15											
-	studyAssayOrganism	Plasmodium falciparum	NCBITaxon_5833	16											
-	studyAssayOrganism	Pneumocystis carinii	NCBITaxon_4754	17											
-	studyAssayOrganism	Rattus norvegicus	NCBITaxon_10116	18											
-	studyAssayOrganism	Saccharomyces cerevisiae (brewer's yeast)	NCBITaxon_4932	19											
-	studyAssayOrganism	Schizosaccharomyces pombe	NCBITaxon_4896	20											
-	studyAssayOrganism	Takifugu rubripes	NCBITaxon_31033	21											
-	studyAssayOrganism	Xenopus laevis	NCBITaxon_8355	22											
-	studyAssayOrganism	Zea mays	NCBITaxon_4577	23											
-	studyAssayOrganism	Other	OTHER_TAXONOMY	24											
-	studyAssayTechnologyType	culture based drug susceptibility testing, single concentration	CULTURE_DRUG_TEST_SINGLE	0											
-	studyAssayTechnologyType	culture based drug susceptibility testing, two concentrations	CULTURE_DRUG_TEST_TWO	1											
-	studyAssayTechnologyType	culture based drug susceptibility testing, three or more concentrations (minimium inhibitory concentration measurement)	CULTURE_DRUG_TEST_THREE	2											
-	studyAssayTechnologyType	DNA microarray	OBI_0400148	3											
-	studyAssayTechnologyType	flow cytometry	OBI_0000916	4											
-	studyAssayTechnologyType	gel electrophoresis	OBI_0600053	5											
-	studyAssayTechnologyType	mass spectrometry	OBI_0000470	6											
-	studyAssayTechnologyType	NMR spectroscopy	OBI_0000623	7											
-	studyAssayTechnologyType	nucleotide sequencing	OBI_0000626	8											
-	studyAssayTechnologyType	protein microarray	OBI_0400149	9											
-	studyAssayTechnologyType	real time PCR	OBI_0000893	10											
-	studyAssayTechnologyType	no technology required	NO_TECHNOLOGY	11											
-	studyAssayTechnologyType	Other	OTHER_TECHNOLOGY	12											
-	studyAssayPlatform	210-MS GC Ion Trap (Varian)	210_MS_GC	0											
-	studyAssayPlatform	220-MS GC Ion Trap (Varian)	220_MS_GC	1											
-	studyAssayPlatform	225-MS GC Ion Trap (Varian)	225_MS_GC	2											
-	studyAssayPlatform	240-MS GC Ion Trap (Varian)	240_MS_GC	3											
-	studyAssayPlatform	300-MS quadrupole GC/MS (Varian)	300_MS_GCMS	4											
-	studyAssayPlatform	320-MS LC/MS (Varian)	320_MS_LCMS	5											
-	studyAssayPlatform	325-MS LC/MS (Varian)	325_MS_LCMS	6											
-	studyAssayPlatform	320-MS GC/MS (Varian)	500_MS_GCMS	7											
-	studyAssayPlatform	500-MS LC/MS (Varian)	500_MS_LCMS	8											
-	studyAssayPlatform	800D (Jeol)	800D	9											
-	studyAssayPlatform	910-MS TQ-FT (Varian)	910_MS_TQFT	10											
-	studyAssayPlatform	920-MS TQ-FT (Varian)	920_MS_TQFT	11											
-	studyAssayPlatform	3100 Mass Detector (Waters)	3100_MASS_D	12											
-	studyAssayPlatform	6110 Quadrupole LC/MS (Agilent)	6110_QUAD_LCMS	13											
-	studyAssayPlatform	6120 Quadrupole LC/MS (Agilent)	6120_QUAD_LCMS	14											
-	studyAssayPlatform	6130 Quadrupole LC/MS (Agilent)	6130_QUAD_LCMS	15											
-	studyAssayPlatform	6140 Quadrupole LC/MS (Agilent)	6140_QUAD_LCMS	16											
-	studyAssayPlatform	6310 Ion Trap LC/MS (Agilent)	6310_ION_LCMS	17											
-	studyAssayPlatform	6320 Ion Trap LC/MS (Agilent)	6320_ION_LCMS	18											
-	studyAssayPlatform	6330 Ion Trap LC/MS (Agilent)	6330_ION_LCMS	19											
-	studyAssayPlatform	6340 Ion Trap LC/MS (Agilent)	6340_ION_LCMS	20											
-	studyAssayPlatform	6410 Triple Quadrupole LC/MS (Agilent)	6410_TRIPLE_LCMS	21											
-	studyAssayPlatform	6430 Triple Quadrupole LC/MS (Agilent)	6430_TRIPLE_LCMS	22											
-	studyAssayPlatform	6460 Triple Quadrupole LC/MS (Agilent)	6460_TRIPLE_LCMS	23											
-	studyAssayPlatform	6490 Triple Quadrupole LC/MS (Agilent)	6490_TRIPLE_LCMS	24											
-	studyAssayPlatform	6530 Q-TOF LC/MS (Agilent)	6530_Q_TOF_LCMS	25											
-	studyAssayPlatform	6540 Q-TOF LC/MS (Agilent)	6540_Q_TOF_LCMS	26											
-	studyAssayPlatform	6210 TOF LC/MS (Agilent)	6210_Q_TOF_LCMS	27											
-	studyAssayPlatform	6220 TOF LC/MS (Agilent)	6220_Q_TOF_LCMS	28											
-	studyAssayPlatform	6230 TOF LC/MS (Agilent)	6230_Q_TOF_LCMS	29											
-	studyAssayPlatform	7000B Triple Quadrupole GC/MS (Agilent)	700B_TRIPLE_GCMS	30											
-	studyAssayPlatform	AccuTO DART (Jeol)	ACCUTO_DART	31											
-	studyAssayPlatform	AccuTOF GC (Jeol)	ACCUTOF_GC	32											
-	studyAssayPlatform	AccuTOF LC (Jeol)	ACCUTOF_LC	33											
-	studyAssayPlatform	ACQUITY SQD (Waters)	ACQUITY_SQD	34											
-	studyAssayPlatform	ACQUITY TQD (Waters)	ACQUITY_TQD	35											
-	studyAssayPlatform	Agilent	AGILENT	36											
-	studyAssayPlatform	Agilent 5975E GC/MSD (Agilent)	AGILENT_ 5975E_GCMSD	37											
-	studyAssayPlatform	Agilent 5975T LTM GC/MSD (Agilent)	AGILENT_5975T_LTM_GCMSD	38											
-	studyAssayPlatform	5975C Series GC/MSD (Agilent)	5975C_GCMSD	39											
-	studyAssayPlatform	Affymetrix	AFFYMETRIX	40											
-	studyAssayPlatform	amaZon ETD ESI Ion Trap (Bruker)	AMAZON_ETD_ESI	41											
-	studyAssayPlatform	amaZon X ESI Ion Trap (Bruker)	AMAZON_X_ESI	42											
-	studyAssayPlatform	apex-ultra hybrid Qq-FTMS (Bruker)	APEX_ULTRA_QQ_FTMS	43											
-	studyAssayPlatform	API 2000 (AB Sciex)	API_2000	44											
-	studyAssayPlatform	API 3200 (AB Sciex)	API_3200	45											
-	studyAssayPlatform	API 3200 QTRAP (AB Sciex)	API_3200_QTRAP	46											
-	studyAssayPlatform	API 4000 (AB Sciex)	API_4000	47											
-	studyAssayPlatform	API 4000 QTRAP (AB Sciex)	API_4000_QTRAP	48											
-	studyAssayPlatform	API 5000 (AB Sciex)	API_5000	49											
-	studyAssayPlatform	API 5500 (AB Sciex)	API_5500	50											
-	studyAssayPlatform	API 5500 QTRAP (AB Sciex)	API_5500_QTRAP	51											
-	studyAssayPlatform	Applied Biosystems Group (ABI)	APPLIED_BIOSYSTEMS	52											
-	studyAssayPlatform	AQI Biosciences	AQI_BIOSCIENCES	53											
-	studyAssayPlatform	Atmospheric Pressure GC (Waters)	ATMOS_GC	54											
-	studyAssayPlatform	autoflex III MALDI-TOF MS (Bruker)	AUTOFLEX_III_MALDI_TOF_MS	55											
-	studyAssayPlatform	autoflex speed(Bruker)	AUTOFLEX_SPEED	56											
-	studyAssayPlatform	AutoSpec Premier (Waters)	AUTOSPEC_PREMIER	57											
-	studyAssayPlatform	AXIMA Mega TOF (Shimadzu)	AXIMA_MEGA_TOF	58											
-	studyAssayPlatform	AXIMA Performance MALDI TOF/TOF (Shimadzu)	AXIMA_PERF_MALDI_TOF	59											
-	studyAssayPlatform	A-10 Analyzer (Apogee)	A_10_ANALYZER	60											
-	studyAssayPlatform	A-40-MiniFCM (Apogee)	A_40_MINIFCM	61											
-	studyAssayPlatform	Bactiflow (Chemunex SA)	BACTIFLOW	62											
-	studyAssayPlatform	Base4innovation	BASE4INNOVATION	63											
-	studyAssayPlatform	BD BACTEC MGIT 320	BD_BACTEC_MGIT_320	64											
-	studyAssayPlatform	BD BACTEC MGIT 960	BD_BACTEC_MGIT_960	65											
-	studyAssayPlatform	BD Radiometric BACTEC 460TB	BD_RADIO_BACTEC_460TB	66											
-	studyAssayPlatform	BioNanomatrix	BIONANOMATRIX	67											
-	studyAssayPlatform	Cell Lab Quanta SC (Becman Coulter)	CELL_LAB_QUANTA_SC	68											
-	studyAssayPlatform	Clarus 560 D GC/MS (PerkinElmer)	CLARUS_560_D_GCMS	69											
-	studyAssayPlatform	Clarus 560 S GC/MS (PerkinElmer)	CLARUS_560_S_GCMS	70											
-	studyAssayPlatform	Clarus 600 GC/MS (PerkinElmer)	CLARUS_600_GCMS	71											
-	studyAssayPlatform	Complete Genomics	COMPLETE_GENOMICS	72											
-	studyAssayPlatform	Cyan (Dako Cytomation)	CYAN	73											
-	studyAssayPlatform	CyFlow ML (Partec)	CYFLOW_ML	74											
-	studyAssayPlatform	Cyow SL (Partec)	CYFLOW_SL	75											
-	studyAssayPlatform	CyFlow SL3 (Partec)	CYFLOW_SL3	76											
-	studyAssayPlatform	CytoBuoy (Cyto Buoy Inc)	CYTOBUOY	77											
-	studyAssayPlatform	CytoSence (Cyto Buoy Inc)	CYTOSENCE	78											
-	studyAssayPlatform	CytoSub (Cyto Buoy Inc)	CYTOSUB	79											
-	studyAssayPlatform	Danaher	DANAHER	80											
-	studyAssayPlatform	DFS (Thermo Scientific)	DFS	81											
-	studyAssayPlatform	Exactive(Thermo Scientific)	EXACTIVE	82											
-	studyAssayPlatform	FACS Canto (Becton Dickinson)	FACS_CANTO	83											
-	studyAssayPlatform	FACS Canto2 (Becton Dickinson)	FACS_CANTO2	84											
-	studyAssayPlatform	FACS Scan (Becton Dickinson)	FACS_SCAN	85											
-	studyAssayPlatform	FC 500 (Becman Coulter)	FC_500	86											
-	studyAssayPlatform	GCmate II GC/MS (Jeol)	GCMATE_II	87											
-	studyAssayPlatform	GCMS-QP2010 Plus (Shimadzu)	GCMS_QP2010_PLUS	88											
-	studyAssayPlatform	GCMS-QP2010S Plus (Shimadzu)	GCMS_QP2010S_PLUS	89											
-	studyAssayPlatform	GCT Premier (Waters)	GCT_PREMIER	90											
-	studyAssayPlatform	GENEQ	GENEQ	91											
-	studyAssayPlatform	Genome Corp.	GENOME_CORP	92											
-	studyAssayPlatform	GenoVoxx	GENOVOXX	93											
-	studyAssayPlatform	GnuBio	GNUBIO	94											
-	studyAssayPlatform	Guava EasyCyte Mini (Millipore)	GUAVA_EASYCYTE_MINI	95											
-	studyAssayPlatform	Guava EasyCyte Plus (Millipore)	GUAVA_EASYCYTE_PLUS	96											
-	studyAssayPlatform	Guava Personal Cell Analysis (Millipore)	GUAVA_PERSONAL_CELL	97											
-	studyAssayPlatform	Guava Personal Cell Analysis-96 (Millipore)	GUAVA_PERSONAL_CELL_96	98											
-	studyAssayPlatform	Helicos BioSciences	HELICOS_BIO	99											
-	studyAssayPlatform	Illumina	ILLUMINA	100											
-	studyAssayPlatform	Indirect proportion method on LJ medium	INDIRECT_LJ_MEDIUM	101											
-	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H9	INDIRECT_AGAR_7H9	102											
-	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H10	INDIRECT_AGAR_7H10	103											
-	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H11	INDIRECT_AGAR_7H11	104											
-	studyAssayPlatform	inFlux Analyzer (Cytopeia)	INFLUX_ANALYZER	105											
-	studyAssayPlatform	Intelligent Bio-Systems	INTELLIGENT_BIOSYSTEMS	106											
-	studyAssayPlatform	ITQ 700 (Thermo Scientific)	ITQ_700	107											
-	studyAssayPlatform	ITQ 900 (Thermo Scientific)	ITQ_900	108											
-	studyAssayPlatform	ITQ 1100 (Thermo Scientific)	ITQ_1100	109											
-	studyAssayPlatform	JMS-53000 SpiralTOF (Jeol)	JMS_53000_SPIRAL	110											
-	studyAssayPlatform	LaserGen	LASERGEN	111											
-	studyAssayPlatform	LCMS-2020 (Shimadzu)	LCMS_2020	112											
-	studyAssayPlatform	LCMS-2010EV (Shimadzu)	LCMS_2010EV	113											
-	studyAssayPlatform	LCMS-IT-TOF (Shimadzu)	LCMS_IT_TOF	114											
-	studyAssayPlatform	Li-Cor	LI_COR	115											
-	studyAssayPlatform	Life Tech	LIFE_TECH	116											
-	studyAssayPlatform	LightSpeed Genomics	LIGHTSPEED_GENOMICS	117											
-	studyAssayPlatform	LCT Premier XE (Waters)	LCT_PREMIER_XE	118											
-	studyAssayPlatform	LCQ Deca XP MAX (Thermo Scientific)	LCQ_DECA_XP_MAX	119											
-	studyAssayPlatform	LCQ Fleet (Thermo Scientific)	LCQ_FLEET	120											
-	studyAssayPlatform	LXQ (Thermo Scientific)	LXQ_THERMO	121											
-	studyAssayPlatform	LTQ Classic (Thermo Scientific)	LTQ_CLASSIC	122											
-	studyAssayPlatform	LTQ XL (Thermo Scientific)	LTQ_XL	123											
-	studyAssayPlatform	LTQ Velos (Thermo Scientific)	LTQ_VELOS	124											
-	studyAssayPlatform	LTQ Orbitrap Classic (Thermo Scientific)	LTQ_ORBITRAP_CLASSIC	125											
-	studyAssayPlatform	LTQ Orbitrap XL (Thermo Scientific)	LTQ_ORBITRAP_XL	126											
-	studyAssayPlatform	LTQ Orbitrap Discovery (Thermo Scientific)	LTQ_ORBITRAP_DISCOVERY	127											
-	studyAssayPlatform	LTQ Orbitrap Velos (Thermo Scientific)	LTQ_ORBITRAP_VELOS	128											
-	studyAssayPlatform	Luminex 100 (Luminex)	LUMINEX_100	129											
-	studyAssayPlatform	Luminex 200 (Luminex)	LUMINEX_200	130											
-	studyAssayPlatform	MACS Quant (Miltenyi)	MACS_QUANT	131											
-	studyAssayPlatform	MALDI SYNAPT G2 HDMS (Waters)	MALDI_SYNAPT_G2_HDMS	132											
-	studyAssayPlatform	MALDI SYNAPT G2 MS (Waters)	MALDI_SYNAPT_G2_MS	133											
-	studyAssayPlatform	MALDI SYNAPT HDMS (Waters)	MALDI_SYNAPT_HDMS	134											
-	studyAssayPlatform	MALDI SYNAPT MS (Waters)	MALDI_SYNAPT_MS	135											
-	studyAssayPlatform	MALDI micro MX (Waters)	MALDI_MICROMX	136											
-	studyAssayPlatform	maXis (Bruker)	MAXIS	137											
-	studyAssayPlatform	maXis G4 (Bruker)	MAXISG4	138											
-	studyAssayPlatform	microflex LT MALDI-TOF MS (Bruker)	MICROFLEX_LT_MALDI_TOF_MS	139											
-	studyAssayPlatform	microflex LRF MALDI-TOF MS (Bruker)	MICROFLEX_LRF_MALDI_TOF_MS	140											
-	studyAssayPlatform	microflex III MALDI-TOF MS (Bruker)	MICROFLEX_III_TOF_MS	141											
-	studyAssayPlatform	micrOTOF II ESI TOF (Bruker)	MICROTOF_II_ESI_TOF	142											
-	studyAssayPlatform	micrOTOF-Q II ESI-Qq-TOF (Bruker)	MICROTOF_Q_II_ESI_QQ_TOF	143											
-	studyAssayPlatform	microplate Alamar Blue (resazurin) colorimetric method	MICROPLATE_ALAMAR_BLUE_COLORIMETRIC	144											
-	studyAssayPlatform	Mstation (Jeol)	MSTATION	145											
-	studyAssayPlatform	MSQ Plus (Thermo Scientific)	MSQ_PLUS	146											
-	studyAssayPlatform	NABsys	NABSYS	147											
-	studyAssayPlatform	Nanophotonics Biosciences	NANOPHOTONICS_BIOSCIENCES	148											
-	studyAssayPlatform	Network Biosystems	NETWORK_BIOSYSTEMS	149											
-	studyAssayPlatform	Nimblegen	NIMBLEGEN	150											
-	studyAssayPlatform	Oxford Nanopore Technologies	OXFORD_NANOPORE_TECHNOLOGIES	151											
-	studyAssayPlatform	Pacific Biosciences	PACIFIC_BIOSCIENCES	152											
-	studyAssayPlatform	Population Genetics Technologies	POPULATION_GENETICS_TECHNOLOGIES	153											
-	studyAssayPlatform	Q1000GC UltraQuad (Jeol)	Q1000GC_ULTRAQUAD	154											
-	studyAssayPlatform	Quattro micro API (Waters)	QUATTRO_MICRO_API	155											
-	studyAssayPlatform	Quattro micro GC (Waters)	QUATTRO_MICRO_GC	156											
-	studyAssayPlatform	Quattro Premier XE (Waters)	QUATTRO_PREMIER_XE	157											
-	studyAssayPlatform	QSTAR (AB Sciex)	QSTAR	158											
-	studyAssayPlatform	Reveo	REVEO	159											
-	studyAssayPlatform	Roche	ROCHE	160											
-	studyAssayPlatform	Seirad	SEIRAD	161											
-	studyAssayPlatform	solariX hybrid Qq-FTMS (Bruker)	SOLARIX_HYBRID_QQ_FTMS	162											
-	studyAssayPlatform	Somacount (Bently Instruments)	SOMACOUNT	163											
-	studyAssayPlatform	SomaScope (Bently Instruments)	SOMASCOPE	164											
-	studyAssayPlatform	SYNAPT G2 HDMS (Waters)	SYNAPT_G2_HDMS	165											
-	studyAssayPlatform	SYNAPT G2 MS (Waters)	SYNAPT_G2_MS	166											
-	studyAssayPlatform	SYNAPT HDMS (Waters)	SYNAPT_HDMS	167											
-	studyAssayPlatform	SYNAPT MS (Waters)	SYNAPT_MS	168											
-	studyAssayPlatform	TripleTOF 5600 (AB Sciex)	TRIPLETOF_5600	169											
-	studyAssayPlatform	TSQ Quantum Ultra (Thermo Scientific)	TSQ_QUANTUM_ULTRA	170											
-	studyAssayPlatform	TSQ Quantum Access (Thermo Scientific)	TSQ_QUANTUM_ACCESS	171											
-	studyAssayPlatform	TSQ Quantum Access MAX (Thermo Scientific)	TSQ_QUANTUM_ACCESS_MAX	172											
-	studyAssayPlatform	TSQ Quantum Discovery MAX (Thermo Scientific)	TSQ_QUANTUM_DISCOVERY_MAX	173											
-	studyAssayPlatform	TSQ Quantum GC (Thermo Scientific)	TSQ_QUANTUM_GC	174											
-	studyAssayPlatform	TSQ Quantum XLS (Thermo Scientific)	TSQ_QUANTUM_XLS	175											
-	studyAssayPlatform	TSQ Vantage (Thermo Scientific)	TSQ_VANTAGE	176											
-	studyAssayPlatform	ultrafleXtreme MALDI-TOF MS (Bruker)	ULTRAFLEXTREME_MALDI_TOF_MS	177											
-	studyAssayPlatform	VisiGen Biotechnologies	VISIGEN_BIO	178											
-	studyAssayPlatform	Xevo G2 QTOF (Waters)	XEVO_G2_QTOF	179											
-	studyAssayPlatform	Xevo QTof MS (Waters)	XEVO_QTOF_MS	180											
-	studyAssayPlatform	Xevo TQ MS (Waters)	XEVO_TQ_MS	181											
-	studyAssayPlatform	Xevo TQ-S (Waters)	XEVO_TQ_S	182											
-	studyAssayPlatform	Other	OTHER_PLATFORM	183											
+#metadataBlock	name	dataverseAlias	displayName														
+	biomedical		Life Sciences Metadata														
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRenderOptions	metadatablock_id
+	studyDesignType	Design Type	Design types that are based on the overall experimental design.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyFactorType	Factor Type	Factors used in the Dataset. 		text	1		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyAssayOrganism	Organism	The taxonomic name of the organism used in the Dataset or from which the  starting biological material derives.		text	2		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyAssayOtherOrganism	Other Organism	If Other was selected in Organism, list any other organisms that were used in this Dataset. Terms from the NCBI Taxonomy are recommended.		text	3		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		TEXT	{}	biomedical
+	studyAssayMeasurementType	Measurement Type	A term to qualify the endpoint, or what is being measured (e.g. gene expression profiling; protein identification). 		text	4		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyAssayOtherMeasurmentType	Other Measurement Type	If Other was selected in Measurement Type, list any other measurement types that were used. Terms from NCBO Bioportal are recommended.		text	5		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		TEXT	{}	biomedical
+	studyAssayTechnologyType	Technology Type	A term to identify the technology used to perform the measurement (e.g. DNA microarray; mass spectrometry).		text	6		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyAssayPlatform	Technology Platform	The manufacturer and name of the technology platform used in the assay (e.g. Bruker AVANCE).		text	7		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	biomedical
+	studyAssayCellType	Cell Type	The name of the cell line from which the source or sample derives.		text	8		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		TEXT	{}	biomedical
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder													
+	studyDesignType	Case Control	EFO_0001427	0													
+	studyDesignType	Cross Sectional	EFO_0001428	1													
+	studyDesignType	Cohort Study	OCRE100078	2													
+	studyDesignType	Nested Case Control Design	NCI_C48202	3													
+	studyDesignType	Not Specified	OTHER_DESIGN	4													
+	studyDesignType	Parallel Group Design	OBI_0500006	5													
+	studyDesignType	Perturbation Design	OBI_0001033	6													
+	studyDesignType	Randomized Controlled Trial	MESH_D016449	7													
+	studyDesignType	Technological Design	TECH_DESIGN	8													
+	studyFactorType	Age	EFO_0000246	0													
+	studyFactorType	Biomarkers	BIOMARKERS	1													
+	studyFactorType	Cell Surface Markers	CELL_SURFACE_M	2													
+	studyFactorType	Cell Type/Cell Line	EFO_0000324;EFO_0000322	3													
+	studyFactorType	Developmental Stage	EFO_0000399	4													
+	studyFactorType	Disease State	OBI_0001293	5													
+	studyFactorType	Drug Susceptibility	IDO_0000469	6													
+	studyFactorType	Extract Molecule	FBcv_0010001	7													
+	studyFactorType	Genetic Characteristics	OBI_0001404	8													
+	studyFactorType	Immunoprecipitation Antibody	OBI_0000690	9													
+	studyFactorType	Organism	OBI_0100026	10													
+	studyFactorType	Other	OTHER_FACTOR	11													
+	studyFactorType	Passages	PASSAGES_FACTOR	12													
+	studyFactorType	Platform	OBI_0000050	13													
+	studyFactorType	Sex	EFO_0000695	14													
+	studyFactorType	Strain	EFO_0005135	15													
+	studyFactorType	Time Point	EFO_0000724	16													
+	studyFactorType	Tissue Type	BTO_0001384	17													
+	studyFactorType	Treatment Compound	EFO_0000369	18													
+	studyFactorType	Treatment Type	EFO_0000727	19													
+	studyAssayMeasurementType	cell counting	ERO_0001899	0													
+	studyAssayMeasurementType	cell sorting	CHMO_0001085	1													
+	studyAssayMeasurementType	clinical chemistry analysis	OBI_0000520	2													
+	studyAssayMeasurementType	copy number variation profiling	OBI_0000537	3													
+	studyAssayMeasurementType	DNA methylation profiling	OBI_0000634	4													
+	studyAssayMeasurementType	DNA methylation profiling (Bisulfite-Seq)	OBI_0000748	5													
+	studyAssayMeasurementType	DNA methylation profiling (MeDIP-Seq)	_OBI_0000634	6													
+	studyAssayMeasurementType	drug susceptibility	_IDO_0000469	7													
+	studyAssayMeasurementType	environmental gene survey	ENV_GENE_SURVEY	8													
+	studyAssayMeasurementType	genome sequencing	ERO_0001183	9													
+	studyAssayMeasurementType	hematology	OBI_0000630	10													
+	studyAssayMeasurementType	histology	OBI_0600020	11													
+	studyAssayMeasurementType	Histone Modification (ChIP-Seq)	OBI_0002017	12													
+	studyAssayMeasurementType	loss of heterozygosity profiling	SO_0001786	13													
+	studyAssayMeasurementType	metabolite profiling	OBI_0000366	14													
+	studyAssayMeasurementType	metagenome sequencing	METAGENOME_SEQ	15													
+	studyAssayMeasurementType	protein expression profiling	OBI_0000615	16													
+	studyAssayMeasurementType	protein identification	ERO_0000346	17													
+	studyAssayMeasurementType	protein-DNA binding site identification	PROTEIN_DNA_BINDING	18													
+	studyAssayMeasurementType	protein-protein interaction detection	OBI_0000288	19													
+	studyAssayMeasurementType	protein-RNA binding (RIP-Seq)	PROTEIN_RNA_BINDING	20													
+	studyAssayMeasurementType	SNP analysis	OBI_0000435	21													
+	studyAssayMeasurementType	targeted sequencing	TARGETED_SEQ	22													
+	studyAssayMeasurementType	transcription factor binding (ChIP-Seq)	OBI_0002018	23													
+	studyAssayMeasurementType	transcription factor binding site identification	OBI_0000291	24													
+	studyAssayMeasurementType	transcription profiling	OBI_0000424	25													
+	studyAssayMeasurementType	transcription profiling	EFO_0001032	26													
+	studyAssayMeasurementType	transcription profiling (Microarray)	TRANSCRIPTION_PROF	27													
+	studyAssayMeasurementType	transcription profiling (RNA-Seq)	OBI_0001271	28													
+	studyAssayMeasurementType	TRAP translational profiling	TRAP_TRANS_PROF	29													
+	studyAssayMeasurementType	Other	OTHER_MEASUREMENT	30													
+	studyAssayOrganism	Arabidopsis thaliana	NCBITaxon_3702	0													
+	studyAssayOrganism	Bos taurus	NCBITaxon_9913	1													
+	studyAssayOrganism	Caenorhabditis elegans	NCBITaxon_6239	2													
+	studyAssayOrganism	Chlamydomonas reinhardtii	NCBITaxon_3055	3													
+	studyAssayOrganism	Danio rerio (zebrafish)	NCBITaxon_7955	4													
+	studyAssayOrganism	Dictyostelium discoideum	NCBITaxon_44689	5													
+	studyAssayOrganism	Drosophila melanogaster	NCBITaxon_7227	6													
+	studyAssayOrganism	Escherichia coli	NCBITaxon_562	7													
+	studyAssayOrganism	Hepatitis C virus	NCBITaxon_11103	8													
+	studyAssayOrganism	Homo sapiens	NCBITaxon_9606	9													
+	studyAssayOrganism	Mus musculus	NCBITaxon_10090	10													
+	studyAssayOrganism	Mycobacterium africanum	NCBITaxon_33894	11													
+	studyAssayOrganism	Mycobacterium canetti	NCBITaxon_78331	12													
+	studyAssayOrganism	Mycobacterium tuberculosis	NCBITaxon_1773	13													
+	studyAssayOrganism	Mycoplasma pneumoniae	NCBITaxon_2104	14													
+	studyAssayOrganism	Oryza sativa	NCBITaxon_4530	15													
+	studyAssayOrganism	Plasmodium falciparum	NCBITaxon_5833	16													
+	studyAssayOrganism	Pneumocystis carinii	NCBITaxon_4754	17													
+	studyAssayOrganism	Rattus norvegicus	NCBITaxon_10116	18													
+	studyAssayOrganism	Saccharomyces cerevisiae (brewer's yeast)	NCBITaxon_4932	19													
+	studyAssayOrganism	Schizosaccharomyces pombe	NCBITaxon_4896	20													
+	studyAssayOrganism	Takifugu rubripes	NCBITaxon_31033	21													
+	studyAssayOrganism	Xenopus laevis	NCBITaxon_8355	22													
+	studyAssayOrganism	Zea mays	NCBITaxon_4577	23													
+	studyAssayOrganism	Other	OTHER_TAXONOMY	24													
+	studyAssayTechnologyType	culture based drug susceptibility testing, single concentration	CULTURE_DRUG_TEST_SINGLE	0													
+	studyAssayTechnologyType	culture based drug susceptibility testing, two concentrations	CULTURE_DRUG_TEST_TWO	1													
+	studyAssayTechnologyType	culture based drug susceptibility testing, three or more concentrations (minimium inhibitory concentration measurement)	CULTURE_DRUG_TEST_THREE	2													
+	studyAssayTechnologyType	DNA microarray	OBI_0400148	3													
+	studyAssayTechnologyType	flow cytometry	OBI_0000916	4													
+	studyAssayTechnologyType	gel electrophoresis	OBI_0600053	5													
+	studyAssayTechnologyType	mass spectrometry	OBI_0000470	6													
+	studyAssayTechnologyType	NMR spectroscopy	OBI_0000623	7													
+	studyAssayTechnologyType	nucleotide sequencing	OBI_0000626	8													
+	studyAssayTechnologyType	protein microarray	OBI_0400149	9													
+	studyAssayTechnologyType	real time PCR	OBI_0000893	10													
+	studyAssayTechnologyType	no technology required	NO_TECHNOLOGY	11													
+	studyAssayTechnologyType	Other	OTHER_TECHNOLOGY	12													
+	studyAssayPlatform	210-MS GC Ion Trap (Varian)	210_MS_GC	0													
+	studyAssayPlatform	220-MS GC Ion Trap (Varian)	220_MS_GC	1													
+	studyAssayPlatform	225-MS GC Ion Trap (Varian)	225_MS_GC	2													
+	studyAssayPlatform	240-MS GC Ion Trap (Varian)	240_MS_GC	3													
+	studyAssayPlatform	300-MS quadrupole GC/MS (Varian)	300_MS_GCMS	4													
+	studyAssayPlatform	320-MS LC/MS (Varian)	320_MS_LCMS	5													
+	studyAssayPlatform	325-MS LC/MS (Varian)	325_MS_LCMS	6													
+	studyAssayPlatform	320-MS GC/MS (Varian)	500_MS_GCMS	7													
+	studyAssayPlatform	500-MS LC/MS (Varian)	500_MS_LCMS	8													
+	studyAssayPlatform	800D (Jeol)	800D	9													
+	studyAssayPlatform	910-MS TQ-FT (Varian)	910_MS_TQFT	10													
+	studyAssayPlatform	920-MS TQ-FT (Varian)	920_MS_TQFT	11													
+	studyAssayPlatform	3100 Mass Detector (Waters)	3100_MASS_D	12													
+	studyAssayPlatform	6110 Quadrupole LC/MS (Agilent)	6110_QUAD_LCMS	13													
+	studyAssayPlatform	6120 Quadrupole LC/MS (Agilent)	6120_QUAD_LCMS	14													
+	studyAssayPlatform	6130 Quadrupole LC/MS (Agilent)	6130_QUAD_LCMS	15													
+	studyAssayPlatform	6140 Quadrupole LC/MS (Agilent)	6140_QUAD_LCMS	16													
+	studyAssayPlatform	6310 Ion Trap LC/MS (Agilent)	6310_ION_LCMS	17													
+	studyAssayPlatform	6320 Ion Trap LC/MS (Agilent)	6320_ION_LCMS	18													
+	studyAssayPlatform	6330 Ion Trap LC/MS (Agilent)	6330_ION_LCMS	19													
+	studyAssayPlatform	6340 Ion Trap LC/MS (Agilent)	6340_ION_LCMS	20													
+	studyAssayPlatform	6410 Triple Quadrupole LC/MS (Agilent)	6410_TRIPLE_LCMS	21													
+	studyAssayPlatform	6430 Triple Quadrupole LC/MS (Agilent)	6430_TRIPLE_LCMS	22													
+	studyAssayPlatform	6460 Triple Quadrupole LC/MS (Agilent)	6460_TRIPLE_LCMS	23													
+	studyAssayPlatform	6490 Triple Quadrupole LC/MS (Agilent)	6490_TRIPLE_LCMS	24													
+	studyAssayPlatform	6530 Q-TOF LC/MS (Agilent)	6530_Q_TOF_LCMS	25													
+	studyAssayPlatform	6540 Q-TOF LC/MS (Agilent)	6540_Q_TOF_LCMS	26													
+	studyAssayPlatform	6210 TOF LC/MS (Agilent)	6210_Q_TOF_LCMS	27													
+	studyAssayPlatform	6220 TOF LC/MS (Agilent)	6220_Q_TOF_LCMS	28													
+	studyAssayPlatform	6230 TOF LC/MS (Agilent)	6230_Q_TOF_LCMS	29													
+	studyAssayPlatform	7000B Triple Quadrupole GC/MS (Agilent)	700B_TRIPLE_GCMS	30													
+	studyAssayPlatform	AccuTO DART (Jeol)	ACCUTO_DART	31													
+	studyAssayPlatform	AccuTOF GC (Jeol)	ACCUTOF_GC	32													
+	studyAssayPlatform	AccuTOF LC (Jeol)	ACCUTOF_LC	33													
+	studyAssayPlatform	ACQUITY SQD (Waters)	ACQUITY_SQD	34													
+	studyAssayPlatform	ACQUITY TQD (Waters)	ACQUITY_TQD	35													
+	studyAssayPlatform	Agilent	AGILENT	36													
+	studyAssayPlatform	Agilent 5975E GC/MSD (Agilent)	AGILENT_ 5975E_GCMSD	37													
+	studyAssayPlatform	Agilent 5975T LTM GC/MSD (Agilent)	AGILENT_5975T_LTM_GCMSD	38													
+	studyAssayPlatform	5975C Series GC/MSD (Agilent)	5975C_GCMSD	39													
+	studyAssayPlatform	Affymetrix	AFFYMETRIX	40													
+	studyAssayPlatform	amaZon ETD ESI Ion Trap (Bruker)	AMAZON_ETD_ESI	41													
+	studyAssayPlatform	amaZon X ESI Ion Trap (Bruker)	AMAZON_X_ESI	42													
+	studyAssayPlatform	apex-ultra hybrid Qq-FTMS (Bruker)	APEX_ULTRA_QQ_FTMS	43													
+	studyAssayPlatform	API 2000 (AB Sciex)	API_2000	44													
+	studyAssayPlatform	API 3200 (AB Sciex)	API_3200	45													
+	studyAssayPlatform	API 3200 QTRAP (AB Sciex)	API_3200_QTRAP	46													
+	studyAssayPlatform	API 4000 (AB Sciex)	API_4000	47													
+	studyAssayPlatform	API 4000 QTRAP (AB Sciex)	API_4000_QTRAP	48													
+	studyAssayPlatform	API 5000 (AB Sciex)	API_5000	49													
+	studyAssayPlatform	API 5500 (AB Sciex)	API_5500	50													
+	studyAssayPlatform	API 5500 QTRAP (AB Sciex)	API_5500_QTRAP	51													
+	studyAssayPlatform	Applied Biosystems Group (ABI)	APPLIED_BIOSYSTEMS	52													
+	studyAssayPlatform	AQI Biosciences	AQI_BIOSCIENCES	53													
+	studyAssayPlatform	Atmospheric Pressure GC (Waters)	ATMOS_GC	54													
+	studyAssayPlatform	autoflex III MALDI-TOF MS (Bruker)	AUTOFLEX_III_MALDI_TOF_MS	55													
+	studyAssayPlatform	autoflex speed(Bruker)	AUTOFLEX_SPEED	56													
+	studyAssayPlatform	AutoSpec Premier (Waters)	AUTOSPEC_PREMIER	57													
+	studyAssayPlatform	AXIMA Mega TOF (Shimadzu)	AXIMA_MEGA_TOF	58													
+	studyAssayPlatform	AXIMA Performance MALDI TOF/TOF (Shimadzu)	AXIMA_PERF_MALDI_TOF	59													
+	studyAssayPlatform	A-10 Analyzer (Apogee)	A_10_ANALYZER	60													
+	studyAssayPlatform	A-40-MiniFCM (Apogee)	A_40_MINIFCM	61													
+	studyAssayPlatform	Bactiflow (Chemunex SA)	BACTIFLOW	62													
+	studyAssayPlatform	Base4innovation	BASE4INNOVATION	63													
+	studyAssayPlatform	BD BACTEC MGIT 320	BD_BACTEC_MGIT_320	64													
+	studyAssayPlatform	BD BACTEC MGIT 960	BD_BACTEC_MGIT_960	65													
+	studyAssayPlatform	BD Radiometric BACTEC 460TB	BD_RADIO_BACTEC_460TB	66													
+	studyAssayPlatform	BioNanomatrix	BIONANOMATRIX	67													
+	studyAssayPlatform	Cell Lab Quanta SC (Becman Coulter)	CELL_LAB_QUANTA_SC	68													
+	studyAssayPlatform	Clarus 560 D GC/MS (PerkinElmer)	CLARUS_560_D_GCMS	69													
+	studyAssayPlatform	Clarus 560 S GC/MS (PerkinElmer)	CLARUS_560_S_GCMS	70													
+	studyAssayPlatform	Clarus 600 GC/MS (PerkinElmer)	CLARUS_600_GCMS	71													
+	studyAssayPlatform	Complete Genomics	COMPLETE_GENOMICS	72													
+	studyAssayPlatform	Cyan (Dako Cytomation)	CYAN	73													
+	studyAssayPlatform	CyFlow ML (Partec)	CYFLOW_ML	74													
+	studyAssayPlatform	Cyow SL (Partec)	CYFLOW_SL	75													
+	studyAssayPlatform	CyFlow SL3 (Partec)	CYFLOW_SL3	76													
+	studyAssayPlatform	CytoBuoy (Cyto Buoy Inc)	CYTOBUOY	77													
+	studyAssayPlatform	CytoSence (Cyto Buoy Inc)	CYTOSENCE	78													
+	studyAssayPlatform	CytoSub (Cyto Buoy Inc)	CYTOSUB	79													
+	studyAssayPlatform	Danaher	DANAHER	80													
+	studyAssayPlatform	DFS (Thermo Scientific)	DFS	81													
+	studyAssayPlatform	Exactive(Thermo Scientific)	EXACTIVE	82													
+	studyAssayPlatform	FACS Canto (Becton Dickinson)	FACS_CANTO	83													
+	studyAssayPlatform	FACS Canto2 (Becton Dickinson)	FACS_CANTO2	84													
+	studyAssayPlatform	FACS Scan (Becton Dickinson)	FACS_SCAN	85													
+	studyAssayPlatform	FC 500 (Becman Coulter)	FC_500	86													
+	studyAssayPlatform	GCmate II GC/MS (Jeol)	GCMATE_II	87													
+	studyAssayPlatform	GCMS-QP2010 Plus (Shimadzu)	GCMS_QP2010_PLUS	88													
+	studyAssayPlatform	GCMS-QP2010S Plus (Shimadzu)	GCMS_QP2010S_PLUS	89													
+	studyAssayPlatform	GCT Premier (Waters)	GCT_PREMIER	90													
+	studyAssayPlatform	GENEQ	GENEQ	91													
+	studyAssayPlatform	Genome Corp.	GENOME_CORP	92													
+	studyAssayPlatform	GenoVoxx	GENOVOXX	93													
+	studyAssayPlatform	GnuBio	GNUBIO	94													
+	studyAssayPlatform	Guava EasyCyte Mini (Millipore)	GUAVA_EASYCYTE_MINI	95													
+	studyAssayPlatform	Guava EasyCyte Plus (Millipore)	GUAVA_EASYCYTE_PLUS	96													
+	studyAssayPlatform	Guava Personal Cell Analysis (Millipore)	GUAVA_PERSONAL_CELL	97													
+	studyAssayPlatform	Guava Personal Cell Analysis-96 (Millipore)	GUAVA_PERSONAL_CELL_96	98													
+	studyAssayPlatform	Helicos BioSciences	HELICOS_BIO	99													
+	studyAssayPlatform	Illumina	ILLUMINA	100													
+	studyAssayPlatform	Indirect proportion method on LJ medium	INDIRECT_LJ_MEDIUM	101													
+	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H9	INDIRECT_AGAR_7H9	102													
+	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H10	INDIRECT_AGAR_7H10	103													
+	studyAssayPlatform	Indirect proportion method on Middlebrook Agar 7H11	INDIRECT_AGAR_7H11	104													
+	studyAssayPlatform	inFlux Analyzer (Cytopeia)	INFLUX_ANALYZER	105													
+	studyAssayPlatform	Intelligent Bio-Systems	INTELLIGENT_BIOSYSTEMS	106													
+	studyAssayPlatform	ITQ 700 (Thermo Scientific)	ITQ_700	107													
+	studyAssayPlatform	ITQ 900 (Thermo Scientific)	ITQ_900	108													
+	studyAssayPlatform	ITQ 1100 (Thermo Scientific)	ITQ_1100	109													
+	studyAssayPlatform	JMS-53000 SpiralTOF (Jeol)	JMS_53000_SPIRAL	110													
+	studyAssayPlatform	LaserGen	LASERGEN	111													
+	studyAssayPlatform	LCMS-2020 (Shimadzu)	LCMS_2020	112													
+	studyAssayPlatform	LCMS-2010EV (Shimadzu)	LCMS_2010EV	113													
+	studyAssayPlatform	LCMS-IT-TOF (Shimadzu)	LCMS_IT_TOF	114													
+	studyAssayPlatform	Li-Cor	LI_COR	115													
+	studyAssayPlatform	Life Tech	LIFE_TECH	116													
+	studyAssayPlatform	LightSpeed Genomics	LIGHTSPEED_GENOMICS	117													
+	studyAssayPlatform	LCT Premier XE (Waters)	LCT_PREMIER_XE	118													
+	studyAssayPlatform	LCQ Deca XP MAX (Thermo Scientific)	LCQ_DECA_XP_MAX	119													
+	studyAssayPlatform	LCQ Fleet (Thermo Scientific)	LCQ_FLEET	120													
+	studyAssayPlatform	LXQ (Thermo Scientific)	LXQ_THERMO	121													
+	studyAssayPlatform	LTQ Classic (Thermo Scientific)	LTQ_CLASSIC	122													
+	studyAssayPlatform	LTQ XL (Thermo Scientific)	LTQ_XL	123													
+	studyAssayPlatform	LTQ Velos (Thermo Scientific)	LTQ_VELOS	124													
+	studyAssayPlatform	LTQ Orbitrap Classic (Thermo Scientific)	LTQ_ORBITRAP_CLASSIC	125													
+	studyAssayPlatform	LTQ Orbitrap XL (Thermo Scientific)	LTQ_ORBITRAP_XL	126													
+	studyAssayPlatform	LTQ Orbitrap Discovery (Thermo Scientific)	LTQ_ORBITRAP_DISCOVERY	127													
+	studyAssayPlatform	LTQ Orbitrap Velos (Thermo Scientific)	LTQ_ORBITRAP_VELOS	128													
+	studyAssayPlatform	Luminex 100 (Luminex)	LUMINEX_100	129													
+	studyAssayPlatform	Luminex 200 (Luminex)	LUMINEX_200	130													
+	studyAssayPlatform	MACS Quant (Miltenyi)	MACS_QUANT	131													
+	studyAssayPlatform	MALDI SYNAPT G2 HDMS (Waters)	MALDI_SYNAPT_G2_HDMS	132													
+	studyAssayPlatform	MALDI SYNAPT G2 MS (Waters)	MALDI_SYNAPT_G2_MS	133													
+	studyAssayPlatform	MALDI SYNAPT HDMS (Waters)	MALDI_SYNAPT_HDMS	134													
+	studyAssayPlatform	MALDI SYNAPT MS (Waters)	MALDI_SYNAPT_MS	135													
+	studyAssayPlatform	MALDI micro MX (Waters)	MALDI_MICROMX	136													
+	studyAssayPlatform	maXis (Bruker)	MAXIS	137													
+	studyAssayPlatform	maXis G4 (Bruker)	MAXISG4	138													
+	studyAssayPlatform	microflex LT MALDI-TOF MS (Bruker)	MICROFLEX_LT_MALDI_TOF_MS	139													
+	studyAssayPlatform	microflex LRF MALDI-TOF MS (Bruker)	MICROFLEX_LRF_MALDI_TOF_MS	140													
+	studyAssayPlatform	microflex III MALDI-TOF MS (Bruker)	MICROFLEX_III_TOF_MS	141													
+	studyAssayPlatform	micrOTOF II ESI TOF (Bruker)	MICROTOF_II_ESI_TOF	142													
+	studyAssayPlatform	micrOTOF-Q II ESI-Qq-TOF (Bruker)	MICROTOF_Q_II_ESI_QQ_TOF	143													
+	studyAssayPlatform	microplate Alamar Blue (resazurin) colorimetric method	MICROPLATE_ALAMAR_BLUE_COLORIMETRIC	144													
+	studyAssayPlatform	Mstation (Jeol)	MSTATION	145													
+	studyAssayPlatform	MSQ Plus (Thermo Scientific)	MSQ_PLUS	146													
+	studyAssayPlatform	NABsys	NABSYS	147													
+	studyAssayPlatform	Nanophotonics Biosciences	NANOPHOTONICS_BIOSCIENCES	148													
+	studyAssayPlatform	Network Biosystems	NETWORK_BIOSYSTEMS	149													
+	studyAssayPlatform	Nimblegen	NIMBLEGEN	150													
+	studyAssayPlatform	Oxford Nanopore Technologies	OXFORD_NANOPORE_TECHNOLOGIES	151													
+	studyAssayPlatform	Pacific Biosciences	PACIFIC_BIOSCIENCES	152													
+	studyAssayPlatform	Population Genetics Technologies	POPULATION_GENETICS_TECHNOLOGIES	153													
+	studyAssayPlatform	Q1000GC UltraQuad (Jeol)	Q1000GC_ULTRAQUAD	154													
+	studyAssayPlatform	Quattro micro API (Waters)	QUATTRO_MICRO_API	155													
+	studyAssayPlatform	Quattro micro GC (Waters)	QUATTRO_MICRO_GC	156													
+	studyAssayPlatform	Quattro Premier XE (Waters)	QUATTRO_PREMIER_XE	157													
+	studyAssayPlatform	QSTAR (AB Sciex)	QSTAR	158													
+	studyAssayPlatform	Reveo	REVEO	159													
+	studyAssayPlatform	Roche	ROCHE	160													
+	studyAssayPlatform	Seirad	SEIRAD	161													
+	studyAssayPlatform	solariX hybrid Qq-FTMS (Bruker)	SOLARIX_HYBRID_QQ_FTMS	162													
+	studyAssayPlatform	Somacount (Bently Instruments)	SOMACOUNT	163													
+	studyAssayPlatform	SomaScope (Bently Instruments)	SOMASCOPE	164													
+	studyAssayPlatform	SYNAPT G2 HDMS (Waters)	SYNAPT_G2_HDMS	165													
+	studyAssayPlatform	SYNAPT G2 MS (Waters)	SYNAPT_G2_MS	166													
+	studyAssayPlatform	SYNAPT HDMS (Waters)	SYNAPT_HDMS	167													
+	studyAssayPlatform	SYNAPT MS (Waters)	SYNAPT_MS	168													
+	studyAssayPlatform	TripleTOF 5600 (AB Sciex)	TRIPLETOF_5600	169													
+	studyAssayPlatform	TSQ Quantum Ultra (Thermo Scientific)	TSQ_QUANTUM_ULTRA	170													
+	studyAssayPlatform	TSQ Quantum Access (Thermo Scientific)	TSQ_QUANTUM_ACCESS	171													
+	studyAssayPlatform	TSQ Quantum Access MAX (Thermo Scientific)	TSQ_QUANTUM_ACCESS_MAX	172													
+	studyAssayPlatform	TSQ Quantum Discovery MAX (Thermo Scientific)	TSQ_QUANTUM_DISCOVERY_MAX	173													
+	studyAssayPlatform	TSQ Quantum GC (Thermo Scientific)	TSQ_QUANTUM_GC	174													
+	studyAssayPlatform	TSQ Quantum XLS (Thermo Scientific)	TSQ_QUANTUM_XLS	175													
+	studyAssayPlatform	TSQ Vantage (Thermo Scientific)	TSQ_VANTAGE	176													
+	studyAssayPlatform	ultrafleXtreme MALDI-TOF MS (Bruker)	ULTRAFLEXTREME_MALDI_TOF_MS	177													
+	studyAssayPlatform	VisiGen Biotechnologies	VISIGEN_BIO	178													
+	studyAssayPlatform	Xevo G2 QTOF (Waters)	XEVO_G2_QTOF	179													
+	studyAssayPlatform	Xevo QTof MS (Waters)	XEVO_QTOF_MS	180													
+	studyAssayPlatform	Xevo TQ MS (Waters)	XEVO_TQ_MS	181													
+	studyAssayPlatform	Xevo TQ-S (Waters)	XEVO_TQ_S	182													
+	studyAssayPlatform	Other	OTHER_PLATFORM	183													

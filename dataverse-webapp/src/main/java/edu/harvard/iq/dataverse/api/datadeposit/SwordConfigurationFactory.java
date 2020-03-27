@@ -18,7 +18,7 @@ public class SwordConfigurationFactory {
 
     @Inject
     SystemConfig systemConfig;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     // -------------------- LOGIC --------------------

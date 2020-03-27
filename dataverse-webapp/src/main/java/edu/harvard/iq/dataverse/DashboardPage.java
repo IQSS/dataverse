@@ -35,7 +35,7 @@ public class DashboardPage implements java.io.Serializable {
     OAISetServiceBean oaiSetService;
     @EJB
     SystemConfig systemConfig;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @Inject

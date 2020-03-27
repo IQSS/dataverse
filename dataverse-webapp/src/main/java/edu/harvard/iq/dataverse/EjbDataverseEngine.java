@@ -42,6 +42,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
@@ -126,7 +127,7 @@ public class EjbDataverseEngine {
     @EJB
     HandlenetServiceBean handleNet;
 
-    @EJB
+    @Inject
     SettingsServiceBean settings;
 
     @EJB

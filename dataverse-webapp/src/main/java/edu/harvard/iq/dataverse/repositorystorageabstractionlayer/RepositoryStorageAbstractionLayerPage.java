@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.JsonArray;
 import java.util.List;
@@ -18,7 +19,7 @@ public class RepositoryStorageAbstractionLayerPage {
 
     private static final Logger logger = Logger.getLogger(RepositoryStorageAbstractionLayerPage.class.getCanonicalName());
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     StorageSiteServiceBean storageSiteServiceBean;

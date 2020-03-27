@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.enterprise.context.ApplicationScoped;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.logging.Logger;
  * @author michael
  * @see FileBasedSettingsFetcher
  */
-@Stateless
+@ApplicationScoped
 public class SettingsServiceBean {
 
     private static final String KEY_AND_POSTFIX_SEPARATOR = ".";

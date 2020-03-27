@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.io.IOUtils;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -30,7 +31,7 @@ import java.nio.file.Paths;
 @WebServlet(name = "CustomizationFilesServlet", urlPatterns = {"/CustomizationFilesServlet"})
 public class CustomizationFilesServlet extends HttpServlet {
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
 

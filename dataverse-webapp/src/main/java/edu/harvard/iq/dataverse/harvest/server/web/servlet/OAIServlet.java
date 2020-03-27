@@ -68,7 +68,7 @@ public class OAIServlet extends HttpServlet {
     OAISetServiceBean setService;
     @EJB
     OAIRecordServiceBean recordService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     DataverseDao dataverseDao;

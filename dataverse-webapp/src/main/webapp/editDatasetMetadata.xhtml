@@ -3,6 +3,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:p="http://primefaces.org/ui"
 >
     <h:head>
@@ -12,6 +13,7 @@
             <ui:param name="pageTitle" value="#{editDatasetMetadataPage.workingVersion.title} - #{editDatasetMetadataPage.dataset.owner.name}"/>
             <ui:param name="dataverse" value="#{editDatasetMetadataPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{editDatasetMetadataPage.dataset}"/>
+            
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{editDatasetMetadataPage.datasetId}"/>
@@ -60,9 +62,10 @@
                         <ui:param name="showAllBlocks" value="#{true}"/>
                         <ui:param name="showAllFields" value="#{true}"/>
                         <ui:param name="expandAllBlocks" value="#{false}"/>
-                        <ui:param name="showAddReplicationForTitleButton" value="#{false}" />
                         
                         <ui:param name="metadataBlocks" value="#{editDatasetMetadataPage.metadataBlocksForEdit.entrySet().toArray()}"/>
+                        <ui:param name="inputRenderersByFieldType" value="#{editDatasetMetadataPage.inputRenderersByFieldType}" />
+                        <ui:param name="operation" value="EDIT_DATASET" />
                     </ui:include>
                     
                     <!-- Bottom action buttons -->

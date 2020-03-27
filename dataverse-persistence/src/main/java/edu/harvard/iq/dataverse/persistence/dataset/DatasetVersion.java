@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author skraffmiller
@@ -697,15 +698,6 @@ public class DatasetVersion implements Serializable {
         return plainTextDescriptions;
     }
 
-    /**
-     * @return A string with the description of the dataset that has been passed
-     * through the escapeHtml method to change the "less than" sign to "&lt;"
-     * for example.
-     */
-    public String getDescriptionHtmlEscaped() {
-        return MarkupChecker.escapeHtml(getDescription());
-    }
-
     public List<String[]> getDatasetContacts() {
         List<String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1147,6 +1139,12 @@ public class DatasetVersion implements Serializable {
             }
         }
         return keywords;
+    }
+
+    private List<DatasetField> extractFieldsWithType(String fieldTypeName) {
+        return datasetFields.stream()
+            .filter(field -> StringUtils.equals(field.getDatasetFieldType().getName(), fieldTypeName))
+            .collect(toList());
     }
 
     public List<String> getDatasetProducerNames() {

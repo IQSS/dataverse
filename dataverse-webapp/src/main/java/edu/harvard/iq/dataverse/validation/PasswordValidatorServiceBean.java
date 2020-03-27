@@ -21,6 +21,8 @@ import org.passay.dictionary.sort.ArraysSort;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -93,7 +95,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
     private String dictionaries = DICTIONARY_FILES;
     private PropertiesMessageResolver messageResolver;
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
 

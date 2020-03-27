@@ -26,6 +26,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -56,7 +57,7 @@ public class DatasetDao implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetDao.class.getCanonicalName());
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @EJB

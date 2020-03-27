@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.util.json.JsonParser;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -64,7 +65,7 @@ public class ImportGenericServiceBean {
     @EJB
     MetadataBlockDao blockService;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")

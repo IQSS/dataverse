@@ -193,14 +193,8 @@ public class Datasets extends AbstractApiBean {
     @EJB
     S3PackageImporter s3PackageImporter;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
-
-    @Inject
-    private TermsOfUseFactory termsOfUseFactory;
-
-    @Inject
-    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     @Inject
     private ExportService exportService;

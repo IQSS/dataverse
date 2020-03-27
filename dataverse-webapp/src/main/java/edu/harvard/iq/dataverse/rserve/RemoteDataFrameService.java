@@ -40,6 +40,8 @@ import org.rosuda.REngine.Rserve.RserveException;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -70,7 +72,7 @@ import java.util.logging.Logger;
 @Stateless
 public class RemoteDataFrameService {
 
-    @EJB
+    @Inject
     private SettingsServiceBean settingsService;
 
     private static Logger logger = Logger.getLogger(RemoteDataFrameService.class.getPackage().getName());

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrFieldFactory;
@@ -364,9 +365,11 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         } else {
             dsf.setParentDatasetFieldType(null);
         }
-        dsf.setMetadataBlock(dataverseDao.findMDBByName(values[15]));
-        if (values.length > 16 && !StringUtils.isEmpty(values[16])) {
-            dsf.setUri(values[16]);
+        dsf.setInputRendererType(InputRendererType.valueOf(values[15]));
+        dsf.setInputRendererOptions(values[16]);
+        dsf.setMetadataBlock(dataverseDao.findMDBByName(values[17]));
+        if (values.length > 18 && !StringUtils.isEmpty(values[18])) {
+            dsf.setUri(values[18]);
         }
         datasetFieldService.save(dsf);
         return dsf.getName();

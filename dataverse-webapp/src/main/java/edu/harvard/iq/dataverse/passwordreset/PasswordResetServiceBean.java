@@ -48,9 +48,6 @@ public class PasswordResetServiceBean {
     @Inject
     private SystemConfig systemConfig;
 
-    @Inject
-    private SettingsServiceBean settingsService;
-
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 

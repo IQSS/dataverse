@@ -105,7 +105,7 @@ public class SearchServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     DatasetFieldServiceBean datasetFieldService;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
     @EJB
     SystemConfig systemConfig;

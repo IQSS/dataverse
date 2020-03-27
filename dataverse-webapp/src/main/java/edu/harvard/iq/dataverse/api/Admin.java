@@ -127,7 +127,7 @@ public class Admin extends AbstractApiBean {
     DataverseRequestServiceBean dvRequestService;
     @EJB
     EjbDataverseEngine commandEngine;
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @Inject

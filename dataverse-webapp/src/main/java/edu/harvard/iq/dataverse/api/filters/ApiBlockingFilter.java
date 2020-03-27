@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -114,7 +115,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
 
     private static final Logger logger = Logger.getLogger(ApiBlockingFilter.class.getName());
 
-    @EJB
+    @Inject
     protected SettingsServiceBean settingsSvc;
 
     final Set<String> blockedApiEndpoints = new TreeSet<>();

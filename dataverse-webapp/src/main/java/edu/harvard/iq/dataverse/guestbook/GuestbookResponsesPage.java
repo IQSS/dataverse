@@ -41,7 +41,7 @@ public class GuestbookResponsesPage implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
 
-    @EJB
+    @Inject
     SettingsServiceBean settingsService;
 
     @Inject

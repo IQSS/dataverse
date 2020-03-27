@@ -16,6 +16,7 @@
         <ui:param name="pageTitle" value="#{bundle['dataset.pageTitle']} - #{CreateDatasetPage.dataset.owner.name}"/>
         <ui:param name="dataverse" value="#{CreateDatasetPage.dataset.owner}"/>
         <ui:param name="showMessagePanel" value="#{true}"/>
+        
         <ui:define name="body">
             <f:metadata>
                 <f:viewParam name="ownerId" value="#{CreateDatasetPage.ownerId}"/>
@@ -79,9 +80,10 @@
                         <ui:param name="showAllBlocks" value="#{false}"/>
                         <ui:param name="showAllFields" value="#{false}"/>
                         <ui:param name="expandAllBlocks" value="#{true}"/>
-                        <ui:param name="showAddReplicationForTitleButton" value="#{true}"/>
                         <ui:param name="metadataBlocks"
                                   value="#{CreateDatasetPage.metadataBlocksForEdit.entrySet().toArray()}"/>
+                        <ui:param name="inputRenderersByFieldType" value="#{CreateDatasetPage.inputRenderersByFieldType}" />
+                        <ui:param name="operation" value="CREATE_DATASET" />
                     </ui:include>
                 </ui:fragment>
                 <!-- END Create editMode -->

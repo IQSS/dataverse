@@ -8,6 +8,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import javax.ejb.EJB;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -20,8 +21,8 @@ import java.util.logging.Logger;
 public class SolrClientFactory {
     
     private static final Logger LOGGER = Logger.getLogger(SolrClientFactory.class.getCanonicalName());
-    
-    @EJB
+
+    @Inject
     private SettingsServiceBean settingsService;
     
     
