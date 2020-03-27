@@ -84,8 +84,7 @@ public class StoredOriginalFile {
         String fileName = storageIO.getFileName();
         if (fileName != null) {
             if (originalMimeType != null) {
-                String origFileExtension = generateOriginalExtension(originalMimeType);
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", origFileExtension));
+                inputStreamIO.setFileName(dataFile.getOriginalFileName());
             } else {
                 inputStreamIO.setFileName(fileName.replaceAll(".tab$", ""));
             }
