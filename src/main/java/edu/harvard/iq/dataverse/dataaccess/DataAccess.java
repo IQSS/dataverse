@@ -21,12 +21,11 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DvObject;
-import edu.harvard.iq.dataverse.util.StringUtil;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Logger;
+
 import org.apache.commons.lang.StringUtils;
 /**
  *
@@ -42,9 +41,10 @@ public class DataAccess {
 
     };
 
-    //Default is only for tests
+    //Default to "file" is for tests only
     public static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id", "file");
-
+    public static final String UNDEFINED_STORAGE_DRIVER_IDENTIFIER = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating a null driver/inheriting the default)
+    
     // The getStorageIO() methods initialize StorageIO objects for
     // datafiles that are already saved using one of the supported Dataverse
     // DataAccess IO drivers.
@@ -122,6 +122,11 @@ public class DataAccess {
     }
     
     public static String getStorarageIdFromLocation(String location) {
+    	if(location.contains("://")) {
+    		//It's a full location with a driverId, so strip and reapply the driver id
+    		//NOte that this will strip the bucketname out (which s3 uses) but the S3IOStorage class knows to look at re-insert it
+    		return location.substring(0,location.indexOf("://") +3) + location.substring(location.lastIndexOf('/')+1); 
+    	}
     	return location.substring(location.lastIndexOf('/')+1);
     }
     
@@ -165,7 +170,7 @@ public class DataAccess {
         
         dvObject.setStorageIdentifier(storageTag);
 
-        if (StringUtils.isEmpty(storageDriverId)) {
+        if (StringUtils.isBlank(storageDriverId)) {
         	storageDriverId = DEFAULT_STORAGE_DRIVER_IDENTIFIER;
         }
         String storageType = getDriverType(storageDriverId);
@@ -196,7 +201,7 @@ public class DataAccess {
     	if (drivers==null) {
     		populateDrivers();
     	}
-    	if(StringUtil.nonEmpty(driverLabel) && drivers.containsKey(driverLabel)) {
+    	if(!StringUtils.isBlank(driverLabel) && drivers.containsKey(driverLabel)) {
     		return drivers.get(driverLabel);
     	} 
     	return DEFAULT_STORAGE_DRIVER_IDENTIFIER;
@@ -219,7 +224,6 @@ public class DataAccess {
     			logger.info("Found Storage Driver: " + driverId + " for " + p.get(property).toString());
     			drivers.put(p.get(property).toString(), driverId);
     		}
-
     	}
     }
 

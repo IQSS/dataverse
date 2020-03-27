@@ -11,7 +11,9 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <script src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}?version=#{systemConfig.getVersion()}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/md5.js"></script>
     <!-- Static Tab Layout -->
     <div data-widget="content" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top" id="datasetForm:tabView">
         <ul role="tablist" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -71,8 +73,8 @@
                                         <f:param value="#{systemConfig.guidesVersion}"/>
                                     </h:outputFormat>
                                     <h:outputFormat value=" #{bundle['file.selectToAdd.tipLimit']}" escape="false" 
-                                                    rendered="#{systemConfig.maxFileUploadSize !=null and !empty systemConfig.maxFileUploadSize}">
-                                        <f:param value="#{systemConfig.humanMaxFileUploadSize}"/>
+                                                    rendered="#{!EditDatafilesPage.isUnlimitedUploadFileSize()}">
+                                        <f:param value="#{EditDatafilesPage.getHumanMaxFileUploadSizeInBytes()}"/>
                                     </h:outputFormat>
                                 </p>
                     
@@ -90,8 +92,10 @@
                         function uploadWidgetDropRemoveMsg() {
                             $('div[id$="fileUpload"] div.ui-fileupload-content div#dragdropMsg').remove();
                         }
+                        
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
+                            setupDirectUpload(#{EditDatafilesPage.directUploadEnabled()}, #{EditDatafilesPage.workingVersion.dataset.id});
                         });
                         //]]>
                     </script>
@@ -123,7 +127,7 @@
 
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
-                                  auto="true"
+                                  auto="#{!(EditDatafilesPage.directUploadEnabled())}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
@@ -517,6 +521,8 @@
     </div>
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
+    <p:remoteCommand  name="requestDirectUploadUrl" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.requestDirectUploadUrl()}" onerror="javascript:uploadFailure();" />
+    <p:remoteCommand  name="handleExternalUpload" partialSubmit="true" async="true"  update="@none" action="#{EditDatafilesPage.handleExternalUpload()}" oncomplete="javascript:bind_bsui_components();directUploadFinished();" onerror="javascript:uploadFailure();" />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->
