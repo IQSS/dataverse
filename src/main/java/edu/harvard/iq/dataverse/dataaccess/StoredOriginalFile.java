@@ -81,26 +81,14 @@ public class StoredOriginalFile {
             inputStreamIO.setMimeType("application/x-unknown");
         }
 
-        String fileName = storageIO.getFileName();
-        if (fileName != null) {
-            if (originalMimeType != null) {
-                inputStreamIO.setFileName(dataFile.getOriginalFileName());
-            } else {
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", ""));
-            }
-        }
+        inputStreamIO.setFileName(dataFile.getOriginalFileName());
 
         return inputStreamIO;
 
     }
 
-    // TODO: 
-    // do what the comment below says - move this code into the file util, 
-    // or something like that!
-    // -- L.A. 4.0 beta15
-    // Shouldn't be here; should be part of the DataFileFormatType, or 
-    // something like that... 
-    
+    /* 
+            DataFile.getOriginalFileName() method replaces this code
     private static String generateOriginalExtension(String fileType) {
 
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
@@ -124,5 +112,5 @@ public class StoredOriginalFile {
         }
         logger.severe(fileType + " does not have an associated file extension");
         return "";
-    }
+    } */
 }
