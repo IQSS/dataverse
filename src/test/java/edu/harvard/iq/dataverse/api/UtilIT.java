@@ -1059,6 +1059,12 @@ public class UtilIT {
                 .get("/api/admin/index/dataset?persistentId=" + persistentId);
         return response;
     }
+    
+    static Response reindexDataverse(String dvId) {
+        Response response = given()
+                .get("/api/admin/index/dataverses/" + dvId);
+        return response;
+    }
 
     static Response listAuthenticatedUsers(String apiToken) {
         Response response = given()
