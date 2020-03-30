@@ -1383,7 +1383,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             // If it's a ZIP file, we are going to unpack it and create multiple
             // DataFile objects from its contents:
-        } else if (finalType.equals("application/zip")) {
+        } else if (finalType.equals("application/zip" ) && settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit) > 0) {
 
             ZipInputStream unZippedIn = null;
             ZipEntry zipEntry = null;
@@ -1430,8 +1430,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                         // but that's what happens if the file name of the next
                         // entry is not valid in the current CharSet.
                         //      -- L.A.
-                        warningMessage = "Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.";
-                        logger.warning(warningMessage);
+                        warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.unpack.failure");
+                        logger.warning("Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.");
                         throw new IOException();
                     }
 
@@ -1444,9 +1444,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     if (!zipEntry.isDirectory()) {
                         if (datafiles.size() > fileNumberLimit) {
                             logger.warning("Zip upload - too many files.");
-                            warningMessage = "The number of files in the zip archive is over the limit (" + fileNumberLimit +
-                                    "); please upload a zip archive with fewer files, if you want them to be ingested " +
-                                    "as individual DataFiles.";
+                            warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.uploadFilesLimit.exceeded", fileNumberLimit);
                             throw new IOException();
                         }
 
@@ -1512,13 +1510,13 @@ public class DataFileServiceBean implements java.io.Serializable {
                 // of the unzipped file.
                 logger.warning("Unzipping failed; rolling back to saving the file as is.");
                 if (warningMessage == null) {
-                    warningMessage = "Failed to unzip the file. Saving the file as is.";
+                    warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.unzip.failure");
                 }
 
                 datafiles.clear();
             } catch (FileExceedsMaxSizeException femsx) {
                 logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
+                warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.uploadFileSizeLimit.exceeded");
                 datafiles.clear();
             } finally {
                 if (unZippedIn != null) {
@@ -1635,6 +1633,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return null;
     } // end createDataFiles
+
 
 
     private File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
