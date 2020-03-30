@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.customization.CustomizationConstants;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.apache.commons.io.IOUtils;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -19,11 +15,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author skraffmi
@@ -34,113 +39,27 @@ public class CustomizationFilesServlet extends HttpServlet {
     @Inject
     SettingsServiceBean settingsService;
 
+    @Inject
+    DataverseSession dataverseSession;
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request  servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+    private static final Logger logger = Logger.getLogger(CustomizationFilesServlet.class.getSimpleName());
 
-        String customFileType = request.getParameter("customFileType");
-        String filePath = getFilePath(customFileType);
+    private static final Map<String, Key> SETTINGS_MAPPING = Initializer.createSettingsMapping();
 
-        Path physicalPath = Paths.get(filePath);
-        FileInputStream inputStream = null;
-        BufferedReader in = null;
-        try {
-            File fileIn = physicalPath.toFile();
-            if (fileIn != null) {
-                inputStream = new FileInputStream(fileIn);
+    private static final Set<Key> LOCALIZED_FILES_KEYS = Initializer.createSetOfLocalizedFilesKeys();
 
-                in = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
+    private static final String EN_LOCALE_CODE = Locale.ENGLISH.getLanguage();
 
-                StringBuilder responseData = new StringBuilder();
-                try (PrintWriter out = response.getWriter()) {
-
-                    while ((line = in.readLine()) != null) {
-                        responseData.append(line);
-                        out.println(line);
-                    }
-                }
-
-                inputStream.close();
-
-
-            } else {
-                /*
-                   If the file doesn't exist or it is unreadable we don't care
-                */
-            }
-
-        } catch (Exception e) {
-                /*
-                   If the file doesn't exist or it is unreadable we don't care
-                */
-        } finally {
-            IOUtils.closeQuietly(inputStream);
-            IOUtils.closeQuietly(in);
-        }
-
-    }
-
-    private String getFilePath(String fileTypeParam) {
-
-        if (fileTypeParam.equals(CustomizationConstants.fileTypeHomePage)) {
-
-            // Homepage
-            return settingsService.getValueForKey(SettingsServiceBean.Key.HomePageCustomizationFile);
-
-        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeHeader)) {
-
-            // Header
-            return settingsService.getValueForKey(SettingsServiceBean.Key.HeaderCustomizationFile);
-
-        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeFooter)) {
-
-            // Footer        
-            return settingsService.getValueForKey(SettingsServiceBean.Key.FooterCustomizationFile);
-
-        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeStyle)) {
-
-            // Style (css)               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.StyleCustomizationFile);
-
-        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeAnalytics)) {
-
-            // Analytics - appears in head               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.WebAnalyticsCode);
-
-        } else if (fileTypeParam.equals(CustomizationConstants.fileTypeLogo)) {
-
-            // Logo for installation - appears in header               
-            return settingsService.getValueForKey(SettingsServiceBean.Key.LogoCustomizationFile);
-        }
-
-
-        return "";
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // -------------------- LOGIC --------------------
 
     /**
      * Handles the HTTP <code>GET</code> method.
      *
      * @param request  servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         processRequest(request, response);
     }
 
@@ -149,12 +68,9 @@ public class CustomizationFilesServlet extends HttpServlet {
      *
      * @param request  servlet request
      * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         processRequest(request, response);
     }
 
@@ -165,7 +81,96 @@ public class CustomizationFilesServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "CustomizationFilesServlet – for serving customizable parts of the page";
+    }
 
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request  servlet request
+     * @param response servlet response
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("text/html;charset=UTF-8");
+        String customFileType = request.getParameter("customFileType");
+
+        Optional<File> file = findFile(customFileType);
+        if (!file.isPresent()) {
+            return;
+        }
+
+        File fileIn = file.get();
+        try (FileInputStream inputStream = new FileInputStream(fileIn);
+             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+             PrintWriter out = response.getWriter()) {
+            in.lines()
+                    .forEach(out::println);
+        } catch (Exception e) {
+            // We don't want to send trash to logs, but nevertheless some info should be present on demand
+            logger.log(Level.FINEST, e, () -> "Servlet encountered exception: ");
+        }
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private Optional<File> findFile(String customFileType) {
+        return getPaths(customFileType).stream()
+                .map(Path::toFile)
+                .filter(f -> f.exists() && f.isFile())
+                .findFirst();
+    }
+
+    private List<Path> getPaths(String customFileType) {
+        Key key = SETTINGS_MAPPING.get(customFileType);
+        String basePath = getFilePath(key);
+        List<Path> paths = new ArrayList<>();
+        if (LOCALIZED_FILES_KEYS.contains(key)) {
+            createLocalizedPathToFile(basePath)
+                    .ifPresent(paths::add);
+        }
+        paths.add(Paths.get(basePath));
+        return paths;
+    }
+
+    private String getFilePath(Key key) {
+        return key != null ? settingsService.getValueForKey(key) : StringUtils.EMPTY;
+    }
+
+    private Optional<Path> createLocalizedPathToFile(String basePath) {
+        return Optional.ofNullable(basePath)
+                .filter(p -> p.contains("."))
+                .map(p -> Paths.get(interpolateLocaleCodeIntoPathToFile(p, obtainLocaleCode())));
+    }
+
+    private String interpolateLocaleCodeIntoPathToFile(String basePath, String localeCode) {
+        int extensionDotIndex = basePath.lastIndexOf(".");
+        String localeInfix = EN_LOCALE_CODE.equals(localeCode) ? StringUtils.EMPTY : "_" + localeCode;
+        return basePath.substring(0, extensionDotIndex) + localeInfix + basePath.substring(extensionDotIndex);
+    }
+
+    private String obtainLocaleCode() {
+        return Optional.ofNullable(dataverseSession)
+                .map(DataverseSession::getLocaleCode)
+                .orElse(EN_LOCALE_CODE);
+    }
+
+    // -------------------- INNER CLASSES  --------------------
+
+    private static class Initializer {
+        static Map<String, Key> createSettingsMapping() {
+            HashMap<String, Key> mapping = new HashMap<>();
+            mapping.put(CustomizationConstants.fileTypeHomePage, Key.HomePageCustomizationFile); // Homepage
+            mapping.put(CustomizationConstants.fileTypeHeader, Key.HeaderCustomizationFile); // Header
+            mapping.put(CustomizationConstants.fileTypeFooter, Key.FooterCustomizationFile); // Footer
+            mapping.put(CustomizationConstants.fileTypeStyle, Key.StyleCustomizationFile); // Style (css)
+            mapping.put(CustomizationConstants.fileTypeAnalytics, Key.WebAnalyticsCode); // Analytics - appears in head
+            mapping.put(CustomizationConstants.fileTypeLogo, Key.LogoCustomizationFile); // Logo for installation - appears in header
+            return Collections.unmodifiableMap(mapping);
+        }
+
+        static Set<Key> createSetOfLocalizedFilesKeys() {
+            return Collections.singleton(Key.FooterCustomizationFile);
+        }
+    }
 }
