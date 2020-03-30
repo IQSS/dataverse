@@ -159,19 +159,20 @@ public class BundleUtil {
         }
         return getStringFromBundleNoMissingCheck(key, null, bundle);
     }
-
+    
+    /**
+     * Return JVM default locale.
+     *
+     * For now, this simply forwards default system behaviour.
+     * That means on JDK8 the system property user.language will be set on startup
+     * from environment variables like LANG or via Maven arguments (which is important for testing).
+     * (See also pom.xml for an example how we pinpoint this for reproducible tests!)
+     * (You should also be aware that good IDEs are honoring settings from pom.xml.)
+     *
+     * Nonetheless, someday we might want to have more influence on how this is determined, thus this wrapper.
+     * @return Dataverse default locale
+     */
     public static Locale getDefaultLocale() {
-        String localeEnvVar = System.getenv().get("LANG");
-        if (localeEnvVar != null) {
-            if (localeEnvVar.indexOf('.') > 0) {
-                localeEnvVar = localeEnvVar.substring(0, localeEnvVar.indexOf('.'));
-            }
-            if (!"en_US".equals(localeEnvVar)) {
-                logger.fine("BundleUtil: LOCALE code from the environmental variable is "+localeEnvVar);
-                return new Locale(localeEnvVar);
-            }
-        }
-
-        return new Locale("en");
+        return Locale.getDefault();
     }
 }
