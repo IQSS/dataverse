@@ -44,6 +44,13 @@
                                         <div id="file-title-block" class="col-xs-12 margin-bottom-half">
                                             <span class="file-title-label" style="font-size:36px !important;line-height:1.1;">#{FilePage.fileMetadata.label}</span>
                                             
+                                            <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
+                                                <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
+                                                <span style="vertical-align:text-bottom;font-size:30px;" class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{FilePage.fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                                                    <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                                </span>
+                                            </ui:fragment>
+                                            
                                             <p class="help-block">
                                                 <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">
                                                     <o:param value="#{FilePage.fileMetadata.datasetVersion.dataset.displayName}"/>
@@ -196,134 +203,134 @@
                                                                 <li>
                                                                     <!-- LINKS -->
                                                                 </li>
-                                                                <!-- EXPLORE -->
-                                                                <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
                                                                 
-                                                                <!-- END: EXPLORE -->
+                                                                <!-- Explore/Download/Request Button Block -->
+                                                                <ui:fragment rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
+                                                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
+                                                                                                                             and (!FilePage.fileMetadata.dataFile.filePackage or
+                                                                                                                                   FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
+                                                                    <ui:include src="file-download-button-fragment.xhtml">
+                                                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
+
+                                                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                                                        <ui:param name="requestAccessPopupRequired" value="#{FilePage.requestAccessPopupRequired}"/>
+                                                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                                                        <ui:param name="isFilePg" value="true"/>
+                                                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                                                                        <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
+                                                                    </ui:include>
+                                                                </ui:fragment>
+                                                                <!-- END: Explore/Download/Request Button Block -->
                                                                 
-                                                                <!-- DOWNLOAD/REQUEST ACCESS... -->
                                                             </ul>
                                                         </div>
                                                     </div>
                                                     
-                                                    
-                                                    <!-- Explore/Download/Request Button Block -->
-                                                    <div class="button-container btn-group" jsf:rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                                                                (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
-                                                                                                                 and (!FilePage.fileMetadata.dataFile.filePackage or
-                                                                                                                       FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
-                                                        <ui:include src="file-download-button-fragment.xhtml">
-                                                            <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                                            <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>
-                                                            <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                                            <ui:param name="requestAccessPopupRequired" value="#{FilePage.requestAccessPopupRequired}"/>
-                                                            <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                                            <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                                            <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                                            <ui:param name="isFilePg" value="true"/>
-                                                            <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                                                            <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
-                                                        </ui:include>
-                                                    </div>
-                                                    <!-- END: Explore/Download/Request Button Block -->
-                                                    
                                             
                                                     <!-- Map/Edit Button Block -->
-                                                    <div class="button-container btn-group" jsf:rendered="#{!widgetWrapper.widgetView}">
+                                                    <div class="btn-group btn-group-justified" jsf:rendered="#{!widgetWrapper.widgetView}">
                                                         
                                                         <!-- Edit Button Group -->
-                                                        <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated
+                                                        <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                                                  and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                                             <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
                                                                 #{bundle['dataset.editBtn']} FILE
                                                             </p:commandLink>
                                                         </div>
-                                                        <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated
+                                                        <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                                                  and !FilePage.lockedFromEdits
                                                                                  and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                            <div class="btn-group">
-                                                                <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                                                                    #{bundle['dataset.editBtn']} FILE <span class="caret"></span>
-                                                                </button>
-                                                                <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                                    <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
-                                                                    <!--  Should be FilePage.isLockedFromEdits() ? -->
-                                                                        <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
-                                                                            <p:commandLink id="fileProvenanceButton"
-                                                                                       update="editProvenancePopup"
-                                                                                       oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
-                                                                                       <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
-                                                                                        #{bundle['file.provenance']} 
-                                                                            </p:commandLink>
-                                                                        </li> 
-                                                                    </ui:fragment>
-                                                                    <li>
-                                                                        <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
-                                                                            <h:outputText id="editFile-Multi-Link" value="#{bundle['file.dataFilesTab.metadata.header']}"/>
-                                                                        </h:outputLink>
-                                                                    </li>
-                                                                    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                                        <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and !FilePage.fileMetadata.restricted}">
-                                                                            <li>
-                                                                                <p:commandLink onclick="PF('accessPopup').show()">
-                                                                                    <h:outputText value="#{bundle['file.restrict']}"/>
-                                                                                </p:commandLink>
-                                                                            </li>
-                                                                        </ui:fragment>
-                                                                        <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
-                                                                            <li>
-                                                                                <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
-                                                                                    <h:outputText value="#{bundle['file.unrestrict']}"/>
-                                                                                </p:commandLink>
-                                                                            </li>
-                                                                        </ui:fragment>     
-                                                                    </ui:fragment>
-                                                                    <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
-                                                                    <li><!-- start: replace file link -->
-                                                                        <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
-                                                                             <h:outputText value="#{bundle['file.replace']}"/>
-                                                                        </h:outputLink>
-                                                                    <!-- end replace file link --></li>
-                                                                    </ui:fragment>
-                                                                    <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
-                                                                    <li><!-- start: already replaced replace file link -->
-                                                                        <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
-                                                                            <h:outputText value="#{bundle['file.replace']}"/>
+                                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                                                #{bundle['dataset.editBtn']} FILE <span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                                
+                                                                <!-- TODO: WHAT IS THIS? -->
+                                                                <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
+                                                                <li>
+                                                                </li>
+                                                                </ui:fragment>
+                                                                
+                                                                
+                                                                <!-- Map Data/Set Up Button Block -->
+                                                                <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
+                                                                                         and (FilePage.getConfigureTools().size() > 0
+                                                                                         or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
+                                                                    <ui:include src="file-configure-dropdown-fragment.xhtml">
+                                                                        <ui:param name="configureTools" value="#{FilePage.getConfigureTools()}"/>
+                                                                        <ui:param name="isFilePg" value="true"/>
+                                                                        <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
+                                                                        <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
+                                                                        <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
+                                                                    </ui:include>		
+                                                                </ui:fragment>
+                                                                <!-- END: Map Data/Set Up Button Block -->
+                                                                
+                                                                
+                                                                <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
+                                                                <!--  Should be FilePage.isLockedFromEdits() ? -->
+                                                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                                                        <p:commandLink id="fileProvenanceButton"
+                                                                                   update="editProvenancePopup"
+                                                                                   oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
+                                                                                   <f:actionListener binding="#{provPopupFragmentBean.updatePopupState(fileMetadata, true)}" /> <!--clearProvenanceUpdates() -->
+                                                                                    #{bundle['file.provenance']} 
                                                                         </p:commandLink>
-                                                                    <!-- end replace file link --></li>
-                                                                    </ui:fragment>  
-                                                                    <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.released or !FilePage.fileMetadata.dataFile.filePackage}"> 
+                                                                    </li> 
+                                                                </ui:fragment>
+                                                                <li>
+                                                                    <h:outputLink value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE&#38;version=#{FilePage.version}">
+                                                                        <h:outputText id="editFile-Multi-Link" value="#{bundle['file.dataFilesTab.metadata.header']}"/>
+                                                                    </h:outputLink>
+                                                                </li>
+                                                                <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                                                    <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and !FilePage.fileMetadata.restricted}">
                                                                         <li>
-                                                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
-                                                                                <h:outputText value= "#{bundle['file.delete']}"/>
+                                                                            <p:commandLink onclick="PF('accessPopup').show()">
+                                                                                <h:outputText value="#{bundle['file.restrict']}"/>
                                                                             </p:commandLink>
                                                                         </li>
                                                                     </ui:fragment>
-                                                                    <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
+                                                                    <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage and FilePage.fileMetadata.restricted}">
+                                                                        <li>
+                                                                            <p:commandLink update="@form" actionListener="#{FilePage.restrictFile(false)}">
+                                                                                <h:outputText value="#{bundle['file.unrestrict']}"/>
+                                                                            </p:commandLink>
+                                                                        </li>
+                                                                    </ui:fragment>     
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
+                                                                <li><!-- start: replace file link -->
+                                                                    <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
+                                                                         <h:outputText value="#{bundle['file.replace']}"/>
+                                                                    </h:outputLink>
+                                                                <!-- end replace file link --></li>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
+                                                                <li><!-- start: already replaced replace file link -->
+                                                                    <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
+                                                                        <h:outputText value="#{bundle['file.replace']}"/>
+                                                                    </p:commandLink>
+                                                                <!-- end replace file link --></li>
+                                                                </ui:fragment>  
+                                                                <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.released or !FilePage.fileMetadata.dataFile.filePackage}"> 
                                                                     <li>
+                                                                        <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
+                                                                            <h:outputText value= "#{bundle['file.delete']}"/>
+                                                                        </p:commandLink>
                                                                     </li>
-                                                                    </ui:fragment>
-                                                                </ul>
-                                                            </div>
+                                                                </ui:fragment>
+                                                            </ul>
                                                         </div>
                                                         <!-- END: Edit Button Group -->
                                                         
                                                         
                                                         
-                                                        <!-- Map Data/Set Up Button Block -->
-                                                        <ui:fragment rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset() 
-                                                                                 and (FilePage.getConfigureTools().size() > 0
-                                                                                 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">		
-                                                            <ui:include src="file-configure-dropdown-fragment.xhtml">
-                                                                <ui:param name="configureTools" value="#{FilePage.getConfigureTools()}"/>
-                                                                <ui:param name="fileId" value="#{FilePage.fileMetadata.dataFile.id}"/>
-                                                                <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>		
-                                                                <ui:param name="canUpdateDataset" value="#{FilePage.canUpdateDataset()}"/>		
-                                                            </ui:include>		
-                                                        </ui:fragment>
-                                                        <!-- END: Map Data/Set Up Button Block -->
+                                                        
                                                         
                                                         
                                                     </div>
@@ -743,6 +750,16 @@
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                         </ui:include>
+                    </p:dialog>
+                    <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapDataDialog" modal="true">
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+                        </p>
+                        <div class="button-block">
+                            <button type="button" class="btn btn-default" onclick="PF('mapDataDialog').hide();PF('blockDatasetForm').hide();">
+                                #{bundle.close}
+                            </button>
+                        </div>
                     </p:dialog>
                     <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
                                 rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">

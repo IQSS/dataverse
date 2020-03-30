@@ -1382,6 +1382,16 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
+                    <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapDataDialog" modal="true">
+                        <p class="help-block">
+                            <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
+                        </p>
+                        <div class="button-block">
+                            <button type="button" class="btn btn-default" onclick="PF('mapDataDialog').hide();PF('blockDatasetForm').hide();">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>

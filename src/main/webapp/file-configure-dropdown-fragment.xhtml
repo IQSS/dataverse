@@ -10,15 +10,21 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
-        <div class="btn-group">
-            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu pull-right text-left" role="menu">
+        
+        <!-- Configure button -->
+        <!-- FILE PG -->
+        <li class="dropdown-submenu pull-left" jsf:rendered="#{isFilePg}">
+            
+            <a class="btn-configure" tabindex="-1" href="javascript:void(0);">
+                #{bundle['dataset.configureBtn']}
+            </a>
+            
+            <ul class="dropdown-menu multi-level" role="menu">
                 <!-- Worldmap unpublished -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-                    <a onclick="PF('mapData_popup').show()" href="javascript:void(0);">#{bundle['file.map']}</a>
+                    <p:commandLink onclick="PF('mapDataDialog').show()">
+                        #{bundle['file.map']}
+                    </p:commandLink>
                 </li>
                 <!-- Worldmap published -->
                 <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
@@ -26,29 +32,50 @@
                 </li>
                 <ui:repeat value="#{configureTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                     <li>
-                        <p:commandLink
-                            update="@([id$=configureToolPopup])"
-                            action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
-                            oncomplete="PF('configureToolPopup').show()">
-                            <f:actionListener binding="#{configureFragmentBean.setConfigureIds(fileId,fileMetadata.id)}" />
+                        <p:commandLink update="@([id$=configureToolPopup])"
+                                        action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                                        oncomplete="PF('configureToolPopup').show()">
+                                <f:actionListener binding="#{configureFragmentBean.setConfigureIds(fileId,fileMetadata.id)}"/>
+                                #{tool.displayName}
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </li>
+        <!-- END: FILE PG -->
+        <!-- DATASET PG -->
+        <div class="btn-group" jsf:rendered="#{!isFilePg}">
+            <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-cog"/> #{bundle['dataset.configureBtn']} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu pull-right text-left" role="menu">
+                <!-- Worldmap unpublished -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
+                    <p:commandLink onclick="PF('mapDataDialog').show()">
+                        #{bundle['file.map']}
+                    </p:commandLink>
+                </li>
+                <!-- Worldmap published -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
+                    <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}">#{bundle['file.map']}</a>
+                </li>
+                <ui:repeat value="#{configureTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <li>
+                        <p:commandLink update="@([id$=configureToolPopup])"
+                                        action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                                        oncomplete="PF('configureToolPopup').show()">
+                            <f:actionListener binding="#{configureFragmentBean.setConfigureIds(fileId,fileMetadata.id)}"/>
                             #{tool.displayName}
                         </p:commandLink>
                     </li>
                 </ui:repeat>
             </ul>
         </div>
+        <!-- END: DATASET PG -->
+        <!-- END: Configure button -->
         
         <!-- Configure popup MOVED TO file configure popup fragment -->
 
-          <p:dialog id="mapDataDialog" header="#{bundle['file.mapData.unpublished.header']}" widgetVar="mapData_popup" modal="true" rendered="#{(worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-              <p class="help-block">
-                  <span class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.mapData.unpublished.message']}</span>
-              </p>
-              <div class="button-block">
-                  <button type="button" class="btn btn-default" onclick="PF('mapData_popup').hide();PF('blockDatasetForm').hide();">
-                      #{bundle.close}
-                  </button>
-              </div>
-          </p:dialog>
+        <!-- mapDataDialog popup MOVED TO dataset and file pg popup sections at bottom of pg -->
 
 </ui:composition>

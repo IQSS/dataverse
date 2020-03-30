@@ -587,6 +587,7 @@
             <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
                 <ui:include src="file-configure-dropdown-fragment.xhtml">
                     <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                    <ui:param name="isFilePg" value="false"/>
                     <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                 </ui:include>
@@ -594,9 +595,17 @@
 
             <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage or
                 fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
+                
+                <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
+                    <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
+                    <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                        <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                    </span>
+                </ui:fragment>
+                
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    
                     <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
                     <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
