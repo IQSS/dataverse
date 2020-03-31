@@ -462,6 +462,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
     
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void updateDatasetLock(DatasetLock datasetLock) {
+        em.merge(datasetLock);
+    }
+    
     /*
     getTitleFromLatestVersion methods use native query to return a dataset title
     

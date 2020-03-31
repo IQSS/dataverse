@@ -114,9 +114,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             if ( registerGlobalIdsForFiles ){
                 registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
 	    }
+            
+            boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
-                String info = "Adding File PIDs asynchronously";
+            if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
+                    && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
+                // TODO: The time it takes to validate the physical files in the dataset
+                // is a function of the total file size, NOT the number of files; 
+                // so that's what we should be checking. 
+                String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
+                info += "Validating Datafiles Asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);

@@ -57,6 +57,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
+    public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
+    
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
         this( aDataset, aRequest, false );
     }
@@ -244,9 +246,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // systemConfig.getFileFixityChecksumAlgorithm()
                 DataFile.ChecksumType checksumType = dataFile.getChecksumType();
                 if (checksumType == null) {
-                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString())));
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info);
+                    throw new Exception(info);
                 }
-                
+                                
                 StorageIO<DataFile> storage = dataFile.getStorageIO();
                 storage.open(DataAccessOption.READ_ACCESS);
                 InputStream in = null;
@@ -258,28 +262,67 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // instead:
                     in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
                 }
-                
+                                
                 if (in == null) {
-                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString())));
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info);
+                    throw new Exception(info);
                 }
                 
                 String recalculatedChecksum = null; 
                 try {
-                    FileUtil.calculateChecksum(in, checksumType);
+                    recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
                 } catch (RuntimeException rte) {
-                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString())));
+                    recalculatedChecksum = null; 
                 } finally {
                     IOUtils.closeQuietly(in);
                 }
                 
-                if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
-                    throw new Exception(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString())));
+                if (recalculatedChecksum == null) {
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info); 
+                    throw new Exception(info);
                 }
+                
+                // TODO: What should we do if the datafile does not have a non-null checksum?
+                // Should we fail, or should we assume that the recalculated checksum
+                // is correct, and populate the checksumValue field with it?
+                
+                if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info); 
+                    throw new Exception(info);
+                }
+                
+                logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
             }
         } catch (Throwable e) {
-            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-            throw new CommandException(e.getMessage(), this);
+            // Check if there is a workflow lock on the dataset - i.e., if this 
+            // is being done asynchronously. If so, change the lock message 
+            // to notify the user what went wrong, and leave the lock in place:
+            
+            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+                DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.pidRegister);
+                workflowLock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().updateDatasetLock(workflowLock);
+            }
+
+            // Throw a new CommandException; if the command is being called 
+            // synchronously, it will be intercepted and the page will display 
+            // the error message for the user.
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
         }
+        
+        /* 
+         * for debugging only: (TODO: remove before making the final PR)
+        logger.log(Level.INFO,"Validation successful; but throwing an exception anyway, for testing purposes");
+        if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+            DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.pidRegister);
+            workflowLock.setInfo(FILE_VALIDATION_ERROR);
+            ctxt.datasets().updateDatasetLock(workflowLock);
+        }
+        throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
+        */
     }
     
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
@@ -323,6 +366,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
+        /*
+         * for debugging only: (TODO: remove before making the final PR)
+        throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+         */
     }
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
