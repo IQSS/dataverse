@@ -1861,7 +1861,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
-                                    contentType
+                                    contentType, 
+                                    null
                                 )){
             saveEnabled = true;
 
@@ -1920,11 +1921,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private void handleReplaceFileUpload(String fullStorageLocation, 
     		String fileName, 
-    		String contentType){
+    		String contentType, 
+    		String checkSum){
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
-    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation, fileName, contentType)){
+    	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
     		saveEnabled = true;
 
     		/**
@@ -2057,6 +2060,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     		//get file size
     		long fileSize = sio.getSize();
 
+			if(StringUtils.isEmpty(contentType)) {
+				contentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+			}
+			
+			if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
+				String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
+				localWarningMessage = warningMessage;
+				//ToDo - methods like handleReplaceFileUpload and classes like OptionalFileParams will need to track the algorithm in addition to the value to enable this
+			}
+			
     		/* ----------------------------
                 Check file size
                 - Max size NOT specified in db: default is unlimited
@@ -2071,7 +2084,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
-    				this.handleReplaceFileUpload(storageLocation, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT);
+    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue);
     				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
     				return;
     			}
@@ -2087,13 +2100,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     				// for example, multiple files can be extracted from an uncompressed
     				// zip file.
     				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-    				if(StringUtils.isEmpty(contentType)) {
-    					contentType = "application/octet-stream";
-    				}
-    				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
-    					String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
-    					localWarningMessage = warningMessage;
-    				}
+
+
     				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
