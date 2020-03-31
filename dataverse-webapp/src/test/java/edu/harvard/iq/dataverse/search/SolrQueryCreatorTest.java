@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.search.advanced.SearchBlock;
 import edu.harvard.iq.dataverse.search.advanced.SearchField;
 import edu.harvard.iq.dataverse.search.advanced.SolrQueryCreator;
 import edu.harvard.iq.dataverse.search.advanced.TextSearchField;
+import edu.harvard.iq.dataverse.search.advanced.DateSearchField;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -62,6 +63,26 @@ class SolrQueryCreatorTest {
     }
 
     @Test
+    public void constructQuery_BothDatesQuery() {
+        //given
+        SearchBlock searchBlock = new SearchBlock("TEST", "TEST", createBothDatesSearchFields());
+        //when
+        String result = solrQueryCreator.constructQuery(Lists.newArrayList((searchBlock)));
+        //then
+        Assert.assertEquals("date1:[dateValue1 TO dateValue2]", result);
+    }
+
+    @Test
+    public void constructQuery_OneDateQuery() {
+        //given
+        SearchBlock searchBlock = new SearchBlock("TEST", "TEST", createOneDateSearchFields());
+        //when
+        String result = solrQueryCreator.constructQuery(Lists.newArrayList((searchBlock)));
+        //then
+        Assert.assertEquals("date1:[dateValue1 TO *] AND date2:[* TO dateValue2]", result);
+    }
+
+    @Test
     public void constructQuery_CheckboxQuery() {
         //given
         SearchBlock searchBlock = new SearchBlock("TEST", "TEST", createCheckboxSearchFields());
@@ -79,6 +100,7 @@ class SolrQueryCreatorTest {
         searchFields.addAll(createOneNumberSearchFields());
         searchFields.addAll(createCheckboxSearchFields());
         searchFields.addAll(createTextSearchFields());
+        searchFields.addAll(createDateSearchFields());
 
         SearchBlock searchBlock = new SearchBlock("TEST", "TEST", searchFields);
         //when
@@ -86,7 +108,8 @@ class SolrQueryCreatorTest {
         //then
         Assert.assertEquals("number1:[1 TO 2] AND number2:[3.1 TO 4.1] AND number1:[1 TO *] AND" +
                                     " number2:[* TO 4.1] AND checkboxValues:\"checkboxValue1\" AND checkboxValues:\"checkboxValue2\" AND" +
-                                    " text1:testValue1 AND text2:testValue2", result);
+                                    " text1:testValue1 AND text2:testValue2 AND date1:[testDate1 TO *] AND date2:[* TO testDate2] AND " +
+                                    "date3:[testDate31 TO testDate32]", result);
     }
 
     private List<SearchField> createBothNumbersSearchFields() {
@@ -110,6 +133,24 @@ class SolrQueryCreatorTest {
 
         return Lists.newArrayList(testValue1, testValue2);
     }
+    
+    private List<SearchField> createBothDatesSearchFields() {
+        DateSearchField testValue1 = new DateSearchField("date1", "date1", "desc");
+        testValue1.setLowerLimit("dateValue1");
+        testValue1.setUpperLimit("dateValue2");
+
+        return Lists.newArrayList(testValue1);
+    }
+
+    private List<SearchField> createOneDateSearchFields() {
+        DateSearchField testValue1 = new DateSearchField("date1", "date1", "desc");
+        testValue1.setLowerLimit("dateValue1");
+
+        DateSearchField testValue2 = new DateSearchField("date2", "date2", "desc");
+        testValue2.setUpperLimit("dateValue2");
+
+        return Lists.newArrayList(testValue1, testValue2);
+    }
 
     private List<SearchField> createCheckboxSearchFields() {
         CheckboxSearchField testValue1 = new CheckboxSearchField("checkboxValues", "checkboxValues", "desc");
@@ -126,6 +167,20 @@ class SolrQueryCreatorTest {
         testValue2.setFieldValue("testValue2");
 
         return Lists.newArrayList(testValue1, testValue2);
+    }
+
+    private List<SearchField> createDateSearchFields() {
+        DateSearchField testValue1 = new DateSearchField("date1", "date1", "desc");
+        testValue1.setLowerLimit("testDate1");
+
+        DateSearchField testValue2 = new DateSearchField("date2", "date2", "desc");
+        testValue2.setUpperLimit("testDate2");
+
+        DateSearchField testValue3 = new DateSearchField("date3", "date3", "desc");
+        testValue3.setLowerLimit("testDate31");
+        testValue3.setUpperLimit("testDate32");
+
+        return Lists.newArrayList(testValue1, testValue2, testValue3);
     }
 
     private List<SearchField> createLongTextSearchFields() {

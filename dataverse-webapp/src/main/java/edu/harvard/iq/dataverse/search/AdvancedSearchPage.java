@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.search.advanced.CheckboxSearchField;
+import edu.harvard.iq.dataverse.search.advanced.DateSearchField;
 import edu.harvard.iq.dataverse.search.advanced.NumberSearchField;
 import edu.harvard.iq.dataverse.search.advanced.SearchBlock;
 import edu.harvard.iq.dataverse.search.advanced.SearchField;
@@ -158,10 +159,15 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
             return mapCheckBoxValues(datasetFieldType);
 
-        } else if (isTextOrDateField(datasetFieldType)) {
+        } else if (isTextField(datasetFieldType)) {
             return new TextSearchField(datasetFieldType.getName(),
                                        datasetFieldType.getDisplayName(),
                                        datasetFieldType.getLocaleDescription());
+
+        } else if (isDateField(datasetFieldType)) {
+            return new DateSearchField(datasetFieldType.getName(),
+                    datasetFieldType.getDisplayName(),
+                    datasetFieldType.getLocaleDescription());
 
         } else if (isNumberField(datasetFieldType)) {
             return new NumberSearchField(datasetFieldType.getName(),
@@ -196,10 +202,13 @@ public class AdvancedSearchPage implements java.io.Serializable {
                 datasetFieldType.getFieldType().equals(FieldType.FLOAT);
     }
 
-    private boolean isTextOrDateField(DatasetFieldType datasetFieldType) {
+    private boolean isTextField(DatasetFieldType datasetFieldType) {
         return datasetFieldType.getFieldType().equals(FieldType.TEXT) ||
-                datasetFieldType.getFieldType().equals(FieldType.TEXTBOX) ||
-                datasetFieldType.getFieldType().equals(FieldType.DATE);
+                datasetFieldType.getFieldType().equals(FieldType.TEXTBOX);
+    }
+
+    private boolean isDateField(DatasetFieldType datasetFieldType) {
+        return datasetFieldType.getFieldType().equals(FieldType.DATE);
     }
 
     private List<SearchField> constructFilesSearchFields() {

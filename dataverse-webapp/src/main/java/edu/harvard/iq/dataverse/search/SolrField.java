@@ -26,9 +26,10 @@ public class SolrField {
             if (solrType.equals(SolrType.STRING)) {
                 nameSearchable = "dsf_str_" + name;
             } else if (solrType.equals(SolrType.TEXT_EN) ||
-                    solrType.equals(SolrType.EMAIL) ||
-                    solrType.equals(SolrType.DATE)) {
+                    solrType.equals(SolrType.EMAIL)) {
                 nameSearchable = "dsf_txt_" + name;
+            } else if (solrType.equals(SolrType.DATE)) {
+                nameSearchable = "dsf_dtr_" + name;
             } else if (solrType.equals(SolrType.INTEGER)) {
                 nameSearchable = "dsf_int_" + name;
             } else if (solrType.equals(SolrType.FLOAT)) {

@@ -52,7 +52,8 @@
                                     </label>
                                     <div class="col-sm-6">
                                         <p:inputText id="dvFieldName" styleClass="form-control"
-                                                     rendered="#{searchField.searchFieldType == fieldTypeEnums.TEXT}"
+                                                     rendered="#{searchField.searchFieldType == fieldTypeEnums.TEXT or
+                                                     searchField.searchFieldType == fieldTypeEnums.DATE}"
                                                      value="#{searchField.fieldValue}"/>
 
                                         <div class="ui-inputfield form-control select-scroll-block"
@@ -100,6 +101,19 @@
                                             <p:inputText id="stringSearchValue" styleClass="form-control"
                                                          value="#{item.fieldValue}"
                                                          rendered="#{item.searchFieldType == fieldTypeEnums.TEXT}"/>
+                                            <div>
+                                                <p:inputText id="daterangeSearchMinimum" style="padding-right: 5px"
+                                                               placeholder="#{bundle['advanced.search.metadata.from']}"
+                                                               value="#{item.lowerLimit}"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
+                                                <p:outputLabel for="daterangeSearchMaximum"
+                                                               value="&#8212;"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
+                                                <p:inputText id="daterangeSearchMaximum" style="padding-left: 5px"
+                                                               placeholder="#{bundle['advanced.search.metadata.to']}"
+                                                               value="#{item.upperLimit}"
+                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
+                                            </div>
                                             <div>
                                                 <p:inputNumber id="rangeSearchMinimum" style="padding-right: 5px"
                                                                placeholder="#{bundle['advanced.search.metadata.from']}"

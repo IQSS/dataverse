@@ -47,7 +47,9 @@ public class SolrQueryCreator {
             return constructQueryForNumberField((NumberSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.CHECKBOX)) {
             return constructQueryForCheckboxField((CheckboxSearchField) searchField);
-        }
+        } else if (searchField.getSearchFieldType().equals(SearchFieldType.DATE)) {
+            return constructQueryForDateField((DateSearchField) searchField);
+        } 
 
         return StringUtils.EMPTY;
     }
@@ -101,6 +103,22 @@ public class SolrQueryCreator {
         }
 
         return intQueryBuilder.toString();
+    }
+
+    private String constructQueryForDateField(DateSearchField dateSearchField) {
+        StringBuilder dateQueryBuilder = new StringBuilder();
+
+        if (StringUtils.isNotEmpty(dateSearchField.getLowerLimit()) || StringUtils.isNotEmpty(dateSearchField.getUpperLimit())) {
+        	dateQueryBuilder
+                    .append(dateSearchField.getName())
+                    .append(":[")
+                    .append(StringUtils.isEmpty(dateSearchField.getLowerLimit()) ? "*" : dateSearchField.getLowerLimit())
+                    .append(" TO ")
+                    .append(StringUtils.isEmpty(dateSearchField.getUpperLimit()) ? "*" : dateSearchField.getUpperLimit())
+                    .append("]");
+        }
+
+        return dateQueryBuilder.toString();
     }
 
     private boolean isOneNumberPresent(NumberSearchField numberField) {

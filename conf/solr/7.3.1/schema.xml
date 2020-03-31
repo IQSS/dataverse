@@ -231,6 +231,7 @@
     <dynamicField name="dsf_flt_*" type="pfloat" indexed="true" stored="true" multiValued="true" />
 <!--    <dynamicField name="dsf_eml_*" type="text_en" indexed="true" stored="true" multiValued="true" />-->
 <!--    <dynamicField name="dsf_dat_*" type="text_en" indexed="true" stored="true" multiValued="true" />-->
+    <dynamicField name="dsf_dtr_*" type="daterange" indexed="true" stored="true" multiValued="true" />
 
     <copyField source="dsf_txt_*" dest="_text_" maxChars="3000" />
     <copyField source="dsf_str_*" dest="_text_" maxChars="3000" />
@@ -407,6 +408,8 @@
 
     <!-- A Trie based date field for faster date range queries and date faceting. -->
     <fieldType name="tdate" class="solr.TrieDateField" precisionStep="6" positionIncrementGap="0"/>
+    
+    <fieldType name="daterange" class="solr.DateRangeField" />
 
     <!-- This is an example of using the KeywordTokenizer along
         With various TokenFilterFactories to produce a sortable field
