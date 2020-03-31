@@ -95,6 +95,7 @@ Terminology
     query parameter values       A **mechanism for substituting reserved words with dynamic content**. For example, in your manifest file, you can use a reserved word (described below) such as ``{fileId}`` to pass a file's database id to your tool in a query parameter. Your tool might receive this query parameter as "fileId=42".
 
     reserved words               A **set of strings surrounded by curly braces** such as ``{fileId}`` or ``{datasetId}`` that will be inserted into query parameters. See the table below for a complete list.
+    toolName                     A **name** of an external tool that is used to differentiate between different external tools and it is used in Bundle.properties for localization in dataverse web interface. For example, for Data Explore Tool the toolName is ``explorer``. For Data Curation Tool the toolName is ``dct``. This is an optional parameter in manifest json file.   
     ===========================  ==========
 
 Reserved Words
@@ -122,6 +123,18 @@ Reserved Words
 
     ``{localeCode}``             optional    The code for the language ("en" for English, "fr" for French, etc.) that user has selected from the language toggle in Dataverse. See also :ref:`i18n`.
     ===========================  ==========  ===========
+
+Internationalization of Your External Tool
+++++++++++++++++++++++++++++++++++++++++++
+
+In order the name and description of your tool were localized and available in different languages in dataverse web interface please use ``toolName`` parameter in manifest json file. Please also add that name to Bundle.properties.
+
+If a ``toolName`` of your external tool is ``fabulous`` then the lines in Bundle.properties should be:
+
+``externaltools.fabulous.displayname=Fabulous File Tool``
+
+``externaltools.fabulous.description=Fabulous Fun for Files!``
+
 
 Using Example Manifests to Get Started
 ++++++++++++++++++++++++++++++++++++++
@@ -158,3 +171,4 @@ Announcing Your External Tool
 You are welcome to announce your external tool at https://groups.google.com/forum/#!forum/dataverse-community
 
 If you're too shy, we'll do it for you. We'll probably tweet about it too. Thank you for your contribution to Dataverse!
+
