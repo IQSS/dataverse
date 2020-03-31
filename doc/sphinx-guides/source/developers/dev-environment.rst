@@ -46,7 +46,7 @@ On Mac, install Homebrew to simplify the steps below: https://brew.sh
 Clone the Dataverse Git Repo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Fork https://github.com/IQSS/dataverse and then clone your fork like this:
+Fork https://github.com/CeON/dataverse and then clone your fork like this:
 
 ``git clone git@github.com:[YOUR GITHUB USERNAME]/dataverse.git``
 
@@ -74,22 +74,22 @@ On Linux, install ``jq`` from your package manager or download a binary from htt
 Install Glassfish
 ~~~~~~~~~~~~~~~~~
 
-Glassfish 4.1 is required.
+Glassfish 4.1.2 is required.
 
 To install Glassfish, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip``
+``sudo curl -O http://download.oracle.com/glassfish/4.1.2/release/glassfish-4.1.2.zip``
 
-``sudo unzip glassfish-4.1.zip``
+``sudo unzip glassfish-4.1.2.zip``
 
 ``sudo chown -R $USER /usr/local/glassfish4``
 
 Test Glassfish Startup Time on Mac
 ++++++++++++++++++++++++++++++++++
 
-``cd /usr/local/glassfish4/glassfish/bin``
+``cd /usr/local/glassfish4.1.2/glassfish/bin``
 
 ``./asadmin start-domain``
 
@@ -143,11 +143,11 @@ To install Solr, execute the following commands:
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema.xml``
+``curl -O https://raw.githubusercontent.com/CeON/dataverse/develop/conf/solr/7.3.1/schema.xml``
 
 ``mv schema.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/CeON/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 

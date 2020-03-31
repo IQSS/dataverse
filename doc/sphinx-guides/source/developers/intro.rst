@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! `Dataverse <http://dataverse.org>`_ is an `open source <https://github.com/IQSS/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md>`_!
+Welcome! `Dataverse <http://dataverse.org>`_ is an `open source <https://github.com/CeON/dataverse/blob/master/LICENSE.md>`_ project that loves `contributors <https://github.com/CeON/dataverse/blob/develop/CONTRIBUTING.md>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -10,14 +10,14 @@ Welcome! `Dataverse <http://dataverse.org>`_ is an `open source <https://github.
 Intended Audience
 -----------------
 
-This guide is intended primarily for developers who want to work on the main Dataverse code base at https://github.com/IQSS/dataverse but see "Related Projects" below for other code you can work on!
+This guide is intended primarily for developers who want to work on the main Dataverse code base at https://github.com/CeON/dataverse but see "Related Projects" below for other code you can work on!
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
 Getting Help
 ------------
 
-If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org (#dataverse on freenode), the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
+If you have any questions at all, please reach out to other developers via the channels listed in https://github.com/CeON/dataverse/blob/develop/CONTRIBUTING.md such as http://chat.dataverse.org (#dataverse on freenode), the `dataverse-dev <https://groups.google.com/forum/#!forum/dataverse-dev>`_ mailing list, `community calls <https://dataverse.org/community-calls>`_, or support@dataverse.org.
 
 Core Technologies
 -----------------
@@ -26,20 +26,10 @@ Dataverse is a `Java EE <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_
 
 We make use of a variety of Java EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
 
-Roadmap
--------
-
-For the Dataverse development roadmap, please see https://dataverse.org/goals-roadmap-and-releases
-
-Kanban Board
-------------
-
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://waffle.io/IQSS/dataverse
-
 Issue Tracker
 -------------
 
-We use GitHub Issues as our issue tracker: https://github.com/IQSS/dataverse/issues
+We use GitHub Issues as our issue tracker: https://github.com/CeON/dataverse/projects/1
 
 Related Guides
 --------------

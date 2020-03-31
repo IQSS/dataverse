@@ -253,3 +253,4 @@ In the GUI, this is called "Local Access". It's where you can compute on files o
 ``curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"``
 
 
+Previous: :doc:`selinux` | Next: :doc:`workflows`

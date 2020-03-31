@@ -24,7 +24,6 @@ Developer Guide
    coding-style
    deployment
    containers
-   making-releases
    tools
    unf/index
    remote-users

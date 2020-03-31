@@ -89,8 +89,6 @@ You should be aware that some unit tests have been deemed "non-essential" and ha
 
 ``mvn test -P all-unit-tests``
 
-Typically https://travis-ci.org/IQSS/dataverse will show a higher number of unit tests executed because it uses the profile above.
-
 Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
 
 Integration Tests
