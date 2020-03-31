@@ -95,7 +95,8 @@ Terminology
     query parameter values       A **mechanism for substituting reserved words with dynamic content**. For example, in your manifest file, you can use a reserved word (described below) such as ``{fileId}`` to pass a file's database id to your tool in a query parameter. Your tool might receive this query parameter as "fileId=42".
 
     reserved words               A **set of strings surrounded by curly braces** such as ``{fileId}`` or ``{datasetId}`` that will be inserted into query parameters. See the table below for a complete list.
-    toolName                     A **name** of an external tool that is used to differentiate between different external tools and it is used in Bundle.properties for localization in dataverse web interface. For example, for Data Explore Tool the toolName is ``explorer``. For Data Curation Tool the toolName is ``dct``. This is an optional parameter in manifest json file.   
+    
+    toolName                     A **name** of an external tool that is used to differentiate between external tools and also used in bundle.properties for localization in the Dataverse web interface. For example, the toolName for Data Explorer is ``explorer``. For the Data Curation Tool the toolName is ``dct``. This is an optional parameter in the manifest JSON file.   
     ===========================  ==========
 
 Reserved Words
@@ -127,12 +128,11 @@ Reserved Words
 Internationalization of Your External Tool
 ++++++++++++++++++++++++++++++++++++++++++
 
-In order the name and description of your tool were localized and available in different languages in dataverse web interface please use ``toolName`` parameter in manifest json file. Please also add that name to Bundle.properties.
+The name and description of your tool can be localized and made available in different languages in the Dataverse web interface. Use the ``toolName`` parameter in the manifest JSON file and then add that toolName to bundle.properties.
 
-If a ``toolName`` of your external tool is ``fabulous`` then the lines in Bundle.properties should be:
+For example, if the ``toolName`` of your external tool is ``fabulous`` then the lines in Bundle.properties should be:
 
 ``externaltools.fabulous.displayname=Fabulous File Tool``
-
 ``externaltools.fabulous.description=Fabulous Fun for Files!``
 
 
