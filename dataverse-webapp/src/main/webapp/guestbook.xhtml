@@ -143,7 +143,9 @@
                                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                                     <div>
                                                             <p:inputText id="questionText" styleClass="form-control"
-                                                                         value="#{cq.questionString}"/>
+                                                                         value="#{cq.questionString}">
+                                                                <p:ajax event="blur" update="questionText"/>
+                                                            </p:inputText>
                                                             <p:message for="questionText" display="text"/>
                                                     </div>
                                                 </div>
