@@ -25,6 +25,13 @@ Testing in Depth
 
 When writing tests, you may find it helpful to first map out which functions of your code you want to test, and then write a functional unit test for each which can later comprise a larger integration test. 
 
+Locale
+------
+Do you use a locale different than ``en_US.UTF-8`` on your development machine? Are you in a different timezone
+than Harvard (Eastern Time)? You might experience issues while running tests that were written with these settings
+in mind. The Maven  ``pom.xml`` tries to handle this for you by setting the locale to ``en_US.UTF-8`` and timezone
+``UTC``, but more, not yet discovered building or testing problems might lurk in the shadows.
+
 Unit Tests
 ----------
 

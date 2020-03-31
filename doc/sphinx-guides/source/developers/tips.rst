@@ -152,4 +152,4 @@ On a Mac, you won't have git installed unless you have "Command Line Developer T
 
 ----
 
-Previous: :doc:`dev-environment` | Next: :doc:`troubleshooting`
+Previous: :doc:`windows` | Next: :doc:`troubleshooting`

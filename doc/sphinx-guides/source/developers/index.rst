@@ -11,7 +11,6 @@ Developer Guide
 .. toctree::
 
    intro
-   dev-environment
    windows
    tips
    troubleshooting

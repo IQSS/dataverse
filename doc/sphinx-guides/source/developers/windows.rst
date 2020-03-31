@@ -141,3 +141,5 @@ Discussion and Feedback
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 For more discussion of Windows support for Dataverse development see our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ We would be happy to inconrporate feedback from Windows developers into this page. The :doc:`documentation` section describes how.
+
+Previous: :doc:`intro` | Next: :doc:`tips`
