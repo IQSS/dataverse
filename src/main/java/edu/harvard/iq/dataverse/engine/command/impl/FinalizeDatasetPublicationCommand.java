@@ -241,9 +241,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
         try {
             for (DataFile dataFile : dataset.getFiles()) {
+                // TODO: Should we validate all the files in the dataset, or only 
+                // the files that haven't been published previously?
                 logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
                 
-                // systemConfig.getFileFixityChecksumAlgorithm()
                 DataFile.ChecksumType checksumType = dataFile.getChecksumType();
                 if (checksumType == null) {
                     String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
