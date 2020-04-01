@@ -754,7 +754,16 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.escapeHtml(getDescription());
     }
 
-    public List<String[]> getDatasetContacts(){
+    public List<String[]> getDatasetContacts() {
+        boolean getDisplayValues = true;
+        return getDatasetContacts(getDisplayValues);
+    }
+
+    /**
+     * @param getDisplayValues Instead of the retrieving pristine value in the
+     * database, run the value through special formatting.
+     */
+    public List<String[]> getDatasetContacts(boolean getDisplayValues) {
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
@@ -767,10 +776,11 @@ public class DatasetVersion implements Serializable {
                             if (subField.isEmptyForDisplay()) {
                                 addContributor = false;
                             }
+                            // There is no use case yet for getting the non-display value for contributorName.
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            contributorAffiliation = subField.getDisplayValue();
+                            contributorAffiliation = getDisplayValues ? subField.getDisplayValue() : subField.getValue();
                         }
 
                     }
@@ -783,7 +793,7 @@ public class DatasetVersion implements Serializable {
         }       
         return retList;        
     }
-    
+
     public List<String[]> getDatasetProducers(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {

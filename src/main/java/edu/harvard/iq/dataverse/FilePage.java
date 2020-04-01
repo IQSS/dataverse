@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
@@ -30,6 +31,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -78,6 +81,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private Long datasetVersionId;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -106,6 +110,8 @@ public class FilePage implements java.io.Serializable {
     EjbDataverseEngine commandEngine;
     @EJB
     ExternalToolServiceBean externalToolService;
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
@@ -170,10 +176,14 @@ public class FilePage implements java.io.Serializable {
 
                 return permissionsWrapper.notFound();
             }
-
             RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
-            Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            Long getDatasetVersionID = null;
+            if (datasetVersionId == null) {
+                retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+                getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
+            } else {
+                getDatasetVersionID = datasetVersionId;
+            }
             fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
             if (fileMetadata == null) {
@@ -235,6 +245,14 @@ public class FilePage implements java.io.Serializable {
 
     public FileMetadata getFileMetadata() {
         return fileMetadata;
+    }
+
+    public Long getDatasetVersionId() {
+        return datasetVersionId;
+    }
+
+    public void setDatasetVersionId(Long datasetVersionId) {
+        this.datasetVersionId = datasetVersionId;
     }
     
     private List<ExternalTool> addMapLayerAndSortExternalTools(){
@@ -846,7 +864,21 @@ public class FilePage implements java.io.Serializable {
     public boolean isPubliclyDownloadable() {
         return FileUtil.isPubliclyDownloadable(fileMetadata);
     }
-    
+
+    /**
+     * In Dataverse 4.19 and below file preview was determined by
+     * isPubliclyDownloadable. Now we always allow a PrivateUrlUser to preview
+     * files.
+     */
+    public boolean isPreviewAllowed() {
+        if (session.getUser() instanceof PrivateUrlUser) {
+            // Always allow preview for PrivateUrlUser
+            return true;
+        } else {
+            return isPubliclyDownloadable();
+        }
+    }
+
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar; 
     
@@ -942,6 +974,12 @@ public class FilePage implements java.io.Serializable {
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            privateUrl.getToken();
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privateUrl.getToken());
         }
         if(externalTool == null){
             return "";

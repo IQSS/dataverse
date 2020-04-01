@@ -44,6 +44,8 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 
         # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
+.. _glassfish:
+
 Glassfish
 ---------
 
@@ -186,6 +188,11 @@ Solr
 
 The Dataverse search index is powered by Solr.
 
+Supported Versions
+==================
+
+Dataverse has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
+
 Installing Solr
 ===============
 
@@ -199,19 +206,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz
-        tar xvzf solr-7.3.1.tgz
-        cd solr-7.3.1
+        wget https://archive.apache.org/dist/lucene/solr/7.7.2/solr-7.7.2.tgz
+        tar xvzf solr-7.7.2.tgz
+        cd solr-7.7.2
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
 
 Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.7.2/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -230,7 +237,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup:
 
-        echo "name=collection1" > /usr/local/solr/solr-7.3.1/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
 
 Solr Init Script
 ================
@@ -330,8 +337,8 @@ use Dataverse - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
 you choose to also install `TwoRavens
 <https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries.  Please consult the instructions in the
-TowRavens section of the Installation Guide.
+components and libraries. Please consult the instructions in the
+:doc:`/installation/r-rapache-tworavens/` section of the Installation Guide.
 
 
 Installing R

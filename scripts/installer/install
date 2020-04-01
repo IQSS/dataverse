@@ -182,7 +182,7 @@ my $API_URL = "http://localhost:8080/api";
 # jodbc.postgresql.org recommends 4.2 for Java 8.
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
-my $postgres_jdbc = "postgresql-42.2.2.jar";
+my $postgres_jdbc = "postgresql-42.2.9.jar";
 
 # 0. A few preliminary checks:
 
