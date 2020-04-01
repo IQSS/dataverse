@@ -23,11 +23,13 @@ Configuring / Troubleshooting Mail Host
 
 If you have trouble with the SMTP server, consider editing the ``install`` script to disable the SMTP check.
 
-Out of the box, no emails will be sent from your development environment. This is because you have to set the ``:SystemEmail`` setting and make sure you've configured your SMTP server correctly.
+Out of the box, no emails will be sent from your development environment. This is because you have to set the ``SystemEmail`` setting and make sure you've configured your SMTP server correctly.
 
-You can configure ``:SystemEmail`` like this:
+You can configure ``SystemEmail`` like this:
 
-``curl -X PUT -d 'Davisverse SWAT Team <davisthedog@harvard.edu>' http://localhost:8080/api/admin/settings/:SystemEmail``
+Make sure you copied ``dataverse.default.properties`` to ~/.dataverse with file name ``dataverse.properties`` and change :
+
+``SystemEmail=testmail@mail.com``
 
 Unfortunately for developers not at Harvard, the installer script gives you by default an SMTP server of ``mail.hmdc.harvard.edu`` but you can specify an alternative SMTP server when you run the installer.
 
@@ -84,28 +86,12 @@ As another example, here is how to create a Mail Host via command line for Amazo
 - Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost email-smtp.us-east-1.amazonaws.com --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --transprotocol aws --transprotocolclass com.amazonaws.services.simpleemail.AWSJavaMailTransport --property mail.smtp.auth=true:mail.smtp.user=[aws_access_key]:mail.smtp.password=[aws_secret_key]:mail.transport.protocol=smtp:mail.smtp.port=587:mail.smtp.starttls.enable=true mail/notifyMailSession``
 
-Rebuilding Your Dev Environment
--------------------------------
-
-If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps:
-
-- drop your old database
-- clear out your existing Solr index: ``scripts/search/clear``
-- run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
-- confirm you are using the latest Dataverse-specific Solr schema.xml
-- confirm http://localhost:8080 is up
-- If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
-
-You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See also "Fresh Reinstall" in the :doc:`/installation/installation-main` section of the Installation Guide.
-
 DataCite
 --------
 
-If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``dataverse.siteUrl`` JVM option is unset or set to localhost (``-Ddataverse.siteUrl=http://localhost:8080``). You can try something like this:
+If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``SiteUrl`` is set to localhost (``SiteUrl=http://localhost:8080``). You can try something like this in file settings:
 
-``./asadmin delete-jvm-options '-Ddataverse.siteUrl=http\://localhost\:8080'``
-
-``./asadmin create-jvm-options '-Ddataverse.siteUrl=http\://demo.dataverse.org'``
+``SiteUrl=http://demo.dataverse.org``
 
 ----
 
