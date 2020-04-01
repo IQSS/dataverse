@@ -149,7 +149,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.finalizePublication));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -272,7 +272,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 
                 String recalculatedChecksum = null; 
                 try {
+                    logger.log(Level.INFO, "start: "+new Date().getTime());
                     recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                    logger.log(Level.INFO, "end: "+new Date().getTime());
                 } catch (RuntimeException rte) {
                     recalculatedChecksum = null; 
                 } finally {
@@ -302,8 +304,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // is being done asynchronously. If so, change the lock message 
             // to notify the user what went wrong, and leave the lock in place:
             
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.pidRegister);
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
                 workflowLock.setInfo(FILE_VALIDATION_ERROR);
                 ctxt.datasets().updateDatasetLock(workflowLock);
             }
@@ -317,8 +319,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         /* 
          * for debugging only: (TODO: remove before making the final PR)
         logger.log(Level.INFO,"Validation successful; but throwing an exception anyway, for testing purposes");
-        if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-            DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.pidRegister);
+        if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+            DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
             workflowLock.setInfo(FILE_VALIDATION_ERROR);
             ctxt.datasets().updateDatasetLock(workflowLock);
         }
@@ -363,7 +365,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
-                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
+                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }

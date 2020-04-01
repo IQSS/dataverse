@@ -56,7 +56,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
             Dataset dataset = dv.getDataset();
 
 
-            if (dataset.getLockFor(Reason.pidRegister) == null) {
+            if (dataset.getLockFor(Reason.finalizePublication) == null) {
 
                 String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                         .replace('.', '-').toLowerCase();
@@ -78,7 +78,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
                 dv.setArchivalCopyLocation(sb.toString());
 
             } else {
-                logger.warning("Localhost Submision Workflow aborted: Dataset locked for pidRegister");
+                logger.warning("Localhost Submision Workflow aborted: Dataset locked for finalizePublication");
                 return new Failure("Dataset locked");
             }
         }  catch (Exception e) {

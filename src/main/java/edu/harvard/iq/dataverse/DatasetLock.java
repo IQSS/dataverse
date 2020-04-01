@@ -60,7 +60,7 @@ import javax.persistence.NamedQuery;
 public class DatasetLock implements Serializable {
     
     public enum Reason {
-        /** Data being ingested */
+        /** Data being ingested *//** Data being ingested */
         Ingest,
         
         /** Waits for a {@link Workflow} to end */
@@ -72,8 +72,9 @@ public class DatasetLock implements Serializable {
         /** DCM (rsync) upload in progress */
         DcmUpload,
         
-        //** Registering PIDs for DS and DFs
-        pidRegister,
+        /** Tasks handled by FinalizeDatasetPublicationCommand:
+         Registering PIDs for DS and DFs and/or file validation */
+        finalizePublication,
         
         /*Another edit is in progress*/
         EditInProgress

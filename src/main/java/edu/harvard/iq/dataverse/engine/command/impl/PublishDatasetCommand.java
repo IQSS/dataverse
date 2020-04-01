@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -126,7 +127,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 info += "Validating Datafiles Asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);

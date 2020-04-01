@@ -54,7 +54,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
         String host = requestedSettings.get(DURACLOUD_HOST);
         if (host != null) {
             Dataset dataset = dv.getDataset();
-            if (dataset.getLockFor(Reason.pidRegister) == null) {
+            if (dataset.getLockFor(Reason.finalizePublication) == null) {
                 // Use Duracloud client classes to login
                 ContentStoreManager storeManager = new ContentStoreManagerImpl(host, port, dpnContext);
                 Credential credential = new Credential(System.getProperty("duracloud.username"),
@@ -186,7 +186,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     logger.severe("MD5 MessageDigest not available!");
                 }
             } else {
-                logger.warning("DuraCloud Submision Workflow aborted: Dataset locked for pidRegister");
+                logger.warning("DuraCloud Submision Workflow aborted: Dataset locked for finalizePublication");
                 return new Failure("Dataset locked");
             }
             return WorkflowStepResult.OK;

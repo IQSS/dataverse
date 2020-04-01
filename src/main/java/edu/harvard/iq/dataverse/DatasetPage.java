@@ -2014,14 +2014,14 @@ public class DatasetPage implements java.io.Serializable {
             //This is a hack to remove dataset locks for File PID registration if 
                 //the dataset is released
                 //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
-                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
+                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.finalizePublication)){
+                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
                 }*/
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                // the "pidRegister" lock is used to lock the dataset for BOTH the 
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                // the "finalizePublication" lock is used to lock the dataset for BOTH the 
                 // asynchronous persistent id registration for files AND (or)
                 // physical file validation. 
-                if (FinalizeDatasetPublicationCommand.FILE_VALIDATION_ERROR.equals(dataset.getLockFor(DatasetLock.Reason.pidRegister).getInfo())) {
+                if (FinalizeDatasetPublicationCommand.FILE_VALIDATION_ERROR.equals(dataset.getLockFor(DatasetLock.Reason.finalizePublication).getInfo())) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
                             BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
                 } else {
