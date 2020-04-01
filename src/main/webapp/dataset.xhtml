@@ -1325,7 +1325,10 @@
                     </p:dialog>
                     <!-- Preview Guestbook -->
                     <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
-                        <ui:include src="guestbook-preview-popup-fragment.xhtml"></ui:include>
+                        <ui:include src="guestbook-preview-popup-fragment.xhtml">
+                            <ui:param name="selectedGuestbook" value="#{DatasetPage.selectedGuestbook}"/>
+                            <ui:param name="enableEdit" value="false"/>
+                        </ui:include>
                     </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />

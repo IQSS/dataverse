@@ -7,14 +7,16 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
-
-        <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <p:focus context="downloadPopup"/>
-        <p class="help-block">
-            #{bundle['file.downloadDialog.tip']}
-        </p>
         
+        <ui:fragment rendered="#{enableEdit}">
+            <div class="text-right">
+                <h:outputLink styleClass="btn btn-default"                             
+                              value="/guestbook.xhtml?id=#{selectedGuestbook.id}&#38;ownerId=#{ownerId}">
+                    <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
+                </h:outputLink>
+            </div>
+        </ui:fragment>
+    
         <div class="form-horizontal">
             <p class="help-block">
                 #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
@@ -25,7 +27,7 @@
                 </label>
                 <div class="col-sm-8">
                     <p class="form-control-static">
-                        #{DatasetPage.selectedGuestbook.name}
+                        #{selectedGuestbook.name}
                     </p>
                 </div>
             </div>
@@ -39,12 +41,12 @@
                     <p class="form-control-static">
                         <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
                         <ul>
-                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredAccountInformation}" var="ai">
+                            <ui:repeat value="#{selectedGuestbook.requiredAccountInformation}" var="ai">
                                 <li>
                                     <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
                                 </li>
                             </ui:repeat>
-                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalAccountInformation}" var="ai">
+                            <ui:repeat value="#{selectedGuestbook.optionalAccountInformation}" var="ai">
                                 <li>
                                     <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
                                 </li>
@@ -52,16 +54,16 @@
                         </ul>
                     </p>
                     
-                    <ui:fragment rendered="#{!empty DatasetPage.selectedGuestbook.requiredQuestionsList or !empty DatasetPage.selectedGuestbook.optionalQuestionsList}">
+                    <ui:fragment rendered="#{!empty selectedGuestbook.requiredQuestionsList or !empty selectedGuestbook.optionalQuestionsList}">
                     <p class="form-control-static">
                         <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
                         <ul>
-                            <ui:repeat value="#{DatasetPage.selectedGuestbook.requiredQuestionsList}" var="q">
+                            <ui:repeat value="#{selectedGuestbook.requiredQuestionsList}" var="q">
                                 <li>
                                     <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
                                 </li>
                             </ui:repeat>
-                            <ui:repeat value="#{DatasetPage.selectedGuestbook.optionalQuestionsList}" var="q">
+                            <ui:repeat value="#{selectedGuestbook.optionalQuestionsList}" var="q">
                                 <li>
                                     <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
                                 </li>
