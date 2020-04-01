@@ -1362,6 +1362,10 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
+Note: The dataset will be locked, and the validation will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+
+
+
 .. _:IndependentHandleService:
 
 :IndependentHandleService
@@ -1371,6 +1375,20 @@ Specific for Handle PIDs. Set this setting to true if you want to use a Handle s
 By default this setting is absent and Dataverse assumes it to be false.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
+
+.. _:FileValidationOnPublishEnabled:
+
+:FileValidationOnPublishEnabled
++++++++++++++++++++++++++++++++
+
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+
+If you don't want the datafiles to be validated on publish, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
+
+Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
