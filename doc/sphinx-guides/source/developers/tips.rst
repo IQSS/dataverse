@@ -19,38 +19,38 @@ Undeploy the war File from the ``install`` Script
 
 Because the initial deployment of the war file was done outside of Netbeans by the ``install`` script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Glassfish in ``/usr/local/glassfish4``, run the following ``asadmin`` command to see the version of Dataverse that the ``install`` script deployed:
+Assuming you installed Glassfish in ``/usr/local/glassfish4.1.2``, run the following ``asadmin`` command to see the version of Dataverse that the ``install`` script deployed:
 
-``/usr/local/glassfish4/bin/asadmin list-applications``
+``/usr/local/glassfish4.1.2/bin/asadmin list-applications``
 
-You will probably see something like ``dataverse-4.8.5  <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
+You will probably see something like ``dataverse-webapp-4.11 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/glassfish4/bin/asadmin undeploy dataverse-4.8.5``
+``/usr/local/glassfish4.1.2/bin/asadmin undeploy dataverse-webapp-4.11``
 
 Now that Glassfish doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
 Add Glassfish 4.1 as a Server in Netbeans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse only works with a specific version of Glassfish (see https://github.com/IQSS/dataverse/issues/2628 ) so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
+Dataverse only works with Glassfish 4.1.2 so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4.1.2``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
 
 Please note that if you are on a Mac, Netbeans may be unable to start Glassfish due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
 At this point you can manage Glassfish using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Glassfish to stop and then start it so that it appears in the Output window. Note that you can expand "Glassfish" and "Applications" to see if any applications are deployed.
 
-Ensure that Dataverse Will Be Deployed to Glassfish 4.1
+Ensure that Dataverse Will Be Deployed to Glassfish 4.1.2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1. Click OK.
+Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1.2 Click OK.
 
 Make a Small Change to the Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's make a tiny change to the code, compile the war file, deploy it, and verify that that we can see the change.
 
-One of the smallest changes we can make is adjusting the build number that appears in the lower right of every page.
+One of the smallest changes we can make is adjusting the build number.
 
 From the root of the git repo, run the following command to set the build number to the word "hello" (or whatever you want):
 
@@ -104,7 +104,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4/glassfish/bin`` or wherever you have installed Glassfish.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4.1.2/glassfish/bin`` or wherever you have installed Glassfish.
 
 There are four steps to this process:
 
