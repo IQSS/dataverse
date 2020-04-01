@@ -10,10 +10,9 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.MoveDatasetException;
-import edu.harvard.iq.dataverse.engine.command.exception.MoveDatasetException.AdditionalStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.AdditionalMoveStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.DatasetMoveStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.MoveException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -64,15 +63,15 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         // validate the move makes sense
         if (moved.getOwner().equals(destination)) {
-            throw new MoveDatasetException("Dataset already in this Dataverse ", this,
-                    AdditionalStatus.ALREADY_IN_TARGET_DATAVERSE);
+            throw new MoveException("Dataset already in this Dataverse ", this,
+                    DatasetMoveStatus.ALREADY_IN_TARGET_DATAVERSE);
         }
 
         // if dataset is published make sure that its target is published
         if (moved.isReleased() && !destination.isReleased()) {
-            throw new MoveDatasetException("Published Dataset may not be moved to unpublished Dataverse. You may publish "
+            throw new MoveException("Published Dataset may not be moved to unpublished Dataverse. You may publish "
                     + destination.getDisplayName() + " and re-try the move.", this,
-                    AdditionalStatus.UNPUBLISHED_TARGET_DATAVERSE);
+                    DatasetMoveStatus.UNPUBLISHED_TARGET_DATAVERSE);
         }
 
         //if the datasets guestbook is not contained in the new dataverse then remove it
@@ -123,16 +122,16 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
 
         if (removeGuestbook || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
-            List<AdditionalStatus> exceptionDetails = new ArrayList<>();
+            List<AdditionalMoveStatus> exceptionDetails = new ArrayList<>();
             if (removeGuestbook) {
                 errorString.append("Dataset guestbook is not in target dataverse. ");
-                exceptionDetails.add(AdditionalStatus.NO_GUESTBOOK_IN_TARGET_DATAVERSE);
+                exceptionDetails.add(DatasetMoveStatus.NO_GUESTBOOK_IN_TARGET_DATAVERSE);
             }
             if (removeLinkDs) {
                 errorString.append("Dataset is linked to target dataverse or one of its parents. ");
-                exceptionDetails.add(AdditionalStatus.LINKED_TO_TARGET_DATAVERSE);
+                exceptionDetails.add(DatasetMoveStatus.LINKED_TO_TARGET_DATAVERSE);
             }
-            throw new MoveDatasetException(errorString
+            throw new MoveException(errorString
                     + "Please use the parameter ?forceMove=true to complete the move. This will remove anything from " +
                     "the dataset that is not compatible with the target dataverse.", this, exceptionDetails);
         }
@@ -146,8 +145,8 @@ public class MoveDatasetCommand extends AbstractVoidCommand {
             ctxt.index().indexDataset(moved, doNormalSolrDocCleanUp);
         } catch (Exception e) {
             logger.log(Level.WARNING, "Exception while indexing:" + e.getMessage());
-            throw new MoveDatasetException("Dataset could not be moved. Indexing failed", this,
-                    AdditionalStatus.INDEXING_ISSUE);
+            throw new MoveException("Dataset could not be moved. Indexing failed", this,
+                    DatasetMoveStatus.INDEXING_ISSUE);
         }
     }
 }

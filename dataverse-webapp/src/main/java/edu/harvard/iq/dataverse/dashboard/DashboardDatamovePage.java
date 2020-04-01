@@ -9,9 +9,10 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.MoveDatasetException;
-import edu.harvard.iq.dataverse.engine.command.exception.MoveDatasetException.AdditionalStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.AdditionalMoveStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.MoveException;
 import edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.MoveDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -64,9 +65,16 @@ public class DashboardDatamovePage implements Serializable {
 
     private boolean forceMove = false;
 
+    // Following two are for dataset move
     private Dataset sourceDataset;
 
     private Dataverse targetDataverse;
+
+    // And following two for dataverse move
+
+    private Dataverse source;
+
+    private Dataverse target;
 
     // -------------------- GETTERS --------------------
 
@@ -80,6 +88,14 @@ public class DashboardDatamovePage implements Serializable {
 
     public Dataverse getTargetDataverse() {
         return targetDataverse;
+    }
+
+    public Dataverse getSource() {
+        return source;
+    }
+
+    public Dataverse getTarget() {
+        return target;
     }
 
     // -------------------- LOGIC --------------------
@@ -103,41 +119,70 @@ public class DashboardDatamovePage implements Serializable {
         return Collections.emptyList();
     }
 
-    public List<Dataverse> completeTargetDataverse(String query) {
+    public List<Dataverse> completeDataverse(String query) {
         return dataverseDao.filterByAliasQuery(query);
     }
 
-    public void move() {
+    public void moveDataset() {
         if (sourceDataset == null || targetDataverse == null) {
             // We should never get here, but in case of some unexpected failure we should be prepared nevertheless
             JsfHelper.addFlashErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
             return;
         }
 
-        Summary summary = new Summary().addParameter(sourceDataset.getDisplayName())
+        Summary summary = new Summary(Summary.Mode.DATASET)
+                .addParameter(sourceDataset.getDisplayName())
                 .addParameter(extractSourcePersistentId())
                 .addParameter(targetDataverse.getName());
 
         try {
             DataverseRequest dataverseRequest = requestService.getDataverseRequest();
             commandEngine.submit(new MoveDatasetCommand(dataverseRequest, sourceDataset, targetDataverse, forceMove));
-            logger.info(createMessageWithMoveInfo("Moved"));
-            resetFields();
+            logger.info(createMessageWithDatasetMoveInfo("Moved"));
+            resetDatasetMoveFields();
             summary.showSuccessMessage();
-        } catch (MoveDatasetException mde) {
-            logger.log(Level.WARNING, createMessageWithMoveInfo("Unable to move"), mde);
-            summary.addParameter(mde)
-                    .addParameter(createForceInfoIfApplicable(mde))
+        } catch (MoveException me) {
+            logger.log(Level.WARNING, createMessageWithDatasetMoveInfo("Unable to move"), me);
+            summary.addParameter(me)
+                    .addParameter(createForceInfoIfApplicable(me))
                     .showFailureMessage();
         } catch (CommandException ce) {
-            logger.log(Level.WARNING, createMessageWithMoveInfo("Unable to move"), ce);
+            logger.log(Level.WARNING, createMessageWithDatasetMoveInfo("Unable to move"), ce);
             JsfHelper.addErrorMessage(null,
-                    getStringFromBundle("dashboard.datamove.message.failure.summary"), StringUtils.EMPTY);
+                    getStringFromBundle("dashboard.datamove.dataset.message.failure.summary"), StringUtils.EMPTY);
         }
     }
 
+    public void moveDataverse() {
+        if (source == null || target == null) {
+            JsfHelper.addFlashErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
+            return;
+        }
+
+        Summary summary = new Summary(Summary.Mode.DATAVERSE)
+                .addParameter(extractDataverseAlias(source))
+                .addParameter(extractDataverseAlias(target));
+
+        try {
+            DataverseRequest dataverseRequest = requestService.getDataverseRequest();
+            commandEngine.submit(new MoveDataverseCommand(dataverseRequest, source, target, forceMove));
+            logger.info(createMessageWithDataverseMoveInfo("Moved"));
+            resetDataverseMoveFields();
+            summary.showSuccessMessage();
+        } catch (MoveException me) {
+            logger.log(Level.WARNING, createMessageWithDataverseMoveInfo("Unable to move"), me);
+            summary.addParameter(me)
+                    .addParameter(createForceInfoIfApplicable(me))
+                    .showFailureMessage();
+        } catch (CommandException ce) {
+            logger.log(Level.WARNING, createMessageWithDataverseMoveInfo("Unable to move"), ce);
+            JsfHelper.addErrorMessage(null,
+                    getStringFromBundle("dashboard.datamove.dataverse.message.failure.summary"), StringUtils.EMPTY);
+        }
+    }
 
     // -------------------- PRIVATE --------------------
+
     private String extractSourcePersistentId() {
         return Optional.ofNullable(sourceDataset)
                 .map(Dataset::getGlobalId)
@@ -152,34 +197,45 @@ public class DashboardDatamovePage implements Serializable {
                 .orElse(StringUtils.EMPTY);
     }
 
-    private String extractTargetAlias() {
-        return Optional.ofNullable(targetDataverse)
+    private String extractDataverseAlias(Dataverse dataverse) {
+        return Optional.ofNullable(dataverse)
                 .map(Dataverse::getAlias)
                 .orElse(StringUtils.EMPTY);
     }
 
-    private String createMessageWithMoveInfo(String message) {
+    private String createMessageWithDatasetMoveInfo(String message) {
         return message + " " +
                 extractSourcePersistentId() +
                 " from " + extractSourceAlias() +
-                " to " + extractTargetAlias();
+                " to " + extractDataverseAlias(targetDataverse);
     }
 
-    private String createForceInfoIfApplicable(MoveDatasetException mde) {
+    private String createMessageWithDataverseMoveInfo(String message) {
+        return message + " " +
+                extractDataverseAlias(source) +
+                " to " + extractDataverseAlias(target);
+    }
+
+    private String createForceInfoIfApplicable(MoveException mde) {
         return isForcingPossible(mde)
-                ? getStringFromBundle("dashboard.datamove.dataset.command.suggestForce",
+                ? getStringFromBundle("dashboard.datamove.command.suggestForce",
                 settings.getGuidesBaseUrl(), settings.getGuidesVersion())
                 : StringUtils.EMPTY;
     }
 
-    private boolean isForcingPossible(MoveDatasetException mde) {
+    private boolean isForcingPossible(MoveException mde) {
         return mde.getDetails().stream()
-                .allMatch(AdditionalStatus::isPassByForcePossible);
+                .allMatch(AdditionalMoveStatus::isPassByForcePossible);
     }
 
-    private void resetFields() {
+    private void resetDatasetMoveFields() {
         sourceDataset = null;
         targetDataverse = null;
+    }
+
+    private void resetDataverseMoveFields() {
+        source = null;
+        target = null;
     }
 
     // -------------------- SETTERS --------------------
@@ -196,31 +252,70 @@ public class DashboardDatamovePage implements Serializable {
         this.targetDataverse = targetDataverse;
     }
 
+    public void setSource(Dataverse source) {
+        this.source = source;
+    }
+
+    public void setTarget(Dataverse target) {
+        this.target = target;
+    }
+
     // -------------------- INNER CLASSES ---------------------
 
     private static class Summary {
+        public enum Mode {
+            DATAVERSE("dashboard.datamove.dataverse"),
+            DATASET("dashboard.datamove.dataset");
+
+            private String key;
+
+            Mode(String key) {
+                this.key = key;
+            }
+
+            public String getKey() {
+                return key;
+            }
+        }
+
+        private Mode mode;
+
         private final List<String> summaryParameters = new ArrayList<>();
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        public Summary(Mode mode) {
+            this.mode = mode;
+        }
+
+        // -------------------- LOGIC --------------------
 
         public Summary addParameter(String param) {
             summaryParameters.add(param != null ? param : StringUtils.EMPTY);
             return this;
         }
 
-        public Summary addParameter(MoveDatasetException mde) {
+        public Summary addParameter(MoveException mde) {
             summaryParameters.add(mde.getDetails().stream()
-                    .map(AdditionalStatus::getMessageKey)
+                    .map(AdditionalMoveStatus::getMessageKey)
                     .map(BundleUtil::getStringFromBundle)
                     .collect(Collectors.joining(" ")));
             return this;
         }
 
         public void showSuccessMessage() {
-            JsfHelper.addFlashSuccessMessage(getStringFromBundle("dashboard.datamove.message.success", summaryParameters));
+            JsfHelper.addFlashSuccessMessage(getStringFromBundle(buildKey("message.success"), summaryParameters));
         }
 
         public void showFailureMessage() {
-            JsfHelper.addErrorMessage(null, getStringFromBundle("dashboard.datamove.message.failure.summary"),
-                    getStringFromBundle("dashboard.datamove.message.failure.details", summaryParameters));
+            JsfHelper.addErrorMessage(null, getStringFromBundle(buildKey("message.failure.summary")),
+                    getStringFromBundle(buildKey("message.failure.details"), summaryParameters));
+        }
+
+        // -------------------- PRIVATE --------------------
+
+        private String buildKey(String postfix) {
+            return mode.getKey() + '.' + postfix;
         }
     }
 }

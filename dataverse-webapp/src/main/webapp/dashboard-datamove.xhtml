@@ -6,151 +6,313 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-    <h:head>
-    </h:head>
+<h:head>
+</h:head>
 
-    <h:body>
-        <f:metadata>
-            <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
-            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-            <f:viewAction action="#{DashboardDatamovePage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
-            <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.datamove.manage'])}"/>
-        </f:metadata>
+<h:body>
+    <f:metadata>
+        <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+        <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+        <f:viewAction action="#{DashboardDatamovePage.init}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+        <f:viewAction
+                action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/>
+        <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.datamove.manage'])}"/>
+    </f:metadata>
 
-        <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dashboard.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
-            <ui:param name="showDataverseHeader" value="false"/>
-            <ui:define name="body">
-                <h:form id="datamove-form" class="form-horizontal">
-                    <p:focus for="sourceDatasetMenu"/>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading text-info">#{bundle['dashboard.datamove.selectdataset.header']}</div>
-                            <div class="panel-body">
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle"
+                  value="#{bundle['dashboard.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
+        <ui:param name="showDataverseHeader" value="false"/>
+        <ui:define name="body">
+            <p:tabView styleClass="no-bottom-border">
+                <p:focus for="sourceDatasetMenu"/>
+                <p:tab title="#{bundle['dashboard.datamove.tab.dataset.move']}">
+                    <h:form id="dataset-move-form">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading text-info">
+                                    #{bundle['dashboard.datamove.selectdataset.header']}
+                                </div>
+                                <div class="panel-body">
 
-                                <!-- dataset to move: -->
-                                <div class="col-xs-12 form-group">
-                                    <p:outputLabel value="#{bundle['dashboard.datamove.dataset.label']}" for="sourceDatasetMenu" styleClass="col-xs-3 control-label"/>
-                                    <div class="col-xs-9">
-                                        <p:autoComplete id="sourceDatasetMenu"
-                                                        required="true"
-                                                        requiredMessage="#{bundle['requiredField']}"
-                                                        placeholder="#{bundle['dashboard.datamove.dataset.placeholder']}"
-                                                        multiple="false" scrollHeight="180" forceSelection="true"
-                                                        minQueryLength="10" queryDelay="1000" size="36"
-                                                        emptyMessage="#{bundle['dashboard.datamove.dataset.menu.invalidMsg']}"
-                                                        value="#{DashboardDatamovePage.sourceDataset}"
-                                                        completeMethod="#{DashboardDatamovePage.completeSourceDataset}"
-                                                        var="srcDS" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                                        itemLabel="#{srcDS.globalId}" itemValue="#{srcDS}" converter="datasetConverter">
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    #{bundle['dashboard.datamove.dataset.autocomplete.doi']}
-                                                </f:facet>
-                                                <h:outputText value="#{srcDS.globalId}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    #{bundle['dashboard.datamove.dataset.autocomplete.title']}
-                                                </f:facet>
-                                                <h:outputText value="#{srcDS.displayName}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    #{bundle['dashboard.datamove.dataset.autocomplete.dataverse.identifier']}
-                                                </f:facet>
-                                                <h:outputText value="#{srcDS.owner.alias}"/>
-                                            </p:column>
-                                            <p:ajax process="@this" event="itemSelect" />
-                                            <p:ajax process="@this" event="itemUnselect" />
-                                        </p:autoComplete>
-                                        <script>
+                                    <!-- dataset to move: -->
+                                    <div class="col-xs-12 form-group">
+                                        <p:outputLabel value="#{bundle['dashboard.datamove.dataset.label']}"
+                                                       for="sourceDatasetMenu" styleClass="col-xs-3 control-label"/>
+                                        <div class="col-xs-9">
+                                            <p:autoComplete id="sourceDatasetMenu"
+                                                            required="true"
+                                                            requiredMessage="#{bundle['requiredField']}"
+                                                            placeholder="#{bundle['dashboard.datamove.dataset.placeholder']}"
+                                                            multiple="false" scrollHeight="180"
+                                                            forceSelection="true"
+                                                            minQueryLength="10" queryDelay="1000" size="36"
+                                                            emptyMessage="#{bundle['dashboard.datamove.dataset.menu.invalidMsg']}"
+                                                            value="#{DashboardDatamovePage.sourceDataset}"
+                                                            completeMethod="#{DashboardDatamovePage.completeSourceDataset}"
+                                                            var="srcDS" styleClass="DropdownPopup"
+                                                            panelStyleClass="DropdownPopupPanel"
+                                                            itemLabel="#{srcDS.globalId}" itemValue="#{srcDS}"
+                                                            converter="datasetConverter">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataset.autocomplete.doi']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{srcDS.globalId}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataset.autocomplete.title']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{srcDS.displayName}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataset.autocomplete.dataverse.identifier']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{srcDS.owner.alias}"/>
+                                                </p:column>
+                                                <p:ajax process="@this" event="itemSelect"/>
+                                                <p:ajax process="@this" event="itemUnselect"/>
+                                            </p:autoComplete>
+                                            <script>
                                             handle_dropdown_popup_scroll();
-                                        </script>
-                                        <p:message for="sourceDatasetMenu" display="text"/>
+                                            </script>
+                                            <p:message for="sourceDatasetMenu" display="text"/>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading text-info">
+                                    #{bundle['dashboard.datamove.newdataverse.header']}
+                                </div>
+                                <div class="panel-body">
+
+                                    <!-- dataverse to move to: -->
+                                    <div class="col-xs-12 form-group">
+                                        <p:outputLabel value="#{bundle['dashboard.datamove.dataverse.label']}"
+                                                       for="destinationDataverseMenu"
+                                                       styleClass="col-xs-3 control-label"/>
+                                        <div class="col-xs-9">
+                                            <p:autoComplete id="destinationDataverseMenu"
+                                                            required="true"
+                                                            requiredMessage="#{bundle['requiredField']}"
+                                                            placeholder="#{bundle['dashboard.datamove.dataverse.placeholder']}"
+                                                            multiple="false" scrollHeight="180"
+                                                            forceSelection="true"
+                                                            minQueryLength="2" queryDelay="1000" size="36"
+                                                            emptyMessage="#{bundle['dashboard.datamove.dataverse.menu.invalidMsg']}"
+                                                            value="#{DashboardDatamovePage.targetDataverse}"
+                                                            completeMethod="#{DashboardDatamovePage.completeDataverse}"
+                                                            var="destDV" styleClass="DropdownPopup"
+                                                            panelStyleClass="DropdownPopupPanel"
+                                                            itemLabel="#{destDV.alias}" itemValue="#{destDV}"
+                                                            converter="dataverseConverter">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.name']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{destDV.name}"/>
+                                                    <h:outputText value=" (#{destDV.affiliation})"
+                                                                  rendered="#{!empty destDV.affiliation}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.identifier']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{destDV.alias}"/>
+                                                </p:column>
+                                                <p:ajax process="@this" event="itemSelect"/>
+                                                <p:ajax process="@this" event="itemUnselect"/>
+                                            </p:autoComplete>
+                                            <script>
+                                            handle_dropdown_popup_scroll();
+                                            </script>
+                                            <p:message for="destinationDataverseMenu" display="text"/>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12 button-block">
+                            <p:commandButton id="move" styleClass="btn btn-default"
+                                             value="#{bundle['dashboard.datamove.button.move']}"
+                                             update="dataset-move-form"
+                                             validateClient="true"
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();"/>
+                            <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}"/>
+                        </div>
+                        <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"
+                                  widgetVar="datamoveConfirmation" modal="true">
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign"/>
+                                #{bundle['dashboard.datamove.confirm.dialog']}
+                            </p>
+                            <p:selectBooleanCheckbox value="#{DashboardDatamovePage.forceMove}"
+                                                     itemLabel="#{bundle['dashboard.datamove.confirm.force']}"
+                                                     styleClass="col-sm-12"/>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default"
+                                                 value="#{bundle['dashboard.datamove.confirm.yes']}"
+                                                 onclick="PF('datamoveConfirmation').hide();"
+                                                 action="#{DashboardDatamovePage.moveDataset()}"
+                                                 update="dataset-move-form, :messagePanel" partialSubmit="true"/>
+                                <button class="btn btn-link" onclick="PF('datamoveConfirmation').hide();"
+                                        type="button">
+                                    #{bundle['dashboard.datamove.confirm.no']}
+                                </button>
+                            </div>
+                        </p:dialog>
+                    </h:form>
+                </p:tab>
+                <p:tab title="#{bundle['dashboard.datamove.tab.dataverse.move']}">
+                    <h:form id="dataverse-move-form">
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading text-info">
+                                    #{bundle['dashboard.datamove.selectdataverse.header']}
+                                </div>
+                                <div class="panel-body">
+                                    <!-- dataverse to move: -->
+                                    <div class="col-xs-12 form-group">
+                                        <p:outputLabel value="#{bundle['dashboard.datamove.dataverse.label']}"
+                                                       for="sourceMenu" styleClass="col-xs-3 control-label"/>
+                                        <div class="col-xs-9">
+                                            <p:autoComplete id="sourceMenu"
+                                                            required="true"
+                                                            requiredMessage="#{bundle['requiredField']}"
+                                                            placeholder="#{bundle['dashboard.datamove.dataverse.placeholder']}"
+                                                            multiple="false" scrollHeight="180"
+                                                            forceSelection="true"
+                                                            minQueryLength="2" queryDelay="1000" size="36"
+                                                            emptyMessage="#{bundle['dashboard.datamove.dataverse.menu.invalidMsg']}"
+                                                            value="#{DashboardDatamovePage.source}"
+                                                            completeMethod="#{DashboardDatamovePage.completeDataverse}"
+                                                            var="srcDV" styleClass="DropdownPopup"
+                                                            panelStyleClass="DropdownPopupPanel"
+                                                            itemLabel="#{srcDV.alias}" itemValue="#{srcDV}"
+                                                            converter="dataverseConverter">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.name']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{srcDV.name}"/>
+                                                    <h:outputText value=" (#{srcDV.affiliation})"
+                                                                  rendered="#{!empty srcDV.affiliation}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.identifier']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{srcDV.alias}"/>
+                                                </p:column>
+                                                <p:ajax process="@this" event="itemSelect"/>
+                                                <p:ajax process="@this" event="itemUnselect"/>
+                                            </p:autoComplete>
+                                            <script>
+                                            handle_dropdown_popup_scroll();
+                                            </script>
+                                            <p:message for="sourceMenu" display="text"/>
+                                        </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="panel panel-default">
-                            <div class="panel-heading text-info">#{bundle['dashboard.datamove.newdataverse.header']}</div>
-                            <div class="panel-body">
-                                
-                                <!-- dataverse to move to: -->
-                                <div class="col-xs-12 form-group">
-                                    <p:outputLabel value="#{bundle['dashboard.datamove.dataverse.label']}" for="destinationDataverseMenu" styleClass="col-xs-3 control-label"/>
-                                    <div class="col-xs-9">
-                                        <p:autoComplete id="destinationDataverseMenu"
-                                                        required="true"
-                                                        requiredMessage="#{bundle['requiredField']}"
-                                                        placeholder="#{bundle['dashboard.datamove.dataverse.placeholder']}"
-                                                        multiple="false" scrollHeight="180" forceSelection="true"
-                                                        minQueryLength="2" queryDelay="1000" size="36"
-                                                        emptyMessage="#{bundle['dashboard.datamove.dataverse.menu.invalidMsg']}"
-                                                        value="#{DashboardDatamovePage.targetDataverse}"
-                                                        completeMethod="#{DashboardDatamovePage.completeTargetDataverse}"
-                                                        var="destDV" styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                                        itemLabel="#{destDV.alias}" itemValue="#{destDV}" converter="dataverseConverter">
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    #{bundle['dashboard.datamove.dataverse.autocomplete.name']}
-                                                </f:facet>
-                                                <h:outputText value="#{destDV.name}"/>
-                                                <h:outputText value=" (#{destDV.affiliation})" rendered="#{!empty destDV.affiliation}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <f:facet name="header">
-                                                    #{bundle['dashboard.datamove.dataverse.autocomplete.identifier']}
-                                                </f:facet>
-                                                <h:outputText value="#{destDV.alias}"/>
-                                            </p:column>
-                                            <p:ajax process="@this" event="itemSelect" />
-                                            <p:ajax process="@this" event="itemUnselect" />
-                                        </p:autoComplete>
-                                        <script>
+                        <div class="col-md-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading text-info">
+                                    #{bundle['dashboard.datamove.newdataverse.header']}
+                                </div>
+                                <div class="panel-body">
+                                    <!-- dataverse to move to: -->
+                                    <div class="col-xs-12 form-group">
+                                        <p:outputLabel
+                                                value="#{bundle['dashboard.datamove.dataverse.label']}"
+                                                for="targetMenu"
+                                                styleClass="col-xs-3 control-label"/>
+                                        <div class="col-xs-9">
+                                            <p:autoComplete id="targetMenu"
+                                                            required="true"
+                                                            requiredMessage="#{bundle['requiredField']}"
+                                                            placeholder="#{bundle['dashboard.datamove.dataverse.placeholder']}"
+                                                            multiple="false" scrollHeight="180"
+                                                            forceSelection="true"
+                                                            minQueryLength="2" queryDelay="1000" size="36"
+                                                            emptyMessage="#{bundle['dashboard.datamove.dataverse.menu.invalidMsg']}"
+                                                            value="#{DashboardDatamovePage.target}"
+                                                            completeMethod="#{DashboardDatamovePage.completeDataverse}"
+                                                            var="targetDV" styleClass="DropdownPopup"
+                                                            panelStyleClass="DropdownPopupPanel"
+                                                            itemLabel="#{targetDV.alias}"
+                                                            itemValue="#{targetDV}"
+                                                            converter="dataverseConverter">
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.name']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{targetDV.name}"/>
+                                                    <h:outputText value=" (#{targetDV.affiliation})"
+                                                                  rendered="#{!empty targetDV.affiliation}"/>
+                                                </p:column>
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        #{bundle['dashboard.datamove.dataverse.autocomplete.identifier']}
+                                                    </f:facet>
+                                                    <h:outputText value="#{targetDV.alias}"/>
+                                                </p:column>
+                                                <p:ajax process="@this" event="itemSelect"/>
+                                                <p:ajax process="@this" event="itemUnselect"/>
+                                            </p:autoComplete>
+                                            <script>
                                             handle_dropdown_popup_scroll();
-                                        </script>
-                                        <p:message for="destinationDataverseMenu" display="text"/>
+                                            </script>
+                                            <p:message for="targetMenu" display="text"/>
+                                        </div>
                                     </div>
-                                </div>             
-                                
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-sm-12 button-block">
-                        <p:commandButton id="move" styleClass="btn btn-default" 
-                                       value="#{bundle['dashboard.datamove.button.move']}"
-                                       update="datamove-form"
-                                       validateClient="true"
-                                       oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();"/>
-                        <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}"/>
-                    </div>
-                    
-                    <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}" widgetVar="datamoveConfirmation" modal="true">
-                        <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/>
-                            #{bundle['dashboard.datamove.confirm.dialog']}
-                        </p>
-                        <p:selectBooleanCheckbox value="#{DashboardDatamovePage.forceMove}" itemLabel="#{bundle['dashboard.datamove.confirm.force']}" styleClass="col-sm-12"/>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.datamove.confirm.yes']}"
-                                             onclick="PF('datamoveConfirmation').hide();" 
-                                             action="#{DashboardDatamovePage.move()}"
-                                             update="@form,:messagePanel" partialSubmit="true"/>
-                            <button class="btn btn-link" onclick="PF('datamoveConfirmation').hide();" type="button">
-                                #{bundle['dashboard.datamove.confirm.no']}
-                            </button>
+                        <div class="col-sm-12 button-block">
+                            <p:commandButton id="move" styleClass="btn btn-default"
+                                             value="#{bundle['dashboard.datamove.dataverse.button.move']}"
+                                             update="dataverse-move-form"
+                                             validateClient="true"
+                                             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dataverseMoveConfirmation').show();"/>
+                            <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}"/>
                         </div>
-                    </p:dialog>
-                </h:form>
-            </ui:define>
-        </ui:composition>
+                        <p:dialog id="dataverseMoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"
+                                  widgetVar="dataverseMoveConfirmation" modal="true">
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign"/>
+                                #{bundle['dashboard.datamove.dataverse.confirm.dialog']}
+                            </p>
+                            <p:selectBooleanCheckbox value="#{DashboardDatamovePage.forceMove}"
+                                                     itemLabel="#{bundle['dashboard.datamove.confirm.force']}"
+                                                     styleClass="col-sm-12"/>
+                            <div class="button-block">
+                                <p:commandButton styleClass="btn btn-default"
+                                                 value="#{bundle['dashboard.datamove.dataverse.confirm.yes']}"
+                                                 onclick="PF('dataverseMoveConfirmation').hide();"
+                                                 action="#{DashboardDatamovePage.moveDataverse()}"
+                                                 update="@form,:messagePanel" partialSubmit="true"/>
+                                <button class="btn btn-link"
+                                        onclick="PF('dataverseMoveConfirmation').hide();" type="button">
+                                    #{bundle['dashboard.datamove.confirm.no']}
+                                </button>
+                            </div>
+                        </p:dialog>
+                    </h:form>
+                </p:tab>
+            </p:tabView>
+        </ui:define>
+    </ui:composition>
 
-    </h:body>
+</h:body>
 </html>

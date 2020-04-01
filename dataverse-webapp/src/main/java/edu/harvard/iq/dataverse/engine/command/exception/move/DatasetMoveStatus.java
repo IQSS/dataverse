@@ -1,12 +1,6 @@
-package edu.harvard.iq.dataverse.engine.command.exception;
+package edu.harvard.iq.dataverse.engine.command.exception.move;
 
-import edu.harvard.iq.dataverse.engine.command.Command;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class MoveDatasetException extends IllegalCommandException {
-    public enum AdditionalStatus {
+public enum DatasetMoveStatus implements AdditionalMoveStatus {
         ALREADY_IN_TARGET_DATAVERSE("dashboard.datamove.dataset.command.error.targetDataverseSameAsOriginalDataverse"),
         UNPUBLISHED_TARGET_DATAVERSE("dashboard.datamove.dataset.command.error.targetDataverseUnpublishedDatasetPublished"),
         NO_GUESTBOOK_IN_TARGET_DATAVERSE("dashboard.datamove.dataset.command.error.datasetGuestbookNotInTargetDataverse", true),
@@ -18,37 +12,22 @@ public class MoveDatasetException extends IllegalCommandException {
 
         private final boolean passByForcePossible;
 
-        AdditionalStatus(String messageKey, boolean passByForcePossible) {
+        DatasetMoveStatus(String messageKey, boolean passByForcePossible) {
             this.messageKey = messageKey;
             this.passByForcePossible = passByForcePossible;
         }
 
-        AdditionalStatus(String messageKey) {
+        DatasetMoveStatus(String messageKey) {
             this(messageKey, false);
         }
 
+        @Override
         public String getMessageKey() {
             return messageKey;
         }
 
+        @Override
         public boolean isPassByForcePossible() {
             return passByForcePossible;
         }
-    }
-
-    private List<AdditionalStatus> details = new ArrayList<>();
-
-    public MoveDatasetException(String message, Command aCommand, AdditionalStatus detail) {
-        super(message, aCommand);
-        this.details.add(detail);
-    }
-
-    public MoveDatasetException(String message, Command aCommand, List<AdditionalStatus> details) {
-        super(message, aCommand);
-        this.details.addAll(details);
-    }
-
-    public List<AdditionalStatus> getDetails() {
-        return details;
-    }
 }

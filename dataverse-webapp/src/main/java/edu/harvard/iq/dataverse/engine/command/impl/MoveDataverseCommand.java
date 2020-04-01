@@ -5,8 +5,10 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.engine.command.exception.move.AdditionalMoveStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.DataverseMoveStatus;
+import edu.harvard.iq.dataverse.engine.command.exception.move.MoveException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
@@ -69,17 +71,22 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
         // validate the move makes sense
         if (destination.getOwners().contains(moved)) {
-            throw new IllegalCommandException("Can't move a dataverse to its descendant", this);
+            throw new MoveException("Can't move a dataverse to its descendant", this,
+                    DataverseMoveStatus.TRYING_TO_MOVE_INTO_DESCENDANT_DATAVERSE);
         }
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException("Dataverse already in this dataverse ", this);
+            throw new MoveException("Dataverse already in this dataverse ", this,
+                    DataverseMoveStatus.ALREADY_IN_DATAVERSE);
         }
         if (moved.equals(destination)) {
-            throw new IllegalCommandException("Cannot move a dataverse into itself", this);
+            throw new MoveException("Cannot move a dataverse into itself", this,
+                    DataverseMoveStatus.TRYING_TO_MOVE_INTO_ITSELF);
         }
         // if dataverse is published make sure that its destination is published
         if (moved.isReleased() && !destination.isReleased()) {
-            throw new IllegalCommandException("Published dataverse may not be moved to unpublished dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
+            throw new MoveException("Published dataverse may not be moved to unpublished dataverse. You may publish "
+                    + destination.getDisplayName() + " and re-try the move.", this,
+                    DataverseMoveStatus.UNPUBLISHED_TARGET_DATAVERSE);
         }
 
         logger.info("Getting dataset children of dataverse...");
@@ -263,26 +270,33 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
         if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock || removeLinkDv || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
+            List<AdditionalMoveStatus> details = new ArrayList<>();
             if (removeGuestbook) {
                 errorString.append("Dataset guestbook is not in target dataverse. ");
+                details.add(DataverseMoveStatus.DATASET_GUESTBOOK_NOT_IN_TARGET_DATAVERSE);
             }
             if (removeTemplate) {
                 errorString.append("Dataverse template is not in target dataverse. ");
+                details.add(DataverseMoveStatus.DATAVERSE_TEMPLATE_NOT_IN_TARGET_DATAVERSE);
             }
             if (removeFeatDv) {
                 errorString.append("Dataverse is featured in current dataverse. ");
+                details.add(DataverseMoveStatus.DATAVERSE_FEATURED_IN_CURRENT_DATAVERSE);
             }
             if (removeMetadataBlock) {
                 errorString.append("Dataverse metadata block is not in target dataverse. ");
+                details.add(DataverseMoveStatus.DATAVERSE_METADATA_BLOCK_NOT_IN_TARGET_DATAVERSE);
             }
             if (removeLinkDv) {
                 errorString.append("Dataverse is linked to target dataverse or one of its parents. ");
+                details.add(DataverseMoveStatus.DATAVERSE_LINKED_TO_TARGET_DATAVERSE);
             }
             if (removeLinkDs) {
                 errorString.append("Dataset is linked to target dataverse or one of its parents. ");
+                details.add(DataverseMoveStatus.DATASET_LINKED_TO_TARGET_DATAVERSE);
             }
             errorString.append("Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataverse that is not compatible with the target dataverse.");
-            throw new IllegalCommandException(errorString.toString(), this);
+            throw new MoveException(errorString.toString(), this, details);
         }
         // OK, move
         moved.setOwner(destination);
@@ -293,7 +307,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
 
         ctxt.indexBatch().indexDataverseRecursively(moved);
 
-        //REindex datasets linked to moved dv
+        //Reindex datasets linked to moved dv
         if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
                 Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
