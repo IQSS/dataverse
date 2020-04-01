@@ -11,8 +11,10 @@
                 rendered="#{!hiddenLabel}">
         #{datasetField.datasetFieldType.localeTitle}
         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
-        <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
-              data-toggle="tooltip" data-placement="auto right" data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
+        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+              jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}" tabindex="0"
+              data-toggle="tooltip" data-placement="auto right"
+              data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
     </p:outputLabel>
     
     <p:selectOneMenu id="singleVocabularySelect"
