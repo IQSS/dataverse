@@ -250,11 +250,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return defaultContributorRoleAlias;
     }
     
-    public Boolean isCustomDefaultContributorRole(){
-        if (defaultContributorRoleAlias == null){
+    public Boolean isCustomDefaultContributorRole() {
+        if (defaultContributorRoleAlias == null) {
             initAccessSettings();
         }
-        return !( defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
+        return !(defaultContributorRoleAlias.equals(DataverseRole.EDITOR) || defaultContributorRoleAlias.equals(DataverseRole.CURATOR));
     }
     
     public String getCustomDefaultContributorRoleName(){
@@ -308,8 +308,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 break;
                 // @todo handle case where more than one role has been assigned to the AutenticatedUsers group!
             }
-           
+
             defaultContributorRoleAlias = ((Dataverse) dvObject).getDefaultContributorRole() == null ? DataverseRole.NONE : ((Dataverse) dvObject).getDefaultContributorRole().getAlias();
+        } else {
+            //There are only default roles assigned at the dataverse level
+            defaultContributorRoleAlias = DataverseRole.NONE;
         }
     }
 

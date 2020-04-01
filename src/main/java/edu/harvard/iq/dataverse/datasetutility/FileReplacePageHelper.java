@@ -94,16 +94,17 @@ public class FileReplacePageHelper {
     
     /**
      * Handle native file replace
+     * @param checkSum 
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fileName, String fileContentType) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSum) {
                 
         phase1Success = false;
         
         // Preliminary sanity check
         //
-        if (inputStream == null){
-            throw new NullPointerException("inputStream cannot be null");
+        if ((inputStream == null)&&(fullStorageId==null)){
+            throw new NullPointerException("inputStream and storageId cannot both be null");
         }
         if (fileName == null){
             throw new NullPointerException("fileName cannot be null");
@@ -111,14 +112,25 @@ public class FileReplacePageHelper {
         if (fileContentType == null){
             throw new NullPointerException("fileContentType cannot be null");
         }
-          
+        
+        OptionalFileParams ofp = null;
+        if(checkSum != null) {
+        	try {
+				ofp = new OptionalFileParams(null);
+			} catch (DataFileTagException e) {
+				//Shouldn't happen with null input
+				e.printStackTrace();
+			}
+        	ofp.setCheckSum(checkSum);
+        }
         // Run 1st phase of replace
         //
         replaceFileHelper.runReplaceFromUI_Phase1(fileToReplace.getId(),
                 fileName,
                 fileContentType,
                 inputStream,
-                null
+                fullStorageId,
+                ofp
         );
         
         // Did it work?
