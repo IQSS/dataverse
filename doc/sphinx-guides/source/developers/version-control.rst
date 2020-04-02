@@ -11,7 +11,7 @@ The Dataverse Project uses git for version control and GitHub for hosting. On th
 Where to Find the Dataverse Code
 --------------------------------
 
-The main Dataverse code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse code at https://github.com/CeON/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -32,19 +32,19 @@ Branches
 The "master" Branch
 *******************
 
-The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of Dataverse. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
+The "`master <https://github.com/CeON/dataverse/tree/master>`_" branch represents released versions of Dataverse. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
 
 The "develop" Branch
 ********************
 
-The "`develop <https://github.com/IQSS/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch (described below) and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
+The "`develop <https://github.com/CeON/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch (described below) and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
 
 Feature Branches
 ****************
 
 Feature branches are used for both developing features and fixing bugs. They are named after the GitHub issue they are meant to address, so create a GitHub issue if you need to.
 
-"3728-doc-apipolicy-fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive, and starts with the issue number.
+"{USERNAME}_3728_doc_apipolicy_fix" is an example of a fine name for your feature branch. It tells us that you are addressing https://github.com/IQSS/dataverse/issues/3728 and the "slug" is short, descriptive.
 
 How to Make a Pull Request
 --------------------------
@@ -58,16 +58,14 @@ The example of creating a pull request below has to do with fixing an important 
 Find or Create a GitHub Issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For guidance on which issue to work on, please ask! Also, see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
+For guidance on which issue to work on, please ask! Also, see https://github.com/CeON/dataverse/blob/develop/CONTRIBUTING.md
 
 Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
-
-If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_ and the `Dev Efforts by the Dataverse Community spreadsheet <https://groups.google.com/d/msg/dataverse-community/X2diSWYll0w/ikp1TGcfBgAJ>`_.
 
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "3728-doc-apipolicy-fix" that starts with the issue number you are addressing, and ends with a short, descriptive name. Dashes ("-") and underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "{USERNAME}_3728_doc_apipolicy_fix" that starts with the nickname, then issue number you are addressing, and ends with a short, descriptive name. Underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,30 +75,21 @@ Making a commit (or several commits) to that branch. Ideally the first line of y
 Push Your Branch to GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Push your feature branch to your fork of Dataverse. Your git command may look something like ``git push origin 3728-doc-apipolicy-fix``.
+Push your feature branch to your fork of Dataverse. Your git command may look something like ``git push origin {USERNAME}_3728_doc_apipolicy_fix``.
 
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome! The "connects to #3728" syntax is important because it's used at https://waffle.io/IQSS/dataverse to associate pull requests with issues.
-
-Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
-
-Make Sure Your Pull Request Has Been Advanced to Code Review
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://waffle.io/IQSS/dataverse 
-
-Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
+Make a pull request to get approval to merge your changes into the develop branch.
 
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------
 
 Unfortunately, pull requests can quickly become "stale" and unmergable as other pull requests are merged into the develop branch ahead of you. This is completely normal, and often occurs because other developers made their pull requests before you did.
 
-The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts. If this sounds daunting, please just say so and we will assist you.
+The Dataverse team may ping you to ask you to merge the latest from the develop branch into your branch and resolve merge conflicts.
 
-If you'd like to resolve the merge conflicts yourself, here are some steps to do so that make use of GitHub Desktop and Netbeans.
+Here are some steps to do so that make use of GitHub Desktop and Netbeans.
 
 **In GitHub Desktop:**
 
