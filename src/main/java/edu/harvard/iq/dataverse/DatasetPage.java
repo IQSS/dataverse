@@ -1996,6 +1996,31 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
                 
+        displayLockInfo();
+            
+        for(DataFile f : dataset.getFiles()) {
+            if(f.isTabularData()) {
+                hasTabular = true;
+                break;
+            }
+        }
+        //Show ingest success message if refresh forces a page reload after ingest success
+        //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page 
+        if (showIngestSuccess) {
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
+        }
+        
+        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
+        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
+        rowsPerPage = 10;
+      
+        
+        
+        return null;
+    }
+    
+    private void displayLockInfo() {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
@@ -2012,11 +2037,11 @@ public class DatasetPage implements java.io.Serializable {
                 lockedDueToDcmUpload = true;
             }
             //This is a hack to remove dataset locks for File PID registration if 
-                //the dataset is released
-                //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.finalizePublication)){
-                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
-                }*/
+            //the dataset is released
+            //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
+            /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.finalizePublication)){
+                datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
+            }*/
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 // "finalizePublication" lock is used to lock the dataset while 
                 // the FinalizeDatasetPublicationCommand is running asynchronously. 
@@ -2043,32 +2068,11 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
-                lockedDueToIngestVar = true;
-            }
-            
-        for(DataFile f : dataset.getFiles()) {
-            if(f.isTabularData()) {
-                hasTabular = true;
-                break;
-            }
+        if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
+            lockedDueToIngestVar = true;
         }
-        //Show ingest success message if refresh forces a page reload after ingest success
-        //This is needed to display the explore buttons (the fileDownloadHelper needs to be reloaded via page 
-        if (showIngestSuccess) {
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.unlocked.ingest.message"));
-        }
-        
-        configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
-        exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
-        datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
-        rowsPerPage = 10;
-      
-        
-        
-        return null;
     }
     
     private Boolean fileTreeViewRequired = null; 
@@ -3650,13 +3654,14 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
-                logger.log(Level.INFO, "checking lock status of dataset {0}", dataset.getId());
                 if (testDataset.getLocks().size() > 0) {
                     if (lockedForAsyncPublish) {
                         if (testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
                             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
-                                    BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
+                                    BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
                             /* and now that we've shown the message to the user - remove the lock? */
+                        } else {
+                            displayLockInfo();
                         }
                     }
                     return true;
