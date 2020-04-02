@@ -1,3 +1,0 @@
-# Google Analytics Download Tracking Bug
-
-The button tracking capability discussed in the installation guide (http://guides.dataverse.org/en/4.20/installation/config.html#id88) relies on an analytics-code.html file that must be configured using the :WebAnalyticsCode setting. The example file provided in the installation guide is no longer compatible with recent Dataverse releases (>v4.16). Installations using this feature should update their analytics-code.html file by following the installation instructions using the updated example file. (Alternately, sites can modify their existing files to include the one-line change made in the example file at line 120.)
