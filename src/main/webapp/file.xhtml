@@ -382,7 +382,7 @@
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
                                                 <li>
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
-                                                        <h:outputText value="#{tool.displayName}"/>
+                                                        <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                     </h:commandLink>
                                                 </li>
                                             </ui:repeat>
@@ -399,7 +399,7 @@
                                             <span class="glyphicon glyphicon-equalizer"></span> 
                                             <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{FilePage.selectedTool.displayName}"/>
+                                                <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
                                         <p:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
@@ -413,7 +413,7 @@
                                             <span class="glyphicon glyphicon-equalizer"></span> 
                                             <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{FilePage.selectedTool.displayName}"/>
+                                                <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
                                         <!-- Modular/Configured Explore Tool -->
@@ -681,7 +681,7 @@
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true" 
+                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true"
                                 rendered="#{dataverseSession.user.authenticated and FilePage.canUpdateDataset()}">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="externalTools" value="#{FilePage.getExternalTools()}"/>
