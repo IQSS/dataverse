@@ -103,6 +103,44 @@ Caveat Recipiens
 
 Please note that while the script should work well on new-ish branches, older branches that have different dependencies such as an older version of Solr may not produce a working Dataverse installation. Your mileage may vary.
 
+
+Migrating Datafiles from Local Storage to S3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
+
+The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a file:// prefix, so you'll want to catch both cases.
+
+To Update Dataset Location to S3, Assuming a file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject SET storageidentifier=REPLACE(storageidentifier,'file://','s3://')
+    WHERE dtype='Dataset';
+
+To Update Datafile Location to your-s3-bucket, Assuming a file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject
+    SET storageidentifier=REPLACE(storageidentifier,'file://','s3://your-s3-bucket:')
+    WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
+    AND s.id = o.owner_id AND s.harvestingclient_id IS null
+    AND o.storageidentifier NOT LIKE 's3://%');
+
+To Update Datafile Location to your-s3-bucket, Assuming no file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject SET storageidentifier=CONCAT('s3://your-s3-bucket:', storageidentifier)
+	  WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
+	  AND s.id = o.owner_id AND s.harvestingclient_id IS null
+	  AND o.storageidentifier NOT LIKE '%://%');
+
+
 ----
 
 Previous: :doc:`coding-style` | Next: :doc:`containers`
