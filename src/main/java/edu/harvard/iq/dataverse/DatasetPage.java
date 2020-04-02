@@ -3655,14 +3655,12 @@ public class DatasetPage implements java.io.Serializable {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
                 if (testDataset.getLocks().size() > 0) {
-                    if (lockedForAsyncPublish) {
-                        if (testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
-                            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
-                                    BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
-                            /* and now that we've shown the message to the user - remove the lock? */
-                        } else {
-                            displayLockInfo();
-                        }
+                    if (lockedForAsyncPublish && testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                        JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
+                                BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
+                        /* and now that we've shown the message to the user - remove the lock? */
+                    } else {
+                        displayLockInfo();
                     }
                     return true;
                 }
