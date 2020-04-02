@@ -930,7 +930,8 @@ public class IngestServiceBean {
 
                 dataFile.setDataTable(tabDataIngest.getDataTable());
                 tabDataIngest.getDataTable().setDataFile(dataFile);
-
+                tabDataIngest.getDataTable().setOriginalFileName(originalFileName);
+                
                 try {
                     produceSummaryStatistics(dataFile, tabFile);
                     produceFrequencyStatistics(dataFile, tabFile);
