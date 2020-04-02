@@ -1996,7 +1996,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
                 
-        displayLockInfo();
+        displayLockInfo(dataset);
             
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
@@ -2020,7 +2020,7 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
-    private void displayLockInfo() {
+    private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
             if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
@@ -2057,7 +2057,7 @@ public class DatasetPage implements java.io.Serializable {
                 // failed validation during an attempt to publish it. 
                 if (FacesContext.getCurrentInstance().getExternalContext().getFlash().get("errorMsg") == null) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
-                            BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
+                            BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
                 }
                 /* and now that we've shown the message to the user - remove the lock? */
             } 
@@ -3650,18 +3650,13 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isStillLockedForAnyReason() {
-        boolean lockedForAsyncPublish = dataset.isLockedFor(DatasetLock.Reason.finalizePublication);
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
                 if (testDataset.getLocks().size() > 0) {
-                    if (lockedForAsyncPublish && testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
-                        JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
-                                BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
-                        /* and now that we've shown the message to the user - remove the lock? */
-                    } else {
-                        displayLockInfo();
-                    }
+                    // Refresh the info messages, in case the dataset has been 
+                    // re-locked with a different lock type:
+                    displayLockInfo(testDataset);
                     return true;
                 }
             }
