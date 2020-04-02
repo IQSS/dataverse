@@ -3654,11 +3654,8 @@ public class DatasetPage implements java.io.Serializable {
                 if (testDataset.getLocks().size() > 0) {
                     if (lockedForAsyncPublish) {
                         if (testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
-                            //if (FacesContext.getCurrentInstance().getExternalContext().getFlash().get("errorMsg") == null) {
                             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
                                     BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
-                            init();
-                            //}
                             /* and now that we've shown the message to the user - remove the lock? */
                         }
                     }
