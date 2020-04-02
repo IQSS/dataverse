@@ -77,7 +77,11 @@ public class DatasetLock implements Serializable {
         finalizePublication,
         
         /*Another edit is in progress*/
-        EditInProgress
+        EditInProgress,
+        
+        /* Some files in the dataset failed validation */
+        FileValidationFailed
+        
     }
     
     private static final long serialVersionUID = 1L;

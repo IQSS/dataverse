@@ -139,9 +139,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 
                 // validate the physical files (verify checksums):
                 validateDataFiles(theDataset, ctxt);
+                // (this will throw a CommandException if it fails)
                 
 		if (!datasetExternallyReleased){
 			publicizeExternalIdentifier(theDataset, ctxt);
+                        // (will also throw a CommandException, unless successful)
 		}
 		theDataset.getLatestVersion().setVersionState(RELEASED);
 	}
@@ -272,9 +274,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 
                 String recalculatedChecksum = null; 
                 try {
-                    logger.log(Level.INFO, "start: "+new Date().getTime());
                     recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                    logger.log(Level.INFO, "end: "+new Date().getTime());
                 } catch (RuntimeException rte) {
                     recalculatedChecksum = null; 
                 } finally {
@@ -300,16 +300,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
             }
         } catch (Throwable e) {
-            // Check if there is a workflow lock on the dataset - i.e., if this 
-            // is being done asynchronously. If so, change the lock message 
-            // to notify the user what went wrong, and leave the lock in place:
             
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-                DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
-                workflowLock.setInfo(FILE_VALIDATION_ERROR);
-                ctxt.datasets().updateDatasetLock(workflowLock);
+                DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
+                lock.setReason(DatasetLock.Reason.FileValidationFailed);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().updateDatasetLock(lock);
+            } else {            
+                // Lock the dataset with a new FileValidationFailed lock: 
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.FileValidationFailed, getRequest().getAuthenticatedUser()); //(AuthenticatedUser)getUser());
+                lock.setDataset(dataset);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().addDatasetLock(dataset, lock);
             }
-
+            
             // Throw a new CommandException; if the command is being called 
             // synchronously, it will be intercepted and the page will display 
             // the error message for the user.

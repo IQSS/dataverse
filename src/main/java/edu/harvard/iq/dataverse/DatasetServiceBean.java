@@ -401,7 +401,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         dataset.addLock(lock);
         lock.setStartTime( new Date() );
         em.persist(lock);
-        em.merge(dataset); 
+        //em.merge(dataset); 
         return lock;
     }
     

@@ -2018,17 +2018,24 @@ public class DatasetPage implements java.io.Serializable {
                     datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
                 }*/
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-                // the "finalizePublication" lock is used to lock the dataset for BOTH the 
-                // asynchronous persistent id registration for files AND (or)
-                // physical file validation. 
-                if (FinalizeDatasetPublicationCommand.FILE_VALIDATION_ERROR.equals(dataset.getLockFor(DatasetLock.Reason.finalizePublication).getInfo())) {
+                // "finalizePublication" lock is used to lock the dataset while 
+                // the FinalizeDatasetPublicationCommand is running asynchronously. 
+                // the tasks currently performed by the command are the  pid registration 
+                // for files and (or) physical file validation (either or both 
+                // of these two can be disabled via database settings). More 
+                // such asynchronous processing tasks may be added in the future. 
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
+                        BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                // the dataset is locked, because one or more datafiles in it 
+                // failed validation during an attempt to publish it. 
+                if (FacesContext.getCurrentInstance().getExternalContext().getFlash().get("errorMsg") == null) {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
                             BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
-                } else {
-                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
-                            BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
                 }
-            }
+                /* and now that we've shown the message to the user - remove the lock? */
+            } 
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
@@ -3639,11 +3646,22 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isStillLockedForAnyReason() {
+        boolean lockedForAsyncPublish = dataset.isLockedFor(DatasetLock.Reason.finalizePublication);
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
-                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
+                logger.log(Level.INFO, "checking lock status of dataset {0}", dataset.getId());
                 if (testDataset.getLocks().size() > 0) {
+                    if (lockedForAsyncPublish) {
+                        if (testDataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                            //if (FacesContext.getCurrentInstance().getExternalContext().getFlash().get("errorMsg") == null) {
+                            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
+                                    BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"));
+                            init();
+                            //}
+                            /* and now that we've shown the message to the user - remove the lock? */
+                        }
+                    }
                     return true;
                 }
             }
