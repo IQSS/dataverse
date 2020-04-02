@@ -283,7 +283,7 @@
                                                     <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
                                                         <li>
                                                             <h:commandLink action="#{DatasetPage.explore(tool)}">
-                                                                <h:outputText value="#{tool.displayName}"/>
+                                                                <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                             </h:commandLink>
                                                         </li>
                                                     </ui:repeat>
@@ -1308,7 +1308,7 @@
                         </div>
                     </p:dialog>
                     <!-- END: Request Access Sign Up/Log In Button -->
-                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.displayName}" widgetVar="configureToolPopup" modal="true">
+                    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true">
                         <ui:include src="file-configure-popup-fragment.xhtml">
                             <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                         </ui:include>
