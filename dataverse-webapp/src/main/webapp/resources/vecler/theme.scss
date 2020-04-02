@@ -375,9 +375,14 @@ span.glyphicon-question-sign.tooltip-icon {
 	outline-offset: 3px;
 }
 .ui-selectonemenu.ui-state-focus {
-	&, & .ui-selectonemenu-trigger {
-		outline: 2px dashed $focus-color !important;
-	}
+    &, & .ui-selectonemenu-trigger {
+        outline: 2px dashed $focus-color !important;
+    }
+}
+.ui-selectcheckboxmenu.ui-state-focus {
+    &, & .ui-selectcheckboxmenu-trigger {
+        outline: 2px dashed $focus-color !important;
+    }
 }
 
 #sharrre-block a {
@@ -389,8 +394,8 @@ span.glyphicon-question-sign.tooltip-icon {
 .button-block a,
 .dropdown-menu a,
 .panel-heading,
-.ui-selectonemenu.ui-state-focus {
-	&:focus {
+.ui-selectonemenu, .ui-selectcheckboxmenu {
+	&.ui-state-focus:focus {
 		outline-offset: 0;
 	}
 }
@@ -485,6 +490,22 @@ a[tabindex="-1"] {
 			}
 		}
 	}
+}
+
+.ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container  {
+    padding-right: 30px; /* same as primefaces ui-selectcheckboxmenu-trigger width */
+    
+    .ui-selectcheckboxmenu-token {
+        background: #FFF;
+        border: 1px solid $main-color;
+        box-shadow: none;
+    }
+}
+.ui-selectcheckboxmenu-header .ui-selectcheckboxmenu-filter-container .ui-icon {
+    top: 5px;
+}
+.without-select-all .ui-selectcheckboxmenu-header .ui-chkbox {
+    display: none; 
 }
 
 div.field-add-delete {

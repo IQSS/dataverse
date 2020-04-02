@@ -23,14 +23,15 @@
         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
         <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
     </p:selectOneMenu>
-    <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{datasetField.datasetFieldType.allowMultiples}">
-        <p:selectManyCheckbox id="multiVocabularySelect"
+    
+    <p:selectCheckboxMenu id="multiVocabularySelect" rendered="#{datasetField.datasetFieldType.allowMultiples}"
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                layout="pageDirection">
-            <f:selectItem itemLabel="#{bundle.select}" class="chkbox-label-margin" itemValue="" noSelectionOption="true"/>
-            <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-        </p:selectManyCheckbox>
-    </div>
+                style="width: 100%" panelStyleClass="without-select-all"
+                multiple="true" label="#{bundle.select}"
+                filter="true" filterMatchMode="startsWith">
+        <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+    </p:selectCheckboxMenu>
+    
     <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
     </div>

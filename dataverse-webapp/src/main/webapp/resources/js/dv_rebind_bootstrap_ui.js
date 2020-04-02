@@ -1,3 +1,80 @@
+
+/**
+ * Overrides default javascript handling for some of primefaces components.
+ * When upgrading primefaces version be sure to check this function as
+ * it depends heavily on primefaces internal code.
+ */
+function reinitializePrimefacesComponentsJS() {
+    if (PrimeFaces.widget.SelectCheckboxMenu) {
+        var originalSelectCheckboxMenuBindKeyEvents = PrimeFaces.widget.SelectCheckboxMenu.prototype.bindKeyEvents;
+        
+        // Rebinds original primefaces key events for proper handling of TAB key
+        // in situations when "select all" option is disabled
+        // Note that this is mostly copy-paste of original function
+        // with slight changes (mentioned in comments)
+        // see: forms.selectcheckboxmenu.js in primefaces repository
+        PrimeFaces.widget.SelectCheckboxMenu.prototype.bindKeyEvents = function() {
+            originalSelectCheckboxMenuBindKeyEvents.apply(this);
+            
+            var $this = this;
+            this.keyboardTarget.off('keydown.selectCheckboxMenu'); // turn off default key handling
+            
+            this.keyboardTarget.on('keydown.selectCheckboxMenu', function(e) { // replace with our key handling
+                var keyCode = $.ui.keyCode,
+                key = e.which;
+
+                if($this.cfg.dynamic && !$this.isDynamicLoaded) {
+                    $this._renderPanel();
+                }
+
+                switch(key) {
+                    case keyCode.ENTER:
+                    case keyCode.SPACE:
+                        if ($this.panel.is(":hidden"))
+                            $this.show();
+                        else
+                            $this.hide(true);
+
+                        e.preventDefault();
+                    break;
+
+                    case keyCode.DOWN:
+                        if (e.altKey) {
+                            if ($this.panel.is(":hidden"))
+                                $this.show();
+                            else
+                                $this.hide(true);
+                        }
+
+                        e.preventDefault();
+                    break;
+
+                    case keyCode.TAB: // adjusted to support hidden "select all"
+                        if($this.panel.is(':visible')) {
+                            var selectAllInput = $this.toggler.find('> div.ui-helper-hidden-accessible > input:visible');
+                            if ($this.cfg.showHeader && selectAllInput.length > 0) {
+                                selectAllInput.trigger('focus');
+                            } else if ($this.cfg.showHeader && $this.filterInput.length > 0) {
+                                $this.filterInput.trigger('focus')
+                            } else {
+                                $this.itemContainer.children('li:not(.ui-state-disabled):first').find('div.ui-helper-hidden-accessible > input').trigger('focus');
+                            }
+                            e.preventDefault();
+                        }
+
+                    break;
+
+                    case keyCode.ESCAPE:
+                        $this.hide();
+                    break;
+                };
+            });
+        }
+
+    }
+}
+reinitializePrimefacesComponentsJS();
+
 /*
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
