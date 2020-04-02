@@ -67,7 +67,7 @@ public class DataFileCategory implements Serializable {
      * DataFiles which belong to this category:
      */
     @ManyToMany(mappedBy = "fileCategories")
-    private Collection<FileMetadata> fileMetadatas = null;
+    private Collection<FileMetadata> fileMetadatas = new ArrayList<>();
 
     public Collection<FileMetadata> getFileMetadatas() {
         return fileMetadatas;

@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -337,13 +338,7 @@ public class Dataset extends DvObjectContainer {
 
         for (FileMetadata fm : latestVersion.getFileMetadatas()) {
             FileMetadata newFm = new FileMetadata();
-            // TODO: 
-            // the "category" will be removed, shortly. 
-            // (replaced by multiple, tag-like categories of 
-            // type DataFileCategory) -- L.A. beta 10
-            //newFm.setCategory(fm.getCategory());
-            // yep, these are the new categories:
-            newFm.setCategories(fm.getCategories());
+            newFm.setCategories(new LinkedList<>(fm.getCategories()));
             newFm.setDescription(fm.getDescription());
             newFm.setLabel(fm.getLabel());
             newFm.setDirectoryLabel(fm.getDirectoryLabel());
