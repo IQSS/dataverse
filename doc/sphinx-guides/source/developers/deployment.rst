@@ -107,7 +107,7 @@ Please note that while the script should work well on new-ish branches, older br
 Migrating Datafiles from Local Storage to S3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (i.e. 10.5072) at the bucket "root."
+A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
 
 The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a file:// prefix, so you'll want to catch both cases.
 
