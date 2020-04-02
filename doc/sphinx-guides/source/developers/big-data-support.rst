@@ -6,7 +6,52 @@ Big data support is highly experimental. Eventually this content will move to th
 .. contents:: |toctitle|
         :local:
 
-Various components need to be installed and configured for big data support.
+Various components need to be installed and/or configured for big data support.
+
+S3 Direct Upload and Download
+-----------------------------
+
+A lightweight option for supporting file sizes beyond a few gigabytes - a size that can cause performance issues when uploaded through the Dataverse server itself - is to configure an S3 store to provide direct upload and download via 'pre-signed URLs'. When these options are configured, file uploads and downloads are made directly to and from a configured S3 store using secure (https) connections that enforce Dataverse's access controls. (The upload and download URLs are signed with a unique key that only allows access for a short time period and Dataverse will only generate such a URL if the user has permission to upload/download the specific file in question.)
+
+This option can handle files >40GB and could be appropriate for files up to a TB. Other options can scale farther, but this option has the advantages that it is simple to configure and does not require any user training - uploads and downloads are done via the same interface as normal uploads to Dataverse.
+
+To configure these options, an administrator must set two JVM options for the Dataverse server using the same process as for other configuration options:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
+
+
+With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.  
+
+It is also possible to set file upload size limits per store. See the :MaxFileUploadSizeInBytes setting described in the :doc:`/installation/config` guide.
+
+At present, one potential drawback for direct-upload is that files are only partially 'ingested', tabular and FITS files are processed, but zip files are not unzipped, and the file contents are not inspected to evaluate their mimetype. This could be appropriate for large files, or it may be useful to completely turn off ingest processing for performance reasons (ingest processing requires a copy of the file to be retrieved by Dataverse from the S3 store). A store using direct upload can be configured to disable all ingest processing for files above a given size limit:
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
+
+
+**IMPORTANT:** One additional step that is required to enable direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
+The example below shows how to enable the minimum needed CORS rules on a bucket using the AWS CLI command line tool. Note that you may need to add more methods and/or locations, if you also need to support certain previewers and external tools. 
+
+``aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json``
+
+with the contents of the file cors.json as follows:
+
+.. code-block:: json
+
+        {
+          "CORSRules": [
+             {
+                "AllowedOrigins": ["https://<DATAVERSE SERVER>"],
+                "AllowedHeaders": ["*"],
+                "AllowedMethods": ["PUT", "GET"]
+             }
+          ]
+        }
+
+Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above. 
+
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-status":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in Dataverse. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used. 
 
 Data Capture Module (DCM)
 -------------------------

@@ -1,3 +1,0 @@
-Integration Test Coverage Reporting
-
-API-based integration tests are run every time a branch is merged to develop and the percentage of code covered by these integration tests is now shown on a badge at the bottom of the README.md file that serves as the homepage of Dataverse Github Repository.

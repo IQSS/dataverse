@@ -32,6 +32,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -149,7 +151,7 @@ public class Dataverse extends DvObjectContainer {
 
     private String affiliation;
     
-    private String storageDriver="";
+    private String storageDriver=null;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -762,7 +764,7 @@ public class Dataverse extends DvObjectContainer {
 
 	public String getEffectiveStorageDriverId() {
 		String id = storageDriver;
-		if(id == null) {
+		if(StringUtils.isBlank(id)) {
 			if(this.getOwner() != null) {
 				id = this.getOwner().getEffectiveStorageDriverId(); 
 			} else {
@@ -774,10 +776,17 @@ public class Dataverse extends DvObjectContainer {
 	
 	
 	public String getStorageDriverId() {
+		if(storageDriver==null) {
+			return DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER;
+		}
 		return storageDriver;
 	}
 
 	public void setStorageDriverId(String storageDriver) {
-		this.storageDriver = storageDriver;
+		if(storageDriver!=null&&storageDriver.equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
+			this.storageDriver=null;
+		} else {
+		  this.storageDriver = storageDriver;
+		}
 	}
 }

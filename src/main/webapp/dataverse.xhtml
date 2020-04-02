@@ -148,7 +148,6 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                             <h:selectOneMenu id="dataverseStorage" styleClass="form-control" value="#{DataversePage.dataverse.storageDriverId}">
-                                              <f:selectItem itemLabel="#{bundle['dataverse.storage.usedefault']}"/>
                                               <f:selectItems value="#{DataversePage.getStorageDriverOptions()}" var="driver" itemLabel="#{driver.getKey()}" itemValue="#{driver.getValue()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dataverseStorage" display="text"/>

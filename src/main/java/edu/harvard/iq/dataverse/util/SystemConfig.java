@@ -539,14 +539,10 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
 
-    public Long getMaxFileUploadSize(){
-         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+    public Long getMaxFileUploadSizeForStore(String driverId){
+         return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }
     
-    public String getHumanMaxFileUploadSize(){
-         return bytesToHumanReadable(getMaxFileUploadSize());
-     }
-
     public Integer getSearchHighlightFragmentSize() {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
