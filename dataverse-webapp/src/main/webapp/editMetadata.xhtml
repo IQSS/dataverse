@@ -26,9 +26,10 @@
                                                             or !fieldsByType.areAllFieldsEmpty()
                                                             or fieldsByType.datasetFieldType.requiredInDataverse)
                                                      and fieldsByType.include)}"
-                                        styleClass="form-group">
+                                        styleClass="form-group #{inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden() ? 'hidden-form-group' : ''}">
 
-                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label">
+                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label"
+                                            jsf:rendered="#{not inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden()}">
                                     #{fieldsByType.datasetFieldType.localeTitle}
                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldsByType.datasetFieldType.requiredInDataverse }" />
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -61,7 +62,8 @@
                                             <div class="col-xs-9 form-col-container" jsf:rendered="#{fieldsByType.datasetFieldType.compound}">
                                                 <ui:repeat id="subfields" value="#{datasetField.datasetFieldsChildren}" var="subdsf">
                                                     <div class="form-col-container
-                                                            #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).renderInTwoColumns()) ? 'col-sm-6' : 'col-sm-12'}">
+                                                            #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).renderInTwoColumns()) ? 'col-sm-6' : 'col-sm-12'}
+                                                            #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).isHidden()) ? 'form-hidden-col-container' : ''}">
                                                     
                                                         <ui:include src="datasetFieldForEditFragment.xhtml">
                                                             <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(subdsf.datasetFieldType)}" />
@@ -101,7 +103,7 @@
                                     <!-- Controlled vocabulary field -->
                                     <ui:fragment rendered="#{fieldsByType.datasetFieldType.controlledVocabulary}">
                                         <ui:include src="datasetFieldForEditFragment.xhtml">
-                                            <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(fieldsByType.datasetFields.get(0).getDatasetFieldType())}" />
+                                            <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(fieldsByType.datasetFieldType)}" />
                                             <ui:param name="datasetField" value="#{fieldsByType.datasetFields.get(0)}" />
                                             <ui:param name="hiddenLabel" value="true" />
                                             <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />

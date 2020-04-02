@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -23,6 +22,8 @@ import java.util.Map;
 import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,9 +61,9 @@ public class InputFieldRendererManagerTest {
         fieldType.setInputRendererType(InputRendererType.VOCABULARY_SELECT);
         fieldType.setInputRendererOptions("{}");
         
-        VocabSelectInputFieldRenderer renderer = Mockito.mock(VocabSelectInputFieldRenderer.class);
+        VocabSelectInputFieldRenderer renderer = mock(VocabSelectInputFieldRenderer.class);
         
-        when(vocabSelectRendererFactory.createRenderer(Mockito.any())).thenReturn(renderer);
+        when(vocabSelectRendererFactory.createRenderer(any(), any())).thenReturn(renderer);
         
         // when
         InputFieldRenderer retRenderer = inputFieldRendererManager.obtainRenderer(fieldType);
@@ -107,11 +108,11 @@ public class InputFieldRendererManagerTest {
         DatasetField field3 = new DatasetField();
         field3.setDatasetFieldType(fieldType2);
 
-        TextInputFieldRenderer textRenderer = Mockito.mock(TextInputFieldRenderer.class);
-        VocabSelectInputFieldRenderer vocabRenderer = Mockito.mock(VocabSelectInputFieldRenderer.class);
+        TextInputFieldRenderer textRenderer = mock(TextInputFieldRenderer.class);
+        VocabSelectInputFieldRenderer vocabRenderer = mock(VocabSelectInputFieldRenderer.class);
 
-        when(textRendererFactory.createRenderer(Mockito.any())).thenReturn(textRenderer);
-        when(vocabSelectRendererFactory.createRenderer(Mockito.any())).thenReturn(vocabRenderer);
+        when(textRendererFactory.createRenderer(any(), any())).thenReturn(textRenderer);
+        when(vocabSelectRendererFactory.createRenderer(any(), any())).thenReturn(vocabRenderer);
         
         // when
         Map<DatasetFieldType, InputFieldRenderer> retRenderers = inputFieldRendererManager.obtainRenderersByType(

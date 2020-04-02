@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.buttonaction.FieldButtonActionHandler;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.util.json.TestJsonCreator;
 import org.apache.commons.collections4.IteratorUtils;
@@ -46,6 +47,9 @@ public class TextInputFieldRendererFactoryTest {
     @Mock
     private Instance<FieldButtonActionHandler> actionHandlers;
     
+    private DatasetFieldType fieldType = new DatasetFieldType();
+    
+    
     @BeforeEach
     public void beforeEach() {
         when(actionHandler1.getName()).thenReturn("actionHandler1");
@@ -62,7 +66,7 @@ public class TextInputFieldRendererFactoryTest {
         // given
         JsonObject rendererOptions = TestJsonCreator.stringAsJsonElement("{}").getAsJsonObject();
         // when
-        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(rendererOptions);
+        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
         // then
         assertEquals(inputFieldRendererFactory.isFactoryForType(), renderer.getType());
         assertTrue(renderer.renderInTwoColumns());
@@ -78,7 +82,7 @@ public class TextInputFieldRendererFactoryTest {
                 + "'actionForOperations':['CREATE_DATASET']}").getAsJsonObject();
         
         // when
-        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(rendererOptions);
+        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
         
         // then
         assertEquals(inputFieldRendererFactory.isFactoryForType(), renderer.getType());
@@ -98,7 +102,7 @@ public class TextInputFieldRendererFactoryTest {
                 "{'buttonActionHandler':'notexisting'}").getAsJsonObject();
         
         // when
-        Executable createRendererOperation = () -> inputFieldRendererFactory.createRenderer(rendererOptions);
+        Executable createRendererOperation = () -> inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
         
         // then
         assertThrows(InputRendererInvalidConfigException.class, createRendererOperation);
@@ -112,7 +116,7 @@ public class TextInputFieldRendererFactoryTest {
                 + "'actionForOperations':'invalid'}").getAsJsonObject();
         
         // when
-        Executable createRendererOperation = () -> inputFieldRendererFactory.createRenderer(rendererOptions);
+        Executable createRendererOperation = () -> inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
         
         
         // then
@@ -134,7 +138,7 @@ public class TextInputFieldRendererFactoryTest {
         
         
         // when
-        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(rendererOptions);
+        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
         renderer.executeButtonAction(datasetField, allBlockFields);
         
         

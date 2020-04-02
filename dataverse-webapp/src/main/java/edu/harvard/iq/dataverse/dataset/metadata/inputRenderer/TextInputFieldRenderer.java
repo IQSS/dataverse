@@ -54,6 +54,16 @@ public class TextInputFieldRenderer implements InputFieldRenderer {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation always returns {@code false}
+     */
+    @Override
+    public boolean isHidden() {
+        return false;
+    }
+
     // -------------------- LOGIC --------------------
 
     public boolean hasActionButton() {

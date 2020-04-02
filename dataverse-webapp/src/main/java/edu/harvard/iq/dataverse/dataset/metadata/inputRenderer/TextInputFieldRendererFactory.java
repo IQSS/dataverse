@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.buttonaction.FieldButtonActionHandler;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import io.vavr.control.Try;
 import org.apache.commons.collections4.IteratorUtils;
@@ -45,7 +46,7 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
     }
 
     @Override
-    public TextInputFieldRenderer createRenderer(JsonObject jsonOptions) {
+    public TextInputFieldRenderer createRenderer(DatasetFieldType fieldType, JsonObject jsonOptions) {
         
         TextInputRendererOptions rendererOptions = Try.of(() -> new Gson().fromJson(jsonOptions, TextInputRendererOptions.class))
                 .getOrElseThrow((e) -> new InputRendererInvalidConfigException("Invalid syntax of input renderer options " + jsonOptions + ")", e));

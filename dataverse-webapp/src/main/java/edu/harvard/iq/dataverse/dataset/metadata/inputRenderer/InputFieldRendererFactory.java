@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer;
 
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 
 /**
@@ -26,5 +27,5 @@ public interface InputFieldRendererFactory<T extends InputFieldRenderer> {
      * @param rendererOptions - options specific to renderer of type T
      * @return created input renderer 
      */
-    T createRenderer(JsonObject rendererOptions);
+    T createRenderer(DatasetFieldType fieldType, JsonObject rendererOptions);
 }

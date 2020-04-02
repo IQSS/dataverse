@@ -8,17 +8,16 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 
 import javax.ejb.Stateless;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
 import java.util.List;
 
 /**
  * @author skraffmiller
  */
 @Stateless
-@Named
 public class ControlledVocabularyValueServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -31,5 +30,4 @@ public class ControlledVocabularyValueServiceBean implements java.io.Serializabl
         return query.getResultList();
 
     }
-
 }

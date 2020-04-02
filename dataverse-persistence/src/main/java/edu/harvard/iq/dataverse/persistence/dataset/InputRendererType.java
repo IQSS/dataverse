@@ -30,5 +30,12 @@ public enum InputRendererType {
      * ({@link DatasetFieldType#isAllowMultiples()} is true.
      * Should be used only for field with controlled vocabulary.
      */
-    VOCABULARY_SELECT
+    VOCABULARY_SELECT,
+    
+    /**
+     * Input field will be rendered as hidden
+     * checkboxes with auto selected all
+     * values defined in renderer options
+     */
+    HIDDEN_VOCABULARY
 }

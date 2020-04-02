@@ -586,9 +586,15 @@ textarea {
 div.edit-compound-field .ui-message, .ui-message-form {
 	margin: 6px 0;
 }
+div.form-col-container.edit-compound-field div.form-col-container.form-hidden-col-container {
+    margin: 0;
+}
 
 .form-group .ui-message.ui-message-error {
 	margin: 5px 0 0 0;
+}
+.form-group.hidden-form-group {
+    margin: 0;
 }
 
 .ui-autocomplete-input-token {

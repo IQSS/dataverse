@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer;
 
 import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 
 import javax.ejb.Stateless;
@@ -24,7 +25,7 @@ public class HtmlMarkupInputFieldRendererFactory implements InputFieldRendererFa
      * This implementation ignores provided options
      */
     @Override
-    public HtmlMarkupInputFieldRenderer createRenderer(JsonObject rendererOptions) {
+    public HtmlMarkupInputFieldRenderer createRenderer(DatasetFieldType fieldType, JsonObject rendererOptions) {
         return new HtmlMarkupInputFieldRenderer();
     }
 

@@ -1,0 +1,25 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <p:selectManyCheckbox style="display:none;"
+                value="#{datasetField.controlledVocabularyValues}"
+                converter="controlledVocabularyValueConverter"
+                widgetVar="#{datasetField.datasetFieldType.name}_HiddenSelect">
+        <f:selectItems value="#{inputRenderer.defaultVocabValues}" />
+    </p:selectManyCheckbox>
+
+    <script>
+    $(document).ready(function (){
+        PF('#{datasetField.datasetFieldType.name}_HiddenSelect').inputs.each(function() {
+            $(this).prop('checked', true)
+        });
+    });
+    </script>
+
+</ui:composition>

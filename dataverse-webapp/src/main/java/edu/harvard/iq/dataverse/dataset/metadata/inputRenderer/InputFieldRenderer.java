@@ -28,4 +28,10 @@ public interface InputFieldRenderer {
      * full width.
      */
     boolean renderInTwoColumns();
+    
+    /**
+     * Returns true if input field does not produce
+     * any visible content on page
+     */
+    boolean isHidden();
 }

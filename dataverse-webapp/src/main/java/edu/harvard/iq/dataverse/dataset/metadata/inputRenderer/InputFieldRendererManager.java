@@ -80,7 +80,7 @@ public class InputFieldRendererManager {
                          "Unable to parse input renderer options for field " + fieldType + " - check your field type configuration", e));
         
         InputFieldRenderer renderer = inputRendererFactories.get(rendererType)
-            .createRenderer(jsonOptions);
+            .createRenderer(fieldType, jsonOptions);
         
         
         return renderer;

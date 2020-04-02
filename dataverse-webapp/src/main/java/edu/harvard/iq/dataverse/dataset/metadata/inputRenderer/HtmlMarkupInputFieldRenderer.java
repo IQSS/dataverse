@@ -26,4 +26,14 @@ public class HtmlMarkupInputFieldRenderer implements InputFieldRenderer {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation always returns {@code false}
+     */
+    @Override
+    public boolean isHidden() {
+        return false;
+    }
+
 }
