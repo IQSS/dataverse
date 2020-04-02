@@ -74,6 +74,7 @@ import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -136,6 +137,11 @@ public class Admin extends AbstractApiBean {
         GroupServiceBean groupService;
         @EJB
         SettingsServiceBean settingsService;
+        @EJB
+        DatasetVersionServiceBean datasetVersionService;
+        @EJB
+        ExplicitGroupServiceBean explicitGroupService;
+        
 
 	// Make the session available
 	@Inject
@@ -324,18 +330,48 @@ public class Admin extends AbstractApiBean {
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
 
-	@DELETE
-	@Path("authenticatedUsers/{identifier}/")
-	public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + identifier + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @DELETE
+    @Path("authenticatedUsers/{identifier}/")
+    public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+    
+    @DELETE
+    @Path("authenticatedUsers/id/{id}/")
+    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deleteAuthenticatedUser(AuthenticatedUser au) {
         
+        //getDeleteUserErrorMessages does all of the tests to see
+        //if the user is 'deletable' if it returns an empty string the user 
+        //can be safely deleted.
         
+        String errorMessages = authSvc.getDeleteUserErrorMessages(au);
+        
+        if (!errorMessages.isEmpty()) {
+            return badRequest(errorMessages);
+        }
+        
+        //if the user is deletable we will delete access requests and group membership
+        // many-to-many relationships that couldn't be cascade deleted
+        authSvc.removeAuthentictedUserItems(au);
+        
+        authSvc.deleteAuthenticatedUser(au.getId());
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
+
+    }  
+    
+
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
@@ -811,16 +847,8 @@ public class Admin extends AbstractApiBean {
 		return ok(response);
 	}
 
-	@DELETE
-	@Path("authenticatedUsers/id/{id}/")
-	public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
-		AuthenticatedUser user = authSvc.findByID(id);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + id + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
-	}
+
+
 
 	@Path("roles")
 	@POST

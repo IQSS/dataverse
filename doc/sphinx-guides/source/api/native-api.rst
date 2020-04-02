@@ -2806,6 +2806,21 @@ Make User a SuperUser
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
+    
+Delete a User
+~~~~~~~~~~~~~
+
+Deletes an ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
+
+    DELETE http://$SERVER/api/admin/authenticatedUsers/$identifier
+    
+Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
+
+    DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
+    
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted.
+    
+    
 
 List Role Assignments of a Role Assignee
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

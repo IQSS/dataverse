@@ -21,7 +21,7 @@ Open Science Framework (OSF)
 
 The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit http://help.osf.io/m/addons/l/863978-connect-dataverse-to-a-project
+For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit https://help.osf.io/hc/en-us/articles/360019737314-Connect-Dataverse-to-a-Project
 
 RSpace
 ++++++
