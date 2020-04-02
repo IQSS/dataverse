@@ -15,7 +15,7 @@
     </p>
 
     <p:outputLabel styleClass="control-label" for="textarea" rendered="#{!hiddenLabel}">
-        #{datasetField.datasetFieldType.localeTitle}
+        <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
         <span class="glyphicon glyphicon-question-sign tooltip-icon"
               jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}" tabindex="0"

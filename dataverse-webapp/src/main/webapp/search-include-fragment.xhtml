@@ -194,7 +194,7 @@
             <!--NON-TYPE FACETS-->
             <h:form id="facetCategoryForm" rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
-                    <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
+                    <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName" escape="false"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                             <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
@@ -335,7 +335,9 @@
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
-                        <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
+                        <h:outputText value="#{friendlyNames.get(0)}: " escape="false"/>
+                        <h:outputText value="#{friendlyNames.get(1)}" />
+                        <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>

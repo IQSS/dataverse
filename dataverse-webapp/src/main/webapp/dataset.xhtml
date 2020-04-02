@@ -491,7 +491,7 @@
                                              jsf:rendered="#{fieldsByType.datasetFieldType.name!='publication' and fieldsByType.datasetFieldType.name!='keyword'  }">
                                             <label for="metadata_#{dsf.datasetFieldType.name}"
                                                    class="col-sm-3 control-label">
-                                                #{fieldsByType.datasetFieldType.localeTitle}
+                                                <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0"
                                                       jsf:rendered="#{not empty fieldsByType.datasetFieldType.localeDescription}"
                                                       data-toggle="tooltip" data-placement="auto right"
