@@ -28,7 +28,8 @@
                                                      and fieldsByType.include)}"
                                         styleClass="form-group #{inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden() ? 'hidden-form-group' : ''}">
 
-                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label">
+                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label"
+                                        jsf:rendered="#{not inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden()}">
                                     <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldsByType.datasetFieldType.requiredInDataverse }" />
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
