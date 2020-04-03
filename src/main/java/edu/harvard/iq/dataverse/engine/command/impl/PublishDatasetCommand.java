@@ -120,7 +120,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
             if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
                     && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
-                // TODO: The time it takes to validate the physical files in the dataset
+                // TODO? The time it takes to validate the physical files in the dataset
                 // is a function of the total file size, NOT the number of files; 
                 // so that's what we should be checking. 
                 String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
@@ -158,10 +158,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
         
         if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
-                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) ) {
+                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
+        }
+        
+        if ( getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+            throw new IllegalCommandException("This dataset cannot be published because some files have been found missing or corrupted. " 
+                    + ". Please contact support to address this.", this);
         }
         
         if ( datasetExternallyReleased ) {
