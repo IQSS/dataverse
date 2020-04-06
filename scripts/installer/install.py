@@ -15,7 +15,7 @@ import pwd
 from tempfile import mkstemp
 import xml.etree.cElementTree as ET
 from installUtils import (check_user, read_user_input, linux_ram, macos_ram, test_smtp_server, test_appserver_directory, validate_admin_email)
-from installGlassfish import runAsadminScript
+from installAppServer import runAsadminScript
 from installConfig import read_config_file
 
 # process command line arguments: 
