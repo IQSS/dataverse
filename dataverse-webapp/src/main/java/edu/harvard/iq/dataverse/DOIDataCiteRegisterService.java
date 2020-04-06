@@ -434,8 +434,8 @@ class DataCiteMetadataTemplate {
                     creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
                 }
             }
-            if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
+            if (author.getAffiliation() != null && !author.getAffiliation().getFieldValue().isEmpty()) {
+                creatorsElement.append("<affiliation>" + author.getAffiliation().getFieldValue().get() + "</affiliation>");
             }
             creatorsElement.append("</creator>");
         }

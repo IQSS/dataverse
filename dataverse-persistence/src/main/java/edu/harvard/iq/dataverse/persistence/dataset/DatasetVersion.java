@@ -713,7 +713,7 @@ public class DatasetVersion implements Serializable {
                         contributorName = subField.getDisplayValue();
                     }
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                        contributorAffiliation = subField.getDisplayValue();
+                        contributorAffiliation = subField.getFieldValue().getOrElse(StringUtils.EMPTY);
                     }
 
                 }
