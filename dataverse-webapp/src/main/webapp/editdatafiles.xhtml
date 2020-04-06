@@ -61,7 +61,7 @@
                                     <p:commandButton id="save" value="#{bundle.saveChanges}"
                                             onclick="PF('blockFileForm').show();"
                                             action="#{EditDatafilesPage.save}"
-                                            update="@form,:messagePanel"
+                                            update="@form,:messagePanel" process="@form"
                                             oncomplete="$(document).scrollTop(0);" />
                                     <p:commandButton id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" >
                                     </p:commandButton>
