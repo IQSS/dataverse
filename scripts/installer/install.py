@@ -14,7 +14,7 @@ import sys
 import pwd
 from tempfile import mkstemp
 import xml.etree.cElementTree as ET
-from installUtils import (check_user, read_user_input, linux_ram, macos_ram, test_smtp_server, test_glassfish_directory, validate_admin_email)
+from installUtils import (check_user, read_user_input, linux_ram, macos_ram, test_smtp_server, test_appserver_directory, validate_admin_email)
 from installGlassfish import runAsadminScript
 from installConfig import read_config_file
 
@@ -211,7 +211,7 @@ if mailServer != "":
 
 if gfDir != "":
    print("testing "+gfDir+"...")
-   if test_glassfish_directory(gfDir):
+   if test_appserver_directory(gfDir):
       print("ok")
       config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
    else:
