@@ -27,6 +27,11 @@
                                 <h:outputText value="#{bundle['footer.termsOfUse.link.name']}"/>
                             </h:outputLink>
                         </span>
+                        <span jsf:rendered="#{systemConfig.showAccessibilityStatementFooterLinkRendered}">
+                            <h:outputLink value="/accessibility-statement.xhtml">
+                                <h:outputText value="#{bundle['footer.accessibility.link.name']}"/>
+                            </h:outputLink>
+                        </span>
                     </p>
                 </div>
                 <div class="col-sm-3 text-right">

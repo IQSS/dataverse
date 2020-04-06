@@ -9,11 +9,9 @@ import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -229,6 +227,10 @@ public class SystemConfig {
 
     public String getPrivacyPolicy(Locale locale) {
         return getFromBundleIfEmptyLocalizedProperty(SettingsServiceBean.Key.PrivacyPolicy, locale, "system.privacy.policy");
+    }
+
+    public String getAccessibilityStatement(Locale locale) {
+        return getFromBundleIfEmptyLocalizedProperty(Key.AccessibilityStatement, locale, "system.accessibility.statement");
     }
 
     public long getTabularIngestSizeLimit() {
@@ -512,6 +514,10 @@ public class SystemConfig {
 
     public boolean isShowTermsOfUseFooterLinkRendered() {
         return settingsService.isTrueForKey(Key.ShowTermsOfUseFooterLink);
+    }
+
+    public boolean isShowAccessibilityStatementFooterLinkRendered() {
+        return settingsService.isTrueForKey(Key.ShowAccessibilityStatementFooterLink);
     }
 
     public String getCustomThemeCssFilename() {

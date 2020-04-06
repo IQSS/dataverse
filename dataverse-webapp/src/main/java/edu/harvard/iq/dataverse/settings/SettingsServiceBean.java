@@ -9,9 +9,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
 import javax.enterprise.context.ApplicationScoped;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -499,6 +497,16 @@ public class SettingsServiceBean {
         PrivacyPolicy,
 
         /**
+         * Text with accessibility statement.
+         * Setting can be postfixed with language code to
+         * obtain translated versions of the statement.
+         * It is assumed that not postfixed setting is
+         * the default one (used in case if language specific
+         * version is not present).
+         */
+        AccessibilityStatement,
+
+        /**
          * Dataverse admin can configure application-wide maximum length for embargo.
          * @value number of months
          * For any given date, maximum embargo for that date is: [date] + [MaximumEmbargoLength]
@@ -532,6 +540,12 @@ public class SettingsServiceBean {
          * By default is set to 'false', so link won't be shown.
          */
         ShowTermsOfUseFooterLink,
+
+        /**
+         * Show link to Accesibility Statement page in the footer (if set to 'true').
+         * By default is set to 'false', so link won't be shown.
+         */
+        ShowAccessibilityStatementFooterLink,
         
         /**
          * Name of the site that will be presented in the header.
