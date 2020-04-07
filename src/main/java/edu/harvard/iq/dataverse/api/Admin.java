@@ -1069,6 +1069,7 @@ public class Admin extends AbstractApiBean {
                      
                     JsonObjectBuilder output = Json.createObjectBuilder();
                     output.add("datafileId", dataFile.getId());
+                    output.add("storageIdentifier", dataFile.getStorageIdentifier());
 
                     
                     try {
