@@ -111,12 +111,12 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update=":templateForm"
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update=":templateForm,messagePanel"
                                          value="#{bundle['dataset.create.add.terms']}"
                                          rendered="#{TemplatePage.editMode == 'CREATE'}">  
                              <f:ajax onerror="window.scrollTo(0, 0)"/>
                         </p:commandButton>
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update=":templateForm"
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update=":templateForm,messagePanel"
                                          value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}"
                                          rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <f:ajax onerror="window.scrollTo(0, 0)"/>
