@@ -39,17 +39,11 @@ public class MetadataBlockService {
     public List<DataverseFieldTypeInputLevel> getDataverseFieldTypeInputLevelsToBeSaved(Collection<MetadataBlock> metadataBlocks,
                                                                                         DataverseMetaBlockOptions mdbOptions,
                                                                                         Dataverse dataverse) {
-        List<DataverseFieldTypeInputLevel> listDFTIL = new ArrayList<>();
-
-        if (!mdbOptions.isInheritMetaBlocksFromParent()) {
             dataverse.getRootMetadataBlocks().clear();
-
             List<MetadataBlock> selectedMetadataBlocks = getSelectedMetadataBlocks(metadataBlocks, mdbOptions);
             dataverse.setMetadataBlocks(selectedMetadataBlocks);
-            listDFTIL = getSelectedMetadataFields(selectedMetadataBlocks, dataverse, mdbOptions);
-        }
 
-        return listDFTIL;
+            return getSelectedMetadataFields(selectedMetadataBlocks, dataverse, mdbOptions);
     }
 
     /**

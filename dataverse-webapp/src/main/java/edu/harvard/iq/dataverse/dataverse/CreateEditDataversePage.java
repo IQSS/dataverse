@@ -20,8 +20,8 @@ import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
+import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.TransferEvent;
 import org.primefaces.model.DualListModel;
 
@@ -30,9 +30,9 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +85,7 @@ public class CreateEditDataversePage implements Serializable {
     private DualListModel<DatasetFieldType> facets = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
 
     private DataverseMetaBlockOptions mdbOptions = new DataverseMetaBlockOptions();
-    private DataverseMetaBlockOptions defaultMdbOptions;
+    private DataverseMetaBlockOptions parentRootMdbOptions = new DataverseMetaBlockOptions();
 
     // -------------------- GETTERS --------------------
 
@@ -175,7 +175,8 @@ public class CreateEditDataversePage implements Serializable {
      * Resets all view options for metadata blocks, dataset fields and sets metadata blocks to be inherited from parent.
      */
     public String resetToInherit() {
-        mdbOptions = defaultMdbOptions.deepCopy();
+        mdbOptions = parentRootMdbOptions.deepCopy();
+        mdbOptions.setInheritMetaBlocksFromParent(true);
         dataverse.setMetadataBlockRoot(false);
 
         return StringUtils.EMPTY;
@@ -355,7 +356,9 @@ public class CreateEditDataversePage implements Serializable {
     private void setupForGeneralInfoEdit() {
         initFacets();
         allMetadataBlocks = metadataBlockService.prepareMetaBlocksAndDatasetfields(dataverse, mdbOptions);
-        defaultMdbOptions = mdbOptions.deepCopy();
+
+        metadataBlockService.prepareMetaBlocksAndDatasetfields(Option.of(dataverse.getOwner()).getOrElse(dataverse),
+                                                                        parentRootMdbOptions);
     }
 
     private void initFacets() {
