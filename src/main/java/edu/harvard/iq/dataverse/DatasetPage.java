@@ -2059,7 +2059,6 @@ public class DatasetPage implements java.io.Serializable {
                     JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
                             BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
                 }
-                /* and now that we've shown the message to the user - remove the lock? */
             } 
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 String rootDataverseName = dataverseService.findRootDataverse().getName();

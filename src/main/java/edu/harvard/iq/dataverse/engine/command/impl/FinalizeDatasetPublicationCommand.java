@@ -246,58 +246,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // TODO: Should we validate all the files in the dataset, or only 
                 // the files that haven't been published previously?
                 logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
-                
-                DataFile.ChecksumType checksumType = dataFile.getChecksumType();
-                if (checksumType == null) {
-                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
-                    logger.log(Level.INFO, info);
-                    throw new Exception(info);
-                }
-                                
-                StorageIO<DataFile> storage = dataFile.getStorageIO();
-                storage.open(DataAccessOption.READ_ACCESS);
-                InputStream in = null;
-                
-                if (!dataFile.isTabularData()) {
-                    in = storage.getInputStream();
-                } else {
-                    // if this is a tabular file, read the preserved original "auxiliary file"
-                    // instead:
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                }
-                                
-                if (in == null) {
-                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
-                    logger.log(Level.INFO, info);
-                    throw new Exception(info);
-                }
-                
-                String recalculatedChecksum = null; 
-                try {
-                    recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                } catch (RuntimeException rte) {
-                    recalculatedChecksum = null; 
-                } finally {
-                    IOUtils.closeQuietly(in);
-                }
-                
-                if (recalculatedChecksum == null) {
-                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
-                    logger.log(Level.INFO, info); 
-                    throw new Exception(info);
-                }
-                
-                // TODO: What should we do if the datafile does not have a non-null checksum?
-                // Should we fail, or should we assume that the recalculated checksum
-                // is correct, and populate the checksumValue field with it?
-                
-                if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
-                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
-                    logger.log(Level.INFO, info); 
-                    throw new Exception(info);
-                }
-                
-                logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
+                FileUtil.validateDataFileChecksum(dataFile);
             }
         } catch (Throwable e) {
             

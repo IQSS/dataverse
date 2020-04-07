@@ -82,6 +82,10 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import java.util.Arrays;
+import org.apache.commons.io.IOUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1673,6 +1677,59 @@ public class FileUtil implements java.io.Serializable  {
 
     	}
     	return s3io;
+    }
+    
+    public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
+        DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+        if (checksumType == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        StorageIO<DataFile> storage = dataFile.getStorageIO();
+        storage.open(DataAccessOption.READ_ACCESS);
+        InputStream in = null;
+
+        if (!dataFile.isTabularData()) {
+            in = storage.getInputStream();
+        } else {
+            // if this is a tabular file, read the preserved original "auxiliary file"
+            // instead:
+            in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+        }
+
+        if (in == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        String recalculatedChecksum = null;
+        try {
+            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+        } catch (RuntimeException rte) {
+            recalculatedChecksum = null;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+
+        if (recalculatedChecksum == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        // TODO: What should we do if the datafile does not have a non-null checksum?
+        // Should we fail, or should we assume that the recalculated checksum
+        // is correct, and populate the checksumValue field with it?
+        if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
     }
     
     public static String getStorageIdentifierFromLocation(String location) {
