@@ -254,7 +254,7 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
 
 
-Writing and using a Testcontainers Test
+Writing and Using a Testcontainers Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most scenarios of integration testing involve having dependent services running.
