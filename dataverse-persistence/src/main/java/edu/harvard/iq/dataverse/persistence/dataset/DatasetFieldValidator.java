@@ -71,65 +71,28 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         if (fieldType.equals(FieldType.DATE)) {
             boolean valid = false;
             String testString = value.getValue();
-
-            if (!valid) {
-                valid = isValidDate(testString, "yyyy-MM-dd");
-            }
-            if (!valid) {
-                valid = isValidDate(testString, "yyyy-MM");
+            if (testString.startsWith("-")) {
+            	testString = testString.substring(1);
             }
 
-            //If AD must be a 4 digit year
-            if (value.getValue().contains("AD")) {
-                testString = (testString.substring(0, testString.indexOf("AD"))).trim();
-            }
-
+            String YYYYMMDDformat = "yyyy-MM-dd";
+            String YYYYMMformat = "yyyy-MM";
             String YYYYformat = "yyyy";
+
+            if (!valid) {
+                valid = isValidDate(testString, YYYYMMDDformat);
+            }
+            if (!valid) {
+                valid = isValidDate(testString, YYYYMMformat);
+            }
+
             if (!valid) {
                 valid = isValidDate(testString, YYYYformat);
-                if (!StringUtils.isNumeric(testString)) {
-                    valid = false;
-                }
             }
 
-            //If BC must be numeric
-            if (!valid && value.getValue().contains("BC")) {
-                testString = (testString.substring(0, testString.indexOf("BC"))).trim();
-                if (StringUtils.isNumeric(testString)) {
-                    valid = true;
-                }
-            }
-
-            // Validate Bracket entries
-            // Must start with "[", end with "?]" and not start with "[-"
-            if (!valid && value.getValue().startsWith("[") && value.getValue().endsWith("?]") && !value.getValue().startsWith("[-")) {
-                testString = value.getValue().replace("[", " ").replace("?]", " ").replace("-", " ").replace("BC", " ").replace("AD", " ").trim();
-                if (value.getValue().contains("BC") && StringUtils.isNumeric(testString)) {
-                    valid = true;
-                } else {
-                    valid = isValidDate(testString, YYYYformat);
-                    if (!StringUtils.isNumeric(testString)) {
-                        valid = false;
-                    }
-                }
-            }
-
-            if (!valid) {
-                // TODO:
-                // This is a temporary fix for the early beta!
-                // (to accommodate dates with time stamps from Astronomy files)
-                // As a real fix, we need to introduce a different type -
-                // "datetime" for ex. and use it for timestamps;
-                // We do NOT want users to be able to enter a full time stamp
-                // as the release date...
-                // -- L.A. 4.0 beta
-
-                valid = (isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss") || isValidDate(value.getValue(), "yyyy-MM-dd'T'HH:mm:ss.SSS") || isValidDate(value.getValue(), "yyyy-MM-dd HH:mm:ss"));
-
-            }
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", Lists.newArrayList(YYYYformat))).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", Lists.newArrayList(YYYYMMDDformat, YYYYMMformat, YYYYformat))).addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }
