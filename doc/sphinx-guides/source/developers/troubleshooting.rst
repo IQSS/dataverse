@@ -2,7 +2,7 @@
 Troubleshooting
 ===============
 
-Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`../installation/installation-main` section we described the "happy path" of when everything goes right as you set up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
 	:local:

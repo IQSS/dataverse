@@ -2,7 +2,6 @@
 Tips
 ====
 
-If you just followed the steps in :doc:`dev-environment` for the first time, you will need to get set up to deploy code to Glassfish. Below you'll find other tips as well.
 
 .. contents:: |toctitle|
 	:local:
@@ -10,7 +9,7 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Glassfish by the ``install`` script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Glassfish.
+When you followed the steps in the :doc:`../installation/installation-main` section, the war file was deployed to Glassfish by the ``install`` script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Glassfish.
 
 It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Glassfish (that's what the ``install`` script uses and the steps are documented below), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
 
@@ -29,8 +28,8 @@ You will probably see something like ``dataverse-webapp-4.11 <ejb, web>`` as the
 
 Now that Glassfish doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
-Add Glassfish 4.1 as a Server in Netbeans
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Add Glassfish 4.1.2 as a Server in Netbeans
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Dataverse only works with Glassfish 4.1.2 so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
 
@@ -41,7 +40,7 @@ Please note that if you are on a Mac, Netbeans may be unable to start Glassfish 
 At this point you can manage Glassfish using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Glassfish to stop and then start it so that it appears in the Output window. Note that you can expand "Glassfish" and "Applications" to see if any applications are deployed.
 
 Ensure that Dataverse Will Be Deployed to Glassfish 4.1.2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1.2 Click OK.
 
@@ -86,7 +85,7 @@ With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewha
 pgAdmin
 ~~~~~~~~
 
-Back in the :doc:`dev-environment` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
+Back in the :doc:`../installation/installation-main` section, we had you install pgAdmin, which can help you explore the tables and execute SQL commands. It's also listed in the :doc:`tools` section.
 
 SchemaSpy
 ~~~~~~~~~

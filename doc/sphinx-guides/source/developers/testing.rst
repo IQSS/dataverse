@@ -95,6 +95,29 @@ You should be aware that some unit tests have been deemed "non-essential" and ha
 
 Generally speaking, unit tests have been flagged as non-essential because they are slow or because they require an Internet connection. You should not feel obligated to run these tests continuously but you can use the ``mvn`` command above to run them. To iterate on the unit test in Netbeans and execute it with "Run -> Test File", you must temporarily comment out the annotation flagging the test as non-essential.
 
+Integration Tests
+-----------------
+
+For integration testing we are using Arquillian, the example test you can look at is called ``ArquillianExampleTest``.
+
+Database
+~~~~~~~~
+
+In order to configure the database for tests you need to create user and database that matches the info from ``glassfish.properties`` file.
+
+If you want to edit information contained in the file you need to move it to ~/.dataverse and then you can configure desired values.
+
+Docker
+~~~~~~
+
+We are also using "Test containers" so there is no need for Solr manual setup in tests.
+
+In order to make it run you need to have docker installed. Then user must be added to docker group which can be done with following command::
+
+    sudo usermod -aG docker {USERNAME}
+
+First test run downloads docker images so it can take some time for test to be completed.
+
 ----
 
 Previous: :doc:`sql-upgrade-scripts` | Next: :doc:`documentation`
