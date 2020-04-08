@@ -13,46 +13,7 @@ Java
 Formatting Code
 ~~~~~~~~~~~~~~~
 
-Tabs vs. Spaces
-^^^^^^^^^^^^^^^
-
-Don't use tabs. Use 4 spaces.
-
-Braces Placement
-^^^^^^^^^^^^^^^^
-
-Place curly braces according to the style below, which is an example you can see from Netbeans.
-
-.. code-block:: java
-
-    public class ClassA {
-
-        private String letters[] = new String[]{"A", "B"};
-
-        public int meth(String text, int number) {
-            BinaryOperator plus = (a, b) -> {
-                return a + b;
-            };
-            if (text != null) {
-                try {
-                    meth("Some text", text.length());
-                } catch (Throwable t) {
-                } finally {
-                }
-            } else if (number >= 0) {
-                text = number == 0 ? "empty" : "nonempty";
-            }
-            do {
-                number = number + 1;
-            } while (number < 2);
-            for (int i = 1; i < 100; i++) {
-                number = number + i;
-            }
-            while (number > 0) {
-                number--;
-            }
-        }
-    }
+Rules can be seen here: https://wiki.yadda.icm.edu.pl/yadda/Public:Coding_conventions
 
 Format Code You Changed with Netbeans
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -89,20 +50,6 @@ Generally speaking you should use ``fine`` for everything that you don't want to
 
 When adding logging, do not simply add ``System.out.println()`` lines because the logging level cannot be controlled.
 
-Avoid Hard-Coding Strings
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Special strings should be defined as public constants. For example, ``DatasetFieldConstant.java`` contains a field for "title" and it's used in many places in the code (try "Find Usages" in Netbeans). This is better than writing the string "title" in all those places.
-
-Type Safety
-~~~~~~~~~~~
-
-If you just downloaded Netbeans and are using the out-of-the-box settings, you should be in pretty good shape. Unfortunately, the default configuration of Netbeans doesn't warn you about type-safety problems you may be inadvertently introducing into the code. To see these warnings, click Netbeans -> Preferences -> Editor -> Hints and check the following:
-
-- "Raw Types" under "Standard Javac Warnings"
-
-If you know of a way to easily share Netbeans configuration across a team, please get in touch.
-
 Bash
 ----
 
@@ -117,13 +64,6 @@ Tabs vs. Spaces
 Don't use tabs. Use 2 spaces.
 
 shfmt from https://github.com/mvdan/sh seems like a decent way to enforce indentation of two spaces (i.e. ``shfmt -i 2 -w path/to/script.sh``) but be aware that it makes other changes.
-
-Bike Shedding
--------------
-
-What color should the `bike shed <https://en.wiktionary.org/wiki/bikeshedding>`_ be? :)
-
-Come debate with us about coding style in this Google doc that has public comments enabled: https://docs.google.com/document/d/1KTd3FpM1BI3HlBofaZjMmBiQEJtFf11jiiGpQeJzy7A/edit?usp=sharing
 
 ----
 
