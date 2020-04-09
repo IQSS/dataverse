@@ -166,7 +166,7 @@ if currentUser is None or currentUser == "":
 # if the username was specified on the command line, it takes precedence:
 if gfUser != "":
    config.set('glassfish', 'GLASSFISH_USER', gfUser)
-   # check if the glassfish user specified actually exists
+   # check if the app. server user specified actually exists
 #   ret = subprocess.call("id "+gfUser+" > /dev/null 2>&1", shell=True)
 #   if ret != 0:
    if not checkUser(gfUser):
@@ -182,10 +182,10 @@ if not nonInteractive:
    if os.getuid() == 0:
       print("\n####################################################################")
       print("     It is recommended that this script not be run as root.")
-      print(" Consider creating a glassfish service account, giving it ownership")
+      print(" Consider creating a payara service account, giving it ownership")
       print("  on the glassfish/domains/domain1/ and glassfish/lib/ directories,")
       print("    along with the JVM-specified files.dir location, and running")
-      print("       this installer as the user who will launch Glassfish.")
+      print("       this installer as the user who will launch Payara.")
       print("####################################################################\n")
       ret = read_user_input("hit return to continue (or ctrl-C to exit the installer)")
 
@@ -215,7 +215,7 @@ if gfDir != "":
       print("ok")
       config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
    else:
-      sys.exit("Invalid Glassfish directory: "+gfDir+". Please specify a valid glassfish directory.")
+      sys.exit("Invalid Payara directory: "+gfDir+". Please specify a valid Payara directory.")
 
 # 0e. current working directory:
 # @todo - do we need it still?
@@ -328,9 +328,9 @@ else:
                   config.set('system', 'ADMIN_EMAIL', adminEmail)
                elif option == "glassfish_directory":
                   gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
-                  while not test_glassfish_directory(gfDir):
-                     print("\nInvalid Glassfish directory!")
-                     gfDir = read_user_input("Enter the root directory of your Glassfish installation:\n(Or ctrl-C to exit the installer): ")
+                  while not test_appserver_directory(gfDir):
+                     print("\nInvalid Payara directory!")
+                     gfDir = read_user_input("Enter the root directory of your Payara5 installation:\n(Or ctrl-C to exit the installer): ")
                   config.set('glassfish', 'GLASSFISH_DIRECTORY', gfDir)
                elif option == "mail_server":
                   mailServer = config.get('system', 'MAIL_SERVER')
@@ -365,7 +365,7 @@ pgDb = config.get('database', 'POSTGRES_DATABASE')
 pgHost = config.get('database', 'POSTGRES_SERVER')
 pgPassword = config.get('database', 'POSTGRES_PASSWORD')
 pgUser = config.get('database', 'POSTGRES_USER')
-# glassfish settings:
+# app. server (payara) settings:
 hostName = config.get('glassfish', 'HOST_DNS_ADDRESS')
 gfDir = config.get('glassfish', 'GLASSFISH_DIRECTORY')
 gfUser = config.get('glassfish', 'GLASSFISH_USER')
@@ -438,16 +438,16 @@ if podName != "start-glassfish" and podName != "dataverse-glassfish-0" and not s
       print("postgres-only setup complete.")
       sys.exit()
 
-# 4. CONFIGURE GLASSFISH
+# 4. CONFIGURE PAYARA
 
-# 4a. Glassfish heap size - let's make it 1/2 of system memory
+# 4a. App. server heap size - let's make it 1/2 of system memory
 # @todo: should we skip doing this in the non-interactive mode? (and just use the value from the config file?)
 if myOS == "MacOSX":
    gfHeap = int(macos_ram() / 2)
 else:
    # linux
    gfHeap = int(linux_ram() / 2)
-print("Setting Glassfish heap size (Xmx) to "+str(gfHeap)+" Megabytes")
+print("Setting App. Server heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
 # 4b. PostgresQL driver:
@@ -460,13 +460,13 @@ except:
    print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
 
-# 4c. create glassfish admin credentials file
+# 4c. create payara admin credentials file
 
 userHomeDir = pwd.getpwuid(os.getuid())[5]
 gfClientDir = userHomeDir+"/.gfclient"
 gfClientFile = gfClientDir+"/pass"
 
-print("using glassfish client file: " + gfClientFile)
+print("using payara/glassfish client file: " + gfClientFile)
 
 # mkdir gfClientDir
 if not os.path.isdir(gfClientDir):
@@ -481,22 +481,22 @@ credstring = "asadmin://"+gfAdminUser+"@localhost:4848"
 f = open(gfClientFile, 'w')
 try:
    f.write(credstring)
-   print("Glassfish admin credentials written to "+gfClientFile+".")
+   print("Payara admin credentials written to "+gfClientFile+".")
 except:
-   print("Unable to write Glassfish admin credentials. Subsequent commands will likely fail.")
+   print("Unable to write Payara admin credentials. Subsequent commands will likely fail.")
 f.close
 
-# 4d. check if glassfish is running, attempt to start if necessary
+# 4d. check if Payara is running, attempt to start if necessary
 asadmincmd = gfDir +"/bin/asadmin"
 domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT).decode()
 if re.match(gfDomain+" not running", domain_status):
-   print("Looks like Glassfish isn't running. Attempting to start it...")
+   print("Looks like Payara isn't running. Attempting to start it...")
    subprocess.call([asadmincmd, "start-domain"], stderr=subprocess.STDOUT)
    # now check again or bail
    print("Checking to be sure "+gfDomain+" is running.")
    domain_status = subprocess.check_output([asadmincmd, "list-domains"], stderr=subprocess.STDOUT).decode()
    if not re.match(gfDomain+" running", domain_status):
-      sys.exit("There was a problem starting Glassfish. Please ensure that it's running, or that the installer can launch it.")
+      sys.exit("There was a problem starting Payara. Please ensure that it's running, or that the installer can launch it.")
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
@@ -507,7 +507,7 @@ gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser
 print("Note: some asadmin commands will fail, and that's ok. Existing settings can't be created; new settings can't be cleared beforehand.")
 
 if not runAsadminScript(config):
-   sys.exit("Glassfish configuration script failed to execute properly; aborting.")
+   sys.exit("Payara configuration script failed to execute properly; aborting.")
 
 # 4g. Additional config files:
 
@@ -540,7 +540,7 @@ except:
    sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
 
 # @todo: The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
-# - so it may need to be readjusted, if glassfish lives somewhere other than /usr/local/glassfish4
+# - so it may need to be readjusted, if payara lives somewhere other than /usr/local/payara5
 # (replicate from the old installer)
 
 # 5. Deploy the application: 
@@ -616,7 +616,7 @@ print("can publish datasets. Once you receive the account name and password, add
 print("as the following two JVM options:")
 print("\t<jvm-options>-Ddoi.username=...</jvm-options>")
 print("\t<jvm-options>-Ddoi.password=...</jvm-options>")
-print("and restart glassfish")
+print("and restart payara")
 print("If this is a production Dataverse and you are planning to register datasets as ")
 print("\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"")
 print("section of the Installataion guide, on how to configure your Dataverse with the proper registration")
