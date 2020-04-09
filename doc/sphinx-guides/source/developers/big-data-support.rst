@@ -92,7 +92,7 @@ If you need a fully operating DCM client for development purposes, these steps w
 Docker Image Set-up
 ^^^^^^^^^^^^^^^^^^^
 
-See https://github.com/IQSS/dataverse/blob/develop/conf/docker-dcm/readme.txt
+See https://github.com/CeON/dataverse/blob/develop/conf/docker-dcm/readme.txt
 
 - Install docker if you do not have it
       
