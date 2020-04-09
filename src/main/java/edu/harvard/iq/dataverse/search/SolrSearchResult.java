@@ -565,36 +565,40 @@ public class SolrSearchResult {
             if (this.entity.isInstanceofDataset()) {
                 nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
                 Dataset ds = (Dataset) this.entity;
-                DatasetVersion dv;
+                DatasetVersion dv;                
+                
                 if (this.isDraftState()) {
                     dv = ds.getLatestVersion();
                 } else {
                     dv = ds.getReleasedVersion();
                 }
 
-                if (!dv.getKeywords().isEmpty()) {
+                if (dv != null && !dv.getKeywords().isEmpty()) {
                     JsonArrayBuilder keyWords = Json.createArrayBuilder();
                     for (String keyword : dv.getKeywords()) {
                         keyWords.add(keyword);
                     }
                     nullSafeJsonBuilder.add("keywords", keyWords);
                 }
-                JsonArrayBuilder subjects = Json.createArrayBuilder();
-                for (String subject : dv.getDatasetSubjects()) {
-                    subjects.add(subject);
+                if (dv != null) {
+                    JsonArrayBuilder subjects = Json.createArrayBuilder();
+                    for (String subject : dv.getDatasetSubjects()) {
+                        subjects.add(subject);
+                    }
+                    nullSafeJsonBuilder.add("subjects", subjects);
+                    nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
+                    nullSafeJsonBuilder.add("versionId", dv.getId());
+                    nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
+                    if (this.isPublishedState()) {
+                        nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
+                        nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
+                    }
                 }
-                nullSafeJsonBuilder.add("subjects", subjects);
-                nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
-                nullSafeJsonBuilder.add("versionId", dv.getId());
-                nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
-                if(this.isPublishedState()){
-                    nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
-                    nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
-                }
+
                 nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
                 nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
                 
-                if (!dv.getDatasetContacts().isEmpty()) {
+                if (dv != null && !dv.getDatasetContacts().isEmpty()) {
                     JsonArrayBuilder contacts = Json.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
                     for (String contact[] : dv.getDatasetContacts(false)) {
@@ -604,7 +608,7 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("contacts", contacts);
                 }
-                if(!dv.getRelatedPublications().isEmpty()){
+                if(dv != null && !dv.getRelatedPublications().isEmpty()){
                     JsonArrayBuilder relPub = Json.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
                     for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
@@ -616,14 +620,14 @@ public class SolrSearchResult {
                     nullSafeJsonBuilder.add("publications", relPub);                   
                 }
                 
-                if (!dv.getDatasetProducers().isEmpty()) {
+                if (dv != null  && !dv.getDatasetProducers().isEmpty()) {
                     JsonArrayBuilder producers = Json.createArrayBuilder();
                     for (String[] producer : dv.getDatasetProducers()) {
                         producers.add(producer[0]);
                     }
                     nullSafeJsonBuilder.add("producers", producers);
                 }
-                 if (!dv.getRelatedMaterial().isEmpty()) {
+                 if (dv != null  && !dv.getRelatedMaterial().isEmpty()) {
                     JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
                     for (String relatedMaterial : dv.getRelatedMaterial()) {
                         relatedMaterials.add(relatedMaterial);
@@ -631,7 +635,7 @@ public class SolrSearchResult {
                     nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
                 }
                 
-                if (!dv.getGeographicCoverage().isEmpty()) {
+                if (dv != null  && !dv.getGeographicCoverage().isEmpty()) {
                     JsonArrayBuilder geoCov = Json.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
                     for (String ind[] : dv.getGeographicCoverage()) {
@@ -643,7 +647,7 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("geographicCoverage", geoCov);
                 }  
-                if (!dv.getDataSource().isEmpty()) {
+                if (dv != null  && !dv.getDataSource().isEmpty()) {
                     JsonArrayBuilder dataSources = Json.createArrayBuilder();
                     for (String dsource : dv.getDataSource()) {
                         dataSources.add(dsource);
