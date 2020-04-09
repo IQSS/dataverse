@@ -565,14 +565,7 @@ public class SolrSearchResult {
             if (this.entity.isInstanceofDataset()) {
                 nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
                 Dataset ds = (Dataset) this.entity;
-                DatasetVersion dv = null;
-
-                for (DatasetVersion v : ds.getVersions()) {
-                    if (v.getId().equals(this.datasetVersionId)) {
-                        dv = v;
-                        break;
-                    }
-                }
+                DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
 
                 if (!dv.getKeywords().isEmpty()) {
                     JsonArrayBuilder keyWords = Json.createArrayBuilder();
