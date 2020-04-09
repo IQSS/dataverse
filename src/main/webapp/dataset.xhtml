@@ -239,17 +239,19 @@
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
                                                             <!-- Publish LINKS x5 -->
-                                                            <li>
+                                                            <li class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
                                                                 <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{!DatasetPage.dataset.released
                                                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                                onclick="PF('publishConfirm').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
                                                                 <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
                                                                                rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.owner.released
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                                onclick="PF('releaseDraft').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
@@ -258,6 +260,7 @@
                                                                                rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
                                                                                            and !DatasetPage.canPublishDataverse()}"
+                                                                               disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                                onclick="PF('mayNotRelease').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
@@ -266,6 +269,7 @@
                                                                                            and DatasetPage.canPublishDataverse()
                                                                                            and (DatasetPage.dataset.owner.owner == null or (DatasetPage.dataset.owner.owner != null and DatasetPage.dataset.owner.owner.released))
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                                onclick="PF('publishParent').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
@@ -274,6 +278,7 @@
                                                                                            and DatasetPage.canPublishDataverse()
                                                                                            and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"
+                                                                               disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                                onclick="PF('maynotPublishParent').show()">
                                                                     #{bundle['dataset.publish.btn']}
                                                                 </p:commandLink>
@@ -282,9 +287,10 @@
                                                             <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                                        and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                                                 <!-- Return to Author LINK -->
-                                                                <li>
+                                                                <li class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
                                                                     <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
-                                                                                          onclick="PF('sendBackToContributor').show()">
+                                                                                   disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                                                   onclick="PF('sendBackToContributor').show()">
                                                                         #{bundle['dataset.rejectBtn']}
                                                                     </p:commandLink>
                                                                 </li>
@@ -296,9 +302,10 @@
                                                                                     and DatasetPage.canUpdateDataset()
                                                                                     and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                                                 <!-- Submit for Review LINK -->
-                                                                <li>
+                                                                <li class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
                                                                     <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                                                          onclick="PF('inreview').show()">
+                                                                                   disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
+                                                                                   onclick="PF('inreview').show()">
                                                                         #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
                                                                     </p:commandLink>
                                                                 </li>
