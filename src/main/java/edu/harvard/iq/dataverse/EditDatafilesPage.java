@@ -80,8 +80,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
-import org.primefaces.model.file.UploadedFile;
-//import org.primefaces.context.RequestContext;
 
 /**
  *
