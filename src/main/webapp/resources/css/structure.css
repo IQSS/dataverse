@@ -232,7 +232,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
 /* #dataverseHeader .dataverseHeaderBlock {display:table-row;} */
 /* #dataverseHeader .dataverseHeaderCell {display:table-cell;} */
-#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center; display: none;}
+#dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
 #dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
@@ -250,7 +250,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 /*QDR*/
-#dataverseHeader .label.status {display:block; float:left; margin-top:16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;}
+#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;}
 
 
 /* -------- FOOTER -------- */
@@ -384,7 +384,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
 
 /* Buttons */
-#actionButtonBlock {margin-bottom:1em; margin-top:0;}
+#actionButtonBlock {margin-bottom:1em; margin-top:0;z-index:1;}
 #dataverse-info-dropdown {padding:.5em 1em .25em 1em; overflow:hidden; width:400px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon {width:40px; float:left; margin-right:12px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon .icon-dataverse {font-size:40px; line-height:40px;}
