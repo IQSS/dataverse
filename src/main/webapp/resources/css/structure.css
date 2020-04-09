@@ -396,7 +396,14 @@ td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margi
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
-.button-block ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
+/* DIASABLED LINK-BTN TITLE PF COMMANDLINK HACK */
+/* TODO - REVIEW DISABLED CLASS LINKS WHICH 
+          ARE NOW FUNCTIONAL DUE TO HACK?? 
+          "This class uses pointer-events: none to try to disable the link functionality"
+html .ui-state-disabled {
+    pointer-events: all;
+} */
+div.btn-group ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled {display: block; padding: 3px 20px; color: #777; background: none; opacity:1.0;}
 .button-single {display: block; padding: 3px 3px; color: #777; background: none; opacity:1.0;}
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}

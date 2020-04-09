@@ -94,6 +94,7 @@
                                         <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
                                             <span id="title" style="font-size:36px !important;line-height:1.1;">#{DatasetPage.datasetVersionUI.title.value}</span>
                                             <div id="title-label-block" class="margin-top-half">
+                                                <!-- DATASET Publication Status -->
                                                 <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-default" rendered="#{DatasetPage.workingVersion.draft}"/>
                                                 <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-default" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                                 <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-default" rendered="#{!DatasetPage.dataset.released}"/>
@@ -126,16 +127,24 @@
 
                                                 
                                                 <!-- DOWNLOAD/ACCESS DATASET -->
-                                                <div class="btn-group btn-group-justified">
+                                                <div class="btn-group btn-group-justified" jsf:rendered="#{!DatasetPage.dataset.deaccessioned}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                             ACCESS DATASET <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
+                                                            
+                                                            <!-- DOWNLOAD -->
+                                                            <ui:fragment rendered="#{true}">
+                                                                <li class="disabled">
+                                                                    <span class="ui-commandlink ui-widget ui-state-disabled btn-download-placeholder">Download (Placeholder)</span>
+                                                                </li>
+                                                            </ui:fragment>
+                                                            <!-- END: DOWNLOAD -->
 
                                                             <!-- EXPLORE -->
                                                             <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
-                                                            <ui:fragment rendered="#{!DatasetPage.dataset.deaccessioned}">
+                                                            <ui:fragment rendered="#{true}">
                                                                 <li class="#{DatasetPage.datasetExploreTools.size()>1 ? 'dropdown-submenu pull-left' : ''}">
                                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
                                                                         <a tabindex="-1" href="#" class="btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">#{bundle.explore}</a>
@@ -160,7 +169,6 @@
                                                             <!-- COMPUTE -->
                                                             <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
                                                             <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                        and !DatasetPage.dataset.deaccessioned
                                                                                         and DatasetPage.showComputeButton()}">
                                                                 <li>
                                                                     <a tabindex="-1" href="#" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
@@ -219,13 +227,14 @@
                                                 <!-- END: DOWNLOAD/ACCESS DATASET -->
 
                                                 <!-- PUBLISH DATASET -->
-                                                <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                                                                and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                                                                or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                                                and DatasetPage.canUpdateDataset()
-                                                                                                and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
+                                                <div class="btn-group btn-group-justified" 
+                                                     jsf:rendered="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+                                                                                                     and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
+                                                                                                     or (DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                                                                           and DatasetPage.canUpdateDataset()
+                                                                                                           and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset))}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                             PUBLISH DATASET <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
@@ -307,7 +316,7 @@
                                                                                                       and !DatasetPage.dataset.deaccessioned}">
 
                                                         <div class="btn-group">
-                                                            <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown">
+                                                            <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                 #{bundle['dataset.editBtn']} DATASET <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
@@ -365,7 +374,7 @@
                                                                     </h:outputLink>
                                                                 </li>
                                                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li class="divider"></li>
+                                                                    <li role="separator" class="divider"></li>
                                                                     <li>
                                                                         <p:commandLink id="deleteDataset" onclick="PF('deleteConfirmation').show()">
                                                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
@@ -373,7 +382,7 @@
                                                                     </li>
                                                                 </ui:fragment>
                                                                 <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li class="divider"></li>
+                                                                    <li role="separator" class="divider"></li>
                                                                     <li>
                                                                         <p:commandLink id="deleteVersion" onclick="PF('deleteVersionConfirmation').show()">
                                                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
@@ -381,7 +390,7 @@
                                                                     </li>
                                                                 </ui:fragment>
                                                                 <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li class="divider"></li>
+                                                                    <li role="separator" class="divider"></li>
                                                                     <li>
                                                                         <p:commandLink id="deaccessionDatasetLink" 
                                                                                        action="#{DatasetPage.clickDeaccessionDataset}"

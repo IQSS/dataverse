@@ -62,10 +62,10 @@
                                                 <span style="margin-right:6px;" class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}" />
                                                 <span style="margin-right:6px;" class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }" />
                                                 <!-- DATASET Publication Status -->
-                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
-                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
-                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
-                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
+                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
+                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-default" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
+                                                <h:outputText style="margin-right:6px;" value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
                                                 <!-- DATASET VERSION NUMBER -->
                                                 <h:outputText styleClass="label label-default" rendered="#{FilePage.fileMetadata.datasetVersion.released and !(FilePage.fileMetadata.datasetVersion.draft or FilePage.fileMetadata.datasetVersion.inReview)}"
                                                               value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionNumber}.#{FilePage.fileMetadata.datasetVersion.minorVersionNumber}" /> 
@@ -97,10 +97,10 @@
                                                             </div>
                                                             <div class="col-xs-12 col-sm-4 col-md-3 citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                                 <div class="btn-group">
-                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown">
+                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                          #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
                                                                     </button>
-                                                                    <ul class="dropdown-menu" role="menu">
+                                                                    <ul class="dropdown-menu">
                                                                         <li>
                                                                             <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
                                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
@@ -150,10 +150,10 @@
                                                             </div>
                                                             <div class="col-xs-12 col-sm-4 col-md-3 citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                                 <div class="btn-group">
-                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown">
+                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
                                                                     </button>
-                                                                    <ul class="dropdown-menu" role="menu">
+                                                                    <ul class="dropdown-menu">
                                                                         <li>
                                                                             <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
                                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
@@ -196,7 +196,7 @@
                                                     <!-- DOWNLOAD/ACCESS DATASET -->
                                                     <div class="btn-group btn-group-justified" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                         <div class="btn-group">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                 ACCESS FILE <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
@@ -236,7 +236,8 @@
                                                         <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                                                  and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                            <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()">
+                                                            <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()"
+                                                                           title="#{bundle['dataset.editBtn']}">
                                                                 #{bundle['dataset.editBtn']} FILE
                                                             </p:commandLink>
                                                         </div>
@@ -244,10 +245,10 @@
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                                                  and !FilePage.lockedFromEdits
                                                                                  and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                 #{bundle['dataset.editBtn']} FILE <span class="caret"></span>
                                                             </button>
-                                                            <ul class="dropdown-menu pull-right text-left" role="menu">
+                                                            <ul class="dropdown-menu pull-right text-left">
                                                                 
                                                                 <!-- TODO: WHAT IS THIS? -->
                                                                 <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">

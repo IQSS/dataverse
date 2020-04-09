@@ -59,7 +59,8 @@
                     <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
+                                   target="_blank" rel="noopener">
                         #{bundle['file.mapData.worldMap']}
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
@@ -117,7 +118,8 @@
                     <h:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" target="_blank">
+                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
+                                   target="_blank" rel="noopener">
                         #{bundle['file.mapData.worldMap']}
                     </h:commandLink>
                     <p:commandLink rendered="#{downloadPopupRequired}"
@@ -139,14 +141,18 @@
     
     <!-- Compute Button *FILE PG only*: -->
     <li jsf:rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-        <h:outputLink value="#{FilePage.computeUrl}" styleClass="btn-compute" target="_blank">
+        <h:outputLink value="#{FilePage.computeUrl}" styleClass="btn-compute" 
+                      target="_blank" rel="noopener">
             #{bundle['file.compute']}
         </h:outputLink>
     </li>
     <!-- END: Compute Button *FILE PG only*: -->
  
     <!-- Compute Button *DATASET PG only*: -->
-    <h:outputLink style="font-size:2em !important;" value="#{DatasetPage.getComputeUrl(fileMetadata)}" styleClass="btn-compute btn btn-link bootstrap-button-tooltip" title="#{bundle['file.compute']}" target="_blank" rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
+    <h:outputLink style="font-size:2em !important;" styleClass="btn-compute btn btn-link bootstrap-button-tooltip" 
+                  title="#{bundle['file.compute']}" value="#{DatasetPage.getComputeUrl(fileMetadata)}"
+                  target="_blank" rel="noopener"
+                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
         <span class="glyphicon glyphicon-flash"/>
     </h:outputLink>
     <!-- END: Compute Button *DATASET PG only*: -->
@@ -542,11 +548,12 @@
         <ui:fragment rendered="#{!isFilePg}">
         <!-- DATASET PG -->
         
-        <!-- TODO - FIX UX INDICATOR YOUR REQUEST WAS SUBMITTED SINCE BTN LABEL IS NOW HIDDEN IN TITLE TOOLTIP -->
+        <!-- TODO - FIX UX INDICATOR YOUR REQUEST WAS SUBMITTED SINCE BTN LABEL IS NOW HIDDEN IN TITLE TOOLTIP
+                        FIX, WITH CSS POINTER-EVENTS VS JQUERY WORKAROUND, BUT... PRIMEFACES COMMANDLINK DIASABLED EMPTY TITLE BUG ???? -->
         
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and !requestAccessPopupRequired}"
-                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="EMPTY1 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                        update="@this"
@@ -555,7 +562,7 @@
         </p:commandLink>
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and requestAccessPopupRequired}"
-                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="EMPTY2 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
                        onclick="PF('requestAccessPopup').show()"
@@ -564,7 +571,7 @@
             <span class="glyphicon glyphicon-bullhorn"/>
         </p:commandLink>
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{!fileDownloadHelper.session.user.authenticated}"
-                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="EMPTY3 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        onclick="PF('accessSignUpLogIn_popup').show()">
             <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
