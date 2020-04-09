@@ -574,7 +574,7 @@ table.ui-panelgrid.facetsMoreLess tr.ui-widget-content {border:0;}
 table.ui-panelgrid.facetsMoreLess td {width:50%; border:0;}
 table.ui-panelgrid.facetsMoreLess td:last-child {text-align:right;}
 
-#dv-main div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;}
+#dv-main div.emptyResults.bg-warning {background:#FCF8F2; padding:.5em 1em;max-width:80%;}
 #resultsFacetsTopBlock {margin-bottom:.5em;}
 #resultsFacetsTopBlock a.facetLink.facetSelected {display:inline-block; margin-bottom:.5em; margin-right:1em; background-color:#E6F1F6; padding-left:.3em; padding-right:.3em;}
 
