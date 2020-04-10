@@ -805,7 +805,8 @@
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}">
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
-                                            <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
+                                            <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"></span>
+                                        </button>
                                         <ul class="dropdown-menu" role="menu">
                                             <ui:repeat var="exporter" value="#{DatasetPage.exporters}">
                                                 <li>
