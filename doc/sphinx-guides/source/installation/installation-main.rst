@@ -24,12 +24,6 @@ Unpack the zip file - this will create the directory ``dvinstall``.
 
 **Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
 
-Execute the installer script like this (but first read the note below about not running the installer as root)::
-
-        $ cd dvinstall
-        $ ./install
-
-
 **It is no longer necessary to run the installer as root!**
 
 Just make sure the user running the installer has write permission to:
@@ -39,10 +33,16 @@ Just make sure the user running the installer has write permission to:
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
-**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). But for now it is being offered as an (experimental) alternative. See README_python.txt, included in the installer bundle, for more information on how to run it.
-
-
 The only reason to run Payara as root would be to allow Payara itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Payara run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+
+Read the installer script directions like this::
+
+        $ cd dvinstall
+        $ less README_python.txt
+
+Alternatively you can download :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` from this guides.
+
+Follow the instructions in the text file.
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
@@ -98,8 +98,6 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara5/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
 .. _JHOVE: http://jhove.openpreservation.org
-
-The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
 Logging In
 ----------
