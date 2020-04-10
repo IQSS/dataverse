@@ -14,7 +14,7 @@
         
         <div>
             <ui:repeat value="#{FileDownloadRequestHelper.filesForRequestAccessByTermsOfUse.entrySet().toArray()}" var="restrictedTermsOfUse">
-                <div style="background-color: #eee; border-color: #777; padding: 5px; margin-bottom: 15px; margin-top: 5px;">
+                <div class="restricted-terms-of-use">
                     <p>
                         <h:outputText value="#{bundle['file.dataFilesTab.terms.list.filePrefix']}" />
                         <ui:repeat value="#{restrictedTermsOfUse.value}" var="dataFile" varStatus="status">

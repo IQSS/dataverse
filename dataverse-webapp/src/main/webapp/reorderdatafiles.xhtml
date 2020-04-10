@@ -144,6 +144,7 @@
                                                  action="#{ReorderDataFilesPage.saveFileOrder}"
                                                  onclick="PF('blockFileForm').show();"/>
                                 <p:commandButton id="cancel" value="#{bundle.cancel}"
+                                                 styleClass="button-cancel"
                                                  action="#{ReorderDataFilesPage.returnToPreviousPage}" process="@this"
                                                  update="@form"
                                                  oncomplete="javascript:post_cancel_edit_files_or_metadata()">

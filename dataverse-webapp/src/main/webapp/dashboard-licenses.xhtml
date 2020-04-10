@@ -163,21 +163,17 @@
                             </div>
                         </ui:repeat>
                     </div>
-                    <div class="container">
-                        <div class="row text-left">
-                            <div class="col" style="margin-top: 5%">
-                                <p:commandButton value="#{bundle.save}"
-                                                 update=":licenseEditForm"
-                                                 action="#{LicenseListingPage.saveEditedLicense(LicenseListingPage.licenseForEdit)}"
-                                                 style="margin-right: 1%"
-                                                 styleClass="btn btn-default"/>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.save}"
+                                            update=":licenseEditForm"
+                                            action="#{LicenseListingPage.saveEditedLicense(LicenseListingPage.licenseForEdit)}"
+                                            style="margin-right: 1%"
+                                            styleClass="btn btn-default"/>
 
-                                <p:commandButton value="#{bundle.close}"
-                                                 action="#{LicenseListingPage.refreshPage}"
-                                                 process="@this"
-                                                 styleClass="btn btn-default"/>
-                            </div>
-                        </div>
+                        <p:commandButton value="#{bundle.close}"
+                                            action="#{LicenseListingPage.refreshPage}"
+                                            process="@this"
+                                            styleClass="btn btn-default"/>
                     </div>
                 </h:form>
             </p:dialog>
@@ -197,7 +193,7 @@
                             </div>
                         </c:forEach>
                     </div>
-                    <div style="text-align: left; padding-top: 2%">
+                    <div class="button-block">
                         <p:button value="#{bundle.close}"
                                   onclick="PF('licenseLocalizedPreview').hide();"
                                   styleClass="btn btn-default"/>
@@ -269,19 +265,15 @@
                         </div>
                     </div>
 
-                    <div class="container">
-                        <div class="row text-left">
-                            <div class="col" style="margin-top: 2%">
-                                <p:commandButton value="#{bundle.save}"
-                                                 update="dialogForm"
-                                                 action="#{LicenseListingPage.saveNewLicense()}"
-                                                 style="margin-right: 1%" styleClass="btn btn-default"/>
-                                <p:commandButton value="#{bundle.cancel}"
-                                                 action="#{LicenseListingPage.refreshPage}"
-                                                 process="@this"
-                                                 styleClass="btn btn-default"/>
-                            </div>
-                        </div>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.save}"
+                                            update="dialogForm"
+                                            action="#{LicenseListingPage.saveNewLicense()}"
+                                            style="margin-right: 1%" styleClass="btn btn-default"/>
+                        <p:commandButton value="#{bundle.cancel}"
+                                            action="#{LicenseListingPage.refreshPage}"
+                                            process="@this"
+                                            styleClass="btn btn-default"/>
                     </div>
                 </h:form>
             </p:dialog>

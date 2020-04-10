@@ -147,7 +147,7 @@
                                              update="dataset-move-form"
                                              validateClient="true"
                                              oncomplete="if (args &amp;&amp; !args.validationFailed) PF('datamoveConfirmation').show();"/>
-                            <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}"/>
+                            <p:button styleClass="btn btn-default button-cancel" outcome="dashboard" value="#{bundle['cancel']}"/>
                         </div>
                         <p:dialog id="datamoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"
                                   widgetVar="datamoveConfirmation" modal="true">
@@ -164,7 +164,7 @@
                                                  onclick="PF('datamoveConfirmation').hide();"
                                                  action="#{DashboardDatamovePage.moveDataset()}"
                                                  update="dataset-move-form, :messagePanel" partialSubmit="true"/>
-                                <button class="btn btn-link" onclick="PF('datamoveConfirmation').hide();"
+                                <button class="btn btn-default button-cancel" onclick="PF('datamoveConfirmation').hide();"
                                         type="button">
                                     #{bundle['dashboard.datamove.confirm.no']}
                                 </button>
@@ -285,7 +285,7 @@
                                              update="dataverse-move-form"
                                              validateClient="true"
                                              oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dataverseMoveConfirmation').show();"/>
-                            <p:button styleClass="btn btn-link" outcome="dashboard" value="#{bundle['cancel']}"/>
+                            <p:button styleClass="btn btn-default button-cancel" outcome="dashboard" value="#{bundle['cancel']}"/>
                         </div>
                         <p:dialog id="dataverseMoveConfirmation" header="#{bundle['dashboard.card.datamove.manage']}"
                                   widgetVar="dataverseMoveConfirmation" modal="true">
@@ -302,7 +302,7 @@
                                                  onclick="PF('dataverseMoveConfirmation').hide();"
                                                  action="#{DashboardDatamovePage.moveDataverse()}"
                                                  update="@form,:messagePanel" partialSubmit="true"/>
-                                <button class="btn btn-link"
+                                <button class="btn btn-default button-cancel"
                                         onclick="PF('dataverseMoveConfirmation').hide();" type="button">
                                     #{bundle['dashboard.datamove.confirm.no']}
                                 </button>

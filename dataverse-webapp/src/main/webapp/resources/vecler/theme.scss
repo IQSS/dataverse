@@ -33,6 +33,8 @@ $main-logo: "img/logo-repod.svg" !default;
 $primefaces-main: "img/primefaces-main-repod.png" !default;
 $dataverse-icon: "img/dataverse-icon-repod.svg" !default;
 $ajax_spinner_filter: saturate(2) !default;
+$dataverse-icon-mono: "\f100" !default;
+$main-logo-mono: "\f202" !default;
 
 /* MX-RDR color scheme */
 
@@ -49,6 +51,8 @@ $main-logo: "img/logo-mxrdr.svg";
 $primefaces-main: "img/primefaces-main-mxrdr.png";
 $dataverse-icon: "img/dataverse-icon-mxrdr.svg";
 $ajax_spinner_filter: hue-rotate(140deg) saturate(2);
+$dataverse-icon-mono: "\f202";
+$main-logo-mono: "\f204";
 */
 
 
@@ -67,6 +71,8 @@ $main-logo: "img/logo-rds.svg";
 $primefaces-main: "img/primefaces-main-rds.png";
 $dataverse-icon: "img/dataverse-icon-rds.svg";
 $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
+$dataverse-icon-mono: "\f201";
+$main-logo-mono: "\f203";
 */
 
 /**
@@ -101,6 +107,7 @@ $ajax_spinner_filter: hue-rotate(170deg) saturate(2);
 	background-repeat: no-repeat;
 	background-position: center center;
 	color: transparent;
+	content: $dataverse-icon-mono;
 }
 
 
@@ -124,8 +131,13 @@ body {
 	color: $main-text-color;
 }
 
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+	text-shadow: none;
+}
+
 /* "Skip to content" label */
 .sr-only.impaired-navigation:focus {
+	position: fixed;
 	top: -1px;
 	left: 0;
 	right: 0;
@@ -171,6 +183,7 @@ body {
 		background: $main-color;
 		border: 1px solid $main-color;
 		box-shadow: none;
+		text-shadow: none;
 
 		&:hover {
 			background-color: $icon-color;
@@ -184,6 +197,7 @@ body {
 
 	&.btn-default {
 		@include btn-access;
+		text-shadow: none;
 	}
 
 	.glyphicon, .caret {
@@ -193,6 +207,7 @@ body {
 
 .alert {
 	color: #043e58;
+	box-shadow: none;
 
 	&.alert-info {
 		background: #e8f3ff;
@@ -222,9 +237,15 @@ body {
 	}
 }
 
+.bg-danger {
+	border-radius: $border-radius;
+}
+
 .ui-message, .ui-messages {
 	box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 1px 1px rgba(0,0,0,.075);
+}
 
+.ui-message, .ui-messages, * {
 	.ui-message-info, .ui-message-warn, .ui-message-error, .ui-message-fatal,
 	.ui-messages-info, .ui-messages-warn, .ui-messages-error, .ui-messages-fatal {
 		padding: 20px 23px;
@@ -240,7 +261,6 @@ body {
 	.ui-messages-info {
 		background: #f2f8fa;
 		border-color: #c5e0eb;
-		color: $main-text-color;
 	}
 
 	.ui-message-info-icon, .ui-message-warn-icon, .ui-message-error-icon, .ui-message-fatal-icon,
@@ -353,7 +373,11 @@ span.glyphicon-question-sign.tooltip-icon {
 	color: #de8800;
 }
 
-*, ui-widget-content  {
+.ui-widget-content .ui-selectonemenu.ui-state-default {
+	background: $gray-border-color;
+}
+
+*, .ui-widget-content  {
 	button, span {
 		&.ui-button.ui-state-default{
 			@include btn-access;
@@ -361,8 +385,8 @@ span.glyphicon-question-sign.tooltip-icon {
 	}
 }
 
-.ui-button.ui-state-default {
-	&[id*="Cancel"], &[id*="cancel"], &[class="button-cancel"] {
+.ui-button.ui-state-default, .ui-widget-content button.ui-button.ui-state-default {
+	&[id*="Cancel"], &[id*="cancel"], &.button-cancel {
 		border: none;
 		box-shadow: none;
 	}
@@ -444,6 +468,14 @@ a[tabindex="-1"] {
 
 /* Forms */
 
+input:disabled {
+	cursor: not-allowed;
+}
+
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover {
+	background-position: 0;
+}
+
 #datasetThumbnail {
 	border-radius: 5px;
 }
@@ -455,6 +487,7 @@ a[tabindex="-1"] {
 	.ui-selectonemenu-label {
 		margin-right: 23px;
 		padding-left: 15px;
+		padding-bottom: 5px;
 		background: #fff;
 		box-shadow: none;
 	}
@@ -474,7 +507,7 @@ a[tabindex="-1"] {
 
 		span.ui-icon.ui-icon-triangle-1-s {
 			width: 42px;
-			margin-top: 7px;
+			margin-top: 9px;
 			background: none;
 			text-align: center;
 
@@ -490,6 +523,11 @@ a[tabindex="-1"] {
 			}
 		}
 	}
+}
+
+
+div.ui-selectonemenu.form-control {
+	padding: 1px 0;
 }
 
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container  {
@@ -603,6 +641,28 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 	input:focus {
 		outline-offset: 1px;
 	}
+}
+
+#guestbookForm, #templateForm {
+	> .button-block {
+		button, a, input[type="button"] {
+			&:last-child {
+				border: 1px solid transparent;
+				box-shadow: none;
+		
+				&:active {
+					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+				}
+			}
+		}
+	}
+}
+
+.ui-spinner-up.ui-state-default {
+	border-radius: 0.267em 0.267em 0 0;
+}
+.ui-spinner-down.ui-state-default {
+	border-radius: 0 0 0.267em 0.267em;
 }
 
 /* File uploader */
@@ -989,6 +1049,10 @@ input.fancy-checkbox[type=checkbox] {
 	}
 }
 
+.ui-autocomplete-emptyMessage {
+	border-radius: 9px;
+}
+
 /* Buttons */
 
 .button-block {
@@ -1225,6 +1289,7 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 }
 
 .panel-default > .panel-heading {
+	border-radius: $border-radius $border-radius 0 0;
 	display: block;
 	padding: 16px 20px 14px 20px;
 	border-bottom: 1px solid $gray-border-color;
@@ -1384,6 +1449,7 @@ $navbar-height: 6.8em;
 			&.icon-dataverse {	
 				&::before {
 					background: none;
+					content: $main-logo-mono;
 				}
 			}
 
@@ -1423,6 +1489,7 @@ $navbar-height: 6.8em;
 		> a {
 			color: $main-text-color;
 			border-radius: $border-radius;
+			text-shadow: none;
 
 			.caret {
 				color: $icon-color;
@@ -1625,7 +1692,7 @@ div.panelSearchForm input.search-input {
 		text-shadow: none;
 	}
 
-	&.ui-state-disabled {
+	&.ui-state-disabled span {
 		filter: saturate(0);
 	}
 }
@@ -1825,6 +1892,10 @@ form[id$="facetCategoryForm"] {
 }
 div[id$="facetCategoryList"] > div > ul > li {
 	margin-bottom: 1.833em;
+
+	&:last-child {
+		border-bottom: none;
+	}
 }
 div[id$="facetCategoryList"] div li div.ui-widget {
 	padding-bottom: 1.6em;
@@ -1850,6 +1921,11 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 }
 
 /* Search results */
+
+#resultsFacetsTopBlock a.facetLink.facetSelected {
+	padding: 0.3em 0.6em;
+	border-radius: $border-radius;
+}
 
 #resultsCountPaginatorBlock {
 	margin-bottom: 8px;
@@ -1938,7 +2014,7 @@ table[id$="resultsTable"] {
 	.card-content-container {
 		margin-left: 3.333em;
 
-		> a, > span.text-muted {
+		> a, > span.text-muted, .card-title-icon-block + div {
 			font-size: 0.867em;
 		}
 	}
@@ -2253,13 +2329,6 @@ div.filesTable {
 		-webkit-transform: none;
 		transform: none;
 	}
-
-	.ui-state-default, a.btn {
-		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
-			@include btn-access;
-			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
-		}
-	}	
 	
 	.button-block {
 		border-top: 1px solid $gray-border-color;
@@ -2267,8 +2336,7 @@ div.filesTable {
 		padding-top: 27px;
 		padding-bottom: 31px;
 
-		button, a {
-
+		button, a, input[type="button"] {
 			padding: 6px 12px;
 			color: $link-color;
 
@@ -2286,14 +2354,9 @@ div.filesTable {
 				padding: 0;
 			}
 		}
-	}
-	
-	.ui-state-default, a.btn {
-		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
-			@include btn-access;
-			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
 
-			&:not([class^="ui-selectonemenu"]):not(.ui-button-icon-only):last-child {
+		.ui-state-default, a.btn {
+			&:last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
 		
@@ -2302,6 +2365,13 @@ div.filesTable {
 				}
 			}
 		}	
+	}
+	
+	.ui-state-default, a.btn {
+		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
+			@include btn-access;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+		}
 	}
 
 	.ui-icon {
@@ -2443,6 +2513,15 @@ div.ui-widget-overlay {
 	width: 100% !important;
 }
 
+.restricted-terms-of-use {
+	margin-bottom: 15px; 
+	margin-top: 5px;
+	padding: 5px; 
+
+	background-color: #eee;
+	border-radius: $border-radius;
+}
+
 /* Fix for the unnecessary scrollbar in some modals */
 div.ui-dialog.largePopUp {
 	overflow: hidden;
@@ -2454,7 +2533,1183 @@ div.ui-dialog.largePopUp {
 .consent-label {
 	padding-left: 1% !important;
 }
-
+  
 .no-bottom-border {
     border-bottom: none !important;
 }
+
+
+/**
+ * HIGH CONTRAST VERSION BELOW
+ */
+
+@mixin contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color) {
+	border-color: $contrast-foreground-color;
+	background: $contrast-foreground-color;
+	color: $contrast-background-color;
+	text-decoration: underline;
+
+	& .glyphicon, & .caret {
+		color: $contrast-background-color !important;
+	}
+
+	&:hover, &:active, &:focus, &:active:focus {
+		color: $contrast-background-color;
+		background: $contrast-link-color;
+	}
+}
+
+@mixin contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color) {
+	border-color: $contrast-background-color;
+	background: $contrast-background-color;
+	color: $contrast-link-color;
+	text-decoration: underline;
+
+	& .glyphicon, & .caret {
+		color: $contrast-link-color !important;
+	}
+
+	&:hover, &:active, &:focus, &:active:focus {
+		color: $contrast-foreground-color;
+		background: $contrast-hover-color;
+	}
+}
+
+/* Template */
+
+ @mixin high-contrast-template (
+	 $contrast-background-color: #000,
+	 $contrast-foreground-color: #ff0,
+	 $contrast-hover-color: #323232,
+	 $contrast-alt-background-color: #484848,
+	 $contrast-link-color: #fff,
+	 $contrast-alt-focus-color: #f00,
+	 $contrast-primefaces-main: "img/primefaces-main-yellow.png",
+	 $contrast-primefaces-main-alt: "/javax.faces.resource/images/ui-icons_333333_256x240.png?ln=primefaces-bootstrap",
+	 $contrast-ajax-spinner-filter: invert(1) hue-rotate(35deg) saturate(16)
+	) {
+	background-color: $contrast-background-color;
+	color:  $contrast-foreground-color;
+
+	/* Selection */
+
+	::selection {
+		background: $contrast-foreground-color;
+		color: $contrast-background-color;
+	}
+
+	.ui-state-selected::selection {
+		background: $contrast-background-color;
+		color: $contrast-foreground-color;
+	}
+
+	/* Focus */
+
+	*:focus, a:focus {
+		outline: 2px dashed $contrast-foreground-color !important;
+	}
+	.ui-selectonemenu.ui-state-focus {
+		&, & .ui-selectonemenu-trigger {
+			outline: 2px dashed $contrast-foreground-color !important;
+		}
+	}
+	.ui-selectcheckboxmenu.ui-state-focus {
+		&, & .ui-selectcheckboxmenu-trigger {
+			outline: 2px dashed $contrast-foreground-color !important;
+		}
+	}
+
+	#navbarFixed #cookie-banner, .sr-only.impaired-navigation:focus {
+		background-color: $contrast-foreground-color;
+		color:  $contrast-background-color;
+
+		::selection {
+			background: $contrast-background-color;
+			color: $contrast-foreground-color;
+		}
+
+		*:focus, a:focus {
+			outline: 2px dashed $contrast-background-color !important;
+		}
+	}
+
+	/* General rules */
+
+	.ui-state-hover, .ui-widget-content .ui-state-hover,
+	.text-muted {
+		color: $contrast-foreground-color;
+	}
+
+	#navbarFixed,
+	#navbarFixed .navbar-brand #site-subtitle,
+	#navbarFixed .navbar-brand #site-title,
+	#footer,
+	div.ui-widget-overlay,
+	.dropdown-menu,
+	input,
+	.ui-widget-content:not(.file-thumbnail-icon),
+	.ui-inputfield,
+	.alert.alert-info,
+	.panel,
+	.btn.btn-default.btn-access,
+	div.alert-info.bg-citation,
+	.ui-chkbox-box .ui-chkbox-icon::before,
+	#resultsCountPaginatorBlock div.results-count,
+	#metrics-content, #metrics-label,
+	.form-horizontal .control-label,
+	#breadcrumbNavBlock .breadcrumbActive,
+	.ui-widget-header,
+	.bg-warning,
+	.ui-widget-content .ui-state-default:not(.ui-button),
+	.ui-state-default,
+	#dragdropMsg,
+	.highlight,
+	.ui-message-error,
+	.ui-messages-error,
+	pre,
+	.ui-widget-content code {
+		background-color: $contrast-background-color;
+		color:  $contrast-foreground-color;
+	}
+
+	.ui-state-highlight:not(tr), .ui-widget-content .ui-state-highlight:not(tr), .ui-widget-header .ui-state-highlight,
+	.ui-picklist .ui-picklist-list-wrapper .ui-widget-content .ui-state-highlight {
+		background-color: $contrast-foreground-color;
+		color:  $contrast-background-color;
+	}
+
+	.ui-dialog.ui-widget-content .ui-dialog-titlebar {
+		border-bottom-color: $contrast-link-color;
+		background-color: $contrast-background-color;
+		color: $contrast-link-color;
+	}
+
+	.help-block {
+		background: transparent;
+		color: $contrast-foreground-color;
+	}
+
+	.bg-info {
+		background: $contrast-alt-background-color;
+		color: $contrast-foreground-color;
+	}
+
+	#carouselBlocksWrapper .owl-carousel .item,
+	.alert.alert-info,
+	#metrics-content, #metrics-label,
+	.bg-warning,
+	.highlight,
+	.ui-message-error,
+	.ui-messages-error,
+	select.ui-paginator-rpp-options,
+	.ui-widget-content code {
+		border: 1px solid $contrast-foreground-color;
+	}
+
+	.ui-dialog.ui-widget.ui-widget-content,
+	div.alert-info.bg-citation,
+	#navbarsearch-modal,
+	#search-row-panel,
+	.panel {
+		border: 1px solid $contrast-link-color;
+	}
+
+	.ui-dialog.ui-widget-content .bg-muted,
+	div.ui-dialog div.highlight,
+	.form-control[readonly],
+	.label.label-default,
+	.label.label-warning,
+	.label.label-success,
+	.label.label-info {
+		border-color: $contrast-foreground-color;
+		background-color: $contrast-background-color;
+		color: $contrast-link-color;
+	}
+
+	.label.label-primary {
+		border-color: $contrast-foreground-color;
+		background-color: $contrast-foreground-color;
+		color: $contrast-background-color;
+	}
+
+	a, .btn,
+	#dv-sidebar a.facetLink,
+	#carouselBlocksWrapper a,
+	.button-block a,
+	.nav > li > a:focus,
+	#navbarFixed form.navbar-form-link a.ui-commandlink,
+	.dropdown-menu > li > a,
+	#navbarFixed .dropdown.accountName .logout a,
+	.ui-widget-content a:not(.btn) {
+		color: $contrast-link-color;
+		text-decoration: underline;
+
+		&:active, &:hover, &:focus {
+			color: $contrast-foreground-color;
+			text-decoration: underline;
+		}
+	}
+
+	.dropdown-menu > li > a,
+	.dropdown-menu > form > li > a,
+	#navbarFixed .dropdown.accountName .logout a {
+		text-decoration: underline;
+
+		&:active, &:hover, &:focus {
+			background-color: $contrast-hover-color !important;
+			text-decoration: underline;
+		}
+	}
+
+	div[id$="notifications"].ui-tabs-panel div.notification-item-cell,
+	.panel-default > .panel-heading {
+		border-bottom-color: $contrast-link-color;
+	}
+
+	hr, .ui-widget-header, .button-block.form-top, .form-field-group {
+		border-color: $contrast-link-color;
+	}
+
+	.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover {
+		background-color: $contrast-hover-color;
+	}
+
+	/* Icons */
+
+	#ajaxStatusPanel_start img {
+		filter: $contrast-ajax-spinner-filter;
+	}
+
+	[data-icon]::before, .icon-astro::before, .icon-audio::before, .icon-code::before, .icon-dataset::before, .icon-dataverse::before, .icon-dataverse::after, .icon-document::before, .icon-file::before, .icon-geodata::before, .icon-image::before, .icon-network::before, .icon-other::before, .icon-package::before, .icon-tabular::before, .icon-unlock::before, .icon-video::before,
+	#dv-sidebar a.facetTypeLink {
+		color: $contrast-foreground-color;
+	}
+	.icon-dataverse::before {
+		background: none;
+	}
+
+	.ui-message, .ui-messages, * {	
+		.ui-message-info, .ui-message-warn, .ui-message-error, .ui-message-fatal,
+		.ui-messages-info, .ui-messages-warn, .ui-messages-error, .ui-messages-fatal {
+			color: $contrast-foreground-color;
+
+			.ui-icon {
+				background-image: url($contrast-primefaces-main);
+			}
+		}
+		
+		.ui-message-info-icon::before,
+		.ui-messages-info-icon::before,
+		.ui-message-warn-icon::before,
+		.ui-messages-warn-icon::before,
+		.ui-message-error-icon::before,
+		.ui-messages-error-icon::before,
+		.ui-message-fatal-icon::before,
+		.ui-messages-fatal-icon::before {
+			color: $contrast-foreground-color;
+		}
+	}
+
+	.ui-state-default .ui-icon, .ui-widget-header .ui-icon, .ui-widget-content .ui-icon {
+		background-image: url($contrast-primefaces-main);
+	}
+
+	/* Alerts, errors, notifications */
+
+	.alert {
+		color: $contrast-foreground-color;
+	
+		&.alert-info, &.alert-success, &.alert-danger, &.alert-warning {
+			background: $contrast-background-color;
+			border-color: $contrast-foreground-color;
+		}
+	}
+
+	.text-warning {
+		color: $contrast-link-color;
+	}
+	.text-danger {
+		color: $contrast-alt-focus-color;
+	}
+	.text-success {
+		color: $contrast-foreground-color;
+	}
+
+	.bg-danger {
+		border-color: $contrast-foreground-color;
+		background: $contrast-background-color;
+
+		.text-danger {
+			color: $contrast-foreground-color;
+		}
+	}
+
+	.ui-autocomplete-emptyMessage {
+		border: 1px solid $contrast-foreground-color;
+		background: $contrast-background-color;
+		color: $contrast-foreground-color;
+	}
+
+	/* Buttons, inputs */
+
+	legend {
+		color: $contrast-foreground-color;
+	}
+
+	.dropdown-menu {
+		border-color: $contrast-link-color;
+
+		li a {
+			text-decoration: underline !important;
+		}
+
+		.divider {
+			background-color: $contrast-link-color;
+		}
+	}
+
+	.ui-button {
+		text-decoration: underline !important;
+	}
+
+	#actionButtonBlock .glyphicon {
+		color: $contrast-foreground-color;
+	}
+
+	.btn.btn-default.btn-access, .btn.btn-default, .btn.btn-primary,
+	.ui-widget-content button.ui-button.ui-state-default,
+	.ui-widget-content .ui-button.ui-state-default,
+	.ui-widget-content .ui-selectcheckboxmenu-trigger.ui-state-default,
+	.ui-dialog.ui-widget-content span.ui-button.ui-state-default,
+	.ui-selectcheckboxmenu-trigger.ui-state-default,
+	.ui-dialog.ui-widget-content .ui-selectcheckboxmenu-trigger.ui-state-default,
+	* button.ui-button.ui-state-default, span.ui-button.ui-state-default {
+		@include contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+
+		.ui-icon {
+			background-image: url($contrast-primefaces-main-alt);
+		}
+	}
+
+	.btn-group {
+		.btn + .btn,
+		.btn + .btn-group,
+		.btn-group + .btn,
+		.btn-group + .btn-group {
+			margin-left: 1px;
+		}
+	}
+
+	.ui-button.ui-state-default, .ui-widget-content button.ui-button.ui-state-default {
+		&[id*="Cancel"], &[id*="cancel"], &.button-cancel {
+			@include contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+		}
+	}
+	
+	input[type="text"], input[type="password"], textarea, .ui-inputfield, .ui-widget-content .ui-inputfield, .ui-widget-header .ui-inputfield {
+		&, &.form-control {
+			border-color: $contrast-link-color;
+			background: $contrast-background-color;
+			color: $contrast-foreground-color;
+
+			&::placeholder {
+				color: $contrast-foreground-color;
+				opacity: 0.7;
+			}
+		}
+	}
+
+	.ui-dialog.ui-widget-content {
+		.ui-state-default:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box), a.btn:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
+			@include contrast-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+		}
+
+		.button-block {
+			border-top-color: $contrast-link-color;
+
+			button, a, input[type="button"] {
+				&.btn:last-child, &.ui-state-default:last-child {
+					@include contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+				}
+			}
+		}
+	}
+
+	#guestbookForm, #templateForm {
+		> .button-block {
+			button:last-child, a:last-child, input[type="button"]:last-child {
+				@include contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+			}
+		}
+	}
+
+	select.ui-widget-content {
+		&:hover, &:active, &:focus {
+			border: 1px solid $contrast-foreground-color;
+			background-color: $contrast-hover-color;
+		}
+	}
+	
+	.ui-selectonemenu, .ui-selectcheckboxmenu {
+		border-color: $contrast-link-color;
+		text-decoration: underline;
+
+		.ui-selectonemenu-label, .ui-selectcheckboxmenu-label-container {
+			border: $contrast-foreground-color;
+			background: $contrast-background-color;
+
+			label {
+				background: $contrast-background-color;
+				color: $contrast-foreground-color;
+				text-decoration: underline;
+
+				&:hover {
+					background: $contrast-hover-color;
+				}
+			}
+
+			&:hover {
+				background: $contrast-hover-color;
+			}
+		}
+
+		.ui-selectonemenu-trigger.ui-state-default, .ui-selectcheckboxmenu-trigger.ui-state-default {
+			border: $contrast-foreground-color;
+			background: $contrast-foreground-color;
+
+			span.ui-icon.ui-icon-triangle-1-s::before {
+				color: $contrast-background-color;
+			}
+
+			&:hover, &:active, &:focus {
+				background: $contrast-link-color;
+			}
+		}
+
+		&.ui-state-focus {
+			.ui-selectonemenu-label, .ui-selectcheckboxmenu-label-container {
+				background: $contrast-hover-color;
+
+				label {
+					background: $contrast-hover-color;
+				}
+			}
+		}
+	}
+	.ui-selectonemenu-panel.ui-widget-content {
+		border-color: $contrast-link-color;
+	}
+
+	.ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container .ui-selectcheckboxmenu-token {
+		border-color: $contrast-foreground-color;
+		color: $contrast-foreground-color;
+		background: $contrast-background-color;
+	}
+
+	.pagination, .ui-widget-content div.filesTable .ui-paginator {
+		> li > a,
+		.ui-paginator-first,
+		.ui-paginator-prev,
+		.ui-paginator-next,
+		.ui-paginator-last,
+		.ui-paginator-page {
+			border-color: $contrast-foreground-color;
+			background-color: $contrast-background-color;
+			color: $contrast-link-color;
+			text-decoration: underline;
+
+			&:hover, &:active, &:focus {
+				border-color: $contrast-foreground-color;
+				background-color: $contrast-hover-color;
+				color: $contrast-foreground-color;
+			}
+		}
+
+		.ui-paginator-first,
+		.ui-paginator-prev,
+		.ui-paginator-next,
+		.ui-paginator-last {
+			&:hover, &:active, &:focus {
+				.ui-icon {
+					background-image: url($contrast-primefaces-main-alt);
+				}
+			}
+		}
+
+		.active > a,
+		.ui-paginator-pages .ui-state-active {
+			border-color: $contrast-foreground-color;
+			background: $contrast-foreground-color;
+			color: $contrast-background-color;
+
+			&:hover, &:active, &:focus {
+				border-color: $contrast-foreground-color;
+				background: $contrast-link-color;
+				color: $contrast-background-color;
+			}
+		}
+
+		[class^="ui-paginator-"]:not(.ui-paginator-current):not(.ui-state-active) {
+			&:hover, &:active, &:focus {
+				border-color: $contrast-foreground-color;
+				background: $contrast-link-color;
+				color: $contrast-background-color;
+			}
+		}
+
+		> .disabled > a,
+		> .ui-state-disabled {
+			border-color: $contrast-foreground-color;
+			background: $contrast-background-color;
+			color: $contrast-link-color;
+			opacity: 0.7;
+			text-decoration: none;
+
+			&:hover, &:active, &:focus {
+				border-color: $contrast-foreground-color;
+				background: $contrast-background-color;
+				color: $contrast-link-color;
+				text-decoration: none;
+			}
+
+			& span {
+				filter: grayscale(0);
+			}
+		}
+	}
+	
+	.ui-chkbox-box.ui-state-focus .ui-chkbox-icon::before,
+	.ui-chkbox-box.ui-state-focus .ui-chkbox-icon.ui-icon-check::before {
+		color: $contrast-alt-focus-color;
+	}
+
+	.checkbox label input + span::before, label input.fancy-checkbox[type="checkbox"] + span::before {
+		color: $contrast-foreground-color;
+	}
+	.checkbox label input:focus + span::before, label input.fancy-checkbox[type="checkbox"]:focus + span::before {
+		color: $contrast-alt-focus-color;
+	}
+
+	.ui-radiobutton .ui-radiobutton-box {
+		border-color: $contrast-foreground-color;
+
+		.ui-radiobutton-icon {
+			background-color: $contrast-foreground-color;
+		}
+
+		&.ui-state-focus {
+			border-color: $contrast-alt-focus-color;
+	
+			.ui-radiobutton-icon {
+				background-color: $contrast-alt-focus-color;
+			}
+		}
+	}
+
+	.ui-datatable.ui-widget, .ui-autocomplete-panel {
+		.ui-autocomplete-table, table {
+			thead th, thead th.ui-state-default {
+				.ui-chkbox-box::before, .ui-chkbox-icon::before {
+					background: $contrast-background-color;
+				}
+			}
+		}
+	}
+
+	.ui-widget-content .ui-selectonemenu.ui-state-default {
+		background: $contrast-link-color;
+	}
+	.ui-selectonemenu .ui-selectonemenu-trigger.ui-state-default {
+		padding-bottom: 34px;
+	}
+
+	.ui-widget-content .ui-picklist .ui-state-disabled {
+		background-color: $contrast-background-color;
+	}
+
+	span.glyphicon.glyphicon-question-sign,
+	span.glyphicon.glyphicon-question-sign.tooltip-icon {
+		&::before {
+			color: $contrast-foreground-color;
+		}
+
+		&:focus::before {
+			color: $contrast-alt-focus-color;
+		}
+	}
+
+	.ui-spinner-button {
+		background: $contrast-background-color;
+		border: 1px solid $contrast-foreground-color;
+
+		&:hover {
+			background: $contrast-hover-color;
+		}
+	}
+
+	.dropdown-submenu > a {
+		&::after, &:hover::after {
+			border-left-color: $contrast-foreground-color;
+		}
+	}
+
+	#terms-agreement-block.well {
+		border-color: $contrast-link-color;
+		background: $contrast-background-color;
+		color: $contrast-foreground-color;
+	}
+
+	/* Datepicker */
+
+	.ui-datepicker.ui-widget-content {
+		.ui-state-disabled {
+			background: $contrast-background-color;
+		}
+
+		.ui-datepicker-calendar .ui-state-default {
+			background: $contrast-alt-background-color;
+		}
+
+		select {
+			background: $contrast-background-color;
+			border: 1px solid $contrast-foreground-color;
+		}
+	}
+
+	/* Dataverse page */
+
+	/* Override default colors */
+	#dataverseHeader {
+		&[style*="background:#FFFFFF"], *[style*="background:#FFFFFF"] {
+			background-color: $contrast-background-color !important;
+		}
+		&[style*="color:#888888"], *[style*="color:#888888"] {
+			color:  $contrast-foreground-color !important;
+		}
+		&[style*="color:#428BCA"], *[style*="color:#428BCA"] {
+			color:  $contrast-link-color !important;
+
+			&:hover, &:focus {
+				color:  $contrast-foreground-color !important;
+			}
+		}
+	}
+	
+	#featuredDataversesBlock div.customNavigation {
+		span.glyphicon {
+			border-color: $contrast-foreground-color;
+			background-color: $contrast-background-color;
+			color: $contrast-link-color;
+		}
+
+		a:hover, a:active, a:focus {
+			span.glyphicon {
+				color: $contrast-foreground-color;
+				background: $contrast-alt-background-color;
+			}
+		}
+	}
+	
+	#resultsFacetsTopBlock a.facetLink.facetSelected {
+		background: $contrast-alt-background-color;
+	}
+
+	table[id$="resultsTable"] td {
+		> div.datasetResult, > div.dataverseResult {
+			border-color: $contrast-foreground-color;
+		}
+		>  div.fileResult {
+			border-color: $contrast-link-color;
+		}
+	}
+
+	#dv-main div.emptyResults.bg-warning {
+		border: 1px solid $contrast-foreground-color;
+		background: $contrast-background-color;
+	}
+
+	div[id$="facetCategoryList"] > div > ul > li {
+		border-bottom-color: $contrast-link-color;
+	}
+
+	/* Dataset page */
+
+	.glyphicon.glyphicon-asterisk.text-danger::before {
+		color: $contrast-alt-focus-color;
+	}
+
+	#metrics-label a {
+		color: $contrast-link-color;
+
+		&:hover, &:focus {
+			color: $contrast-foreground-color;
+			text-decoration: underline;
+		}
+	}
+
+	.ui-tabs {
+		.ui-tabs-nav.ui-widget-header {
+			border-bottom-color: $contrast-link-color;
+	
+			li {
+				border-color: $contrast-link-color;
+				background: $contrast-background-color;
+	
+				a {
+					color: $contrast-link-color;
+					text-decoration: underline;
+				}
+				&:focus a, a:active {
+					color: $contrast-foreground-color;
+				}
+			}
+	
+			li.ui-state-hover {
+				border-color: $contrast-foreground-color $contrast-foreground-color $contrast-link-color $contrast-foreground-color;
+				background: $contrast-background-color;
+	
+				a {
+					color: $contrast-foreground-color;
+				}
+			}
+	
+			li.ui-state-active {
+				border-color: $contrast-link-color $contrast-link-color transparent $contrast-link-color;
+				background: $contrast-background-color;
+			}
+		}
+
+		&.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {
+			color: $contrast-foreground-color;
+			text-decoration: none;
+		}
+
+		&.ui-tabs-top {
+			border-bottom-color: $contrast-link-color;
+		}
+	}
+	
+	.ui-datatable.ui-widget table {
+		thead#datasetForm\:tabView\:filesTable_head tr,
+		thead#datasetForm\:filesTable_head tr,
+		thead tr {
+			background: $contrast-background-color;
+			color: $contrast-foreground-color;
+			border-color: $contrast-link-color;
+	
+			th.ui-state-default {
+				background: $contrast-background-color;
+	
+				.ui-chkbox-icon.ui-icon {
+					background: $contrast-background-color;
+				}
+			}
+	
+			&.ui-datatable-odd {
+				background: $contrast-background-color;
+				border-color: $contrast-link-color;
+		
+				th.ui-state-default {
+					background: $contrast-background-color;
+		
+					.ui-chkbox-icon.ui-icon {
+						background: $contrast-background-color;
+					}
+				}
+			}
+		}
+
+		thead th.ui-state-default,
+		tr td {
+			border-color: $contrast-link-color;
+		}
+	}
+		
+	.ui-datatable.ui-widget tr.ui-widget-content {
+		.text-muted {
+			background: transparent;
+			color: $contrast-foreground-color;
+		}
+
+		&:hover td {
+			background: $contrast-hover-color;
+
+			.ui-chkbox-icon.ui-icon::before {
+				background: $contrast-hover-color;
+			}
+		}
+
+		&.ui-state-highlight td {
+			background: $contrast-foreground-color;
+			color: $contrast-background-color;
+	
+			.ui-chkbox-box::before, .ui-chkbox-icon.ui-icon::before {
+				background: $contrast-foreground-color;
+				color: $contrast-background-color;
+			}
+
+			.text-muted {
+				background: transparent;
+				color: $contrast-background-color;
+			}
+
+			.file-thumbnail-icon::before {
+				color: $contrast-background-color !important;
+			}
+
+			&.col-file-thumb span[class^="icon"]::before {
+				color: $contrast-background-color;
+			}
+
+			a:not(.btn) {
+				color: $contrast-background-color;
+			}
+
+			.dropdown-menu a:not(.btn) {
+				color: $contrast-link-color;
+
+				&:hover, &:active, &:hover {
+					color: $contrast-foreground-color;
+				}
+			}
+
+			.btn.btn-default {
+				@include contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
+			}
+		}
+	}
+
+	.ui-datatable.ui-widget.no-alternating-row-colors .ui-datatable-odd:not(.ui-state-highlight):not(:hover) td {
+		background: $contrast-background-color;
+	}
+	.ui-datatable.ui-widget:not(.no-alternating-row-colors) .ui-datatable-odd:not(.ui-state-highlight):not(:hover) td {
+		background: $contrast-alt-background-color;
+
+		.ui-chkbox-box::before, .ui-chkbox-icon.ui-icon::before {
+			background: $contrast-alt-background-color;
+		}
+	}
+
+	&, .ui-widget-content, .ui-datatable.ui-widget {
+		tr.ui-state-highlight {
+			&, &.ui-datatable-odd {
+				td ul.dropdown-menu a {
+					color: $contrast-link-color;
+
+					&:focus, &:active, &:hover {
+						color: $contrast-foreground-color;
+					}
+				}
+			}
+		}
+	}
+
+	.table-striped > tbody {
+		> tr:nth-of-type(2n+1) {
+			background: $contrast-background-color;
+		}
+
+		> tr:hover {
+			background: $contrast-hover-color;
+
+			.ui-chkbox-icon::before {
+				background: $contrast-hover-color;
+			}
+		}
+	}
+
+	.panel-default > .panel-heading {
+		background: $contrast-background-color;
+		color: $contrast-foreground-color;
+
+		.glyphicon {
+			color: $contrast-foreground-color;
+		}
+
+		&.text-info[data-toggle="collapse"] {
+			color: $contrast-link-color;
+
+			&:focus, &:active, &:hover {
+				color: $contrast-foreground-color;
+			}
+		}
+	}
+
+	.ui-widget-content, .ui-widget-header {
+		li.ui-autocomplete-token {
+			&, &.ui-state-active {
+				background: $contrast-background-color;
+				border-color: $contrast-foreground-color;
+			}
+		}
+	}
+	
+	.ui-autocomplete-multiple-container {
+		border-color: $contrast-link-color;
+	}
+	
+	.ui-autocomplete-panel {
+		.ui-autocomplete-table {
+			border-color: $contrast-link-color;
+	
+			&.ui-widget-content {
+				tr {
+					color: $contrast-foreground-color;
+	
+					&.ui-widget-header {
+						td {
+							background: $contrast-alt-background-color;
+							border-color: $contrast-link-color;
+						}
+					}
+				}
+			}
+		}
+	}
+	.ui-widget-content tr.ui-state-highlight.ui-autocomplete-item  td {
+		background: $contrast-hover-color;
+	}
+
+	#version-details-block > div {
+		border-color: $contrast-background-color;
+	}
+
+	/* Dashboard */
+
+	#dashboard-block div.card-box {
+		border: 1px solid $contrast-link-color;
+		background: $contrast-background-color;
+	}
+
+	/* Navbar, footer */
+
+	.sr-only.impaired-navigation:focus  {
+		border-color: $contrast-background-color;		
+	}
+
+	#navbarFixed {
+		border-color: $contrast-foreground-color;
+
+		.navbar-brand #site-logo, .icon-dataverse::before {
+			background: none;
+		}
+
+		a {
+			color: $contrast-alt-background-color;
+
+			&:hover {
+				color: $contrast-hover-color;
+			}
+		}
+
+		#cookie-banner form button {
+			border-color: $contrast-background-color;
+			background-color: $contrast-foreground-color;
+			color: $contrast-background-color;
+			text-decoration: underline;
+	
+			&:hover {
+				border-color: $contrast-foreground-color;
+				background-color: $contrast-background-color;
+				color: $contrast-foreground-color;
+			}
+		}
+
+		.text-danger {
+			color: $contrast-foreground-color;
+		}
+		.label.label-danger {
+			border: 1px solid $contrast-foreground-color;
+			background: $contrast-foreground-color;
+			color: $contrast-background-color;
+		}
+
+		#navbar-underline {
+			border-color: $contrast-link-color;
+		}
+
+	}
+	.navbar-default {
+		#topNavBar .navbar-nav {
+			a {
+				color: $contrast-link-color;
+	
+				&:hover, &:active, &:focus {
+					color: $contrast-foreground-color;
+					text-decoration: underline;
+				}
+			}
+	
+			> .open > a {
+				background: $contrast-alt-background-color
+			}
+	
+			> li > a .caret, .navbar-nav > form > a .caret {
+				color: $contrast-foreground-color;
+			}
+		}
+
+		.navbar-toggle {
+			&:hover {
+				background: $contrast-hover-color;
+			}
+	
+			.icon-bar {
+				background-color: $contrast-foreground-color;
+			}
+		}
+
+		.navbar-collapse {
+			border-bottom-color: $contrast-link-color;
+		}
+	}
+
+	#footer .footer-links .row {
+		border-top-color: $contrast-link-color;
+
+		div[class^="col-"] p span {
+			border-left-color: $contrast-link-color;
+		}
+	}
+
+	/* Modals */
+
+	#sharrre-block a {
+		border: 1px solid $contrast-link-color;
+		background-color: $contrast-background-color !important;
+		color: $contrast-link-color;
+
+		span {
+			color: $contrast-link-color;
+		}
+	}
+
+	.ui-dialog.ui-widget-content {
+		background-color: $contrast-background-color;
+
+		&, .ui-state-default, .ui-widget-header, .ui-widget-content {
+			.ui-icon {
+				background-image: url($contrast-primefaces-main);
+			}
+
+			button .ui-icon {
+				background-image: url($contrast-primefaces-main-alt);
+			}
+		} 
+
+		.ui-dialog-content, .help-block {
+			color: $contrast-foreground-color;
+		}
+
+		.text-info {
+			color: $contrast-foreground-color;
+		}
+
+		.ui-widget-header,
+		.ui-fileupload-content.ui-widget-content {
+			border-color: $contrast-link-color;
+		}
+	}
+
+	.restricted-terms-of-use {
+		border: 1px solid $contrast-foreground-color;
+		background: $contrast-background-color;
+	}
+
+	/* Bootstrap tooltips, popovers */
+	
+	.tooltip {
+		.tooltip-inner {
+			background-color: $contrast-foreground-color;
+			color: $contrast-background-color;
+			border: 1px solid $contrast-background-color;
+		}
+
+		&.top .tooltip-arrow {
+			border-top-color: $contrast-foreground-color;
+		}
+		&.bottom .tooltip-arrow {
+			border-bottom-color: $contrast-foreground-color;
+		}
+		&.left .tooltip-arrow {
+			border-left-color: $contrast-foreground-color;
+		}
+		&.right .tooltip-arrow {
+			border-right-color: $contrast-foreground-color;
+		}
+	}
+
+	.popover {
+		background: $contrast-background-color;
+		border: 1px solid $contrast-foreground-color;
+
+		.popover-title {
+			background: $contrast-background-color;
+			color: $contrast-foreground-color;
+			border-bottom: 1px solid $contrast-link-color;
+		}
+
+		.popover-content code {
+			background: $contrast-alt-background-color;
+			color: $contrast-foreground-color;
+		}
+
+		&.top > .arrow::after {
+			border-top-color: $contrast-foreground-color;
+		}
+		&.bottom > .arrow::after {
+			border-bottom-color: $contrast-foreground-color;
+		}
+		&.left > .arrow::after {
+			border-left-color: $contrast-foreground-color;
+		}
+		&.right > .arrow::after {
+			border-right-color: $contrast-foreground-color;
+		}
+	}
+}
+
+/* Definitions */
+
+body.high-contrast-yellow-on-black {
+	@include high-contrast-template();
+}
+
+/* Other templates in beta stage, not fully functional/tested yet. Just a proof of concept */
+
+/*
+body.high-contrast-white-on-black {
+	@include high-contrast-template (
+		$contrast-foreground-color: #fff, 
+		$contrast-link-color: #ff0,
+		$contrast-primefaces-main: "img/primefaces-main-white.png",
+		$contrast-ajax-spinner-filter: invert(1) hue-rotate(35deg) saturate(16) grayscale(1)
+	);
+}
+
+body.high-contrast-black-on-yellow {
+	@include high-contrast-template (
+		$contrast-background-color: #ff0,
+		$contrast-foreground-color: #000,
+		$contrast-hover-color: #fff,
+		$contrast-alt-background-color: #ff9,
+		$contrast-link-color: #484848,
+		$contrast-primefaces-main: "/javax.faces.resource/images/ui-icons_333333_256x240.png?ln=primefaces-bootstrap",
+		$contrast-primefaces-main-alt: "img/primefaces-main-yellow.png",
+		$contrast-ajax-spinner-filter: grayscale(1) brightness(0.75)
+	);
+}
+
+body.high-contrast-black-on-white {
+	@include high-contrast-template (
+		$contrast-background-color: #fff,
+		$contrast-foreground-color: #000,
+		$contrast-hover-color: #ff0,
+		$contrast-alt-background-color: #eee,
+		$contrast-link-color: #484848,
+		$contrast-primefaces-main: "/javax.faces.resource/images/ui-icons_333333_256x240.png?ln=primefaces-bootstrap",
+		$contrast-primefaces-main-alt: "img/primefaces-main-white.png",
+		$contrast-ajax-spinner-filter: grayscale(1) brightness(0.75)
+	);
+}
+*/

@@ -72,10 +72,10 @@ public class PasswordValidatorUtil {
         }
 
         if (errors.contains(errorState.toString())) {
-            String fail = "<span class=\"glyphicon glyphicon-ban-circle\" style=\"color:#a94442\"/> ";
+            String fail = "<span class=\"glyphicon glyphicon-ban-circle text-danger\"/> ";
             return fail;
         } else {
-            String ok = "<span class=\"glyphicon glyphicon-ok\" style=\"color:#3c763d\"/> ";
+            String ok = "<span class=\"glyphicon glyphicon-ok text-success\"/> ";
             return ok;
         }
     }
