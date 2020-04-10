@@ -459,13 +459,48 @@ For example::
 Add a File to a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a file to an existing Dataset. Description and tags are optional::
+Add a file to an existing Dataset. Description, terms of use and tags are optional::
 
     POST http://$SERVER/api/datasets/$id/add?key=$apiKey
 
-A more detailed "add" example using curl::
 
-    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "restrict":"true"}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+When adding a file to a dataset, you can optionally specify the following:
+
+*   A description of the file.
+*   Tags and categories for the file.
+*   Terms of use and access for the file.
+
+All optional parameters are passed in a ``jsonData`` object. To build a valid jsonData you can pass:
+
+===================  =============  ===========
+Name                 Type           Description
+===================  =============  ===========
+description          string         File description
+categories           array<string>  List of file tags (e.g. "categories":["Data","Documentation","Example"]
+termsOfUseAndAccess  json           A Json object that models terms of use and access for a file.
+===================  =============  ===========
+
+
+Detailed description of ``termsOfUseAndAccess`` object passed to set terms of use and access conditions on a file. To build a valid object you must pass temsType and all available and required parameters for a given termsType.
+
+
+==========================  =======  ===========
+Name                        Type     Description
+==========================  =======  ===========
+termsType                   string   Type of terms of use. Possible values are: LICENSE_BASED, ALL_RIGHTS_RESERVED or RESTRICTED.
+accessConditions            string   Conditions under which a file can be accessed. Available and required when termsType=RESTRICTED. Possible values are: ACADEMIC_PURPOSE, NOT_FOR_REDISTRIBUTION, ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION, CUSTOM.
+license                     string   Standardized name of a specific license. Available and required when termsType=LICENSE_BASED.
+accessConditionsCustomText  string   Description on how exactly a file is restricted and how it can be access. Available and required when accessConditions=CUSTOM.
+==========================  =======  ===========
+
+
+A more detailed "add" examples using curl::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"description":"My description.","categories":["Data"], "termsOfUseAndAccess":{"termsType":"LICENSE_BASED", "license":"Apache Software License 2.0"}}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"termsOfUseAndAccess":{"termsType":"ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION"}}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@data.tsv' -F 'jsonData={"termsOfUseAndAccess":{"termsType":"RESTRICTED", "accessConditions":"CUSTOM", "accessConditionsCustomText":"Exemplary reason"}}' "https://example.dataverse.edu/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 Example python code to add a file. This may be run by changing these parameters in the sample code:
 
