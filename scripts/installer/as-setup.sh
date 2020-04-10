@@ -97,7 +97,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=rserve_password_alias}'
   # The host and url addresses this Dataverse will be using:
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 

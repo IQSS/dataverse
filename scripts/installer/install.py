@@ -182,10 +182,11 @@ if not nonInteractive:
    if os.getuid() == 0:
       print("\n####################################################################")
       print("     It is recommended that this script not be run as root.")
-      print(" Consider creating a payara service account, giving it ownership")
+      print(" Consider creating the service account \"dataverse\", giving it ownership")
       print("  on the glassfish/domains/domain1/ and glassfish/lib/ directories,")
-      print("    along with the JVM-specified files.dir location, and running")
-      print("       this installer as the user who will launch Payara.")
+      print("    along with the JVM-specified files.dir location, and designate")
+      print("    that account to launch and run the Application Server (Payara),")
+      print("           AND use that user account to run this installer.")
       print("####################################################################\n")
       ret = read_user_input("hit return to continue (or ctrl-C to exit the installer)")
 
@@ -229,12 +230,12 @@ if not pgOnly:
    print("Checking for required components...")
    # 1a. check to see if warfile is available
    warfile = "dataverse.war"
-   warfileVersion = None
+   warfileVersion = ""
    if not os.path.isfile(warfile):
       # get dataverse version from pom.xml
       tree = ET.ElementTree(file='../../pom.xml')
       for elem in tree.iter("*"):
-         if elem.tag == '{http://maven.apache.org/POM/4.0.0}version':
+         if elem.tag == '{https://maven.apache.org/POM/4.0.0}version':
             warfileVersion = elem.text
          # only want the first, the rest are dependencies
             break
