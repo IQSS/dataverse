@@ -90,6 +90,7 @@ body .ui-widget {font-size: inherit;}
 .panelLayoutBlock .ui-panelgrid.panelgridLayoutTable .ui-widget-content .ui-panelgrid .ui-widget-content .ui-panelgrid td:first-child {padding-left:0;}
 
 .btn span.glyphicon {margin-right:.3em;}
+.btn.btn-link.bootstrap-button-tooltip span.glyphicon {margin:0;} /* OR JUST USE NO-TEXT... */
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
 .col-manage-action .btn-group .btn span.glyphicon.no-text {margin:0;}
@@ -111,6 +112,15 @@ tr.ui-state-highlight .ui-icon {
     background-image: url("/javax.faces.resource/images/ui-icons_333333_256x240.png.xhtml?ln=primefaces-bootstrap");
 }
 td.col-select-width, th.col-select-width {width:36px;}
+
+/* FILE TABLE ROW SELECTED ICON BTN COLOR PF HACK */
+.ui-state-highlight a.btn-link, .ui-widget-content .ui-state-highlight a.btn-link, .ui-widget-header .ui-state-highlight a.btn-link {
+    color: #337AB7;
+}
+.ui-state-highlight a.btn-link:focus, .ui-widget-content .ui-state-highlight a.btn-link:focus, .ui-widget-header .ui-state-highlight a.btn-link:focus, 
+.ui-state-highlight a.btn-link:hover, .ui-widget-content .ui-state-highlight a.btn-link:hover, .ui-widget-header .ui-state-highlight a.btn-link:hover {
+    color: #23527C;
+}
 
 #ajaxStatusPanel_start {width:31px;height:31px;position:fixed;right:50%;bottom:50%;z-index:111111;}
 #ajaxStatusPanel_complete {position:absolute;top:-9999px;left:-9999px;}
@@ -382,7 +392,7 @@ th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
 
-td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}
+/*td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}*/
 
 .btn.btn-default.btn-access {background-color: #fff;background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
@@ -819,8 +829,8 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-span.ingest-warning {display:inline-block; font-size:24px; line-height:1; vertical-align: middle;}
-span.ingest-warning span.glyphicon {top:3px}
+span.ingest-warning {/*display:inline-block;*/ font-size:2em !important; line-height:1; vertical-align: middle;}
+/*span.ingest-warning span.glyphicon {top:3px}*/
 
 /* DOWNLOAD POPUP */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}

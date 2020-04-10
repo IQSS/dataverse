@@ -194,17 +194,18 @@
                                             <div id="actionButtonBlock">
                                                     
                                                     <!-- DOWNLOAD/ACCESS DATASET -->
+                                                    <!-- TO-DO RENDER LOGIC (DOWNLOAD + EXPOLRE + COMPUTE) -->
                                                     <div class="btn-group btn-group-justified" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                         <div class="btn-group">
-                                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                ACCESS FILE <span class="caret"></span>
+                                                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                #{bundle['file.accessBtn']} <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
-                                                                <li>
-                                                                    <!-- LINKS -->
-                                                                </li>
                                                                 
                                                                 <!-- Explore/Download/Request Button Block -->
+                                                                
+                                                                <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+                                                                
                                                                 <ui:fragment rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
                                                                                                                              and (!FilePage.fileMetadata.dataFile.filePackage or
@@ -229,7 +230,7 @@
                                                     </div>
                                                     
                                             
-                                                    <!-- Map/Edit Button Block -->
+                                                    <!-- Edit/Map Button Block -->
                                                     <div class="btn-group btn-group-justified" jsf:rendered="#{!widgetWrapper.widgetView}">
                                                         
                                                         <!-- Edit Button Group -->
@@ -237,8 +238,8 @@
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                                                  and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                                             <p:commandLink styleClass="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()"
-                                                                           title="#{bundle['dataset.editBtn']}">
-                                                                #{bundle['dataset.editBtn']} FILE
+                                                                           title="#{bundle['file.editBtn']}">
+                                                                #{bundle['file.editBtn']}
                                                             </p:commandLink>
                                                         </div>
                                                         <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
@@ -246,11 +247,11 @@
                                                                                  and !FilePage.lockedFromEdits
                                                                                  and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
                                                             <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                #{bundle['dataset.editBtn']} FILE <span class="caret"></span>
+                                                                #{bundle['file.editBtn']} <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
                                                                 
-                                                                <!-- TODO: WHAT IS THIS? -->
+                                                                <!-- TO-DO: WHAT IS THIS? -->
                                                                 <ui:fragment rendered="#{!widgetWrapper.widgetView and (worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(FilePage.fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(FilePage.fileMetadata))}">
                                                                 <li>
                                                                 </li>
@@ -317,7 +318,18 @@
                                                                         <h:outputText value="#{bundle['file.replace']}"/>
                                                                     </p:commandLink>
                                                                 <!-- end replace file link --></li>
-                                                                </ui:fragment>  
+                                                                </ui:fragment>
+                                                                
+                                                                <!-- TO-DO #3488 ADD EDIT FILE TAGS LINK -->
+                                                                <ui:fragment rendered="#{false}">
+                                                                    <li>
+                                                                        <p:commandLink onclick="PF('fileTagsPopup').show()"><!-- TODO #3488 ADD EDIT FILE TAGS POPUP -->
+                                                                            <h:outputText value="#{bundle['file.tags']}"/>
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                </ui:fragment>
+                                                                
+                                                                
                                                                 <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.released or !FilePage.fileMetadata.dataFile.filePackage}"> 
                                                                     <li>
                                                                         <p:commandLink title="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').show();">
@@ -330,13 +342,8 @@
                                                         <!-- END: Edit Button Group -->
                                                         
                                                         
-                                                        
-                                                        
-                                                        
-                                                        
                                                     </div>
                                                     <!-- END: Map/Edit Button Block -->
-                                                    
                                                     
                                                     
                                                     <!-- Contact/Share Button Group -->
@@ -347,12 +354,12 @@
                                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                             <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{FilePage.fileMetadata.dataFile}"/>
-                                                            #{bundle['contact.contact']} OWNER
+                                                            #{bundle['file.contactBtn']}
                                                         </p:commandLink>
                                                         <p:commandLink styleClass="btn btn-default btn-xs" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}"
                                                                        title="#{bundle['dataset.share.datasetShare']}"
                                                                        oncomplete="PF('shareDialog').show();sharrre();">
-                                                            #{bundle['share']}
+                                                            #{bundle['file.shareBtn']}
                                                         </p:commandLink>
                                                     </div>
                                                     <!-- END: Contact/Share Button Group -->
@@ -416,7 +423,6 @@
                                             </div>
                                         </div>
                                         <!-- END DEACCESSION REASON -->
-                                        
                                         
                                         
                                     </div>
@@ -537,8 +543,8 @@
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <button class="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button" disabled="#{FilePage.lockedFromEdits}">
-                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
+                                        <button class="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button">
+                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                         </button>
                                     </div>
                                     <!-- Export Button -->

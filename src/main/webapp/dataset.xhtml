@@ -133,15 +133,18 @@
 
                                                 
                                                 <!-- DOWNLOAD/ACCESS DATASET -->
+                                                <!-- TO-DO RENDER LOGIC (#3513 DOWNLOAD ALL + EXPOLRE + COMPUTE) -->
                                                 <div class="btn-group btn-group-justified" jsf:rendered="#{!DatasetPage.dataset.deaccessioned}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            ACCESS DATASET <span class="caret"></span>
+                                                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            #{bundle['dataset.accessBtn']} <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
                                                             
                                                             <!-- DOWNLOAD -->
+                                                            <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
                                                             <ui:fragment rendered="#{true}">
+                                                                <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                                 <li class="disabled">
                                                                     <span class="ui-commandlink ui-widget ui-state-disabled btn-download-placeholder">Download (Placeholder)</span>
                                                                 </li>
@@ -151,6 +154,7 @@
                                                             <!-- EXPLORE -->
                                                             <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
                                                             <ui:fragment rendered="#{true}">
+                                                                <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
                                                                 <li class="#{DatasetPage.datasetExploreTools.size()>1 ? 'dropdown-submenu pull-left' : ''}">
                                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
                                                                         <a tabindex="-1" href="#" class="btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">#{bundle.explore}</a>
@@ -176,6 +180,7 @@
                                                             <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
                                                             <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                         and DatasetPage.showComputeButton()}">
+                                                                <li class="dropdown-header">#{bundle['dataset.accessBtn.header.compute']} <span class="glyphicon glyphicon-flash"/></li>
                                                                 <li>
                                                                     <a tabindex="-1" href="#" id="computeBatch" class="btn-compute">#{bundle['dataset.compute.computeBtn']}</a>
                                                                     <ul class="dropdown-menu">
@@ -236,8 +241,8 @@
                                                 <div class="btn-group btn-group-justified" 
                                                      jsf:rendered="#{showPublishButtonGroup}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            PUBLISH DATASET <span class="caret"></span>
+                                                        <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            #{bundle['dataset.publishBtn']} <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
                                                             <!-- Publish LINKS x5 -->
@@ -326,7 +331,7 @@
 
                                                         <div class="btn-group">
                                                             <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                #{bundle['dataset.editBtn']} DATASET <span class="caret"></span>
+                                                                #{bundle['dataset.editBtn']} <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
                                                                 <li>                                           
@@ -422,7 +427,7 @@
                                                                    action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                                    oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                                    update="@form">
-                                                        #{bundle['link']} DATASET
+                                                        #{bundle['dataset.linkBtn']}
                                                     </p:commandLink>
                                                 </div>
                                                 <!-- END: LINK -->
@@ -435,12 +440,12 @@
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
                                                         <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{DatasetPage.dataset}"/>
-                                                        #{bundle['contact.contact']} OWNER
+                                                        #{bundle['dataset.contactBtn']}
                                                     </p:commandLink>
                                                     <p:commandLink style="font-size:12px !important;" styleClass="btn btn-default btn-xs" rendered="#{!DatasetPage.workingVersion.deaccessioned}"
                                                                    title="#{bundle['dataset.share.datasetShare']}"
                                                                    oncomplete="PF('shareDialog').show();sharrre();">
-                                                        #{bundle['share']}
+                                                        #{bundle['dataset.shareBtn']}
                                                     </p:commandLink>
                                                 </div>
                                                 <!-- END: Contact/Share Button Group -->
