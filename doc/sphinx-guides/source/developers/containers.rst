@@ -1,8 +1,13 @@
-================================= 
-Docker, Kubernetes, and OpenShift
-=================================
+================================== 
+Docker, Kubernetes, and Containers
+==================================
 
-Dataverse is exploring the use of Docker, Kubernetes, OpenShift and other container-related technologies.
+The Dataverse community is exploring the use of Docker, Kubernetes, and other container-related technologies. The primary community-lead projects to watch are:
+
+- https://github.com/IQSS/dataverse-kubernetes
+- https://github.com/IQSS/dataverse-docker
+
+Much of the content below was written in 2017-2018 and references an old version of an application server (Glassfish 4) that is no longer used in development. Pull requests are welcome to completely rewrite this page.
 
 .. contents:: |toctitle|
 	:local:
