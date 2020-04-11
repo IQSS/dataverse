@@ -1646,7 +1646,7 @@ public class FileUtil implements java.io.Serializable  {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(dataFile.getContentType());
     }
     
-    public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
+    public static S3AccessIO<DataFile> getS3AccessForDirectUpload(Dataset dataset) {
     	String driverId = dataset.getDataverseContext().getEffectiveStorageDriverId();
     	boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
     	//Should only be requested when it is allowed, but we'll log a warning otherwise
