@@ -81,9 +81,9 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 Launching Payara on System Boot
 ===============================
 
-The Dataverse installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but can be adjusted for Payara.
+The Dataverse installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
-- This :download:`Systemd file<../_static/installation/files/etc/systemd/glassfish.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
+- This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
 - This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Payara service account, or
 - This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
 
