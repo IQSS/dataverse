@@ -401,11 +401,12 @@
                                         </div>
                                         
                                         
-                                        
                                         <!-- DEACCESSION ONLY?? NO SUMMARY BLOCK?? RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 -->
                                         <div jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
                                              id="dataset-colorder-block" class="visible-md-block visible-lg-block col-md-8 col-lg-9"><!--Hack--></div>
                                         <!-- END: RESPONSIVE ORDER HACK BOOTSTRAP 3 -->
+                                        
+                                        
                                         <!-- DEACCESSION REASON -->
                                         <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9 margin-bottom" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                             <div id="deaccession-reason-block" class="col-xs-12 bg-danger">
@@ -546,7 +547,7 @@
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/>
                                         </button>
-                                        <ul class="dropdown-menu" role="menu">
+                                        <ul class="dropdown-menu pull-right text-left">
                                             <ui:repeat var="exporter" value="#{FilePage.getExporters()}">
                                                 <li>
                                                     <h:outputLink value="#{exporter[1]}" target="_blank">

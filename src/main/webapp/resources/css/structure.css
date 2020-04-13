@@ -390,7 +390,8 @@ td.col-file-action > .button-block, .col-manage-action > .button-block,
 div.ui-datatable-header > .button-block, .button-block.tab-header, #actionButtonBlock > .button-block, .inline-buttons > .button-block {margin-top:0;}
 th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
-.button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block span.btn.ui-state-disabled, .button-block .button-container {margin-right:1em;}
+.button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block .button-container,
+.button-block span.btn.ui-state-disabled, .button-block span.btn.disabled {margin-right:1em;}
 
 /*td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}*/
 
