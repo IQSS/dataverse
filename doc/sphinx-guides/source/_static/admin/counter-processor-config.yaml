@@ -42,7 +42,7 @@ year_month: 2019-01
 # Don't put the filename extension, the code will tack on the tsv or json extension for you.
 # Output formats are either tsv or json currently.  TSV is currently broken until anyone accepts reports in that format.
 # FIXME: "/tmp" is fine for a quick test but pick another directory that
-# the "counter" user can write to and that the "glassfish" user can read from.
+# the "counter" user can write to and that the "dataverse" user can read from.
 output_file: /tmp/make-data-count-report
 output_format: json
 
