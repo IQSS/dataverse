@@ -55,7 +55,7 @@ Additional Recommendations
 Run Payara as a User Other Than Root
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See the :ref:`glassfish` section of :doc:`prerequisites` for details and init scripts for running Payara as non-root.
+See the :ref:`payara` section of :doc:`prerequisites` for details and init scripts for running Payara as non-root.
 
 Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
 
@@ -496,7 +496,7 @@ In case you would like to configure Dataverse to use a custom S3 service instead
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
-Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 S3 Storage Options
 ##################
@@ -640,13 +640,13 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
-Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/glassfish/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
+Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/dataverse/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
 
-``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/glassfish/langBundles'``
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/dataverse/langBundles'``
 
 Go ahead and create the directory you specified.
 
-``mkdir /home/glassfish/langBundles``
+``mkdir /home/dataverse/langBundles``
 
 Creating a languages.zip File
 +++++++++++++++++++++++++++++
@@ -779,7 +779,7 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
 
-Archivers may require glassfish settings as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
+Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
 ``./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'``
 
