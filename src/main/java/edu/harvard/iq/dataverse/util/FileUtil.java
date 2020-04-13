@@ -1688,10 +1688,11 @@ public class FileUtil implements java.io.Serializable  {
         }
 
         StorageIO<DataFile> storage = dataFile.getStorageIO();
-        storage.open(DataAccessOption.READ_ACCESS);
         InputStream in = null;
         
         try {
+            storage.open(DataAccessOption.READ_ACCESS);
+            
             if (!dataFile.isTabularData()) {
                 in = storage.getInputStream();
             } else {

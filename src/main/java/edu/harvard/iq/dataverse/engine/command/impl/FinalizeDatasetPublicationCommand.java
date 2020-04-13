@@ -71,6 +71,17 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
+        // validate the physical files before we do anything else: 
+        // (unless specifically disabled)
+        if (theDataset.getLatestVersion().getVersionState() != RELEASED
+                && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()) {
+            // some imported datasets may already be released.
+
+            // validate the physical files (verify checksums):
+            validateDataFiles(theDataset, ctxt);
+            // (this will throw a CommandException if it fails)
+        }
+        
         if ( theDataset.getGlobalIdCreateTime() == null ) {
             registerExternalIdentifier(theDataset, ctxt);
         }
@@ -134,19 +145,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
-                
-                // validate the physical files (verify checksums):
-                validateDataFiles(theDataset, ctxt);
-                // (this will throw a CommandException if it fails)
-                
-		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-                        // (will also throw a CommandException, unless successful)
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
+	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+            // some imported datasets may already be released.
+
+            if (!datasetExternallyReleased) {
+                publicizeExternalIdentifier(theDataset, ctxt);
+                // (will throw a CommandException, unless successful)
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
         
 
         // Remove locks
