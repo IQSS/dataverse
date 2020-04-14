@@ -2887,6 +2887,25 @@ Recalculate the check sum value value of a datafile, by supplying the file's dat
 Validate an existing check sum value against one newly calculated from the saved file:: 
 
    curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/validateDataFileHashValue/{fileId}
+
+.. _dataset-files-validation-api:
+
+Physical Files Validation in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following validates all the physical files in the dataset spcified, by recalculating the checksums and comparing them against the values saved in the database::
+
+  $SERVER_URL/api/admin/validate/dataset/files/{datasetId}
+
+It will report the specific files that have failed the validation. For example::
+   
+   curl http://localhost:8080/api/admin/validate/dataset/files/:persistentId/?persistentId=doi:10.5072/FK2/XXXXX
+     {"dataFiles": [
+     		  {"datafileId":2658,"storageIdentifier":"file://123-aaa","status":"valid"},
+		  {"datafileId":2659,"storageIdentifier":"file://123-bbb","status":"invalid","errorMessage":"Checksum mismatch for datafile id 2669"}, 
+		  {"datafileId":2659,"storageIdentifier":"file://123-ccc","status":"valid"}
+		  ]
+      }
   
 These are only available to super users.
 
@@ -2927,8 +2946,6 @@ This API streams its output in real time, i.e. it will start producing the outpu
 Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your Glassfish configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
-
-
 
 Workflows
 ~~~~~~~~~

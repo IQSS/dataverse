@@ -717,7 +717,7 @@ public class PermissionServiceBean {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
             // TODO: Do we need to check for "Workflow"? Should the message be more specific?
@@ -745,7 +745,7 @@ public class PermissionServiceBean {
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
             }
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowed"), command);
             }
             // TODO: Do we need to check for "Workflow"? Should the message be more specific?
