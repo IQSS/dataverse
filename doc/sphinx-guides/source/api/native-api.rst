@@ -456,6 +456,9 @@ For example::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT "$SERVER_URL/api/datasets/:persistentId/liftEmbargo?persistentId=$PID"
 
+
+.. _'Add a File to a Dataset':
+
 Add a File to a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -489,7 +492,7 @@ Name                        Type     Description
 ==========================  =======  ===========
 termsType                   string   Type of terms of use. Possible values are: LICENSE_BASED, ALL_RIGHTS_RESERVED or RESTRICTED.
 accessConditions            string   Conditions under which a file can be accessed. Available and required when termsType=RESTRICTED. Possible values are: ACADEMIC_PURPOSE, NOT_FOR_REDISTRIBUTION, ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION, CUSTOM.
-license                     string   Standardized name of a specific license. Available and required when termsType=LICENSE_BASED.
+license                     string   Standardized name of a specific license. Available and required when termsType=LICENSE_BASED. To list all valid values see `Active Licenses`_.
 accessConditionsCustomText  string   Description on how exactly a file is restricted and how it can be access. Available and required when accessConditions=CUSTOM.
 ==========================  =======  ===========
 
@@ -984,6 +987,15 @@ Get API Terms of Use URL
 Get API Terms of Use. The response contains the text value inserted as API Terms of use which uses the database setting  ``:ApiTermsOfUse``::
 
   GET http://$SERVER/api/info/apiTermsOfUse
+
+.. _`Active Licenses`:
+
+Get Active Licenses
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get list of standardized license names that are active on current installation. This is useful when a user wants to set a license on a file when adding it through api (see `Add a File to a Dataset`_)::
+
+  GET http://$SERVER/api/info/activeLicenses
 
 Metadata Blocks
 ---------------
