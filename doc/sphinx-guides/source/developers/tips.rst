@@ -43,10 +43,6 @@ Ensure that Dataverse Will Be Deployed to Payara
 
 Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Payara. Click OK.
 
-Please note: Around commit d04d09c3e or earlier the procedure above does not work. The message reported by Netbeans is "Project's pom.xml contains invalid xml content. Please fix the file before proceeding." This is despite pom.xml passing multiple validators. We asked_ about it on the Netbeans mailing list.
-
-.. _asked: https://lists.apache.org/thread.html/r1e76cf22bc3fd210c4129550fd1d8fb58d83bec9030a39f2ff79c485%40%3Cusers.netbeans.apache.org%3E
-
 .. _custom_build_num_script:
 
 Make a Small Change to the Code

@@ -19,10 +19,10 @@ You should be conscious of the following when running multiple Payara servers.
 - Dataset draft version logging occurs separately on each Payara server. See :ref:`edit-draft-versions-logging` section in Monitoring of the Admin Guide for details.
 - Password aliases (``db_password_alias``, etc.) are stored per Payara server.
 
-Detecting Which Payara Server a User Is On
-++++++++++++++++++++++++++++++++++++++++++
+Detecting Which App Server a User Is On
++++++++++++++++++++++++++++++++++++++++
 
-If you have successfully installed multiple Payara servers behind a load balancer you might like to know which server a user has landed on. A straightforward solution is to place a file called ``host.txt`` in a directory that is served up by Apache such as ``/var/www/html`` and then configure Apache not to proxy requests to ``/host.txt`` to Payara. Here are some example commands on RHEL/CentOS 7 that accomplish this::
+If you have successfully installed multiple app servers behind a load balancer you might like to know which server a user has landed on. A straightforward solution is to place a file called ``host.txt`` in a directory that is served up by Apache such as ``/var/www/html`` and then configure Apache not to proxy requests to ``/host.txt`` to the app server. Here are some example commands on RHEL/CentOS 7 that accomplish this::
 
         [root@server1 ~]# vim /etc/httpd/conf.d/ssl.conf
         [root@server1 ~]# grep host.txt /etc/httpd/conf.d/ssl.conf
@@ -32,6 +32,6 @@ If you have successfully installed multiple Payara servers behind a load balance
         [root@server1 ~]# curl https://dataverse.example.edu/host.txt
         server1.example.edu
 
-You would repeat the steps above for all of your Payara servers. If users seem to be having a problem with a particular server, you can ask them to visit https://dataverse.example.edu/host.txt and let you know what they see there (e.g. "server1.example.edu") to help you know which server to troubleshoot.
+You would repeat the steps above for all of your app servers. If users seem to be having a problem with a particular server, you can ask them to visit https://dataverse.example.edu/host.txt and let you know what they see there (e.g. "server1.example.edu") to help you know which server to troubleshoot.
 
-Please note that :ref:`network-ports` under the Configuration section has more information on fronting Payara with Apache. The :doc:`shibboleth` section talks about the use of ``ProxyPassMatch``.
+Please note that :ref:`network-ports` under the Configuration section has more information on fronting your app server with Apache. The :doc:`shibboleth` section talks about the use of ``ProxyPassMatch``.

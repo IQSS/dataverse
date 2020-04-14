@@ -51,7 +51,7 @@ A setup such as this is advanced enough to be considered out of scope for this g
 Architecture and Components
 ---------------------------
 
-Dataverse is a Java Enterprise Edition (EE) web application that is shipped as a war (web archive) file.
+Dataverse is a Java Enterprise Edition (EE) web application that is shipped as a WAR (Web ARchive) file. This WAR file is deployed to an application server or app server.
 
 Required Components
 +++++++++++++++++++
@@ -59,7 +59,7 @@ Required Components
 When planning your installation you should be aware of the following components of the Dataverse architecture:
 
 - Linux: RHEL/CentOS is highly recommended since all development and QA happens on this distribution.
-- Payara: a Java EE/Jakarta EE application server to which the Dataverse application (war file) is deployed.
+- App server: Payara is the recommended Java EE/Jakarta EE application server
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
@@ -92,7 +92,7 @@ In contrast, before we moved it to the Amazon Cloud, the production installation
 
 Currently, Harvard Dataverse is served by four AWS server nodes: two "m4.4xlarge" instances (64GB/16 vCPU) as web frontends, one 32GB/8 vCPU ("m4.2xlarge") instance for the Solr search engine, and one 16GB/4 vCPU ("m4.xlarge") instance for R and TwoRavens. The PostgreSQL database is served by Amazon RDS, and physical files are stored on Amazon S3.
 
-The Dataverse installation script will attempt to give Payara the right amount of RAM based on your system.
+The Dataverse installation script will attempt to give your app server the right amount of RAM based on your system.
 
 Experimentation and testing with various hardware configurations is encouraged, or course, but do reach out as explained in the :doc:`intro` as needed for assistance.
 
@@ -111,7 +111,7 @@ Here are some questions to keep in the back of your mind as you test and move in
 - How much storage do I need?
 - Which features do I want based on :ref:`architecture`?
 - How do I want my users to log in to Dataverse? With local accounts? With Shibboleth/SAML? With OAuth providers such as ORCID, GitHub, or Google?
-- Do I want to to run Payara on the standard web ports (80 and 443) or do I want to "front" Payara with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
+- Do I want to to run my app server on the standard web ports (80 and 443) or do I want to "front" my app server with a proxy such as Apache or nginx? See "Network Ports" in the :doc:`config` section.
 - How many points of failure am I willing to tolerate? How much complexity do I want?
 - How much does it cost to subscribe to a service to create persistent identifiers such as DOIs or handles?
 

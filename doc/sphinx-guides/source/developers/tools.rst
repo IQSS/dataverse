@@ -36,7 +36,7 @@ We assume you have already cloned the repo from https://github.com/IQSS/datavers
 
 From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach an installation of Dataverse at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
 
-Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an application server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
+Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an app server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
 
 On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
 
@@ -71,7 +71,7 @@ Sign up at https://pagekite.net and follow the installation instructions or simp
 
 The first time you run ``./pagekite.py`` a file at ``~/.pagekite.rc`` will be
 created. You can edit this file to configure PageKite to serve up port 8080
-(the default Java app server HTTP port) or the port of your choosing.
+(the default app server HTTP port) or the port of your choosing.
 
 According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as Dataverse.
 

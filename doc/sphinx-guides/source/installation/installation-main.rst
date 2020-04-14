@@ -12,7 +12,7 @@ Now that the :doc:`prerequisites` are in place, we are ready to execute the Data
 Running the Dataverse Installer
 -------------------------------
 
-A scripted, interactive installer is provided. This script will configure your Payara environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
+A scripted, interactive installer is provided. This script will configure your app server environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
 
 As mentioned in the :doc:`prerequisites` section, RHEL/CentOS is the recommended Linux distribution. (The installer is also known to work on Mac OS X for setting up a development environment.)
 
