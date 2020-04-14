@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -147,6 +150,8 @@ public class Dataverse extends DvObjectContainer {
     }
 
     private String affiliation;
+    
+    private String storageDriver=null;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -756,4 +761,32 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
+
+	public String getEffectiveStorageDriverId() {
+		String id = storageDriver;
+		if(StringUtils.isBlank(id)) {
+			if(this.getOwner() != null) {
+				id = this.getOwner().getEffectiveStorageDriverId(); 
+			} else {
+				id= DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
+			}
+		}
+		return id;
+	}
+	
+	
+	public String getStorageDriverId() {
+		if(storageDriver==null) {
+			return DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER;
+		}
+		return storageDriver;
+	}
+
+	public void setStorageDriverId(String storageDriver) {
+		if(storageDriver!=null&&storageDriver.equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
+			this.storageDriver=null;
+		} else {
+		  this.storageDriver = storageDriver;
+		}
+	}
 }

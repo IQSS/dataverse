@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -46,14 +47,16 @@ public class GuestbookResponseServiceBean {
     // the collected data, in CSV format, from the manage-guestbooks and 
     // guestbook-results pages. (for entire dataverses, and for the individual 
     // guestbooks within dataverses, respectively). -- L.A. 
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value,  r.responsetime, f.downloadtype,"
-                + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position "
-                + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g  "
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
+                + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
+                + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
+                + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g, dvobject d "
                 + "where "  
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
+                + " and d.id = r.datafile_id "
                 + " and r.id = f.guestbookresponse_id "
                 + " and r.dataset_id = o.id "
                 + " and r.guestbook_id = g.id ";
@@ -140,7 +143,7 @@ public class GuestbookResponseServiceBean {
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
 
         // the CSV header:
-        out.write("Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
         
         for (Object[] result : guestbookResults) {
             Integer guestbookResponseId = (Integer)result[0];
@@ -160,6 +163,10 @@ public class GuestbookResponseServiceBean {
             sb.append(((String)result[2]).replace(',', ' '));
             sb.append(SEPARATOR);
             
+            // Dataset persistent identifier: 
+            sb.append(formatPersistentIdentifier((String)result[11], (String)result[12], (String)result[13]));
+            sb.append(SEPARATOR);
+            
             if (result[3] != null) {
                 sb.append(DATE_FORMAT.format((Date) result[3]));
             } else {
@@ -177,6 +184,11 @@ public class GuestbookResponseServiceBean {
 
             // file id (numeric):
             sb.append(result[6] == null ? "" : result[6]);
+            sb.append(SEPARATOR);
+            
+            // persistent id of the file (if available):
+            // Dataset persistent identifier: 
+            sb.append(formatPersistentIdentifier((String)result[14], (String)result[15], (String)result[16]));
             sb.append(SEPARATOR);
             
             // name supplied in the guestbook response: 
@@ -224,6 +236,20 @@ public class GuestbookResponseServiceBean {
             out.write(sb.toString().getBytes());
             out.flush();
         }
+    }
+    
+    private String formatPersistentIdentifier(String protocol, String authority, String identifier) {
+        // Note that the persistent id may be unavailable for this dvObject:
+        if (StringUtil.nonEmpty(protocol) && StringUtil.nonEmpty(authority) && StringUtil.nonEmpty(identifier)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(protocol);
+            sb.append(":");
+            sb.append(authority);
+            sb.append("/");
+            sb.append(identifier);
+            return sb.toString();
+        } 
+        return "N/A";
     }
     
     /*

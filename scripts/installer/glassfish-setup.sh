@@ -29,6 +29,9 @@
 # DOI_PASSWORD
 # DOI_BASEURL
 #
+# Base URL the Make Data Count: 
+# DOI_MDCBASEURL
+#
 # other local configuration:
 # HOST_ADDRESS
 # SMTP_SERVER
@@ -67,9 +70,13 @@ function preliminary_setup()
     ###
   # Add the necessary JVM options: 
   # 
-  # location of the datafiles directory: 
-  # (defaults to dataverse/files in the users home directory)
+  # location of the datafiles temp directory: 
+  # (defaults to dataverse/files in the users home directory, ${FILES_DIR}/temp if this is set)
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.directory=${FILES_DIR}"
+  # Backward compatible file store configuration
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.type=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.label=file"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.file.directory=${FILES_DIR}"
   # Rserve-related JVM options: 
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.host=${RSERVE_HOST}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
@@ -87,6 +94,10 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.username=${DOI_USERNAME}"
   ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddoi.password=${ALIAS=doi_password_alias}'
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
+
+  # jvm-options use colons as separators, escape as literal
+  DOI_MDCBASEURL_ESC=`echo $DOI_MDCBASEURL | sed -e 's/:/\\\:/'`
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
   # enable comet support

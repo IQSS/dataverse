@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Column;
@@ -11,6 +14,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 /**
  * A specification or definition for how an external tool is intended to
@@ -20,6 +24,8 @@ import javax.persistence.Id;
 @Entity
 public class ExternalTool implements Serializable {
 
+    private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
+
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
     public static final String TYPE = "type";
@@ -27,6 +33,8 @@ public class ExternalTool implements Serializable {
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
+    public static final String HAS_PREVIEW_MODE = "hasPreviewMode";
+    public static final String TOOL_NAME = "toolName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +46,12 @@ public class ExternalTool implements Serializable {
     // TODO: How are we going to internationalize the display name?
     @Column(nullable = false)
     private String displayName;
+
+    /**
+     * Type of tool such as dct, explorer, etc
+     */
+    @Column(nullable = true)
+    private String toolName;
 
     /**
      * The description of the tool in English.
@@ -76,6 +90,22 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
+    
+    @Column(nullable = false)
+    private boolean hasPreviewMode;   
+
+
+    
+    @Transient
+    private boolean worldMapTool;
+    
+    public boolean isWorldMapTool() {
+        return worldMapTool;
+    }
+
+    public void setWorldMapTool(boolean worldMapTool) {
+        this.worldMapTool = worldMapTool;
+    }
 
     /**
      * This default constructor is only here to prevent this error at
@@ -91,14 +121,28 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType) {
+    public ExternalTool(String displayName, String toolName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType) {
         this.displayName = displayName;
+        this.toolName = toolName;
         this.description = description;
         this.type = type;
         this.scope = scope;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
+        this.hasPreviewMode = false;
+    }
+    
+    public ExternalTool(String displayName, String toolName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType, boolean hasPreviewMode) {
+        this.displayName = displayName;
+        this.toolName = toolName;
+        this.description = description;
+        this.type = type;
+        this.scope = scope;
+        this.toolUrl = toolUrl;
+        this.toolParameters = toolParameters;
+        this.contentType = contentType;
+        this.hasPreviewMode = hasPreviewMode;
     }
 
     public enum Type {
@@ -169,9 +213,13 @@ public class ExternalTool implements Serializable {
         return displayName;
     }
 
+    public String  getToolName() { return toolName; }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+
+    public void setToolName(String toolName) { this.toolName = toolName; }
 
     public String getDescription() {
         return description;
@@ -212,11 +260,22 @@ public class ExternalTool implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
+    
+    public boolean getHasPreviewMode() {
+        return hasPreviewMode;
+    }
 
+    public void setHasPreviewMode(boolean hasPreviewMode) {
+        this.hasPreviewMode = hasPreviewMode;
+    }
+    
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
         jab.add(DISPLAY_NAME, getDisplayName());
+        if (getToolName() != null) {
+            jab.add(TOOL_NAME, getToolName());
+        }
         jab.add(DESCRIPTION, getDescription());
         jab.add(TYPE, getType().text);
         jab.add(SCOPE, getScope().text);
@@ -224,6 +283,11 @@ public class ExternalTool implements Serializable {
         jab.add(TOOL_PARAMETERS, getToolParameters());
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
+        }
+        if (getHasPreviewMode()) {
+            jab.add(HAS_PREVIEW_MODE, getHasPreviewMode());
+        } else {
+            
         }
         return jab;
     }
@@ -284,5 +348,26 @@ public class ExternalTool implements Serializable {
             return text;
         }
     }
+
+    public String getDescriptionLang() {
+        String toolName = "";
+        if (this.toolName != null) {
+            toolName = "externaltools." + this.toolName + ".description";
+            return (BundleUtil.getStringFromBundle(toolName));
+        } else {
+            return this.getDescription();
+        }
+    }
+
+    public String getDisplayNameLang() {
+        String toolName = "";
+        if (this.toolName != null) {
+            toolName = "externaltools." + this.toolName + ".displayname";
+            return (BundleUtil.getStringFromBundle(toolName));
+        } else {
+            return this.getDisplayName();
+        }
+    }
+
 
 }

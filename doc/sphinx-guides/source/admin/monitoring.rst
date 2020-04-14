@@ -103,6 +103,8 @@ actionlogrecord
 
 There is a database table called ``actionlogrecord`` that captures events that may be of interest. See https://github.com/IQSS/dataverse/issues/2729 for more discussion around this table.
 
+.. _edit-draft-versions-logging:
+
 Edit Draft Versions Logging
 ---------------------------
 

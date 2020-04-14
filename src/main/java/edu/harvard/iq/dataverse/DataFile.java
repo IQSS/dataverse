@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -240,8 +241,24 @@ public class DataFile extends DvObject implements Comparable {
         this(); //calls DataFile() constructor
         this.contentType = contentType;
     }
-    
-    
+
+    /*
+    Used in manage file permissions UI 
+    to easily display those files that have been deleted in the current draft 
+    or previous version which may have roles assigned or pending requests for access
+    */
+   
+    @Transient
+    private boolean deleted;
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+       
     /**
      * All constructors should use this method
      * to initialize this file replace attributes
@@ -393,6 +410,30 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return null;
+    }
+    
+    public String getOriginalFileName() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileName() != null ? dataTable.getOriginalFileName()
+                        : getDerivedOriginalFileName();
+            }
+        }
+        return null;
+    }
+
+    
+    private String getDerivedOriginalFileName() {
+        FileMetadata fm = getFileMetadata();
+        String filename = fm.getLabel();
+        String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
+        String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
+        if (StringUtil.nonEmpty(extensionToRemove)) {
+            return filename.replaceAll(extensionToRemove + "$", originalExtension);
+        } else{
+            return filename + originalExtension ;
+        }        
     }
 
     @Override
@@ -778,6 +819,10 @@ public class DataFile extends DvObject implements Comparable {
        return getLatestFileMetadata().getLabel(); 
     }
     
+    public String getDirectoryLabel() {
+       return getLatestFileMetadata().getDirectoryLabel();
+    }
+    
     @Override 
     public String getCurrentName(){
         return getLatestFileMetadata().getLabel();
@@ -785,8 +830,18 @@ public class DataFile extends DvObject implements Comparable {
     
     @Override
     public int compareTo(Object o) {
+        /*
+         * The primary intent here is to provide ordering by displayName. However, the
+         * secondary comparison by id is needed to insure that two DataFiles with the
+         * same displayName aren't considered equal, e.g. in structures that require
+         * unique keys. See Issues #4287 and #6401.
+         */
         DataFile other = (DataFile) o;
-        return this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        int comparison = this.getDisplayName().toUpperCase().compareTo(other.getDisplayName().toUpperCase());
+        if (comparison == 0) {
+            comparison = this.getId().compareTo(other.getId());
+        }
+        return comparison;
     }
     
     /**

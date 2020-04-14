@@ -29,7 +29,8 @@ public class DatasetUtilTest {
         DataFile dataFile = MocksFactory.makeDataFile();
         dataFile.setContentType("image/");
         dataFile.setOwner(dataset);
-        dataFile.setStorageIdentifier("file://src/test/resources/images/coffeeshop.png");
+        System.setProperty("dataverse.files.testfile.type", "file");
+        dataFile.setStorageIdentifier("testfile://src/test/resources/images/coffeeshop.png");
 
         System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
         DatasetVersion version = dataset.getCreateVersion();
@@ -45,7 +46,8 @@ public class DatasetUtilTest {
         assertNull(DatasetUtil.getThumbnail(null, null));
 
         Dataset dataset = MocksFactory.makeDataset();
-        dataset.setStorageIdentifier("file://");
+        System.setProperty("dataverse.files.testfile.type", "file");
+        dataset.setStorageIdentifier("testfile://");
         dataset.setUseGenericThumbnail(true);
 
         assertNull(DatasetUtil.getThumbnail(dataset));

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,12 +13,15 @@ import java.io.IOException;
 public class DataAccessTest {
   DataFile datafile;
   Dataset dataset;
+  Dataverse dataverse;
 
   @BeforeEach
   void setUp() {
     datafile = MocksFactory.makeDataFile();
     dataset = MocksFactory.makeDataset();
+    dataverse = MocksFactory.makeDataverse();
     datafile.setOwner(dataset);
+    dataset.setOwner(dataverse);
   }
 
   @Test
@@ -50,6 +54,8 @@ public class DataAccessTest {
 
   @Test
   void testCreateNewStorageIO_createsFileAccessIObyDefault() throws IOException {
+	System.setProperty("dataverse.files.file.type", "file");
+	System.setProperty("dataverse.files.storage-driver-id", "file");
     StorageIO<Dataset> storageIo = DataAccess.createNewStorageIO(dataset, "valid-tag");
     assertTrue(storageIo.getClass().equals(FileAccessIO.class));
   }

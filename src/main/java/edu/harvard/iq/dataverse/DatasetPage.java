@@ -88,6 +88,7 @@ import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
@@ -129,6 +130,7 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrClient;
@@ -237,8 +239,11 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject DataverseHeaderFragment dataverseHeaderFragment;
 
     private Dataset dataset = new Dataset();
+    
+    private Long id = null;    
     private EditMode editMode;
     private boolean bulkFileDeleteInProgress = false;
 
@@ -1456,6 +1461,9 @@ public class DatasetPage implements java.io.Serializable {
     public DatasetVersion getWorkingVersion() {
         return workingVersion;
     }
+    
+    public Long getId() { return this.id; }
+    public void setId(Long id) { this.id = id; }    
 
     public EditMode getEditMode() {
         return editMode;
@@ -1472,7 +1480,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setOwnerId(Long ownerId) {
         this.ownerId = ownerId;
     }
-
+    
     public Long getVersionId() {
         return versionId;
     }
@@ -1763,10 +1771,22 @@ public class DatasetPage implements java.io.Serializable {
         return init(false);
     }     
     
+    public void updateOwnerDataverse() {
+        if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
+            ownerId = dataset.getOwner().getId();
+            logger.info("New host dataverse id: "+ownerId);
+            // discard the dataset already created:
+            dataset = new Dataset();
+            // initiate from scratch: (isolate the creation of a new dataset in its own method?)
+            init(true);
+            // rebuild the bred crumbs display:
+            dataverseHeaderFragment.initBreadcrumbs(dataset);
+        }
+    }
+    
     private String init(boolean initFull) {
   
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSize();
         setDataverseSiteUrl(systemConfig.getDataverseSiteUrl());
 
         guestbookResponse = new GuestbookResponse();
@@ -1796,9 +1816,9 @@ public class DatasetPage implements java.io.Serializable {
                 this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
                 logger.fine("retrieved version: id: " + workingVersion.getId() + ", state: " + this.workingVersion.getVersionState());
 
-            } else if (dataset.getId() != null) {
+            } else if (this.getId() != null) {
                 // Set Working Version and Dataset by Datasaet Id and Version
-                dataset = datasetService.find(dataset.getId());
+                dataset = datasetService.find(this.getId());
                 if (dataset == null) {
                     logger.warning("No such dataset: "+dataset);
                     return permissionsWrapper.notFound();
@@ -1813,7 +1833,9 @@ public class DatasetPage implements java.io.Serializable {
                 // Set Working Version and Dataset by DatasaetVersion Id
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
-            } 
+            }
+            this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+
 
             if (retrieveDatasetVersionResponse == null) {
                 return permissionsWrapper.notFound();
@@ -1936,7 +1958,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-            
+                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -2690,8 +2712,13 @@ public class DatasetPage implements java.io.Serializable {
         if (lockedDueToIngestVar != null && lockedDueToIngestVar) {
             //we need to add a redirect here to disply the explore buttons as needed
             //as well as the ingest success message
+            //SEK 12/20/2019 - since we are ingesting a file we know that there is a current draft version
             lockedDueToIngestVar = null;
-            return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+            if (canViewUnpublishedDataset()) {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&version=DRAFT&faces-redirect=true";
+            } else {
+                return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&showIngestSuccess=true&faces-redirect=true";
+            }
         }
 
         return "";
@@ -3011,17 +3038,6 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseErrorMessage = linkingDataverseErrorMessage;
     }
     
-    UIInput selectedLinkingDataverseMenu;
-    
-    public UIInput getSelectedDataverseMenu() {
-        return selectedLinkingDataverseMenu;
-    }
-
-    public void setSelectedDataverseMenu(UIInput selectedDataverseMenu) {
-        this.selectedLinkingDataverseMenu = selectedDataverseMenu;
-    }
-    
-    
     private Boolean saveLink(Dataverse dataverse){
         boolean retVal = true;
         if (readOnly) {
@@ -3050,6 +3066,14 @@ public class DatasetPage implements java.io.Serializable {
         dataset = datasetService.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
             return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
+        } else {
+            return null;
+        }
+    }
+    
+    public List<Dataverse> completeHostDataverseMenuList(String query) {
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForHosting(query, dvRequestService.getDataverseRequest());
         } else {
             return null;
         }
@@ -3165,6 +3189,9 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public int getRestrictedFileCount() {
+        if (workingVersion == null){
+            return 0;
+        }
         int restrictedFileCount = 0;
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (fmd.isRestricted()) {
@@ -3324,12 +3351,16 @@ public class DatasetPage implements java.io.Serializable {
 
     }
      
-     public String save() {
-         //Before dataset saved, write cached prov freeform to version
-        if(systemConfig.isProvCollectionEnabled()) {
+    public String save() {
+        //Before dataset saved, write cached prov freeform to version
+        if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
         }
-        
+
+        // Before validating, ensure that the dataset has an owner:
+        if (dataset.getOwner() == null || dataset.getOwner().getId() == null) {
+            dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
+        }
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
@@ -3342,7 +3373,7 @@ public class DatasetPage implements java.io.Serializable {
         Map<Long, String> deleteStorageLocations = null;
         
         try { 
-            if (editMode == EditMode.CREATE) {                
+            if (editMode == EditMode.CREATE) {
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate); 
@@ -4310,9 +4341,12 @@ public class DatasetPage implements java.io.Serializable {
             selectedTags = selectedTags.clone();
         }
     }
-        
-
     
+    public void handleCVVSelection(final AjaxBehaviorEvent event) {
+        //Dummy method for AJAX update of items selected
+    }
+        
+   
     private void refreshTabFileTagsByName(){
         
         tabFileTagsByName= new ArrayList<>();
@@ -5313,6 +5347,11 @@ public class DatasetPage implements java.io.Serializable {
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privUrl.getToken());
         }
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();

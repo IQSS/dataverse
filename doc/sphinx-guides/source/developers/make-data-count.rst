@@ -71,7 +71,7 @@ If all this is working and you want to send data to the test instance of the Dat
 
 ``curl --header "Content-Type: application/json; Accept: application/json" -H "Authorization: Bearer $JSON_WEB_TOKEN" -X POST https://api.test.datacite.org/reports/ -d @sushi_report.json``
 
-For how to put citations into your dev database and how to get them out again, see "Configuring Dataverse for Make Data Count Citations" in the :doc:`/admin/make-data-count` section of the Admin Guide.
+For how to put citations into your dev database and how to get them out again, see :ref:`MDC-updateCitationsForDataset` section in Make Data Count of the Admin Guide.
 
 Testing Make Data Count and Dataverse
 -------------------------------------

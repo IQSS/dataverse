@@ -7,13 +7,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.SCOPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +24,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
 
 @Stateless
 @Named
@@ -52,7 +47,8 @@ public class ExternalToolServiceBean {
      */
     public List<ExternalTool> findDatasetToolsByType(Type type) {
         String nullContentType = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.DATASET, type, nullContentType, nullPreviewAvailable);
     }
 
     /**
@@ -61,7 +57,8 @@ public class ExternalToolServiceBean {
      */
     public List<ExternalTool> findFileToolsByType(Type type) {
         String nullContentType = null;
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, nullContentType, nullPreviewAvailable);
     }
 
     /**
@@ -70,7 +67,18 @@ public class ExternalToolServiceBean {
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByTypeAndContentType(Type type, String contentType) {
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType);
+        String nullPreviewAvailable = null;
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, nullPreviewAvailable);
+    }
+    
+    /**
+     * @param type explore or configure
+     * @param contentType file content type (MIME type)
+     * @return A list of tools or an empty list.
+     */
+    public List<ExternalTool> findFileToolsByTypeContentTypeAndAvailablePreview(Type type, String contentType) {
+        String previewAvailable = "true";
+        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, previewAvailable);
     }
 
     /**
@@ -79,13 +87,17 @@ public class ExternalToolServiceBean {
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
-    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType) {
+    private List<ExternalTool> findByScopeTypeAndContentType(Scope scope, Type type, String contentType, String previewAvailable) {
         List<ExternalTool> externalTools = new ArrayList<>();
         String contentTypeClause = "";
         if (contentType != null) {
             contentTypeClause = "AND o.contentType = :contentType";
         }
-        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause, ExternalTool.class);
+        String previewAvailableClause = "";
+        if (previewAvailable != null) {
+            previewAvailableClause = " AND o.hasPreviewMode = 'true'";
+        }
+        TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.scope = :scope AND o.type = :type " + contentTypeClause + previewAvailableClause, ExternalTool.class);
         typedQuery.setParameter("scope", scope);
         typedQuery.setParameter("type", type);
         if (contentType != null) {
@@ -145,6 +157,7 @@ public class ExternalToolServiceBean {
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {
+
         if (manifest == null || manifest.isEmpty()) {
             throw new IllegalArgumentException("External tool manifest was null or empty!");
         }
@@ -152,10 +165,12 @@ public class ExternalToolServiceBean {
         JsonObject jsonObject = jsonReader.readObject();
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
+        String toolName = getOptionalTopLevelField(jsonObject, TOOL_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
         String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
+        
 
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
@@ -218,7 +233,15 @@ public class ExternalToolServiceBean {
 
         }
         String toolParameters = toolParametersObj.toString();
-        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType);
+
+        String hasPreviewMode = getOptionalTopLevelField(jsonObject, HAS_PREVIEW_MODE);
+
+        boolean hasPreviewModeBoolean = false;
+        if(hasPreviewMode != null && hasPreviewMode.equals("true")){
+            hasPreviewModeBoolean = true;
+        }
+
+        return new ExternalTool(displayName, toolName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

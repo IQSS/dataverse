@@ -81,25 +81,29 @@ public class UserNotificationServiceBean {
     
     public void delete(UserNotification userNotification) {
         em.remove(em.merge(userNotification));
-    }    
+    }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
-    
+
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment) {
-        sendNotification(dataverseUser, sendDate, type, objectId, comment, null);
+        sendNotification(dataverseUser, sendDate, type, objectId, comment, null, false);
     }
-    
-    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor) {
+
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, boolean isHtmlContent) {
+        sendNotification(dataverseUser, sendDate, type, objectId, comment, null, isHtmlContent);
+    }
+
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
         userNotification.setType(type);
         userNotification.setObjectId(objectId);
         userNotification.setRequestor(requestor);
-        
-        if (mailService.sendNotificationEmail(userNotification, comment, requestor)) {
+
+        if (mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
             save(userNotification);

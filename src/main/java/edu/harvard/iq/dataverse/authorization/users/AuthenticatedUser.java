@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.FileAccessRequest;
 import edu.harvard.iq.dataverse.DataFile;
@@ -12,6 +13,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2A
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -127,6 +129,40 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
+    
+    @OneToMany(mappedBy = "dataverseUser", cascade={CascadeType.REMOVE})
+    private List<WorldMapToken> worldMapTokens;
+
+    public List<WorldMapToken> getWorldMapTokens() {
+        return worldMapTokens;
+    }
+
+    public void setWorldMapTokens(List<WorldMapToken> worldMapTokens) {
+        this.worldMapTokens = worldMapTokens;
+    }
+    
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
+    private List<UserNotification> notifications;
+
+    public List<UserNotification> getUserNotifications() {
+        return notifications;
+    }
+
+    public void setUserNotifications(List<UserNotification> notifications) {
+        this.notifications = notifications;
+    }
+    
+    @OneToMany(mappedBy = "requestor", cascade={CascadeType.REMOVE})
+    private List<UserNotification> requests;
+
+    public List<UserNotification> getUserRequests() {
+        return requests;
+    }
+
+    public void setUserRequestss(List<UserNotification> requests) {
+        this.requests = requests;
+    }
+
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;
