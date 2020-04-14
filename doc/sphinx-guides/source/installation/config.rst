@@ -162,6 +162,7 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -1366,9 +1367,16 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
-Note: The dataset will be locked, and the validation will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
 
+.. _:PIDAsynchRegFileCount:
 
+:PIDAsynchRegFileCount
+++++++++++++++++++++++
+
+Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
+
+``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
 
 .. _:IndependentHandleService:
 
