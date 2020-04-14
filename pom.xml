@@ -24,6 +24,10 @@
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
         <skipUnitTests>false</skipUnitTests>
+        
+        <jakartaee-api.version>8.0.0</jakartaee-api.version>
+        <!-- Make this correspond to the version used in Payara: 5.201 uses (patched) 2.3.14 -->
+        <mojarra.version>2.3.14</mojarra.version>
         <aws.version>1.11.172</aws.version>
         <jackson.version>2.9.6</jackson.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -289,15 +293,15 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>7.0</version>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.faces</artifactId>
+            <version>${mojarra.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
