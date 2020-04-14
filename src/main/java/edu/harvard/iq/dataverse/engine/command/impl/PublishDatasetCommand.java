@@ -131,6 +131,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
+                theDataset = ctxt.em().merge(theDataset);
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
