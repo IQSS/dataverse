@@ -2055,10 +2055,8 @@ public class DatasetPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
                 // the dataset is locked, because one or more datafiles in it 
                 // failed validation during an attempt to publish it. 
-                if (FacesContext.getCurrentInstance().getExternalContext().getFlash().get("errorMsg") == null) {
-                    JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
-                            BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
-                }
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
+                        BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
             } 
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
@@ -2578,7 +2576,13 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } catch (CommandException ex) {
-                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                Dataset testDs = datasetService.find(dataset.getId());
+                if (testDs != null && !testDs.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                    // If the dataset could not be published because it has failed 
+                    // physical file validation, the messaging will be handled via
+                    // the lock info system. 
+                    JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                }
                 logger.severe(ex.getMessage());
             }
             

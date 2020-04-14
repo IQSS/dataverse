@@ -275,17 +275,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // the error message for the user.
             throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
         }
-        
-        /* 
-         * for debugging only: (TODO: remove before making the final PR)
-        logger.log(Level.INFO,"Validation successful; but throwing an exception anyway, for testing purposes");
-        if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
-            DatasetLock workflowLock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
-            workflowLock.setInfo(FILE_VALIDATION_ERROR);
-            ctxt.datasets().updateDatasetLock(workflowLock);
-        }
-        throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
-        */
     }
     
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
