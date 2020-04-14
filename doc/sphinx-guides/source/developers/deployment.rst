@@ -82,23 +82,64 @@ Download and Run the "Create Instance" Script
 
 Once you have done the configuration above, you are ready to try running the "ec2-create-instance.sh" script to spin up Dataverse in AWS.
 
-Download :download:`ec2-create-instance.sh <../../../../scripts/installer/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
+Download :download:`ec2-create-instance.sh<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
-ec2-create-instance accepts a number few command-line switches:
+To run it with default values you just need the script, but you may also want a current copy of the ansible :download:`group vars<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_ file.
+
+ec2-create-instance accepts a number of command-line switches, including:
 
 * -r: GitHub Repository URL (defaults to https://github.com/IQSS/dataverse.git)
 * -b: branch to build (defaults to develop)
 * -p: pemfile directory (defaults to $HOME)
 * -g: Ansible GroupVars file (if you wish to override role defaults)
+* -h: help (displays usage for each available option)
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -g main.yml``
 
-Now you will need to wait around 15 minutes until the deployment is finished. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via ssh. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You can also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
+You will need to wait for 15 minutes or so until the deployment is finished, longer if you've enabled sample data and/or the API test suite. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via SSH. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You may also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 
-Caveats
-~~~~~~~
+Caveat Recipiens
+~~~~~~~~~~~~~~~~
 
-Please note that while the script should work fine on newish branches, older branches that have different dependencies such as an older version of Solr may not produce a working Dataverse installation. Your mileage may vary.
+Please note that while the script should work well on new-ish branches, older branches that have different dependencies such as an older version of Solr may not produce a working Dataverse installation. Your mileage may vary.
+
+
+Migrating Datafiles from Local Storage to S3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
+
+The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a file:// prefix, so you'll want to catch both cases.
+
+To Update Dataset Location to S3, Assuming a file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject SET storageidentifier=REPLACE(storageidentifier,'file://','s3://')
+    WHERE dtype='Dataset';
+
+To Update Datafile Location to your-s3-bucket, Assuming a file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject
+    SET storageidentifier=REPLACE(storageidentifier,'file://','s3://your-s3-bucket:')
+    WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
+    AND s.id = o.owner_id AND s.harvestingclient_id IS null
+    AND o.storageidentifier NOT LIKE 's3://%');
+
+To Update Datafile Location to your-s3-bucket, Assuming no file:// Prefix:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  UPDATE dvobject SET storageidentifier=CONCAT('s3://your-s3-bucket:', storageidentifier)
+	  WHERE id IN (SELECT o.id FROM dvobject o, dataset s WHERE o.dtype = 'DataFile'
+	  AND s.id = o.owner_id AND s.harvestingclient_id IS null
+	  AND o.storageidentifier NOT LIKE '%://%');
+
 
 ----
 

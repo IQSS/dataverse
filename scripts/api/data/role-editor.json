@@ -1,5 +1,5 @@
 {
-    "alias":"editor",
+    "alias":"contributor",
     "name":"Contributor",
     "description":"For datasets, a person who can edit License + Terms, and then submit them for review.",
     "permissions":[

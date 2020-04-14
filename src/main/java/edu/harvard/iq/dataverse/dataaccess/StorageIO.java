@@ -53,16 +53,20 @@ public abstract class StorageIO<T extends DvObject> {
     public StorageIO() {
 
     }
-
-    public StorageIO(T dvObject) {
-        this(dvObject, null);
+    
+    public StorageIO(String storageLocation, String driverId) {
+      this.driverId=driverId;
     }
 
-    public StorageIO(T dvObject, DataAccessRequest req) {
+    public StorageIO(T dvObject, DataAccessRequest req, String driverId) {
         this.dvObject = dvObject;
         this.req = req;
+        this.driverId=driverId;
         if (this.req == null) {
             this.req = new DataAccessRequest();
+        }
+        if (this.driverId == null) {
+            this.driverId = "file";
         }
     }
 
@@ -183,6 +187,7 @@ public abstract class StorageIO<T extends DvObject> {
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
+    protected String driverId;
 
     /*private int status;*/
     private long size;
@@ -528,4 +533,13 @@ public abstract class StorageIO<T extends DvObject> {
         // By default, we open the file in read mode:
         return false;
     }
+
+	public boolean isBelowIngestSizeLimit() {
+		long limit = Long.parseLong(System.getProperty("dataverse.files." + this.driverId + ".ingestsizelimit", "-1"));
+		if(limit>0 && getSize()>limit) {
+			return false;
+		} else {
+		    return true;
+		}
+	}
 }

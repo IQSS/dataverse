@@ -11,13 +11,17 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -127,33 +131,45 @@ public class MakeDataCountApi extends AbstractApiBean {
     @POST
     @Path("{id}/updateCitationsForDataset")
     public Response updateCitationsForDataset(@PathParam("id") String id) throws MalformedURLException, IOException {
-        String msg = "updateCitationsForDataset called";
-        Dataset dataset = null;
         try {
-            // FIXME: Switch to findDatasetOrDie instead of blindly downloading citations for whatever DOI.
-            // FIXME: remove this parseBooleanOrDie which is only here to throw WrappedResponse.
-            parseBooleanOrDie("true");
-//            dataset = findDatasetOrDie(id);
-//            String authorityPlusIdentifier = dataset.getAuthority() + dataset.getIdentifier();
-            String persistentId = getRequestParameter(":persistentId".substring(1));
+            Dataset dataset = findDatasetOrDie(id);
+            String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            // curl https://api.datacite.org/events?doi=10.7910/dvn/hqzoob&source=crossref
             String baseUrl = System.getProperty("doi.mdcbaseurlstring");
-            if(null==baseUrl) {
-            	//Backward compatible default to the production server
-            	baseUrl="https://api.datacite.org";
+            if (null == baseUrl) {
+                // Backward compatible default to the production server
+                baseUrl = "https://api.datacite.org";
             }
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref");
-            logger.fine("Requesting citations from " + url);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int status = connection.getResponseCode();
-            // TODO: Do something with non 200 status.
-            System.out.println("status: " + status);
-            JsonObject report = Json.createReader(connection.getInputStream()).readObject();
-            logger.fine("body of citation response: " + report.toString());
-            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(report);
+            // Request max page size and then loop to handle multiple pages
+            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            logger.fine("Retrieving Citations from " + url.toString());
+            boolean nextPage = true;
+            JsonArrayBuilder dataBuilder = Json.createArrayBuilder();
+            do {
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                int status = connection.getResponseCode();
+                if (status != 200) {
+                    logger.warning("Failed to get citations from " + url.toString());
+                    return error(Status.fromStatusCode(status), "Failed to get citations from " + url.toString());
+                }
+                JsonObject report = Json.createReader(connection.getInputStream()).readObject();
+                JsonObject links = report.getJsonObject("links");
+                JsonArray data = report.getJsonArray("data");
+                Iterator<JsonValue> iter = data.iterator();
+                while (iter.hasNext()) {
+                    dataBuilder.add(iter.next());
+                }
+                if (links.containsKey("next")) {
+                    url = new URL(links.getString("next"));
+                } else {
+                    nextPage = false;
+                }
+                logger.fine("body of citation response: " + report.toString());
+            } while (nextPage == true);
+            JsonArray allData = dataBuilder.build();
+            List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
 
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
