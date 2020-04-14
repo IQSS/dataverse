@@ -281,11 +281,6 @@
             <version>1.0.10</version>
         </dependency>
         <dependency>
-            <groupId>org.atmosphere</groupId>
-            <artifactId>atmosphere-runtime</artifactId>
-            <version>2.4.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
             <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
