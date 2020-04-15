@@ -733,6 +733,7 @@ div[id$="filesTable"] .col-file-thumb {padding:4px 10px; width:84px;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block {position:relative;width:64px;height:64px;margin:0 auto;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
+div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img img {max-width:64px; max-height:64px;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] .file-metadata-block {-webkit-flex: 1 100%;
 	-moz-flex: 1 100%;
