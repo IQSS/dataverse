@@ -101,6 +101,11 @@ public class ExternalToolHandler {
 
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
     public String getQueryParametersForUrl() {
+        return getQueryParametersForUrl(false);
+    }
+    
+    // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
+    public String getQueryParametersForUrl(boolean preview) {
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -118,7 +123,11 @@ public class ExternalToolHandler {
                 }
             });
         });
-        return "?" + String.join("&", params);
+        if (!preview) {
+            return "?" + String.join("&", params);
+        } else {
+            return "?" + String.join("&", params) + "&preview=true";
+        }
     }
 
     private String getQueryParam(String key, String value) {
@@ -177,6 +186,10 @@ public class ExternalToolHandler {
 
     public String getToolUrlWithQueryParams() {
         return externalTool.getToolUrl() + getQueryParametersForUrl();
+    }
+    
+    public String getToolUrlForPreviewMode() {
+        return externalTool.getToolUrl() + getQueryParametersForUrl(true);
     }
 
     public ExternalTool getExternalTool() {

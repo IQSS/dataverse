@@ -192,9 +192,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                 UserNotification.Type.CREATEACC, null);
         
         final OAuth2TokenData tokenData = newUser.getTokenData();
-                tokenData.setUser(user);
-                tokenData.setOauthProviderId(newUser.getServiceId());
-                oauth2Tokens.store(tokenData);
+        if (tokenData != null) {
+            tokenData.setUser(user);
+            tokenData.setOauthProviderId(newUser.getServiceId());
+            oauth2Tokens.store(tokenData);
+        }
         
         return "/dataverse.xhtml?faces-redirect=true";
     }

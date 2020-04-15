@@ -93,6 +93,65 @@ Now that you've made your pull request, your goal is to make sure it appears in 
 
 Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
 
+Summary of Git commands
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This section provides sequences of Git commands for two scenarios:
+
+* preparing the first request, when the IQSS Dataverse repository and the forked repository are identical
+* creating an additional request after some time, when the IQSS Dataverse repository is ahead of the forked repository
+
+In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
+
+**1st scenario: preparing the first pull request**
+
+.. code-block:: bash
+
+        # clone Dataverse at Github.com ... then
+
+        git clone https://github.com/YOUR_NAME/dataverse.git dataverse_fork
+        cd dataverse_fork
+
+        # create a new branch locally for the pull request
+        git checkout -b 123-COOL-FEATURE
+
+        # working on the branch ... then commit changes
+        git commit -am "#123 explanation of changes"
+
+        # upload the new branch to https://github.com/YOUR_NAME/dataverse
+        git push -u origin 123-COOL-FEATURE
+
+        # ... then create pull request at github.com/YOUR_NAME/dataverse
+
+
+**2nd scenario: preparing another pull request some month later**
+
+.. code-block:: bash
+
+        # register IQSS Dataverse repo
+        git remote add upstream https://github.com/IQSS/dataverse.git
+
+        git checkout develop
+
+        # update local develop banch from https://github.com/IQSS/dataverse
+        git fetch upstream develop
+        git rebase upstream/develop
+
+        # update remote develop branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+        # create a new branch locally for the pull request
+        git checkout -b 123-COOL-FEATURE
+
+        # work on the branch and commit changes
+        git commit -am "#123 explanation of changes"
+
+        # upload the new branch to https://github.com/YOUR_NAME/dataverse
+        git push -u origin 123-COOL-FEATURE
+
+        # ... then create pull request at github.com/YOUR_NAME/dataverse
+
+
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------
 

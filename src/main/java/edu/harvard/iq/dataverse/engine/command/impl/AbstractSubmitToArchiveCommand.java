@@ -46,7 +46,8 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         
         AuthenticatedUser user = getRequest().getAuthenticatedUser();
         ApiToken token = ctxt.authentication().findApiTokenByUser(user);
-        if ((token == null) || (token.getExpireTime().before(new Date()))) {
+        if (token == null) {
+            //No un-expired token
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
         performArchiveSubmission(version, token, requestedSettings);

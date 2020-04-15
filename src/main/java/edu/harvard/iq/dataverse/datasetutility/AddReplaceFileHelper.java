@@ -120,9 +120,11 @@ public class AddReplaceFileHelper{
     private InputStream newFileInputStream;     // step 20
     private String newFileName;                 // step 20
     private String newFileContentType;          // step 20
+    private String newStorageIdentifier;        // step 20
+    private String newCheckSum;        // step 20
+    
     // -- Optional  
     private DataFile fileToReplace;             // step 25
-    
     
     // -----------------------------------
     // Instance variables derived from other input
@@ -258,6 +260,7 @@ public class AddReplaceFileHelper{
     public boolean runAddFileByDataset(Dataset chosenDataset, 
             String newFileName, 
             String newFileContentType, 
+            String newStorageIdentifier,
             InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
         
@@ -272,7 +275,7 @@ public class AddReplaceFileHelper{
         }
         
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
-        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
 
     }
     
@@ -342,9 +345,7 @@ public class AddReplaceFileHelper{
     }
     
 
-
-    
-    public boolean runReplaceFile(Long oldFileId,
+	public boolean runReplaceFile(Long oldFileId,
                             String newFileName, 
                             String newFileContentType, 
                             InputStream newFileInputStream,
@@ -366,7 +367,6 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-
         return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
     }
     
@@ -386,25 +386,31 @@ public class AddReplaceFileHelper{
      * 
      * The UI will call Phase 1 on initial upload and 
      *   then run Phase 2 if the user chooses to save the changes.
+     * @param newStorageIdentifier 
      * 
      * 
      * @return 
      */
-    private boolean runAddReplaceFile(Dataset dataset,  
+    private boolean runAddReplaceFile(Dataset owner, String newFileName, String newFileContentType,
+			InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
+		return runAddReplaceFile(owner,newFileName, newFileContentType, null, newFileInputStream, optionalFileParams);
+	}
+    
+    private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
-            InputStream newFileInputStream,
+            String newStorageIdentifier, InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
         
         // Run "Phase 1" - Initial ingest of file + error check
         // But don't save the dataset version yet
         //
-        boolean phase1Success = runAddReplacePhase1(dataset,  
+        boolean phase1Success = runAddReplacePhase1(owner,  
                                         newFileName,  
                                         newFileContentType,  
+                                        newStorageIdentifier,
                                         newFileInputStream,
                                         optionalFileParams
                                         );
-        
         if (!phase1Success){
             return false;
         }
@@ -429,6 +435,7 @@ public class AddReplaceFileHelper{
             String newFileName, 
             String newFileContentType,
             InputStream newFileInputStream,
+            String fullStorageId,
             OptionalFileParams optionalFileParams){
         
         
@@ -449,7 +456,8 @@ public class AddReplaceFileHelper{
 
         return this.runAddReplacePhase1(fileToReplace.getOwner(), 
                 newFileName, 
-                newFileContentType, 
+                newFileContentType,
+                fullStorageId,
                 newFileInputStream, 
                 optionalFileParams);
 
@@ -462,13 +470,14 @@ public class AddReplaceFileHelper{
      * 
      * Phase 1 (here): Add/replace the file and make sure there are no errors
      *          But don't update the Dataset (yet)
+     * @param newStorageIdentifier 
      * 
      * @return 
      */
-    private boolean runAddReplacePhase1(Dataset dataset,  
+    private boolean runAddReplacePhase1(Dataset owner,  
             String newFileName, 
             String newFileContentType,
-            InputStream newFileInputStream,
+            String newStorageIdentifier, InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
         
         if (this.hasError()){
@@ -476,7 +485,7 @@ public class AddReplaceFileHelper{
         }
 
         msgt("step_001_loadDataset");
-        if (!this.step_001_loadDataset(dataset)){
+        if (!this.step_001_loadDataset(owner)){
             return false;
         }
         
@@ -487,11 +496,16 @@ public class AddReplaceFileHelper{
         }
 
         msgt("step_020_loadNewFile");
-        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newFileInputStream)){
+        if (!this.step_020_loadNewFile(newFileName, newFileContentType, newStorageIdentifier, newFileInputStream)){
             return false;
             
         }
-        
+        if(optionalFileParams != null) {
+        	if(optionalFileParams.hasCheckSum()) {
+        		newCheckSum = optionalFileParams.getCheckSum();
+        	}
+        }
+
         msgt("step_030_createNewFilesViaIngest");
         if (!this.step_030_createNewFilesViaIngest()){
             return false;
@@ -914,7 +928,7 @@ public class AddReplaceFileHelper{
     }
     
     
-    private boolean step_020_loadNewFile(String fileName, String fileContentType, InputStream fileInputStream){
+    private boolean step_020_loadNewFile(String fileName, String fileContentType, String storageIdentifier, InputStream fileInputStream){
         
         if (this.hasError()){
             return false;
@@ -932,18 +946,23 @@ public class AddReplaceFileHelper{
             
         }
         
-        if (fileInputStream == null){
-            this.addErrorSevere(getBundleErr("file_upload_failed"));
-            return false;
-        }
-       
+		if (fileInputStream == null) {
+			if (storageIdentifier == null) {
+				this.addErrorSevere(getBundleErr("file_upload_failed"));
+				return false;
+			} 
+		} 
+		
         newFileName = fileName;
         newFileContentType = fileContentType;
+        
+        //One of these will be null
+    	newStorageIdentifier = storageIdentifier;
         newFileInputStream = fileInputStream;
         
         return true;
     }
-    
+
     
     /**
      * Optional: old file to replace
@@ -967,7 +986,7 @@ public class AddReplaceFileHelper{
         // Does the file exist?
         //
         DataFile existingFile = fileService.find(dataFileId);
-
+        
         if (existingFile == null){           
             this.addError(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Collections.singletonList(dataFileId.toString())));
             return false;
@@ -1050,6 +1069,8 @@ public class AddReplaceFileHelper{
                     this.newFileInputStream,
                     this.newFileName,
                     this.newFileContentType,
+                    this.newStorageIdentifier,
+                    this.newCheckSum,
                     this.systemConfig);
 
         } catch (IOException ex) {
