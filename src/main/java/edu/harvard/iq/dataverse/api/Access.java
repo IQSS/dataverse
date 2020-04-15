@@ -255,6 +255,7 @@ public class Access extends AbstractApiBean {
             df = findDataFileOrDie(fileId);
         } catch (WrappedResponse ex) {
             logger.warning("Access: datafile service could not locate a DataFile object for id "+fileId+"!");
+            logger.warning(ex.getWrappedMessageWhenJson());
             throw new NotFoundException();
         }
          return df;
@@ -298,7 +299,7 @@ public class Access extends AbstractApiBean {
         if (df.isTabularData()) {
             String originalMimeType = df.getDataTable().getOriginalFileFormat();
             dInfo.addServiceAvailable(new OptionalAccessService("original", originalMimeType, "format=original","Saved original (" + originalMimeType + ")"));
-            
+            dInfo.addServiceAvailable(new OptionalAccessService("tabular", "text/tab-separated-values", "format=tab", "Tabular file in native format"));
             dInfo.addServiceAvailable(new OptionalAccessService("R", "application/x-rlang-transport", "format=RData", "Data in R format"));
             dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
             dInfo.addServiceAvailable(new OptionalAccessService("subset", "text/tab-separated-values", "variables=&lt;LIST&gt;", "Column-wise Subsetting"));
@@ -312,66 +313,80 @@ public class Access extends AbstractApiBean {
             downloadInstance.setDataverseRequestService(dvRequestService);
             downloadInstance.setCommand(engineSvc);
         }
+        boolean serviceRequested = false;
+        boolean serviceFound = false;
+
         for (String key : uriInfo.getQueryParameters().keySet()) {
             String value = uriInfo.getQueryParameters().getFirst(key);
-            logger.fine("is download service supported? key="+key+", value="+value);
+            logger.fine("is download service supported? key=" + key + ", value=" + value);
+            // The loop goes through all query params (e.g. including key, gbrecs, persistentId, etc. )
+            // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
+            if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
+                serviceRequested = true;
+                //Only need to check if this key is associated with a service
+                if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
+                    // this automatically sets the conversion parameters in
+                    // the download instance to key and value;
+                    // TODO: I should probably set these explicitly instead.
+                    logger.fine("yes!");
 
-            if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
-                // this automatically sets the conversion parameters in 
-                // the download instance to key and value;
-                // TODO: I should probably set these explicitly instead. 
-                logger.fine("yes!");
-                
-                if (downloadInstance.getConversionParam().equals("subset")) {
-                    String subsetParam = downloadInstance.getConversionParamValue();
-                    String variableIdParams[] = subsetParam.split(",");
-                    if (variableIdParams != null && variableIdParams.length > 0) {
-                        logger.fine(variableIdParams.length + " tokens;");
-                        for (int i = 0; i < variableIdParams.length; i++) {
-                            logger.fine("token: " + variableIdParams[i]);
-                            String token = variableIdParams[i].replaceFirst("^v", "");
-                            Long variableId = null;
-                            try {
-                                variableId = new Long(token);
-                            } catch (NumberFormatException nfe) {
-                                variableId = null;
-                            }
-                            if (variableId != null) {
-                                logger.fine("attempting to look up variable id " + variableId);
-                                if (variableService != null) {
-                                    DataVariable variable = variableService.find(variableId);
-                                    if (variable != null) {
-                                        if (downloadInstance.getExtraArguments() == null) {
-                                            downloadInstance.setExtraArguments(new ArrayList<Object>());
+                    if (downloadInstance.getConversionParam().equals("subset")) {
+                        String subsetParam = downloadInstance.getConversionParamValue();
+                        String variableIdParams[] = subsetParam.split(",");
+                        if (variableIdParams != null && variableIdParams.length > 0) {
+                            logger.fine(variableIdParams.length + " tokens;");
+                            for (int i = 0; i < variableIdParams.length; i++) {
+                                logger.fine("token: " + variableIdParams[i]);
+                                String token = variableIdParams[i].replaceFirst("^v", "");
+                                Long variableId = null;
+                                try {
+                                    variableId = new Long(token);
+                                } catch (NumberFormatException nfe) {
+                                    variableId = null;
+                                }
+                                if (variableId != null) {
+                                    logger.fine("attempting to look up variable id " + variableId);
+                                    if (variableService != null) {
+                                        DataVariable variable = variableService.find(variableId);
+                                        if (variable != null) {
+                                            if (downloadInstance.getExtraArguments() == null) {
+                                                downloadInstance.setExtraArguments(new ArrayList<Object>());
+                                            }
+                                            logger.fine("putting variable id " + variable.getId() + " on the parameters list of the download instance.");
+                                            downloadInstance.getExtraArguments().add(variable);
+
+                                            // if (!variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
+                                            // variableList.add(variable);
+                                            // }
                                         }
-                                        logger.fine("putting variable id "+variable.getId()+" on the parameters list of the download instance.");
-                                        downloadInstance.getExtraArguments().add(variable);
-                                        
-                                        //if (!variable.getDataTable().getDataFile().getId().equals(sf.getId())) {
-                                        //variableList.add(variable);
-                                        //}
+                                    } else {
+                                        logger.fine("variable service is null.");
                                     }
-                                } else {
-                                    logger.fine("variable service is null.");
                                 }
                             }
                         }
                     }
-                }
 
-                logger.fine("downloadInstance: "+downloadInstance.getConversionParam()+","+downloadInstance.getConversionParamValue());
-                
-                break;
+                    logger.fine("downloadInstance: " + downloadInstance.getConversionParam() + "," + downloadInstance.getConversionParamValue());
+                    serviceFound = true;
+                    break;
+                }
             } else {
-                // Service unknown/not supported/bad arguments, etc.:
-                // TODO: throw new ServiceUnavailableException(); 
+                
             }
         }
-                
+        if (serviceRequested && !serviceFound) {
+            // Service not supported/bad arguments, etc.:
+            // One could return
+            // a ServiceNotAvailableException. However, since the returns are all files of
+            // some sort, it seems reasonable, and more standard, to just return
+            // a NotFoundException.
+            throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) is not supported on this datafile.");
+        } // Else - the file itself was requested or we have the info needed to invoke the service and get the derived info
+        logger.fine("Returning download instance");
         /* 
          * Provide some browser-friendly headers: (?)
          */
-        //return retValue; 
         return downloadInstance;
     }
     

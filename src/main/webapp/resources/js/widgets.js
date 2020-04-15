@@ -25,6 +25,8 @@ function parseQueryString(queryString) {
         for (var i=0; i < keyValues.length; i++) {
             var pair = keyValues[i].split('=');
             params[pair[0]] = pair[1].replace(pl, " ");
+            // OpenScholar is encoding ":" as "%3A". See https://github.com/IQSS/dataverse/issues/6381
+            params[pair[0]] = pair[1].replace("%3A", ":");
         }
     }
     return params;

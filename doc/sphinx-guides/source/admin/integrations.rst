@@ -19,9 +19,9 @@ If your researchers have data on Dropbox, you can make it easier for them to get
 Open Science Framework (OSF)
 ++++++++++++++++++++++++++++
 
-The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project. 
+The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit http://help.osf.io/m/addons/l/863978-connect-dataverse-to-a-project 
+For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit http://help.osf.io/m/addons/l/863978-connect-dataverse-to-a-project
 
 RSpace
 ++++++
@@ -41,13 +41,40 @@ As of this writing only OJS 2.x is supported and instructions for getting starte
 
 If you are interested in OJS 3.x supporting deposit from Dataverse, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
 
+Renku
++++++
+
+Renku is a platform that enables collaborative, reproducible and reusable
+(data)science. It allows researchers to automatically record the provenance of
+their research results and retain links to imported and exported data. Users
+can organize their data in "Datasets", which can be exported to Dataverse via
+the command-line interface (CLI).
+
+Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset
+
+Flagship deployment of the Renku platform: https://renkulab.io
+
+Renku discourse: https://renku.discourse.group/
+
+
+Embedding Data on Websites
+--------------------------
+
+OpenScholar
++++++++++++
+
+`OpenScholar <https://theopenscholar.com>`_ is oriented toward hosting websites for academic institutions and offers `Dataverse Widgets <https://help.theopenscholar.com/dataverse>`_ that can be added to web pages. See also:
+
+- :ref:`openscholar-dataverse-level` (dataverse level)
+- :ref:`openscholar-dataset-level` (dataset level)
+
 Analysis and Computation
 ------------------------
 
 Data Explorer
 +++++++++++++
 
-Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. 
+Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
 
 For installation instructions, see the :doc:`external-tools` section.
 
@@ -77,6 +104,27 @@ Whole Tale
 `import data from Dataverse
 <https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
 
+Binder
+++++++
+
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a Dataverse dataset on https://mybinder.org
+
+Institutions can self host BinderHub. Dataverse is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
+Renku
++++++
+
+Researchers can import Dataverse datasets into their Renku projects via the
+command-line interface (CLI) by using the Dataverse DOI. See the `renku Dataset
+documentation
+<https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
+for details. Currently Dataverse ``>=4.8.x`` is required for the import to work. If you need
+support for an earlier version of Dataverse, please get in touch with the Renku team at
+`Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
+The UI implementation of the import is in progress and will be
+completed in Q12020.
+
+
 Discoverability
 ---------------
 
@@ -90,7 +138,7 @@ Dataverse supports a protocol called OAI-PMH that facilitates harvesting dataset
 SHARE
 +++++
 
-`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add and installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
+`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add an installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
 
 Research Data Preservation
 --------------------------
@@ -98,7 +146,7 @@ Research Data Preservation
 Archivematica
 +++++++++++++
 
-`Archivematica <https://www.archivematica.org>`_ is an integrated suite of open-source tools for processing digital objects for long-term preservation, developed and maintained by Artefactual Systems Inc. Its configurable workflow is designed to produce system-independent, standards-based Archival Information Packages (AIPs) suitable for long-term storage and management. 
+`Archivematica <https://www.archivematica.org>`_ is an integrated suite of open-source tools for processing digital objects for long-term preservation, developed and maintained by Artefactual Systems Inc. Its configurable workflow is designed to produce system-independent, standards-based Archival Information Packages (AIPs) suitable for long-term storage and management.
 
 Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.on.ca/>`_, this technical integration enables users of Archivematica to select datasets from connected Dataverse instances and process them for long-term access and digital preservation. For more information and list of known issues, please refer to Artefactual's `release notes <https://wiki.archivematica.org/Archivematica_1.8_and_Storage_Service_0.13_release_notes>`_, `integration documentation <https://www.archivematica.org/en/docs/archivematica-1.8/user-manual/transfer/dataverse/>`_, and the `project wiki <https://wiki.archivematica.org/Dataverse>`_.
 

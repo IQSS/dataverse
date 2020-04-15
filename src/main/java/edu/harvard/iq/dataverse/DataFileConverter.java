@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.enterprise.inject.spi.CDI;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -13,8 +14,8 @@ public class DataFileConverter implements Converter {
 
     private static final Logger logger = Logger.getLogger(DataFileConverter.class.getCanonicalName());
 
-    @EJB
-    DataFileServiceBean dataFileService;
+    //@EJB
+    DataFileServiceBean dataFileService = CDI.current().select(DataFileServiceBean.class).get();
 
     @Override
     public Object getAsObject(FacesContext facesContext, UIComponent component, String submittedValue) {

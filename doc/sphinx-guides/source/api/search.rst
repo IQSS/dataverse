@@ -6,7 +6,7 @@ Search API
 
 The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
 
-Unlike the web interface, this new API is limited to *published* data.
+To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 
 The parameters and JSON response are partly inspired by the `GitHub Search API <https://developer.github.com/v3/search/>`_.
 
@@ -35,7 +35,6 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
-query_entities   boolean  Whether entities are queried via direct database calls (for developer use).
 ===============  =======  ===========
 
 Basic Search Example
@@ -49,7 +48,7 @@ https://demo.dataverse.org/api/search?q=trees
         "status":"OK",
         "data":{
             "q":"trees",
-            "total_count":4,
+            "total_count":5,
             "start":0,
             "spelling_alternatives":{
                 "trees":"[tree]"
@@ -99,16 +98,57 @@ https://demo.dataverse.org/api/search?q=trees
                     "identifier":"birds",
                     "description":"A bird dataverse with some trees",
                     "published_at":"2016-05-10T12:57:27Z"
-                }
+                },
+                {  
+                    "name":"Darwin's Finches",
+                    "type":"dataset",
+                    "url":"https://doi.org/10.70122/FK2/MB5VGR",
+                    "global_id":"doi:10.70122/FK2/MB5VGR",
+                    "description":"Darwin's finches (also known as the GalÃ¡pagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at":"2019-12-11T15:26:10Z",
+                    "publisher":"dvbe69f5e1",
+                    "citationHtml":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/MB5VGR\" target=\"_blank\">https://doi.org/10.70122/FK2/MB5VGR</a>, Root, V3",
+                    "identifier_of_dataverse":"dvbe69f5e1",
+                    "name_of_dataverse":"dvbe69f5e1",
+                    "citation":"Finch, Fiona; Spruce, Sabrina; Poe, Edgar Allen; Mulligan, Hercules, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/MB5VGR, Root, V3",
+                    "storageIdentifier":"file://10.70122/FK2/MB5VGR",
+                    "subjects":[  
+                       "Astronomy and Astrophysics",
+                       "Other"
+                    ],
+                    "fileCount":3,
+                    "versionId":1260,
+                    "versionState":"RELEASED",
+                    "majorVersion":3,
+                    "minorVersion":0,
+                    "createdAt":"2019-09-20T18:08:29Z",
+                    "updatedAt":"2019-12-11T15:26:10Z",
+                    "contacts":[  
+                       {  
+                          "name":"Finch, Fiona",
+                          "affiliation":""
+                       }
+                    ],
+                    "producers":[  
+                       "Allen, Irwin",
+                       "Spielberg, Stephen"
+                    ],
+                    "authors":[  
+                       "Finch, Fiona",
+                       "Spruce, Sabrina",
+                       "Poe, Edgar Allen",
+                       "Mulligan, Hercules"
+                    ]
+                 }
             ],
-            "count_in_response":4
+            "count_in_response":5
         }
     }
 
 .. _advancedsearch-example:
 
-Advanced Search Example
------------------------
+Advanced Search Examples
+------------------------
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
@@ -221,6 +261,100 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
             "count_in_response":2
         }
     }
+
+https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
+
+The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions of datasets. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
+
+.. code-block:: json
+
+    {
+        "status": "OK",
+        "data": {
+            "q": "finch",
+            "total_count": 2,
+            "start": 0,
+            "spelling_alternatives": {},
+            "items": [
+                {
+                    "name": "Darwin's Finches",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.70122/FK2/GUAS41",
+                    "global_id": "doi:10.70122/FK2/GUAS41",
+                    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at": "2019-12-24T08:05:02Z",
+                    "publisher": "mdmizanur rahman Dataverse",
+                    "citationHtml": "Finch, Fiona, 2019, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/GUAS41\" target=\"_blank\">https://doi.org/10.70122/FK2/GUAS41</a>, Demo Dataverse, V1",
+                    "identifier_of_dataverse": "rahman",
+                    "name_of_dataverse": "mdmizanur rahman Dataverse",
+                    "citation": "Finch, Fiona, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/GUAS41, Demo Dataverse, V1",
+                    "storageIdentifier": "file://10.70122/FK2/GUAS41",
+                    "subjects": [
+                        "Medicine, Health and Life Sciences"
+                    ],
+                    "fileCount":6,
+                    "versionId": 53001,
+                    "versionState": "RELEASED",
+                    "majorVersion": 1,
+                    "minorVersion": 0,
+                    "createdAt": "2019-12-05T09:18:30Z",
+                    "updatedAt": "2019-12-24T08:38:00Z",
+                    "contacts": [
+                        {
+                            "name": "Finch, Fiona",
+                            "affiliation": ""
+                        }
+                    ],
+                    "authors": [
+                        "Finch, Fiona"
+                    ]
+                },
+                {
+                    "name": "Darwin's Finches",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.70122/FK2/7ZXYRH",
+                    "global_id": "doi:10.70122/FK2/7ZXYRH",
+                    "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                    "published_at": "2020-01-22T21:47:34Z",
+                    "publisher": "Demo Dataverse",
+                    "citationHtml": "Finch, Fiona, 2020, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/7ZXYRH\" target=\"_blank\">https://doi.org/10.70122/FK2/7ZXYRH</a>, Demo Dataverse, V1",
+                    "identifier_of_dataverse": "demo",
+                    "name_of_dataverse": "Demo Dataverse",
+                    "citation": "Finch, Fiona, 2020, \"Darwin's Finches\", https://doi.org/10.70122/FK2/7ZXYRH, Demo Dataverse, V1",
+                    "storageIdentifier": "file://10.70122/FK2/7ZXYRH",
+                    "subjects": [
+                        "Medicine, Health and Life Sciences"
+                    ],
+                    "fileCount":9,
+                    "versionId": 53444,
+                    "versionState": "RELEASED",
+                    "majorVersion": 1,
+                    "minorVersion": 0,
+                    "createdAt": "2020-01-22T21:23:43Z",
+                    "updatedAt": "2020-01-22T21:47:34Z",
+                    "contacts": [
+                        {
+                            "name": "Finch, Fiona",
+                            "affiliation": ""
+                        }
+                    ],
+                    "authors": [
+                        "Finch, Fiona"
+                    ]
+                }
+            ],
+            "count_in_response": 2
+        }
+    }
+
+.. _search-date-range:
+
+Date Range Search Example
+-------------------------
+
+Below is an example of searching across a date range of dataverses, datasets, and files that were published in 2018.
+
+`https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z] <https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z]>`_
 
 .. _iteration-example:
 

@@ -57,6 +57,7 @@
 	<a href="#content" class="sr-only">#{bundle['body.skip']}</a>                
         <ui:include src="dataverse_header.xhtml">
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseServiceBean.findRootDataverse()}"/>
+            <ui:param name="editModeDataverse" value="#{editModeDataverse}"/>
             <ui:param name="showDataverseHeader" value="#{showDataverseHeader != null ? showDataverseHeader : true}"/>
             <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
             <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
@@ -106,7 +107,10 @@
 
                 // Rebind bootstrap UI components
                 bind_bsui_components();
-            });
+            });            
+            function clickSupportLink() {
+                $("[id$='headerSupportLink']").click();
+            }            
             //]]>
         </script>
     </h:body>

@@ -15,7 +15,11 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(DvObject dvo) throws Exception {
-        return true;
+    	/* Direct upload creates an identifier prior to calling the CreateNewDatasetCommand - if this is true, that call fails.
+    	 * In that case, the local test (DatasetServiceBean.isIdentifierLocallyUnique()) correctly returns false since it tests the database.
+    	 * This provider could do the same check or use some other method to test alreadyExists(DvObject) =true failures. (no tests found currently) 
+    	 */
+        return false;
     }
     
     @Override

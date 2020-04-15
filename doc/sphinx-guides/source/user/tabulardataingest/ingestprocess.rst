@@ -56,4 +56,4 @@ The structure of the metadata defining tabular data variables used in
 Dataverse was originally based on the `DDI Codebook
 <http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
 
-You can see an example of DDI output under the "Data Variable Metadata Access" section of the :doc:`/api/dataaccess` section of the API Guide.
+You can see an example of DDI output under the :ref:`data-variable-metadata-access` section of the :doc:`/api/dataaccess` section of the API Guide.
