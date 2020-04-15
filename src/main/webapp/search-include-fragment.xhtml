@@ -579,7 +579,7 @@
                             <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
 
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
-							<div class="checksum-block">
+							<span class="checksum-block">
                                 <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
                                             data-clipboard-text="#{result.entity.getChecksumValue()}"
@@ -588,7 +588,7 @@
                                             #{result.entity.getChecksumType()}
                                             <span class="glyphicon glyphicon-copy"></span>
                                 </button>
-                            </div>    
+                            </span>    
                                         <script>
                                             $(document).ready(function() {
                                                 // clipboard.js > checksum copy buttons
