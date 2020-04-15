@@ -579,15 +579,16 @@
                             <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
 
                             <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
-
-                            <button class="btn btn-secondary checksum" type="button"
+							<span class="checksum-block">
+                                <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
-                                            data-clipboard-text="#{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}"
-                                            title="#{bundle['file.checksum.copy']} #{result.entity.getChecksumType()}"
+                                            data-clipboard-text="#{result.entity.getChecksumValue()}"
+                                            title="#{bundle['file.checksum.copy']} #{result.entity.getChecksumValue()}"
                                             jsf:rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}">
-                                            #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}
+                                            #{result.entity.getChecksumType()}
                                             <span class="glyphicon glyphicon-copy"></span>
-                                        </button>
+                                </button>
+                            </span>    
                                         <script>
                                             $(document).ready(function() {
                                                 // clipboard.js > checksum copy buttons
