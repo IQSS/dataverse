@@ -8,7 +8,7 @@ JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_fields.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_copies.xml ${INSTALLER_ZIP_DIR}/updateSchemaMDB.sh
 SOLR_CONFIG=${INSTALLER_ZIP_DIR}/solrconfig.xml
-PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installGlassfish.py ${INSTALLER_ZIP_DIR}/requirements.txt ${INSTALLER_ZIP_DIR}/default.config ${INSTALLER_ZIP_DIR}/interactive.config
+PYTHON_FILES=${INSTALLER_ZIP_DIR}/README_python.txt ${INSTALLER_ZIP_DIR}/installConfig.py ${INSTALLER_ZIP_DIR}/installUtils.py ${INSTALLER_ZIP_DIR}/install.py ${INSTALLER_ZIP_DIR}/installAppServer.py ${INSTALLER_ZIP_DIR}/requirements.txt ${INSTALLER_ZIP_DIR}/default.config ${INSTALLER_ZIP_DIR}/interactive.config
 INSTALL_SCRIPT=${INSTALLER_ZIP_DIR}/install
 
 installer:	dvinstall.zip
@@ -41,10 +41,10 @@ ${DISTRIBUTION_WAR_FILE}:
 		exit 1; \
 	fi
 
-${GLASSFISH_SETUP_SCRIPT}:	glassfish-setup.sh
+${GLASSFISH_SETUP_SCRIPT}:	as-setup.sh
 	@echo copying glassfish setup
 	mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp glassfish-setup.sh ${INSTALLER_ZIP_DIR}
+	/bin/cp as-setup.sh ${INSTALLER_ZIP_DIR}
 
 ${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.12.jar
 	@echo copying postgres driver
@@ -81,7 +81,7 @@ ${SOLR_CONFIG}:		../../conf/solr/7.7.2/solrconfig.xml
 	@mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp ../../conf/solr/7.7.2/solrconfig.xml ${INSTALLER_ZIP_DIR}
 
-${PYTHON_FILES}: README_python.txt install.py installConfig.py installGlassfish.py installUtils.py requirements.txt default.config interactive.config
+${PYTHON_FILES}: README_python.txt install.py installConfig.py installAppServer.py installUtils.py requirements.txt default.config interactive.config
 	@echo copying Python installer files
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	/bin/cp README_python.txt install.py installConfig.py installGlassfish.py installUtils.py requirements.txt default.config interactive.config ${INSTALLER_ZIP_DIR}
+	/bin/cp README_python.txt install.py installConfig.py installAppServer.py installUtils.py requirements.txt default.config interactive.config ${INSTALLER_ZIP_DIR}
