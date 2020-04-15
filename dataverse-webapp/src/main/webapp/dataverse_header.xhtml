@@ -214,10 +214,29 @@
                                 </ul>
                             </li>
                         </ui:fragment>
+            
+                        <div id="accessibility-controls">
+                            <h:outputText value="#{bundle['header.accessibility.contrast']}" />: 
+                            <ul id="high-contrast-mode-selector">
+                                <li>
+                                    <button class="default" title="#{bundle['header.accessibility.contrast.default']}"></button>
+                                </li>
+                                <li>
+                                    <button class="yellow-on-black" title="#{bundle['header.accessibility.contrast.yellowOnBlack']}"></button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <script type="text/javascript">
+                            // Some pages reload the header, we need to ensure the button bindings stay functional.
+                            // Example: API Token tab on user account page.
+                            accessibilityBindButtonEvents();
+                        </script>
                     </ul>
                 </div>
             </div>
         </div>
+
     </nav>
 
     <div id="dataverse-header-block">

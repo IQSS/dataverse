@@ -424,6 +424,10 @@ span.glyphicon-question-sign.tooltip-icon {
 	}
 }
 
+#high-contrast-mode-selector a:focus {
+	outline-offset: 0;
+}
+
 button,
 a.btn, 
 .owl-item a,
@@ -1400,6 +1404,10 @@ $navbar-height: 6.8em;
 	border-top: 4px solid $icon-color;
 	border-bottom: none;
 
+	.container {
+		position: relative;
+	}
+
 	#cookie-banner {
 		padding: 6px 0 10px 0;
 		background: $icon-color;
@@ -1561,6 +1569,47 @@ $navbar-height: 6.8em;
 			vertical-align: middle;
 			float: none;
 			height: $navbar-height;
+	}
+}
+
+#accessibility-controls {
+	position: absolute;
+	bottom: -1.3em;
+	right: 1.2em;
+	background: #fff;
+	padding: 0em 0.8em 0.9em 0.8em;
+	border-radius: $border-radius;
+
+	line-height: 0.8em;
+}
+
+#high-contrast-mode-selector {
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+	list-style-type: none;
+
+	li {
+		display: block;
+		float: left;
+		margin-left: 0.4em;
+	}
+
+	button {
+		position: relative;
+		top: 0.5em;
+		padding: 0.4em 0.2em;
+
+		border: 1px solid $main-text-color;
+		background: #fff;
+		color: $main-color !important;
+		font-weight: bold;
+		text-decoration: none !important;
+		cursor: pointer;
+
+		&::before {
+			content: "Aa";
+		}
 	}
 }
 
@@ -3564,6 +3613,10 @@ div.ui-dialog.largePopUp {
 		}
 	}
 
+	#accessibility-controls {
+		background: $contrast-background-color;
+	}
+
 	#footer .footer-links .row {
 		border-top-color: $contrast-link-color;
 
@@ -3673,6 +3726,12 @@ div.ui-dialog.largePopUp {
 
 body.high-contrast-yellow-on-black {
 	@include high-contrast-template();
+}
+#high-contrast-mode-selector button.yellow-on-black {
+	border-color: #ff0;
+	background: #000;
+	color: #ff0 !important;
+	text-decoration: underline !important;
 }
 
 /* Other templates in beta stage, not fully functional/tested yet. Just a proof of concept */
