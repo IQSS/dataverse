@@ -51,6 +51,9 @@
                                    oncomplete="PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');">
                         <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         #{tool.displayName}
+                                   update="@widgetVar(downloadPopup)"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{tool.getDisplayNameLang()}
                     </p:commandLink>
                 </li>
             </ui:repeat>
