@@ -134,7 +134,9 @@
                                                 
                                                 <!-- DOWNLOAD/ACCESS DATASET -->
                                                 <!-- TO-DO RENDER LOGIC (#3513 DOWNLOAD ALL + EXPOLRE + COMPUTE) -->
-                                                <div class="btn-group btn-group-justified" jsf:rendered="#{!DatasetPage.dataset.deaccessioned}">
+                                                <div class="btn-group btn-group-justified" 
+                                                     jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned
+                                                                        or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}"> <!-- !DatasetPage.dataset.deaccessioned -->
                                                     <div class="btn-group">
                                                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                             #{bundle['dataset.accessBtn']} <span class="caret"></span>
@@ -327,7 +329,7 @@
                                                 <div>
                                                     <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                                       and DatasetPage.canUpdateDataset()
-                                                                                                      and !DatasetPage.dataset.deaccessioned}">
+                                                                                                      }"> <!-- and !DatasetPage.dataset.deaccessioned -->
 
                                                         <div class="btn-group">
                                                             <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -784,9 +786,10 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
                             <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
-                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{(!DatasetPage.workingVersion.deaccessioned or 
-                                                              (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))  and
-                                                              (empty DatasetPage.editMode)}">
+                            <p:tab id="dataFilesTab" title="#{bundle.files}" 
+                                   rendered="#{(!DatasetPage.workingVersion.deaccessioned 
+                                                or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
+                                                and (empty DatasetPage.editMode)}">
                                 <ui:include src="filesFragment.xhtml">
                                     <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                                 </ui:include>
@@ -798,12 +801,17 @@
                                              and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                                 <div class="button-block tab-header margin-bottom text-right" jsf:rendered="#{empty DatasetPage.editMode}">
                                     <p:commandLink styleClass="btn btn-default btn-access" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:bind_bsui_components();" 
-                                                   disabled="#{DatasetPage.locked}" rendered="#{!widgetWrapper.widgetView and (DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
-                                                               and DatasetPage.canUpdateDataset() and !DatasetPage.dataset.deaccessioned)}">
+                                                   disabled="#{DatasetPage.locked}" 
+                                                   rendered="#{!widgetWrapper.widgetView 
+                                                               and (DatasetPage.sessionUserAuthenticated 
+                                                               and empty DatasetPage.editMode and !widgetWrapper.widgetView
+                                                               and DatasetPage.canUpdateDataset())}"><!-- and !DatasetPage.dataset.deaccessioned -->
                                         <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0"/>
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </p:commandLink>
-                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released and !DatasetPage.dataset.deaccessioned}">
+                                    <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released 
+                                                                           and (!DatasetPage.dataset.deaccessioned
+                                                                           or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"></span>
                                         </button>
