@@ -377,6 +377,7 @@ gfAdminUser = config.get('glassfish', 'GLASSFISH_ADMIN_USER')
 gfAdminPassword = config.get('glassfish', 'GLASSFISH_ADMIN_PASSWORD')
 gfDomain = "domain1"
 gfJarPath = gfDir+"/glassfish/lib"
+gfModulePath = gfDir+"/glassfish/modules"
 # system settings:
 adminEmail = config.get('system', 'ADMIN_EMAIL')
 solrLocation = config.get('system', 'SOLR_LOCATION')
@@ -451,7 +452,7 @@ else:
 print("Setting App. Server heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
 
-# 4b. PostgresQL driver:
+# 4b1. PostgresQL driver:
 pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
 
 try:
@@ -460,6 +461,16 @@ try:
 except:
    print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
+# 4b2. JSF patch for Payara:
+
+jsf_patch_path = "jsfpatch/jakarta.faces_dv.jar"
+
+try:
+   # overwrite the jar file supplied with Payara:
+   copy2(jsf_patch_path, gfModulePath+"/jakarta.faces.jar")
+   print("Copied "+jsf_patch_path+" into "+gfModulePath)
+except:
+   print("Couldn't copy "+jsf_patch_path+" into "+gfModulePath+". Check its permissions?")
 
 # 4c. create payara admin credentials file
 
