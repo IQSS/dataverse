@@ -27,6 +27,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -51,6 +52,8 @@ public class Files extends AbstractApiBean {
     EjbDataverseEngine commandEngine;
     @EJB
     SystemConfig systemConfig;
+    @Inject
+    private OptionalFileParams optionalFileParams;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 
@@ -126,7 +129,7 @@ public class Files extends AbstractApiBean {
                     // (2b) Load up optional params via JSON
                     //  - Will skip extra attributes which includes fileToReplaceId and forceReplace
                     //---------------------------------------
-                    optionalFileParams = new OptionalFileParams(jsonData);
+                    optionalFileParams = this.optionalFileParams.create(jsonData);
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
@@ -152,7 +155,7 @@ public class Files extends AbstractApiBean {
                                                                       this.ingestService,
                                                                       this.fileService,
                                                                       this.permissionSvc,
-                                                                      this.commandEngine);
+                                                                      this.commandEngine, this.optionalFileParams);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"

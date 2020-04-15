@@ -76,4 +76,17 @@ public class TermsOfUseFactory {
 
         return termsOfUse;
     }
+
+    /**
+     * Return new instance of restricted access
+     * {@link FileTermsOfUse} with {@link FileTermsOfUse.RestrictType.CUSTOM} type
+     * and custom restrict reason text
+     */
+    public FileTermsOfUse createRestrictedCustomTermsOfUse(String customRestrictReason) {
+        FileTermsOfUse termsOfUse = new FileTermsOfUse();
+        termsOfUse.setRestrictType(RestrictType.CUSTOM);
+        termsOfUse.setRestrictCustomText(customRestrictReason);
+
+        return termsOfUse;
+    }
 }

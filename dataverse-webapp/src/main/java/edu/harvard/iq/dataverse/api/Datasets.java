@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.amazonaws.services.pi.model.InvalidArgumentException;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -66,8 +67,6 @@ import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
-import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -121,12 +120,10 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.security.InvalidParameterException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -201,6 +198,12 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     private DatasetService datasetSvc;
+
+    @Inject
+    private DatasetsValidators datasetsValidators;
+
+    @Inject
+    private OptionalFileParams optionalFileParamsSvc;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -628,7 +631,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             Date embargoDate = dateFormat.parse(date);
-            validateEmbargoDate(embargoDate);
+            datasetsValidators.validateEmbargoDate(embargoDate);
 
             dataset = datasetSvc.setDatasetEmbargoDate(dataset, embargoDate);
 
@@ -637,6 +640,8 @@ public class Datasets extends AbstractApiBean {
             return wr.getResponse();
         } catch (ParseException pe) {
             return badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.format", settingsSvc.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat)));
+        } catch (InvalidArgumentException iae) {
+            return badRequest(iae.getMessage());
         } catch (EJBException ise) {
             return badRequest(ise.getCause().getMessage());
         } catch (PermissionException pe) {
@@ -1622,9 +1627,17 @@ public class Datasets extends AbstractApiBean {
         msgt("(api) jsonData: " + jsonData);
 
         try {
-            optionalFileParams = new OptionalFileParams(jsonData);
+            optionalFileParams = optionalFileParamsSvc.create(jsonData);
         } catch (DataFileTagException ex) {
             return error(Response.Status.BAD_REQUEST, ex.getMessage());
+        }
+
+        try {
+            datasetsValidators.validateFileTermsOfUseDTO(optionalFileParams.getFileTermsOfUseDTO());
+        } catch (InvalidParameterException pe) {
+            return error(Response.Status.BAD_REQUEST, pe.getMessage());
+        } catch (EJBException ejbe) {
+            return error(Response.Status.BAD_REQUEST, ejbe.getCause().getMessage());
         }
 
 
@@ -1638,7 +1651,7 @@ public class Datasets extends AbstractApiBean {
                                                                       ingestService,
                                                                       fileService,
                                                                       permissionSvc,
-                                                                      commandEngine);
+                                                                      commandEngine, optionalFileParamsSvc);
 
 
         //-------------------
@@ -1853,32 +1866,6 @@ public class Datasets extends AbstractApiBean {
             }
 
         });
-    }
-
-    // -------------------- PRIVATE ---------------------
-    private void validateEmbargoDate(Date embargoDate) throws WrappedResponse {
-        if (embargoDate.toInstant().isBefore(getTomorrowsDateInstant())) {
-            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.notFuture")));
-        }
-        if (isMaximumEmbargoLengthSet() && embargoDate.toInstant().isAfter(getMaximumEmbargoDate())) {
-            throw new WrappedResponse(badRequest(BundleUtil.getStringFromBundle("datasets.api.setEmbargo.failure.badDate.tooLong",
-                    settingsSvc.getValueForKey(SettingsServiceBean.Key.MaximumEmbargoLength))));
-        }
-    }
-
-    private Instant getTomorrowsDateInstant() {
-        return Date.from(Instant.now().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS)).toInstant();
-    }
-
-    private boolean isMaximumEmbargoLengthSet() {
-        return settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.MaximumEmbargoLength) > 0;
-    }
-
-    private Instant getMaximumEmbargoDate() {
-        return Date.from(Instant
-                .now().atOffset(ZoneOffset.UTC)
-                .plus(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength), ChronoUnit.MONTHS)
-                .toInstant()).toInstant();
     }
 
 }

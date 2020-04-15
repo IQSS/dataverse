@@ -104,6 +104,7 @@ public class AddReplaceFileHelper {
     private DataFileServiceBean fileService;
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
+    private OptionalFileParams optionalFileParams;
 
     // -----------------------------------
     // Instance variables directly added
@@ -156,7 +157,8 @@ public class AddReplaceFileHelper {
                                 IngestServiceBean ingestService,
                                 DataFileServiceBean fileService,
                                 PermissionServiceBean permissionService,
-                                EjbDataverseEngine commandEngine) {
+                                EjbDataverseEngine commandEngine,
+                                OptionalFileParams optionalFileParams) {
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -171,6 +173,7 @@ public class AddReplaceFileHelper {
         this.fileService = Objects.requireNonNull(fileService, "fileService cannot be null");
         this.permissionService = Objects.requireNonNull(permissionService, "permissionService cannot be null");
         this.commandEngine = Objects.requireNonNull(commandEngine, "commandEngine cannot be null");
+        this.optionalFileParams = optionalFileParams;
 
         // ---------------------------------
 
@@ -306,8 +309,7 @@ public class AddReplaceFileHelper {
                                                     newFileName,
                                                     newFileContentType,
                                                     newFileInputStream,
-                                                    optionalFileParams
-        );
+                                                    optionalFileParams);
 
         if (!phase1Success) {
             return false;
