@@ -503,7 +503,7 @@ span.search-term-match {font-weight: bold;}
 [id$='resultsTable'] {width:100%;}
 [id$='resultsTable'] div[class*='Result'] {
     font-size: 90%;
-    word-break:break-all;
+    word-break:break-word;
 }
 [id$='resultsTable'] div[class*='Result'] > div.card-title-icon-block, 
 [id$='resultsTable'] div[class*='Result'] > div.card-preview-icon-block, 
@@ -850,11 +850,13 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 }
 
 .checksum-block .checksum {
-    padding: 2px 2px;
-    line-height: 1.0;
+    padding: 1px 2px 1px 2px;
+    background-color: inherit;
+    font-size: 90%;
 }
 .checksum-block {
     word-break:break-all;
+    font-size: 14px;
 }
 
 /* FILES TREE */

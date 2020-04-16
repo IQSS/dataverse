@@ -578,8 +578,8 @@
                             <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
                             <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
 
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
-							<span class="checksum-block">
+                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}, " rendered="#{!result.harvested}" />
+							<span class="checksum-block text-muted">
                                 <button class="btn btn-secondary checksum" type="button"
                                             data-clipboard-action="copy"
                                             data-clipboard-text="#{result.entity.getChecksumValue()}"
