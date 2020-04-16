@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -1995,43 +1996,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
                 
-        // Various info messages, when the dataset is locked (for various reasons):
-        if (dataset.isLocked() && canUpdateDataset()) {
-            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.message.details"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
-                        BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
-                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
-                lockedDueToDcmUpload = true;
-            }
-            //This is a hack to remove dataset locks for File PID registration if 
-                //the dataset is released
-                //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
-                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
-                }*/
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
-                        BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
-            }
-        }
-        
-            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
-                lockedDueToIngestVar = true;
-            }
+        displayLockInfo(dataset);
             
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
@@ -2053,6 +2018,58 @@ public class DatasetPage implements java.io.Serializable {
         
         
         return null;
+    }
+    
+    private void displayLockInfo(Dataset dataset) {
+        // Various info messages, when the dataset is locked (for various reasons):
+        if (dataset.isLocked() && canUpdateDataset()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.message.details"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
+                        BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
+                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+                lockedDueToDcmUpload = true;
+            }
+            //This is a hack to remove dataset locks for File PID registration if 
+            //the dataset is released
+            //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
+            /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.finalizePublication)){
+                datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
+            }*/
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                // "finalizePublication" lock is used to lock the dataset while 
+                // the FinalizeDatasetPublicationCommand is running asynchronously. 
+                // the tasks currently performed by the command are the  pid registration 
+                // for files and (or) physical file validation (either or both 
+                // of these two can be disabled via database settings). More 
+                // such asynchronous processing tasks may be added in the future. 
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
+                        BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                // the dataset is locked, because one or more datafiles in it 
+                // failed validation during an attempt to publish it. 
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
+                        BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
+            } 
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+            }
+        }
+        
+        if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
+            lockedDueToIngestVar = true;
+        }
     }
     
     private Boolean fileTreeViewRequired = null; 
@@ -2559,7 +2576,13 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } catch (CommandException ex) {
-                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                Dataset testDs = datasetService.find(dataset.getId());
+                if (testDs != null && !testDs.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                    // If the dataset could not be published because it has failed 
+                    // physical file validation, the messaging will be handled via
+                    // the lock info system. 
+                    JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                }
                 logger.severe(ex.getMessage());
             }
             
@@ -3633,8 +3656,10 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
-                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
                 if (testDataset.getLocks().size() > 0) {
+                    // Refresh the info messages, in case the dataset has been 
+                    // re-locked with a different lock type:
+                    displayLockInfo(testDataset);
                     return true;
                 }
             }
