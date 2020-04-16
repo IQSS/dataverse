@@ -514,28 +514,28 @@
                         <div>
                             <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
                         </div>
-
-                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                        <div>  
+                          <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
                             <h:outputText value="... #{snippet} ..." escape="false"/>
-                        </ui:repeat>
+                          </ui:repeat>
 
-                        <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
+                          <ui:fragment rendered="#{false and result.matchedFields.size() > 0}">
                             <h:outputText value="#{bundle['dataverse.results.cards.foundInMetadata']} "/>
                             <ui:repeat value="#{result.matchedFields}" var="field" varStatus="varStatus">
                                 <h:outputText value="#{field}"/>
                                 <h:outputText value=", " rendered="#{varStatus.last != true}"/>
                             </ui:repeat>
-                        </ui:fragment>
+                          </ui:fragment>
 
-                        <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
+                          <ui:repeat value="#{result.highlightsAsList}" var="highlight" rendered="#{result.highlightsAsList.size() > 0}">
                             <ui:repeat value="#{highlight.snippets}" var="snippet">
                                 <div>
                                     <h:outputText value="#{highlight.displayName}: #{snippet}" escape="false"/>
                                 </div>
                             </ui:repeat>
-                        </ui:repeat>
-
+                          </ui:repeat>
+                        </div>
                         <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
                             <h:outputText value="#{result.harvestingDescription}"/>
                         </div>
