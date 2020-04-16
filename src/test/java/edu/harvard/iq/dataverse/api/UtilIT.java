@@ -357,9 +357,6 @@ public class UtilIT {
     static Response createDatasetViaNativeApi(String dataverseAlias, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
         
-        System.out.print("dataverseAlias: " + dataverseAlias);
-        System.out.print("pathToJsonFile: " + pathToJsonFile);
-        System.out.print("apiToken: " + apiToken);
         Response createDatasetResponse = given()               
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
