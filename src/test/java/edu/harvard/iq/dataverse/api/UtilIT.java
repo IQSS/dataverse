@@ -356,7 +356,11 @@ public class UtilIT {
 
     static Response createDatasetViaNativeApi(String dataverseAlias, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
-        Response createDatasetResponse = given()
+        
+        System.out.print("dataverseAlias: " + dataverseAlias);
+        System.out.print("pathToJsonFile: " + pathToJsonFile);
+        System.out.print("apiToken: " + apiToken);
+        Response createDatasetResponse = given()               
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
@@ -368,9 +372,16 @@ public class UtilIT {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+            System.out.print(datasetVersionAsJson);
             return datasetVersionAsJson;
         } catch (IOException ex) {
+            System.out.print("GET Dataset Json IO Exception");
             Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } catch (Exception e){
+            
+            System.out.print("Another Exception: "
+                    + e.getMessage());
             return null;
         }
     }
