@@ -104,7 +104,6 @@ import org.primefaces.PrimeFaces;
 public class EditDatafilesPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
-    private FileView fileView;
     private boolean uploadWarningMessageIsNotAnError;
 
     public enum FileEditMode {
@@ -147,7 +146,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
-    private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
     
@@ -155,7 +153,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
 
     private String selectedFileIdsString = null; 
-    private FileEditMode mode = FileEditMode.EDIT; 
+    private FileEditMode mode; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
     private List<FileMetadata> fileMetadatas = new ArrayList<>();;
 
@@ -474,6 +472,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     
 
     public String init() {
+        // default mode should be EDIT
+        if (mode == null) {
+            mode = FileEditMode.EDIT;
+        }
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
@@ -582,7 +584,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
-            }           
+            }    
                        
         }
         
