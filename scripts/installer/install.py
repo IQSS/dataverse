@@ -545,13 +545,20 @@ if not os.path.exists(jhoveConfigDist) or not os.path.exists(jhoveConfigSchemaDi
 
 print("\nInstalling additional configuration files (Jhove)... ")
 try: 
-   copy2(jhoveConfigDist, gfConfigDir)
    copy2(jhoveConfigSchemaDist, gfConfigDir)
+   # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
+   # and may need to be adjusted, if Payara is installed anywhere other than /usr/local/payara5:
+   if gfDir == "/usr/local/payara5":
+      copy2(jhoveConfigDist, gfConfigDir)
+   else:
+      sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
+      subprocess.call(sedCommand, shell=True)
+
    print("done.")
 except: 
    sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
 
-# @todo: The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
+   
 # - so it may need to be readjusted, if payara lives somewhere other than /usr/local/payara5
 # (replicate from the old installer)
 
