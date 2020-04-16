@@ -70,9 +70,8 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 return null;
             }
 
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(
-                    assignedThumbnailFile,
-                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(assignedThumbnailFile,
+                    ImageThumbConverter.DEFAULT_DATASET_THUMBNAIL_SIZE);
 
             if (imageSourceBase64 != null) {
                 this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);

@@ -58,8 +58,8 @@ the following parameter values are supported (for image and pdf files only):
 ==============  ===========
 Value           Description
 ==============  ===========
-true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
-``N``           Rescales the image to ``N`` pixels.
+true            Generates a thumbnail image by rescaling to the default thumbnail size (64 pixels wide).
+``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
 
 Multiple File ("bundle") download
