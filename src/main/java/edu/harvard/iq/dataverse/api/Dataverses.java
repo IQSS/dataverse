@@ -217,7 +217,6 @@ public class Dataverses extends AbstractApiBean {
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
-            System.out.print(parentIdtf);
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);

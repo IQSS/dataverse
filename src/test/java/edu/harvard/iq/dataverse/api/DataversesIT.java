@@ -472,11 +472,7 @@ public class DataversesIT {
         String pathToJsonFile = "src/test/resources/json/complete-dataset-with-files.json";
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         
-        //"scripts/api/data/dataset-create-new.json";
-        //"src/test/resources/json/complete-dataset-with-files.json";
-        //String pathToJsonFile = "scripts/api/data/dataset-create-new.json";
-        // String pathToJsonFile = "scripts/search/tests/data/dataset-finch2.json";
-        //should fail if not a super user and attempting to
+        //should fail if non-super user and attempting to
         //create a dataset with files
         createDatasetResponse.prettyPrint();
         createDatasetResponse.then().assertThat()
@@ -491,6 +487,7 @@ public class DataversesIT {
                 .statusCode(CREATED.getStatusCode());
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
         
+        //As non-super user should be able to add a real file
         String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
         Response authorAttemptsToAddFileViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
 
