@@ -268,6 +268,13 @@ public class DatasetField implements Serializable {
         return returnString;
     }
 
+    public String getParentDisplayFormat() {
+        return this.getDatasetFieldParent()
+                .map(DatasetField::getDatasetFieldType)
+                .map(DatasetFieldType::getDisplayFormat)
+                .getOrElse(StringUtils.EMPTY);
+    }
+
     public String getRawValue() {
         String returnString = "";
         for (String value : getRawValuesList()) {

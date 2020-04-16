@@ -31,7 +31,7 @@
             </ui:repeat>
             
             <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
-                <h:outputText value=" " rendered="#{!childLoop.first}" />
+                <h:outputText value="#{childField.parentDisplayFormat}" rendered="#{!childLoop.first}" />
                 <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
                     <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
                                 escape="#{childField.datasetFieldType.isEscapeOutputText()}"/>
