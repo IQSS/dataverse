@@ -235,7 +235,7 @@ if not pgOnly:
       # get dataverse version from pom.xml
       tree = ET.ElementTree(file='../../pom.xml')
       for elem in tree.iter("*"):
-         if elem.tag == '{https://maven.apache.org/POM/4.0.0}version':
+         if elem.tag == '{http://maven.apache.org/POM/4.0.0}version':
             warfileVersion = elem.text
          # only want the first, the rest are dependencies
             break
