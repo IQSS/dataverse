@@ -624,7 +624,7 @@
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
-                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)}" actionListener="#{DatasetPage.refreshAllLocks()}"/>
+                            <p:remoteCommand name="refreshAllLocksCommand" process="@this" update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)},:messagePanel" actionListener="#{DatasetPage.refreshAllLocks()}"/>
                             <p:remoteCommand name="refreshAllCommand" process="@this" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel" action="#{DatasetPage.refresh()}"/>
                             <!-- see the comment in the javascript below that explains what this button is for -->
                             <p:commandButton id="refreshButton" process="@this" widgetVar="refreshButton" update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable" style="display:none"/>
@@ -1321,6 +1321,13 @@
                             <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                        </ui:include>
+                    </p:dialog>
+                    <!-- Preview Guestbook -->
+                    <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
+                        <ui:include src="guestbook-preview-popup-fragment.xhtml">
+                            <ui:param name="selectedGuestbook" value="#{DatasetPage.selectedGuestbook}"/>
+                            <ui:param name="enableEdit" value="false"/>
                         </ui:include>
                     </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
