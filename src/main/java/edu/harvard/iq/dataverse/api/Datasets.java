@@ -1529,7 +1529,7 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 		try {
 			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
 		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+			logger.info("Exception thrown while trying to figure out permissions while getting upload URLs for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
 		}
 		if (!canUpdateDataset) {
             return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
@@ -1567,7 +1567,7 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 		try {
 			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
 		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+			logger.info("Exception thrown while trying to figure out permissions while getting aborting upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
 		}
 		if (!canUpdateDataset) {
 			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
@@ -1601,13 +1601,13 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 			}
 		} catch (JsonException je) {
 			logger.info("Unable to parse eTags from: " + partETagBody);
-			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload"));
+			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
 		}
 		boolean canUpdateDataset = false;
 		try {
 			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
 		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+			logger.info("Exception thrown while trying to figure out permissions while completing upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
 		}
 		if (!canUpdateDataset) {
 			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
@@ -1615,11 +1615,11 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 		try {
 			S3AccessIO.completeMultipartUpload(dataset, storageidentifier, uploadId, eTagList);
 		} catch (IOException io) {
-			logger.warning("Multipart upload abort failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
+			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
-			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload")); 
+			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload")); 
 		}
-		return ok("Multipart Upload aborted");
+		return ok("Multipart Upload completed");
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
 	}
