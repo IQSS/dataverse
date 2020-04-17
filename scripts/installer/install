@@ -105,6 +105,9 @@ my $API_URL = "http://localhost:8080/api";
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
 my $postgres_jdbc = "postgresql-42.2.12.jar";
+# JSF patch for Payara5: 
+# (a temporary measure most likely)
+my $jsf_patch = "jsfpatch/jakarta.faces_dv.jar";
 
 # 0. A few preliminary checks:
 
@@ -878,10 +881,19 @@ sub setup_appserver {
 	exit 1;
     }
 
-# more diagnostics needed?
+    print "done!\n";
+
+    my $jsf_patch_success = copy($jsf_patch, $glassfish_dir . "/glassfish/modules" );
+
+    unless ($jsf_patch_success) 
+    {
+	print "\n*********************\n";
+	print "ERROR! Failed to copy " . $jsf_patch . " to " . $glassfish_dir . "/glassfish/modules - check the directory permissions!\n";
+	exit 1;
+    }
 
     print "done!\n";
-    
+
     print "\n*********************\n";
     print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
     print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
