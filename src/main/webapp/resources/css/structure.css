@@ -633,19 +633,11 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
     #dataset-summary-metadata, #deaccession-reason-block {margin-top: -50px;}
 }
 
-/*TO-DO, NEEDS WORK TO ADD THUMBNAIL*/
-.citation-block {/*-- margin-bottom:.5em; padding-right:0; --*/}
 .bg-citation {background:#ECF6FB; border: 0;}
 .bg-citation-file {background:#f5f5f5; border: 0;}
 .alert-danger.bg-danger {background:#F2DEDE; border: 0;}
-div.alert-info.bg-citation, div.alert-danger.bg-danger {/*padding-top:4px; padding-bottom:4px;*/ border-radius:0; color:#333;}
-.citation-block > div.alert-info.bg-citation, .citation-block > div.alert-danger.bg-danger {/*padding-top:0; padding-bottom:0;*/}
-.citation-select {/*-- display:inline-block; --*/}
-.citation, .citation-download, .citation-standards {/*padding:.5em;*/}
+div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#333;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
-
-div.citation-block div.preview-icon-block {/*width:48px;*/}
-div.citation-block div.preview-icon-block img {/*margin:6px 0;*/}
 div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}

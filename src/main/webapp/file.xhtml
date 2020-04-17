@@ -244,9 +244,9 @@
                                                         </div>
                                                         <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                                  and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                                                 and !FilePage.lockedFromEdits
                                                                                  and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            <button type="button" id="editFile" class="btn btn-default btn-access dropdown-toggle #{FilePage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                                    disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                                                 #{bundle['file.editBtn']} <span class="caret"></span>
                                                             </button>
                                                             <ul class="dropdown-menu pull-right text-left">
@@ -268,8 +268,7 @@
                                                                 
                                                                 
                                                                 <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
-                                                                <!--  Should be FilePage.isLockedFromEdits() ? -->
-                                                                    <li class="#{DatasetPage.lockedFromEdits  ? 'disabled' : ''}">
+                                                                    <li class="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                                                         <p:commandLink id="fileProvenanceButton"
                                                                                    update="editProvenancePopup"
                                                                                    oncomplete="PF('editProvenancePopup').show();bind_bsui_components();">
@@ -527,18 +526,19 @@
                                 <!-- Metadata -->
                                 <div class="button-block tab-header margin-bottom text-right">
                                     <!-- Add + Edit Metadata Button -->
-                                    <h:outputLink styleClass="btn btn-default btn-access #{(FilePage.lockedFromEdits) ? 'disabled' : ''}"
+                                    <h:outputLink styleClass="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}"
                                                   value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
                                                      and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}"
-                                                  disabled="#{FilePage.lockedFromEdits}">
+                                                  disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
                                                          and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <button class="btn btn-default btn-access" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button">
+                                        <button class="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button"
+                                                disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                         </button>
                                     </div>

@@ -240,10 +240,10 @@
                                                 <!-- END: DOWNLOAD/ACCESS DATASET -->
 
                                                 <!-- PUBLISH DATASET -->
-                                                <div class="btn-group btn-group-justified" 
-                                                     jsf:rendered="#{showPublishButtonGroup}">
+                                                <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishButtonGroup}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <button type="button" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.dataset.latestVersion.inReview and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                                disabled="#{DatasetPage.dataset.latestVersion.inReview and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                                             #{bundle['dataset.publishBtn']} <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
@@ -326,105 +326,103 @@
                                                 <!-- END: Publish -->
 
                                                 <!-- Edit Dataset -->
-                                                <div>
-                                                    <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                                      and DatasetPage.canUpdateDataset()
-                                                                                                      }"> <!-- and !DatasetPage.dataset.deaccessioned -->
+                                                <div class="btn-group btn-group-justified" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
+                                                                                                            and DatasetPage.canUpdateDataset()}">
 
-                                                        <div class="btn-group">
-                                                            <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                #{bundle['dataset.editBtn']} <span class="caret"></span>
-                                                            </button>
-                                                            <ul class="dropdown-menu pull-right text-left">
-                                                                <li>                                           
-                                                                    <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
-                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
-                                                                    </h:outputLink>
+                                                    <div class="btn-group">
+                                                        <button type="button" id="editDataSet" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                                disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
+                                                            #{bundle['dataset.editBtn']} <span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu pull-right text-left">
+                                                            <li>                                           
+                                                                <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD">
+                                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.upload']}"/>
+                                                                </h:outputLink>
+                                                            </li>
+                                                            <li>
+                                                                <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                                </p:commandLink>
+                                                            </li>
+                                                            <li>
+                                                                <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                                    <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
+                                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
+                                                                </p:commandLink>
+                                                            </li>
+                                                            <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
+                                                                <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
+                                                                    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
+                                                                        <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
+                                                                        <ul class="dropdown-menu">
+                                                                            <li>
+                                                                                <h:link id="manageDatasetPermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                                                    <h:outputText value="#{bundle['dataset']}" />
+                                                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                                                </h:link>
+                                                                            </li>
+                                                                            <li>
+                                                                                <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
+                                                                                    <h:outputText value="#{bundle['file']}" />
+                                                                                    <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                                                </h:link>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </ui:fragment>                                            
+                                                                    <h:link id="managePermissions" rendered="#{settingsWrapper.publicInstall}"
+                                                                            styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
+                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
+                                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
+                                                                    </h:link>
                                                                 </li>
                                                                 <li>
-                                                                    <p:commandLink id="editMetadata" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
-                                                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.metadata']}" />
+                                                                    <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
+                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.privateUrl']}" />
                                                                     </p:commandLink>
                                                                 </li>
+                                                            </ui:fragment>
+                                                            <li>
+                                                                <h:outputLink value="/dataset-widgets.xhtml?datasetId=#{DatasetPage.dataset.id}">
+                                                                    <h:outputText value="#{bundle['dataset.editBtn.itemLabel.thumbnailsAndWidgets']}"/>
+                                                                </h:outputLink>
+                                                            </li>
+                                                            <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
+                                                                <li role="separator" class="divider"></li>
                                                                 <li>
-                                                                    <p:commandLink id="editTerms" actionListener="#{DatasetPage.edit('LICENSE')}" update="@form,:datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();">
-                                                                        <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
-                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.terms']}" />
+                                                                    <p:commandLink id="deleteDataset" onclick="PF('deleteConfirmation').show()">
+                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
                                                                     </p:commandLink>
                                                                 </li>
-                                                                <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
-                                                                    <li class="#{settingsWrapper.publicInstall ? '' : 'dropdown-submenu pull-left'}">
-                                                                        <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
-                                                                            <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                                                            <ul class="dropdown-menu">
-                                                                                <li>
-                                                                                    <h:link id="manageDatasetPermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                                                        <h:outputText value="#{bundle['dataset']}" />
-                                                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                                                    </h:link>
-                                                                                </li>
-                                                                                <li>
-                                                                                    <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                                                        <h:outputText value="#{bundle['file']}" />
-                                                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                                                    </h:link>
-                                                                                </li>
-                                                                            </ul>
-                                                                        </ui:fragment>                                            
-                                                                        <h:link id="managePermissions" rendered="#{settingsWrapper.publicInstall}"
-                                                                                styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.permissions']}" />
-                                                                            <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                                        </h:link>
-                                                                    </li>
-                                                                    <li>
-                                                                        <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
-                                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.privateUrl']}" />
-                                                                        </p:commandLink>
-                                                                    </li>
-                                                                </ui:fragment>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
+                                                                <li role="separator" class="divider"></li>
                                                                 <li>
-                                                                    <h:outputLink value="/dataset-widgets.xhtml?datasetId=#{DatasetPage.dataset.id}">
-                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.thumbnailsAndWidgets']}"/>
-                                                                    </h:outputLink>
+                                                                    <p:commandLink id="deleteVersion" onclick="PF('deleteVersionConfirmation').show()">
+                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
+                                                                    </p:commandLink>
                                                                 </li>
-                                                                <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li role="separator" class="divider"></li>
-                                                                    <li>
-                                                                        <p:commandLink id="deleteDataset" onclick="PF('deleteConfirmation').show()">
-                                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDataset']}" />
-                                                                        </p:commandLink>
-                                                                    </li>
-                                                                </ui:fragment>
-                                                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li role="separator" class="divider"></li>
-                                                                    <li>
-                                                                        <p:commandLink id="deleteVersion" onclick="PF('deleteVersionConfirmation').show()">
-                                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
-                                                                        </p:commandLink>
-                                                                    </li>
-                                                                </ui:fragment>
-                                                                <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
-                                                                    <li role="separator" class="divider"></li>
-                                                                    <li>
-                                                                        <p:commandLink id="deaccessionDatasetLink" 
-                                                                                       action="#{DatasetPage.clickDeaccessionDataset}"
-                                                                                       oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
-                                                                                       update="deaccessionBlock">
-                                                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
-                                                                        </p:commandLink>
-                                                                    </li>
-                                                                </ui:fragment>
-                                                            </ul>
-                                                        </div>
+                                                            </ui:fragment>
+                                                            <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                                <li role="separator" class="divider"></li>
+                                                                <li>
+                                                                    <p:commandLink id="deaccessionDatasetLink" 
+                                                                                   action="#{DatasetPage.clickDeaccessionDataset}"
+                                                                                   oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
+                                                                                   update="deaccessionBlock">
+                                                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
+                                                                    </p:commandLink>
+                                                                </li>
+                                                            </ui:fragment>
+                                                        </ul>
                                                     </div>
                                                 </div>
                                                 <!-- END: Edit Dataset -->
 
                                                 <!-- LINK -->
-                                                <div>
-                                                    <p:commandLink style="font-size:12px !important;" rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
+                                                <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
+                                                    <p:commandLink style="font-size:12px !important;"
                                                                    styleClass="btn btn-default btn-access btn-xs btn-block"   
                                                                    action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                                    oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"

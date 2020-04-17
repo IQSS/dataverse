@@ -132,11 +132,11 @@
 
                             <!-- UPLOAD FILES BUTTON -->
                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                          type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                          type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
                                           disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                         and DatasetPage.canUpdateDataset()
                                                                                         and !widgetWrapper.widgetView}">
-                                <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                                <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                             </h:outputLink>
                         </div>
                     </p:outputPanel>
