@@ -80,12 +80,12 @@ public class S3AccessIOTest {
         // given
         dataFile.setStorageIdentifier(null);
         // when & then
-        assertThrows(FileNotFoundException.class, () -> {dataFileAccess.getMainFileKey(); });
+        assertThrows(FileNotFoundException.class, () -> {S3AccessIO.getMainFileKey(dataSet, dataFile.getStorageIdentifier()); });
     
         // given
         dataFile.setStorageIdentifier("");
         // when & then
-        assertThrows(FileNotFoundException.class, () -> {dataFileAccess.getMainFileKey(); });
+        assertThrows(FileNotFoundException.class, () -> {S3AccessIO.getMainFileKey(dataSet, dataFile.getStorageIdentifier()); });
     }
     
     @Test
