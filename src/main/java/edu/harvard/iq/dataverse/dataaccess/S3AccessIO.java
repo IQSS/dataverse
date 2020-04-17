@@ -780,12 +780,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (key == null) {
         	DataFile df = this.getDataFile();
         	// TODO: (?) - should we worry here about the datafile having null for the owner here? 
-        	key = getMainFileKey(df.getOwner(), df.getStorageIdentifier());
+        	key = getMainFileKey(df.getOwner(), df.getStorageIdentifier(), driverId);
         }
         return key;
     }
     
-    static String getMainFileKey(Dataset owner, String storageIdentifier) throws IOException {
+    static String getMainFileKey(Dataset owner, String storageIdentifier, String driverId) throws IOException {
     	String key = null;	 
     	// or about the owner dataset having null for the authority and/or identifier?
     	// we should probably check for that and throw an exception. (unless we are 
@@ -796,14 +796,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
     	}
 
-    	if (storageIdentifier.indexOf("://")>0) {
+    	if (storageIdentifier.indexOf(driverId + "://")>0) {
     		//String driverId = storageIdentifier.substring(0, storageIdentifier.indexOf("://")+3);
     		//As currently implemented (v4.20), the bucket is part of the identifier and we could extract it and compare it with getBucketName() as a check - 
     		//Only one bucket per driver is supported (though things might work if the profile creds work with multiple buckets, then again it's not clear when logic is reading from the driver property or from the DataFile).
     		//String bucketName = storageIdentifier.substring(driverId.length() + 3, storageIdentifier.lastIndexOf(":"));
     		key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);	
     	} else {
-    		throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object.");
+    		throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object associated with driver: ." + driverId);
     	}
     	return key;
     }
@@ -1086,7 +1086,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 	 String driverId = info[0]; 
 	  AmazonS3 s3Client = getClient(driverId);
 	  String bucketName = getBucketName(driverId);
-	  String key = getMainFileKey(owner, storageIdentifier);
+	  String key = getMainFileKey(owner, storageIdentifier, driverId);
 	  AbortMultipartUploadRequest req = new AbortMultipartUploadRequest(bucketName, key, uploadId);
 	  s3Client.abortMultipartUpload(req);
 	}
@@ -1096,7 +1096,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		 String driverId = info[0]; 
 		  AmazonS3 s3Client = getClient(driverId);
 		  String bucketName = getBucketName(driverId);
-		  String key = getMainFileKey(owner, storageIdentifier);
+		  String key = getMainFileKey(owner, storageIdentifier, driverId);
 		  CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
 		  s3Client.completeMultipartUpload(req);
 	}
