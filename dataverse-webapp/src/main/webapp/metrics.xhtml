@@ -9,7 +9,8 @@
 >
 <p:importEnum type="edu.harvard.iq.dataverse.metrics.ChartMode" var="chartMode" allSuffix="ALL_ENUM_VALUES" />
 
-<f:view locale="#{dataverseSession.localeCode}">
+<f:view locale="#{dataverseSession.localeCode}" />
+
 <h:body>
     <f:metadata>
         <f:viewAction action="#{PublishedDatasetsChart.init}"/>
@@ -22,6 +23,7 @@
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['metrics.title']} - #{dataverseDao.findRootDataverse().name}"/>
         <ui:define name="body">
             <h3><h:outputText value="#{bundle['metrics.title']}"/></h3>
 
@@ -308,5 +310,4 @@
         </ui:define>
     </ui:composition>
 </h:body>
-</f:view>
 </html>
