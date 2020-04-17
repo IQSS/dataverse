@@ -82,6 +82,7 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;

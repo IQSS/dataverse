@@ -376,7 +376,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!readOnly) {
-            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
             if (datasetThumbnail == null) {
                 thumbnailString = "";
                 return null;
@@ -392,7 +392,10 @@ public class DatasetPage implements java.io.Serializable {
 
             thumbnailString = datasetThumbnail.getBase64image();
         } else {
-            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(),!workingVersion.isDraft());
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, 
+                    workingVersion.getId(),
+                    !workingVersion.isDraft(),
+                    ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
             if (thumbnailString == null) {
                 thumbnailString = "";
                 return null;
