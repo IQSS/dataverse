@@ -5,12 +5,10 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseThemeCommand;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,7 +22,6 @@ import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
@@ -37,7 +34,7 @@ import org.primefaces.PrimeFaces;
 //import org.primefaces.context.RequestContext;
 
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -232,7 +229,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
                 uploadedFileFooter.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputstream(), uploadedFileFooter.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputStream(), uploadedFileFooter.toPath(), StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogoFooter(uFile.getFileName());
 
@@ -259,7 +256,7 @@ public class ThemeWidgetFragment implements java.io.Serializable {
                 uploadedFile.createNewFile();
             }
             logger.finer("created file");
-            Files.copy(uFile.getInputstream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(uFile.getInputStream(), uploadedFile.toPath(),StandardCopyOption.REPLACE_EXISTING);
             logger.finer("copied inputstream to file");
             editDv.getDataverseTheme().setLogo(uFile.getFileName());
 
