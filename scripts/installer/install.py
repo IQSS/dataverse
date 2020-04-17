@@ -529,17 +529,16 @@ jhoveConfigSchema = "jhoveConfig.xsd"
 jhoveConfigDist = jhoveConfig
 jhoveConfigSchemaDist = jhoveConfigSchema
 
-# (if the installer is being run NOT as part of a distribution zipped bundle, but                                
-# from inside the source tree - adjust the locations of the jhove config files:                                  
+# (if the installer is being run NOT as part of a distribution zipped bundle, but
+# from inside the source tree - adjust the locations of the jhove config files:
 
 if not os.path.exists(jhoveConfigDist):
    jhoveConfigDist = "../../conf/jhove/" + jhoveConfig
    jhoveConfigSchemaDist = "../../conf/jhove/" + jhoveConfigSchema
 
-# but if we can't find the files in either location, it must mean                                                
-# that they are not running the script in the correct directory - so                                             
-# nothing else left for us to do but give up:                                                                    
-
+# but if we can't find the files in either location, it must mean
+# that they are not running the script in the correct directory - so
+# nothing else left for us to do but give up:
 if not os.path.exists(jhoveConfigDist) or not os.path.exists(jhoveConfigSchemaDist):
    sys.exit("Jhove config files not found; aborting. (are you running the installer in the right directory?)")
 
@@ -551,16 +550,13 @@ try:
    if gfDir == "/usr/local/payara5":
       copy2(jhoveConfigDist, gfConfigDir)
    else:
+      # use sed to replace /usr/local/payara5 in the distribution copy with the real gfDir:
       sedCommand = "sed 's:/usr/local/payara5:"+gfDir+":g' < " + jhoveConfigDist + " > " + gfConfigDir + "/" + jhoveConfig
       subprocess.call(sedCommand, shell=True)
 
    print("done.")
 except: 
    sys.exit("Failed to copy Jhove config files into the domain config dir. (check permissions?)")
-
-   
-# - so it may need to be readjusted, if payara lives somewhere other than /usr/local/payara5
-# (replicate from the old installer)
 
 # 5. Deploy the application: 
 
