@@ -58,7 +58,7 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
+	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
 	# unzip payara-5.201.zip
 	# mv payara5 /usr/local
 
