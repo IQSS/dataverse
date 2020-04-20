@@ -1,6 +1,6 @@
 INSTALLER_ZIP_DIR=dvinstall
 DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
-GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-setup.sh
+GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/as-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
 JSF_PATCH_DIR=${INSTALLER_ZIP_DIR}/jsfpatch
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
