@@ -178,7 +178,6 @@
         <mime-type>application/json</mime-type>
     </mime-mapping>
     <mime-mapping>
-    <mime-mapping>
         <extension>svg</extension>
         <mime-type>image/svg+xml</mime-type>
     </mime-mapping>
