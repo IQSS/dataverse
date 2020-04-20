@@ -168,7 +168,7 @@ Running the full API test suite using Docker
 
 To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
 
-Alternatively, you can run tests against Payara running on your laptop by following the "getting set up" steps below.
+Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
