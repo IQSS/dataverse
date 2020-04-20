@@ -335,7 +335,7 @@ public class SearchIT {
         
         File trees = new File("scripts/search/data/binary/trees.png");
         String treesAsBase64 = null;
-        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (treesAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
@@ -496,7 +496,7 @@ public class SearchIT {
 
         File dataverseProjectLogo = new File(pathToFile);
         String dataverseProjectLogoAsBase64 = null;
-        dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+        dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (dataverseProjectLogoAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
@@ -557,7 +557,7 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
+        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
         if (datasetLogoAsBase64 == null) {
             Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
