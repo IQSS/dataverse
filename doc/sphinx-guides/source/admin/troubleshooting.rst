@@ -104,7 +104,7 @@ to download the correct version of the driver. If you have an older driver in gl
 Constraint Violations Issues
 ----------------------------
 
-In real life production use, it may be possible to end up in a situation where some values associated with the datasets in your database are no longer valid under the constraints enforced by the latest version of Dataverse. This is not very likely to happen, but if it does, the symptomps will be as follows: Some datasets can no longer be edited, long exception stack traces logged in the Payara server log, caused by::
+In real life production use, it may be possible to end up in a situation where some values associated with the datasets in your database are no longer valid under the constraints enforced by the latest version of Dataverse. This is not very likely to happen, but if it does, the symptoms will be as follows: Some datasets can no longer be edited, long exception stack traces logged in the app server log, caused by::
 
    javax.validation.ConstraintViolationException: 
    Bean Validation constraint(s) violated while executing Automatic Bean Validation on callback event:'preUpdate'. 
