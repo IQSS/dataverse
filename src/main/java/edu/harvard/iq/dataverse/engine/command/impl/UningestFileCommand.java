@@ -58,7 +58,9 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
         }
-        
+
+        String originalFileName = uningest.getOriginalFileName();
+
         StorageIO<DataFile> dataAccess = null;
         // size of the stored original:
         Long storedOriginalFileSize;
@@ -139,7 +141,6 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // could be more than one: 
         
        // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        String originalFileName = uningest.getOriginalFileName();
         for (FileMetadata fm : uningest.getFileMetadatas()) {
             
             fm.setLabel(originalFileName);
