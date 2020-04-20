@@ -3,9 +3,8 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.faces.model.SelectItem;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -525,7 +524,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     public String getLocaleDescription() {
-        if (getMetadataBlock() == null) {
+        if (getMetadataBlock() == null || StringUtils.isEmpty(description)) {
             return description;
         } else {
             try {
