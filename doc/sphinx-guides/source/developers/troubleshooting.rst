@@ -76,7 +76,7 @@ The mail session can also be set from command line. To use this method, you will
 
 These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
 
-+ If you're seeing a "Relay access denied" error in your Payara logs when your app attempts to send an email, double check your user/password credentials for the Mail Host you're using.
++ If you're seeing a "Relay access denied" error in your app server logs when Dataverse attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
 As another example, here is how to create a Mail Host via command line for Amazon SES:
