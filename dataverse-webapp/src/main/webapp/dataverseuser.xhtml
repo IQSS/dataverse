@@ -76,7 +76,7 @@
                             <ul class="dropdown-menu pull-right text-left" role="menu">
                                 <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                     <li>
-                                        <p:commandLink id="editAccount" rendered="#{DataverseUserPage.accountDetailsEditable}"
+                                        <p:commandLink id="editAccountInfo" rendered="#{DataverseUserPage.accountDetailsEditable}"
                                                        actionListener="#{DataverseUserPage.edit}" update="@form" >
                                             <h:outputText value="#{bundle['account.info']}" />
                                         </p:commandLink>

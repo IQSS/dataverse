@@ -30,7 +30,7 @@
                              value="#{MyDataSearchFragment.query}"
                              onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{bundle['mydataFragment.search']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{MyDataSearchFragment.searchRedirect(dataverseRedirectPage)}">
+                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{MyDataSearchFragment.searchRedirect(DataverseUserPage.redirectPage)}">
                     <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                 </p:commandLink>
         </div>
@@ -46,7 +46,7 @@
                 <p:watermark for="searchUserId" value="#{MyDataSearchFragment.searchUserId}"/>
         </div>
             <p:remoteCommand name="submitsearch"
-                             action="#{MyDataSearchFragment.searchRedirect(dataverseRedirectPage)}"/>
+                             action="#{MyDataSearchFragment.searchRedirect(DataverseUserPage.redirectPage)}"/>
         </h:form>
     </div>
 <!-- start: panel body -->
@@ -305,7 +305,7 @@
                     <ui:fragment rendered="#{MyDataSearchFragment.searchResultsList.size() eq 0}">
                         <!--BROWSE CAN_ADD ZERO COUNTS-->
                         <p>
-                            <h:outputFormat value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
+                            <h:outputFormat value="#{DataverseUserPage.redirectPage == 'dataverse.xhtml' ? bundle['account.results.empty.browse.loggedin.perms.zero'] : bundle['dataverse.results.empty.browse.loggedin.perms.zero']}" escape="false">
                                 <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                 <f:param value="#{settingsWrapper.guidesVersion}"/>
                             </h:outputFormat>
