@@ -28,7 +28,7 @@ Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been te
 Install Apache
 ~~~~~~~~~~~~~~
 
-We will be "fronting" Payara with Apache so that we can make use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
+We will be "fronting" the app server with Apache so that we can make use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
 
 We include the ``mod_ssl`` package to enforce HTTPS per below.
 
@@ -68,14 +68,14 @@ Please note that during the installation it's ok to import GPG keys from the Shi
 Configure Payara
 ----------------
 
-Payara HTTP and HTTPS ports
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+App Server HTTP and HTTPS ports
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Apache will be listening on ports 80 and 443 so we need to make sure Payara isn't using them. If you've been changing the default ports used by Payara per the :doc:`config` section, revert the Payara HTTP service to listen on 8080, the default port:
+Apache will be listening on ports 80 and 443 so we need to make sure the app server isn't using them. If you've been changing the default ports used by the app server per the :doc:`config` section, revert the HTTP service to listen on 8080, the default port:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
 
-Likewise, if necessary, revert the Payara HTTPS service to listen on port 8181:
+Likewise, if necessary, revert the HTTPS service to listen on port 8181:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
 
@@ -298,7 +298,7 @@ The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``Me
 Add the Shibboleth Authentication Provider to Dataverse
 -------------------------------------------------------
 
-Now that you've configured Payara, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
+Now that you've configured your app server, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibAuthProvider.json
    :language: json
