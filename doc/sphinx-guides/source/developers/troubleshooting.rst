@@ -67,7 +67,7 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 **\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
-Save these changes at the top of the page and restart your Payara server to try it out.
+Save these changes at the top of the page and restart your app server to try it out.
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
