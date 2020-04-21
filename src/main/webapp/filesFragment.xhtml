@@ -508,19 +508,21 @@
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and !DatasetPage.isHasTabular()}">
-                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                    <p:commandLink rendered="#{!DatasetPage.termsPopupRequired and !DatasetPage.guestbookPopupRequiredAtDownload}"
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
                                     update="@form"
-                                    actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
+                                    actionListener="#{DatasetPage.validateFilesForDownload(false)}">
+                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                    <p:commandLink rendered="#{DatasetPage.termsPopupRequired or DatasetPage.guestbookPopupRequiredAtDownload}"
                                     styleClass="btn btn-default btn-download"
                                     disabled="#{false and DatasetPage.lockedFromDownload}"
-                                    action="#{DatasetPage.validateFilesForDownload(true, false)}"
+                                    action="#{DatasetPage.validateFilesForDownload(false)}"
                                     update="@form" oncomplete="">
+                        <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
@@ -533,32 +535,36 @@
                         </button>
                         <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                             <li >
-                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                <p:commandLink rendered="#{!DatasetPage.termsPopupRequired and !DatasetPage.guestbookPopupRequiredAtDownload}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
-                                                actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
+                                                actionListener="#{DatasetPage.validateFilesForDownload(true)}">
+                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadOriginal}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                <p:commandLink rendered="#{DatasetPage.termsPopupRequired or DatasetPage.guestbookPopupRequiredAtDownload}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
-                                                action="#{DatasetPage.validateFilesForDownload(true, true)}"
+                                                action="#{DatasetPage.validateFilesForDownload(true)}"
                                                 update="@form" oncomplete="">
+                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadOriginal}
                                 </p:commandLink>
                             </li>
                             <li> <!--jsf:rendered="# {DatasetPage.isTabularDataSelected()}"-->
-                                <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                                <p:commandLink rendered="#{!DatasetPage.termsPopupRequired and !DatasetPage.guestbookPopupRequiredAtDownload}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
                                                 update="@form"
-                                                actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
+                                                actionListener="#{DatasetPage.validateFilesForDownload(false)}">
+                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadArchival}
                                 </p:commandLink>
                                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                                <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                <p:commandLink rendered="#{DatasetPage.termsPopupRequired or DatasetPage.guestbookPopupRequiredAtDownload}"
                                                 disabled="#{false and DatasetPage.lockedFromDownload}"
-                                                action="#{DatasetPage.validateFilesForDownload(true, false)}"
+                                                action="#{DatasetPage.validateFilesForDownload(false)}"
                                                 update="@form" oncomplete="">
+                                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle.download)}"/>
                                     #{bundle.downloadArchival}
                                 </p:commandLink>
                             </li>
@@ -567,8 +573,10 @@
 
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                 styleClass="btn btn-default btn-request"                                   
-                                update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
-                                disabled="#{DatasetPage.locked}">
+                                update="@form" 
+                                action="#{DatasetPage.validateFilesForRequestAccess()}"
+                                disabled="#{DatasetPage.locked or !DatasetPage.fileAccessRequestMultiButtonEnabled}">
+                    <f:actionListener binding="#{DatasetPage.setTermsGuestbookPopupAction(bundle['file.requestAccess'])}"/>
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
@@ -597,8 +605,9 @@
                 <ui:include src="file-download-button-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                     <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                    <ui:param name="termsPopupRequired" value="#{DatasetPage.termsPopupRequired}"/>
+                    <ui:param name="guestbookPopupRequiredAtDownload" value="#{DatasetPage.guestbookPopupRequiredAtDownload}"/>        
+                    <ui:param name="guestbookAndTermsPopupRequired" value="#{DatasetPage.guestbookAndTermsPopupRequired}"/>
                     <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
                     <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>

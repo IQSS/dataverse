@@ -152,6 +152,27 @@ public class DataFileServiceBean implements java.io.Serializable {
         
     }*/
     
+    public List<DataFile> findAll(List<Long> fileIds){
+        List<DataFile> dataFiles = new ArrayList<>();
+         
+         for (Long fileId : fileIds){
+             dataFiles.add(find(fileId));
+         }
+    
+        return dataFiles;
+    }
+     
+    public List<DataFile> findAll(String fileIdsAsString){
+        ArrayList<Long> dataFileIds = new ArrayList<>();
+        
+        String[] fileIds = fileIdsAsString.split(",");
+        for (String fId : fileIds){
+            dataFileIds.add(Long.parseLong(fId));
+        }
+        
+        return findAll(dataFileIds);
+    }
+    
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
@@ -341,6 +362,19 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
+    
+    public List<DataFile> findAllCheapAndEasy(String fileIdsAsString){ 
+        //assumption is that the fileIds are separated by ','
+        ArrayList <DataFile> dataFilesFound = new ArrayList<>();
+        String[] fileIds = fileIdsAsString.split(",");
+        DataFile df = this.findCheapAndEasy(Long.parseLong(fileIds[0]));
+        if(df != null){
+            dataFilesFound.add(df);
+        }
+        
+        return dataFilesFound;
+    }
+            
     public DataFile findCheapAndEasy(Long id) {
         DataFile dataFile;
 
@@ -794,7 +828,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
         List<AuthenticatedUser> retList = new ArrayList<>();
         
-        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
+        //List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
+        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = " + fileIn.getId() + " and requeststate='CREATED'").getResultList();
         
         for (Object userIdObj : requesters){
             Long userId = (Long) userIdObj;

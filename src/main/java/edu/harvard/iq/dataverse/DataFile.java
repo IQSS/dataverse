@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -40,6 +41,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -214,6 +216,17 @@ public class DataFile extends DvObject implements Comparable {
         this.guestbookResponses = guestbookResponses;
     }
     
+    @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<FileAccessRequest> fileAccessRequests;
+    
+    public List<FileAccessRequest> getFileAccessRequests(){
+        return fileAccessRequests;
+    }
+      
+    public void setFileAccessRequests(List<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
+    }
+    
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
@@ -225,9 +238,8 @@ public class DataFile extends DvObject implements Comparable {
     }    
 
     public DataFile(String contentType) {
+        this(); //calls DataFile() constructor
         this.contentType = contentType;
-        this.fileMetadatas = new ArrayList<>();
-        initFileReplaceAttributes();
     }
 
     /*
@@ -715,20 +727,34 @@ public class DataFile extends DvObject implements Comparable {
         return null; 
     }
     
-
+    /*
     @ManyToMany
     @JoinTable(name = "fileaccessrequests",
     joinColumns = @JoinColumn(name = "datafile_id"),
     inverseJoinColumns = @JoinColumn(name = "authenticated_user_id"))
+    */
+    
+    //@OneToMany(mappedBy="dataFile",cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @Transient
     private List<AuthenticatedUser> fileAccessRequesters;
-
+    
     public List<AuthenticatedUser> getFileAccessRequesters() {
+        if(fileAccessRequesters == null){
+           this.fileAccessRequesters = new ArrayList<>();
+            for(FileAccessRequest far : fileAccessRequests){
+               if(far.isStateCreated()){
+                    fileAccessRequesters.add(far.getRequester());
+               }
+            }
+        }
         return fileAccessRequesters;
     }
-
+    
     public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
         this.fileAccessRequesters = fileAccessRequesters;
     }
+    
+    
     
     public boolean isHarvested() {
         

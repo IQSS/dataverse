@@ -232,8 +232,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             //requestContext.execute("PF('downloadPopup').hide()");
-             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
 
              // Note that this method is only ever called from the file-download-popup - 
@@ -261,8 +260,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
 
          } else {
-             //requestContext.execute("PF('downloadPopup').hide()");
-             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              //requestContext.execute("PF('downloadDataSubsetPopup').show()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
@@ -310,8 +308,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              return;
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         //requestContext.execute("PF('downloadPopup').hide()");
-         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
@@ -321,17 +318,30 @@ public class FileDownloadHelper implements java.io.Serializable {
         if (!valid) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
         } else {
-            //requestContext.execute("PF('downloadPopup').hide()");
-            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
             //requestContext.execute("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
             //requestContext.execute("handleResizeDialog('downloadPackagePopup')");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
-
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
     }
 
+    public void writeGuestbookResponseAndRequestAccess(GuestbookResponse guestbookResponse) {
+         //RequestContext requestContext = RequestContext.getCurrentInstance();
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+
+         if (!valid) {
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+         } else {
+             //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
+             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
+             fileDownloadService.writeGuestbookResponseAndRequestAccess(guestbookResponse);
+         }
+
+     }
+    
+    
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
         //RequestContext requestContext = RequestContext.getCurrentInstance();
@@ -342,12 +352,10 @@ public class FileDownloadHelper implements java.io.Serializable {
          } 
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        //requestContext.execute("PF('downloadPopup').hide()");
-        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+        PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         return retVal;
     }
-
-        
+  
     private List<DataFile> filesForRequestAccess;
 
     public List<DataFile> getFilesForRequestAccess() {
@@ -485,8 +493,8 @@ public class FileDownloadHelper implements java.io.Serializable {
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
     }
-
-     public void requestAccessMultiple(List<DataFile> files) {
+  
+    public void requestAccessMultiple(List<DataFile> files) {
          //need to verify that a valid request was made before 
          //sending the notification - if at least one is valid send the notification
          boolean succeeded = false;
@@ -505,7 +513,7 @@ public class FileDownloadHelper implements java.io.Serializable {
              fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
          }
      }
-    
+     
      public void requestAccessIndirect() {
          //Called when there are multiple files and no popup
          // or there's a popup with sigular or multiple files
@@ -521,6 +529,13 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
+             
+             //write the guestbookResponse if there is an enabled guestbook
+             GuestbookResponse gbr = this.getGuestbookResponse(); //can we be sure this is the correct guestbookResponse?? - can it get out of sync??
+             if( gbr != null && gbr.getGuestbook().isEnabled() ){
+                 fileDownloadService.writeGuestbookResponseRecordForRequestAccess(gbr); 
+             }
+             
              // create notification if necessary
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());

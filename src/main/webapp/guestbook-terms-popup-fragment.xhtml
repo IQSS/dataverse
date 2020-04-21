@@ -10,9 +10,9 @@
 
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <p:focus context="downloadPopup"/>
+        <p:focus context="guestbookAndTermsPopup"/>
         <p class="help-block">
-            #{bundle['file.downloadDialog.tip']}
+            #{bundle['file.downloadDialog.tip']} <!--need correct tip depending on download or requestAccess -->
         </p>
         <p:fragment id="guestbookMessages">
             <div class="container messagePanel">
@@ -45,7 +45,11 @@
                     </div>
                 </div>
             </div>
-            <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
+            
+            <p:fragment rendered="#{
+                        workingVersion.dataset.hasEnabledGuestbook() 
+                        and guestbookPopupRequired
+                        }" id="guestbookUIFragment">
                 <p:fragment>
                     <div class="form-group">
                         <label class="col-sm-3 control-label" for="guestbookuser_nameText">
@@ -144,35 +148,64 @@
                         </ui:repeat>
                     </div>
                 </div>
-            </p:fragment>
+            </p:fragment>    
         </div>
-        <div class="button-block">
+        
+       <ui:param name="button_label" value="#{(workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse) or (!empty workingVersion.termsOfUseAndAccess.termsOfAccess) ? bundle.acceptTerms : bundle.download}" />
+       
+       <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle.download }"> <!-- THIS BUTTON BLOCK IS FOR DOWNLOAD -->
+       <!-- THIS BUTTON BLOCK IS FOR DOWNLOAD -->
+   
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
+            <p:commandButton styleClass="btn btn-default" process="@this" value="#{button_label}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
+                                                                                                                            and guestbookResponse.fileFormat != 'subset'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
                                                                                                                             and guestbookResponse.fileFormat != 'package'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
                            update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandButton>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
+            <p:commandButton styleClass="btn btn-default" process="@this" value="#{button_label}" rendered="#{guestbookResponse.fileFormat == 'subset'}"
+                           actionListener="#{fileDownloadHelper.writeGuestbookAndOpenSubset(guestbookResponse)}"
+                           update="guestbookUIFragment @form">                                    
+                <f:param name="DO_GB_VALIDATION" value="true"/>               
+            </p:commandButton>
+            <p:commandButton styleClass="btn btn-default" value="#{button_label}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
                             actionListener="#{fileDownloadHelper.startWorldMapDownloadLink(guestbookResponse, null)}" 
                             update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandButton>
             <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
-                           action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}"
+            <p:commandButton styleClass="btn btn-default" process="@this" value="#{button_label}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
+                           action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, guestbookResponse.getDataFile().getFileMetadata(), tool)}"
                            update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandButton>
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'package'}"
+            <p:commandButton styleClass="btn btn-default" process="@this" value="#{button_label}" rendered="#{guestbookResponse.fileFormat == 'package'}"
                            update="guestbookUIFragment @form @widgetVar(downloadPackagePopup)">
                 <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}"/>
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandButton>
-            <button class="btn btn-link" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" type="button">
+            <button class="btn btn-link" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}
             </button>
+        </div>
+            
+        <div class="button-block" jsf:rendered="#{DatasetPage.termsGuestbookPopupAction == bundle['file.requestAccess']}">
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(guestbookResponse)}"                          
+                    update="@([id$=Messages])"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION" value="true"/>
+            </p:commandLink>
+           
+            <p:commandLink type="button" styleClass="btn btn-default" rendered="#{!workingVersion.dataset.hasEnabledGuestbook()}" value="#{bundle['file.requestAccess']}"
+                    actionListener="#{fileDownloadHelper.writeGuestbookResponseAndRequestAccess(fileDownloadHelper.guestbookResponse)}"                          
+                    update="@([id$=Messages])"
+                    oncomplete="if (!args || (args &amp;&amp; !args.validationFailed)){PF('guestbookAndTermsPopup').hide();window.location.replace(window.location.href);}">
+                    <f:param name="DO_GB_VALIDATION" value="true"/>
+            </p:commandLink>
+            
+            <button type="button" class="btn btn-default" onclick="PF('guestbookAndTermsPopup').hide();PF('blockDatasetForm').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>
         </div>
 </ui:composition>
