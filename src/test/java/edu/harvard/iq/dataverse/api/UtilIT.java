@@ -369,16 +369,12 @@ public class UtilIT {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-            System.out.print(datasetVersionAsJson);
             return datasetVersionAsJson;
         } catch (IOException ex) {
-            System.out.print("GET Dataset Json IO Exception");
             Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         } catch (Exception e){
-            
-            System.out.print("Another Exception: "
-                    + e.getMessage());
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, e);
             return null;
         }
     }
