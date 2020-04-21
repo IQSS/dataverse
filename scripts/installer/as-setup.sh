@@ -5,7 +5,9 @@
 # as environmental variables: 
 # (no defaults for these values are provided here!)
 #
-# glassfish configuration: 
+# app. server (payara) configuration: 
+# the variables used by this script still has the word "glassfish" in them.
+# this is kept as legacy, just to avoid unncessary changes.
 # GLASSFISH_ROOT
 # GLASSFISH_DOMAIN
 # ASADMIN_OPTS
@@ -49,14 +51,25 @@ function preliminary_setup()
 {
     # undeploy the app, if running: 
 
-  ./asadmin $ASADMIN_OPTS undeploy dataverse-4.0
+  ./asadmin $ASADMIN_OPTS undeploy dataverse
 
   # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
   #./asadmin $ASADMIN_OPTS list-jvm-options
-  ./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
-  ./asadmin $ASADMIN_OPTS delete-jvm-options -client
+  # Note that these JVM options are different for Payara5 and Glassfish4:
+  # old Glassfish4 options: (commented out)
+  #./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
+  #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
+  #./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
+  # payara5 ships with the "-server" option already in domain.xml, so no need:
+  #./asadmin $ASADMIN_OPTS delete-jvm-options -client
+
+  # new Payara5 options: (thanks to donsizemore@unc.edu)
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxMetaspaceSize=512m"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MetaspaceSize=256m"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-Dfish.payara.classloading.delegate=false"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+UseG1GC"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+UseStringDeduplication"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+DisableExplicitGC"
 
   # alias passwords
   for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
@@ -67,8 +80,8 @@ function preliminary_setup()
       rm /tmp/$1.txt
   done
 
-    ###
-  # Add the necessary JVM options: 
+  ###
+  # Add the Dataverse-specific JVM options: 
   # 
   # location of the datafiles temp directory: 
   # (defaults to dataverse/files in the users home directory, ${FILES_DIR}/temp if this is set)
@@ -82,8 +95,9 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.port=${RSERVE_PORT}"
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.rserve.user=${RSERVE_USER}"
   ./asadmin $ASADMIN_OPTS create-jvm-options '\-Ddataverse.rserve.password=${ALIAS=rserve_password_alias}'
-  # Data Deposit API options
+  # The host and url addresses this Dataverse will be using:
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.fqdn=${HOST_ADDRESS}"
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.siteUrl=http\://\${dataverse.fqdn}\:8080"
   # password reset token timeout in minutes
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.auth.password-reset-timeout-in-minutes=60"
 
@@ -167,18 +181,18 @@ function final_setup(){
 
 if [ "$DOCKER_BUILD" = "true" ]
   then
-    FILES_DIR="/usr/local/glassfish4/glassfish/domains/domain1/files"
+    FILES_DIR="/usr/local/payara5/glassfish/domains/domain1/files"
     RSERVE_HOST="localhost"
     RSERVE_PORT="6311"
     RSERVE_USER="rserve"
     RSERVE_PASS="rserve"
     HOST_ADDRESS="localhost\:8080"
-    pushd /usr/local/glassfish4/glassfish/bin/
+    pushd /usr/local/payara5/glassfish/bin/
     ./asadmin start-domain domain1
     preliminary_setup
-    chmod -R 777 /usr/local/glassfish4/
-    rm -rf /usr/local/glassfish4/glassfish/domains/domain1/generated 
-    rm -rf /usr/local/glassfish4/glassfish/domains/domain1/applications
+    chmod -R 777 /usr/local/payara5/
+    rm -rf /usr/local/payara5/glassfish/domains/domain1/generated 
+    rm -rf /usr/local/payara5/glassfish/domains/domain1/applications
     popd
     exit 0
 fi
@@ -288,11 +302,11 @@ if [ ! -d "$DOMAIN_DIR" ]
     exit 2
 fi
 
-echo "Setting up your glassfish4 to support Dataverse"
-echo "Glassfish directory: "$GLASSFISH_ROOT
+echo "Setting up your app. server (Payara5) to support Dataverse"
+echo "Payara directory: "$GLASSFISH_ROOT
 echo "Domain directory:    "$DOMAIN_DIR
 
-# Move to the glassfish dir
+# Move to the payara dir
 pushd $GLASSFISH_BIN_DIR
 
 ###
@@ -331,6 +345,6 @@ echo Updates done. Restarting...
 # Clean up
 popd
 
-echo "Glassfish setup complete"
+echo "Payara setup complete"
 date
 
