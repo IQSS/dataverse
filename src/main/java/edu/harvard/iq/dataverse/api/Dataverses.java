@@ -226,7 +226,7 @@ public class Dataverses extends AbstractApiBean {
             }
             
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest("Only a super user may add files via this api");
+                return badRequest("Only a superuser may add files via this api");
             }
 
             // clean possible version metadata
