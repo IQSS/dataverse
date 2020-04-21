@@ -40,7 +40,7 @@ from conf/jhove:
 
 jhove.conf
 
-SOLR schema and config files, from conf/solr/7.3.1: 
+SOLR schema and config files, from conf/solr/7.7.2: 
 
 schema.xml
 schema_dv_cmb_copies.xml

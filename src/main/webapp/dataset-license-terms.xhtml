@@ -238,13 +238,15 @@
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.title']}"></span>
                            </label>
-                           <div class="col-sm-9">
-                               <p>
-                                   <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}">
-                                       <f:param value="#{DatasetPage.restrictedFileCount}"/>
-                                   </h:outputFormat>
-                               </p>
-                           </div>
+                           <ui:fragment rendered="#{datasetPage == true}">
+                               <div class="col-sm-9">
+                                   <p>
+                                       <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.restrictedFiles.txt']}">
+                                           <f:param value="#{DatasetPage.restrictedFileCount}"/>
+                                       </h:outputFormat>
+                                   </p>
+                               </div>
+                           </ui:fragment>
                        </div>
                        <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfAccess}">
                            <label for="metadata_TermsAccess" class="col-sm-3 control-label">
@@ -256,7 +258,7 @@
                                <p><h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfAccess)}" escape="false"/></p>
                            </div>
                        </div>
-                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and (DatasetPage.restrictedFileCount > 0)}">
+                       <div class="form-group" jsf:rendered="#{!settingsWrapper.publicInstall and ( datasetPage == true and DatasetPage.restrictedFileCount > 0)}">
                            <label for="metadata_RequestAccess" class="col-sm-3 control-label">
                                #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                <span class="glyphicon glyphicon-question-sign tooltip-icon"

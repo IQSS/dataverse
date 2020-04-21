@@ -156,6 +156,12 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.DESCRIPTION, "Description");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NAME, "Variable Name");
         solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_LABEL, "Variable Label");
+        solrFieldsToHightlightOnMap.put(SearchFields.LITERAL_QUESTION, BundleUtil.getStringFromBundle("search.datasets.literalquestion"));
+        solrFieldsToHightlightOnMap.put(SearchFields.INTERVIEW_INSTRUCTIONS, BundleUtil.getStringFromBundle("search.datasets.interviewinstructions"));
+        solrFieldsToHightlightOnMap.put(SearchFields.POST_QUESTION, BundleUtil.getStringFromBundle("search.datasets.postquestion"));
+        solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_UNIVERSE, BundleUtil.getStringFromBundle("search.datasets.variableuniverse"));
+        solrFieldsToHightlightOnMap.put(SearchFields.VARIABLE_NOTES, BundleUtil.getStringFromBundle("search.datasets.variableNotes"));
+
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TYPE_SEARCHABLE, "File Type");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, "Publication Year");
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
@@ -883,8 +889,9 @@ public class SearchServiceBean {
         //      Yes, give back everything
         // ----------------------------------------------------
         if (au.isSuperuser()) {
-            // dangerous because this user will be able to see
-            // EVERYTHING in Solr with no regard to permissions!
+            // Somewhat dangerous because this user (a superuser) will be able
+            // to see everything in Solr with no regard to permissions. But it's
+            // been this way since Dataverse 4.0. So relax. :)
 
             return dangerZoneNoSolrJoin;
         }

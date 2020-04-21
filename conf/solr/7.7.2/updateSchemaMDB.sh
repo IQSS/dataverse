@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -euo pipefail
 
 # This script updates the <field> and <copyField> schema configuration necessary to properly
@@ -60,6 +60,12 @@ fi
 echo "Retrieve schema data from ${DATAVERSE_URL}/api/admin/index/solr/schema"
 TMPFILE=`mktemp`
 curl -f -sS "${DATAVERSE_URL}/api/admin/index/solr/schema${UNBLOCK_KEY}" > $TMPFILE
+
+### Fail gracefull if Dataverse is not ready yet.
+if [[ "`wc -l ${TMPFILE}`" < "3" ]]; then
+  echo "Dataverse responded with empty file. When running on K8s: did you bootstrap yet?"
+  exit 123
+fi
 
 ### Processing
 echo "Writing ${TARGET}/schema_dv_mdb_fields.xml"

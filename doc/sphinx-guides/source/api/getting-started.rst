@@ -94,6 +94,13 @@ A quick example search for the word "data" is https://demo.dataverse.org/api/sea
 
 See the :doc:`search` section for details.
 
+Finding Recently Published Dataverses, Datasets, and Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See :ref:`search-date-range`.
+
+It's also possible to find recently published datasets via OAI-PMH.
+
 Downloading Files
 ~~~~~~~~~~~~~~~~~
 

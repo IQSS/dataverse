@@ -539,14 +539,10 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
 
-    public Long getMaxFileUploadSize(){
-         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+    public Long getMaxFileUploadSizeForStore(String driverId){
+         return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }
     
-    public String getHumanMaxFileUploadSize(){
-         return bytesToHumanReadable(getMaxFileUploadSize());
-     }
-
     public Integer getSearchHighlightFragmentSize() {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
@@ -862,7 +858,7 @@ public class SystemConfig {
     /**
      * See FileUploadMethods.
      *
-     * TODO: Consider if dataverse.files.s3-download-redirect belongs here since
+     * TODO: Consider if dataverse.files.<id>.download-redirect belongs here since
      * it's a way to bypass Glassfish when downloading.
      */
     public enum FileDownloadMethods {

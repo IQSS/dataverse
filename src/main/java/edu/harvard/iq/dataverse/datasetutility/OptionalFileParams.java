@@ -61,7 +61,15 @@ public class OptionalFileParams {
     
     private boolean restrict = false;
     public static final String RESTRICT_ATTR_NAME = "restrict";
-
+    
+    private String storageIdentifier;
+    public static final String STORAGE_IDENTIFIER_ATTR_NAME = "storageIdentifier";
+    private String fileName;
+    public static final String FILE_NAME_ATTR_NAME = "fileName";
+    private String mimeType;
+    public static final String MIME_TYPE_ATTR_NAME = "mimeType";
+    private String checkSum;
+    public static final String CHECKSUM_ATTR_NAME = "md5Hash";
 
      
     public OptionalFileParams(String jsonData) throws DataFileTagException{
@@ -184,7 +192,43 @@ public class OptionalFileParams {
         }
         return true;
     }
-    
+
+	public boolean hasStorageIdentifier() {
+		return ((storageIdentifier!=null)&&(!storageIdentifier.isEmpty()));
+	}
+
+	public String getStorageIdentifier() {
+		return storageIdentifier;
+	}
+
+	public boolean hasFileName() {
+		return ((fileName!=null)&&(!fileName.isEmpty()));
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public boolean hasMimetype() {
+		return ((mimeType!=null)&&(!mimeType.isEmpty()));
+	}
+
+	public String getMimeType() {
+		return mimeType;
+	}
+
+	public void setCheckSum(String checkSum) {
+		this.checkSum = checkSum;
+	}
+	
+	public boolean hasCheckSum() {
+		return ((checkSum!=null)&&(!checkSum.isEmpty()));
+	}
+
+	public String getCheckSum() {
+		return checkSum;
+	}
+
     /**
      *  Set tags
      *  @param tags
@@ -279,6 +323,38 @@ public class OptionalFileParams {
         if ((jsonObj.has(RESTRICT_ATTR_NAME)) && (!jsonObj.get(RESTRICT_ATTR_NAME).isJsonNull())){
             
             this.restrict = Boolean.valueOf(jsonObj.get(RESTRICT_ATTR_NAME).getAsString());
+        }
+        
+        // -------------------------------
+        // get storage identifier as string
+        // -------------------------------
+        if ((jsonObj.has(STORAGE_IDENTIFIER_ATTR_NAME)) && (!jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).isJsonNull())){
+
+            this.storageIdentifier = jsonObj.get(STORAGE_IDENTIFIER_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get file name as string
+        // -------------------------------
+        if ((jsonObj.has(FILE_NAME_ATTR_NAME)) && (!jsonObj.get(FILE_NAME_ATTR_NAME).isJsonNull())){
+
+            this.fileName = jsonObj.get(FILE_NAME_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get mimetype as string
+        // -------------------------------
+        if ((jsonObj.has(MIME_TYPE_ATTR_NAME)) && (!jsonObj.get(MIME_TYPE_ATTR_NAME).isJsonNull())){
+
+            this.mimeType = jsonObj.get(MIME_TYPE_ATTR_NAME).getAsString();
+        }
+        
+        // -------------------------------
+        // get checkSum as string
+        // -------------------------------
+        if ((jsonObj.has(CHECKSUM_ATTR_NAME)) && (!jsonObj.get(CHECKSUM_ATTR_NAME).isJsonNull())){
+
+            this.checkSum = jsonObj.get(CHECKSUM_ATTR_NAME).getAsString();
         }
         
         // -------------------------------
@@ -516,5 +592,5 @@ public class OptionalFileParams {
         }                
         
     }
-        
+
 }

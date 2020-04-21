@@ -17,35 +17,6 @@
             <span class="glyphicon glyphicon-warning-sign text-danger"/>
         </span>
     </ui:fragment>
-    
-    <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-        <button type="button" 
-                style="border-right:0;" 
-                class="btn btn-default btn-preview" 
-                data-target="#map-modal-#{fileMetadata.id}"
-                data-toggle="modal">
-            <span class="glyphicon glyphicon-map-marker"/> #{bundle['preview']}
-        </button>
-        <div class="modal fade" id="map-modal-#{fileMetadata.id}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <!-- WorldMap Preview -->
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header text-left">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="#{bundle['close']}"><span aria-hidden="true">&#215;</span></button>
-                        <h4 class="modal-title" id="myModalLabel"><span style="color:#c75b1d;">#{bundle['file.previewMap']}</span> #{fileMetadata.label}</h4>
-                    </div>
-                    <div class="modal-body">
-                        <iframe id="id_iframe_map" height="300" width="100%" src="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getEmbedMapLink() }"></iframe>
-                    </div>
-                    <div class="modal-footer clearfix">
-                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank"><img src="https://worldmap.harvard.edu/static/theme/img/WorldMap-Logo_26px.png" alt="#{bundle['file.mapData.worldMap']}" class="pull-left" style="margin-top:5px;" /></a>
-                        <a href="#{ worldMapPermissionHelper.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" class="btn btn-default" target="_blank"><span class="glyphicon glyphicon-equalizer"/> #{bundle['file.metaData.viewOnWorldMap']}</a>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">#{bundle['close']}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </ui:fragment>
 
     <!--"Explore" button (dropdown of tools)-->
     <!--exploreTools is set as a ui:param by the file and dataset pages-->
