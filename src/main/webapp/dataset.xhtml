@@ -154,8 +154,7 @@
                                                             <!-- END: DOWNLOAD -->
 
                                                             <!-- EXPLORE -->
-                                                            <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
-                                                            <ui:fragment rendered="#{true}">
+                                                            <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
                                                                 <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
                                                                 <li class="#{DatasetPage.datasetExploreTools.size()>1 ? 'dropdown-submenu pull-left' : ''}">
                                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
@@ -179,7 +178,6 @@
                                                             <!-- END: EXPLORE -->
 
                                                             <!-- COMPUTE -->
-                                                            <!-- TO-DO, FIX RENDER LOGIC, ANALYTICS EVENT TRACKING -->
                                                             <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                         and DatasetPage.showComputeButton()}">
                                                                 <li class="dropdown-header">#{bundle['dataset.accessBtn.header.compute']} <span class="glyphicon glyphicon-flash"/></li>
@@ -242,8 +240,8 @@
                                                 <!-- PUBLISH DATASET -->
                                                 <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishButtonGroup}">
                                                     <div class="btn-group">
-                                                        <button type="button" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.dataset.latestVersion.inReview and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                                disabled="#{DatasetPage.dataset.latestVersion.inReview and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
+                                                        <button type="button" class="btn btn-default btn-access dropdown-toggle #{DatasetPage.locked and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                                disabled="#{DatasetPage.locked and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}">
                                                             #{bundle['dataset.publishBtn']} <span class="caret"></span>
                                                         </button>
                                                         <ul class="dropdown-menu pull-right text-left">
