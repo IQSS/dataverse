@@ -37,18 +37,16 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" tabindex="-1">
+                <a href="/" class="navbar-brand">
                     <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
-                        <span class="navbar-brand" tabindex="1">
-                            <i id="site-logo" class="icon-dataverse"></i> 
-                            <div>
-                                <div id="site-title">
-                                    <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
-                                </div>
-                                <div id="site-subtitle">
-                                    <h:outputText value="#{systemConfig.getSiteFullName(dataverseSession.locale)}" escape="false"/>
-                                </div>
-                            </div>
+                        <i id="site-logo" class="icon-dataverse"></i> 
+                        <span>
+                            <span id="site-title">
+                                <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
+                            </span>
+                            <span id="site-subtitle">
+                                <h:outputText value="#{systemConfig.getSiteFullName(dataverseSession.locale)}" escape="false"/>
+                            </span>
                         </span>
                     </ui:fragment>
                     <h:graphicImage rendered="#{!empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}"
