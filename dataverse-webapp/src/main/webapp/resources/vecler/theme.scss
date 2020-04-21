@@ -669,6 +669,13 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 	border-radius: 0 0 0.267em 0.267em;
 }
 
+.ui-inputnumber.input-number-left input {
+	padding-left: 5px;
+}
+.ui-inputnumber.input-number-right input {
+	padding-right: 5px;
+}
+
 /* File uploader */
 
 .ui-fileupload {

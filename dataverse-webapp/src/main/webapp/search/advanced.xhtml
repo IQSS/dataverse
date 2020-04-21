@@ -105,38 +105,56 @@
                                                          value="#{item.fieldValue}"
                                                          rendered="#{item.searchFieldType == fieldTypeEnums.TEXT}"/>
                                             <div>
-                                                <p:inputText id="daterangeSearchMinimum" style="padding-right: 5px"
-                                                               placeholder="#{bundle['advanced.search.metadata.from']}"
-                                                               value="#{item.lowerLimit}"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                               validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
-                                                    <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
-                                                </p:inputText>
-                                                <p:outputLabel for="daterangeSearchMaximum"
-                                                               value="&#8212;"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"/>
-                                                <p:inputText id="daterangeSearchMaximum" style="padding-left: 5px"
-                                                               placeholder="#{bundle['advanced.search.metadata.to']}"
-                                                               value="#{item.upperLimit}"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                               validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
-                                                    <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
-                                                </p:inputText>
-                                                <p:message for="daterangeSearchMinimum" display="text" />
-                                                <p:message for="daterangeSearchMaximum" display="text" />
+                                                <div style="display: inline-block; " jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
+                                                    <p:outputLabel for="daterangeSearchMinimum"
+                                                                   value="#{bundle['advanced.search.metadata.from']} "
+                                                                   style="white-space: pre"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
+                                                                   />
+                                                    <p:inputText id="daterangeSearchMinimum" style="padding-right: 5px"
+                                                                   value="#{item.lowerLimit}"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
+                                                                   validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
+                                                        <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
+                                                    </p:inputText>
+                                                </div>
+                                                <div style="display: inline-block;" jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
+                                                    <p:outputLabel for="daterangeSearchMaximum"
+                                                                   value=" #{bundle['advanced.search.metadata.to']} "
+                                                                   style="white-space: pre"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
+                                                    />
+                                                    <p:inputText id="daterangeSearchMaximum" style="padding-left: 5px"
+                                                                   value="#{item.upperLimit}"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
+                                                                   validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
+                                                        <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
+                                                    </p:inputText>
+                                                    <p:message for="daterangeSearchMinimum" display="text" />
+                                                    <p:message for="daterangeSearchMaximum" display="text" />
+                                                </div>
                                             </div>
                                             <div>
-                                                <p:inputNumber id="rangeSearchMinimum" style="padding-right: 5px"
-                                                               placeholder="#{bundle['advanced.search.metadata.from']}"
-                                                               value="#{item.minimum}"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
-                                                <p:outputLabel for="rangeSearchMaximum"
-                                                               value="&#8212;"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
-                                                <p:inputNumber id="rangeSearchMaximum" style="padding-left: 5px"
-                                                               placeholder="#{bundle['advanced.search.metadata.to']}"
-                                                               value="#{item.maximum}"
-                                                               rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                                <div style="display: inline-block;" jsf:rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}">
+                                                    <p:outputLabel for="rangeSearchMinimum"
+                                                                   value="#{bundle['advanced.search.metadata.from']} "
+                                                                   style="white-space: pre"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"
+                                                    />
+                                                    <p:inputNumber id="rangeSearchMinimum" class="input-number-right"
+                                                                   value="#{item.minimum}"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                                </div>
+                                                <div style="display: inline-block;" jsf:rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}">
+                                                    <p:outputLabel for="rangeSearchMaximum"
+                                                                   value=" #{bundle['advanced.search.metadata.to']} "
+                                                                   style="white-space: pre"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"
+                                                    />
+                                                    <p:inputNumber id="rangeSearchMaximum" class="input-number-left"
+                                                                   value="#{item.maximum}"
+                                                                   rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
+                                                </div>
                                             </div>
                                             <div class="ui-inputfield form-control select-scroll-block"
                                                  jsf:rendered="#{item.searchFieldType == fieldTypeEnums.CHECKBOX}">
