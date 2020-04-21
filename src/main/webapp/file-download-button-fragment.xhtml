@@ -11,158 +11,14 @@
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-    <!-- REMOVED INGEST WARNING -->
-    
-    <!-- Explore button -->
-    <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-        <!--exploreTools is set as a ui:param by the file and dataset pages-->
-        <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
-
-        <!-- FILE PG -->
-        <li class="#{exploreTools.size()>1 
-                            or (exploreTools.size()>=1 
-                            and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))
-                        ? 'dropdown-submenu pull-left' : ''}" jsf:rendered="#{isFilePg}">
-            
-            <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-                <a class="btn-explore" tabindex="-1" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">#{bundle.explore}</a>
-            </ui:fragment>
-            
-            <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-                <a class="btn-explore" tabindex="-1" href="javascript:void(0);">#{bundle.explore}</a>
-            </ui:fragment>
-            
-            <ul class="dropdown-menu multi-level" role="menu">
-                <!-- externalTools -->
-                <ui:repeat var="tool" value="#{exploreTools}">
-                    <li>
-                        <h:commandLink rendered="#{!downloadPopupRequired}"
-                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                       action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
-                            #{tool.displayName}
-                        </h:commandLink>
-                        <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
-                        <p:commandLink rendered="#{downloadPopupRequired}"
-                                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
-                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                       process="@this"
-                                       update="@widgetVar(downloadPopup)"
-                                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                            #{tool.displayName}
-                        </p:commandLink>
-                    </li>
-                </ui:repeat>
-                <!-- END: externalTools -->
-                <!-- WorldMap -->
-                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-                    <h:commandLink rendered="#{!downloadPopupRequired}"
-                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
-                                   target="_blank" rel="noopener">
-                        #{bundle['file.mapData.worldMap']}
-                    </h:commandLink>
-                    <p:commandLink rendered="#{downloadPopupRequired}"
-                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   disabled="#{fileMetadata.dataFile.ingestInProgress or lockedFromDownload}"
-                                   process="@this"
-                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                                   update="@widgetVar(downloadPopup)"
-                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{bundle['file.mapData.worldMap']}
-                    </p:commandLink>
-                </li>
-                <!-- END: WorldMap -->
-            </ul>
-        </li>
-        <!-- END: FILE PG -->
-        
-        <!-- DATASET PG -->
-        <div class="btn-group dropdown" jsf:rendered="#{!isFilePg}">
-            <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-                <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip" 
-                               title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
-                    <span class="glyphicon glyphicon-equalizer"/>
-                </a>
-            </ui:fragment>
-            <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-                <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip dropdown-toggle" 
-                               title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="glyphicon glyphicon-equalizer"/> <span class="caret"></span>
-                </a>
-            </ui:fragment>
-            <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
-                <!--external tools-->
-                <ui:repeat var="tool" value="#{exploreTools}">
-                    <li>
-                        <h:commandLink rendered="#{!downloadPopupRequired}"
-                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
-                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                       action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
-                            #{tool.displayName}
-                        </h:commandLink>
-                        <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
-                        <p:commandLink rendered="#{downloadPopupRequired}"
-                                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
-                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                       process="@this"
-                                       update="@widgetVar(downloadPopup)"
-                                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                            #{tool.displayName}
-                        </p:commandLink>
-                    </li>
-                </ui:repeat>
-                <!--WorldMap Explore-->
-                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-                    <h:commandLink rendered="#{!downloadPopupRequired}"
-                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
-                                   target="_blank" rel="noopener">
-                        #{bundle['file.mapData.worldMap']}
-                    </h:commandLink>
-                    <p:commandLink rendered="#{downloadPopupRequired}"
-                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                                   disabled="#{fileMetadata.dataFile.ingestInProgress or lockedFromDownload}"
-                                   process="@this"
-                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                                   update="@widgetVar(downloadPopup)"
-                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{bundle['file.mapData.worldMap']}
-                    </p:commandLink>
-                </li>
-            </ul>
-        </div>
-        <!-- END: DATASET PG -->
-    </ui:fragment>
-    <!-- Explore button -->
-
-    
-    <!-- Compute Button *FILE PG only*: -->
-    <li jsf:rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-        <h:outputLink value="#{FilePage.computeUrl}" styleClass="btn-compute" 
-                      target="_blank" rel="noopener">
-            #{bundle['file.compute']}
-        </h:outputLink>
-    </li>
-    <!-- END: Compute Button *FILE PG only*: -->
- 
-    <!-- Compute Button *DATASET PG only*: -->
-    <h:outputLink style="font-size:2em !important;" styleClass="btn-compute btn btn-link bootstrap-button-tooltip" 
-                  title="#{bundle['file.compute']}" value="#{DatasetPage.getComputeUrl(fileMetadata)}"
-                  target="_blank" rel="noopener"
-                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
-        <span class="glyphicon glyphicon-flash"/>
-    </h:outputLink>
-    <!-- END: Compute Button *DATASET PG only*: -->
- 
-    
     <!-- Download Button -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata)}">
     <!-- FILE PG -->
+    
+        <li class="dropdown-header" jsf:rendered="#{isFilePg}">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+        
         <li class="#{fileMetadata.dataFile.tabularData
-                        ? 'dropdown-submenu pull-left' : ''}"
+                        ? 'dropdown-submenu' : ''}"
             jsf:rendered="#{isFilePg}">
             <!-- DUPLICATE LINKS -->
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
@@ -214,7 +70,7 @@
                 <!-- Download Dropdown -->
                 <a class="btn-download" tabindex="-1" href="javascript:void(0);">#{bundle.download}</a>
             
-                <ul class="dropdown-menu multi-level" role="menu">
+                <ul class="dropdown-menu pull-right text-left" role="menu">
                     
                     <!-- TODO: FIX PULL-LEFT DROPDOWN OVERLAP DOWNLOAD -->
                     
@@ -506,7 +362,6 @@
     </ui:fragment>
     <!-- Download Button -->
     
-    
     <!-- Request Access Button -->
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest}">
@@ -581,4 +436,151 @@
         </ui:fragment>
     </ui:fragment>
     <!-- END: Request Access Button -->
+    
+    <!-- Explore button -->
+    <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+        <!--exploreTools is set as a ui:param by the file and dataset pages-->
+        <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
+
+        <!-- FILE PG -->
+        
+        <li class="dropdown-header" jsf:rendered="#{isFilePg}">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
+        
+        <li class="#{exploreTools.size()>1 
+                            or (exploreTools.size()>=1 
+                            and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))
+                        ? 'dropdown-submenu pull-left' : ''}" jsf:rendered="#{isFilePg}">
+            
+            <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+                <a class="btn-explore" tabindex="-1" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">#{bundle.explore}</a>
+            </ui:fragment>
+            
+            <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+                <a class="btn-explore" tabindex="-1" href="javascript:void(0);">#{bundle.explore}</a>
+            </ui:fragment>
+            
+            <ul class="dropdown-menu multi-level" role="menu">
+                <!-- externalTools -->
+                <ui:repeat var="tool" value="#{exploreTools}">
+                    <li>
+                        <h:commandLink rendered="#{!downloadPopupRequired}"
+                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                       action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
+                            #{tool.displayName}
+                        </h:commandLink>
+                        <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
+                        <p:commandLink rendered="#{downloadPopupRequired}"
+                                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
+                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                       process="@this"
+                                       update="@widgetVar(downloadPopup)"
+                                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                            #{tool.displayName}
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+                <!-- END: externalTools -->
+                <!-- WorldMap -->
+                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
+                                   target="_blank" rel="noopener">
+                        #{bundle['file.mapData.worldMap']}
+                    </h:commandLink>
+                    <p:commandLink rendered="#{downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   disabled="#{fileMetadata.dataFile.ingestInProgress or lockedFromDownload}"
+                                   process="@this"
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
+                                   update="@widgetVar(downloadPopup)"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{bundle['file.mapData.worldMap']}
+                    </p:commandLink>
+                </li>
+                <!-- END: WorldMap -->
+            </ul>
+        </li>
+        <!-- END: FILE PG -->
+        
+        <!-- DATASET PG -->
+        <div class="btn-group dropdown" jsf:rendered="#{!isFilePg}">
+            <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+                <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip" 
+                               title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                    <span class="glyphicon glyphicon-equalizer"/>
+                </a>
+            </ui:fragment>
+            <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+                <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip dropdown-toggle" 
+                               title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="glyphicon glyphicon-equalizer"/> <span class="caret"></span>
+                </a>
+            </ui:fragment>
+            <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
+                <!--external tools-->
+                <ui:repeat var="tool" value="#{exploreTools}">
+                    <li>
+                        <h:commandLink rendered="#{!downloadPopupRequired}"
+                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
+                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                       action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
+                            #{tool.displayName}
+                        </h:commandLink>
+                        <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
+                        <p:commandLink rendered="#{downloadPopupRequired}"
+                                       action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
+                                       disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                       process="@this"
+                                       update="@widgetVar(downloadPopup)"
+                                       oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                            #{tool.displayName}
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+                <!--WorldMap Explore-->
+                <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
+                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
+                                   target="_blank" rel="noopener">
+                        #{bundle['file.mapData.worldMap']}
+                    </h:commandLink>
+                    <p:commandLink rendered="#{downloadPopupRequired}"
+                                   styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   disabled="#{fileMetadata.dataFile.ingestInProgress or lockedFromDownload}"
+                                   process="@this"
+                                   action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
+                                   update="@widgetVar(downloadPopup)"
+                                   oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                        #{bundle['file.mapData.worldMap']}
+                    </p:commandLink>
+                </li>
+            </ul>
+        </div>
+        <!-- END: DATASET PG -->
+    </ui:fragment>
+    <!-- Explore button -->
+
+    <!-- Compute Button *FILE PG only*: -->
+    <li jsf:rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+        <h:outputLink value="#{FilePage.computeUrl}" styleClass="btn-compute" 
+                      target="_blank" rel="noopener">
+            #{bundle['file.compute']}
+        </h:outputLink>
+    </li>
+    <!-- END: Compute Button *FILE PG only*: -->
+ 
+    <!-- Compute Button *DATASET PG only*: -->
+    <h:outputLink style="font-size:2em !important;" styleClass="btn-compute btn btn-link bootstrap-button-tooltip" 
+                  title="#{bundle['file.compute']}" value="#{DatasetPage.getComputeUrl(fileMetadata)}"
+                  target="_blank" rel="noopener"
+                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
+        <span class="glyphicon glyphicon-flash"/>
+    </h:outputLink>
+    <!-- END: Compute Button *DATASET PG only*: -->
+ 
 </ui:composition>

@@ -203,9 +203,6 @@
                                                             <ul class="dropdown-menu pull-right text-left">
                                                                 
                                                                 <!-- Explore/Download/Request Button Block -->
-                                                                
-                                                                <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                                
                                                                 <ui:fragment rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
                                                                                                                             (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
                                                                                                                              and (!FilePage.fileMetadata.dataFile.filePackage or
