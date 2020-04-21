@@ -5,12 +5,9 @@
  */
 package edu.harvard.iq.dataverse.export.dublincore;
 
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -25,7 +22,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.primefaces.json.JSONObject;
 
 /**
  *
