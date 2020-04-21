@@ -3955,7 +3955,6 @@ public class DatasetPage implements java.io.Serializable {
         // that's the case. -- L.A.
         
         this.guestbookResponse.setDownloadtype("Download");
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show();handleResizeDialog('guestbookAndTermsPopup');");
     }
     
@@ -4836,7 +4835,6 @@ public class DatasetPage implements java.io.Serializable {
                  fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
             }          
             if (isGuestbookAndTermsPopupRequired()) {
-                //RequestContext requestContext = RequestContext.getCurrentInstance();                
                 PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').show()");               
                 return "";
             } else {
