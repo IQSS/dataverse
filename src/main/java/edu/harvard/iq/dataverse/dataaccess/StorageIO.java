@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -222,9 +221,6 @@ public abstract class StorageIO<T extends DvObject> {
     /*private GetMethod method = null;
     private Header[] responseHeaders;*/
 
-    // For S3
-    private URL s3PreSignedUrl;
-
     // getters:
     
     public Channel getChannel() throws IOException {
@@ -367,11 +363,6 @@ public abstract class StorageIO<T extends DvObject> {
     public boolean noVarHeader() {
         return noVarHeader;
     }
-
-    public URL generateS3PreSignedUrl(String objectKey) {
-    	return s3PreSignedUrl;
-    }
-
 
     // setters:
     public void setDvObject(T f) {
