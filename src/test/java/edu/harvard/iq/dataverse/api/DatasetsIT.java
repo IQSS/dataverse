@@ -1924,16 +1924,12 @@ public class DatasetsIT {
         String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
         System.out.println("datasetPersistentId: " + datasetPersistentId);
 
-       // String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
-
        String pathToJsonFile = "src/test/resources/json/update-dataset-version-with-files.json";
+
         Response updateMetadataAddFilesViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
         updateMetadataAddFilesViaNative.prettyPrint();
         updateMetadataAddFilesViaNative.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode());
-
-
-
 
         // These println's are here in case you want to log into the GUI to see what notifications look like.
         System.out.println("Curator username/password: " + curatorUsername);
