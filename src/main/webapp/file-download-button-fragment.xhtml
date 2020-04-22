@@ -18,9 +18,8 @@
         <li class="dropdown-header" jsf:rendered="#{isFilePg}">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
         
         <li class="#{fileMetadata.dataFile.tabularData
-                        ? 'dropdown-submenu' : ''}"
+                        ? 'dropdown-submenu pull-left' : ''}"
             jsf:rendered="#{isFilePg}">
-            <!-- DUPLICATE LINKS -->
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                     and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                          styleClass="btn-download" process="@this"
@@ -64,13 +63,12 @@
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 #{bundle.download}
             </p:commandLink>
-            <!-- END:DUPLICATE LINKS -->
-            <!-- DUP SUBMENU LINK -->
+            <!-- SUBMENU LINK -->
             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
                 <!-- Download Dropdown -->
                 <a class="btn-download" tabindex="-1" href="javascript:void(0);">#{bundle.download}</a>
             
-                <ul class="dropdown-menu pull-right text-left" role="menu">
+                <ul class="dropdown-menu multi-level" role="menu">
                     
                     <!-- TODO: FIX PULL-LEFT DROPDOWN OVERLAP DOWNLOAD -->
                     
@@ -97,7 +95,8 @@
                                        disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                        actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                                <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
+                                <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
+                                <f:param value="CSV"/> <!-- # {fileMetadata.dataFile.originalFormatLabel} -->
                             </h:outputFormat>
                         </p:commandLink>
                         <p:commandLink rendered="#{downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
@@ -185,8 +184,12 @@
                     </li>
                 </ul>
             </ui:fragment>
-            <!-- END: DUP SUBMENU LINK -->
+            <!-- END: SUBMENU LINK -->
         </li>
+        
+        <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
+        <li role="presentation" class="clearfix" jsf:rendered="#{isFilePg}"></li>
+        
     <!-- END: FILE PG -->
     <!-- DATASET PG -->
         <ui:fragment rendered="#{!isFilePg}">
