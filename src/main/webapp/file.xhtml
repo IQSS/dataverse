@@ -195,7 +195,9 @@
                                                     
                                                     <!-- DOWNLOAD/ACCESS DATASET -->
                                                     <!-- TO-DO RENDER LOGIC (DOWNLOAD + EXPOLRE + COMPUTE) -->
-                                                    <div class="btn-group btn-group-justified" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                    <div class="btn-group btn-group-justified" 
+                                                         jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
+                                                                            or (FilePage.fileMetadata.datasetVersion.deaccessioned and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}">
                                                         <div class="btn-group">
                                                             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                 #{bundle['file.accessBtn']} <span class="caret"></span>
@@ -203,13 +205,10 @@
                                                             <ul class="dropdown-menu pull-right text-left">
                                                                 
                                                                 <!-- Explore/Download/Request Button Block -->
-                                                                <ui:fragment rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
-                                                                                                                            (FilePage.fileMetadata.datasetVersion.deaccessioned and FilePage.canUpdateDataset())) 
-                                                                                                                             and (!FilePage.fileMetadata.dataFile.filePackage or
-                                                                                                                                   FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}">
+                                                                <ui:fragment rendered="#{!FilePage.fileMetadata.dataFile.filePackage 
+                                                                                           or FilePage.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
                                                                     <ui:include src="file-download-button-fragment.xhtml">
                                                                         <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-
                                                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
                                                                         <ui:param name="requestAccessPopupRequired" value="#{FilePage.requestAccessPopupRequired}"/>
                                                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
