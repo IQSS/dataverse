@@ -40,6 +40,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.create.dataverse.subject", rootDvNameAsList);
             case REQUESTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.request.file.access.subject", rootDvNameAsList);
+            case REQUESTEDFILEACCESS:
+                return BundleUtil.getStringFromBundle("notification.email.requested.file.access.subject", rootDvNameAsList);
             case GRANTFILEACCESS:
                 return BundleUtil.getStringFromBundle("notification.email.grant.file.access.subject", rootDvNameAsList);
             case REJECTFILEACCESS:
