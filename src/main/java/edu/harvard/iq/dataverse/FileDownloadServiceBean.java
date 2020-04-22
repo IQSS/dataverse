@@ -576,8 +576,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             un = userNotificationService.sendUserNotification(au, ts, UserNotification.Type.REQUESTFILEACCESS, fileId);
             
             if(un != null){
-                
-               boolean mailed = mailService.sendNotificationEmail(un, appendMsgText, (AuthenticatedUser)session.getUser());
+               
+               boolean mailed = mailService.sendNotificationEmail(un, appendMsgText, (AuthenticatedUser)session.getUser(), false);
                if(mailed){
                    un.setEmailed(true);
                    userNotificationService.save(un);
