@@ -1061,6 +1061,17 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
     }
+    
+    public boolean canDownloadFiles(){
+        //returns true if the page user has permission to download at least one file
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+             if (fileDownloadHelper.canDownloadFile(fmd)) {
+                 return true;
+             }
+        }
+        return false;
+    }
+    
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
     for the temporary url of only ONE datafile within the dataset. This is because in the 

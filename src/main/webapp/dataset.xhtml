@@ -43,7 +43,8 @@
                                                                      and DatasetPage.canPublishDataverse()
                                                                      and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>             
-                                                                                                      
+            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles() and (!DatasetPage.workingVersion.deaccessioned
+                                                  or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>                                                                                         
             <ui:define name="meta_header">
             <meta name="description" content="#{DatasetPage.description}"/>
             </ui:define>
@@ -153,8 +154,7 @@
                                                 <!-- DOWNLOAD/ACCESS DATASET -->
                                                 <!-- TO-DO RENDER LOGIC (#3513 DOWNLOAD ALL + EXPOLRE + COMPUTE) -->
                                                 <div class="btn-group btn-group-justified" 
-                                                     jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned
-                                                                        or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())}"> <!-- !DatasetPage.dataset.deaccessioned -->
+                                                     jsf:rendered="#{showAccessDatasetButtonGroup}"> <!-- !DatasetPage.dataset.deaccessioned -->
                                                     <div class="btn-group">
                                                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                             #{bundle['dataset.accessBtn']} <span class="caret"></span>
