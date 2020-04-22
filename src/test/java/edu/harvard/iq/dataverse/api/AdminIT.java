@@ -73,7 +73,7 @@ public class AdminIT {
         // --------------------------------------------
         // Forbidden: Try *without* an API token
         // --------------------------------------------
-        Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null);
+        Response anon = UtilIT.filterAuthenticatedUsers("", null, null, null, null);
         anon.prettyPrint();
         anon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
 
@@ -86,7 +86,7 @@ public class AdminIT {
         String nonSuperuserApiToken = UtilIT.getApiTokenFromResponse(createUserResponse);
         String nonSuperUsername = UtilIT.getUsernameFromResponse(createUserResponse);
         
-        Response filterResponseBadToken = UtilIT.filterAuthenticatedUsers(nonSuperuserApiToken, null, null, null);
+        Response filterResponseBadToken = UtilIT.filterAuthenticatedUsers(nonSuperuserApiToken, null, null, null, null);
         filterResponseBadToken.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
          
         // delete user
@@ -132,7 +132,7 @@ public class AdminIT {
         // --------------------------------------------
         // Search for the 11 new users and verify results
         // --------------------------------------------        
-        Response filterReponse01 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, null, 100);
+        Response filterReponse01 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, null, 100, null);
         filterReponse01.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse01.prettyPrint();
 
@@ -156,7 +156,7 @@ public class AdminIT {
         // Search for the 11 new users, but only return 5 per page
         // --------------------------------------------        
         int numUsersReturned = 5;
-        Response filterReponse02 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 1, numUsersReturned);
+        Response filterReponse02 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 1, numUsersReturned, null);
         filterReponse02.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse02.prettyPrint();
 
@@ -180,7 +180,7 @@ public class AdminIT {
         // --------------------------------------------
         // Search for the 11 new users, return 5 per page, and start on NON-EXISTENT 4th page -- should revert to 1st page
         // --------------------------------------------        
-        Response filterReponse02a = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 4, numUsersReturned);
+        Response filterReponse02a = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 4, numUsersReturned, null);
         filterReponse02a.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse02a.prettyPrint();
 
@@ -197,7 +197,7 @@ public class AdminIT {
         // --------------------------------------------
         // Search for the 11 new users, return 5 per page, start on 3rd page
         // --------------------------------------------     
-        Response filterReponse03 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 3, 5);
+        Response filterReponse03 = UtilIT.filterAuthenticatedUsers(superuserApiToken, randUserNamePrefix, 3, 5, null);
         filterReponse03.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse03.prettyPrint();
         
@@ -215,7 +215,7 @@ public class AdminIT {
         // --------------------------------------------
         // Run search that returns no users
         // --------------------------------------------     
-        Response filterReponse04 = UtilIT.filterAuthenticatedUsers(superuserApiToken, "zzz" + randUserNamePrefix, 1, 50);
+        Response filterReponse04 = UtilIT.filterAuthenticatedUsers(superuserApiToken, "zzz" + randUserNamePrefix, 1, 50, null);
         filterReponse04.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse04.prettyPrint();
         
@@ -231,7 +231,7 @@ public class AdminIT {
         // Run search that returns 1 user
         // --------------------------------------------     
         String singleUsername = randomUsernames.get(0);
-        Response filterReponse05 = UtilIT.filterAuthenticatedUsers(superuserApiToken, singleUsername, 1, 50);
+        Response filterReponse05 = UtilIT.filterAuthenticatedUsers(superuserApiToken, singleUsername, 1, 50, null);
         filterReponse05.then().assertThat().statusCode(OK.getStatusCode());
         filterReponse05.prettyPrint();
         

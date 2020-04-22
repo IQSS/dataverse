@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.specification.RequestSpecification;
@@ -1093,8 +1094,8 @@ public class UtilIT {
     static Response filterAuthenticatedUsers(String superUserApiToken,
             String searchTerm,
             Integer selectedPage,
-            Integer itemsPerPage
-    //                                         String sortKey
+            Integer itemsPerPage,
+            String sortKey
     ) {
 
         List<String> queryParams = new ArrayList<String>();
@@ -1106,6 +1107,9 @@ public class UtilIT {
         }
         if (itemsPerPage != null) {
             queryParams.add("itemsPerPage=" + itemsPerPage.toString());
+        }
+        if (StringUtils.isNotBlank(sortKey)) {
+            queryParams.add("sortKey=" + sortKey);
         }
 
         String queryString = "";
