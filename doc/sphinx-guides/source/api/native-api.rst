@@ -2434,7 +2434,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer:
+Get the server name. This is useful when a Dataverse system is composed of multiple app servers behind a load balancer:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
