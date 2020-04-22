@@ -14,15 +14,8 @@ We'll try to get you up and running as quickly as possible, but we thought you m
 Choose Your Own Installation Adventure
 --------------------------------------
 
-Vagrant (for Testing Only)
-++++++++++++++++++++++++++
-
-If you are looking to simply kick the tires on installing Dataverse and are familiar with Vagrant, you are welcome to read through the :ref:`vagrant` section of the :doc:`/developers/tools` section of the Developer Guide. Checking out a tagged release is recommended rather than running ``vagrant up`` on unreleased code.
-
-Pilot Installation
-++++++++++++++++++
-
-Vagrant is not a bad way for a sysadmin to get a quick sense of how an application like Dataverse is put together in a sandbox (a virtual machine running on a laptop for example), but to allow end users to start playing with Dataverse, you'll need to install Dataverse on a server.
+Standard Installation
++++++++++++++++++++++
 
 Installing Dataverse involves some system configuration followed by executing an installation script that will guide you through the installation process as described in :doc:`installation-main`, but reading about the :ref:`architecture` of Dataverse is recommended first.
 

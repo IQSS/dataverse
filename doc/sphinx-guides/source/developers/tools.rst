@@ -30,6 +30,8 @@ With Maven installed you can run ``mvn package`` and ``mvn test`` from the comma
 Vagrant
 +++++++
 
+Please note that the Vagrant environment is currently broken. For details, see https://github.com/IQSS/dataverse/issues/6849
+
 Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
 
 We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
