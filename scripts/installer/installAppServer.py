@@ -3,7 +3,7 @@ import subprocess
 
 def runAsadminScript(config):
    # We are going to run a standalone shell script with a bunch of asadmin                                      
-   # commands to set up all the glassfish components for the application.                                       
+   # commands to set up all the app. server (payara5) components for the application.                                       
    # All the parameters must be passed to that script as environmental                                          
    # variables:
    os.environ['GLASSFISH_DOMAIN'] = "domain1";
@@ -41,10 +41,10 @@ def runAsadminScript(config):
 
    os.environ['FILES_DIR'] = config.get('glassfish','GLASSFISH_DIRECTORY') + "/glassfish/domains/domain1/files"
 
-   # run glassfish setup script:
+   # run app. server setup script:
 
-   print("running glassfish configuration script (glassfish-setup.sh)")
-   returncode = subprocess.call(["./glassfish-setup.sh"])
+   print("running app. server configuration script (as-setup.sh)")
+   returncode = subprocess.call(["./as-setup.sh"])
    if returncode != 0:
       return False
 
