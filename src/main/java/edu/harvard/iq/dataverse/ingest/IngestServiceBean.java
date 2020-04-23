@@ -110,7 +110,6 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Message;
-import javax.faces.bean.ManagedBean;
 import javax.faces.application.FacesMessage;
 
 /**
@@ -122,7 +121,6 @@ import javax.faces.application.FacesMessage;
  */
 @Stateless
 @Named
-@ManagedBean
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
     @EJB
