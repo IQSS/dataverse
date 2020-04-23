@@ -481,6 +481,8 @@ The fully expanded example above (without the environment variables) looks like 
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
+.. note:: Only a Dataverse account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
+
 Import a Dataset into a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

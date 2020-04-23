@@ -357,7 +357,8 @@ public class UtilIT {
 
     static Response createDatasetViaNativeApi(String dataverseAlias, String pathToJsonFile, String apiToken) {
         String jsonIn = getDatasetJson(pathToJsonFile);
-        Response createDatasetResponse = given()
+        
+        Response createDatasetResponse = given()               
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
@@ -372,6 +373,9 @@ public class UtilIT {
             return datasetVersionAsJson;
         } catch (IOException ex) {
             Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        } catch (Exception e){
+            Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, e);
             return null;
         }
     }
