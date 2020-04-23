@@ -1252,6 +1252,22 @@ public class Datasets extends AbstractApiBean {
             return notFound("Thumbnail not available");
         }
     }
+    
+    @GET
+    @Produces({ "image/png" })
+    @Path("{id}/logo")
+    public Response getDatasetLogo(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            InputStream is = DatasetUtil.getLogoAsInputStream(dataset);
+            if (is == null) {
+                return notFound("Logo not available");
+            }
+            return Response.ok(is).build();
+        } catch (WrappedResponse wr) {
+            return notFound("Logo not available");
+        }
+    }
 
     // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST

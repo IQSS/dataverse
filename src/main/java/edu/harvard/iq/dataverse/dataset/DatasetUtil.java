@@ -375,6 +375,64 @@ public class DatasetUtil {
             return nonDefaultDatasetThumbnail;
         }
     }
+    
+    public static InputStream getLogoAsInputStream(Dataset dataset) {
+        if (dataset == null) {
+            return null;
+        }
+        StorageIO<Dataset> dataAccess = null;
+
+        try{
+            dataAccess = DataAccess.getStorageIO(dataset);
+        }
+        catch(IOException ioex){
+            logger.warning("getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+        }
+
+        InputStream in = null;
+        try {
+            if (dataAccess == null) {
+                logger.warning("getLogo(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
+            } else {
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoFilenameFinal);
+            }
+        } catch (IOException ex) {
+            logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
+        }
+
+
+        if(in==null) {
+            DataFile thumbnailFile = dataset.getThumbnailFile();
+
+            if (thumbnailFile == null) {
+                if (dataset.isUseGenericThumbnail()) {
+                    logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo and is 'Use Generic'.");
+                    return null;
+                } else {
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, null);
+                    if (thumbnailFile == null) {
+                        logger.fine("Dataset (id :" + dataset.getId() + ") does not have a logo available that could be selected automatically.");
+                        return null;
+                    } else {
+
+                    }
+                }
+            } 
+            if (thumbnailFile.isRestricted()) {
+                logger.fine("Dataset (id :" + dataset.getId() + ") has a logo the user selected but the file must have later been restricted. Returning null.");
+                return null;
+            }
+
+            try {
+                in = ImageThumbConverter.getImageThumbnailAsInputStream(thumbnailFile.getStorageIO(),ImageThumbConverter.DEFAULT_PREVIEW_SIZE).getInputStream();
+            } catch (IOException ioex) {
+                logger.warning("getLogo(): Failed to get logo from DataFile for " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");                
+                ioex.printStackTrace();
+            }
+
+        }
+        return in;
+    }
 
     /**
      * The dataset logo is the file that a user uploads which is *not* one of
