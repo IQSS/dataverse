@@ -134,6 +134,8 @@ public class FileMetadataIT {
 
             // create dataset and set id
             System.out.println("Creating dataset....");
+            //SEK 4/14/2020 need to be super user to add a dataset with files
+            UtilIT.makeSuperUser(testName);
             dsId = given()
                     .header(keyString, token)
                     .body(IOUtils.toString(classLoader.getResourceAsStream("json/complete-dataset-with-files.json")))
