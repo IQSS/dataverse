@@ -535,19 +535,22 @@ div.ui-selectonemenu.form-control {
 }
 
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container  {
-    padding-right: 30px; /* same as primefaces ui-selectcheckboxmenu-trigger width */
-    
-    .ui-selectcheckboxmenu-token {
-        background: #FFF;
-        border: 1px solid $main-color;
-        box-shadow: none;
-    }
+	padding-right: 30px; /* same as primefaces ui-selectcheckboxmenu-trigger width */
+	
+	.ui-selectcheckboxmenu-token {
+		background: #FFF;
+		border: 1px solid $main-color;
+		box-shadow: none;
+	}
 }
 .ui-selectcheckboxmenu-header .ui-selectcheckboxmenu-filter-container .ui-icon {
-    top: 5px;
+	top: 5px;
 }
 .without-select-all .ui-selectcheckboxmenu-header .ui-chkbox {
-    display: none; 
+	display: none; 
+}
+.ui-selectcheckboxmenu-label-container {
+	display: inline-block;
 }
 
 div.field-add-delete {
