@@ -774,8 +774,7 @@ public class DataCitation {
         if (!dsv.getDataset().isHarvested()
                 || HarvestingClient.HARVEST_STYLE_VDC.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
                 || HarvestingClient.HARVEST_STYLE_ICPSR.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())
-                || HarvestingClient.HARVEST_STYLE_DATAVERSE
-                .equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
+                || HarvestingClient.HARVEST_STYLE_DATAVERSE.equals(dsv.getDataset().getHarvestedFrom().getHarvestStyle())) {
             // creating a global id like this:
             // persistentId = new GlobalId(dv.getGlobalId());
             // you end up doing new GlobalId((New GlobalId(dv)).toString())

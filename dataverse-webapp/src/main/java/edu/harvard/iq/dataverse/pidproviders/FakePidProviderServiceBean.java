@@ -20,7 +20,7 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean alreadyExists(GlobalId globalId) throws Exception {
-        return true;
+        return false;
     }
 
     @Override
@@ -67,6 +67,9 @@ public class FakePidProviderServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean publicizeIdentifier(DvObject studyIn) {
+        if (studyIn.getIdentifier() == null || studyIn.getIdentifier().isEmpty()) {
+            generateIdentifier(studyIn);
+        }
         return true;
     }
 
