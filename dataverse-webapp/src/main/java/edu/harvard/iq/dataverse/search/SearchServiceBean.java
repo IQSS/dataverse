@@ -792,12 +792,10 @@ public class SearchServiceBean {
     }
 
     private String getDatasetFieldFacetCategoryName(DatasetFieldType matchedDatasetField) {
-        if (matchedDatasetField.isFacetable()) {
-            if (matchedDatasetField.getParentDatasetFieldType() != null) {
-                return matchedDatasetField.getLocaleTitleWithParent();
-            }
-
-            return getStringFromBundle(format(FACETBUNDLE_MASK_VALUE, matchedDatasetField.getName()));
+        if (matchedDatasetField.isFacetable() && !matchedDatasetField.isHasParent()) {
+            return Optional.ofNullable(getStringFromBundle(format(FACETBUNDLE_MASK_VALUE, matchedDatasetField.getName())))
+                    .filter(name -> !name.isEmpty())
+                    .orElse(matchedDatasetField.getDisplayName());
         }
         return matchedDatasetField.getDisplayName();
     }
