@@ -125,7 +125,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
             }
         } catch (SdkClientException sce) {
-            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?)");
+            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
         }
 
         DataAccessRequest req = this.getRequest();
