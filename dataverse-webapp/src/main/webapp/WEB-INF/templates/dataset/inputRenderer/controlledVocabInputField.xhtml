@@ -18,8 +18,14 @@
     </p:outputLabel>
     
     <p:selectOneMenu id="singleVocabularySelect"
-                     value="#{datasetField.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                     rendered="#{!datasetField.datasetFieldType.allowMultiples}">
+                     value="#{datasetField.singleControlledVocabularyValue}"
+                     converter="controlledVocabularyValueConverter"
+                     style="width: auto !important; max-width:100%; min-width:200px;"
+                     styleClass="form-control primitive"
+                     rendered="#{!datasetField.datasetFieldType.allowMultiples}"
+                     filter="true"
+                     filterMatchMode="contains"
+    >
         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
         <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
     </p:selectOneMenu>
@@ -28,7 +34,7 @@
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                 style="width: 100%" panelStyleClass="without-select-all"
                 multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="startsWith">
+                filter="true" filterMatchMode="contains">
         <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
     </p:selectCheckboxMenu>
     
