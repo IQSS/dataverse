@@ -10,6 +10,14 @@
                 xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
+    <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
+    <ui:param name="authUserSession" value ="#{dataverseSession.user.authenticated}"/>
+    <ui:param name="showAddDataverseLink" value="#{(dataverseSession.user.authenticated and permissionsWrapper.canIssueCreateDataverseCommand(dataverseServiceBean.findRootDataverse())) 
+                                                   or (!dataverseSession.user.authenticated and permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand')) }"/>
+    <ui:param name="showAddDatasetLink" value="#{(dataverseSession.user.authenticated and permissionsWrapper.canIssueCreateDatasetCommand(dataverseServiceBean.findRootDataverse()))
+                                                 or (!dataverseSession.user.authenticated and permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand')) }"/>
+    <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or  showAddDatasetLink}"/>
+  
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -31,21 +39,35 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
-                                    </h:outputLink>
+                        <ui:fragment rendered="#{showAddDataGroup}">
+                        <ui:fragment rendered="#{!authUserSession}">
+                            <li>
+                                <a href="#" onClick="PF('addData_popup').show()">#{bundle['dataverse.results.btn.addData']} </a>
+                            </li> 
+                        </ui:fragment>
+
+                            <ui:fragment rendered="#{authUserSession}">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
+                                    <ul class="dropdown-menu">
+                                        <ui:fragment rendered="#{showAddDataverseLink}">
+                                            <li>
+                                                <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
+                                                </h:outputLink>
+                                            </li>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{showAddDatasetLink}">
+                                            <li>
+                                                <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                                    <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
+                                                </h:outputLink>
+                                            </li>
+                                        </ui:fragment>
+                                    </ul>
                                 </li>
-                                <li>
-                                    <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
-                                    </h:outputLink>
-                                </li>
-                            </ul>
-                        </li>
+                            </ui:fragment>
+                        </ui:fragment>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul class="dropdown-menu navbar-search">
@@ -189,6 +211,11 @@
                 </div>
             </div>
         </noscript>
+        <script>
+function a () {
+var contact = prompt("Add the contact.");
+}
+</script>
         <!-- Status Alert -->
         <o:form class="form-inline">
             <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
