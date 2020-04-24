@@ -60,6 +60,3 @@ scripts/installer/default.config
 tests/node_modules
 tests/package-lock.json
 venv
-/src/test/java/
-/src/main/
-/src/test/

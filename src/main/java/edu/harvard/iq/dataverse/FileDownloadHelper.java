@@ -232,7 +232,6 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
              PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
 
@@ -261,7 +260,6 @@ public class FileDownloadHelper implements java.io.Serializable {
          if (!valid) {
 
          } else {
-             //requestContext.execute("PF('guestbookAndTermsPopup').hide()"); 
              PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
              //requestContext.execute("PF('downloadDataSubsetPopup').show()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
@@ -310,7 +308,6 @@ public class FileDownloadHelper implements java.io.Serializable {
              return;
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
          PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
     }
      
@@ -321,13 +318,11 @@ public class FileDownloadHelper implements java.io.Serializable {
         if (!valid) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
         } else {
-            //requestContext.execute("PF('guestbookAndTermsPopup').hide()");
             PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
             //requestContext.execute("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
             //requestContext.execute("handleResizeDialog('downloadPackagePopup')");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
-            
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
     }
@@ -357,7 +352,6 @@ public class FileDownloadHelper implements java.io.Serializable {
          } 
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        //requestContext.execute("PF('guestbookAndTermsPopup').hide()"); 
         PrimeFaces.current().executeScript("PF('guestbookAndTermsPopup').hide()");
         return retVal;
     }
