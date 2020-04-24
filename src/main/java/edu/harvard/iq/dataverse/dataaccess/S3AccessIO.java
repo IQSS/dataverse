@@ -796,14 +796,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
     	}
 
-    	if (storageIdentifier.indexOf(driverId + "://")>0) {
+    	if (storageIdentifier.indexOf(driverId + "://")>=0) {
     		//String driverId = storageIdentifier.substring(0, storageIdentifier.indexOf("://")+3);
     		//As currently implemented (v4.20), the bucket is part of the identifier and we could extract it and compare it with getBucketName() as a check - 
     		//Only one bucket per driver is supported (though things might work if the profile creds work with multiple buckets, then again it's not clear when logic is reading from the driver property or from the DataFile).
     		//String bucketName = storageIdentifier.substring(driverId.length() + 3, storageIdentifier.lastIndexOf(":"));
     		key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);	
     	} else {
-    		throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object associated with driver: ." + driverId);
+    		throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object associated with driver: " + driverId);
     	}
     	return key;
     }
