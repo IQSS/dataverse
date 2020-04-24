@@ -7,13 +7,14 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
-import org.junit.Test;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -29,6 +30,20 @@ import static org.junit.Assert.assertTrue;
 
 public class SiteMapUtilTest {
 
+    @BeforeEach
+    public void beforeEach() {
+        File oldSitemapFile = new File("tmp", SiteMapUtil.SITEMAP_FILENAME_FINAL);
+        if (oldSitemapFile.exists()) {
+            oldSitemapFile.delete();
+        }
+        File oldSitemapStagedFile = new File("tmp", SiteMapUtil.SITEMAP_FILENAME_STAGED);
+        if (oldSitemapStagedFile.exists()) {
+            oldSitemapStagedFile.delete();
+        }
+    }
+    
+    // -------------------- TESTS --------------------
+    
     @Test
     public void testUpdateSiteMap() throws IOException, ParseException {
 
@@ -76,10 +91,6 @@ public class SiteMapUtilTest {
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
 
-        File oldSitemapFile = new File("/tmp/sitemap.xml");
-        if (oldSitemapFile.exists()) {
-            oldSitemapFile.delete();
-        }
         SiteMapUtil.updateSiteMap(dataverses, datasets, "https://localhost:8080");
 
         Exception wellFormedXmlException = null;
@@ -93,7 +104,7 @@ public class SiteMapUtilTest {
 
         Exception notValidAgainstSchemaException = null;
         try {
-            assertTrue(XmlValidator.validateXmlSchema("/tmp/sitemap.xml", new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
+            assertTrue(XmlValidator.validateXmlSchema("/tmp/sitemap.xml", IOUtils.resourceToURL(SiteMapUtil.SITEMAP_XSD_CLASSPATH)));
         } catch (MalformedURLException | SAXException ex) {
             System.out.println("Exception caught validating XML against the sitemap schema: " + ex);
             notValidAgainstSchemaException = ex;

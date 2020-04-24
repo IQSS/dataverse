@@ -473,6 +473,7 @@
                     <include>**/*.xml</include>
                     <include>**/*.conf</include>
                     <include>**/*.png</include>
+                    <include>**/*.xsd</include>
                     <include>**/*.providers</include>
                     <include>**/firstNames/*.*</include>
                 </includes>

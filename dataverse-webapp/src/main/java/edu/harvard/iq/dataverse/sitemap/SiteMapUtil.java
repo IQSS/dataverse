@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.xml.XmlValidator;
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -35,8 +36,9 @@ public class SiteMapUtil {
 
     private static final Logger logger = Logger.getLogger(SiteMapUtil.class.getCanonicalName());
 
-    static final String SITEMAP_FILENAME_FINAL = "sitemap.xml";
-    static final String SITEMAP_FILENAME_STAGED = "sitemap.xml.staged";
+    public static final String SITEMAP_FILENAME_FINAL = "sitemap.xml";
+    public static final String SITEMAP_FILENAME_STAGED = "sitemap.xml.staged";
+    public static final String SITEMAP_XSD_CLASSPATH = "/xsd/sitemap.xsd";
 
     /**
      * TODO: Handle more than 50,000 entries in the sitemap.
@@ -169,14 +171,8 @@ public class SiteMapUtil {
         }
 
         logger.info("Checking staged sitemap against XML schema. The staged file is " + stagedSitemapPathAndFileString);
-        URL schemaUrl = null;
         try {
-            schemaUrl = new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd");
-        } catch (MalformedURLException ex) {
-            // This URL is hard coded and it's fine. We should never get MalformedURLException so we just swallow the exception and carry on.
-        }
-        try {
-            XmlValidator.validateXmlSchema(stagedSitemapPathAndFileString, schemaUrl);
+            XmlValidator.validateXmlSchema(stagedSitemapPathAndFileString, IOUtils.resourceToURL(SITEMAP_XSD_CLASSPATH));
         } catch (SAXException | IOException ex) {
             logger.warning("Unable to update sitemap! Exception caught while checking XML staged file (" + stagedSitemapPathAndFileString + " ) against XML schema: " + ex.getLocalizedMessage());
             return;

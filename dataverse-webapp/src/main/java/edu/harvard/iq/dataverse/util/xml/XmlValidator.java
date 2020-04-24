@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.xml;
 
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -16,6 +17,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -39,7 +41,7 @@ public class XmlValidator {
             return false;
         }
     }
-
+    
     /**
      * @param filename XML file on disk to check for well-formedness.
      * @return true if well-formed or an exception with a message about why if
