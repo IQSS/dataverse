@@ -6,6 +6,9 @@ import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRenderer;
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendererManager;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
+import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
+import edu.harvard.iq.dataverse.importers.ui.ImportersForView;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
@@ -40,6 +43,9 @@ public class EditDatasetMetadataPage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(EditDatasetMetadataPage.class.getCanonicalName());
 
+    @Inject
+    private ImporterRegistry importerRegistry;
+
     @EJB
     private DatasetDao datasetDao;
     @EJB
@@ -51,6 +57,9 @@ public class EditDatasetMetadataPage implements Serializable {
     @Inject
     private DataverseRequestServiceBean dvRequestService;
     @Inject
+    private DataverseSession session;
+
+    @Inject
     private DatasetFieldsInitializer datasetFieldsInitializer;
 
     private Long datasetId;
@@ -60,6 +69,8 @@ public class EditDatasetMetadataPage implements Serializable {
     private DatasetVersion workingVersion;
     private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocksForEdit;
     private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
+    private ImportersForView importers;
+    private MetadataImporter selectedImporter;
 
     // -------------------- GETTERS --------------------
 
@@ -87,6 +98,14 @@ public class EditDatasetMetadataPage implements Serializable {
         return inputRenderersByFieldType;
     }
 
+    public ImportersForView getImporters() {
+        return importers;
+    }
+
+    public MetadataImporter getSelectedImporter() {
+        return selectedImporter;
+    }
+
     // -------------------- LOGIC --------------------
 
     public String init() {
@@ -111,6 +130,8 @@ public class EditDatasetMetadataPage implements Serializable {
         }
 
         workingVersion = dataset.getEditVersion();
+
+        importers = ImportersForView.createInitialized(dataset, importerRegistry.getImporters(), session.getLocale());
 
         List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(workingVersion.getDatasetFields(),
                 dataset.getOwner().getMetadataBlockRootDataverse());
@@ -185,4 +206,7 @@ public class EditDatasetMetadataPage implements Serializable {
         this.persistentId = persistentId;
     }
 
+    public void setSelectedImporter(MetadataImporter selectedImporter) {
+        this.selectedImporter = selectedImporter;
+    }
 }

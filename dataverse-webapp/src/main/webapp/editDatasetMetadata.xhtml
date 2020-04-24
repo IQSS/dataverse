@@ -58,8 +58,14 @@
                         <p:commandButton id="cancelTop" class="btn-access" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
                         </p:commandButton>
                     </div>
-                    
-                    
+
+                    <ui:fragment>
+                        <ui:include src="metadata-importers-fragment.xhtml">
+                            <ui:param name="importers" value="#{editDatasetMetadataPage.importers}"/>
+                            <ui:param name="selectedImporter" value="#{editDatasetMetadataPage.selectedImporter}"/>
+                        </ui:include>
+                    </ui:fragment>
+
                     <!-- Main edit metadata content -->
                     <ui:include src="editMetadata.xhtml">
                         <ui:param name="showAllBlocks" value="#{true}"/>

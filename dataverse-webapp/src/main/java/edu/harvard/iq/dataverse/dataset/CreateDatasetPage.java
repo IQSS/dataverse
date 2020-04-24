@@ -9,6 +9,9 @@ import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendere
 import edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.InputFieldRendererManager;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
+import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
+import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
+import edu.harvard.iq.dataverse.importers.ui.ImportersForView;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -56,6 +59,9 @@ public class CreateDatasetPage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
+    @Inject
+    ImporterRegistry importerRegistry;
+
     @EJB
     private DataverseDao dataverseDao;
     @Inject
@@ -88,6 +94,9 @@ public class CreateDatasetPage implements Serializable {
     private Map<MetadataBlock, List<DatasetFieldsByType>> metadataBlocksForEdit = new HashMap<>();
     private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
 
+    private ImportersForView importers;
+    private MetadataImporter selectedImporter;
+
     public String init() {
 
         Dataverse ownerDataverse = dataverseDao.find(ownerId);
@@ -104,6 +113,8 @@ public class CreateDatasetPage implements Serializable {
 
         dataset = new Dataset();
         dataset.setOwner(ownerDataverse);
+
+        this.importers = ImportersForView.createInitialized(dataset, importerRegistry.getImporters(), session.getLocale());
 
         workingVersion = dataset.getLatestVersion();
         resetDatasetFields();
@@ -153,6 +164,13 @@ public class CreateDatasetPage implements Serializable {
         return inputRenderersByFieldType;
     }
 
+    public ImportersForView getImporters() {
+        return importers;
+    }
+
+    public MetadataImporter getSelectedImporter() {
+        return selectedImporter;
+    }
 
     // -------------------- LOGIC --------------------
 
@@ -269,4 +287,7 @@ public class CreateDatasetPage implements Serializable {
         this.selectedTemplate = selectedTemplate;
     }
 
+    public void setSelectedImporter(MetadataImporter selectedImporter) {
+        this.selectedImporter = selectedImporter;
+    }
 }

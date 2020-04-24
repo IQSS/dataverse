@@ -1,0 +1,45 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <p:fragment id="importersPanel">
+        <div class="panel panel-default" jsf:rendered="#{not empty importers}">
+            <div class="panel-heading text-info">
+                #{bundle['metadata.import.panel.title']}
+            </div>
+            <div class="panel-body">
+                <label class="col-sm-3 control-label" for="importersList">
+                    <h:outputText value="#{bundle['metadata.import.panel.importer.label']}" escape="false"/>
+                </label>
+                <div class="col-sm-9 form-group">
+                    <p:selectOneMenu id="importersList" value="#{selectedImporter}"
+                                     converter="importerConverter">
+                        <f:selectItem value="#{null}" itemLabel=""/>
+                        <f:selectItems value="#{importers.getImportersView()}"
+                                       var="importer"
+                                       itemLabel="#{importers[importer].name}"/>
+                        <p:ajax event="change" update="importerDescription, importButton"/>
+                    </p:selectOneMenu>
+                </div>
+                <div class="col-sm-3 control-label"><!-- Placeholder --></div>
+                <p:fragment id="importerDescription">
+                    <div class="col-sm-9">
+                        #{importers[selectedImporter].description}
+                    </div>
+                </p:fragment>
+                <div class="col-sm-3 control-label"><!-- Placeholder --></div>
+                <p:fragment id="importButton">
+                    <div class="col-sm-9" jsf:rendered="#{not empty selectedImporter}">
+                        <br/>
+                        <p:commandButton value="#{bundle['metadata.import.panel.import.button']}"/>
+                    </div>
+                </p:fragment>
+            </div>
+        </div>
+    </p:fragment>
+</ui:composition>

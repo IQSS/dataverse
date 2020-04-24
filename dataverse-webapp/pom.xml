@@ -44,6 +44,11 @@
         </dependency>
         <dependency>
             <groupId>edu.harvard.iq</groupId>
+            <artifactId>dataverse-extension-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.iq</groupId>
             <artifactId>dataverse-persistence</artifactId>
             <version>${project.version}</version>
             <classifier>tests</classifier>
@@ -177,7 +182,6 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>2.7.1</version> <!-- 3.x versions requires jsf 2.3 -->
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

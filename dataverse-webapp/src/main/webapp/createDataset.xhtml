@@ -76,6 +76,13 @@
                     </div>
                 </ui:fragment>
                 <ui:fragment>
+                    <ui:include src="metadata-importers-fragment.xhtml">
+                        <ui:param name="importers" value="#{CreateDatasetPage.importers}"/>
+                        <ui:param name="selectedImporter" value="#{CreateDatasetPage.selectedImporter}"/>
+                    </ui:include>
+                </ui:fragment>
+
+                <ui:fragment>
                     <ui:include src="editMetadata.xhtml">
                         <ui:param name="showAllBlocks" value="#{false}"/>
                         <ui:param name="showAllFields" value="#{false}"/>
