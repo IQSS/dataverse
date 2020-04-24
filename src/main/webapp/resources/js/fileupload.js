@@ -242,9 +242,6 @@ function uploadFailure(jqXHR, upid, filename) {
   // but others, (Firefox) don't support this. The calls below retrieve the status and other info
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
   
-  //Update count of files processed so that direct uploads will complete correctly
-  finishFile();
-  
   //Retrieve the error number (status) and related explanation (statusText)
   var status = null;
   var statusText =null;
