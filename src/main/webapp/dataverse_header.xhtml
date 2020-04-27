@@ -39,35 +39,24 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <ui:fragment rendered="#{showAddDataGroup}">
-                        <ui:fragment rendered="#{!authUserSession}">
-                            <li>
-                                <a href="#" onClick="PF('addData_popup').show()">#{bundle['dataverse.results.btn.addData']} </a>
-                            </li> 
-                        </ui:fragment>
-
-                            <ui:fragment rendered="#{authUserSession}">
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
-                                    <ul class="dropdown-menu">
-                                        <ui:fragment rendered="#{showAddDataverseLink}">
-                                            <li>
-                                                <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                                                    <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
-                                                </h:outputLink>
-                                            </li>
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{showAddDatasetLink}">
-                                            <li>
-                                                <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                                                    <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
-                                                </h:outputLink>
-                                            </li>
-                                        </ui:fragment>
-                                    </ul>
+                        <li jsf:rendered="#{showAddDataGroup and !authUserSession}">
+                            <a href="#" onClick="PF('addData_popup').show()">#{bundle['dataverse.results.btn.addData']} </a>
+                        </li> 
+                        <li class="dropdown" jsf:rendered="#{showAddDataGroup and authUserSession}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li jsf:rendered="#{showAddDataverseLink and authUserSession}">
+                                    <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
+                                    </h:outputLink>
                                 </li>
-                            </ui:fragment>
-                        </ui:fragment>
+                                <li jsf:rendered="#{showAddDatasetLink and authUserSession}">
+                                    <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
+                                        <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
+                                    </h:outputLink>
+                                </li>
+                            </ul>
+                        </li>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul class="dropdown-menu navbar-search">
