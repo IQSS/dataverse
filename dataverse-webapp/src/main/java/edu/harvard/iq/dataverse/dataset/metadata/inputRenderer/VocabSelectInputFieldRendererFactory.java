@@ -1,10 +1,13 @@
 package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer;
 
+import javax.ejb.Stateless;
+
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
-
-import javax.ejb.Stateless;
+import io.vavr.control.Try;
 
 @Stateless
 public class VocabSelectInputFieldRendererFactory implements InputFieldRendererFactory<VocabSelectInputFieldRenderer> {
@@ -26,7 +29,31 @@ public class VocabSelectInputFieldRendererFactory implements InputFieldRendererF
      */
     @Override
     public VocabSelectInputFieldRenderer createRenderer(DatasetFieldType fieldType, JsonObject jsonOptions) {
-        return new VocabSelectInputFieldRenderer();
+        VocabularyInputRendererOptions rendererOptions = Try.of(() -> new Gson().fromJson(jsonOptions, VocabularyInputRendererOptions.class))
+                .getOrElseThrow((e) -> new InputRendererInvalidConfigException("Invalid syntax of input renderer options " + jsonOptions + ")", e));
+        
+        return new VocabSelectInputFieldRenderer(rendererOptions.isSortByLocalisedStringsOrder());
     }
 
+    // -------------------- INNER CLASSES --------------------
+    
+    /**
+     * Class representing allowed options for {@link VocabSelectInputFieldRenderer}
+     */
+    public static class VocabularyInputRendererOptions {
+        private boolean sortByLocalisedStringsOrder = false;
+        
+        // -------------------- GETTERS --------------------
+
+        public boolean isSortByLocalisedStringsOrder() {
+			return sortByLocalisedStringsOrder;
+		}
+        
+        
+        // -------------------- SETTERS --------------------
+        
+		public void setBySortLocalisedStringsOrder(boolean sortByLocalisedStringsOrder) {
+			this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
+		}
+    }
 }

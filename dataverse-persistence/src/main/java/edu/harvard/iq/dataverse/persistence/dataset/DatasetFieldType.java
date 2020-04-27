@@ -1,5 +1,20 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.faces.model.SelectItem;
+import javax.faces.model.SelectItemGroup;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
@@ -21,16 +36,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
+
+import org.apache.commons.lang3.StringUtils;
+
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 
 
 /**
@@ -313,6 +324,58 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public Collection<ControlledVocabularyValue> getControlledVocabularyValues() {
         return this.controlledVocabularyValues;
+    }
+
+    public boolean hasGroupedValue() {
+    	for (ControlledVocabularyValue value:controlledVocabularyValues) {
+    		if (StringUtils.isNotEmpty(value.getDisplayGroup())) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    public Collection<SelectItem> getGroupedValues() {
+    	
+    	ArrayList<SelectItem> groupedList = new ArrayList<SelectItem>();
+    	
+    	Map<String, List<SelectItem>> groupsMap = new LinkedHashMap<String, List<SelectItem>>();
+    	
+    	for (ControlledVocabularyValue value:controlledVocabularyValues) {
+    		if (StringUtils.isNotEmpty(value.getDisplayGroup())) {
+    			if (!groupsMap.containsKey(value.getDisplayGroup())) {
+    				groupsMap.put(value.getDisplayGroup(), new ArrayList<SelectItem>());
+    			}
+				groupsMap.get(value.getDisplayGroup()).add(new SelectItem(value, value.getLocaleStrValue()));
+    		}
+    	}
+    	
+    	for (String groupName:groupsMap.keySet()) {
+        	String groupLabel = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + getName() + "." + groupName,
+                    getMetadataBlock().getName());
+
+    		SelectItemGroup selectItemGroup = new SelectItemGroup(groupLabel);
+        	selectItemGroup.setSelectItems(groupsMap.get(groupName).toArray(new SelectItem[0]));
+        	groupedList.add(selectItemGroup);
+    	}
+    	return groupedList;
+    }
+
+    public Collection<SelectItem> getSortedByLocaleValues() {
+    	
+    	ArrayList<SelectItem> sortedList = new ArrayList<SelectItem>();
+    	
+    	for (ControlledVocabularyValue value:controlledVocabularyValues) {
+			sortedList.add(new SelectItem(value, value.getLocaleStrValue()));
+    	}
+    	sortedList.sort(new Comparator<SelectItem>() {
+
+			@Override
+			public int compare(SelectItem selectItem1, SelectItem selectItem2) {
+				return selectItem1.getLabel().compareToIgnoreCase(selectItem2.getLabel());
+			}
+		});
+    	return sortedList;
     }
 
     public void setControlledVocabularyValues(Collection<ControlledVocabularyValue> controlledVocabularyValues) {

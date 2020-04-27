@@ -22,7 +22,7 @@
                      converter="controlledVocabularyValueConverter"
                      style="width: auto !important; max-width:100%; min-width:200px;"
                      styleClass="form-control primitive"
-                     rendered="#{!datasetField.datasetFieldType.allowMultiples}"
+                     rendered="#{!datasetField.datasetFieldType.allowMultipless and !inputRenderer.isSortByLocalisedStringsOrder()}"
                      filter="true"
                      filterMatchMode="contains"
     >
@@ -30,12 +30,38 @@
         <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
     </p:selectOneMenu>
     
-    <p:selectCheckboxMenu id="multiVocabularySelect" rendered="#{datasetField.datasetFieldType.allowMultiples}"
+    <p:selectOneMenu id="singleVocabularyLocaleStringSortSelect"
+                     value="#{datasetField.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
+                     rendered="#{!datasetField.datasetFieldType.allowMultiples and inputRenderer.isSortByLocalisedStringsOrder()}">
+        <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
+        <f:selectItems value="#{datasetField.datasetFieldType.sortedByLocaleValues}" />
+    </p:selectOneMenu>
+
+    <p:selectCheckboxMenu id="multiVocabularySelect" 
+    			rendered="#{datasetField.datasetFieldType.allowMultiples and !datasetField.datasetFieldType.hasGroupedValue() and !inputRenderer.isSortByLocalisedStringsOrder()}"
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                 style="width: 100%" panelStyleClass="without-select-all"
                 multiple="true" label="#{bundle.select}"
                 filter="true" filterMatchMode="contains">
         <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
+    </p:selectCheckboxMenu>
+    
+    <p:selectCheckboxMenu id="multiVocabularyLocaleStringSelect" 
+    			rendered="#{datasetField.datasetFieldType.allowMultiples and !datasetField.datasetFieldType.hasGroupedValue() and inputRenderer.isSortByLocalisedStringsOrder()}"
+                value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                style="width: 100%" panelStyleClass="without-select-all"
+                multiple="true" label="#{bundle.select}"
+                filter="true" filterMatchMode="startsWith">
+        <f:selectItems value="#{datasetField.datasetFieldType.sortedByLocaleValues}" />
+    </p:selectCheckboxMenu>
+
+    <p:selectCheckboxMenu id="multiVocabularyGroupedSelect" rendered="#{datasetField.datasetFieldType.allowMultiples and datasetField.datasetFieldType.hasGroupedValue()}"
+                value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
+                style="width: 100%" panelStyleClass="without-select-all"
+                multiple="true" label="#{bundle.select}"
+                filter="true" filterMatchMode="startsWith">
+        
+        <f:selectItems value="#{datasetField.datasetFieldType.groupedValues}" />
     </p:selectCheckboxMenu>
     
     <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty datasetField.validationMessage}">

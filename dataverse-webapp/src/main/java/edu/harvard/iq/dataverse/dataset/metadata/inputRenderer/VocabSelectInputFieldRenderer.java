@@ -4,7 +4,20 @@ import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 
 public class VocabSelectInputFieldRenderer implements InputFieldRenderer {
 
-    // -------------------- GETTERS --------------------
+    /**
+     * Sort vocabulary values list in localized labels order 
+     */
+	private boolean sortByLocalisedStringsOrder = false;
+
+	public VocabSelectInputFieldRenderer() {
+	}
+	
+	
+	public VocabSelectInputFieldRenderer(boolean sortByLocalisedStringsOrder) {
+		this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
+	}
+
+	// -------------------- GETTERS --------------------
     
     /**
      * {@inheritDoc}
@@ -36,4 +49,7 @@ public class VocabSelectInputFieldRenderer implements InputFieldRenderer {
         return false;
     }
 
+    public boolean isSortByLocalisedStringsOrder() {
+    	return sortByLocalisedStringsOrder;
+    }
 }

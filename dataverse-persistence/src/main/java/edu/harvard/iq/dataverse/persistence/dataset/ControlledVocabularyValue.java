@@ -123,7 +123,18 @@ public class ControlledVocabularyValue implements Serializable {
         }
     }
 
-    @Override
+    @Column
+    private String displayGroup;
+
+    public String getDisplayGroup() {
+		return displayGroup;
+	}
+
+	public void setDisplayGroup(String displayGroup) {
+		this.displayGroup = displayGroup;
+	}
+
+	@Override
     public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
