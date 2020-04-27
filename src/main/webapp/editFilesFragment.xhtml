@@ -95,7 +95,6 @@
                         
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
-                            setupDirectUpload(#{EditDatafilesPage.directUploadEnabled()});
                         });
                         //]]>
                     </script>
@@ -127,7 +126,7 @@
 
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
-                                  auto="#{!(EditDatafilesPage.directUploadEnabled())}"
+                                  auto="#{!(systemConfig.directUploadEnabled())}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   listener="#{EditDatafilesPage.handleFileUpload}" 

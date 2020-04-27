@@ -1766,10 +1766,6 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    public boolean directUploadEnabled() {
-    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
-    }
-    
     private String init(boolean initFull) {
   
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
@@ -1945,7 +1941,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             //Wait until the create command before actually getting an identifier, except if we're using directUpload  
         	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
-            if ( isEmpty(dataset.getIdentifier()) && directUploadEnabled() ) {
+            if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
             	CommandContext ctxt = commandEngine.getContext();
             	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
                 dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
