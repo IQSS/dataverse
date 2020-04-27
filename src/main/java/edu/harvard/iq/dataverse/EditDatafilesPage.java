@@ -346,10 +346,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return hasPermission;
     }
     
-    public boolean directUploadEnabled() {
-    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
-    }
-    
     public void reset() {
         // ?
     }
@@ -481,12 +477,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
         
-    	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
-        if ( isEmpty(dataset.getIdentifier()) && directUploadEnabled() ) {
-        	CommandContext ctxt = commandEngine.getContext();
-        	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-            dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
-        }
+
 
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
