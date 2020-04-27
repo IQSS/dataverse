@@ -1544,8 +1544,9 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 		JsonObjectBuilder urlsBuilder = null;
         String storageIdentifier = null;
 		try {
-			urlsBuilder = s3io.generateTemporaryS3UploadUrls(fileSize);
-        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+			urlsBuilder = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
+        	
         } catch (IOException io) {
         	logger.warning(io.getMessage());
         	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));

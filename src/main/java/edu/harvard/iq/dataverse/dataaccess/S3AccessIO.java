@@ -910,7 +910,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return urlString;
     }
     
-	public JsonObjectBuilder generateTemporaryS3UploadUrls(long fileSize) {
+	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) {
 		
 		long chunkSize=5*1024*1024l; //5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
 		JsonObjectBuilder response = Json.createObjectBuilder();
@@ -951,7 +951,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 				}
 				response.add(Integer.toString(i), urlString);
 			}
-		} catch (IOException e) {
+			  response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
+			  response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
+			} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
