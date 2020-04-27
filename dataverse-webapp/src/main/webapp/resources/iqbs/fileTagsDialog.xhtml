@@ -3,7 +3,9 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf" xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+      xmlns:of="http://omnifaces.org/functions"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite">
 
 
 <composite:interface>
@@ -23,9 +25,9 @@
         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
         <ui:fragment class="form-horizontal">
             <div class="form-group text-left">
-                <label for="selectedTagsList" class="col-sm-4 control-label">
+                <div class="col-sm-4 control-label section-title">
                     #{bundle['file.editTagsDialog.selectedTags']}
-                </label>
+                </div>
                 <div class="col-sm-8">
                     <p:outputPanel id="selectedTagsList">
                         <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}"
@@ -45,12 +47,14 @@
                 </div>
             </div>
             <div class="form-group text-left">
-                <label for="fileTagsMenuDS" class="col-sm-4 control-label">
+                <div jsf:id="fileTagsMenuDSsectionLabel" class="col-sm-4 control-label section-title">
                     #{bundle['file.editTagsDialog.select']}
-                </label>
+                </div>
                 <div class="col-sm-8">
                     <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
-                                          value="#{FileTagModal.selectedFileMetadataTags}" label="#{bundle.select}">
+                                          widgetVar="fileTagsMenuDS"
+                                          value="#{FileTagModal.selectedFileMetadataTags}" label="#{bundle.select}"
+                                          data-extra-label="some extra label">
 
                         <p:ajax event="toggleSelect"
                                 update="selectedTagsList"/>
@@ -63,9 +67,9 @@
                 </div>
             </div>
             <div class="form-group text-left">
-                <label for="fileTagAddNewDS" class="col-sm-4 control-label">
+                <h:outputLabel for="fileTagAddNewDS" styleClass="col-sm-4 control-label">
                     #{bundle['file.editTagsDialog.add']}
-                </label>
+                </h:outputLabel>
                 <div class="col-sm-8">
                     <div class="row form-inline">
                         <div class="col-sm-12">
@@ -85,12 +89,13 @@
                 </div>
             </div>
             <div class="form-group text-left" jsf:rendered="#{FileTagModal.isTabularFile()}">
-                <label for="tabularDataTagsDSPage" class="col-sm-4 control-label">
+                <div jsf:id="tabularDataTagsDSPageSectionLabel" class="col-sm-4 control-label section-title">
                     #{bundle['file.tabularDataTags']}
-                </label>
+                </div>
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
                     <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
+                                          widgetVar="tabularDataTagsDSPage"
                                           value="#{FileTagModal.selectedDataFileTags}"
                                           label="#{bundle.select}"
                                           filter="false">
@@ -106,9 +111,9 @@
                 </div>
             </div>
             <div class="form-group text-left" jsf:rendered="#{cc.attrs.showRemoveUnusedTags}">
-                <label class="col-sm-4 control-label">
+                <div class="col-sm-4 control-label section-title">
                     #{bundle['dataset.removeUnusedFileTags.label']}
-                </label>
+                </div>
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
                     <p:selectBooleanCheckbox id="removeUnused"
@@ -128,6 +133,7 @@
                              value="#{bundle.cancel}"
                              onsuccess="PF('#{cc.attrs.dialogWidgetId}').hide();"/>
         </div>
+        
     </p:dialog>
 </composite:implementation>
 

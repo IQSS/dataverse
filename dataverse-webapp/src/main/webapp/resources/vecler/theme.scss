@@ -123,6 +123,30 @@ body {
 	color: $main-text-color;
 }
 
+h1 {
+    font-size: 1.6em;
+}
+h2 {
+    font-size: 1.5em;
+}
+h3 {
+    font-size: 1.3em;
+}
+h4 {
+    font-size: 1.2em;
+}
+h5 {
+    font-size: 1.1em;
+}
+h6 {
+    font-size: 1em;
+}
+h1, h2, h3, h4, h5, h6 {
+    &.header-inline {
+        display: inline;
+    }
+}
+
 .text-brand {
 	color: $icon-color;
 }
@@ -299,6 +323,9 @@ body {
 		font-weight: normal;
 	}
 }
+.inline-message {
+    display: inline-block;
+}
 
 @mixin link-color {
 	color: $link-color;
@@ -342,6 +369,9 @@ a,
 		}
 	}
 }
+.open > form > .dropdown-menu {
+    display: block; /* allows for dropdown-menu to be directly in form tag */
+}
 
 #breadcrumbNavBlock .breadcrumbActive {
 	color: $main-text-color;
@@ -373,6 +403,13 @@ span.glyphicon-question-sign.tooltip-icon {
 	font-family: $font-main;
 	font-size: 15px;
 	color: #de8800;
+}
+
+.section-title {
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    font-weight: 700;
 }
 
 .ui-widget-content .ui-selectonemenu.ui-state-default {
@@ -601,11 +638,26 @@ textarea {
 	font-family: $font-monospace;
 }
 
-.form-horizontal .control-label {
-	padding-top: 4px;
-	padding-bottom: 5px;
-	color: $main-text-color;
+.form-horizontal {
+    .control-label {
+	   padding-top: 4px;
+	   padding-bottom: 5px;
+	   color: $main-text-color;
+    }
+    /* Overriding bootstrap defaults */
+    legend.control-label {
+        border-bottom: none;
+        font-size: inherit;
+        display: inherit;
+        
+        max-width: 100%;
+        font-weight: 700;
+    }
 }
+.ui-outputlabel.ui-state-error {
+    background: inherit;
+}
+
 
 .form-field-group {
 	border: 1px solid $gray-border-color;
@@ -1512,8 +1564,8 @@ $navbar-height: 6.8em;
 }
 
 .navbar-default #topNavBar .navbar-nav {
-	> li, > form {
-		> a  {
+	> li {
+		> a, > form > a {
 			color: $main-text-color;
 			border-radius: $border-radius;
 			text-shadow: none;
@@ -1525,6 +1577,9 @@ $navbar-height: 6.8em;
 			.caret {
 				color: $icon-color;
 			}
+            &:focus {
+                text-decoration: none;
+            }
 		}
 	}
 
@@ -1655,7 +1710,7 @@ $navbar-height: 6.8em;
 		text-decoration: none !important;
 		cursor: pointer;
 
-		&::before {
+		span.contrast-icon::before {
 			content: "Aa";
 		}
 	}
@@ -2428,10 +2483,13 @@ div.filesTable {
 	}
 	
 	.button-block {
-		border-top: 1px solid $gray-border-color;
-		margin: 49px 0 0 0;
-		padding-top: 27px;
-		padding-bottom: 31px;
+		
+		&:not(.not-main-dialog-button-block) {
+		    border-top: 1px solid $gray-border-color;
+		    margin: 49px 0 0 0;
+		    padding-top: 27px;
+		    padding-bottom: 31px;
+		}
 
 		button, a, input[type="button"] {
 			padding: 6px 12px;
@@ -2523,7 +2581,7 @@ div.filesTable {
 	.ui-dialog-content {
 		position: static;
 
-		.button-block {
+		.button-block:not(.not-main-dialog-button-block) {
 			position: absolute;
 			left: 15px;
 			right: 15px;

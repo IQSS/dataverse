@@ -216,7 +216,6 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
 #dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
-#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName {font-size: 1.3em;}
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
@@ -709,7 +708,8 @@ div.filesTable .col-file-thumb div.thumbnail-block {position:relative;width:64px
 div.filesTable .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div.filesTable .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div.filesTable .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div.filesTable .col-file-metadata {padding-left:0; padding-right:0; border-left:0; border-right:0; text-align:left; font-weight:normal;}
+div.filesTable .col-file-metadata {padding-left:0; padding-right:0; border-left:0; border-right:0; text-align:left;}
+div.filesTable td.col-file-metadata {font-weight:normal;}
 div.filesTable td.col-file-action {padding-left:0; border-left:0;}
 div.filesTable div.file-tags-block {padding-bottom:2px;}
 div.filesTable div.file-tags-block a.ui-commandlink {font-size:12px;}
@@ -838,7 +838,7 @@ thead.ui-datatable-scrollable-theadclone {display:none}
 }
 
 #fileImageTitle span.glyphicon-lock, #fileImageTitle span.icon-unlock {font-size:1.5em;}
-#fileImageTitle #file-title-block span.file-title-label {font-size:1.5em;font-weight:bold;margin-right:.5em;}
+#fileImageTitle #file-title-block .file-title-label {font-weight:bold;margin-top:0;margin-bottom:0;margin-right:.5em;}
 #fileImageTitle #file-title-block span.label {margin-right:.5em;vertical-align: text-top;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
 #fileImageTitle #deaccession-reason-block.col-xs-12 {padding-left:15px;padding-right:15px;}

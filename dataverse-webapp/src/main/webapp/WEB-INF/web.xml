@@ -26,7 +26,7 @@
             See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
-<!--        <param-value>Development</param-value>-->
+<!--        <param-value>Development</param-value> -->
         <param-value>Production</param-value>
     </context-param>
     <context-param>

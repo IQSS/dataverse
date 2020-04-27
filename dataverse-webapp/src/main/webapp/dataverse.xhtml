@@ -12,8 +12,13 @@
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
+        <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
+        
         <ui:param name="pageTitle" value="#{DataversePage.dataverse.name}"/>
         <ui:param name="dataverse" value="#{DataversePage.dataverse}"/>
+        <ui:define name="additional_meta_header">
+            <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
+        </ui:define>
         <ui:define name="body">
             <f:metadata>
                 <f:viewParam name="id" value="#{DataversePage.dataverse.id}"/>
@@ -83,12 +88,12 @@
                                     <f:param name="DO_VALIDATION" value="false"/>
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}"
                                                                  value="#{DataversePage.dataverse}"/>
-                                    <span class="glyphicon glyphicon-envelope"/> #{bundle['contact.contact']}
+                                    <span class="glyphicon glyphicon-envelope" aria-hidden="true"/> #{bundle['contact.contact']}
                                 </p:commandLink>
                                 <p:commandLink type="button" styleClass="text-button btn-share bootstrap-button-tooltip"
                                                title="#{bundle['dataverse.share.dataverseShare']}"
                                                oncomplete="PF('shareDialog').show();sharrre();">
-                                    <span class="glyphicon glyphicon-share"/> #{bundle['share']}
+                                    <span class="glyphicon glyphicon-share" aria-hidden="true"/> #{bundle['share']}
                                 </p:commandLink>
                             </div>
                             <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}"
@@ -97,8 +102,8 @@
     
                                 <div id="sharrre-widget"
                                      data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}"
-                                     data-text="#{bundle['dataverse.share.dataverseShare.shareText']}">
-                                </div>
+                                     data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"
+                                     data-language="#{dataverseSession.localeCode}" />
     
                                 <div class="button-block">
                                     <button type="button" onclick="PF('shareDialog').hide()" class="btn btn-default" value="#{bundle.close}">
@@ -264,7 +269,6 @@
 
                     <ui:fragment
                             rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and empty SearchIncludeFragment.query}">
-                        <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
                         <ui:fragment
                                 rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">
                             <div id="dataverseDesc" style="margin-bottom:1em;">

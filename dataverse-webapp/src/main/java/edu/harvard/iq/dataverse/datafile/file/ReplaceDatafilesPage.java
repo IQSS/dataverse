@@ -22,7 +22,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
@@ -71,7 +73,6 @@ public class ReplaceDatafilesPage implements Serializable {
     private DataFile fileToBeReplaced;
     private DataFile fileToBeSaved;
     private Map<String, String> temporaryThumbnailsMap = new HashMap<>();
-    private List<FileMetadata> selectedFiles;
     private List<String> tabFileTags;
     private FileMetadata fileMetadataSelectedForTagsPopup;
     private boolean uploadInProgress;
@@ -133,10 +134,6 @@ public class ReplaceDatafilesPage implements Serializable {
         return dataset;
     }
 
-    public List<FileMetadata> getSelectedFiles() {
-        return selectedFiles;
-    }
-
     // -------------------- LOGIC --------------------
 
     public String init() {
@@ -168,11 +165,6 @@ public class ReplaceDatafilesPage implements Serializable {
 
         fileToBeSaved = dataFile.get();
 
-        if (!uFile.getContentType().equals(fileToBeReplaced.getContentType())) {
-            PrimeFaces.current().ajax().update("replaceFileForm:fileTypeDifferentPopup");
-            PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
-        }
-
         return StringUtils.EMPTY;
     }
 
@@ -181,15 +173,15 @@ public class ReplaceDatafilesPage implements Serializable {
         if (uploadedFile.isFailure()) {
 
             if (uploadedFile.getCause() instanceof FileReplaceException) {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"));
+                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"));
             } else {
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.generic"));
+                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.generic"));
             }
             return true;
         }
 
         if (uploadedFile.get().getChecksumValue().equals(fileToBeReplaced.getChecksumValue())) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_same_as_replacement"));
+            JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_same_as_replacement"));
             return true;
         }
 
@@ -293,6 +285,15 @@ public class ReplaceDatafilesPage implements Serializable {
     }
 
     public String saveReplacement() {
+        if (!fileToBeSaved.getContentType().equals(fileToBeReplaced.getContentType())) {
+            PrimeFaces.current().ajax().update("replaceFileForm:fileTypeDifferentPopup");
+            PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
+            return StringUtils.EMPTY;
+        }
+        return saveReplacementFile();
+    }
+
+    public String saveReplacementNoFileTypeCheck() {
         return saveReplacementFile();
     }
 
@@ -341,26 +342,6 @@ public class ReplaceDatafilesPage implements Serializable {
 
     public void refreshTagsPopUp(FileMetadata fm) {
         setFileMetadataSelectedForTagsPopup(fm);
-    }
-
-    /**
-     * @param fm
-     * @todo For consistency, we should disallow users from setting the
-     * thumbnail to a restricted file. We enforce this rule in the newer
-     * workflow in dataset-widgets.xhtml. The logic to show the "Set Thumbnail"
-     * button is in editFilesFragment.xhtml and it would be nice to move it to
-     * Java since it's getting long and a bit complicated.
-     */
-    public void setFileMetadataSelectedForThumbnailPopup(FileMetadata fm) {
-
-    }
-
-    public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
-        return datasetThumbnail != null && !datasetThumbnail.isFromDataFile();
-    }
-
-    public void setFileMetadataSelectedForIngestOptionsPopup(FileMetadata fm) {
     }
 
     public boolean isLockedFromEdits() {
@@ -449,6 +430,8 @@ public class ReplaceDatafilesPage implements Serializable {
         int status = 0;
 
         try {
+            HttpClient httpclient = new HttpClient();
+            httpclient.getParams().setParameter(HttpClientParams.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
             status = new HttpClient().executeMethod(dropBoxMethod);
             if (status == 200) {
                 return dropBoxMethod.getResponseBodyAsStream();
@@ -503,10 +486,6 @@ public class ReplaceDatafilesPage implements Serializable {
 
     public void setFileId(long fileId) {
         this.fileId = fileId;
-    }
-
-    public void setSelectedFiles(List<FileMetadata> selectedFiles) {
-        this.selectedFiles = selectedFiles;
     }
 
     public void setDropBoxSelection(String dropBoxSelection) {

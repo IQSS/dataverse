@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -452,7 +453,9 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
         ArrayList<ProvEntityFileData> fd = new ArrayList<>();
 
         for (ProvEntityFileData s : getProvJsonParsedEntitiesArray()) {
-            if (s.entityName.contains(query) || s.fileName.contains(query) || s.fileType.contains(query)) {
+            if (StringUtils.contains(s.entityName, query) || 
+                    StringUtils.contains(s.fileName, query) ||
+                    StringUtils.contains(s.fileType, query)) {
                 fd.add(s);
             }
         }

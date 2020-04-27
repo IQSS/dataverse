@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
@@ -14,18 +13,19 @@
 
 <f:view locale="#{dataverseSession.localeCode}">
     <h:head>
-	<o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker" />
+        <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker" />
         <f:facet name="first">
             <o:resourceInclude path="/CustomizationFilesServlet?customFileType=analytics" />
             <title><h:outputText value="#{pageTitle}"/></title>
-	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
             <ui:remove><!-- We might want dc_meta_header or jsonld_header at the file level some day.--></ui:remove>
-	    <ui:insert name="dc_meta_header"></ui:insert>
-	    <ui:insert name="og_header"></ui:insert>
-	    <ui:insert name="jsonld_header"></ui:insert>
+            <ui:insert name="dc_meta_header"></ui:insert>
+            <ui:insert name="og_header"></ui:insert>
+            <ui:insert name="jsonld_header"></ui:insert>
+            <ui:insert name="additional_meta_header"></ui:insert>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-            <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
         </f:facet>
         <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
@@ -71,7 +71,7 @@
                 <ui:param name="showMessagePanel" value="#{showMessagePanel != null ? showMessagePanel : true}"/>
                 <ui:param name="loginRedirectPage" value="#{loginRedirectPage != null ? '?redirectPage='.concat(loginRedirectPage) : navigationWrapper.redirectPage}"/>
             </ui:include>
-            <div class="container" id="content">
+            <div class="container" id="content" role="main">
                 <ui:insert name="body">#{bundle.defaultBody}</ui:insert>
             </div>
             <!-- FOOTER BLOCK -->
@@ -99,15 +99,16 @@
                     </button>
                 </div>
             </p:dialog>
-            <script type="text/javascript" defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script type="text/javascript" defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/primefaces_locales.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
             <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
-                <script type="text/javascript" language="javascript" src="#{resource['js/shib/isPassive.js']}"></script>
+                <script src="#{resource['js/shib/isPassive.js']}"></script>
             </ui:fragment>
             <script>
                 //<![CDATA[

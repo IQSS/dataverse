@@ -6,6 +6,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
       xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs">
 
 <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
@@ -15,7 +16,7 @@
 
 <h:body>
 
-    <script type="text/javascript" src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}"></script>
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
                        var="termsOfUseTypeEnum"/>
@@ -34,16 +35,24 @@
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{ReplaceDatafilesPage.init}"/>
                 <f:viewAction
-                        action="#{dataverseHeaderFragment.initBreadcrumbs(ReplaceDatafilesPage.dataset, bundle['file.replaceFile'])}"/>
-                <f:viewAction
                         action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(ReplaceDatafilesPage.fileToBeReplaced, bundle['file.replaceFile'])}"/>
             </f:metadata>
+            
             <h:form id="replaceFileForm">
+                <p:focus context="replaceFileForm" rendered="#{facesContext.validationFailed}" />
+                
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                    </div>
+                </div>
+            
                 <ui:fragment>
-                    <div id="file-replace-original-block" class="col-sm-12">
-                        <label class="col-sm-2 control-label">
+                    <div id="file-replace-original-block" class="form-group row">
+                        <div class="col-sm-2 control-label section-title">
                             <span>#{bundle['file.replace.original']}</span>
-                        </label>
+                        </div>
                         <div class="col-sm-10">
                             <ui:include src="file-info-fragment.xhtml">
                                 <ui:param name="fileMetadata"
@@ -56,32 +65,18 @@
                 <o:importConstants
                         type="edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key"
                         var="settingEnum"/>
-                <div id="contentTabs">
-                    <div data-widget="content"
-                         class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-hidden-container ui-tabs-top"
-                         id="replaceFileForm:tabView">
-                        <ul role="tablist"
-                            class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-                            <li role="tab"
-                                class="ui-state-default ui-tabs-selected ui-state-active ui-corner-top">
-                                <a href="#replaceFileForm:tabView:dataFilesTab">#{bundle['files']}</a>
-                            </li>
-                        </ul>
-                        <div class="ui-tabs-panels">
-                            <div aria-hidden="false" role="tabpanel"
-                                 class="ui-tabs-panel ui-widget-content ui-corner-bottom"
-                                 id="replaceFileForm:tabView:dataFilesTab">
+                <div id="contentTabs" style="clear: both;">
                                 <div jsf:id="httpPanel" jsf:rendered="#{settingsWrapper.HTTPUpload}"
                                      class="panel panel-default">
-                                    <a role="tab" id="headingHTTP" data-toggle="collapse"
-                                         href="#panelCollapseHTTP"
+                                    <a id="headingHTTP" href="#panelCollapseHTTP"
                                          class="panel-heading text-info"
-                                         aria-controls="panelCollapseHTTP"
-                                         tabindex="0">
+                                         data-toggle="collapse"
+                                         aria-controls="panelCollapseHTTP" aria-expanded="true">
+                                        
                                         #{bundle['file.fromHTTP']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                                     </a>
-                                    <div id="panelCollapseHTTP" class="panel-collapse collapse in" role="tabpanel"
-                                         aria-labelledby="headingHTTP">
+                                    <div id="panelCollapseHTTP" class="panel-collapse collapse in"
+                                         aria-labelledby="headingHTTP" role="region">
                                         <div class="panel-body" jsf:id="httpUploadDisabledDueToExistingRsyncPackage"
                                              jsf:rendered="#{ReplaceDatafilesPage.dataset.getEditVersion().hasPackageFile and
                                               !ReplaceDatafilesPage.dataset.released}">
@@ -100,7 +95,7 @@
                                         </div>
                                         <div class="panel-body" jsf:id="contentOfHttpPanel">
                                             <p class="help-block">
-                                                <h:outputFormat value="#{bundle['file.selectToAdd.tipMoreInformation']}"
+                                                <h:outputFormat value="#{bundle['file.replace.upload.selectToReplace.tipMoreInformation']}"
                                                                 escape="false">
                                                     <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                                     <f:param value="#{settingsWrapper.guidesVersion}"/>
@@ -114,32 +109,24 @@
                                                           disabled="#{ReplaceDatafilesPage.lockedFromEdits || ReplaceDatafilesPage.fileToBeSaved != null}"
                                                           listener="#{ReplaceDatafilesPage.handleFileUpload}"
                                                           update="@form"
-                                                          label="#{bundle['file.selectToAddBtn']}"
-                                                          onstart="#{ReplaceDatafilesPage.uploadStarted()}; disableUploadButton();"
-                                                          onerror="uploadFailure(); enableUploadButton();"
+                                                          label="#{bundle['file.replace.upload.selectToReplaceBtn']}"
+                                                          onstart="#{ReplaceDatafilesPage.uploadStarted()};"
+                                                          onerror="uploadFailure();"
                                                           sizeLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MaxFileUploadSizeInBytes)}"
-                                                          fileLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MultipleUploadFilesLimit)}"
+                                                          fileLimit="1"
                                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"
+                                                          fileLimitMessage="#{bundle['file.replace.upload.error.onlyOneFile']}"
                                                           sequential="true"
-                                                          widgetVar="fileUploadWidget"/>
+                                                          widgetVar="fileUploadWidget">
+                                            </p:fileUpload>
 
                                             <script>
 
                                                 function uploadWidgetDropMsg() {
                                                     var fileUpload = $('div[id$="fileUpload"] div.ui-fileupload-content');
                                                     if ($(fileUpload).children('#dragdropMsg').length === 0) {
-                                                        $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.selectToAdd.dragdropMsg']}</div>');
+                                                        $(fileUpload).prepend('<div id="dragdropMsg">#{bundle['file.replace.upload.selectToReplace.dragdropMsg']}</div>');
                                                     }
-                                                }
-
-                                                function disableUploadButton() {
-                                                    $('div[id*="fileUpload"]').addClass("upload-in-progress");
-                                                    $('div[id*="fileUpload"] .ui-fileupload-buttonbar .ui-button').attr("tabindex", "-1");
-                                                }
-
-                                                function enableUploadButton() {
-                                                    $('div[id*="fileUpload"]').removeClass("upload-in-progress");
-                                                    $('div[id*="fileUpload"] .ui-fileupload-buttonbar .ui-button').attr("tabindex", "0");
                                                 }
 
                                                 $(document).ready(function () {
@@ -150,14 +137,14 @@
 
                                         <div jsf:id="dropboxBlock"
                                              jsf:rendered="#{settingsWrapper.isHasDropBoxKey() and !ReplaceDatafilesPage.isLockedFromEdits() }"
-                                             class="margin-top">
+                                             class="margin-top panel-body">
                                             <!-- Dropbox upload widget -->
                                             <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
                                             <h:inputText id="dropBoxSelectionInput" style="display:none"
                                                          value="#{ReplaceDatafilesPage.dropBoxSelection}"/>
                                             <p:commandButton id="dropBoxButton"
                                                              actionListener="#{ReplaceDatafilesPage.handleDropBoxUpload}"
-                                                             update="@none" style="display:none;"/>
+                                                             update="@form" style="display:none;"/>
                                             <p:commandButton id="dropBoxUserButton"
                                                              disabled="#{ReplaceDatafilesPage.fileToBeSaved != null}"
                                                              value="#{bundle['file.fromDropbox']}"
@@ -179,40 +166,14 @@
                                                  rendered="#{!empty ReplaceDatafilesPage.fileMetadatas}"
                                                  rowIndexVar="rowNum"
                                                  rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                                                 rowSelectMode="checkbox"
-                                                 selection="#{ReplaceDatafilesPage.selectedFiles}"
                                                  var="fileMetadata"
                                                  widgetVar="filesTable"
-                                                 emptyMessage="#{ReplaceDatafilesPage.fileToBeSaved != null ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
+                                                 emptyMessage="#{bundle['file.noUploadedFiles.tip']}"
                                                  styleClass="filesTable"
                                     >
-                                        <f:facet name="header">
-                                            <div jsf:id="filesHeaderBlock" class="row">
-                                                <div id="filesHeaderCount" class="col-xs-6 text-left">
-                                                    <!-- Files Count -->
-                                                    <h:outputFormat value="#{bundle['file.count.shown']}"
-                                                                    styleClass="highlightBold"
-                                                                    rendered="#{!empty ReplaceDatafilesPage.fileMetadatas}">
-                                                        <f:param
-                                                                value="#{ReplaceDatafilesPage.fileMetadatas.size()}"/>
-                                                    </h:outputFormat>
-                                                </div>
-                                            </div>
-                                        </f:facet>
-                                        <p:column selectionMode="multiple" class="col-select-width text-center"
-                                                  style="width:40px !important;"/>
                                         <p:column class="col-file-thumb text-center"
-                                                  style="width:73px !important;padding:4px 10px;">
+                                                  style="width:73px !important;padding:4px 10px;" ariaHeaderText="#{bundle['file.replace.column.icon.ariaHeader']}">
                                             <div class="thumbnail-block">
-                                                <!-- Thumbnail Preview -->
-                                                <span class="file-thumbnail-preview-img"
-                                                      jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
-                                                      data-container="body" data-toggle="popover"
-                                                      data-placement="top" data-trigger="hover" data-html="true"
-                                                      data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                <p:graphicImage
-                                        value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
-                            </span>
                                                 <!-- Default Icon -->
                                                 <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted"
                                                       jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
@@ -228,29 +189,22 @@
                                                      jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED }">
                                                     <span class="icon-unlock text-success"/>
                                                 </div>
-                                                <!-- Dataset Thumbnail -->
-                                                <span id="datasetThumbnail"
-                                                      class="bg-info text-info text-center small show"
-                                                      jsf:rendered="#{ReplaceDatafilesPage.isDesignatedDatasetThumbnail(fileMetadata)}"
-                                                      data-toggle="tooltip" data-placement="bottom"
-                                                      title="#{bundle['file.selectedThumbnail.tip']}">
-                                #{bundle['file.selectedThumbnail']}
-                            </span>
                                             </div>
                                         </p:column>
-                                        <p:column class="col-file-metadata">
+                                        <p:column class="col-file-metadata" headerText="#{bundle['file.editSingle.column.file.header']}">
                                             <ui:fragment>
-                                                <label class="control-label" for="fileName"
+                                                <p:outputLabel styleClass="control-label" for="fileName" indicateRequired="false"
                                                        style="margin-right:1em;margin-bottom:.5em;">
                                                     #{bundle['file.fileName']}
-                                                </label>
+                                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                                </p:outputLabel>
                                                 <p:inputText id="fileName" value="#{fileMetadata.label}"
                                                              style="width:60%; margin-bottom:.5em;">
                                                     <p:ajax event="change" update="fileName"/>
                                                 </p:inputText>
-                                                <p:message for="fileName"/>
+                                                <p:message for="fileName" display="text"/>
                                             </ui:fragment>
-                                            <!-- TYPE + SIZE + DATE + CHECKSUM -->
+                                            <!-- TYPE + SIZE + CHECKSUM -->
                                             <div class="text-muted small">
                                                 <h:outputText id="fileTypeOutputRegular"
                                                               value="#{fileMetadata.dataFile.friendlyType}"
@@ -258,33 +212,18 @@
                                                 <h:outputText id="fileTypeOutputTabular"
                                                               value="#{bundle['file.type.tabularData']}"
                                                               rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                                <h:outputText id="fileCreatePublishDate"
-                                                              value=" - #{fileMetadata.getFileDateToDisplay()}"
-                                                              rendered="#{!(empty fileMetadata.id)}"/>
                                                 <div class="checksum-block">
                                                     <h:outputText id="fileChecksum"
                                                                   value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};"
                                                                   rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
                                                 </div>
                                             </div>
-                                            <!-- UNF + Variables, Obsersvations -->
-                                            <div class="text-muted small"
-                                                 jsf:rendered="#{fileMetadata.dataFile.tabularData}">
-                                                <h:outputText id="fileNumVars"
-                                                              value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "
-                                                              rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                                <h:outputText id="fileNumObs"
-                                                              value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}"
-                                                              rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                                <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}"
-                                                              rendered="#{!empty fileMetadata.dataFile.unf}"/>
-                                            </div>
                                             <div class="fileDescription">
                                                 <ui:fragment>
-                                                    <label class="control-label" for="fileDescription"
+                                                    <h:outputLabel styleClass="control-label" for="fileDescription"
                                                            style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                                         #{bundle.description}
-                                                    </label>
+                                                    </h:outputLabel>
                                                     <p:inputTextarea id="fileDescription" immediate="true" rows="2"
                                                                      cols="40" value="#{fileMetadata.description}"
                                                                      style="width:60%; margin-top:.5em;">
@@ -310,41 +249,26 @@
                                                 </ui:fragment>
                                             </div>
                                         </p:column>
-                                        <p:column class="col-file-action text-right">
+                                        <p:column class="col-file-action text-right" headerText="#{bundle['file.editSingle.column.action.header']}">
                                             <f:facet name="header" class="col-file-action text-right">
-                                                <div jsf:id="editFilesRestrictDeletePanel"
-                                                     style="margin-right:14px;" class="btn-group"
-                                                     jsf:rendered="#{!empty ReplaceDatafilesPage.fileMetadatas and !ReplaceDatafilesPage.dataset.getEditVersion().hasPackageFile}">
-                                                    <button type="button"
-                                                            class="btn btn-default dropdown-toggle"
-                                                            data-toggle="dropdown">
-                                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']}
-                                                        <span class="caret"/>
-                                                    </button>
-                                                    <ul class="dropdown-menu multi-level pull-right text-left"
-                                                        role="menu">
-                                                        <li class="#{ReplaceDatafilesPage.isLockedFromEdits() ? 'disabled' : ''}">
-                                                            <p:commandLink onclick="checkFilesSelected();">
-                                                                <h:outputText value="#{bundle['file.delete']}"/>
-                                                            </p:commandLink>
-                                                        </li>
-                                                    </ul>
-                                                </div>
                                             </f:facet>
                                             <div style="margin-right:14px;" class="btn-group">
-                                                <button type="button"
+                                                <button id="editFile_#{rowNum}"
+                                                        type="button"
                                                         class="btn btn-default btn-access dropdown-toggle"
                                                         data-toggle="dropdown"
-                                                        disabled="#{ReplaceDatafilesPage.isLockedFromEdits() ? 'disabled' : ''}">
-                                                    <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']}
+                                                        disabled="#{ReplaceDatafilesPage.isLockedFromEdits() ? 'disabled' : ''}"
+                                                        aria-haspopup="true" aria-expanded="false">
+                                                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> #{bundle['file.editFile']}
                                                     <span class="caret"/>
                                                 </button>
                                                 <ul class="dropdown-menu multi-level pull-right text-left"
-                                                    role="menu">
+                                                    role="menu" aria-labelledby="editFile_#{rowNum}">
                                                     <ui:fragment
                                                             rendered="#{settingsWrapper.provCollectionEnabled}">
-                                                        <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}">
+                                                        <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}" role="none">
                                                             <p:commandLink id="fileProvenanceButton"
+                                                                           pt:role="menuitem"
                                                                            update="@form"
                                                                            oncomplete="PF('editProvenancePopup').show();">
                                                                 <f:actionListener
@@ -354,8 +278,9 @@
                                                         </li>
                                                     </ui:fragment>
 
-                                                    <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}">
+                                                    <li class="#{ReplaceDatafilesPage.isLockedFromEdits()  ? 'disabled' : ''}" role="none">
                                                         <p:commandLink id="fileCategoriesButton"
+                                                                       pt:role="menuitem"
                                                                        actionListener="#{ReplaceDatafilesPage.refreshTagsPopUp(fileMetadata)}"
                                                                        action="#{FileTagModal.initForSingleFile(fileMetadata, ReplaceDatafilesPage.dataset)}"
                                                                        update="@form"
@@ -363,31 +288,9 @@
                                                             #{bundle['file.tags']}
                                                         </p:commandLink>
                                                     </li>
-                                                    <li>
-                                                        <p:commandLink id="fileSetThumbnailBtn"
-                                                                       rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and not ReplaceDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
-                                                                       actionListener="#{ReplaceDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                                                                       update="@form"
-                                                                       oncomplete="PF('fileSetThumbnail').show()">
-                                                            #{bundle['file.setThumbnail']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li>
-                                                        <p:commandLink id="fileSetThumbnailBtn2"
-                                                                       rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image and ReplaceDatafilesPage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
-                                                                       actionListener="#{ReplaceDatafilesPage.setFileMetadataSelectedForThumbnailPopup(fileMetadata)}"
-                                                                       oncomplete="PF('fileThumbnailConfirm').show()">
-                                                            #{bundle['file.setThumbnail']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li>
-                                                        <p:commandLink id="advancedIngestOptionsButton"
-                                                                       rendered="#{((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssPorFile(fileMetadata.dataFile))
-                                                               or ((empty fileMetadata.dataFile.id) and dataFileServiceBean.isSpssSavFile(fileMetadata.dataFile))}"
-                                                                       actionListener="#{ReplaceDatafilesPage.setFileMetadataSelectedForIngestOptionsPopup(fileMetadata)}"
-                                                                       update="@form"
-                                                                       oncomplete="PF('fileAdvancedOptions').show()">
-                                                            #{bundle['file.advancedIngestOptions']}
+                                                    <li class="#{ReplaceDatafilesPage.isLockedFromEdits() ? 'disabled' : ''}" role="none">
+                                                        <p:commandLink onclick="PF('deleteFileConfirmation').show();" pt:role="menuitem">
+                                                            <h:outputText value="#{bundle['file.delete']}"/>
                                                         </p:commandLink>
                                                     </li>
                                                 </ul>
@@ -396,9 +299,7 @@
                                     </p:dataTable>
 
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
                 <p:fragment id="editDataFilesButtons">
@@ -406,9 +307,10 @@
                         <p:outputPanel id="filesButtons">
                             <div jsf:rendered="#{!(empty ReplaceDatafilesPage.fileMetadatas)}">
                                 <p:commandButton value="#{bundle.saveChanges}" id="datasetSave"
+                                                 process="@form"
                                                  update="@form,:messagePanel"
-                                                 oncomplete="$(document).scrollTop(0);"
                                                  action="#{ReplaceDatafilesPage.saveReplacement()}"/>
+                                
                                 <p:commandButton id="cancel" value="#{bundle.cancel}"
                                                  action="#{ReplaceDatafilesPage.returnToFileLandingPage()}"
                                                  process="@this" update="@form"
@@ -433,10 +335,10 @@
                             class="glyphicon glyphicon-warning-sign"/> #{ReplaceDatafilesPage.getDifferentContentTypeMessage()}
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide();enableUploadButton();"
-                                         action="#{ReplaceDatafilesPage.deleteFiles()}"
-                                         update="@form"/>
-                        <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()"
+                        <p:commandButton value="#{bundle.yesSaveChanges}"
+                                         update="@form,:messagePanel"
+                                         action="#{ReplaceDatafilesPage.saveReplacementNoFileTypeCheck()}"/>
+                        <p:commandButton value="#{bundle.noCancel}" onclick="PF('fileTypeDifferentPopup').hide()"
                                          type="button"/>
                     </div>
                 </p:dialog>
@@ -460,7 +362,7 @@
                     </ui:fragment>
                     <div class="button-block">
                         <p:commandButton value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()"
-                                         oncomplete="window.scrollTo(0, 0);deleteFinished();enableUploadButton()"
+                                         oncomplete="window.scrollTo(0, 0);deleteFinished();"
                                          update="@form" action="#{ReplaceDatafilesPage.deleteFiles()}"/>
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteFileConfirmation').hide()"
                                          type="button"/>
@@ -468,6 +370,9 @@
                 </p:dialog>
                 <ui:include rendered="#{settingsWrapper.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
 
+                <script type="text/javascript" src="/resources/js/dropins.js" id="dropboxjs"
+                        data-app-key="#{settingsWrapper.dropBoxKey}"/>
+                        
                 <script type="text/javascript">
 
                     function deleteFinished() {
@@ -494,6 +399,7 @@
                                 // Pass the JSON-ized output of the Chooser to the backing bean,
                                 // via a hidden input field:
                                 $('input[id$="dropBoxSelectionInput"]').val(JSON.stringify(files));
+                                console.log(JSON.stringify(files));
                                 //alert(JSON.stringify(files));
                                 // Trigger the upload processing method in the backing
                                 // bean, via an invisible commandButton:

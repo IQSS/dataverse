@@ -31,7 +31,7 @@
             </ui:repeat>
         </div>
         <div class="button-block">
-            <p:commandLink type="button" styleClass="btn btn-default"  
+            <p:commandLink styleClass="btn btn-default"  
                            action="#{FileDownloadRequestHelper.requestAccessIndirect()}"
                            update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
                 #{bundle['acceptTerms']}

@@ -5,7 +5,8 @@
         xmlns:p="http://primefaces.org/ui"
         xmlns:jsf="http://xmlns.jcp.org/jsf"
         xmlns:composite="http://xmlns.jcp.org/jsf/composite"
-      xmlns:c="http://java.sun.com/jsp/jstl/core">
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+        xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
         
 <composite:interface>
     <composite:attribute name="fileMetadata" required="true" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"/>
@@ -73,6 +74,7 @@
             <ui:repeat var="tool" value="#{cc.attrs.exploreTools}">
                 <li>
                     <p:commandLink id="externalToolDownloadPopupButton"
+                                   pt:role="menuitem"
                                    disabled="#{downloadsDisabled}"
                                    process="@this"
                                    actionListener="#{RequestedDownloadType.initDownloadTypeForTool(cc.attrs.fileMetadata, tool)}"
@@ -100,14 +102,14 @@
     <ui:fragment rendered="#{cc.attrs.fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload and !(cc.attrs.fileMetadata.dataFile.tabularData)}">
 
     <p:commandLink id="packageDownloadPopupButton"
-                    type="button" styleClass="btn btn-default btn-download"
+                   styleClass="btn btn-default btn-download"
                    process="@this"
                    disabled="#{downloadsDisabled}"
                    actionListener="#{RequestedDownloadType.initDownloadTypeForPackage(cc.attrs.fileMetadata)}"
                    action="#{cc.attrs.downloadRequestFunction}"
                    update="#{cc.attrs.updateOnDownloadRequest}">
         <!-- package data file: -->
-        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle.download}
     </p:commandLink>
     
     </ui:fragment>
@@ -116,26 +118,28 @@
     
     
     <p:commandLink id="standardFileDownloadButton"
-                   type="button" styleClass="btn btn-default btn-download"
+                   styleClass="btn btn-default btn-download"
                    process="@this"
                    disabled="#{downloadsDisabled}"
                    actionListener="#{RequestedDownloadType.initDownloadType(cc.attrs.fileMetadata)}"
                    action="#{cc.attrs.downloadRequestFunction}"
                    update="#{cc.attrs.updateOnDownloadRequest}">
         <!-- non-tabular data file: -->
-        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle.download}
     </p:commandLink>
     
     </ui:fragment>
 
     <div class="btn-group" jsf:rendered="#{cc.attrs.fileMetadata.dataFile.tabularData }">
         <!-- Download Dropdown -->
-        <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">
+        <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
             <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
                 <p:commandLink id="tabularOriginalDownloadPopupButton"
+                               pt:role="menuitem"
                                disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForOriginal(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
@@ -147,6 +151,7 @@
             </li>
             <li>
                 <p:commandLink id="tabularTabDownloadPopupButton"
+                               pt:role="menuitem"
                                disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForTab(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
@@ -157,6 +162,7 @@
             <ui:fragment rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'RData')}">
                 <li>
                     <p:commandLink id="tabularRdataDownloadPopupButton"
+                                   pt:role="menuitem"
                                    process="@this"
                                    disabled="#{downloadsDisabled}"
                                    actionListener="#{RequestedDownloadType.initDownloadTypeForRdata(cc.attrs.fileMetadata)}"
@@ -167,7 +173,8 @@
                 </li>
             </ui:fragment>
             <li>
-                <p:commandLink process="@this"
+                <p:commandLink pt:role="menuitem"
+                               process="@this"
                                disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForVar(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
@@ -177,6 +184,7 @@
             </li>
             <li>
                 <p:commandLink id="tabularSubsetDownloadPopupButton" rendered="#{systemConfig.rserveConfigured}"
+                               pt:role="menuitem"
                                process="@this"
                                disabled="#{downloadsDisabled}"
                                value="#{bundle['file.downloadBtn.format.datasubset']}"
@@ -189,17 +197,20 @@
                 <a tabindex="-1" class="no-focus">#{bundle['file.downloadBtn.format.citation']}</a>
                 <ul class="dropdown-menu" role="menu">
                     <li>
-                        <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}">
+                        <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(cc.attrs.fileMetadata)}"
+                                role="menuitem">
                             <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
                         </h:commandLink>
                     </li>
                     <li>
-                        <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(cc.attrs.fileMetadata)}">
+                        <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(cc.attrs.fileMetadata)}"
+                                role="menuitem">
                             <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
                         </h:commandLink>
                     </li>
                     <li>
-                        <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(cc.attrs.fileMetadata)}">
+                        <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(cc.attrs.fileMetadata)}"
+                                role="menuitem">
                             <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
                         </h:commandLink>
                     </li>
@@ -212,7 +223,7 @@
     
     <ui:fragment rendered="#{!cc.attrs.fileMetadata.datasetVersion.deaccessioned and !canDownloadFile}">
     
-    <p:commandLink type="button" styleClass="btn btn-default btn-request" rendered="#{dataverseSession.user.authenticated}"
+    <p:commandLink styleClass="btn btn-default btn-request" rendered="#{dataverseSession.user.authenticated}"
                    process="@this"
                    action="#{FileDownloadRequestHelper.replaceRequestAccessWithSingleFile(cc.attrs.fileMetadata.dataFile)}"
                    update="#{cc.attrs.updateOnRequestAccess}"

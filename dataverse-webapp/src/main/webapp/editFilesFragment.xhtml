@@ -12,7 +12,7 @@
 
     <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
-    <script type="text/javascript" language="javascript" src="#{resource['js/fileupload.js']}"></script>
+    <script src="#{resource['js/fileupload.js']}"></script>
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType"
                        var="termsOfUseTypeEnum"/>
@@ -642,18 +642,6 @@
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 
     <!-- Popups -->
-    <p:dialog styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}"
-              widgetVar="fileTypeDifferentPopup" id="fileTypeDifferentPopup" modal="true">
-        <p class="text-warning"><span
-                class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
-        <div class="button-block">
-            <p:commandButton value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()"
-                             action="#{EditDatafilesPage.deleteFiles()}"
-                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
-            <p:commandButton value="#{bundle.continue}" onclick="PF('fileTypeDifferentPopup').hide()" type="button"/>
-        </div>
-    </p:dialog>
-
     <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment"
               modal="true">

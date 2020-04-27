@@ -4,6 +4,7 @@
         http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
               version="2.2">
     <application>
+        <message-bundle>messages</message-bundle>
         <resource-bundle>
             <base-name>Bundle</base-name>
             <var>bundle</var>

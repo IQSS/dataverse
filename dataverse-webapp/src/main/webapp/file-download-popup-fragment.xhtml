@@ -6,23 +6,32 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
         
+        <p class="help-block">
+            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+            <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+        </p>
+        
         <div class="form-horizontal">
             <p:fragment rendered="#{GuestbookResponseDialog.downloadPopupRequired}" id="guestbookUIFragment">
+                <p:focus context="guestbookUIFragment" rendered="#{facesContext.validationFailed}" />
+                
                 <p:fragment>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="guestbookuser_nameText">
+                        <h:outputLabel styleClass="col-sm-3 control-label" for="guestbookuser_nameText">
                             #{bundle.name}
                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{GuestbookResponseDialog.guestbook.nameRequired}" />
-                        </label>
+                        </h:outputLabel>
                         <div class="col-sm-6">
                             <p:inputText id="guestbookuser_nameText" styleClass="form-control"
                                          value="#{GuestbookResponseDialog.guestbookResponse.name}"
+                                         pt:aria-required="#{GuestbookResponseDialog.guestbook.nameRequired}"
                                          required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.nameRequired}"
                                          requiredMessage="#{bundle['requiredField']}">
 
@@ -34,13 +43,14 @@
                     </div>
                 </p:fragment>
                 <div class="form-group">
-                    <label class="col-sm-3 control-label" for="guestbookuser_email">
+                    <h:outputLabel styleClass="col-sm-3 control-label" for="guestbookuser_email">
                         #{bundle.email}
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{GuestbookResponseDialog.guestbook.emailRequired}" />
-                    </label>
+                    </h:outputLabel>
                     <div class="col-sm-6">
                         <p:inputText id="guestbookuser_email" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.email}"
+                                     pt:aria-required="#{GuestbookResponseDialog.guestbook.emailRequired}"
                                      required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.emailRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
 
@@ -51,13 +61,14 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-sm-3 control-label" for="guestbookuser_institution">
+                    <h:outputLabel styleClass="col-sm-3 control-label" for="guestbookuser_institution">
                         #{bundle.institution}
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{GuestbookResponseDialog.guestbook.institutionRequired}" />
-                    </label>
+                    </h:outputLabel>
                     <div class="col-sm-6">
                         <p:inputText id="guestbookuser_institution" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.institution}"
+                                     pt:aria-required="#{GuestbookResponseDialog.guestbook.institutionRequired}"
                                      required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.institutionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
                                      
@@ -68,13 +79,14 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-sm-3 control-label" for="guestbookuser_position">
+                    <h:outputLabel styleClass="col-sm-3 control-label" for="guestbookuser_position">
                         #{bundle.position}
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{GuestbookResponseDialog.guestbook.positionRequired}" />
-                    </label>
+                    </h:outputLabel>
                     <div class="col-sm-6">
                         <p:inputText id="guestbookuser_position" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.position}"
+                                     pt:aria-required="#{GuestbookResponseDialog.guestbook.positionRequired}"
                                      required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.positionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
                                      
@@ -85,39 +97,43 @@
                     </div>
                 </div>
                 <div class="form-group" jsf:rendered="#{!empty GuestbookResponseDialog.guestbook.customQuestions}">
-                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
-                        #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
-                    </label>
-                    <div class="col-sm-6">
-                        <ui:repeat value="#{GuestbookResponseDialog.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
-                            <div class="text-left">
-                                <label class="control-label"
-                                            for="#{customQuestionResponse.customQuestion.questionType=='text' ? 'customQuestionResponse' : 'customQuestionResponseSelect'}">
-                                    <h:outputText value="#{customQuestionResponse.customQuestion.questionString}" />
-                                    <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
-                                </label>
-                                
-                                <p:inputText id="customQuestionResponse"
-                                             styleClass="form-control" value="#{customQuestionResponse.response}"
-                                             required="#{param['DO_GB_VALIDATION'] and  customQuestionResponse.customQuestion.required}"
-                                             rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
-                                             requiredMessage="#{bundle['requiredField']}">
-                                </p:inputText>
-                                <p:selectOneMenu id="customQuestionResponseSelect"
+                    <fieldset>
+                        <legend class="col-sm-3 control-label">
+                            #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
+                        </legend>
+                        <div class="col-sm-6">
+                            <ui:repeat value="#{GuestbookResponseDialog.guestbookResponse.customQuestionResponses}" var="customQuestionResponse">
+                                <div class="text-left">
+                                    <p:outputLabel styleClass="control-label" indicateRequired="false"
+                                                for="#{customQuestionResponse.customQuestion.questionType=='text' ? 'customQuestionResponse' : 'customQuestionResponseSelect'}">
+                                        <h:outputText value="#{customQuestionResponse.customQuestion.questionString}" />
+                                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{customQuestionResponse.customQuestion.required}" />
+                                    </p:outputLabel>
+                                    
+                                    <p:inputText id="customQuestionResponse"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                 required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
-                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                 pt:aria-required="#{customQuestionResponse.customQuestion.required}"
+                                                 required="#{param['DO_GB_VALIDATION'] and  customQuestionResponse.customQuestion.required}"
+                                                 rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                                  requiredMessage="#{bundle['requiredField']}">
-                                    <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
-                                    <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
-                                </p:selectOneMenu>
-                                
-                                <p:message id="cqMessages"
-                                           for="#{customQuestionResponse.customQuestion.questionType=='text' ? 'customQuestionResponse' : 'customQuestionResponseSelect'}"
-                                           display="text"/>
-                            </div>
-                        </ui:repeat>
-                    </div>
+                                    </p:inputText>
+                                    <p:selectOneMenu id="customQuestionResponseSelect"
+                                                     styleClass="form-control" value="#{customQuestionResponse.response}"
+                                                     pt:aria-required="#{customQuestionResponse.customQuestion.required}"
+                                                     required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                     rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
+                                                     requiredMessage="#{bundle['requiredField']}">
+                                        <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
+                                        <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
+                                    </p:selectOneMenu>
+                                    
+                                    <p:message id="cqMessages"
+                                               for="#{customQuestionResponse.customQuestion.questionType=='text' ? 'customQuestionResponse' : 'customQuestionResponseSelect'}"
+                                               display="text"/>
+                                </div>
+                            </ui:repeat>
+                        </div>
+                    </fieldset>
                 </div>
             </p:fragment>
         </div>

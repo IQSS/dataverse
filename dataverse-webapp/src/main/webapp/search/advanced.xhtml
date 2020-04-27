@@ -49,6 +49,7 @@
                                         <span data-toggle="tooltip" data-placement="top"
                                               jsf:rendered="#{not empty searchField.description}"
                                               class="glyphicon glyphicon-question-sign text-primary"
+                                              tabindex="0" role="button"
                                               data-original-title="#{searchField.description}">
                                         </span>
                                     </label>
@@ -96,6 +97,7 @@
                                             <span data-toggle="tooltip" data-placement="top"
                                                   jsf:rendered="#{not empty item.description}"
                                                   class="glyphicon glyphicon-question-sign text-primary"
+                                                  tabindex="0" role="button"
                                                   data-original-title="#{item.description}">
                                             </span>
                                         </label>
@@ -186,7 +188,7 @@
                                         #{fileSearchFields.displayName}
                                         <span class="glyphicon glyphicon-question-sign text-primary"
                                               jsf:rendered="#{not empty fileSearchFields.description}"
-                                              tabindex="0"
+                                              tabindex="0" role="button"
                                               data-toggle="tooltip" data-placement="top"
                                               data-original-title="#{fileSearchFields.description}"
                                         />

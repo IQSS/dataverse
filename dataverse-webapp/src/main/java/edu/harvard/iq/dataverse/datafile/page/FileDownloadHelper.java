@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.Term
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -114,14 +115,14 @@ public class FileDownloadHelper implements java.io.Serializable {
      * If guestbook fill is required then it shows proper dialog or handles download
      * directly otherwise.
      */
-    public void requestDownload() {
+    public String requestDownload() {
         
         List<FileMetadata> fileMetadatas = requestedDownloadType.getFileMetadatas();
         DownloadType fileFormat = requestedDownloadType.getFileFormat();
         
         if (FileUtil.isDownloadPopupRequired(fileMetadatas.get(0).getDatasetVersion())) {
             PrimefacesUtil.showDialog("downloadPopup");
-            return;
+            return StringUtils.EMPTY;
         }
         
         if (!fileMetadatas.get(0).getDatasetVersion().isDraft()) {
@@ -130,6 +131,7 @@ public class FileDownloadHelper implements java.io.Serializable {
         }
         
         startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool());
+        return StringUtils.EMPTY;
     }
 
     public boolean canUserDownloadFile(FileMetadata fileMetadata) {

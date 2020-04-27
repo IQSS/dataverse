@@ -6,6 +6,7 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:o="http://omnifaces.org/ui"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
       xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs"
 >
 
@@ -13,11 +14,6 @@
 <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
 <h:head>
-    <style>
-        .hideTableheader thead {
-            display: none; !important;
-        }
-    </style>
 </h:head>
 
 <h:body>
@@ -41,6 +37,14 @@
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
 
             <h:form id="fileForm">
+                <p:focus context="fileForm" rendered="#{facesContext.validationFailed}" />
+                
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                    </div>
+                </div>
 
                 <div id="contentTabs">
                     <div jsf:id="fileEditBox">
@@ -51,25 +55,20 @@
                                      rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                                      var="fileMetadata"
                                      widgetVar="fileTable"
-                                     emptyMessage=""
-                                     styleClass="hideTableheader filesTable"
+                                     styleClass="filesTable"
                         >
                             <p:column class="col-file-thumb text-center"
-                                      style="width:73px !important;padding:4px 10px;">
+                                      style="width:73px !important;padding:4px 10px;" ariaHeaderText="#{bundle['file.editSingle.column.icon.ariaHeader']}" >
                                 <div class="thumbnail-block">
                                     <!-- Thumbnail Preview -->
-                                    <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
+                                    <span class="file-thumbnail-preview-img" jsf:rendered="#{dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
                                           data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true"
                                           data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
-                            </span>
+                                        <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true"/>
+                                    </span>
                                     <!-- Default Icon -->
                                     <span class="icon-#{dataFileServiceBean.getFileClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted"
-                                          jsf:rendered="#{(!empty fileMetadata.dataFile.id and !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)) or (empty fileMetadata.dataFile.id and !fileMetadata.dataFile.previewImageAvailable)}"/>
-                                    <ui:fragment rendered="#{empty fileMetadata.dataFile.id and !empty fileMetadata.dataFile.storageIdentifier and fileMetadata.dataFile.previewImageAvailable}">
-                                        <h:graphicImage value="#{EditSingleFilePage.getTemporaryPreviewAsBase64(fileMetadata.dataFile.storageIdentifier)}"/>
-                                        <h:outputText id="imgPreview" value="#{bundle['preview']}" styleClass="bg-info text-info text-center show"/>
-                                    </ui:fragment>
+                                          jsf:rendered="#{(!dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile))}"/>
                                     <!-- Restricted File Icon -->
                                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.termsOfUse.termsOfUseType eq termsOfUseTypeEnum.RESTRICTED }">
                                         <span class="icon-unlock text-success"/>
@@ -78,19 +77,21 @@
                                     <span id="datasetThumbnail" class="bg-info text-info text-center small show"
                                           jsf:rendered="#{EditSingleFilePage.isDesignatedDatasetThumbnail(fileMetadata)}"
                                           data-toggle="tooltip" data-placement="bottom" title="#{bundle['file.selectedThumbnail.tip']}">
-                                #{bundle['file.selectedThumbnail']}
-                            </span>
+                                        #{bundle['file.selectedThumbnail']}
+                                    </span>
                                 </div>
                             </p:column>
-                            <p:column class="col-file-metadata">
+                            <p:column class="col-file-metadata" headerText="#{bundle['file.editSingle.column.file.header']}">
                                 <ui:fragment>
-                                    <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
+                                    <p:outputLabel for="fileName" styleClass="control-label" style="margin-right:1em;margin-bottom:.5em;" indicateRequired="false">
                                         #{bundle['file.fileName']}
-                                    </label>
-                                    <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}">
+                                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </p:outputLabel>
+                                    <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" 
+                                                    disabled="#{fileMetadata.dataFile.filePackage}">
                                         <p:ajax event="change" listener="#{EditSingleFilePage.handleNameChange}" update="fileName" />
                                     </p:inputText>
-                                    <p:message for="fileName"/>
+                                    <p:message for="fileName" display="text" />
                                 </ui:fragment>
                                 <!-- TYPE + SIZE + DATE + CHECKSUM -->
                                 <div class="text-muted small">
@@ -109,14 +110,14 @@
                                 </div>
                                 <div class="fileDescription">
                                     <ui:fragment>
-                                        <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
+                                        <h:outputLabel for="fileDescription"  styleClass="control-label" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
                                             #{bundle.description}
-                                        </label>
+                                        </h:outputLabel>
                                         <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;">
                                             <p:ajax event="change" listener="#{EditSingleFilePage.handleDescriptionChange}" update="fileDescription" />
                                         </p:inputTextarea>
                                         <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
-                                        <p:message for="fileDescription"/>
+                                        <p:message for="fileDescription" display="text" />
                                     </ui:fragment>
                                 </div>
                                 <div class="file-tags-block margin-top-half">
@@ -132,19 +133,21 @@
                                     </ui:fragment>
                                 </div>
                             </p:column>
-                            <p:column class="col-file-action text-right">
+                            <p:column class="col-file-action text-right" headerText="#{bundle['file.editSingle.column.action.header']}">
                                 <div style="margin-right:14px;" class="btn-group" >
                                     <button type="button"
                                             class="btn btn-default btn-access dropdown-toggle"
-                                            data-toggle="dropdown">
-                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="false">
+                                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> #{bundle['file.editFile']} <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                         <ui:fragment rendered="#{settingsWrapper.provCollectionEnabled}">
-                                            <li>
+                                            <li role="none">
                                                 <p:commandLink id="fileProvenanceButton"
                                                                update=":fileForm:editProvenancePopup"
                                                                oncomplete="PF('editProvenancePopup').show();"
+                                                               pt:role="menuitem"
                                                 >
                                                     <f:actionListener binding="#{provPopupFragmentBean.updatePopupStateAndDataset(fileMetadata, EditSingleFilePage.dataset)}" />
                                                     #{bundle['file.provenance']}
@@ -152,30 +155,31 @@
                                             </li>
                                         </ui:fragment>
 
-                                        <li>
+                                        <li role="none">
                                             <p:commandLink id="fileTagsButton"
                                                            update="@form"
                                                            action="#{FileTagModal.initForSingleFile(EditSingleFilePage.fileMetadata, EditSingleFilePage.dataset)}"
                                                            oncomplete="PF('editFileTagsPopup').show();"
+                                                           pt:role="menuitem"
                                             >
                                                 #{bundle['file.tags']}
                                             </p:commandLink>
                                         </li>
-                                        <li>
+                                        <li role="none" jsf:rendered="#{fileMetadata.dataFile.image
+                                                                                and not EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}">
                                             <p:commandLink id="fileSetThumbnailBtn"
-                                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image
-                                                                                and not EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
                                                            update=":fileForm:fileSetThumbnail"
                                                            oncomplete="PF('fileSetThumbnail').show()"
+                                                           pt:role="menuitem"
                                             >
                                                 #{bundle['file.setThumbnail']}
                                             </p:commandLink>
                                         </li>
-                                        <li>
+                                        <li role="none" jsf:rendered="#{fileMetadata.dataFile.image
+                                                                                and EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}">
                                             <p:commandLink id="fileSetThumbnailBtn2"
-                                                           rendered="#{!empty fileMetadata.dataFile.id and fileMetadata.dataFile.image
-                                                                                and EditSingleFilePage.thumbnailIsFromDatasetLogoRatherThanDatafile}"
-                                                           oncomplete="PF('fileThumbnailConfirm').show()">
+                                                           oncomplete="PF('fileThumbnailConfirm').show()"
+                                                           pt:role="menuitem">
                                                 #{bundle['file.setThumbnail']}
                                             </p:commandLink>
                                         </li>

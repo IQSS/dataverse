@@ -33,7 +33,8 @@
                                     <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldsByType.datasetFieldType.requiredInDataverse }" />
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          jsf:rendered="#{not empty fieldsByType.datasetFieldType.localeDescription}" tabindex="0"
+                                          jsf:rendered="#{not empty fieldsByType.datasetFieldType.localeDescription}"
+                                          tabindex="0" role="button"
                                           data-toggle="tooltip" data-placement="auto right"
                                           data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                 </label>

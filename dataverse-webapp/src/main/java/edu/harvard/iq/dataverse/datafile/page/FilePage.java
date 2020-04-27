@@ -505,7 +505,7 @@ public class FilePage implements java.io.Serializable {
 
     public Optional<StreamedContent> getLicenseIconContent(FileMetadata fileMetadata) {
         if (!isLicenseIconAvailable(fileMetadata)) {
-            Optional.empty();
+            return Optional.empty();
         }
         LicenseIcon licenseIcon = fileMetadata.getTermsOfUse().getLicense().getIcon();
         return Optional.of(DefaultStreamedContent.builder()

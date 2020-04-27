@@ -15,7 +15,7 @@
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
 
     <!-- Navbar Panel -->
-    <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}" role="navigation">
+    <div id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
         <div id="navbar-underline"></div>
         <div id="cookie-banner" jsf:rendered="#{empty cookie['ConsentCookie']}">
             <h:form class="container">
@@ -31,7 +31,7 @@
         </div>
         <div class="container">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-pressed="false">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false">
                     <span class="sr-only">#{bundle.toggleNavigation}</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -55,11 +55,15 @@
                 </a>
             </div>
             <div class="collapse navbar-collapse" id="topNavBar">
-                <div class="pull-right">
+                <nav class="pull-right">
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
+                                #{bundle.search} <b class="caret"></b>
+                            </a>
                             <ul id="navbarsearch-modal" class="dropdown-menu" style="padding:12px;min-width:350px;">
+                                <li>
                                 <form class="form-inline" role="search">
                                     <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                     <div class="input-group">
@@ -72,6 +76,7 @@
                                         </span>
                                     </div>
                                 </form>
+                                </li>
                             </ul>
                         </li>
     
@@ -94,8 +99,9 @@
                                 <h:outputText value="#{bundle['header.support']}"/>
                             </h:outputLink>
                         </li>
-    
+
                         <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
+                        <li>
                             <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
                                 <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
                                     <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
@@ -105,22 +111,22 @@
                                     <h:outputText value="#{bundle['header.support']}"/>
                                 </p:commandLink>
                             </o:form>
+                        </li>
                         </ui:fragment>
     
                         <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}">
-                                <img alt="Current language flag" class="header-flag" src="#{resource['images/flags/'
-                                    .concat(dataverseSession.getLocale().toLanguageTag()).concat('.svg')]}" height="20px" width="20px" />
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}" aria-expanded="false">
+                                <img alt="" class="header-flag" src="#{resource['images/flags/'
+                                    .concat(dataverseSession.getLocale().toLanguageTag()).concat('.svg')]}" height="20" width="20" />
                                 #{dataverseSession.localeTitle} <b class="caret"></b>
                             </a>
-                            <ul class="dropdown-menu">
-                                <h:form class="form-inline">
+                            <h:form class="form-inline">
+                                <ul class="dropdown-menu">
                                     <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
-                                        <li class="#{dataverseSession.localeTitle == language.value ? 'active' : ''}">
-                                            <h:commandLink rendered="#{language.value ne dataverseSession.localeTitle}"
-                                                            value="#{language.value}"
+                                        <li jsf:rendered="#{language.value ne dataverseSession.localeTitle}">
+                                            <h:commandLink value="#{language.value}"
                                                             actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}"
-                                                            action="submit()"
+                                                            lang="#{language.key}"
                                                             style="padding: 3px 20px;
                                                                     clear: both;
                                                                     font-weight: 400;
@@ -132,8 +138,8 @@
                                             </h:commandLink>
                                         </li>
                                     </ui:repeat>
-                                </h:form>
-                            </ul>
+                                </ul>
+                            </h:form>
                         </li>
     
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
@@ -152,59 +158,58 @@
     
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
-                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown" role="menu" aria-haspopup="true" aria-expanded="false">
+                                <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-controls="accountHeaderMenu" aria-expanded="false">
                                     <ui:fragment rendered="#{dataverseSession.user.superuser}">
-                                        <span class="glyphicon glyphicon-user text-danger"></span>
+                                        <span class="glyphicon glyphicon-user text-danger" aria-hidden="true"></span>
                                     </ui:fragment>
+                                    <h:outputText styleClass="sr-only" value="#{bundle['header.user.loggedAs']} " />
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
+                                    <h:outputText styleClass="sr-only" value=", #{bundle['header.user.unreadNotifications']} " rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }" />
                                     <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />                                    <b class="caret"></b>
+                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
+                                    <b class="caret"></b>
                                 </a>
-                                <ul class="dropdown-menu">
-                                    <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
+                                <ul id="accountHeaderMenu" class="dropdown-menu"
+                                        role="menu" aria-label="#{bundle['header.user.menuLabel']}">
+                                    <li role="none">
+                                        <h:outputLink value="/dataverseuser.xhtml" role="menuitem">
                                             <f:param name="selectTab" value="dataRelatedToMe" />
                                             <h:outputText value="#{bundle['header.user.selectTab.dataRelated']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
+                                    <li role="none">
+                                        <h:outputLink value="/dataverseuser.xhtml" role="menuitem">
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
                                             <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
                                                             value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
+                                            <h:outputText styleClass="sr-only" value="#{bundle['header.user.selectTab.notifications.unread']}" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"/>
                                         </h:outputLink>
                                     </li>
-                                    <ui:remove>
-                                        <li tabindex="-1">
-                                            <h:outputLink value="/dataverseuser.xhtml">
-                                                <f:param name="selectTab" value="groupsRoles" />
-                                                <h:outputText value="#{bundle['header.user.selectTab.groupsAndRoles']}" />
-                                            </h:outputLink>
-                                        </li>
-                                    </ui:remove>
-                                    <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
+                                    <li role="none">
+                                        <h:outputLink value="/dataverseuser.xhtml" role="menuitem">
                                             <f:param name="selectTab" value="accountInfo" />
                                             <h:outputText value="#{bundle['header.accountInfo']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
+                                    <li role="none">
+                                        <h:outputLink value="/dataverseuser.xhtml" role="menuitem">
                                             <f:param name="selectTab" value="apiTokenTab" />
                                             <h:outputText value="#{bundle['header.user.selectTab.apiToken']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider"></li>
-                                    <li jsf:rendered="#{dataverseSession.user.superuser}" tabindex="-1">
-                                        <h:outputLink value="/dashboard.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}">
+                                    <li class="divider" role="none"></li>
+                                    <li role="none" jsf:rendered="#{dataverseSession.user.superuser}">
+                                        <h:outputLink value="/dashboard.xhtml" role="menuitem">
+                                            <f:param name="dataverseId" value="#{dataverseDao.findRootDataverse().id}" />
                                             <h:outputText value="#{bundle['header.dashboard']}" />
                                         </h:outputLink>
                                     </li>
-                                    <li class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
-                                    <li class="logout" tabindex="-1">
-                                        <o:form useRequestURI="true" pt:role="logout">
-                                            <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout">
+                                    <li role="none" class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
+                                    <li role="none" class="logout">
+                                        <o:form useRequestURI="true" pt:role="none">
+                                            <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout" role="menuitem">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
                                             </h:commandLink>
                                         </o:form>
@@ -212,31 +217,39 @@
                                 </ul>
                             </li>
                         </ui:fragment>
-            
-                        <div id="accessibility-controls">
-                            <h:outputText value="#{bundle['header.accessibility.contrast']}" />: 
-                            <ul id="high-contrast-mode-selector">
-                                <li>
-                                    <button class="default" title="#{bundle['header.accessibility.contrast.default']}"></button>
-                                </li>
-                                <li>
-                                    <button class="yellow-on-black" title="#{bundle['header.accessibility.contrast.yellowOnBlack']}"></button>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <script type="text/javascript">
-                            // Some pages reload the header, we need to ensure the button bindings stay functional.
-                            // Example: API Token tab on user account page.
-                            accessibilityBindButtonEvents();
-                        </script>
                     </ul>
-                </div>
+
+                </nav>
+                    <div id="accessibility-controls">
+                        <h:outputText value="#{bundle['header.accessibility.contrast']}" />: 
+                        <ul id="high-contrast-mode-selector">
+                            <li>
+                                <button type="button" class="default"
+                                                title="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.default']}"
+                                                aria-label="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.default']}">
+                                    <span class="contrast-icon" aria-hidden="true" />
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="yellow-on-black" 
+                                                title="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.yellowOnBlack']}"
+                                                aria-label="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.yellowOnBlack']}">
+                                    <span class="contrast-icon" aria-hidden="true" />
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <script type="text/javascript">
+                        // Some pages reload the header, we need to ensure the button bindings stay functional.
+                        // Example: API Token tab on user account page.
+                        accessibilityBindButtonEvents();
+                    </script>
             </div>
         </div>
 
-    </nav>
-
+    </div>
+    
     <div id="dataverse-header-block">
         <ui:include src="text-messagesAndBanners.xhtml">
 
@@ -273,19 +286,23 @@
             <!-- FIXME: Rather than hard-coding "inherit", get it from the backend (ThemeWidgetFragment.DEFAULT_LOGO_BACKGROUND_COLOR). -->
             <div class="dataverseHeaderLogo" style="text-align:#{!empty dataverse.dataverseTheme.logoAlignment ? dataverse.dataverseTheme.logoAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoBackgroundColor ? dataverse.dataverseTheme.logoBackgroundColor : 'inherit'};"
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
-                <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
+                <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle['header.dataverse.logo.alt']}"/>
             </div>
             <div class="dataverseHeaderBlock">
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
-                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name}"/>
+                    <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle['header.dataverse.logo.alt']}"/>
                 </div>
-                <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
+                <div class="dataverseHeaderCell dataverseHeaderName" role="heading" aria-level="1" jsf:rendered="#{!empty dataverse.name}">
                     <ui:fragment rendered="#{empty dataverse.dataverseTheme.linkColor}">
-                        <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" >#{dataverse.name}</a>
+                        <h1 class="header-inline">
+                            <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" >#{dataverse.name}</a>
+                        </h1>
                         <h:outputText value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     </ui:fragment>
                     <ui:fragment rendered="#{!empty dataverse.dataverseTheme.linkColor}">
-                        <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{dataverse.dataverseTheme.linkColor}">#{dataverse.name}</a>
+                        <h1 class="header-inline">
+                            <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" style="color:##{dataverse.dataverseTheme.linkColor}">#{dataverse.name}</a>
+                        </h1>
                         <h:outputText style="color:##{dataverse.dataverseTheme.textColor};" value=" (#{dataverse.affiliation})" rendered="#{!empty dataverse.affiliation}"/>
                     </ui:fragment>
                     <h:outputText value="#{bundle.unpublished}" styleClass="label label-warning label-unpublished" rendered="#{!dataverse.released}"/>
@@ -307,7 +324,8 @@
             </div>
         </div>
 
-        <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
+        <nav id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}"
+                aria-label="#{bundle['header.breadcrumb.regionLabel']}">
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
                 <div class="breadcrumbBlock">
@@ -341,7 +359,7 @@
                     </ui:fragment>
                 </div>
             </ui:repeat>
-        </div>
+        </nav>
 
         <ui:remove>
             <!-- Removing this temporarily until we can fix the performance issues with it;

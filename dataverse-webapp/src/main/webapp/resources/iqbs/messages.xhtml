@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='UTF-8' ?>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:cc="http://java.sun.com/jsf/composite"
@@ -19,12 +18,13 @@
     <o:importConstants type="javax.faces.application.FacesMessage"/>
 
 
+    <div aria-live="polite">
+    
     <p:outputPanel>
         <p:autoUpdate/>
-            <o:messages globalOnly="true" var="globalMessage">
-
+            <o:messages globalOnly="true" var="globalMessage" >
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_ERROR}">
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger" role="alert" aria-atomic="true">
                         <o:form useRequestURI="true">
                             <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
                             <h:outputText value="#{globalMessage.detail}" escape="false"/>
@@ -47,33 +47,33 @@
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_INFO}">
-                    <div class="alert alert-info">
+                    <div class="alert alert-info" role="alert" aria-atomic="true">
                         <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
                         <h:outputText escape="false" value="#{globalMessage.detail} "/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_WARN}">
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning" role="alert" aria-atomic="true">
                         <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
                         <h:outputText escape="false" value="#{globalMessage.detail} "/>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{facesContext.validationFailed}">
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger" role="alert" aria-atomic="true">
                         <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
                     </div>
                 </ui:fragment>
-
             </o:messages>
     </p:outputPanel>
 
-
     <o:messages id="successMessage" var="message" showDetail="true"
                 rendered="#{not empty facesContext.getMessageList('successMessage')}" redisplay="false">
-        <div class="alert alert-success">
+        <div class="alert alert-success" role="alert" aria-atomic="true">
             <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{message.summary}</strong> –
             <h:outputText escape="false" value="#{message.detail}"/>
         </div>
     </o:messages>
+    
+    </div>
 </cc:implementation>
 </html>

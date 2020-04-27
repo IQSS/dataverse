@@ -7,6 +7,24 @@
 function reinitializePrimefacesComponentsJS() {
     if (PrimeFaces.widget.SelectCheckboxMenu) {
         var originalSelectCheckboxMenuBindKeyEvents = PrimeFaces.widget.SelectCheckboxMenu.prototype.bindKeyEvents;
+        var originalSelectCheckboxMenuBindPanelKeyEvents = PrimeFaces.widget.SelectCheckboxMenu.prototype.bindPanelKeyEvents;
+        var originalSelectCheckboxMenuRenderHeader = PrimeFaces.widget.SelectCheckboxMenu.prototype.renderHeader;
+        var originalSelectCheckboxMenuHide = PrimeFaces.widget.SelectCheckboxMenu.prototype.hide;
+        
+        // Adds i18n handling on elements read by screen reader
+        PrimeFaces.widget.SelectCheckboxMenu.prototype.renderHeader = function() {
+            originalSelectCheckboxMenuRenderHeader.apply(this);
+            
+            if (this.toggler) {
+                this.toggler.find('> .ui-helper-hidden-accessible > input').attr('aria-label', PrimeFaces.getLocaleSettings().selectAllSelectCheckboxMenu);
+            }
+            if (this.filterInput) {
+                this.filterInput.attr('aria-label', PrimeFaces.getLocaleSettings().filterInputSelectCheckboxMenu);
+            }
+            if (this.closer) {
+                this.closer.attr('aria-label', PrimeFaces.getLocaleSettings().closeText);
+            }
+        };
         
         // Rebinds original primefaces key events for proper handling of TAB key
         // in situations when "select all" option is disabled
@@ -49,7 +67,7 @@ function reinitializePrimefacesComponentsJS() {
                         e.preventDefault();
                     break;
 
-                    case keyCode.TAB: // adjusted to support hidden "select all"
+                    case keyCode.TAB: // change: adjusted to support hidden "select all"
                         if($this.panel.is(':visible')) {
                             var selectAllInput = $this.toggler.find('> div.ui-helper-hidden-accessible > input:visible');
                             if ($this.cfg.showHeader && selectAllInput.length > 0) {
@@ -70,7 +88,291 @@ function reinitializePrimefacesComponentsJS() {
                 };
             });
         }
+        
+        // Added tab handling on panel
+        // When pressing tab key from last tabbable element it moves focus to first tabbable element
+        // When pressing alt+tab key from first tabbable element it moves focus to last tabbable element
+        PrimeFaces.widget.SelectCheckboxMenu.prototype.bindPanelKeyEvents = function() {
+            originalSelectCheckboxMenuBindPanelKeyEvents.apply(this);
+            var $this = this;
+            var focusableElementsString = 'a[href]:visible, input:not([disabled]):visible, select:not([disabled]):visible, textarea:not([disabled]):visible, button:not([disabled]):visible, [tabindex="0"]:visible';
+            
+            this.panel.on('keydown.selectCheckboxMenuLockTab', focusableElementsString, function(e) {
+                var keyCode = $.ui.keyCode;
+                var focusableElements = $this.panel.find(focusableElementsString);
+                var key = e.which;
 
+                if (key === keyCode.TAB) {
+                    if (e.shiftKey && e.target === focusableElements.first().get(0)) {
+                        e.preventDefault();
+                        focusableElements.last().focus();
+                    }
+                    if (!e.shiftKey && e.target === focusableElements.last().get(0)) {
+                        e.preventDefault();
+                        focusableElements.first().focus();
+                    }
+                }
+                
+            });
+        };
+        
+        // Handles focus change when closing panel
+        PrimeFaces.widget.SelectCheckboxMenu.prototype.hide = function(animate) {
+            originalSelectCheckboxMenuHide.apply(this, [animate]);
+            this.keyboardTarget.focus();
+        };
+    }
+    
+    if (PrimeFaces.widget.FileUpload) {
+
+        // Added update of progress for screen readers
+        // Note that this is mostly copy-paste of original function
+        PrimeFaces.widget.FileUpload.prototype.init = function(cfg) {
+            // skip calling PrimeFaces.widget.FileUpload.init() on purpose
+            PrimeFaces.widget.DeferredWidget.prototype.init.call(this, cfg);
+            //this._super(cfg);
+            
+            if(this.cfg.disabled) {
+                return;
+            }
+
+            this.ucfg = {};
+            this.form = this.jq.closest('form');
+            this.buttonBar = this.jq.children('.ui-fileupload-buttonbar');
+            this.chooseButton = this.buttonBar.children('.ui-fileupload-choose');
+            this.uploadButton = this.buttonBar.children('.ui-fileupload-upload');
+            this.cancelButton = this.buttonBar.children('.ui-fileupload-cancel');
+            this.content = this.jq.children('.ui-fileupload-content');
+            this.filesTbody = this.content.find('> div.ui-fileupload-files > div');
+            this.sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            this.files = [];
+            this.fileAddIndex = 0;
+            this.cfg.invalidFileMessage = this.cfg.invalidFileMessage || 'Invalid file type';
+            this.cfg.invalidSizeMessage = this.cfg.invalidSizeMessage || 'Invalid file size';
+            this.cfg.fileLimitMessage = this.cfg.fileLimitMessage || 'Maximum number of files exceeded';
+            this.cfg.messageTemplate = this.cfg.messageTemplate || '{name} {size}';
+            this.cfg.previewWidth = this.cfg.previewWidth || 80;
+            this.uploadedFileCount = 0;
+            this.fileId = 0;
+
+            this.renderMessages();
+
+            this.bindEvents();
+
+            var $this = this,
+                postURL = this.form.attr('action'),
+                encodedURLfield = this.form.children("input[name*='javax.faces.encodedURL']");
+
+            //portlet support
+            var porletFormsSelector = null;
+            if(encodedURLfield.length > 0) {
+                porletFormsSelector = 'form[action="' + postURL + '"]';
+                postURL = encodedURLfield.val();
+            }
+            
+            this.ucfg = {
+                    url: postURL,
+                    portletForms: porletFormsSelector,
+                    paramName: this.id,
+                    dataType: 'xml',
+                    dropZone: (this.cfg.dnd === false) ? null : this.jq,
+                    sequentialUploads: this.cfg.sequentialUploads,
+                    formData: function() {
+                        return $this.createPostData();
+                    },
+                    beforeSend: function(xhr, settings) {
+                        xhr.setRequestHeader('Faces-Request', 'partial/ajax');
+                        xhr.pfSettings = settings;
+                        xhr.pfArgs = {}; // default should be an empty object
+                    },
+                    start: function(e) {
+                        if($this.cfg.onstart) {
+                            $this.cfg.onstart.call($this);
+                        }
+                    },
+                    add: function(e, data) {
+                        $this.chooseButton.removeClass('ui-state-hover ui-state-focus');
+
+                        if($this.fileAddIndex === 0) {
+                            $this.clearMessages();
+                        }
+
+                        if($this.cfg.fileLimit && ($this.uploadedFileCount + $this.files.length + 1) > $this.cfg.fileLimit) {
+                            $this.clearMessages();
+                            $this.showMessage({
+                                summary: $this.cfg.fileLimitMessage
+                            });
+
+                            return;
+                        }
+
+                        var file = data.files ? data.files[0] : null;
+                        if(file) {
+                            var validMsg = $this.validate(file);
+
+                            if(validMsg) {
+                                $this.showMessage({
+                                    summary: validMsg,
+                                    filename: file.name,
+                                    filesize: file.size
+                                });
+
+                                $this.postSelectFile(data);
+                            }
+                            else {
+                                if($this.cfg.onAdd) {
+                                    $this.cfg.onAdd.call($this, file, function(processedFile) {
+                                        file = processedFile;
+                                        data.files[0] = processedFile;
+                                        $this.addFileToRow(file, data);
+                                    });
+                                }
+                                else {
+                                    $this.addFileToRow(file, data);
+                                }
+                            }
+                        }
+                    },
+                    send: function(e, data) {
+                        if(!window.FormData) {
+                            for(var i = 0; i < data.files.length; i++) {
+                                var file = data.files[i];
+                                if(file.row) {
+                                    file.row.children('.ui-fileupload-progress').find('> .ui-progressbar').attr('aria-valuenow', 100); // change: Added update of progress for screen readers
+                                    file.row.children('.ui-fileupload-progress').find('> .ui-progressbar > .ui-progressbar-value')
+                                            .addClass('ui-progressbar-value-legacy')
+                                            .css({
+                                                width: '100%',
+                                                display: 'block'
+                                            });
+                                }
+                            }
+                        }
+                    },
+                    fail: function(e, data) {
+                        if (data.errorThrown === 'abort') {
+                            if ($this.cfg.oncancel) {
+                                $this.cfg.oncancel.call($this);
+                            }
+                            return;
+                        }
+                        if($this.cfg.onerror) {
+                            $this.cfg.onerror.call($this, data.jqXHR, data.textStatus, data.jqXHR.pfArgs);
+                        }
+                    },
+                    progress: function(e, data) {
+                        if(window.FormData) {
+                            var progress = parseInt(data.loaded / data.total * 100, 10);
+
+                            for(var i = 0; i < data.files.length; i++) {
+                                var file = data.files[i];
+                                if(file.row) {
+                                    file.row.children('.ui-fileupload-progress').find('> .ui-progressbar').attr('aria-valuenow', progress); // change: Added update of progress for screen readers
+                                    file.row.children('.ui-fileupload-progress').find('> .ui-progressbar > .ui-progressbar-value').css({
+                                        width: progress + '%',
+                                        display: 'block'
+                                    });
+                                }
+                            }
+                        }
+                    },
+                    done: function(e, data) {
+                        $this.uploadedFileCount += data.files.length;
+                        $this.removeFiles(data.files);
+
+                        PrimeFaces.ajax.Response.handle(data.result, data.textStatus, data.jqXHR, null);
+                    },
+                    always: function(e, data) {
+                        if($this.cfg.oncomplete) {
+                            $this.cfg.oncomplete.call($this, data.jqXHR.pfArgs, data);
+                        }
+                    }
+                };
+
+                this.jq.fileupload(this.ucfg);
+                this.input = $(this.jqId + '_input');
+        };
+        
+        var originalFileUploadRenderMessages = PrimeFaces.widget.FileUpload.prototype.renderMessages;
+
+        // Adds i18n support for elements read by screen reader
+        PrimeFaces.widget.FileUpload.prototype.renderMessages = function() {
+            originalFileUploadRenderMessages.apply(this);
+            this.clearMessageLink.attr('aria-label', PrimeFaces.getLocaleSettings().closeText);
+            this.clearMessageLink.attr('role', 'button');
+        };
+        
+        var originalAddFileToRow = PrimeFaces.widget.FileUpload.prototype.addFileToRow;
+        
+        // Adds i18n support for elements read by screen reader
+        PrimeFaces.widget.FileUpload.prototype.addFileToRow = function(file, data) {
+            originalAddFileToRow.apply(this, [file, data]);
+            
+            this.files.forEach(function(file) {
+                file.row.find('.ui-fileupload-cancel')
+                    .attr('aria-label', PrimeFaces.getLocaleSettings().cancelFileUpload + PrimeFaces.escapeHTML(file.name));
+            });
+        };
+    }
+    if(PrimeFaces.widget.Message) {
+        // copy of original primefaces messages java script handling with
+        // fixed bug introduced in pf 8.0
+        PrimeFaces.widget.Message = PrimeFaces.widget.BaseWidget.extend({
+            
+            init: function(cfg) {
+                this._super(cfg);
+                
+                var text = this.jq.children('div').children('.ui-message-error-detail').text(); // change: error detail is enclosed with div tag
+                
+                if(text) {
+                   var target = $(PrimeFaces.escapeClientId(this.cfg.target));
+                   
+                   if (this.cfg.tooltip) {
+                      target.data('tooltip', text);
+                   }
+                   
+                   target.attr('aria-describedby', this.id + '_error-detail');
+                } 
+           }
+        });
+    }
+    
+    if(PrimeFaces.widget.Dialog) {
+        // Dialog Listener For Calling handleResizeDialog
+        var originalDialogPostShow = PrimeFaces.widget.Dialog.prototype.postShow;
+        var originalDialogOnHide = PrimeFaces.widget.Dialog.prototype.onHide;
+        
+        PrimeFaces.widget.Dialog.prototype.postShow = function() {
+            originalDialogPostShow.apply(this);
+            this.jq.attr('aria-live', 'off');
+            
+            var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
+            var dialog_titlebar_el = document.getElementById(this.id).querySelector(".ui-dialog-title");
+            handleResizeDialog(dialog_id);
+
+            $(window).on("resize", null, {dialog_id: dialog_id}, fixBodyWidth);
+        }
+        PrimeFaces.widget.Dialog.prototype.onHide = function(a, b) {
+            originalDialogOnHide.apply(this, [a,b]);
+            
+            fixBodyWidth(false);
+
+            $(window).off("resize", fixBodyWidth);
+        }
+        
+        // Change default focus element
+        PrimeFaces.widget.Dialog.prototype.applyFocus = function() {
+            var $this = this;
+            
+            if(this.cfg.focus) {
+                PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.cfg.focus).focus();
+            } else {
+                // change: override default focus to title element instead of first input
+                // change: focus inside timeout to fix problems for some dialogs - for example downloadPopup
+                $this.jq.find('.ui-dialog-title').attr('tabindex', 0);
+                setTimeout(function(){ $this.jq.find('.ui-dialog-title').focus(); }, 0);
+            }
+        };
     }
 }
 reinitializePrimefacesComponentsJS();
@@ -113,21 +415,6 @@ function bind_bsui_components(){
     // Custom Popover with HTML content
     popoverHTML();
     
-    // Dialog Listener For Calling handleResizeDialog
-    PrimeFaces.widget.Dialog.prototype.postShow = function() {
-        var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
-        var dialog_titlebar_el = document.getElementById(this.id).querySelector(".ui-dialog-title");
-        handleResizeDialog(dialog_id);
-
-        $(window).on("resize", null, {dialog_id: dialog_id}, fixBodyWidth);
-        dialog_titlebar_el.setAttribute("tabIndex", "0");
-        dialog_titlebar_el.focus();
-    }
-    PrimeFaces.widget.Dialog.prototype.onHide = function() {
-        fixBodyWidth(false);
-
-        $(window).off("resize", fixBodyWidth);
-    }
 }
 
 function bind_tooltip_popover(){
@@ -211,20 +498,48 @@ function post_differences(){
  * Sharrre
  */
 function sharrre(){
+    var language = $('#sharrre-widget').data('language');
+    
+    var sharrreLocales = {
+            pl: {
+                'sharrre.button.facebook.title': 'Udostępnij na Facebooku',
+                'sharrre.button.twitter.title': 'Udostępnij na Twitterze',
+                'sharrre.button.newWindonw.info': '(otwierane w nowym oknie)'
+            },
+            en: {
+                'sharrre.button.facebook.title': 'Share on Facebook',
+                'sharrre.button.twitter.title': 'Share in Twitter',
+                'sharrre.button.newWindonw.info': '(opens in new window)'
+            }
+    };
+    
+    var currentLocales = sharrreLocales[language];
+    if (currentLocales === null) {
+        currentLocales = sharrreLocales.en;
+    }
+    
     $('#sharrre-widget').sharrre({
         share: {
             facebook: true,
             twitter: true
         },
+        locales: currentLocales,
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
-                    <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
-                    <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
+                    <a href="#" class="sharrre-facebook" title="{sharrre.button.facebook.title} {sharrre.button.newWindonw.info}" aria-label="{sharrre.button.facebook.title} {sharrre.button.newWindonw.info}"><span class="socicon socicon-facebook" aria-hidden="true"/></a> \n\
+                    <a href="#" class="sharrre-twitter" title="{sharrre.button.twitter.title} {sharrre.button.newWindonw.info}" aria-label="{sharrre.button.twitter.title} {sharrre.button.newWindonw.info}"><span class="socicon socicon-twitter" aria-hidden="true"/></a> \n\
                     </div>',
         enableHover: false,
         enableTracking: true,
         urlCurl: '',
         render: function(api, options){
+            var elementHtml = $(api.element).html();
+            
+            $.each(options.locales, function(key, translation) {
+                elementHtml = elementHtml.split('{' + key + '}').join(translation);
+            });
+            $(api.element).html(elementHtml);
+            
             $(api.element).on('click', '.sharrre-twitter', function() {
                 api.openPopup('twitter');
             });
