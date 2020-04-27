@@ -912,7 +912,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
 	public JsonObjectBuilder generateTemporaryS3UploadUrls(long fileSize) {
 		
-		long chunkSize=512l;
+		long chunkSize=5*1024*1024l; //5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
 		JsonObjectBuilder response = Json.createObjectBuilder();
 		try {
 			key = getMainFileKey();
