@@ -12,12 +12,10 @@
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
     <ui:param name="authUserSession" value ="#{dataverseSession.user.authenticated}"/>
-    <ui:param name="showAddDataverseLink" value="#{(dataverseSession.user.authenticated and permissionsWrapper.canIssueCreateDataverseCommand(dataverseServiceBean.findRootDataverse())) 
-                                                   or (!dataverseSession.user.authenticated and permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand')) }"/>
-    <ui:param name="showAddDatasetLink" value="#{(dataverseSession.user.authenticated and permissionsWrapper.canIssueCreateDatasetCommand(dataverseServiceBean.findRootDataverse()))
-                                                 or (!dataverseSession.user.authenticated and permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand')) }"/>
-    <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or  showAddDatasetLink}"/>
-  
+    <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
+    <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
+    <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
