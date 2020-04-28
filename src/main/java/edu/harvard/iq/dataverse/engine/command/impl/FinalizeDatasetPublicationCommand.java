@@ -126,12 +126,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
 	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
+            // some imported datasets may already be released.
 		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
+                publicizeExternalIdentifier(theDataset, ctxt);
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
         
 
         // Remove locks

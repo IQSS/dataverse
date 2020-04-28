@@ -58,7 +58,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
         }
-        
+
         StorageIO<DataFile> dataAccess = null;
         // size of the stored original:
         Long storedOriginalFileSize;

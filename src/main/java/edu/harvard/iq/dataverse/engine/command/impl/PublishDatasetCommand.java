@@ -114,7 +114,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             if ( registerGlobalIdsForFiles ){
                 registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
 	    }
-
+            
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();

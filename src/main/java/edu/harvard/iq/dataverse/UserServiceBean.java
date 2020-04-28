@@ -400,7 +400,7 @@ public class UserServiceBean {
         if (!searchTerm.isEmpty()) {
             sharedSearchClause = " AND " + getSharedSearchClause(searchTerm);
         }
-        
+
         
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";

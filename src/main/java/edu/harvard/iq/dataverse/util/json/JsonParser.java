@@ -413,10 +413,10 @@ public class JsonParser {
                     dataFile.getFileMetadatas().add(fileMetadata);
                     dataFile.setOwner(dsv.getDataset());
                     fileMetadata.setDataFile(dataFile);
-                    if (dsv.getDataset().getFiles() == null) {
-                        dsv.getDataset().setFiles(new ArrayList<>());
-                    }
-                    dsv.getDataset().getFiles().add(dataFile);
+                        if (dsv.getDataset().getFiles() == null) {
+                            dsv.getDataset().setFiles(new ArrayList<>());
+                        }
+                        dsv.getDataset().getFiles().add(dataFile);
                 }
                 
 
