@@ -11,7 +11,6 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
-    <ui:param name="authUserSession" value ="#{dataverseSession.user.authenticated}"/>
     <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
     <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
     <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
@@ -37,18 +36,15 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li jsf:rendered="#{showAddDataGroup and !authUserSession}">
-                            <a href="#" onClick="PF('addData_popup').show()">#{bundle['dataverse.results.btn.addData']} </a>
-                        </li> 
-                        <li class="dropdown" jsf:rendered="#{showAddDataGroup and authUserSession}">
+                        <li class="dropdown" jsf:rendered="#{showAddDataGroup}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li jsf:rendered="#{showAddDataverseLink and authUserSession}">
+                                <li jsf:rendered="#{showAddDataverseLink}">
                                     <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
                                     </h:outputLink>
                                 </li>
-                                <li jsf:rendered="#{showAddDatasetLink and authUserSession}">
+                                <li jsf:rendered="#{showAddDatasetLink}">
                                     <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
                                     </h:outputLink>
