@@ -152,7 +152,7 @@
         <!-- Uncomment the line below to disble `;jsessionid=` in URLs -->
 	<!-- tracking-mode>COOKIE</tracking-mode -->
     </session-config>
-    <!-- web fonts -->
+    <!-- web fonts, bootstrap css map, favicon -->
     <mime-mapping>
         <extension>eot</extension>
         <mime-type>application/vnd.ms-fontobject</mime-type>
@@ -172,6 +172,10 @@
     <mime-mapping>
         <extension>woff2</extension>
         <mime-type>application/font-woff2</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>map</extension>
+        <mime-type>application/json</mime-type>
     </mime-mapping>
     <mime-mapping>
         <extension>svg</extension>

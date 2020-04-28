@@ -130,7 +130,7 @@
                                   auto="#{!(EditDatafilesPage.directUploadEnabled())}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
-                                  fileUploadListener="#{EditDatafilesPage.handleFileUpload}" 
+                                  listener="#{EditDatafilesPage.handleFileUpload}" 
                                   process="filesTable" 
                                   update=":datasetForm:filesTable, @([id$=filesButtons])"
                                   label="#{bundle['file.selectToAddBtn']}"
@@ -765,7 +765,7 @@
                 <div class="col-sm-8">
                     <p class="help-block">#{bundle['file.spss-porExtraLabels.title']}</p>
                     <p:growl id="messageForLabelsFileUpload" showDetail="true" />
-                    <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" fileUploadListener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
+                    <p:fileUpload id="labelsFileUpload" label="#{bundle['file.spss-porExtraLabels.selectToAddBtn']}" update="messageForLabelsFileUpload" mode="advanced" auto="true" listener="#{EditDatafilesPage.handleLabelsFileUpload}"/>
                 </div>
             </div>
         </div>

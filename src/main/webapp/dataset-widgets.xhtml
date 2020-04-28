@@ -22,9 +22,10 @@
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
                 </f:metadata>
+                <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
                 <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">
                     <p:tab id="thumbnailsTab" title="#{bundle['dataset.thumbnailsAndWidget.thumbnails.title']}">
-                        <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
+
                             <div class="form-group" jsf:rendered="#{true or themeWidgetFragment.editDv.themeRoot}">
                                 <label class="col-sm-3 control-label" for="logoFormat">
                                     #{bundle['dataset.thumbnailsAndWidget.thumbnailImage']}
@@ -72,7 +73,7 @@
                                             <p:fileUpload invalidFileMessage="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update="@form" 
                                                           sizeLimit="#{systemConfig.uploadLogoSizeLimit}" 
                                                           oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false" 
-                                                          fileUploadListener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
+                                                          listener="#{DatasetWidgetsPage.handleImageFileUpload}" label="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.upload']}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -82,47 +83,7 @@
                                 <p:commandButton styleClass="btn btn-link" update="@form" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
 
-                            <p:dialog id="confrmRemove" header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
-                                <p class="help-block">
-                                    <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
-                                </p>
-                                <div class="button-block">
-                                    <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
-                                                   action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
-                                                   update="@form"/>
-                                    <button class="btn btn-link" onclick="PF('confrmRemove').hide()" type="button">
-                                        #{bundle.cancel}
-                                    </button>
-                                </div> 
-                            </p:dialog>
-                            <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
-                                <div class="form-horizontal col-sm-12">
-                                    <div class="form-group">
-                                        <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
-                                        <p:outputPanel id="customPanel">
-                                            <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
-                                                <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
-                                            </p:selectOneRadio>
-                                            <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
-                                                <div class="col-xs-4 text-center radio">
-                                                    <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
-                                                    <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
-                                                        <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
-                                                        <h:outputText value="#{thumbnail.filename}"/>
-                                                    </h:outputLabel>
-                                                </div>
-                                            </c:forEach>
-                                        </p:outputPanel>
-                                    </div>
-                                </div>
-                                <div class="button-block">
-                                    <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
-                                    <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
-                                        #{bundle.cancel}
-                                    </button>
-                                </div>
-                            </p:dialog>
-                        </h:form>
+
                     </p:tab>
                     <p:tab id="widgetsTab" title="#{bundle['dataset.thumbnailsAndWidget.widgets.title']}">
                         <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
@@ -184,7 +145,51 @@
                         </div>
                     </p:tab>
                 </p:tabView>
+                    
+                    <p:dialog id="confrmRemove" header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
+                        <p class="help-block">
+                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
+                        </p>
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
+                                             action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
+                                             update="@form"/>
+                            <button class="btn btn-link" onclick="PF('confrmRemove').hide()" type="button">
+                                        #{bundle.cancel}
+                            </button>
+                        </div> 
+                    </p:dialog>
+                    <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
+                        <div class="form-horizontal col-sm-12">
+                            <div class="form-group">
+                                <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
+                                <p:outputPanel id="customPanel">
+                                    <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
+                                        <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
+                                    </p:selectOneRadio>
+                                    <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
+                                        <div class="col-xs-4 text-center radio">
+                                            <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
+                                            <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
+                                                <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
+                                                <h:outputText value="#{thumbnail.filename}"/>
+                                            </h:outputLabel>
+                                        </div>
+                                    </c:forEach>
+                                </p:outputPanel>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                            <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
+                                        #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+
+               </h:form>
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>
