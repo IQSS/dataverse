@@ -47,6 +47,8 @@ public class SolrQueryCreator {
             return constructQueryForNumberField((NumberSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.CHECKBOX)) {
             return constructQueryForCheckboxField((CheckboxSearchField) searchField);
+        } else if (searchField.getSearchFieldType().equals(SearchFieldType.SELECT_ONE_VALUE)) {
+            return constructQueryForSelectOneField((SelectOneSearchField) searchField);
         } else if (searchField.getSearchFieldType().equals(SearchFieldType.DATE)) {
             return constructQueryForDateField((DateSearchField) searchField);
         } 
@@ -87,6 +89,25 @@ public class SolrQueryCreator {
                 );
 
         return checkboxQueryBuilder.toString();
+    }
+
+    private String constructQueryForSelectOneField(SelectOneSearchField selectOneSearchField) {
+        if (selectOneSearchField.getCheckedFieldValue() == null) {
+            return StringUtils.EMPTY;
+        }
+
+        StringBuilder selectOneQueryBuilder = new StringBuilder();
+
+        String fieldValue = selectOneSearchField.getCheckedFieldValue();
+
+        selectOneQueryBuilder
+                .append(selectOneSearchField.getName())
+                .append(":")
+                .append("\"")
+                .append(fieldValue)
+                .append("\"");
+
+        return selectOneQueryBuilder.toString();
     }
 
     private String constructQueryForNumberField(NumberSearchField numberSearchField) {

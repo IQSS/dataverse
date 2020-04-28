@@ -62,12 +62,31 @@
                                         <div class="ui-inputfield form-control select-scroll-block"
                                              jsf:rendered="#{searchField.searchFieldType == fieldTypeEnums.CHECKBOX}">
                                             <p:selectManyCheckbox value="#{searchField.checkedFieldValues}"
-                                                                  layout="pageDirection">
+                                                                  layout="pageDirection"
+                                            >
                                                 <f:selectItems value="#{searchField.checkboxLabelAndValue}"
                                                                var="cvs"
                                                                itemLabel="#{cvs._1()}"
                                                                itemValue="#{cvs._2()}"/>
                                             </p:selectManyCheckbox>
+                                        </div>
+                                        <div jsf:rendered="#{searchField.searchFieldType == fieldTypeEnums.SELECT_ONE_VALUE}">
+                                            <p:selectOneMenu styleClass="facet-category-default"
+                                                             value="#{searchField.checkedFieldValue}"
+                                                             layout="pageDirection"
+                                                             filter="true"
+                                                             filterMatchMode="contains"
+                                            >
+                                                <f:selectItem itemLabel="#{bundle['advanced.search.selectItem']}"
+                                                              noSelectionOption="true"
+                                                              itemValue="#{null}"
+                                                              itemDisabled="false"
+                                                />
+                                                <f:selectItems value="#{searchField.listLabelAndValue}"
+                                                               var="sov"
+                                                               itemLabel="#{sov._1()}"
+                                                               itemValue="#{sov._2()}"/>
+                                            </p:selectOneMenu>
                                         </div>
                                     </div>
                                 </div>
@@ -167,6 +186,24 @@
                                                                    itemLabel="#{checkBoxTuple._1()}"
                                                                    itemValue="#{checkBoxTuple._2()}"/>
                                                 </p:selectManyCheckbox>
+                                            </div>
+                                            <div jsf:rendered="#{item.searchFieldType == fieldTypeEnums.SELECT_ONE_VALUE}">
+                                                <p:selectOneMenu value="#{item.checkedFieldValue}"
+                                                                 styleClass="facet-category-default"
+                                                                 layout="pageDirection"
+                                                                 filter="true"
+                                                                 filterMatchMode="contains"
+                                                >
+                                                    <f:selectItem itemLabel="#{bundle['advanced.search.selectItem']}"
+                                                                  noSelectionOption="true"
+                                                                  itemValue="#{null}"
+                                                                  itemDisabled="false"
+                                                                  />
+                                                    <f:selectItems value="#{item.listLabelAndValue}"
+                                                                   var="selectOneTuple"
+                                                                   itemLabel="#{selectOneTuple._1()}"
+                                                                   itemValue="#{selectOneTuple._2()}"/>
+                                                </p:selectOneMenu>
                                             </div>
                                         </div>
                                     </div>

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.search.advanced.DateSearchField;
 import edu.harvard.iq.dataverse.search.advanced.NumberSearchField;
 import edu.harvard.iq.dataverse.search.advanced.SearchBlock;
 import edu.harvard.iq.dataverse.search.advanced.SearchField;
+import edu.harvard.iq.dataverse.search.advanced.SelectOneSearchField;
 import edu.harvard.iq.dataverse.search.advanced.SolrQueryCreator;
 import edu.harvard.iq.dataverse.search.advanced.TextSearchField;
 import io.vavr.Tuple;
@@ -155,9 +156,12 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     private SearchField mapDatasetField(DatasetFieldType datasetFieldType) {
 
-        if (containsCheckboxValues(datasetFieldType)) {
-
-            return mapCheckBoxValues(datasetFieldType);
+        if (containsControlledVocabularyValues(datasetFieldType)) {
+            if(datasetFieldType.isThisOrParentAllowsMultipleValues()) {
+                return mapCheckBoxValues(datasetFieldType);
+            } else {
+                return mapSelectOneValues(datasetFieldType);
+            }
 
         } else if (isTextField(datasetFieldType)) {
             return new TextSearchField(datasetFieldType.getName(),
@@ -193,7 +197,20 @@ public class AdvancedSearchPage implements java.io.Serializable {
         return checkboxSearchField;
     }
 
-    private boolean containsCheckboxValues(DatasetFieldType datasetFieldType) {
+    private SelectOneSearchField mapSelectOneValues(DatasetFieldType datasetFieldType) {
+        SelectOneSearchField selectOneSearchField = new SelectOneSearchField(datasetFieldType.getName(),
+                datasetFieldType.getDisplayName(),
+                datasetFieldType.getLocaleDescription());
+
+        for (ControlledVocabularyValue vocabValue : datasetFieldType.getControlledVocabularyValues()) {
+            selectOneSearchField.getListLabelAndValue().add(Tuple.of(vocabValue.getLocaleStrValue(),
+                    vocabValue.getStrValue()));
+
+        }
+        return selectOneSearchField;
+    }
+
+    private boolean containsControlledVocabularyValues(DatasetFieldType datasetFieldType) {
         return !datasetFieldType.getControlledVocabularyValues().isEmpty();
     }
 
@@ -260,16 +277,15 @@ public class AdvancedSearchPage implements java.io.Serializable {
                                                        BundleUtil.getStringFromBundle("description"),
                                                        BundleUtil.getStringFromBundle("advanced.search.dataverses.description.tip")));
 
-        CheckboxSearchField checkboxSearchField = new CheckboxSearchField(SearchFields.DATAVERSE_SUBJECT,
-                                                                          BundleUtil.getStringFromBundle("subject"),
-                                                                          BundleUtil.getStringFromBundle("advanced.search.dataverses.subject.tip"));
-
         DatasetFieldType subjectType = datasetFieldService.findByName(DatasetFieldConstant.subject);
+
+        CheckboxSearchField checkboxSearchField = new CheckboxSearchField(SearchFields.DATAVERSE_SUBJECT,
+                BundleUtil.getStringFromBundle("subject"),
+                BundleUtil.getStringFromBundle("advanced.search.dataverses.subject.tip"));
 
         for (ControlledVocabularyValue vocabValue : subjectType.getControlledVocabularyValues()) {
             checkboxSearchField.getCheckboxLabelAndValue().add(Tuple.of(vocabValue.getLocaleStrValue(),
-                                                                        vocabValue.getStrValue()));
-
+                    vocabValue.getStrValue()));
         }
 
         dataversesSearchFields.add(checkboxSearchField);
