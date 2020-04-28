@@ -27,7 +27,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
-import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
 //import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,7 +53,6 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless(name = "harvesterService")
 @Named
-@ManagedBean
 public class HarvesterServiceBean {
     @PersistenceContext(unitName="VDCNet-ejbPU")
     private EntityManager em;

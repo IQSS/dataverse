@@ -594,6 +594,7 @@ public class JsonPrinter {
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add ("originalFileSize", df.getOriginalFileSize())
+                .add("originalFileName", df.getOriginalFileName())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId

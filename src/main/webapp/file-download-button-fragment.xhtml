@@ -40,7 +40,7 @@
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
-                        #{tool.displayName}
+                        #{tool.getDisplayNameLang()}
                     </h:commandLink>
                     <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
                     <p:commandLink rendered="#{downloadPopupRequired}"
@@ -49,7 +49,7 @@
                                    process="@this"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{tool.displayName}
+                        #{tool.getDisplayNameLang()}
                     </p:commandLink>
                 </li>
             </ui:repeat>

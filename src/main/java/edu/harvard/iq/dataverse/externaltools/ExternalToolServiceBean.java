@@ -7,14 +7,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Type;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.Scope;
 
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.SCOPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.CONTENT_TYPE;
-import static edu.harvard.iq.dataverse.externaltools.ExternalTool.HAS_PREVIEW_MODE;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +24,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
+import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
 
 @Stateless
 @Named
@@ -171,6 +165,7 @@ public class ExternalToolServiceBean {
         JsonObject jsonObject = jsonReader.readObject();
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
         String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
+        String toolName = getOptionalTopLevelField(jsonObject, TOOL_NAME);
         String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
         String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
         String scopeUserInput = getRequiredTopLevelField(jsonObject, SCOPE);
@@ -246,7 +241,7 @@ public class ExternalToolServiceBean {
             hasPreviewModeBoolean = true;
         }
 
-        return new ExternalTool(displayName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
+        return new ExternalTool(displayName, toolName, description, type, scope, toolUrl, toolParameters, contentType, hasPreviewModeBoolean);
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

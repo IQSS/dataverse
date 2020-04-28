@@ -8,13 +8,9 @@ package edu.harvard.iq.dataverse.datasetutility;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+
 
 /**
  * Adding single file replace to the EditDatafilesPage.
@@ -94,9 +90,10 @@ public class FileReplacePageHelper {
     
     /**
      * Handle native file replace
+     * @param checkSum 
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSum) {
                 
         phase1Success = false;
         
@@ -111,7 +108,17 @@ public class FileReplacePageHelper {
         if (fileContentType == null){
             throw new NullPointerException("fileContentType cannot be null");
         }
-          
+        
+        OptionalFileParams ofp = null;
+        if(checkSum != null) {
+        	try {
+				ofp = new OptionalFileParams(null);
+			} catch (DataFileTagException e) {
+				//Shouldn't happen with null input
+				e.printStackTrace();
+			}
+        	ofp.setCheckSum(checkSum);
+        }
         // Run 1st phase of replace
         //
         replaceFileHelper.runReplaceFromUI_Phase1(fileToReplace.getId(),
@@ -119,7 +126,7 @@ public class FileReplacePageHelper {
                 fileContentType,
                 inputStream,
                 fullStorageId,
-                null
+                ofp
         );
         
         // Did it work?
