@@ -52,7 +52,7 @@
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                 style="width: 100%" panelStyleClass="without-select-all"
                 multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="startsWith">
+                filter="true" filterMatchMode="contains">
         <f:selectItems value="#{datasetField.datasetFieldType.sortedByLocaleValues}" />
     </p:selectCheckboxMenu>
 
@@ -60,7 +60,7 @@
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                 style="width: 100%" panelStyleClass="without-select-all"
                 multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="startsWith">
+                filter="true" filterMatchMode="contains">
         
         <f:selectItems value="#{datasetField.datasetFieldType.groupedValues}" />
     </p:selectCheckboxMenu>
