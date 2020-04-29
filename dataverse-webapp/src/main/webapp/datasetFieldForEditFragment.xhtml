@@ -1,12 +1,8 @@
 <ui:composition
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:o="http://omnifaces.org/ui"
-    >
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:o="http://omnifaces.org/ui"
+>
 
     <o:importConstants
             type="edu.harvard.iq.dataverse.persistence.dataset.InputRendererType"
@@ -14,6 +10,16 @@
 
     <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.TEXT}">
         <ui:include src="/WEB-INF/templates/dataset/inputRenderer/textInputField.xhtml" >
+            <ui:param name="inputRenderer" value="#{inputRenderer}" />
+            <ui:param name="datasetField" value="#{datasetField}" />
+            <ui:param name="hiddenLabel" value="#{hiddenLabel}" />
+            <ui:param name="allBlockfields" value="#{allBlockfields}" />
+            <ui:param name="operation" value="#{operation}" />
+        </ui:include>
+    </p:fragment>
+
+    <p:fragment rendered="#{inputRenderer.getType() eq inputRendererTypeEnum.SUGGESTION_TEXT}">
+        <ui:include src="/WEB-INF/templates/dataset/inputRenderer/suggestionInputField.xhtml" >
             <ui:param name="inputRenderer" value="#{inputRenderer}" />
             <ui:param name="datasetField" value="#{datasetField}" />
             <ui:param name="hiddenLabel" value="#{hiddenLabel}" />

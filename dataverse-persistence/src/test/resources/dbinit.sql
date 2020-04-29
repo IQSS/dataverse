@@ -244,6 +244,20 @@ VALUES (1, 'Test english consent', 'en', 1);
 INSERT INTO consentaction (actionoptions, consentactiontype, consent_id)
 VALUES ('{"firstName": "John", "lastName": "Tester", "email": "test@gmail.com"}', 'SEND_NEWSLETTER_EMAIL', 1);
 
+-------------------- SUGGESTIONS ---------------------
+
+INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES (1, 'Test Agency', 'TA', 'FREE', 'Test Agency', 'EN');
+
+INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES (2, 'Test Agency', 'TA', 'FREE', 'Agencja Testowa', 'PL');
+
+INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES (3, 'Turkish Agency', 'TUR', 'EURO', 'Turkish Agency', 'EN');
+
+INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES (4, 'Turkish Agency', 'TUR', 'EURO', 'Turecka Agencja', 'PL');
+
 -------------------- Fix sequences --------------------
 
 SELECT setval('authenticateduser_id_seq', COALESCE((SELECT MAX(id)+1 FROM authenticateduser), 1), false);

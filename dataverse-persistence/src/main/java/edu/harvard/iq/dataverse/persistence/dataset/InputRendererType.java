@@ -15,6 +15,11 @@ public enum InputRendererType {
      */
     TEXT,
     /**
+     * Input field will be rendered as autocomplete component
+     * with text input area
+     */
+    SUGGESTION_TEXT,
+    /**
      * Input field will be rendered as textarea
      */
     TEXTBOX,

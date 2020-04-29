@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.suggestion;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface SuggestionHandler {
 
@@ -10,5 +10,5 @@ public interface SuggestionHandler {
      */
     String getName();
 
-    Set<String> generateSuggestions(Map<String, String> filteredBy, String suggestionSourceField);
+    List<String> generateSuggestions(Map<String, String> filteredBy, String suggestionSourceFieldName, String suggestionSourceFieldValue);
 }

@@ -1,0 +1,44 @@
+<ui:composition
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:jsf="http://xmlns.jcp.org/jsf">
+
+    <!--@elvariable id="datasetField" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetField"-->
+    <!--@elvariable id="inputRenderer" type="edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.SuggestionInputFieldRenderer"-->
+
+    <p:outputLabel styleClass="control-label" for="suggestionText" rendered="#{!hiddenLabel}" escape="false"
+                   value="#{datasetField.datasetFieldType.localeTitle}">
+        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value=""
+                      rendered="#{datasetField.datasetFieldType.requiredInDataverse}"/>
+        <span class="glyphicon glyphicon-question-sign tooltip-icon"
+              jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}" tabindex="0"
+              data-toggle="tooltip" data-placement="auto right"
+              data-original-title="#{datasetField.datasetFieldType.localeDescription}"/>
+    </p:outputLabel>
+
+    <!-- input text start -->
+    <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
+    <p:autoComplete
+            id="suggestionText"
+            value="#{datasetField.value}"
+            completeMethod="#{inputRenderer.processSuggestionQuery(datasetField, 'suggestionText')}"
+            styleClass="autocomplete-form-control"
+    >
+
+        <p:ajax process="@this" event="itemSelect"/>
+        <p:ajax process="@this" event="itemUnselect"/>
+    </p:autoComplete>
+    <script>
+        handle_dropdown_popup_scroll();
+    </script>
+
+
+    <p:watermark for="suggestionText" value="#{datasetField.datasetFieldType.localeWatermark}"/>
+
+    <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite"
+         jsf:rendered="#{!empty datasetField.validationMessage}">
+        <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
+    </div>
+
+</ui:composition>
