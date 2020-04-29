@@ -36,7 +36,7 @@ Create a username/password (i.e. "admin" for both):
 
 ``htpasswd /etc/munin/munin-htpasswd admin``
 
-Assuming you are fronting Glassfish with Apache, prevent Apache from proxying "/munin" traffic to Glassfish by adding the following line to your Apache config:
+Assuming you are fronting your app server with Apache, prevent Apache from proxying "/munin" traffic to the app server by adding the following line to your Apache config:
 
 ``ProxyPassMatch ^/munin !``
 
@@ -90,12 +90,12 @@ Process the logs:
 
 Please note that load balancers (such as Amazon's ELB) might interfer with the ``LogFormat`` mentioned above.  To start troubleshooting errors such as ``AWStats did not find any valid log lines that match your LogFormat parameter``, you might need to bump up the value of ``NbOfLinesForCorruptedLog`` in the config files above and re-try while you interate on your Apache and AWStats config.
 
-Please note that the Dataverse team has attempted to parse Glassfish logs using AWStats but it didn't seem to just work and posts have been made at https://stackoverflow.com/questions/49134154/what-logformat-definition-does-awstats-require-to-parse-glassfish-http-access-logs and https://sourceforge.net/p/awstats/discussion/43428/thread/9b1befda/ that can be followed up on some day.
+Please note that the Dataverse team has attempted to parse Glassfish/Payara logs using AWStats but it didn't seem to just work and posts have been made at https://stackoverflow.com/questions/49134154/what-logformat-definition-does-awstats-require-to-parse-glassfish-http-access-logs and https://sourceforge.net/p/awstats/discussion/43428/thread/9b1befda/ that can be followed up on some day.
 
-Database Connection Pool used by Glassfish
-------------------------------------------
+Database Connection Pool Used by App Server
+-------------------------------------------
 
-https://github.com/IQSS/dataverse/issues/2595 contains some information on enabling monitoring of Glassfish, which is disabled by default. It's a TODO to document what to do here if there is sufficient interest.
+https://github.com/IQSS/dataverse/issues/2595 contains some information on enabling monitoring of app servers, which is disabled by default. It's a TODO to document what to do here if there is sufficient interest.
 
 
 actionlogrecord

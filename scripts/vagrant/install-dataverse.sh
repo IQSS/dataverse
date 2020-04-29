@@ -19,13 +19,15 @@ if [ -e default.config ]; then
 	mv default.config tmp-${pid}-default.config
 fi
 
+# FIXME: The default.config format changed in https://github.com/IQSS/dataverse/pull/6809
 echo "HOST_DNS_ADDRESS	localhost" > default.config
-echo "GLASSFISH_DIRECTORY	/home/glassfish/glassfish4" >> default.config
+echo "GLASSFISH_DIRECTORY	/home/dataverse/payara5" >> default.config
 
 if [ ! -z "$MAILSERVER" ]; then
 	echo "MAIL_SERVER	$MAILSERVER" >> default.config
 fi
 
+# FIXME: Switch to newer Python-based installer
 ./install -y -f
 
 if [ -e tmp-${pid}-default.config ]; then # if we moved it out, move it back
