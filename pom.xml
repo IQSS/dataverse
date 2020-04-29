@@ -24,12 +24,13 @@
         -->
         <argLine>-Duser.timezone=${project.timezone} -Dfile.encoding=${project.build.sourceEncoding} -Duser.language=${project.language} -Duser.region=${project.region}</argLine>
         <skipUnitTests>false</skipUnitTests>
-        
+    
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <!-- Make this correspond to the version used in Payara: 5.201 uses (patched) 2.3.14 -->
         <mojarra.version>2.3.14</mojarra.version>
-        <aws.version>1.11.172</aws.version>
-        <jackson.version>2.9.6</jackson.version>
+        <aws.version>1.11.762</aws.version>
+        <!-- Should always correspond with Payara bundled version: 5.201 uses 2.10.2 -->
+        <jackson.version>2.10.2</jackson.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <junit.version>4.12</junit.version>
@@ -183,10 +184,8 @@
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
-            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x, this should be changed to aws-java-sdk-s3,
-                 rendering the WAR much lighter. The version tag needs to be removed then, too. -->
-            <artifactId>aws-java-sdk-bundle</artifactId>
-            <version>${aws.version}</version>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -218,15 +217,17 @@
             <version>2.2.4</version>
             <scope>compile</scope>
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <scope>provided</scope>
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -453,11 +454,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache</artifactId>
-            <version>2.10.1</version>
         </dependency>
         <!-- OAuth2 authentication. -->
         <dependency>
@@ -739,46 +735,6 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.0.0</version>
-            </plugin>
-            <!-- v4.8: The truezip-maven-plugin below deletes two copies of a file that the AWS SDK bundle
-            includes called javamail.providers which breaks system emails. - bsilverstein 8/8/2017 -->
-            <!-- Once on Eclipse Glassfish 5.1 or Payara 5.x and changing to aws-java-sdk-s3, this can be deleted. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>truezip-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>remove-javamail-providers-from-exploded</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>target/dataverse-${project.version}/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>remove-javamail-providers-from-war</id>
-                        <goals>
-                            <goal>remove</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <fileset>
-                                <directory>target/dataverse-${project.version}.war/WEB-INF/lib/aws-java-sdk-bundle-${aws.version}.jar/META-INF</directory>
-                                <includes>
-                                    <include>javamail.providers</include>
-                                </includes>
-                            </fileset>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <!-- https://stackoverflow.com/questions/46177921/how-to-run-unit-tests-in-excludedgroups-in-maven -->
