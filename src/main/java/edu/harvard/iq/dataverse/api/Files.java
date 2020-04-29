@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -366,6 +369,7 @@ public class Files extends AbstractApiBean {
                 //the updated fileMetadata is not populated to the DataFile object where its easily accessible.
                 //Due to this we have to find the FileMetadata inside the DatasetVersion by comparing files info.
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
+                List<String> filePathsAndNames = new ArrayList<>();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
                     // Not sure I understand why we are comparing the checksum values here, 
@@ -378,10 +382,36 @@ public class Files extends AbstractApiBean {
                         && daf.getChecksumValue().equals(df.getChecksumValue())) {
                         upFmd = testFmd;
                     }
+                    String path = "";
+                    if (testFmd.getDirectoryLabel() != null) {
+                        path = testFmd.getDirectoryLabel() + "/";
+                    }
+                    filePathsAndNames.add(path + testFmd.getLabel());
                 }
                 
                 if (upFmd == null){
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
+                javax.json.JsonObject jsonObject = jsonReader.readObject();
+                String label = jsonObject.getString("label", null);
+                String directoryLabel = jsonObject.getString("directoryLabel", null);
+                if (label != null || directoryLabel != null) {
+                    String path = "";
+                    if (directoryLabel != null) {
+                        path = directoryLabel + "/";
+                    }
+                    if (label == null) {
+                        label = df.getFileMetadata().getLabel();
+                    }
+                    String incomingPathPlusFileName = path + label;
+                    logger.fine(filePathsAndNames.toString());
+                    logger.fine("incomingPathName: " + incomingPathPlusFileName);
+                    if (filePathsAndNames.contains(incomingPathPlusFileName)) {
+                        // TODO: Move this English to Bundle.properties.
+                        return error(BAD_REQUEST, "Filename already exists at " + incomingPathPlusFileName);
+                    }
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
