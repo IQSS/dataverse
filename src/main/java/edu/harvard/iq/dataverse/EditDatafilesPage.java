@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -48,9 +47,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +62,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonArray;
@@ -75,25 +72,14 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.validator.ValidatorException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.PrimeFaces;
-//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -104,7 +90,6 @@ import org.primefaces.PrimeFaces;
 public class EditDatafilesPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
-    private FileView fileView;
     private boolean uploadWarningMessageIsNotAnError;
 
     public enum FileEditMode {
@@ -147,7 +132,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
-    private final DateFormat displayDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     private Dataset dataset = new Dataset();
     
@@ -155,7 +139,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
 
     private String selectedFileIdsString = null; 
-    private FileEditMode mode = FileEditMode.EDIT; 
+    private FileEditMode mode; 
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
     private List<FileMetadata> fileMetadatas = new ArrayList<>();;
 
@@ -474,6 +458,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     
 
     public String init() {
+        // default mode should be EDIT
+        if (mode == null) {
+            mode = FileEditMode.EDIT;
+        }
         
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>(); 
@@ -582,7 +570,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
-            }           
+            }    
                        
         }
         
@@ -1873,7 +1861,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
-                                    contentType
+                                    contentType, 
+                                    null
                                 )){
             saveEnabled = true;
 
@@ -1932,11 +1921,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private void handleReplaceFileUpload(String fullStorageLocation, 
     		String fileName, 
-    		String contentType){
+    		String contentType, 
+    		String checkSum){
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
-    	if (fileReplacePageHelper.handleNativeFileUpload(null, fullStorageLocation, fileName, contentType)){
+    	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
     		saveEnabled = true;
 
     		/**
@@ -1981,7 +1972,7 @@ public class EditDatafilesPage implements java.io.Serializable {
          */
         if (isFileReplaceOperation()){
 
-            handleReplaceFileUpload(event, uFile.getInputstream(),
+            handleReplaceFileUpload(event, uFile.getInputStream(),
                                     uFile.getFileName(),
                                     uFile.getContentType(),
                                     event,
@@ -2004,7 +1995,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
+            dFileList = FileUtil.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType(), null, null, systemConfig);
             
         } catch (IOException ioex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
@@ -2069,6 +2060,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     		//get file size
     		long fileSize = sio.getSize();
 
+			if(StringUtils.isEmpty(contentType)) {
+				contentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+			}
+			
+			if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
+				String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
+				localWarningMessage = warningMessage;
+				//ToDo - methods like handleReplaceFileUpload and classes like OptionalFileParams will need to track the algorithm in addition to the value to enable this
+			}
+			
     		/* ----------------------------
                 Check file size
                 - Max size NOT specified in db: default is unlimited
@@ -2083,7 +2084,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
-    				this.handleReplaceFileUpload(storageLocation, fileName, FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT);
+    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue);
     				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
     				return;
     			}
@@ -2099,13 +2100,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     				// for example, multiple files can be extracted from an uncompressed
     				// zip file.
     				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-    				if(StringUtils.isEmpty(contentType)) {
-    					contentType = "application/octet-stream";
-    				}
-    				if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
-    					String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
-    					localWarningMessage = warningMessage;
-    				}
+
+
     				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
@@ -2857,7 +2853,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             InputStream uploadStream = null;
             try {
-                uploadStream = file.getInputstream();
+                uploadStream = file.getInputStream();
             } catch (IOException ioex) {
                 logger.info("the file " + file.getFileName() + " failed to upload!");
                 List<String> args = Arrays.asList(file.getFileName());

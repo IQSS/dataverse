@@ -162,6 +162,7 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
+- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -244,7 +245,7 @@ If you wish to change which store is used by default, you'll need to delete the 
 
   ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
-  
+
   It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
 File Storage
@@ -255,7 +256,7 @@ File stores have one option - the directory where files should be stored. This c
 .. code-block:: none
 
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.directory=<file directory>"
-    
+
 Multiple file stores should specify different directories (which would nominally be the reason to use multiple file stores), but one may share the same directory as "\-Ddataverse.files.directory" option - this would result in temp files being stored in the /temp subdirectory within the file store's root directory.
 
 Swift Storage
@@ -332,7 +333,7 @@ If a user is computing on multiple datasets, the compute button will redirect to
 
 ``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
 
-If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to: 
+If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId=yourObject``
 
@@ -345,7 +346,7 @@ You can configure this redirect properly in your cloud environment to generate a
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
 
-Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse. 
+Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse.
 
 The Dataverse S3 driver supports multipart upload for files over 4 GB.
 
@@ -392,19 +393,19 @@ Please make note of the following details:
 - **Endpoint URL** - consult the documentation of your service on how to find it.
 
     * Example: https://play.minio.io:9000
-    
+
 - **Region:** Optional, but some services might use it. Consult your service documentation.
 
     * Example: *us-east-1*
-    
+
 - **Access key ID and secret access key:** Usually you can generate access keys within the user profile of your service.
 
     * Example:
-    
+
       - ID: *Q3AM3UQ867SPQQA43P2F*
-      
+
       - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
-      
+
 - **Bucket name:** Dataverse will fail opening and uploading files on S3 if you don't create one.
 
     * Example: *dataverse*
@@ -474,7 +475,7 @@ To set up an S3 store, you must define the id, type, and label as for any store:
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=s3"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
 
- 
+
 Then, we'll need to identify which S3 bucket we're using. Replace ``<your_bucket_name>`` with, of course, your bucket:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.bucket-name=<your_bucket_name>"``
@@ -490,7 +491,7 @@ If you enable ``dataverse.files.<id>.download-redirect`` as described above, not
 By default, your store will use the [default] profile in you .aws configuration files. To use a different profile, which would be necessary if you have two s3 stores at different locations, you can specify the profile to use:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.profile=<profilename>"``
- 
+
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
@@ -533,6 +534,10 @@ Reported Working S3-Compatible Storage
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
 We will be glad to add it here.
 
+Migrating from Local Storage to S3
+##################################
+
+Is currently documented on the :doc:`/developers/deployment` page.
 
 .. _Branding Your Installation:
 
@@ -733,7 +738,7 @@ Once you have created the analytics file, run this curl command to add it to you
 Tracking Button Clicks
 ++++++++++++++++++++++
 
-The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations. 
+The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
 
 Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
 
@@ -759,17 +764,17 @@ Also note that while the current Chronopolis implementation generates the bag an
 
 The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Keys and any required Glassfish jvm options. The example instructions here are specific to the DuraCloud Archiver\:
 
-\:ArchiverClassName - the fully qualified class to be used for archiving. For example: 
+\:ArchiverClassName - the fully qualified class to be used for archiving. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.DuraCloudSubmitToArchiveCommand"``
 
-\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\: 
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":DuraCloudHost, :DuraCloudPort, :DuraCloudContext"``
 
 The DPN archiver defines three custom settings, one of which is required (the others have defaults):
 
-\:DuraCloudHost - the URL for your organization's Duracloud site. For example: 
+\:DuraCloudHost - the URL for your organization's Duracloud site. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:DuraCloudHost -X PUT -d "qdr.duracloud.org"``
 
@@ -778,7 +783,7 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 Archivers may require glassfish settings as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Glassfish:
 
 ``./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'``
-    
+
 ``./asadmin create-jvm-options '-Dduracloud.password=YOUR_PASSWORD_HERE'``
 
 .. _Local Path Configuration:
@@ -794,7 +799,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 ``curl -X PUT -d /home/path/to/storage http://localhost:8080/api/admin/settings/:BagItLocalPath``
 
-\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\: 
+\:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
 
@@ -806,13 +811,13 @@ API Call
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
 ``curl -H "X-Dataverse-key: <key>" http://localhost:8080/api/admin/submitDataVersionToArchive/{id}/{version}``
-    
+
 where:
 
 {id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
 
 {version} is the friendly version number, e.g. "1.2".
-     
+
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
@@ -828,12 +833,12 @@ To active this workflow, one must first install a workflow using the archiver st
 Using the Workflow Native API (see the :doc:`/api/native-api` guide) this workflow can be installed using:
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file internal-archiver-workflow.json http://localhost:8080/api/admin/workflows``
-    
+
 The workflow id returned in this call (or available by doing a GET of /api/admin/workflows ) can then be submitted as the default PostPublication workflow:
 
 ``curl -X PUT -d {id} http://localhost:8080/api/admin/workflows/default/PostPublishDataset``
 
-Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.  
+Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.
 
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
@@ -855,9 +860,9 @@ Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikip
 
 We **strongly recommend** using the crawler rules in the sample robots.txt linked above. Note that they make the dataverse and dataset pages accessible to the search engine bots; but discourage them from actually crawling the site, by following any search links - facets and such - on the dataverse pages. Such crawling is very inefficient in terms of system resources, and often results in confusing search results for the end users of the search engines (for example, when partial search results are indexed as individual pages).
 
-The recommended solution instead is to directly point the bots to the dataset and dataverse pages that need to be indexed, by advertising them via an explicit sitemap (please see the next section for details on how to generate the sitemap). 
+The recommended solution instead is to directly point the bots to the dataset and dataverse pages that need to be indexed, by advertising them via an explicit sitemap (please see the next section for details on how to generate the sitemap).
 
-You can of course modify your own robots.txt to suit your specific needs as necessary. If you don't want your datasets to be indexed at all, you can tell the bots to stay away from your site completely. But, as noted above, keep in mind that only the good, "polite" bots honor these rules! You are not really blocking anyone from accessing your site by adding a "Disallow" rule in robots.txt - it is a suggestion only. A rogue bot can and will violate it. If you are having trouble with the site being overloaded with what looks like heavy automated crawling, you may have to resort to blocking this traffic by other means - for example, via rewrite rules in Apache, or even by a Firewall. 
+You can of course modify your own robots.txt to suit your specific needs as necessary. If you don't want your datasets to be indexed at all, you can tell the bots to stay away from your site completely. But, as noted above, keep in mind that only the good, "polite" bots honor these rules! You are not really blocking anyone from accessing your site by adding a "Disallow" rule in robots.txt - it is a suggestion only. A rogue bot can and will violate it. If you are having trouble with the site being overloaded with what looks like heavy automated crawling, you may have to resort to blocking this traffic by other means - for example, via rewrite rules in Apache, or even by a Firewall.
 
 (See the sample robots.txt file linked above for some comments on how to set up different "Allow" and "Disallow" rules for different crawler bots)
 
@@ -887,9 +892,9 @@ This will create or update a file in the following location unless you have cust
 
 On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Glassfish's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
 
-https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar. 
+https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar.
 
-Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it. 
+Once the sitemap has been generated and placed in the domain docroot directory, it will become available to the outside callers at <YOUR_SITE_URL>/sitemap/sitemap.xml; it will also be accessible at <YOUR_SITE_URL>/sitemap.xml (via a *pretty-faces* rewrite rule). Some search engines will be able to find it at this default location. Some, **including Google**, need to be **specifically instructed** to retrieve it.
 
 One way to submit your sitemap URL to Google is by using their "Search Console" (https://search.google.com/search-console). In order to use the console, you will need to authenticate yourself as the owner of your Dataverse site. Various authentication methods are provided; but if you are already using Google Analytics, the easiest way is to use that account. Make sure you are logged in on Google with the account that has the edit permission on your Google Analytics property; go to the search console and enter the root URL of your Dataverse server, then choose Google Analytics as the authentication method. Once logged in, click on "Sitemaps" in the menu on the left. (todo: add a screenshot?) Consult `Google's "submit a sitemap" instructions`_ for more information; and/or similar instructions for other search engines.
 
@@ -1029,7 +1034,7 @@ Then, to switch to production DataCite, you can issue the following command:
 See also these related database settings below:
 
 - :ref:`:DoiProvider`
-- :ref:`:Protocol`  
+- :ref:`:Protocol`
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
@@ -1090,7 +1095,7 @@ If you're using **handles**, this JVM setting configures access credentials so y
 
 dataverse.handlenet.admprivphrase
 +++++++++++++++++++++++++++++++++
-This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with. 
+This JVM setting is also part of **handles** configuration. The Handle.Net installer lets you choose whether to encrypt the admcredfile private key or not. If you do encrypt it, this is the pass phrase that it's encrypted with.
 
 .. _dataverse.handlenet.index:
 
@@ -1306,18 +1311,18 @@ Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! 
 ++++++++++++++++++++++++++
 
 By default, Dataverse generates a random 6 character string, pre-pended by the Shoulder if set, to use as the identifier
-for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values 
-instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``). 
-In addition to this setting, a database sequence must be created in the database. 
+for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values
+instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``).
+In addition to this setting, a database sequence must be created in the database.
 We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
-You may need to make some changes to suit your system setup, see the comments for more information: 
+You may need to make some changes to suit your system setup, see the comments for more information:
 
 .. literalinclude:: ../_static/util/createsequence.sql
 
-Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented 
-in any other SQL flavor - the standard JPA code in the application simply expects 
+Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented
+in any other SQL flavor - the standard JPA code in the application simply expects
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
-with the single return argument ``identifier``. 
+with the single return argument ``identifier``.
 
 Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
 
@@ -1343,7 +1348,7 @@ The chart below shows examples from each possible combination of parameters from
 | **INDEPENDENT** |    MLGWJO     |      100002      |
 +-----------------+---------------+------------------+
 
-As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1". 
+As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
 
 Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID 100001, then the file will be assigned the PID 100002. This option is functional, but it is not a recommended use case.
 
@@ -1362,15 +1367,40 @@ If you don't want to register file-based PIDs for your installation, set:
 
 Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
 
+Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+
+.. _:PIDAsynchRegFileCount:
+
+:PIDAsynchRegFileCount
+++++++++++++++++++++++
+
+Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
+
+``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
+
 .. _:IndependentHandleService:
 
 :IndependentHandleService
 +++++++++++++++++++++++++++
 
-Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry). 
+Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry).
 By default this setting is absent and Dataverse assumes it to be false.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
+
+.. _:FileValidationOnPublishEnabled:
+
+:FileValidationOnPublishEnabled
++++++++++++++++++++++++++++++++
+
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+
+If you don't want the datafiles to be validated on publish, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
+
+Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+
 
 :ApplicationTermsOfUse
 ++++++++++++++++++++++
@@ -1418,12 +1448,12 @@ Note: After making a change to this setting, a reExportAll needs to be run befor
 
 ``curl http://localhost:8080/api/admin/metadata/reExportAll``
 
-This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not. 
+This will *force* a re-export of every published, local dataset, regardless of whether it has already been exported or not.
 
 :NavbarAboutUrl
 +++++++++++++++
 
-Set ``NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar. 
+Set ``NavbarAboutUrl`` to a fully-qualified URL which will be used for the "About" link in the navbar.
 
 Note: The "About" link will not appear in the navbar until this option is set.
 
@@ -1478,13 +1508,13 @@ Alongside the ``:StatusMessageHeader`` you need to add StatusMessageText for the
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
 
-This setting controls the maximum size of uploaded files. 
+This setting controls the maximum size of uploaded files.
 - To have one limit for all stores, set `MaxFileUploadSizeInBytes` to "2147483648", for example, to limit the size of files uploaded to 2 GB:
 
 ``curl -X PUT -d 2147483648 http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
 - To have limits per store with an optional default, use a serialized json object for the value of `MaxFileUploadSizeInBytes` with an entry per store, as in the following example, which maintains a 2 GB default and adds higher limits for stores with ids "fileOne" and "s3".
- 
+
 ``curl -X PUT -d '{"default":"2147483648","fileOne":"4000000000","s3":"8000000000"}' http://localhost:8080/api/admin/settings/:MaxFileUploadSizeInBytes``
 
 Notes:
@@ -1562,9 +1592,9 @@ The relative path URL to which users will be sent for signup. The default settin
 :LoginSessionTimeout
 ++++++++++++++++++++
 
-Session timeout (in minutes) for logged-in users. The default is 8 hours (480 minutes). For the anonymous user sessions, the timeout is set to the default value, configured in the web.xml file of the Dataverse application. 
+Session timeout (in minutes) for logged-in users. The default is 8 hours (480 minutes). For the anonymous user sessions, the timeout is set to the default value, configured in the web.xml file of the Dataverse application.
 
-In the example below we reduce the timeout to 4 hours: 
+In the example below we reduce the timeout to 4 hours:
 
 ``curl -X PUT -d 240 http://localhost:8080/api/admin/settings/:LoginSessionTimeout``
 
@@ -1906,7 +1936,7 @@ This setting is experimental and related to Repository Storage Abstraction Layer
 :GuestbookResponsesPageDisplayLimit
 +++++++++++++++++++++++++++++++++++
 
-Limit on how many guestbook entries to display on the guestbook-responses page. By default, only the 5000 most recent entries will be shown. Use the standard settings API in order to change the limit. For example, to set it to 10,000, make the following API call: 
+Limit on how many guestbook entries to display on the guestbook-responses page. By default, only the 5000 most recent entries will be shown. Use the standard settings API in order to change the limit. For example, to set it to 10,000, make the following API call:
 
 ``curl -X PUT -d 10000 http://localhost:8080/api/admin/settings/:GuestbookResponsesPageDisplayLimit``
 
@@ -1917,7 +1947,7 @@ You can replace the default dataset metadata fields that are displayed above fil
 
 ``curl http://localhost:8080/api/admin/settings/:CustomDatasetSummaryFields -X PUT -d 'producer,subtitle,alternativeTitle'``
 
-You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work. 
+You have to put the datasetFieldType name attribute in the :CustomDatasetSummaryFields setting for this to work.
 
 :AllowApiTokenLookupViaApi
 ++++++++++++++++++++++++++
@@ -1936,7 +1966,7 @@ Enable the collection of provenance metadata on Dataverse via the provenance pop
 :MetricsCacheTimeoutMinutes
 +++++++++++++++++++++++++++
 
-Sets how long a cached metrics result is used before re-running the query for a request. This timeout is only applied to some of the metrics that query the current state of the system, previous months queries are cached indefinitely. See :doc:`/api/metrics` for more info. The default timeout value is 7 days (10080 minutes). 
+Sets how long a cached metrics result is used before re-running the query for a request. This timeout is only applied to some of the metrics that query the current state of the system, previous months queries are cached indefinitely. See :doc:`/api/metrics` for more info. The default timeout value is 7 days (10080 minutes).
 
 ``curl -X PUT -d 10080 http://localhost:8080/api/admin/settings/:MetricsCacheTimeoutMinutes``
 
@@ -1971,11 +2001,11 @@ See :ref:`i18n` for a curl example and related settings.
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++
 
-``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role). 
+``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role).
 This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``::InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
 
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
-or 
+or
 ``curl -X PUT -d '*' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 
 :AllowCors

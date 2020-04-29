@@ -1,6 +1,7 @@
 {
   "displayName": "Fabulous File Tool",
   "description": "Fabulous Fun for Files!",
+  "toolName": "fabulous",
   "scope": "file",
   "type": "explore",
   "toolUrl": "https://fabulousfiletool.com",

@@ -228,6 +228,10 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Please provide initial version in the dataset json");
             }
+            
+            if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
+                return badRequest("Only a superuser may add files via this api");
+            }
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
@@ -258,6 +262,9 @@ public class Dataverses extends AbstractApiBean {
         try {
             logger.log(Level.INFO, "jsonBody:importDataset={0}", jsonBody);
             User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             logger.log(Level.INFO, "dataset:importDataset={0}", xstream.toXML(ds));
@@ -388,7 +395,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
+    
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
         logger.log(Level.INFO, "parseDataset is called");
         try (StringReader rdr = new StringReader(datasetJson)) {
