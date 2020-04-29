@@ -30,7 +30,7 @@ public class DuplicateFilesIT {
     }
 
     @Test
-    public void uploadTwoFilesWithSameName() throws IOException {
+    public void uploadTwoFilesWithSameNameSameDirectory() throws IOException {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -73,6 +73,61 @@ public class DuplicateFilesIT {
                 .statusCode(OK.getStatusCode())
                 // Note that "README.md" was changed to "README-1.md". This is a feature. It's what the GUI does.
                 .body("data.files[0].label", equalTo("README-1.md"));
+
+    }
+
+    @Test
+    public void uploadTwoFilesWithSameNameDifferentDirectories() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Path pathtoReadme1 = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
+        Files.write(pathtoReadme1, "File 1".getBytes());
+        System.out.println("README: " + pathtoReadme1);
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "Description of the whole project.");
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme1.toString(), json1.build(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("README.md"));
+
+        Path pathtoReadme2 = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
+        Files.write(pathtoReadme2, "File 2".getBytes());
+        System.out.println("README: " + pathtoReadme2);
+
+        JsonObjectBuilder json2 = Json.createObjectBuilder()
+                .add("description", "Docs for the code.")
+                .add("directoryLabel", "code");
+
+        Response uploadReadme2 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme2.toString(), json2.build(), apiToken);
+        uploadReadme2.prettyPrint();
+        uploadReadme2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // The file name is still "README.md" (wasn't renamed)
+                // because the previous file was in a different directory.
+                .body("data.files[0].label", equalTo("README.md"));
 
     }
 
