@@ -921,6 +921,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 			msec += 60 * 1000 * getUrlExpirationMinutes();
 			expiration.setTime(msec);
 			InitiateMultipartUploadRequest initiationRequest = new InitiateMultipartUploadRequest(bucketName, key);
+			initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
 			InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
 			String uploadId = initiationResponse.getUploadId();
 			for(int i=1;i<=(fileSize/chunkSize) + (fileSize%chunkSize > 0 ? 1: 0);i++) {
@@ -928,10 +929,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 						new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
 				uploadPartUrlRequest.addRequestParameter("uploadId", uploadId);
 				uploadPartUrlRequest.addRequestParameter("partNumber", Integer.toString(i));
-
-				//Require user to add this header to indicate a temporary file
-				//        generatePresignedUrlRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
-
 				URL presignedUrl; 
 				try {
 					presignedUrl = s3.generatePresignedUrl(uploadPartUrlRequest);
