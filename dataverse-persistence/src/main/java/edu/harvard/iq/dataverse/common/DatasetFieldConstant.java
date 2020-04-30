@@ -69,6 +69,8 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String fundingAgency = "fundingAgency";
     public final static String grantNumberValue = "grantNumberValue";
     public final static String grantNumberAgency = "grantNumberAgency";
+    public final static String grantNumberAgencyShortName = "grantNumberAgencyShortName";
+    public final static String grantNumberProgram = "grantNumberProgram";
     public final static String distributorName = "distributorName";
     public final static String distributorURL = "distributorURL";
     public final static String distributorLogo = "distributorLogoURL";

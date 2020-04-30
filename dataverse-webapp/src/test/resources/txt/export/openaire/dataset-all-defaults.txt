@@ -505,6 +505,20 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "GrantInformationGrantNumber1"
+                },
+                "grantNumberAgencyShortName": {
+                    "typeName": "grantNumberAgencyShortName",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "grantNumberAgencyShortName1"
+
+                },
+                "grantNumberProgram": {
+                    "typeName": "grantNumberProgram",
+                    "multiple": false,
+                    "typeClass": "primitive",
+                    "value": "grantNumberProgram1"
+
                 }
               },
               {

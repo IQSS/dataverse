@@ -14,7 +14,7 @@ public class Cleanup {
      * @param sentence full name or organization name
      * @return normalize string value
      */
-    static public String normalize(String sentence) {
+    public static String normalize(String sentence) {
         if (StringUtils.isBlank(sentence)) {
             return "";
         }
@@ -24,5 +24,10 @@ public class Cleanup {
                 .replaceAll(" +", " ");
 
         return sentence;
+    }
+
+    public static String normalizeSlash(String sentence) {
+
+        return sentence.replaceAll("/", "%2F");
     }
 }

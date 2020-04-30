@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.suggestion;
 
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.dataset.suggestion.GrantSuggestion;
 
 import java.util.HashMap;
@@ -16,9 +17,9 @@ public class GrantSuggestionConnector {
     // -------------------- CONSTRUCTORS --------------------
 
     public GrantSuggestionConnector() {
-        suggestionsEntityConnector.put("grantNumberAgency", GrantSuggestion.getSuggestionNameFieldName());
-        suggestionsEntityConnector.put("grantNumberAgencyShortName", GrantSuggestion.getGrantAgencyAcronymFieldName());
-        suggestionsEntityConnector.put("grantNumberProgram", GrantSuggestion.getFundingProgramFieldName());
+        suggestionsEntityConnector.put(DatasetFieldConstant.grantNumberAgency, GrantSuggestion.getSuggestionNameFieldName());
+        suggestionsEntityConnector.put(DatasetFieldConstant.grantNumberAgencyShortName, GrantSuggestion.getGrantAgencyAcronymFieldName());
+        suggestionsEntityConnector.put(DatasetFieldConstant.grantNumberProgram, GrantSuggestion.getFundingProgramFieldName());
     }
 
     // -------------------- LOGIC --------------------

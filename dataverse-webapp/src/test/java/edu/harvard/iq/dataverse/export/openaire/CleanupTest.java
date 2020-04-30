@@ -25,4 +25,16 @@ public class CleanupTest {
 
         // TODO: organization examples...
     }
+
+    @Test
+    public void normalizeSlash() {
+        //given
+        String funderInfo = "funder/example";
+
+        //when
+        String normalizationResult = Cleanup.normalizeSlash(funderInfo);
+
+        //then
+        Assert.assertEquals("funder%2Fexample", normalizationResult);
+    }
 }
