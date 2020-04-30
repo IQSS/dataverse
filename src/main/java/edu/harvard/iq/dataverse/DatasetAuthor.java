@@ -84,9 +84,8 @@ public class DatasetAuthor {
     }
 
     public boolean isEmpty() {
-        return ( (affiliation==null || affiliation.getValue().trim().equals(""))
-            && (name==null || name.getValue().trim().equals(""))
-           );
+        return ((affiliation == null || affiliation.getValue() == null || affiliation.getValue().trim().equals(""))
+                && (name == null || name.getValue() == null || name.getValue().trim().equals("")));
     }
 
     /**
