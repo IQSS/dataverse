@@ -100,6 +100,47 @@ public class IngestUtil {
         return fileName;
     }
 
+    /**
+     * Given a new proposed label or directoryLabel for a file, check against
+     * existing files if a duplicate directoryLabel/label combination would be
+     * created.
+     *
+     * @param label The new label (filename) that is being proposed. Can be
+     * null.
+     * @param directoryLabel The new directoryLabel (file path) that is being
+     * proposed. Can be null.
+     * @param fileMetadatas The list fileMetadatas to be compared against,
+     * probably from a draft.
+     * @param dataFile The file that is being updated with a new name or path.
+     * @return true if there is a conflict, false otherwise.
+     */
+    public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
+        List<String> filePathsAndNames = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String path = "";
+            if (fileMetadata.getDirectoryLabel() != null) {
+                path = fileMetadata.getDirectoryLabel() + "/";
+            }
+            filePathsAndNames.add(path + fileMetadata.getLabel());
+        }
+        if (label != null || directoryLabel != null) {
+            String path = "";
+            if (directoryLabel != null) {
+                path = directoryLabel + "/";
+            }
+            if (label == null) {
+                label = dataFile.getFileMetadata().getLabel();
+            }
+            String incomingPathPlusFileName = path + label;
+            logger.fine(filePathsAndNames.toString());
+            logger.fine("incomingPathName: " + incomingPathPlusFileName);
+            if (filePathsAndNames.contains(incomingPathPlusFileName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // This method is called on a single file, when we need to modify the name 
     // of an already ingested/persisted datafile. For ex., when we have converted
     // a file to tabular data, and want to update the extension accordingly. 

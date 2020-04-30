@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -369,7 +370,6 @@ public class Files extends AbstractApiBean {
                 //the updated fileMetadata is not populated to the DataFile object where its easily accessible.
                 //Due to this we have to find the FileMetadata inside the DatasetVersion by comparing files info.
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
-                List<String> filePathsAndNames = new ArrayList<>();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
                     // Not sure I understand why we are comparing the checksum values here, 
@@ -382,11 +382,6 @@ public class Files extends AbstractApiBean {
                         && daf.getChecksumValue().equals(df.getChecksumValue())) {
                         upFmd = testFmd;
                     }
-                    String path = "";
-                    if (testFmd.getDirectoryLabel() != null) {
-                        path = testFmd.getDirectoryLabel() + "/";
-                    }
-                    filePathsAndNames.add(path + testFmd.getLabel());
                 }
                 
                 if (upFmd == null){
@@ -397,21 +392,16 @@ public class Files extends AbstractApiBean {
                 javax.json.JsonObject jsonObject = jsonReader.readObject();
                 String label = jsonObject.getString("label", null);
                 String directoryLabel = jsonObject.getString("directoryLabel", null);
-                if (label != null || directoryLabel != null) {
-                    String path = "";
-                    if (directoryLabel != null) {
-                        path = directoryLabel + "/";
-                    }
-                    if (label == null) {
-                        label = df.getFileMetadata().getLabel();
-                    }
+                String path = "";
+                if (directoryLabel != null) {
+                    path = directoryLabel + "/";
+                }
+                if (label == null) {
+                    label = df.getFileMetadata().getLabel();
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
                     String incomingPathPlusFileName = path + label;
-                    logger.fine(filePathsAndNames.toString());
-                    logger.fine("incomingPathName: " + incomingPathPlusFileName);
-                    if (filePathsAndNames.contains(incomingPathPlusFileName)) {
-                        // TODO: Move this English to Bundle.properties.
-                        return error(BAD_REQUEST, "Filename already exists at " + incomingPathPlusFileName);
-                    }
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
