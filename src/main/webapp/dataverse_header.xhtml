@@ -69,7 +69,7 @@
                             </h:outputLink>
                         </li>
                         <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank" rel="noopener">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl', settingsWrapper.guidesBaseUrl.concat('/').concat(systemConfig.guidesVersion).concat('/user'))}" target="_blank" rel="noopener">
                                 <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
                         </li>
