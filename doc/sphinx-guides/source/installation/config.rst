@@ -1462,9 +1462,9 @@ Note: The "About" link will not appear in the navbar until this option is set.
 :NavbarGuidesUrl
 ++++++++++++++++
 
-Set ``NavbarGuidesUrl`` to a fully-qualified URL which will be used for the "User Guide" link in the navbar.
+Set ``:NavbarGuidesUrl`` to a fully-qualified URL which will be used for the "User Guide" link in the navbar.
 
-Note: by default, the URL is composed from the settings ``GuidesBaseUrl`` and ``GuidesVersion`` below.
+Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and ``:GuidesVersion`` below.
 
 ``curl -X PUT -d http://example.edu/fancy-dataverse-guide http://localhost:8080/api/admin/settings/:NavbarGuidesUrl``
 
