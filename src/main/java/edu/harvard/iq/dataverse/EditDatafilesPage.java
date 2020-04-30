@@ -65,6 +65,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
@@ -1761,6 +1762,29 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
+    
+public void requestMultipartDirectUploadUrls(long fileSize) {
+        
+
+        
+        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+        if(s3io == null) {
+        	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
+        }
+        JsonObjectBuilder urls = null;
+        String storageIdentifier = null;
+        try {
+        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        	urls = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
+        	
+        } catch (IOException io) {
+        	logger.warning(io.getMessage());
+       	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
+       }
+        
+    	PrimeFaces.current().executeScript("uploadFileDirectlyInParts('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
+    }
+
     
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
