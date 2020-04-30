@@ -1583,7 +1583,7 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 			logger.warning(io.getMessage());
 			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload")); 
 		}
-		return ok("Multipart Upload aborted");
+		return Response.noContent().build();
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
 	}
