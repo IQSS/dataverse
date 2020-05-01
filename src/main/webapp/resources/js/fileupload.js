@@ -1,24 +1,4 @@
-class Datafile {
-  constructor(id, file) {
-    this.fileToUpload = file;
-    this.localId = id;
-  }
-  
-  setStorageIdentifier(si) {
-    this.storageIdentifier = si;
-  }
-  
-  getStorageIdentifier() {
-    return this.storageIdentifier;
-  }
-  
-  
-  
-}
-
 var fileList = [];
-
-
 var observer2=null;
 var directUploadEnabled=false;
 //How many files have started being processed but aren't yet being uploaded
@@ -91,11 +71,7 @@ function queueFileForDirectUpload(file) {
   //Fire off the first 4 to start (0,1,2,3)
   if(filesInProgress < 4 ) {
     filesInProgress= filesInProgress+1;
-    if(file.size > 5*1024*1024) {
-      requestMultipartDirectUploadUrls(fike,size);
-    } else {
-      requestDirectUploadUrl();
-    }
+    requestDirectUploadUrl();
   }
 }
 
