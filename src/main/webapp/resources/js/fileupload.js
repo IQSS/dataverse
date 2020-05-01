@@ -1,4 +1,24 @@
+class Datafile {
+  constructor(id, file) {
+    this.fileToUpload = file;
+    this.localId = id;
+  }
+  
+  setStorageIdentifier(si) {
+    this.storageIdentifier = si;
+  }
+  
+  getStorageIdentifier() {
+    return this.storageIdentifier;
+  }
+  
+  
+  
+}
+
 var fileList = [];
+
+
 var observer2=null;
 var directUploadEnabled=false;
 //How many files have started being processed but aren't yet being uploaded
@@ -71,7 +91,11 @@ function queueFileForDirectUpload(file) {
   //Fire off the first 4 to start (0,1,2,3)
   if(filesInProgress < 4 ) {
     filesInProgress= filesInProgress+1;
-    requestDirectUploadUrl();
+    if(file.size > 5*1024*1024) {
+      requestMultipartDirectUploadUrls(fike,size);
+    } else {
+      requestDirectUploadUrl();
+    }
   }
 }
 
@@ -241,9 +265,9 @@ function uploadFailure(jqXHR, upid, filename) {
   // On some browsers, the status is available in an event: window.event.srcElement.status
   // but others, (Firefox) don't support this. The calls below retrieve the status and other info
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
-  
+
   //Retrieve the error number (status) and related explanation (statusText)
-  var status = null;
+  var status = 0;
   var statusText =null;
 
   // There are various metadata available about which file the error pertains to
@@ -262,10 +286,14 @@ function uploadFailure(jqXHR, upid, filename) {
     id = upid;
     name=filename;
   } else {
-    status=arguments.callee.caller.caller.arguments[1].jqXHR.status;
-    statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+    try {
     name = arguments.callee.caller.caller.arguments[1].files[0].name;
     id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
+    status=arguments.callee.caller.caller.arguments[1].jqXHR.status;
+    statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+    } catch {
+      console.log("Unable to determine status for error - assuming network issue");
+    }
   }
 
     //statusText for error 0 is the unhelpful 'error'
