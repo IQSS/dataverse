@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
@@ -59,6 +60,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -246,6 +250,8 @@ public class DatasetPage implements java.io.Serializable {
     private Long versionId;
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList<>();
+    private List<DataFile> uploadedFiles = new ArrayList<>();
+
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private int releaseRadio = 1;
@@ -1112,6 +1118,14 @@ public class DatasetPage implements java.io.Serializable {
     
     public void setNewFiles(List<DataFile> newFiles) {
         this.newFiles = newFiles;
+    }
+    
+    public List<DataFile> getUploadedFiles() {
+        return uploadedFiles;
+    }
+    
+    public void setUploadedFiles(List<DataFile> uploadedFiles) {
+        this.uploadedFiles = uploadedFiles;
     }
     
     public Dataverse getLinkingDataverse() {
@@ -3553,9 +3567,19 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String cancel() {
+        //Files that have been finished and are now in the lower list on the page
+        for (DataFile newFile : newFiles) {
+            FileUtil.deleteTempFile(newFile, dataset, ingestService);
+        }
+
+        //Files in the upload process but not yet finished
+        for (DataFile newFile : uploadedFiles) {
+            FileUtil.deleteTempFile(newFile, dataset, ingestService);
+        }
+
         return  returnToLatestVersion();
     }
-
+    
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
