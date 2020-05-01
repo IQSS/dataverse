@@ -1757,8 +1757,14 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
             ownerId = dataset.getOwner().getId();
             logger.info("New host dataverse id: "+ownerId);
-            // discard the dataset already created:
+            // discard the dataset already created
+            //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
+            GlobalId gid = dataset.getGlobalId();
             dataset = new Dataset();
+            if(gid!=null) {
+            	dataset.setGlobalId(gid);
+            }
+         
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
             init(true);
             // rebuild the bred crumbs display:
