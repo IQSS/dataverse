@@ -346,10 +346,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return hasPermission;
     }
     
-    public boolean directUploadEnabled() {
-    	return Boolean.getBoolean("dataverse.files." + this.dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
-    }
-    
     public void reset() {
         // ?
     }
@@ -480,6 +476,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
+        
+
 
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
@@ -1745,12 +1743,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void requestDirectUploadUrl() {
         
-    	//Need to assign an identifier at this point if direct upload is used.
-        if ( isEmpty(dataset.getIdentifier()) ) {
-        	CommandContext ctxt = commandEngine.getContext();
-        	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
-            dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
-        }
+
         
         S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
         if(s3io == null) {
