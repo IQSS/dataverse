@@ -34,12 +34,11 @@ import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -379,49 +378,16 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-
-
-        if ((StringUtils.isEmpty(filterQuery)) ||
-                (datasetfieldFriendlyNamesBySolrField == null) ||
-                (staticSolrFieldFriendlyNamesBySolrField == null)) {
-            return null;
-        }
-
         String[] parts = filterQuery.split(":");
         if (parts.length != 2) {
-            //logger.log(Level.INFO, "String array has {0} part(s).  Should have 2: {1}", new Object[]{parts.length, filterQuery});
             return null;
         }
-        String key = parts[0];
-        String value = parts[1];
+
+        String formattedValue = parts[1].replaceAll("^\"", "").replaceAll("\"$", "");
 
         List<String> friendlyNames = new ArrayList<>();
-
-        String datasetfieldFriendyName = datasetfieldFriendlyNamesBySolrField.get(key);
-        if (datasetfieldFriendyName != null) {
-            friendlyNames.add(datasetfieldFriendyName);
-        } else {
-            String nonDatasetSolrField = staticSolrFieldFriendlyNamesBySolrField.get(key);
-            if (nonDatasetSolrField != null) {
-                friendlyNames.add(nonDatasetSolrField);
-            } else if (key.equals(SearchFields.PUBLICATION_STATUS)) {
-                /**
-                 * @todo Refactor this quick fix for
-                 * https://github.com/IQSS/dataverse/issues/618 . We really need
-                 * to get rid of all the reflection that's happening with
-                 * solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField()
-                 * and
-                 */
-                friendlyNames.add("Publication Status");
-            } else {
-                // meh. better than nuthin'
-                friendlyNames.add(key);
-            }
-        }
-        String noLeadingQuote = value.replaceAll("^\"", "");
-        String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
-        String valueWithoutQuotes = noTrailingQuote;
-        friendlyNames.add(valueWithoutQuotes);
+        friendlyNames.add(searchService.getLocaleFacetCategoryName(parts[0]));
+        friendlyNames.add(searchService.getLocaleFacetLabelName(formattedValue, parts[0]));
         return friendlyNames;
     }
     

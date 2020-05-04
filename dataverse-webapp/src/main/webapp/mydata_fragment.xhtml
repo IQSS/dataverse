@@ -184,7 +184,7 @@
                     <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{MyDataSearchFragment.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!MyDataSearchFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <f:param name="q" value="#{MyDataSearchFragment.query}"/>
@@ -200,7 +200,7 @@
                         </h:outputLink>
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{MyDataSearchFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="#{facetLabel.name} &#40;{0}&#41;">
+                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <span class="glyphicon glyphicon-remove"></span>
@@ -220,7 +220,7 @@
 
                     <!--ROLES-->
                     <h:form id="rolesForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
-                        <h:outputText value="#{bundle['dashboard.list_users.tbl_header.roles']}" styleClass="facetCategoryName"/>
+                        <h:outputText value="#{bundle['facets.search.role']}" styleClass="facetCategoryName"/>
                         <p:dataList id="rolesList" value="#{MyDataSearchFragment.myRoles}" var="role" rows="#{MyDataSearchFragment.myRoles.size()}">
                             <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!MyDataSearchFragment.roleFilters.contains(role)}" styleClass="facetLink">
                                 <h:outputFormat value="#{role}" />
@@ -338,7 +338,7 @@
                 <ui:repeat value="#{MyDataSearchFragment.roleFilters}" var="roleFilter" rendered="#{!MyDataSearchFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{roleFilter}}"/>
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected">
-                        <h:outputText value="Role: #{roleFilter}"/> <span class="glyphicon glyphicon-remove"></span>
+                        <h:outputText value="#{bundle['facets.search.role']}: #{roleFilter}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{MyDataSearchFragment.query}"/>
                         <c:forEach items="#{MyDataSearchFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
