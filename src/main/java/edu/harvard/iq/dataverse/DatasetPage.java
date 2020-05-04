@@ -252,7 +252,7 @@ public class DatasetPage implements java.io.Serializable {
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
-    private MutableBoolean uploadInProgress;
+    private MutableBoolean uploadInProgress = new MutableBoolean(false);
 
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
