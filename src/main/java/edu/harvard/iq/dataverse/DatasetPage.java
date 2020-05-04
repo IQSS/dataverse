@@ -1130,6 +1130,14 @@ public class DatasetPage implements java.io.Serializable {
         this.uploadedFiles = uploadedFiles;
     }
     
+    public MutableBoolean getUploadInProgress() {
+        return uploadInProgress;
+    }
+    
+    public void setUploadInProgress(MutableBoolean inProgress) {
+        this.uploadInProgress = inProgress;
+    }
+    
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
     }
