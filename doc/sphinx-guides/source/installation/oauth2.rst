@@ -65,7 +65,7 @@ Edit the JSON template and replace the two "FIXME" values with the Client ID and
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file github.json http://localhost:8080/api/admin/authenticationProviders``
 
-After restarting Glassfish you should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account` section of the User Guide.
+After restarting your app server you should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account` section of the User Guide.
 
 By default, the Log In page will show the "builtin" provider, but you can adjust this via the ``:DefaultAuthProvider`` configuration option. For details, see :doc:`config`.
 
@@ -76,8 +76,6 @@ ORCID provides a sandbox registry, which may be useful for staging, or for devel
 This template can be used for configuring this setting (**this is not something you should use in a production environment**):
 
 - :download:`orcid-sandbox.json <../_static/installation/files/root/auth-providers/orcid-sandbox.json>`
-
-Please note that the :doc:`prerequisites` section contains an step regarding CA certs in Glassfish that must be followed to get ORCID login to work.
 
 Converting Local Users to OAuth
 -------------------------------

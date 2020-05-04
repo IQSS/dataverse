@@ -14,7 +14,7 @@ For unknown reasons, Netbeans will sometimes change the following line under ``s
 
 ``<context-root>/</context-root>``
 
-Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see a Glassfish error.
+Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see an app server error.
 
 The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 
@@ -35,9 +35,9 @@ You can check the current SMTP server with the ``asadmin`` command:
 
 ``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
-This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. This can be configured from the GlassFish console or the command line.
+This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. This can be configured from the Payara console or the command line.
 
-1. First, navigate to your Glassfish admin console: http://localhost:4848
+1. First, navigate to your Payara admin console: http://localhost:4848
 2. From the left-side panel, select **JavaMail Sessions**
 3. You should see one session named **mail/notifyMailSession** -- click on that.
 
@@ -67,7 +67,7 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 **\*WARNING**: Entering a password here will *not* conceal it on-screen. It’s recommended to use an *app password* (for smtp.gmail.com users) or utilize a dedicated/non-personal user account with SMTP server auths so that you do not risk compromising your password.
 
-Save these changes at the top of the page and restart your Glassfish server to try it out.
+Save these changes at the top of the page and restart your app server to try it out.
 
 The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
 
@@ -76,7 +76,7 @@ The mail session can also be set from command line. To use this method, you will
 
 These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
 
-+ If you're seeing a "Relay access denied" error in your Glassfish logs when your app attempts to send an email, double check your user/password credentials for the Mail Host you're using.
++ If you're seeing a "Relay access denied" error in your app server logs when Dataverse attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
 As another example, here is how to create a Mail Host via command line for Amazon SES:
