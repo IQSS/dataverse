@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -28,7 +27,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
-import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -37,16 +35,11 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,7 +64,6 @@ import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.logging.Level;
@@ -80,6 +72,7 @@ import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.primefaces.PrimeFaces;
 
 /**
@@ -167,6 +160,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private Long maxFileUploadSizeInBytes = null;
     private Integer multipleUploadFilesLimit = null; 
+    
+    //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
+    private MutableBoolean uploadInProgress = null;
     
     private final int NUMBER_OF_SCROLL_ROWS = 25;
     
@@ -420,7 +416,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(String modeToken, DatasetVersion version, List<DataFile> newFilesList, List<DataFile> uploadedFilesList, List<FileMetadata> selectedFileMetadatasList) {
+    public String initCreateMode(String modeToken, DatasetVersion version, MutableBoolean inProgress, List<DataFile> newFilesList, List<DataFile> uploadedFilesList, List<FileMetadata> selectedFileMetadatasList) {
         if (modeToken == null) {
             logger.fine("Request to initialize Edit Files page with null token (aborting).");
             return null;
@@ -440,6 +436,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
+        uploadInProgress= inProgress;
         newFiles = newFilesList;
         uploadedFiles = uploadedFilesList;
         selectedFiles = selectedFileMetadatasList;
@@ -461,7 +458,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         newFiles = new ArrayList<>();
-        uploadedFiles = new ArrayList<>(); 
+        uploadedFiles = new ArrayList<>();
+        uploadInProgress= new MutableBoolean(false);
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -1306,7 +1304,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     
     public String cancel() {
-        uploadInProgress = false;
+        uploadInProgress.setValue(false);
         //Files that have been finished and are now in the lower list on the page
         for (DataFile newFile : newFiles) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
@@ -1442,8 +1440,8 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
-        if (!uploadInProgress) {
-            uploadInProgress = true;
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
         }
         logger.fine("handleDropBoxUpload");
         uploadComponentId = event.getComponent().getClientId();
@@ -1572,7 +1570,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                      }
                 }*/
             }
-            if(!uploadInProgress) {
+            if(uploadInProgress.isFalse()) {
                 logger.warning("Upload in progress cancelled");
                 for (DataFile newFile : datafiles) {
                     FileUtil.deleteTempFile(newFile, dataset, ingestService);
@@ -1595,7 +1593,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // (either through drag-and-drop or select menu). 
         logger.fine("upload started");
         
-        uploadInProgress = true;        
+        uploadInProgress.setValue(true);        
     }
     
     
@@ -1758,9 +1756,9 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
         }
         
        
-        if(uploadInProgress) {
+        if(uploadInProgress.isTrue()) {
             uploadedFiles.clear();
-            uploadInProgress = false;
+            uploadInProgress.setValue(false);
         }
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
@@ -1912,8 +1910,8 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         
-        if (!uploadInProgress) {
-            uploadInProgress = true;
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
         }
         
         if (event == null){
@@ -1978,7 +1976,7 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
             uploadComponentId = event.getComponent().getClientId();
         }
         
-        if(!uploadInProgress) {
+        if(uploadInProgress.isFalse()) {
             logger.warning("Upload in progress cancelled");
             for (DataFile newFile : dFileList) {
                 FileUtil.deleteTempFile(newFile, dataset, ingestService);
@@ -2004,8 +2002,8 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
         
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
-    	if (!uploadInProgress) {
-    		uploadInProgress = true;
+    	if (uploadInProgress.isFalse()) {
+    		uploadInProgress.setValue(true);
     	}
     	logger.fine("handleExternalUpload");
     	
@@ -2074,7 +2072,7 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
     				// -----------------------------------------------------------
     				uploadWarningMessage = processUploadedFileList(datafiles);
     			}
-    			if(!uploadInProgress) {
+    			if(uploadInProgress.isFalse()) {
     				logger.warning("Upload in progress cancelled");
     				for (DataFile newFile : datafiles) {
     					FileUtil.deleteTempFile(newFile, dataset, ingestService);
@@ -2103,7 +2101,6 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
     private String dupeFileNamesNew = null;
     private boolean multipleDupesExisting = false;
     private boolean multipleDupesNew = false;
-    private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
         if (dFileList == null) {

@@ -119,6 +119,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -251,6 +252,7 @@ public class DatasetPage implements java.io.Serializable {
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
+    private MutableBoolean uploadInProgress;
 
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
@@ -3565,19 +3567,34 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDraftVersion(){      
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";    
     }
+    
+    private String returnToParentDataverse(){ 
+        return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";    
+   }
+   
 
     public String cancel() {
+        return  returnToLatestVersion();
+    }
+    
+    public String cancelCreate() {
+    	//Stop any uploads in progress (so that uploadedFiles doesn't change)
+    	uploadInProgress.setValue(false);
+    	
+    	logger.info("Cancelling: " + newFiles.size() + " : " + uploadedFiles.size());
+    	
         //Files that have been finished and are now in the lower list on the page
-        for (DataFile newFile : newFiles) {
+        for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
 
         //Files in the upload process but not yet finished
-        for (DataFile newFile : uploadedFiles) {
+        //ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
+        for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
 
-        return  returnToLatestVersion();
+        return  returnToParentDataverse();
     }
     
     private HttpClient getClient() {

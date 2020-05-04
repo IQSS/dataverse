@@ -72,7 +72,7 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>
-                    <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
+                    <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- View infoMode -->
@@ -755,7 +755,7 @@
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
-                        <p:button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" outcome="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
+                        <p:commandButton id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" onclick="cancelUpload();" action="#{DatasetPage.cancelCreate}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>
                         <p:commandButton value="Direct" id="datasetSave"
                                          style="display:none"
                                          update=":datasetForm,:messagePanel"

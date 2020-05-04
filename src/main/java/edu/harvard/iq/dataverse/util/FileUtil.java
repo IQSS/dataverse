@@ -1777,6 +1777,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void deleteTempFile(DataFile dataFile, Dataset dataset, IngestServiceBean ingestService) {
+    	logger.info("Deleting " + dataFile.getStorageIdentifier());
     	// Before we remove the file from the list and forget about 
     	// it:
     	// The physical uploaded file is still sitting in the temporary

@@ -1,6 +1,9 @@
 var fileList = [];
 var observer2=null;
-var directUploadEnabled=false;
+
+//true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
+var directUploadEnabled=false;   
+
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress=0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -64,6 +67,11 @@ function setupDirectUpload(enabled) {
     observer2.observe(document.getElementById('datasetForm:fileUpload'),config);
   } //else ?
 }
+function cancelUpload() {
+  //Page is going away - don't upload any more files and don't send any more file entries to Dataverse
+  fileList = [];
+  directUploadEnabled=false;
+}
 
 function queueFileForDirectUpload(file) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
@@ -76,85 +84,89 @@ function queueFileForDirectUpload(file) {
 }
 
 function uploadFileDirectly(url, storageId) {
-  var thisFile=curFile;
-  //Pick the 'first-in' pending file
-  var file = fileList.shift();
-  //Increment count of files being processed
-  curFile=curFile+1;
-  console.log('Uploading ' + file.name + ' as ' +storageId + ' to ' + url);
-  //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
-  var filerows =  $('.ui-fileupload-files .ui-fileupload-row');
-  //Add an id attribute to each entry so we can later match progress and errors with the right entry
-  for(i=0;i< filerows.length;i++) {
-    var upid=filerows[i].getAttribute('upid');
-    if(typeof upid === "undefined" || upid === null || upid === '') {
-      var newUpId= getUpId();
-      filerows[i].setAttribute('upid', newUpId);
+  if(directUploadEnabled) {
+    var thisFile=curFile;
+    //Pick the 'first-in' pending file
+    var file = fileList.shift();
+    //Increment count of files being processed
+    curFile=curFile+1;
+    console.log('Uploading ' + file.name + ' as ' +storageId + ' to ' + url);
+    //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
+    var filerows =  $('.ui-fileupload-files .ui-fileupload-row');
+    //Add an id attribute to each entry so we can later match progress and errors with the right entry
+    for(i=0;i< filerows.length;i++) {
+      var upid=filerows[i].getAttribute('upid');
+      if(typeof upid === "undefined" || upid === null || upid === '') {
+        var newUpId= getUpId();
+        filerows[i].setAttribute('upid', newUpId);
+      }
     }
-  }
-  //Get the list of files to upload
-  var files =  $('.ui-fileupload-files');
-  //Find the corresponding row (assumes that the file order and the order of rows is the same)
-  var fileNode = files.find("[upid='"+thisFile+"']");
-  //Decrement number queued for processing
-  filesInProgress=filesInProgress-1;
-  var progBar = fileNode.find('.ui-fileupload-progress');
-  progBar.html('');
-  progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
-  $.ajax({
-    url: url,
-    headers: {"x-amz-tagging":"dv-state=temp"},
-    type: 'PUT',
-    data: file,
-    cache: false,
-    processData: false,
-    success: function () {
-    reportUpload(storageId, file)
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
+    //Get the list of files to upload
+    var files =  $('.ui-fileupload-files');
+    //Find the corresponding row (assumes that the file order and the order of rows is the same)
+    var fileNode = files.find("[upid='"+thisFile+"']");
+    //Decrement number queued for processing
+    filesInProgress=filesInProgress-1;
+    var progBar = fileNode.find('.ui-fileupload-progress');
+    progBar.html('');
+    progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
+    $.ajax({
+      url: url,
+      headers: {"x-amz-tagging":"dv-state=temp"},
+      type: 'PUT',
+      data: file,
+      cache: false,
+      processData: false,
+      success: function () {
+        reportUpload(storageId, file)
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
 
-      console.log('Failure: ' + jqXHR.status);
-      console.log('Failure: ' + errorThrown);
-      uploadFailure(jqXHR, thisFile);
-    },
-    xhr: function() {
-      var myXhr = $.ajaxSettings.xhr();
-      if(myXhr.upload) {
-        myXhr.upload.addEventListener('progress', function(e) {
-          if(e.lengthComputable) {
-            var doublelength = 2 * e.total;
-            progBar.children('progress').attr({
-              value:e.loaded,
-              max:doublelength
-            });
-          }
-        });
+        console.log('Failure: ' + jqXHR.status);
+        console.log('Failure: ' + errorThrown);
+        uploadFailure(jqXHR, thisFile);
+      },
+      xhr: function() {
+        var myXhr = $.ajaxSettings.xhr();
+        if(myXhr.upload) {
+          myXhr.upload.addEventListener('progress', function(e) {
+            if(e.lengthComputable) {
+              var doublelength = 2 * e.total;
+              progBar.children('progress').attr({
+                value:e.loaded,
+                max:doublelength
+              });
+            }
+          });
+        }
+        return myXhr;
       }
-      return myXhr;
-      }
-  });
+    });
+  }
 }
 
 function reportUpload(storageId, file){
-  console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
-  getMD5(
-    file,
-    prog => {
+  if(directUploadEnabled) {
+    console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
+    getMD5(
+      file,
+      prog => {
 
-    var current = 1 + prog;
-    $('progress').attr({
-              value:current,
-              max:2
-            });
-    }
-  ).then(
-    md5 => {
-      //storageId is not the location - has a : separator and no path elements from dataset
-      //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-      handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
-    },
-    err => console.error(err)
-  );
+      var current = 1 + prog;
+      $('progress').attr({
+                value:current,
+                max:2
+              });
+      }
+    ).then(
+      md5 => {
+        //storageId is not the location - has a : separator and no path elements from dataset
+        //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+        handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
+      },
+      err => console.error(err)
+    );
+  } //Todo else - tell Dataverse the storageId is not used/file can be deleted
 }
 
 
@@ -212,6 +224,7 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
+  if(directUploadEnabled) {
     var numDone = finishFile();
     var total = curFile;
     var inProgress = filesInProgress;
@@ -232,6 +245,7 @@ function directUploadFinished() {
         requestDirectUploadUrl();
       }
     }
+  }
 }
 
 function uploadFailure(jqXHR, upid, filename) {
