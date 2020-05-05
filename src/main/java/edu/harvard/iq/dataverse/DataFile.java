@@ -763,8 +763,6 @@ public class DataFile extends DvObject implements Comparable {
         this.fileAccessRequesters = fileAccessRequesters;
     }
     
-    
-    
     public boolean isHarvested() {
         
         // (storageIdentifier is not nullable - so no need to check for null
