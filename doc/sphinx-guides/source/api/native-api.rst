@@ -513,7 +513,7 @@ The JSON format is the same as that supported by the native API's :ref:`create d
 
 .. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
 
-Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by GlassFish.
+Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by the app server user.
 
 .. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
 
@@ -2436,7 +2436,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer:
+Get the server name. This is useful when a Dataverse system is composed of multiple app servers behind a load balancer:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2961,7 +2961,7 @@ This API streams its output in real time, i.e. it will start producing the outpu
 		  ]
       }
 
-Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your Glassfish configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
+Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your app server configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
 

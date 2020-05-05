@@ -38,9 +38,9 @@ Next you need to have Dataverse add some entries to the log that Counter Process
 
 Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
-- ``log_name_pattern`` You might want something like ``/usr/local/glassfish4/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
+- ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
-- ``output_file`` This needs to be a directory that the "glassfish" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
+- ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
 - ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but we're not 100% sure if this should be "Dataverse" or a branch for a Dataverse installation like "LibreScholar".
 - ``upload_to_hub`` This should be "False" unless you are testing sending SUSHI reports to the DataCite hub.
 - ``simulate_date`` You should probably set this to tomorrow.
