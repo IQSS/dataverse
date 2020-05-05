@@ -95,7 +95,7 @@
                         
                         $(document).ready(function () {
                             uploadWidgetDropMsg();
-                            setupDirectUpload(#{EditDatafilesPage.directUploadEnabled()}, #{EditDatafilesPage.workingVersion.dataset.id});
+                            setupDirectUpload(#{systemConfig.directUploadEnabled(EditDatafilesPage.dataset)});
                         });
                         //]]>
                     </script>
@@ -127,7 +127,7 @@
 
                     <p:fileUpload id="fileUpload" 
                                   dragDropSupport="true"
-                                  auto="#{!(EditDatafilesPage.directUploadEnabled())}"
+                                  auto="#{!(systemConfig.directUploadEnabled(EditDatafilesPage.dataset))}"
                                   multiple="#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}"
                                   disabled="#{lockedFromEdits ||  !(datasetPage || EditDatafilesPage.showFileUploadComponent()) }"
                                   listener="#{EditDatafilesPage.handleFileUpload}" 

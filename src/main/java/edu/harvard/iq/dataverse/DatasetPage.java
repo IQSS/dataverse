@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
@@ -50,6 +51,8 @@ import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -1767,8 +1770,14 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
             ownerId = dataset.getOwner().getId();
             logger.info("New host dataverse id: "+ownerId);
-            // discard the dataset already created:
+            // discard the dataset already created
+            //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
+            GlobalId gid = dataset.getGlobalId();
             dataset = new Dataset();
+            if(gid!=null) {
+            	dataset.setGlobalId(gid);
+            }
+         
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
             init(true);
             // rebuild the bred crumbs display:
@@ -1943,14 +1952,19 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
-            //Wait until the create command before actually getting an identifier  
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-                        
+            //Wait until the create command before actually getting an identifier, except if we're using directUpload  
+        	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
+            if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
+            	CommandContext ctxt = commandEngine.getContext();
+            	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+                dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
+            }                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());

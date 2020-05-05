@@ -37,7 +37,7 @@ It's also possible to prevent file uploads via API by adjusting the :ref:`:Uploa
 Forcing HTTPS
 +++++++++++++
 
-To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Glassfish might be a compelling enough reason to front Glassfish with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
+To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Payara might be a compelling enough reason to front Payara with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
 .. _PrivacyConsiderations:
 
@@ -52,12 +52,12 @@ Out of the box, Dataverse will list email addresses of the contacts for datasets
 Additional Recommendations
 ++++++++++++++++++++++++++
 
-Run Glassfish as a User Other Than Root
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Run Payara as a User Other Than Root
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See the :ref:`glassfish` section of :doc:`prerequisites` for details and init scripts for running Glassfish as non-root.
+See the :ref:`payara` section of :doc:`prerequisites` for details and init scripts for running Payara as non-root.
 
-Related to this is that you should remove ``/root/.glassfish/pass`` to ensure that Glassfish isn't ever accidentally started as root. Without the password, Glassfish won't be able to start as root, which is a good thing.
+Related to this is that you should remove ``/root/.payara/pass`` to ensure that Payara isn't ever accidentally started as root. Without the password, Payara won't be able to start as root, which is a good thing.
 
 Enforce Strong Passwords for User Accounts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -84,27 +84,27 @@ Network Ports
 
 Remember how under "Decisions to Make" in the :doc:`prep` section we mentioned you'll need to make a decision about whether or not to introduce a proxy in front of Dataverse such as Apache or nginx? The time has come to make that decision.
 
-The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the standard HTTPS port, which is 443.
+The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Payara puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the standard HTTPS port, which is 443.
 
-Your decision to proxy or not should primarily be driven by which features of Dataverse you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Glassfish with Apache is required. The details are covered in the :doc:`shibboleth` section.
+Your decision to proxy or not should primarily be driven by which features of Dataverse you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Payara with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
 If you'd like to use TwoRavens, you should also consider fronting with Apache because you will be required to install an Apache anyway to make use of the rApache module. For details, see the :doc:`r-rapache-tworavens` section.
 
-Even if you have no interest in Shibboleth nor TwoRavens, you may want to front Dataverse with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Glassfish is arduous and not for the faint of heart. The Dataverse team cannot provide much help with adding certificates to Glassfish beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
+Even if you have no interest in Shibboleth nor TwoRavens, you may want to front Dataverse with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Payara is arduous and not for the faint of heart. The Dataverse team cannot provide much help with adding certificates to Payara beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
-Still not convinced you should put Glassfish behind another web server? Even if you manage to get your SSL certificate into Glassfish, how are you going to run Glassfish on low ports such as 80 and 443? Are you going to run Glassfish as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Glassfish to run as a user other than root. (The Dataverse team will close https://github.com/IQSS/dataverse/issues/1934 after updating the Glassfish init script provided in the :doc:`prerequisites` section to not require root.)
+Still not convinced you should put Payara behind another web server? Even if you manage to get your SSL certificate into Payara, how are you going to run Payara on low ports such as 80 and 443? Are you going to run Payara as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Payara to run as a user other than root.
 
 There's also the issue of serving a production-ready version of robots.txt. By using a proxy such as Apache, this is a one-time "set it and forget it" step as explained below in the "Going Live" section.
 
-If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:`shibboleth` section should be good resource for you.
+If you are convinced you'd like to try fronting Payara with Apache, the :doc:`shibboleth` section should be good resource for you.
 
-If you really don't want to front Glassfish with any proxy (not recommended), you can configure Glassfish to run HTTPS on port 443 like this:
+If you really don't want to front Payara with any proxy (not recommended), you can configure Payara to run HTTPS on port 443 like this:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
 
-What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
+What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Payara uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Payara can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
-If you are running an installation with Apache and Glassfish on the same server, and would like to restrict Glassfish from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict the AJP listener to localhost only with:
+If you are running an installation with Apache and Payara on the same server, and would like to restrict Payara from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict the AJP listener to localhost only with:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
 
@@ -129,7 +129,7 @@ By default, the installer configures a default DOI namespace (10.5072) with Data
       <jvm-options>-Ddoi.username=...</jvm-options>
       <jvm-options>-Ddoi.password=...</jvm-options>
 
-and restart Glassfish. The prefix can be configured via the API (where it is referred to as "Authority"):
+and restart Payara. The prefix can be configured via the API (where it is referred to as "Authority"):
 
 ``curl -X PUT -d 10.xxxx http://localhost:8080/api/admin/settings/:Authority``
 
@@ -219,7 +219,7 @@ As for the "Remote only" authentication mode, it means that:
 File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
 ---------------------------------------------------------------------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
 
 Dataverse can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-dataverse basis.
 
@@ -356,7 +356,7 @@ First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dataverse and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
-``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either
+``~/.aws/`` where ``~`` is the home directory of the user you run Payara as. This file can be generated via either
 of two methods described below:
 
 1. Manually through creation of the credentials and config files or
@@ -442,7 +442,7 @@ Additional profiles can be added to these files by appending the relevant inform
   aws_access_key_id = <insert key, no brackets>
   aws_secret_access_key = <insert secret key, no brackets>
 
-Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Glassfish
+Place these two files in a folder named ``.aws`` under the home directory for the user running your Dataverse Payara
 instance. (From the `AWS Command Line Interface Documentation <http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html>`_:
 "In order to separate credentials from less sensitive options, region and output format are stored in a separate file
 named config in the same folder")
@@ -480,7 +480,7 @@ Then, we'll need to identify which S3 bucket we're using. Replace ``<your_bucket
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.bucket-name=<your_bucket_name>"``
 
-Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Glassfish to your users. To accomplish this, set ``dataverse.files.<id>.download-redirect`` to ``true`` like this:
+Optionally, you can have users download files from S3 directly rather than having files pass from S3 through Payara to your users. To accomplish this, set ``dataverse.files.<id>.download-redirect`` to ``true`` like this:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
 
@@ -497,7 +497,7 @@ In case you would like to configure Dataverse to use a custom S3 service instead
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
-Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+Lastly, go ahead and restart your Payara server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
 
 S3 Storage Options
 ##################
@@ -582,7 +582,7 @@ Custom Navbar Logo
 
 Dataverse allows you to replace the default Dataverse icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
 
-The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Glassfish ``logos`` directory and place your custom logo there. By Glassfish default, your logo image file will be located at ``/usr/local/glassfish4/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
+The custom logo image file is expected to be small enough to fit comfortably in the navbar, no more than 50 pixels in height and 160 pixels in width. Create a ``navbar`` directory in your Payara ``logos`` directory and place your custom logo there. By default, your logo image file will be located at ``/usr/local/payara5/glassfish/domains/domain1/docroot/logos/navbar/logo.png``.
 
 Once you have the location of your custom logo image file, run this curl command to add it to your settings:
 
@@ -641,13 +641,13 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
-Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/glassfish/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
+Translations for Dataverse are stored in "properties" files in a directory on disk (e.g. ``/home/dataverse/langBundles``) that you specify with the :ref:`dataverse.lang.directory` ``dataverse.lang.directory`` JVM option, like this:
 
-``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/glassfish/langBundles'``
+``./asadmin create-jvm-options '-Ddataverse.lang.directory=/home/dataverse/langBundles'``
 
 Go ahead and create the directory you specified.
 
-``mkdir /home/glassfish/langBundles``
+``mkdir /home/dataverse/langBundles``
 
 Creating a languages.zip File
 +++++++++++++++++++++++++++++
@@ -762,7 +762,7 @@ Duracloud Configuration
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
-The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Keys and any required Glassfish jvm options. The example instructions here are specific to the DuraCloud Archiver\:
+The minimal configuration to support an archiver integration involves adding a minimum of two Dataverse Keys and any required Payara jvm options. The example instructions here are specific to the DuraCloud Archiver\:
 
 \:ArchiverClassName - the fully qualified class to be used for archiving. For example:
 
@@ -780,7 +780,7 @@ The DPN archiver defines three custom settings, one of which is required (the ot
 
 :DuraCloudPort and :DuraCloudContext are also defined if you are not using the defaults ("443" and "duracloud" respectively). (Note\: these settings are only in effect if they are listed in the \:ArchiverSettings. Otherwise, they will not be passed to the DuraCloud Archiver class.)
 
-Archivers may require glassfish settings as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Glassfish:
+Archivers may require JVM options as well. For the Chronopolis archiver, the username and password associated with your organization's Chronopolis/DuraCloud account should be configured in Payara:
 
 ``./asadmin create-jvm-options '-Dduracloud.username=YOUR_USERNAME_HERE'``
 
@@ -866,16 +866,16 @@ You can of course modify your own robots.txt to suit your specific needs as nece
 
 (See the sample robots.txt file linked above for some comments on how to set up different "Allow" and "Disallow" rules for different crawler bots)
 
-You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that is embedded in the Dataverse war file:
+You have a couple of options for putting an updated robots.txt file into production. If you are fronting Payara with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Payara from serving the version of robots.txt that is embedded in the Dataverse war file:
 
 .. code-block:: text
 
-    # don't let Glassfish serve its version of robots.txt
+    # don't let Payara serve its version of robots.txt
     ProxyPassMatch ^/robots.txt$ !
 
 For more of an explanation of ``ProxyPassMatch`` see the :doc:`shibboleth` section.
 
-If you are not fronting Glassfish with Apache you'll need to prevent Glassfish from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of Dataverse. Furthermore, since the version of Dataverse is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse 4.6.1 the path to robots.txt may be ``/usr/local/glassfish4/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
+If you are not fronting Payara with Apache you'll need to prevent Payara from serving the robots.txt file embedded in the war file by overwriting robots.txt after the war file has been deployed. The downside of this technique is that you will have to remember to overwrite robots.txt in the "exploded" war file each time you deploy the war file, which probably means each time you upgrade to a new version of Dataverse. Furthermore, since the version of Dataverse is always incrementing and the version can be part of the file path, you will need to be conscious of where on disk you need to replace the file. For example, for Dataverse 4.6.1 the path to robots.txt may be ``/usr/local/payara5/glassfish/domains/domain1/applications/dataverse-4.6.1/robots.txt`` with the version number ``4.6.1`` as part of the path.
 
 Creating a Sitemap and Submitting it to Search Engines
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -886,11 +886,11 @@ Create or update your sitemap by adding the following curl command to cron to ru
 
 ``curl -X POST http://localhost:8080/api/admin/sitemap``
 
-This will create or update a file in the following location unless you have customized your installation directory for Glassfish:
+This will create or update a file in the following location unless you have customized your installation directory for Payara:
 
-``/usr/local/glassfish4/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
+``/usr/local/payara5/glassfish/domains/domain1/docroot/sitemap/sitemap.xml``
 
-On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Glassfish's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
+On an installation of Dataverse with many datasets, the creation or updating of the sitemap can take a while. You can check Payara's server.log file for "BEGIN updateSiteMap" and "END updateSiteMap" lines to know when the process started and stopped and any errors in between.
 
 https://demo.dataverse.org/sitemap.xml is the sitemap URL for the Dataverse Demo site and yours should be similar.
 
@@ -921,7 +921,7 @@ Before going live, you might want to consider setting up integrations to make it
 JVM Options
 -----------
 
-JVM stands for Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+JVM stands for Java Virtual Machine and as a Java application, Payara can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
@@ -931,7 +931,7 @@ When changing values these values with ``asadmin``, you'll need to delete the ol
 
 ``./asadmin create-jvm-options "-Ddataverse.fqdn=dataverse.example.com"``
 
-It's also possible to change these values by stopping Glassfish, editing ``glassfish4/glassfish/domains/domain1/config/domain.xml``, and restarting Glassfish.
+It's also possible to change these values by stopping Payara, editing ``payara5/glassfish/domains/domain1/config/domain.xml``, and restarting Payara.
 
 dataverse.fqdn
 ++++++++++++++
@@ -1108,7 +1108,7 @@ If you want to use different index than the default 300
 dataverse.timerServer
 +++++++++++++++++++++
 
-This JVM option is only relevant if you plan to run multiple Glassfish servers for redundancy. Only one Glassfish server can act as the dedicated timer server and for details on promoting or demoting a Glassfish server to handle this responsibility, see :doc:`/admin/timers`.
+This JVM option is only relevant if you plan to run multiple Payara servers for redundancy. Only one Payara server can act as the dedicated timer server and for details on promoting or demoting a Payara server to handle this responsibility, see :doc:`/admin/timers`.
 
 .. _dataverse.lang.directory:
 
@@ -1459,6 +1459,14 @@ Note: The "About" link will not appear in the navbar until this option is set.
 
 ``curl -X PUT -d http://dataverse.example.edu http://localhost:8080/api/admin/settings/:NavbarAboutUrl``
 
+:NavbarGuidesUrl
+++++++++++++++++
+
+Set ``:NavbarGuidesUrl`` to a fully-qualified URL which will be used for the "User Guide" link in the navbar.
+
+Note: by default, the URL is composed from the settings ``:GuidesBaseUrl`` and ``:GuidesVersion`` below.
+
+``curl -X PUT -d http://example.edu/fancy-dataverse-guide http://localhost:8080/api/admin/settings/:NavbarGuidesUrl``
 
 :GuidesBaseUrl
 ++++++++++++++
@@ -1564,7 +1572,7 @@ Limit the number of files in a zip that Dataverse will accept.
 :SolrHostColonPort
 ++++++++++++++++++
 
-By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Glassfish after making this change.
+By default Dataverse will attempt to connect to Solr on port 8983 on localhost. Use this setting to change the hostname or port. You must restart Payara after making this change.
 
 ``curl -X PUT -d localhost:8983 http://localhost:8080/api/admin/settings/:SolrHostColonPort``
 
@@ -1977,7 +1985,7 @@ Sets how long a cached metrics result is used before re-running the query for a 
 
 Sets the path where the raw Make Data Count logs are stored before being processed. If not set, no logs will be created for Make Data Count. See also the :doc:`/admin/make-data-count` section of the Admin Guide.
 
-``curl -X PUT -d '/usr/local/glassfish4/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
+``curl -X PUT -d '/usr/local/payara5/glassfish/domains/domain1/logs' http://localhost:8080/api/admin/settings/:MDCLogPath``
 
 .. _:DisplayMDCMetrics:
 
