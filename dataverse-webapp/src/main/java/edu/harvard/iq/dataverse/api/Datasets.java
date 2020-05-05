@@ -93,6 +93,7 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.vavr.control.Either;
+import org.apache.commons.cli.MissingArgumentException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1634,7 +1635,7 @@ public class Datasets extends AbstractApiBean {
 
         try {
             datasetsValidators.validateFileTermsOfUseDTO(optionalFileParams.getFileTermsOfUseDTO());
-        } catch (InvalidParameterException pe) {
+        } catch (MissingArgumentException | InvalidParameterException pe) {
             return error(Response.Status.BAD_REQUEST, pe.getMessage());
         } catch (EJBException ejbe) {
             return error(Response.Status.BAD_REQUEST, ejbe.getCause().getMessage());

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
@@ -33,7 +34,10 @@ public class DatasetsValidators {
     }
 
     // -------------------- LOGIC --------------------
-    public void validateFileTermsOfUseDTO(FileTermsOfUseDTO fileTermsOfUseDTO) throws InvalidParameterException {
+    public void validateFileTermsOfUseDTO(FileTermsOfUseDTO fileTermsOfUseDTO) throws InvalidParameterException, MissingArgumentException {
+        if(fileTermsOfUseDTO == null) {
+            throw new MissingArgumentException("datasets.api.add.termsOfUseAndAccess.missingFileTermsOfUseDto");
+        }
         if(StringUtils.isEmpty(fileTermsOfUseDTO.getTermsType())) {
             throw new InvalidParameterException(BundleUtil.getStringFromBundle("datasets.api.add.termsOfUseAndAccess.missingTermsOfUse"));
         }

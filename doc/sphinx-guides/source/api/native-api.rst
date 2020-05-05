@@ -462,18 +462,20 @@ For example::
 Add a File to a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a file to an existing Dataset. Description, terms of use and tags are optional::
+Add a file to an existing Dataset. Description and tags are optional, terms of use are required::
 
     POST http://$SERVER/api/datasets/$id/add?key=$apiKey
 
+When adding a file to a dataset, you must specify:
 
-When adding a file to a dataset, you can optionally specify the following:
+*   Terms of use and access for the file.
+
+When adding a file to a dataset, you can optionally specify:
 
 *   A description of the file.
 *   Tags and categories for the file.
-*   Terms of use and access for the file.
 
-All optional parameters are passed in a ``jsonData`` object. To build a valid jsonData you can pass:
+All parameters are passed in a ``jsonData`` object. To build a valid jsonData you pass:
 
 ===================  =============  ===========
 Name                 Type           Description
@@ -484,7 +486,7 @@ termsOfUseAndAccess  json           A Json object that models terms of use and a
 ===================  =============  ===========
 
 
-Detailed description of ``termsOfUseAndAccess`` object passed to set terms of use and access conditions on a file. To build a valid object you must pass temsType and all available and required parameters for a given termsType.
+Detailed description of ``termsOfUseAndAccess`` object passed to set terms of use and access conditions on a file. To build a valid object you must pass termsType and all available and required parameters for a given termsType.
 
 
 ==========================  =======  ===========
@@ -535,10 +537,11 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     files = {'file': ('sample_file.txt', file_content)}
 
     # --------------------------------------------------
-    # Using a "jsonData" parameter, add optional description + file tags
+    # Using a "jsonData" parameter, add optional description + file tags and required terms of use and access
     # --------------------------------------------------
     params = dict(description='Blue skies!',
-                categories=['Lily', 'Rosemary', 'Jack of Hearts'])
+                categories=['Lily', 'Rosemary', 'Jack of Hearts'],
+                termsOfUseAndAccess=dict(termsType='RESTRICTED', accessConditions='CUSTOM', accessConditionsCustomText='Exemplary reason'))
 
     params_as_json_string = json.dumps(params)
 
