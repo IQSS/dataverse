@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -46,6 +47,8 @@ public class SystemConfig {
 
     @Inject
     private SettingsServiceBean settingsService;
+    @Inject
+    private DataverseSession dataverseSession;
 
 
     private static String appVersionString = null;
@@ -149,7 +152,8 @@ public class SystemConfig {
     
     public String getGuidesBaseUrl() {
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
-        return guidesBaseUrl + "/en";
+        String guidesLang = dataverseSession.getLocaleCode();
+        return guidesBaseUrl + "/" + guidesLang;
     }
 
     public String getGuidesVersion() {
