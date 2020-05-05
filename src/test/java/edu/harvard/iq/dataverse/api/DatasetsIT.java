@@ -41,10 +41,17 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.matchers.JUnitMatchers.containsString;
@@ -1869,4 +1876,66 @@ public class DatasetsIT {
 
     }
     
+    @Test
+    public void testUpdateDatasetVersionWithFiles() throws InterruptedException {
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String curatorApiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(curatorApiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createAuthor = UtilIT.createRandomUser();
+        createAuthor.prettyPrint();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createAuthor);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+ 
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"))
+                .statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // FIXME: have the initial create return the DOI or Handle to obviate the need for this call.
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        System.out.println("datasetPersistentId: " + datasetPersistentId);
+
+       String pathToJsonFile = "src/test/resources/json/update-dataset-version-with-files.json";
+
+        Response updateMetadataAddFilesViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
+        updateMetadataAddFilesViaNative.prettyPrint();
+        updateMetadataAddFilesViaNative.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // These println's are here in case you want to log into the GUI to see what notifications look like.
+        System.out.println("Curator username/password: " + curatorUsername);
+        System.out.println("Author username/password: " + authorUsername);
+
     }
+
+    
+}

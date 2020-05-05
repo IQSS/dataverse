@@ -157,75 +157,11 @@
                         </div>
                     </p:dialog>
                     <p:dialog id="previewGuestbook" styleClass="largePopUp" header="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.header']}" widgetVar="viewGuestbook" modal="true">
-                        <div class="text-right">
-                            <h:outputLink styleClass="btn btn-default"
-                                          rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id}"
-                                          value="/guestbook.xhtml?id=#{manageGuestbooksPage.selectedGuestbook.id}&#38;ownerId=#{manageGuestbooksPage.dataverse.id}">
-                                <span class="glyphicon glyphicon-pencil"></span> #{bundle['dataset.manageGuestbooks.tab.action.btn.edit']}
-                            </h:outputLink>
-                        </div>
-                        <div class="form-horizontal">
-                            <p class="help-block">
-                                #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook.title']}
-                            </p>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">
-                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.datasetGuestbook']}
-                                </label>
-                                <div class="col-sm-8">
-                                    <p class="form-control-static">
-                                        #{manageGuestbooksPage.selectedGuestbook.name}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">
-                                    #{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData']}
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.manageGuestbooks.tab.action.btn.view.dialog.userCollectedData.title']}"></span>
-                                </label>
-                                <div class="col-sm-8">
-                                    <p class="form-control-static">
-                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.accountInformation']}"/>
-                                        <ul>
-                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredAccountInformation}" var="ai">
-                                                <li>
-                                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
-                                                </li>
-                                            </ui:repeat>
-                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalAccountInformation}" var="ai">
-                                                <li>
-                                                    <h:outputText value="#{ai} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
-                                                </li>
-                                            </ui:repeat>
-                                        </ul>
-                                    </p>
-                                    
-                                    <ui:fragment rendered="#{!empty manageGuestbooksPage.selectedGuestbook.requiredQuestionsList or !empty manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}">
-                                    <p class="form-control-static">
-                                        <h:outputText value="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}"/>
-                                        <ul>
-                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.requiredQuestionsList}" var="q">
-                                                <li>
-                                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.required']}"/>
-                                                </li>
-                                            </ui:repeat>
-                                            <ui:repeat value="#{manageGuestbooksPage.selectedGuestbook.optionalQuestionsList}" var="q">
-                                                <li>
-                                                    <h:outputText value="#{q} #{bundle['dataset.manageGuestbooks.guestbook.optional']}"/>
-                                                </li>
-                                            </ui:repeat>
-                                        </ul>
-                                    </p>
-                                    </ui:fragment>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('viewGuestbook').hide()" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
+                        <ui:include src="guestbook-preview-popup-fragment.xhtml">
+                            <ui:param name="selectedGuestbook" value="#{manageGuestbooksPage.selectedGuestbook}"/>
+                            <ui:param name="enableEdit" value="#{manageGuestbooksPage.dataverse.id eq manageGuestbooksPage.selectedGuestbook.dataverse.id}"/>
+                            <ui:param name="ownerId" value="#{manageGuestbooksPage.dataverse.id}"/>
+                        </ui:include>
                     </p:dialog>
                 </h:form>
             </ui:define>
