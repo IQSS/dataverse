@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -227,6 +228,13 @@ public class DataFile extends DvObject implements Comparable {
         this.fileAccessRequests = fARs;
     }
     
+    // The WorldMap LayerMetadata and AuthToken are here to facilitate a
+    // clean cascade delete when the DataFile is deleted:
+    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private MapLayerMetadata mapLayerMetadata;    
+    @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<WorldMapToken> worldMapTokens;
+    
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
@@ -238,8 +246,9 @@ public class DataFile extends DvObject implements Comparable {
     }    
 
     public DataFile(String contentType) {
-        this(); //calls DataFile() constructor
         this.contentType = contentType;
+        this.fileMetadatas = new ArrayList<>();
+        initFileReplaceAttributes();
     }
 
     /*
@@ -753,8 +762,6 @@ public class DataFile extends DvObject implements Comparable {
     public void setFileAccessRequesters(List<AuthenticatedUser> fileAccessRequesters) {
         this.fileAccessRequesters = fileAccessRequesters;
     }
-    
-    
     
     public boolean isHarvested() {
         
