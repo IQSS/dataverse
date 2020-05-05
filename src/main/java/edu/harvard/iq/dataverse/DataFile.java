@@ -215,6 +215,13 @@ public class DataFile extends DvObject implements Comparable {
     public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
         this.guestbookResponses = guestbookResponses;
     }
+ 
+    // The WorldMap LayerMetadata and AuthToken are here to facilitate a
+    // clean cascade delete when the DataFile is deleted:
+    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private MapLayerMetadata mapLayerMetadata;    
+    @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<WorldMapToken> worldMapTokens;
     
     @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<FileAccessRequest> fileAccessRequests;
@@ -238,8 +245,9 @@ public class DataFile extends DvObject implements Comparable {
     }    
 
     public DataFile(String contentType) {
-        this(); //calls DataFile() constructor
         this.contentType = contentType;
+	this.fileMetadatas = new ArrayList<>();
+        initFileReplaceAttributes();
     }
 
     /*
