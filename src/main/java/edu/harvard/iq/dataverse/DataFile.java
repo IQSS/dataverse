@@ -219,22 +219,22 @@ public class DataFile extends DvObject implements Comparable {
     
     @OneToMany(mappedBy="dataFile",fetch = FetchType.LAZY,cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private List<FileAccessRequest> fileAccessRequests;
-    
-    public List<FileAccessRequest> getFileAccessRequests(){
-        return fileAccessRequests;
-    }
       
-    public void setFileAccessRequests(List<FileAccessRequest> fARs){
-        this.fileAccessRequests = fARs;
-    }
-    
     // The WorldMap LayerMetadata and AuthToken are here to facilitate a
     // clean cascade delete when the DataFile is deleted:
     @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private MapLayerMetadata mapLayerMetadata;    
     @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorldMapToken> worldMapTokens;
-    
+	
+    public List<FileAccessRequest> getFileAccessRequests(){
+        return fileAccessRequests;
+    }
+	
+    public void setFileAccessRequests(List<FileAccessRequest> fARs){
+        this.fileAccessRequests = fARs;
+    }
+   
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
