@@ -191,7 +191,7 @@ Without this "burrito" key in place, REST Assured will not be able to create use
 Root Dataverse Permissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses" if it isn't set to this already.
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a Dataverse account can add sub dataverses and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 

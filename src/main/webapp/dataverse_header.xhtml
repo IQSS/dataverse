@@ -10,6 +10,11 @@
                 xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
+    <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
+    <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
+    <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
+    <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -31,15 +36,15 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
+                        <li class="dropdown" jsf:rendered="#{showAddDataGroup}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li>
+                                <li jsf:rendered="#{showAddDataverseLink}">
                                     <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
                                     </h:outputLink>
                                 </li>
-                                <li>
+                                <li jsf:rendered="#{showAddDatasetLink}">
                                     <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
                                     </h:outputLink>
@@ -69,7 +74,7 @@
                             </h:outputLink>
                         </li>
                         <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank" rel="noopener">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl', settingsWrapper.guidesBaseUrl.concat('/').concat(systemConfig.guidesVersion).concat('/user'))}" target="_blank" rel="noopener">
                                 <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
                         </li>
