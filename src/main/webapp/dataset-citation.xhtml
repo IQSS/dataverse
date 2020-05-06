@@ -19,14 +19,14 @@
                     </style>
                     <img src="#{DatasetPage.thumbnailString}" 
                          class="img-responsive" 
-                         jsf:rendered="#{!empty DatasetPage.thumbnailString}" 
+                         jsf:rendered="#{!empty DatasetPage.thumbnailString and !DatasetPage.workingVersion.deaccessioned}" 
                          alt="#{DatasetPage.datasetVersionUI.title.value}"/>
                     
                     <!-- TO-DO, FIX ICON SIZE, VISIBLE-XS HACK TO DISPLAY SMALLER ICON -->
                     <!-- XS -->
-                    <span class="icon-dataset visible-xs-block" style="font-size:350% !important;" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
+                    <span class="icon-dataset visible-xs-block" style="font-size:350% !important;" jsf:rendered="#{empty DatasetPage.thumbnailString or DatasetPage.workingVersion.deaccessioned}"/>
                     <!-- SM -->
-                    <span class="icon-dataset hidden-xs" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
+                    <span class="icon-dataset hidden-xs" jsf:rendered="#{empty DatasetPage.thumbnailString or DatasetPage.workingVersion.deaccessioned}"/>
                 </div>
                 <div class="col-xs-10 citation">
                     <div class="row">
