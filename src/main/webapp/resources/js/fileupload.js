@@ -67,11 +67,28 @@ function setupDirectUpload(enabled) {
     observer2.observe(document.getElementById('datasetForm:fileUpload'),config);
   } //else ?
 }
-function cancelUpload() {
+
+function sleep(ms) {
+  console.log("Sleeping");
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+var allDirectUploadsReported=false;
+
+async function cancelUpload() {
   //Page is going away - don't upload any more files and don't send any more file entries to Dataverse
+if(directUploadEnabled) {
+  var curListLength = fileList.length;
   fileList = [];
   directUploadEnabled=false;
+  while(!allDirectUploadsReported) {
+console.log("Waiting on files: " + curFile);
+await sleep(1000);
 }
+console.log("Calling cancel");
+}
+}
+
 
 function queueFileForDirectUpload(file) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
@@ -84,6 +101,7 @@ function queueFileForDirectUpload(file) {
 }
 
 function uploadFileDirectly(url, storageId) {
+    console.log("UFD : " + directUploadEnabled + " : " + storageId);
   if(directUploadEnabled) {
     var thisFile=curFile;
     //Pick the 'first-in' pending file
@@ -146,7 +164,6 @@ function uploadFileDirectly(url, storageId) {
 }
 
 function reportUpload(storageId, file){
-  if(directUploadEnabled) {
     console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
     getMD5(
       file,
@@ -166,7 +183,6 @@ function reportUpload(storageId, file){
       },
       err => console.error(err)
     );
-  } //Todo else - tell Dataverse the storageId is not used/file can be deleted
 }
 
 
@@ -230,6 +246,11 @@ function directUploadFinished() {
     var inProgress = filesInProgress;
     var inList = fileList.length;
     console.log(inList + ' : ' + numDone + ' : ' + total + ' : ' + inProgress);
+    if(total === numDone) {
+  allDirectUploadsReported = true;
+} else {
+  allDirectUploadsReported=false;
+}
     if (inList === 0) {
       if(total === numDone) {
         $('button[id$="AllUploadsFinished"]').trigger('click');

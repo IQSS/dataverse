@@ -3576,8 +3576,10 @@ public class DatasetPage implements java.io.Serializable {
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";    
     }
     
-    private String returnToParentDataverse(){ 
-        return "/dataverse.xhtml?alias=" + dataset.getOwner().getAlias() + "&faces-redirect=true";    
+    private String returnToParentDataverse(){
+    	String alias = dataset.getOwner().getAlias();
+    	logger.info("alias: " + alias);
+        return "/dataverse.xhtml?alias=" + alias + "&faces-redirect=true";    
    }
    
 
@@ -3595,13 +3597,15 @@ public class DatasetPage implements java.io.Serializable {
         for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
-
+        logger.info("Deleted newFiles");
+    	
         //Files in the upload process but not yet finished
         //ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
         for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
-
+        logger.info("Deleted uploadedFiles");
+    	
         return  returnToParentDataverse();
     }
     
