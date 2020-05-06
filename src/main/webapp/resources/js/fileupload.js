@@ -81,6 +81,9 @@ if(directUploadEnabled) {
   directUploadEnabled=false;
   while(curFile!=numDone) {
 console.log("Waiting on files: " + numDone + ":" + curFile);
+$("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
+$("#datasetSave").prop('disabled', true);
+
 await sleep(1000);
 }
 console.log("Calling cancel");
