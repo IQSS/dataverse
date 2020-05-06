@@ -3576,18 +3576,18 @@ public class DatasetPage implements java.io.Serializable {
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";    
     }
     
-    private String returnToParentDataverse(){
-    	String alias = dataset.getOwner().getAlias();
-    	logger.info("alias: " + alias);
-        return "/dataverse.xhtml?alias=" + alias + "&faces-redirect=true";    
-   }
+ //   private String returnToParentDataverse(){
+//    	String alias = dataset.getOwner().getAlias();
+//    	logger.info("alias: " + alias);
+//        return "/dataverse.xhtml?alias=" + alias + "&faces-redirect=true";    
+//   }
    
 
     public String cancel() {
         return  returnToLatestVersion();
     }
     
-    public String cancelCreate() {
+    public void cancelCreate() {
     	//Stop any uploads in progress (so that uploadedFiles doesn't change)
     	uploadInProgress.setValue(false);
     	
@@ -3606,7 +3606,15 @@ public class DatasetPage implements java.io.Serializable {
         }
         logger.info("Deleted uploadedFiles");
     	
-        return  returnToParentDataverse();
+        try {
+        	String alias = dataset.getOwner().getAlias();
+        	logger.info("alias: " + alias);
+            FacesContext.getCurrentInstance().getExternalContext().redirect("/dataverse.xhtml?alias=" + alias);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to file download url.");
+        }
+        
+//        return  returnToParentDataverse();
     }
     
     private HttpClient getClient() {
