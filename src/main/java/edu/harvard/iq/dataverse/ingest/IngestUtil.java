@@ -116,14 +116,7 @@ public class IngestUtil {
      * @return true if there is a conflict, false otherwise.
      */
     public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
-        List<String> filePathsAndNames = new ArrayList<>();
-        for (FileMetadata fileMetadata : fileMetadatas) {
-            String path = "";
-            if (fileMetadata.getDirectoryLabel() != null) {
-                path = fileMetadata.getDirectoryLabel() + "/";
-            }
-            filePathsAndNames.add(path + fileMetadata.getLabel());
-        }
+        List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
         if (label != null || directoryLabel != null) {
             String path = "";
             if (directoryLabel != null) {
@@ -150,16 +143,7 @@ public class IngestUtil {
      * @return A Collection of Strings in the form of path/to/file.txt
      */
     public static Collection<String> findDuplicateFilenames(DatasetVersion datasetVersion) {
-        List<String> allFileNamesWithPaths = new ArrayList<>();
-        for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
-            String directoryLabel = fileMetadata.getDirectoryLabel();
-            String path = "";
-            if (directoryLabel != null) {
-                path = directoryLabel + "/";
-            }
-            String pathAndfileName = path + fileMetadata.getLabel();
-            allFileNamesWithPaths.add(pathAndfileName);
-        }
+        List<String> allFileNamesWithPaths = getPathsAndFileNames(datasetVersion.getFileMetadatas());
         return findDuplicates(allFileNamesWithPaths);
     }
 
@@ -173,6 +157,23 @@ public class IngestUtil {
             }
         }
         return duplicates;
+    }
+
+    /**
+     * @return A List of Strings in the form of path/to/file.txt
+     */
+    public static List<String> getPathsAndFileNames(List<FileMetadata> fileMetadatas) {
+        List<String> allFileNamesWithPaths = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String directoryLabel = fileMetadata.getDirectoryLabel();
+            String path = "";
+            if (directoryLabel != null) {
+                path = directoryLabel + "/";
+            }
+            String pathAndfileName = path + fileMetadata.getLabel();
+            allFileNamesWithPaths.add(pathAndfileName);
+        }
+        return allFileNamesWithPaths;
     }
 
     // This method is called on a single file, when we need to modify the name 
