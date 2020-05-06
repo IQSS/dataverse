@@ -1,5 +1,6 @@
 var fileList = [];
 var observer2=null;
+var numDone=0;
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled=false;   
@@ -73,19 +74,29 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-var allDirectUploadsReported=false;
-
-async function cancelUpload() {
-  //Page is going away - don't upload any more files and don't send any more file entries to Dataverse
+async function cancelDatasetCreate() {
+  //Page is going away - don't upload any more files, finish reporting current uploads, and then call calncelCreateCommand to clean up temp files
 if(directUploadEnabled) {
-  var curListLength = fileList.length;
   fileList = [];
   directUploadEnabled=false;
-  while(!allDirectUploadsReported) {
-console.log("Waiting on files: " + curFile);
+  while(curFile!=numDone) {
+console.log("Waiting on files: " + numDone + ":" + curFile);
 await sleep(1000);
 }
 console.log("Calling cancel");
+  cancelCreateCommand();
+} else {
+  cancelCreateCommand();
+}
+}
+
+var directUploadReport = true;
+async function cancelDatasetEdit() {
+  //Don't upload any more files and don't send any more file entries to Dataverse, report any direct upload files that didn't get handled
+if(directUploadEnabled) {
+  fileList = [];
+  directUploadEnabled=false;
+  directUploadReport = false;
 }
 }
 
@@ -165,6 +176,7 @@ function uploadFileDirectly(url, storageId) {
 
 function reportUpload(storageId, file){
     console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
+    if(directUploadReport) {
     getMD5(
       file,
       prog => {
@@ -183,6 +195,9 @@ function reportUpload(storageId, file){
       },
       err => console.error(err)
     );
+    } else {
+      console.log("Abandoned: " + storageId);
+    }
 }
 
 
@@ -240,17 +255,13 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
+
+  numDone = finishFile();
+  var total = curFile;
+  var inProgress = filesInProgress;
+  var inList = fileList.length;
+  console.log(inList + ' : ' + numDone + ' : ' + total + ' : ' + inProgress);
   if(directUploadEnabled) {
-    var numDone = finishFile();
-    var total = curFile;
-    var inProgress = filesInProgress;
-    var inList = fileList.length;
-    console.log(inList + ' : ' + numDone + ' : ' + total + ' : ' + inProgress);
-    if(total === numDone) {
-  allDirectUploadsReported = true;
-} else {
-  allDirectUploadsReported=false;
-}
     if (inList === 0) {
       if(total === numDone) {
         $('button[id$="AllUploadsFinished"]').trigger('click');
