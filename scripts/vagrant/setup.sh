@@ -23,7 +23,7 @@ java -version
 javac -version
 
 # switching to postgresql-9.6 per #4709
-yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 yum makecache fast
 yum install -y postgresql96-server
 /usr/pgsql-9.6/bin/postgresql96-setup initdb

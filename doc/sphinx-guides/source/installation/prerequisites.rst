@@ -101,16 +101,16 @@ Installing PostgreSQL
 
 Version 9.6 is strongly recommended because it is the version developers and QA test with::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 
-Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 8 use::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# service postgresql-9.6 initdb
