@@ -72,6 +72,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -1092,6 +1093,11 @@ public class EditDatafilesPage implements java.io.Serializable {
     }    
         
     public String save() {
+        Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion);
+        if (!duplicates.isEmpty()) {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames", new ArrayList<>(duplicates)));
+            return null;
+        }
         if (!saveEnabled) {
             return "";
         }
