@@ -1,4 +1,4 @@
-#metadataBlock	name    dataverseAlias    displayName													
+#metadataBlock	name	dataverseAlias	displayName													
 	astrophysics		Astronomy and Astrophysics Metadata													
 #datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
 	astroType	Type	The nature or genre of the content of the files in the dataset.		text	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		astrophysics
