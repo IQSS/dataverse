@@ -31,7 +31,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true;
+        return false;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
-            String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
+            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
