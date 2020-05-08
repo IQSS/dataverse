@@ -1,4 +1,5 @@
 #!/bin/sh
+#counter_weekly.sh
 
 # This script iterates through all published Datasets in all Dataverses and calls the Make Data Count API to update their citations from DataCite
 # Note: Requires curl and jq for parsing JSON responses form curl
