@@ -100,7 +100,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/glassfish4/glassfish/domains/domain1/logs``
+  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs``
 
   * ``touch counter_2019-02-01.log``
   

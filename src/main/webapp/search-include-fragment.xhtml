@@ -657,15 +657,6 @@
                          actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
     </h:form>
 
-    <p:dialog id="addDataGuest" header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
-        <p class="help-block">
-            <h:outputText value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false"></h:outputText>
-        </p>
-        <div class="button-block">
-            <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
-            </ui:fragment>
-            <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
-        </div>
-    </p:dialog>
+    <ui:include src="addDataFormFragment.xhtml"></ui:include>
+
 </ui:composition>

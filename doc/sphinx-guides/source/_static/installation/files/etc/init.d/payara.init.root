@@ -1,24 +1,24 @@
 #! /bin/sh
 # chkconfig: 2345 99 01
-# description: GlassFish App Server
+# description: Payara App Server
 
 set -e
 
-ASADMIN=/usr/local/glassfish4/bin/asadmin
+ASADMIN=/usr/local/payara5/bin/asadmin
 
 case "$1" in
   start)
-        echo -n "Starting GlassFish server: glassfish"
+        echo -n "Starting Payara"
         # Increase file descriptor limit:
         ulimit -n 32768
         # Allow "memory overcommit":
         # (basically, this allows to run exec() calls from inside the
         # app, without the Unix fork() call physically hogging 2X
-        # the amount of memory glassfish is already using)
+        # the amount of memory Payara is already using)
         echo 1 > /proc/sys/vm/overcommit_memory
 
         #echo
-        #echo "GLASSFISH IS UNDER MAINTENANCE;"
+        #echo "PAYARA IS UNDER MAINTENANCE;"
         #echo "PLEASE DO NOT USE service init script."
         #echo
 	LANG=en_US.UTF-8; export LANG
@@ -26,9 +26,9 @@ case "$1" in
         echo "."
         ;;
   stop)
-        echo -n "Stopping GlassFish server: glassfish"
+        echo -n "Stopping Payara"
         #echo
-        #echo "GLASSFISH IS UNDER MAINTENANCE;"
+        #echo "PAYARA IS UNDER MAINTENANCE;"
         #echo "PLEASE DO NOT USE service init script."
         #echo
 
@@ -37,7 +37,7 @@ case "$1" in
         ;;
 
   *)
-        echo "Usage: /etc/init.d/glassfish {start|stop}"
+        echo "Usage: /etc/init.d/payara {start|stop}"
         exit 1
 esac
 

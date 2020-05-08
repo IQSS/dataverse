@@ -395,7 +395,6 @@ public class JsonParser {
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
-
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
@@ -413,13 +412,14 @@ public class JsonParser {
                     dataFile.getFileMetadatas().add(fileMetadata);
                     dataFile.setOwner(dsv.getDataset());
                     fileMetadata.setDataFile(dataFile);
-                    if (dsv.getDataset().getFiles() == null) {
-                        dsv.getDataset().setFiles(new ArrayList<>());
+                    if (dsv.getDataset() != null) {
+                        if (dsv.getDataset().getFiles() == null) {
+                            dsv.getDataset().setFiles(new ArrayList<>());
+                        }
+                        dsv.getDataset().getFiles().add(dataFile);
                     }
-                    dsv.getDataset().getFiles().add(dataFile);
                 }
                 
-
                 fileMetadatas.add(fileMetadata);
                 fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
             }

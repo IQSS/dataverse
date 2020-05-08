@@ -23,7 +23,7 @@ java -version
 javac -version
 
 # switching to postgresql-9.6 per #4709
-yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 yum makecache fast
 yum install -y postgresql96-server
 /usr/pgsql-9.6/bin/postgresql96-setup initdb
@@ -32,32 +32,26 @@ cp /dataverse/conf/vagrant/var/lib/pgsql/data/pg_hba.conf /var/lib/pgsql/9.6/dat
 /usr/bin/systemctl start postgresql-9.6
 /usr/bin/systemctl enable postgresql-9.6
 
-GLASSFISH_USER=glassfish
+GLASSFISH_USER=dataverse
 echo "Ensuring Unix user '$GLASSFISH_USER' exists"
 useradd $GLASSFISH_USER || :
 SOLR_USER=solr
 echo "Ensuring Unix user '$SOLR_USER' exists"
 useradd $SOLR_USER || :
 DOWNLOAD_DIR='/dataverse/downloads'
-GLASSFISH_ZIP="$DOWNLOAD_DIR/glassfish-4.1.zip"
+GLASSFISH_ZIP="$DOWNLOAD_DIR/payara-5.201.zip"
 SOLR_TGZ="$DOWNLOAD_DIR/solr-7.7.2.tgz"
-WELD_PATCH="$DOWNLOAD_DIR/weld-osgi-bundle-2.2.10.Final-glassfish4.jar"
-# The CA certificate bundle files from CentOS are ok. Glassfish's are expired.
-GOOD_CACERTS='/etc/pki/ca-trust/extracted/java/cacerts'
 if [ ! -f $GLASSFISH_ZIP ] || [ ! -f $SOLR_TGZ ]; then
     echo "Couldn't find $GLASSFISH_ZIP or $SOLR_TGZ! Running download script...."
     cd $DOWNLOAD_DIR && ./download.sh && cd
     echo "Done running download script."
 fi
-GLASSFISH_USER_HOME=~glassfish
-GLASSFISH_ROOT=$GLASSFISH_USER_HOME/glassfish4
+GLASSFISH_USER_HOME=~dataverse
+GLASSFISH_ROOT=$GLASSFISH_USER_HOME/payara5
 if [ ! -d $GLASSFISH_ROOT ]; then
   echo "Copying $GLASSFISH_ZIP to $GLASSFISH_USER_HOME and unzipping"
   su $GLASSFISH_USER -s /bin/sh -c "cp $GLASSFISH_ZIP $GLASSFISH_USER_HOME"
   su $GLASSFISH_USER -s /bin/sh -c "cd $GLASSFISH_USER_HOME && unzip -q $GLASSFISH_ZIP"
-  su $GLASSFISH_USER -s /bin/sh -c "mv $GLASSFISH_ROOT/glassfish/modules/weld-osgi-bundle.jar /tmp"
-  su $GLASSFISH_USER -s /bin/sh -c "cp $WELD_PATCH $GLASSFISH_ROOT/glassfish/modules"
-  su $GLASSFISH_USER -s /bin/sh -c "cp $GOOD_CACERTS $GLASSFISH_ROOT/glassfish/domains/domain1/config/cacerts.jks"
 else
   echo "$GLASSFISH_ROOT already exists"
 fi
