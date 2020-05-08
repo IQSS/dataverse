@@ -85,35 +85,43 @@
                                 <h:outputText value="#{bundle['header.about']}"/>
                             </h:outputLink>
                         </li>
-    
-                        <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user"
-                                            target="_blank">
-                                <h:outputText value="#{bundle['header.guides.user']}"/>
-                            </h:outputLink>
-                        </li>
-    
-                        <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
-                            <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarSupportUrl')}"
-                                            target="_blank">
-                                <h:outputText value="#{bundle['header.support']}"/>
-                            </h:outputLink>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                               aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
+                                #{bundle['header.help']} <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user"
+                                                  target="_blank">
+                                        <h:outputText value="#{bundle['header.guides.user']}"/>
+                                    </h:outputLink>
+                                </li>
+
+                                <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
+                                    <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarSupportUrl')}"
+                                                  target="_blank">
+                                        <h:outputText value="#{bundle['header.support']}"/>
+                                    </h:outputLink>
+                                </li>
+
+                                <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
+                                    <li>
+                                        <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
+                                            <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                                                <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                                                <h:outputText value="#{bundle['header.support']}"/>
+                                            </p:commandLink>
+                                        </o:form>
+                                    </li>
+                                </ui:fragment>
+                            </ul>
                         </li>
 
-                        <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':NavbarSupportUrl')}">
-                        <li>
-                            <o:form useRequestURI="true" class="navbar-form navbar-left navbar-form-link">
-                                <p:commandLink oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                    <h:outputText value="#{bundle['header.support']}"/>
-                                </p:commandLink>
-                            </o:form>
-                        </li>
-                        </ui:fragment>
-    
                         <li class="dropdown" jsf:rendered="#{settingsWrapper.localesConfigured}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="#{bundle.language}" aria-expanded="false">
                                 <img alt="" class="header-flag" src="#{resource['images/flags/'

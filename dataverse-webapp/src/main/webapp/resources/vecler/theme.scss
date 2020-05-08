@@ -373,6 +373,25 @@ a,
     display: block; /* allows for dropdown-menu to be directly in form tag */
 }
 
+#navbarFixed .dropdown-menu > li > form.navbar-form-link {
+	display: list-item;
+	width: 100%;
+
+	a.ui-commandlink {
+		display: block;
+		padding: 3px 20px;
+		clear: both;
+		font-weight: 400;
+		line-height: 1.42857143;
+		color: #333;
+		white-space: nowrap;
+
+		&:focus, &:hover {
+			background: $gray-border-color;
+		}
+	}
+}
+
 #breadcrumbNavBlock .breadcrumbActive {
 	color: $main-text-color;
 }
@@ -2918,7 +2937,8 @@ div.ui-dialog.largePopUp {
 	#navbarFixed form.navbar-form-link a.ui-commandlink,
 	.dropdown-menu > li > a,
 	#navbarFixed .dropdown.accountName .logout a,
-	.ui-widget-content a:not(.btn) {
+	.ui-widget-content a:not(.btn),
+	#navbarFixed .dropdown-menu > li > form.navbar-form-link a.ui-commandlink {
 		color: $contrast-link-color;
 		text-decoration: underline;
 
@@ -2930,7 +2950,8 @@ div.ui-dialog.largePopUp {
 
 	.dropdown-menu > li > a,
 	.dropdown-menu > form > li > a,
-	#navbarFixed .dropdown.accountName .logout a {
+	#navbarFixed .dropdown.accountName .logout a,
+	#navbarFixed .dropdown-menu > li > form.navbar-form-link a.ui-commandlink {
 		text-decoration: underline;
 
 		&:active, &:hover, &:focus {
