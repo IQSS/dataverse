@@ -91,6 +91,7 @@ body .ui-widget {font-size: inherit;}
 
 .btn span.glyphicon {margin-right:.3em;}
 .btn.btn-link.bootstrap-button-tooltip span.glyphicon {margin:0;} /* OR JUST USE NO-TEXT... */
+.btn.btn-link.bootstrap-button-tooltip span.caret {margin-left:6px;}
 .btn span.glyphicon.no-text {margin:0;}
 .btn-group .btn span.glyphicon.no-text {margin-left:10px;margin-right:10px;}
 .col-manage-action .btn-group .btn span.glyphicon.no-text {margin:0;}
