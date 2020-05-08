@@ -70,10 +70,10 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     
     public DatasetExternalCitations save(DatasetExternalCitations datasetExternalCitations) {  
         //Replace existing if necessary
-        Dataset testDs =  datasetExternalCitations.getDataset();
-        String testMonth = datasetExternalCitations.getCitedByUrl();
+        Dataset dataset =  datasetExternalCitations.getDataset();
+        String citedByUrl = datasetExternalCitations.getCitedByUrl();
 
-        DatasetExternalCitations getExisting = getDatasetExternalCitationsByDatasetCitingPID(testDs, testMonth);
+        DatasetExternalCitations getExisting = getDatasetExternalCitationsByDatasetCitingPID(dataset, citedByUrl);
         if (getExisting != null){
             em.remove(getExisting);
         }
