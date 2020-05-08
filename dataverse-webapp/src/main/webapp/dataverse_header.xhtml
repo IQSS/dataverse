@@ -300,7 +300,7 @@
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{dataverse.name} #{bundle['header.dataverse.logo.alt']}"/>
                 </div>
-                <div class="dataverseHeaderCell dataverseHeaderName" role="heading" aria-level="1" jsf:rendered="#{!empty dataverse.name}">
+                <div class="dataverseHeaderCell dataverseHeaderName" jsf:rendered="#{!empty dataverse.name}">
                     <ui:fragment rendered="#{empty dataverse.dataverseTheme.linkColor}">
                         <h1 class="header-inline">
                             <a href="/dataverse/#{dataverse.alias}" class="dataverseHeaderDataverseName" >#{dataverse.name}</a>

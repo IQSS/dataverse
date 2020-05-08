@@ -6,6 +6,8 @@ PrimeFaces.locales['en_US'].selectAllSelectCheckboxMenu = 'Select all'
 PrimeFaces.locales['en'].selectAllSelectCheckboxMenu = 'Select all'
 PrimeFaces.locales['en_US'].filterInputSelectCheckboxMenu = 'Filter Input'
 PrimeFaces.locales['en'].filterInputSelectCheckboxMenu = 'Filter Input'
+PrimeFaces.locales['en_US'].filterPickList = 'Filter'
+PrimeFaces.locales['en'].filterPickList = 'Filter'
 
 PrimeFaces.locales['pl'] = {
     closeText: 'Zamknij',
@@ -35,5 +37,6 @@ PrimeFaces.locales['pl'] = {
     
     cancelFileUpload: 'Przerwij przesyłanie pliku ',
     selectAllSelectCheckboxMenu: 'Zaznacz wszystko',
-    filterInputSelectCheckboxMenu: 'Filtruj opcje'
+    filterInputSelectCheckboxMenu: 'Filtruj opcje',
+    filterPickList: 'Filtruj'
 };

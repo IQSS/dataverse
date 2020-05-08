@@ -991,6 +991,9 @@ public class SolrSearchResult {
             return null;
         }*/
         if (entity.getIdentifier() != null) {
+            if (isDraftState()) {
+                return "/file.xhtml?persistentId=" + entity.getGlobalIdString() + "&version=DRAFT";
+            }
             return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
         }
 

@@ -87,7 +87,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private String dataversePath = null;
 
     private String selectedTypesString;
-    private SearchForTypes selectedTypes = SearchForTypes.all();
+    private Map<SearchObjectType, Boolean> selectedTypesMap = new HashMap<>();
     private String searchFieldType = SearchFields.TYPE;
     private String searchFieldSubtree = SearchFields.SUBTREE;
     private String searchFieldNameSort = SearchFields.NAME_SORT;
@@ -244,10 +244,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         filterQueriesFinal.addAll(filterQueries);
         
+        selectedTypesMap.put(SearchObjectType.DATAVERSES, selectedTypesString.contains(SearchObjectType.DATAVERSES.getSolrValue()));
+        selectedTypesMap.put(SearchObjectType.DATASETS, selectedTypesString.contains(SearchObjectType.DATASETS.getSolrValue()));
+        selectedTypesMap.put(SearchObjectType.FILES, selectedTypesString.contains(SearchObjectType.FILES.getSolrValue()));
         
-        selectedTypes = SearchForTypes.byTypes(
-                Arrays.stream(selectedTypesString.split(":"))
-                    .map(typeString -> SearchObjectType.fromSolrValue(typeString))
+        SearchForTypes searchForTypes = SearchForTypes.byTypes(
+                selectedTypesMap.entrySet().stream()
+                    .filter(entry -> entry.getValue())
+                    .map(entry -> entry.getKey())
                     .collect(Collectors.toList()));
 
         int paginationStart = (page - 1) * paginationGuiRows;
@@ -263,7 +267,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse), 
-                    queryToPassToSolr, selectedTypes, filterQueriesFinal, sortField, sortOrder, 
+                    queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder, 
                     paginationStart, numRows, false);
             
             // This 2nd search() is for populating the facets: -- L.A. 
@@ -344,6 +348,24 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
     }
 
+    public String searchWithSelectedTypesRedirect() {
+        String searchUrl = "dataverse.xhtml?alias=" + dataverse.getAlias();
+        
+        searchUrl += "&q=" + ((query == null) ? "" : query);
+        searchUrl += "&types=" + selectedTypesMap.entrySet().stream()
+            .filter(entry -> entry.getValue())
+            .map(entry -> entry.getKey().getSolrValue())
+            .collect(Collectors.joining(":"));
+        
+        for (int i=0; i< filterQueries.size(); i++) {
+            searchUrl += "&fq" + i + "=" + filterQueries.get(i);
+        }
+        searchUrl += "&sort=" + sortField;
+        searchUrl += "&order=" + sortOrder;
+        searchUrl += "&page=1";
+        
+        return widgetWrapper.wrapURL(searchUrl + "&faces-redirect=true");
+    }
 
     /**
      * Used for capturing errors that happen during solr query
@@ -741,18 +763,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
         friendlyNames.add(localizedFacetName);
         return friendlyNames;
     }
-    
-    public String getNewSelectedTypes(SearchObjectType typeClicked) {
-        SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
-        
-        return newTypesSelected.getTypes().stream()
-                .map(t -> t.getSolrValue())
-                .collect(Collectors.joining(":"));
 
+    public Map<SearchObjectType, Boolean> getSelectedTypesMap() {
+        return selectedTypesMap;
     }
 
-    public SearchForTypes getSelectedTypes() {
-        return selectedTypes;
+    public boolean selectedTypesContainsOnly(SearchObjectType searchObjectType) {
+        return selectedTypesMap.entrySet().stream()
+            .filter(entry -> entry.getValue())
+            .allMatch(entry -> entry.getKey() == searchObjectType);
+    }
+    
+    public void setSelectedTypesMap(Map<SearchObjectType, Boolean> selectedTypesMap) {
+        this.selectedTypesMap = selectedTypesMap;
+    }
+    
+    public boolean selectedTypesAreEmpty() {
+        return selectedTypesMap.entrySet().stream()
+                .filter(entry -> entry.getValue())
+                .count() == 0;
     }
 
     public String getErrorFromSolr() {

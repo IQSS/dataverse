@@ -61,7 +61,7 @@
         </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <script type="text/javascript" src="#{resource['js/dv_accessibility.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script src="#{resource['js/dv_accessibility.js']}?version=#{systemConfig.getVersion()}"></script>
         <div id="body-wrapper">
             <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only impaired-navigation">#{bundle['body.skip']}</a>

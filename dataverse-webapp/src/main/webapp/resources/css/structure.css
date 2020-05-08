@@ -446,7 +446,7 @@ a[id$='advsearchlink'] {margin-left:1em;}
 .searchTypeButton {display:block; border:1px solid #DDD; padding:4px 0; margin-bottom: .5em;}
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
-#resultsCountPaginatorBlock div.results-count {padding:6px 12px; font-weight:bold;}
+#resultsCountPaginatorBlock div.results-count {padding:6px 15px; font-weight:bold;}
 #resultsCountPaginatorBlock div.results-sort-pagination {}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
@@ -479,8 +479,7 @@ span.search-term-match {font-weight: bold;}
 
 form[id$='facetType'] > div.clearfix {margin-bottom:4px;}
 form[id$='facetType'] > div.clearfix:last-child {margin-bottom:0;}
-form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left;}
-form[id$='facetType'] > div.clearfix .facetTypeChBox > div.ui-chkbox {padding-top:2px;padding-right:4px;}
+form[id$='facetType'] > div.clearfix .facetTypeChBox {display:block; float:left; padding-top:2px;padding-right:4px;}
 form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left; text-decoration:none;}
 
 form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px;}

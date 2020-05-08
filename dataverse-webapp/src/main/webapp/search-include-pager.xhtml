@@ -11,12 +11,14 @@
         <ui:fragment rendered="#{SearchIncludeFragment.totalPages != 1}">
             <o:importFunctions type="java.lang.Math" />
             <div class="results-sort-pagination results-bottom text-center">
-            <!--<div class="pagination pull-right">-->
                 <ul class="pagination">
                     <!--should take you to page 1-->
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&#171;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{SearchIncludeFragment.page == '1'}">
+                            <h:outputText value="&#171; "/>
+                            <h:outputText styleClass="sr-only"
+                                 value=" #{bundle['dataverse.results.page.screenReader.firstPrefix']} #{bundle['dataverse.results.page.screenReader']} " />
+                            
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -28,8 +30,11 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == '1' ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&lt; #{bundle.previous}"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{SearchIncludeFragment.page == '1'}">
+                            <h:outputText value="&lt; #{bundle['dataverse.results.page.previous']} "/>
+                            <h:outputText styleClass="sr-only"
+                                 value=" #{bundle['dataverse.results.page.screenReader']} " />
+                            
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -45,12 +50,15 @@
                                varStatus="pageStatus">
                         <li class="#{SearchIncludeFragment.page == pageStatus.index ? 'active' : ''}">
                             <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                                <h:outputText value="#{pageStatus.index}">
+                                <h:outputText value="#{pageStatus.index} ">
                                     <f:convertNumber pattern="###,###" />
                                 </h:outputText>
-                                <span class="#{SearchIncludeFragment.page == pageStatus.index ? 'sr-only' : ''}">
-                                    <h:outputText value="#{SearchIncludeFragment.page == pageStatus.index ? bundle['dataverse.results.paginator.current'] : ''}"/>
-                                </span>
+                                <h:outputText styleClass="sr-only"
+                                    value=" #{bundle['dataverse.results.page.screenReader']} " />
+                                <h:outputText styleClass="sr-only"
+                                    value=" #{bundle['dataverse.results.paginator.current']} "
+                                    rendered="#{SearchIncludeFragment.page == pageStatus.index}" />
+                                
                                 <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                                 <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                     <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -63,8 +71,11 @@
                         </li>
                     </c:forEach>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="#{bundle.next} &gt;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages}">
+                            <h:outputText value="#{bundle['dataverse.results.page.next']} &gt; "/>
+                            <h:outputText styleClass="sr-only"
+                                 value=" #{bundle['dataverse.results.page.screenReader']} " />
+                            
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
@@ -76,8 +87,11 @@
                         </h:outputLink>
                     </li>
                     <li class="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages ? 'disabled' : ''}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
-                            <h:outputText value="&#187;"/>
+                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{SearchIncludeFragment.page == SearchIncludeFragment.totalPages}">
+                            <h:outputText value="&#187; "/>
+                            <h:outputText styleClass="sr-only"
+                                 value=" #{bundle['dataverse.results.page.screenReader.lastPrefix']} #{bundle['dataverse.results.page.screenReader']} " />
+                            
                             <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                             <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                                 <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>

@@ -947,7 +947,6 @@ input.fancy-checkbox[type=checkbox] {
 
 	.ui-picklist-list-wrapper {
 		&:nth-of-type(3) {
-			width: 100%;
 
 			ul {
 				width: 100%;
@@ -1026,6 +1025,14 @@ input.fancy-checkbox[type=checkbox] {
 		}
 	}
 }
+.ui-picklist.picklist-target-full-width {
+    .ui-picklist-list-wrapper {
+        &:nth-of-type(3) {
+            width: 100%;
+        }
+    }
+}
+
 
 /* Float elements parent size fix */
 .col-md-6.form-group.form-col-container {
@@ -2033,13 +2040,9 @@ div.panelSearchForm input.search-input {
 	padding-right: 22px;
 	padding-top: 3px;
 
-	a.facetLink  {
-		color: $link-color;
-	}
-
-	a.facetTypeLink  {
-		color: $link-color;
+	label.facetTypeLink  {
 		margin-left: 4px;
+		margin-bottom: 0px;
 	}
 
 	.ui-datalist-item hr {
@@ -2053,7 +2056,7 @@ div.panelSearchForm input.search-input {
 	}
 }
 
-form[id$="facetType"] > div.clearfix a.facetTypeLink span {
+form[id$="facetType"] > div.clearfix label.facetTypeLink span {
 	position: relative;
 	top: -3px;
 }
@@ -2979,8 +2982,7 @@ div.ui-dialog.largePopUp {
 		filter: $contrast-ajax-spinner-filter;
 	}
 
-	[data-icon]::before, .icon-astro::before, .icon-audio::before, .icon-code::before, .icon-dataset::before, .icon-dataverse::before, .icon-dataverse::after, .icon-document::before, .icon-file::before, .icon-geodata::before, .icon-image::before, .icon-network::before, .icon-other::before, .icon-package::before, .icon-tabular::before, .icon-unlock::before, .icon-video::before,
-	#dv-sidebar a.facetTypeLink {
+	[data-icon]::before, .icon-astro::before, .icon-audio::before, .icon-code::before, .icon-dataset::before, .icon-dataverse::before, .icon-dataverse::after, .icon-document::before, .icon-file::before, .icon-geodata::before, .icon-image::before, .icon-network::before, .icon-other::before, .icon-package::before, .icon-tabular::before, .icon-unlock::before, .icon-video::before {
 		color: $contrast-foreground-color;
 	}
 	.icon-dataverse::before {
@@ -3256,7 +3258,7 @@ div.ui-dialog.largePopUp {
 			}
 		}
 
-		> .disabled > a,
+		> .disabled > a, > .disabled > span,
 		> .ui-state-disabled {
 			border-color: $contrast-foreground-color;
 			background: $contrast-background-color;
