@@ -6,6 +6,7 @@
 
 # A recursive method to process each Dataverse
 processDV () {
+echo "Processing Dataverse ID#: $1"
 
 #Call the Dataverse API to get the contents of the Dataverse (without credentials, this will only list published datasets and dataverses
 DVCONTENTS=$(curl -s http://localhost:8080/api/dataverses/$1/contents)
@@ -17,27 +18,31 @@ for subds in $(echo "${DVCONTENTS}" | jq -r '.data[] | select(.type == "dataset"
 DOI=`expr "$subds" : '.*:\/\/\doi\.org\/\(.*\)'`
 
 # Call the Dataverse API for this dataset and get the response
-RESULT=$(curl -s -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI" | jq -r '.status')
+RESULT=$(curl -s -X POST "http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI" )
+# Parse the status and number of citations found from the response
+STATUS=$(echo "$RESULT" | jq -j '.status' )
+CITATIONS=$(echo "$RESULT" | jq -j '.data.citationCount')
 
 # The status for a call that worked
 OK='OK'
 
 # Check the status and report
-if [ "$RESULT" = "$OK" ]; then
-        echo "Updated citations for doi:$DOI"
+if [ "$STATUS" = "$OK" ]; then
+        echo "Updated: $CITATIONS citations for doi:$DOI"
 else
         echo "Failed to update citations for doi:$DOI"
-        echo "Run curl -s -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI' to retry/see the error message"
+        echo "Run curl -s -X POST 'http://localhost:8080/api/admin/makeDataCount/:persistentId/updateCitationsForDataset?persistentId=doi:$DOI ' to retry/see the error message"
 fi
-
+#processDV $subds
 done
 
 # Now iterate over any child Dataverses and recursively process them
 for subdv in $(echo "${DVCONTENTS}" | jq -r '.data[] | select(.type == "dataverse") | .id'); do
+echo $subdv
 processDV $subdv
 done
+
 }
 
 # Call the function on the root dataverse to start processing 
 processDV 1
-
