@@ -19,7 +19,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 @ViewScoped
 @Named("DatasetWidgetsPage")
@@ -132,7 +132,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         logger.fine("handleImageFileUpload clicked");
         UploadedFile uploadedFile = event.getFile();
         try {
-            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputstream());
+            updateDatasetThumbnailCommand = new UpdateDatasetThumbnailCommand(dvRequestService.getDataverseRequest(), dataset, UpdateDatasetThumbnailCommand.UserIntent.setNonDatasetFileAsThumbnail, null, uploadedFile.getInputStream());
         } catch (IOException ex) {
             String error = "Unexpected error while uploading file.";
             logger.warning("Problem uploading dataset thumbnail to dataset id " + dataset.getId() + ". " + error + " . Exception: " + ex);
@@ -141,7 +141,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
         File file = null;
         try {
-            file = FileUtil.inputStreamToFile(uploadedFile.getInputstream());
+            file = FileUtil.inputStreamToFile(uploadedFile.getInputStream());
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
             return;

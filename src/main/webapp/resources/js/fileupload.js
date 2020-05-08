@@ -1,6 +1,6 @@
 var fileList = [];
 var observer2=null;
-var datasetId=null;
+var directUploadEnabled=false;
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress=0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -17,9 +17,9 @@ var finishFile = (function () {
 })();
 
 
-function setupDirectUpload(enabled, theDatasetId) {
+function setupDirectUpload(enabled) {
   if(enabled) {
-    datasetId=theDatasetId;
+    directUploadEnabled=true;
     $('.ui-fileupload-upload').hide();
     $('.ui-fileupload-cancel').hide();
     //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
@@ -28,7 +28,7 @@ function setupDirectUpload(enabled, theDatasetId) {
       fileInput.addEventListener('change', function(event) {
         fileList=[];
         for(var i=0;i<fileInput.files.length;i++) {
-          queueFileForDirectUpload(fileInput.files[i], datasetId);
+          queueFileForDirectUpload(fileInput.files[i]);
         }
       }, {once:false});
     }  
@@ -37,7 +37,7 @@ function setupDirectUpload(enabled, theDatasetId) {
     fileDropWidget.addEventListener('drop', function(event) {
         fileList=[];
         for(var i=0;i<event.dataTransfer.files.length;i++) {
-          queueFileForDirectUpload(event.dataTransfer.files[i], datasetId);
+          queueFileForDirectUpload(event.dataTransfer.files[i]);
         }
       }, {once:false});
 
@@ -50,7 +50,7 @@ function setupDirectUpload(enabled, theDatasetId) {
             fileInput=mutation.addedNodes[i];
             mutation.addedNodes[i].addEventListener('change', function(event) {
               for(var j=0;j<mutation.addedNodes[i].files.length;j++) {
-                queueFileForDirectUpload(mutation.addedNodes[i].files[j], datasetId);
+                queueFileForDirectUpload(mutation.addedNodes[i].files[j]);
               }
             }, {once:false});
           }
@@ -65,7 +65,7 @@ function setupDirectUpload(enabled, theDatasetId) {
   } //else ?
 }
 
-function queueFileForDirectUpload(file, datasetId) {
+function queueFileForDirectUpload(file) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
   //Fire off the first 4 to start (0,1,2,3)
@@ -243,7 +243,7 @@ function uploadFailure(jqXHR, upid, filename) {
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
 
   //Retrieve the error number (status) and related explanation (statusText)
-  var status = null;
+  var status = 0;
   var statusText =null;
 
   // There are various metadata available about which file the error pertains to
@@ -262,10 +262,14 @@ function uploadFailure(jqXHR, upid, filename) {
     id = upid;
     name=filename;
   } else {
-    status=arguments.callee.caller.caller.arguments[1].jqXHR.status;
-    statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+    try {
     name = arguments.callee.caller.caller.arguments[1].files[0].name;
     id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
+    status=arguments.callee.caller.caller.arguments[1].jqXHR.status;
+    statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
+    } catch {
+      console.log("Unable to determine status for error - assuming network issue");
+    }
   }
 
     //statusText for error 0 is the unhelpful 'error'
@@ -294,6 +298,10 @@ function uploadFailure(jqXHR, upid, filename) {
                 rows[i].appendChild(node);
                 break;
         }
+    }
+    if(directUploadEnabled) {
+      //Mark this file as processed and keep processing further files
+      directUploadFinished();
     }
 }
 //MD5 Hashing functions

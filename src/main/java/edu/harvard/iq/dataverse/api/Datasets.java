@@ -572,6 +572,11 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setDataset(ds);
             incomingVersion.setCreateTime(null);
             incomingVersion.setLastUpdateTime(null);
+            
+            if (!incomingVersion.getFileMetadatas().isEmpty()){
+                return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
+            }
+            
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;

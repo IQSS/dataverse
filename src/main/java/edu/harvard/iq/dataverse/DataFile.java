@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -213,6 +215,13 @@ public class DataFile extends DvObject implements Comparable {
         this.guestbookResponses = guestbookResponses;
     }
     
+    // The WorldMap LayerMetadata and AuthToken are here to facilitate a
+    // clean cascade delete when the DataFile is deleted:
+    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private MapLayerMetadata mapLayerMetadata;    
+    @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<WorldMapToken> worldMapTokens;
+    
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
@@ -397,6 +406,30 @@ public class DataFile extends DvObject implements Comparable {
             }
         }
         return null;
+    }
+    
+    public String getOriginalFileName() {
+        if (isTabularData()) {
+            DataTable dataTable = getDataTable();
+            if (dataTable != null) {
+                return dataTable.getOriginalFileName() != null ? dataTable.getOriginalFileName()
+                        : getDerivedOriginalFileName();
+            }
+        }
+        return null;
+    }
+
+    
+    private String getDerivedOriginalFileName() {
+        FileMetadata fm = getFileMetadata();
+        String filename = fm.getLabel();
+        String originalExtension = FileUtil.generateOriginalExtension(getOriginalFileFormat());
+        String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
+        if (StringUtil.nonEmpty(extensionToRemove)) {
+            return filename.replaceAll(extensionToRemove + "$", originalExtension);
+        } else{
+            return filename + originalExtension ;
+        }        
     }
 
     @Override

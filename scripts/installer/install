@@ -90,99 +90,24 @@ else
 	);
 }
 
-my %CONFIG_DEFAULTS = (
-    'HOST_DNS_ADDRESS',    'localhost',
-    'GLASSFISH_USER',	   '',
-    'GLASSFISH_DIRECTORY', '/usr/local/glassfish4',
-    'GLASSFISH_USER',	   '',
-    'ADMIN_EMAIL',         '',
-    'MAIL_SERVER',         'mail.hmdc.harvard.edu:25',
+my %CONFIG_DEFAULTS; 
 
-    'POSTGRES_ADMIN_PASSWORD', 'secret',
-    'POSTGRES_SERVER',   '127.0.0.1',
-    'POSTGRES_PORT',     5432,
-    'POSTGRES_DATABASE', 'dvndb',
-    'POSTGRES_USER',     'dvnapp',
-    'POSTGRES_PASSWORD', 'secret',
+&read_config_defaults("default.config");
 
-    'SOLR_LOCATION',     'LOCAL',
+my %CONFIG_PROMPTS;
+my %CONFIG_COMMENTS; 
 
-    'RSERVE_HOST',     'localhost',
-    'RSERVE_PORT',     6311,
-    'RSERVE_USER',     'rserve',
-    'RSERVE_PASSWORD', 'rserve',
-
-    'DOI_USERNAME',    'dataciteuser',
-    'DOI_PASSWORD',    'datacitepassword',
-    'DOI_BASEURL',     'https://mds.test.datacite.org',
-    'DOI_MDCBASEURL',  'https://api.test.datacite.org',
-
-);
-
-my %CONFIG_PROMPTS = (
-    'HOST_DNS_ADDRESS',    'Fully Qualified Domain Name of your host',
-    'GLASSFISH_USER',	   'Glassfish service account username',
-    'GLASSFISH_DIRECTORY', 'Glassfish Directory',
-    'ADMIN_EMAIL',         'Administrator email address for this Dataverse',
-    'MAIL_SERVER',         'SMTP (mail) server (and port) to relay notification messages',
-
-    'POSTGRES_SERVER',   'Postgres Server Address',
-    'POSTGRES_PORT',     'Postgres Server Port',
-    'POSTGRES_ADMIN_PASSWORD', 'Postgres ADMIN password',
-    'POSTGRES_DATABASE', 'Name of the Postgres Database',
-    'POSTGRES_USER',     'Name of the Postgres User',
-    'POSTGRES_PASSWORD', 'Postgres user password',
-
-    'SOLR_LOCATION',     'Remote SOLR indexing service',
-
-    'RSERVE_HOST',     'Rserve Server',
-    'RSERVE_PORT',     'Rserve Server Port',
-    'RSERVE_USER',     'Rserve User Name',
-    'RSERVE_PASSWORD', 'Rserve User Password',
-
-    'DOI_USERNAME',    'Datacite username',
-    'DOI_PASSWORD',    'Datacite password',
-    'DOI_BASEURL',    'Datacite URL',
-    'DOI_MDCBASEURL', 'Datacite MakeDataCount URL'
-
-);
-
-
-my %CONFIG_COMMENTS = (
-    'HOST_DNS_ADDRESS',    ":\n(enter numeric IP address, if FQDN is unavailable) ",
-    'GLASSFISH_USER',      ":\nThis user will be running Glassfish service on your system.\n - If this is a dev. environment, this should be your own username; \n - In production, we suggest \"glassfish\" or another unprivileged user\n: ",
-    'GLASSFISH_DIRECTORY', '',
-    'ADMIN_EMAIL',         ":\n(please enter a valid email address!) ",
-    'MAIL_SERVER',         '',
-
-    'POSTGRES_SERVER',   '',
-    'POSTGRES_PORT',     '',
-    'POSTGRES_ADMIN_PASSWORD', ":\n - We will need this to create the user and database that the Dataverse application will be using.\n (Hit RETURN if access control is set to \"trust\" for this connection in pg_hba.conf)\n: ",
-    'POSTGRES_USER',     ":\n - This is the Postgres user that the Dataverse app will be using to talk to the database\n: ",
-    'POSTGRES_DATABASE', '',
-    'POSTGRES_PASSWORD', '',
-
-    'SOLR_LOCATION',     "? \n - Leave this set to \"LOCAL\" if the SOLR will be running on the same (this) server.\n Otherwise, please enter the host AND THE PORT NUMBER of the remote SOLR service, colon-separated\n (for example: foo.edu:8983)\n: ",
-
-    'RSERVE_HOST',     '',
-    'RSERVE_PORT',     '',
-    'RSERVE_USER',     '',
-    'RSERVE_PASSWORD', '',
-
-    'DOI_USERNAME',    'DataCite or EZID username. Only necessary for publishing / minting DOIs.',
-    'DOI_PASSWORD',    'DataCite or EZID account password.',
-    'DOI_BASEURL',    'DataCite or EZID URL. Probably https://mds.datacite.org',
-    'DOI_MDCBASEURL',    'DataCite Make Data Count API base URL. Probably https://api.datacite.org'
-
-);
-
+&read_interactive_config_values("interactive.config");
 
 my $API_URL = "http://localhost:8080/api";
 
 # jodbc.postgresql.org recommends 4.2 for Java 8.
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
-my $postgres_jdbc = "postgresql-42.2.9.jar";
+my $postgres_jdbc = "postgresql-42.2.12.jar";
+# JSF patch for Payara5: 
+# (a temporary measure most likely)
+my $jsf_patch = "jsfpatch/jakarta.faces_dv.jar";
 
 # 0. A few preliminary checks:
 
@@ -249,33 +174,33 @@ if ($hostname) {
 
 sub trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
 
-my $config_default_file = "default.config";
-
-if ( -e $config_default_file )
-{
-	print("loading default configuration values from $config_default_file\n");
-	open( my $inp_cfg, $config_default_file );
-	while( my $ln = <$inp_cfg> )
-	{
-		my @xs = split('\t', $ln );
-		if ( 2 == @xs )
-		{
-			my $k = $xs[0];
-                        my $v = trim($xs[1]);
-#                        if (defined $ENV{$k} && ($k eq "POSTGRES_USER" || $k eq "POSTGRES_PASSWORD")) {
-#                            $v = $ENV{$k};
-#                        }
-#                        if (defined $ENV{'POSTGRESQL_ADMIN_PASSWORD'} && $k eq "POSTGRES_ADMIN_PASSWORD")   {
-#                            $v = $ENV{'POSTGRESQL_ADMIN_PASSWORD'};
-#                        }
-                        $CONFIG_DEFAULTS{$k}=$v;
-		}
-	}
-}
-else
-{
-	print("using hard-coded default configuration values (no $config_default_file available)\n");
-}
+#my $config_default_file = "default.config";
+#
+#if ( -e $config_default_file )
+#{
+#	print("loading default configuration values from $config_default_file\n");
+#	open( my $inp_cfg, $config_default_file );
+#	while( my $ln = <$inp_cfg> )
+#	{
+#		my @xs = split('\t', $ln );
+#		if ( 2 == @xs )
+#		{
+#			my $k = $xs[0];
+#                        my $v = trim($xs[1]);
+##                        if (defined $ENV{$k} && ($k eq "POSTGRES_USER" || $k eq "POSTGRES_PASSWORD")) {
+##                            $v = $ENV{$k};
+##                        }
+##                        if (defined $ENV{'POSTGRESQL_ADMIN_PASSWORD'} && $k eq "POSTGRES_ADMIN_PASSWORD")   {
+##                            $v = $ENV{'POSTGRESQL_ADMIN_PASSWORD'};
+##                        }
+#                        $CONFIG_DEFAULTS{$k}=$v;
+#		}
+#	}
+#}
+#else
+#{
+#	print("using hard-coded default configuration values (no $config_default_file available)\n");
+#}
 
 # 0d. current OS user. (the first one we find wins)
 
@@ -288,21 +213,33 @@ if ($gfuser) {
 }
 
 
-if (!$CONFIG_DEFAULTS{'GLASSFISH_USER'}) {
+if (!$CONFIG_DEFAULTS{'GLASSFISH_USER'} || !$noninteractive) {
    $CONFIG_DEFAULTS{'GLASSFISH_USER'} = $current_user;
-   print "No pre-configured user found; using $current_user.\n";
+   print "using $current_user.\n";
 }
 
 
 # prefer that we not install as root.
 unless ( $< != 0 ) {
-print "####################################################################\n";
-print "     It is recommended that this script not be run as root.\n";
-print " Consider creating a glassfish service account, giving it ownership\n";
-print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
-print "    along with the JVM-specified files.dir location, and running\n";
-print "       this installer as the user who will launch Glassfish.\n";
-print "####################################################################\n";
+    print "####################################################################\n";
+    print "     It is recommended that this script not be run as root.\n";
+    print " Consider creating the service account \"dataverse\", giving it ownership\n";
+    print "  on the glassfish/domains/domain1/ and glassfish/lib/ directories,\n";
+    print "    along with the JVM-specified files.dir location, and designate\n";
+    print "    that account to launch and run the Application Server (Payara),\n";
+    print "           AND use that user account to run this installer.\n"; 
+    print "####################################################################\n";
+
+    unless ($noninteractive)
+    {
+	print "\nPress any key to continue, or ctrl-C to exit the installer...\n\n";
+        system "stty cbreak </dev/tty >/dev/tty 2>&1";
+        unless ($noninteractive) {
+            my $key = getc(STDIN);
+        }
+        system "stty -cbreak </dev/tty >/dev/tty 2>&1";
+	print "\n";
+    }
 }
 
 # ensure $gfuser exists or bail
@@ -547,7 +484,7 @@ for my $ENTRY (@CONFIG_VARIABLES)
 		if (!(-w ($g_dir . $test_dir))) 
 		{
 		    print "\n";
-		    die("ERROR: " . $g_dir . $test_dir . " not writable to the user running the installer! Check permissions on the glassfish hierarchy.\n");
+		    die("ERROR: " . $g_dir . $test_dir . " not writable to the user running the installer! Check permissions on Payara5 hierarchy.\n");
 		}
 	    }
 
@@ -623,11 +560,11 @@ unless($pod_name eq "start-glassfish" || $pod_name eq "dataverse-glassfish-0" ||
     }
 }
 
-# 5. CONFIGURE GLASSFISH
+# 5. CONFIGURE PAYARA
 
 my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
-my $done = &setup_glassfish();
+my $done = &setup_appserver();
 
 # 7. POPULATE THE DATABASE WITH REFERENCE DATA
 # TODO: move this further down
@@ -778,7 +715,7 @@ print "can publish datasets. Once you receive the account name and password, add
 print "as the following two JVM options:\n";
 print "\t<jvm-options>-Ddoi.username=...</jvm-options>\n";
 print "\t<jvm-options>-Ddoi.password=...</jvm-options>\n";
-print "and restart glassfish\n";
+print "and restart payara5\n";
 print "If this is a production Dataverse and you are planning to register datasets as \n";
 print "\"real\", non-test DOIs or Handles, consult the \"Persistent Identifiers and Publishing Datasets\"\n";
 print "section of the Installataion guide, on how to configure your Dataverse with the proper registration\n";
@@ -835,14 +772,14 @@ unless ( socket( SOCK, PF_INET, SOCK_STREAM, $rserve_proto )
 close(SOCK);
 print "\nOK!\n";
 
-# 5. CONFIGURE GLASSFISH
-sub setup_glassfish {
+# 5. CONFIGURE PAYARA
+sub setup_appserver {
     my $success = 1;
     my $failure = 0;
 
     my $glassfish_dir = $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'};
 
-    print "\nProceeding with the Glassfish setup.\n";
+    print "\nProceeding with the app. server (Payara5) setup.\n";
 
 # 5a. DETERMINE HOW MUCH MEMORY TO GIVE TO GLASSFISH AS HEAP:
 
@@ -872,7 +809,7 @@ sub setup_glassfish {
 		### TODO: NO, WE ARE NOT NECESSARILY IN DOCKER!
 		###print "We must be running in Docker! Fancy!\n";
 		# The goal of this cgroup check is for
-		# "Setting the heap limit for Glassfish to 750MB"
+		# "Setting the heap limit for Glassfish/Payara to 750MB"
 		# to change to some other value, based on memory available.
 		print "INFO: /sys/fs/cgroup/memory/memory.limit_in_bytes: $limitline\n";
 		my $limit_in_kb = $limitline / 1024;
@@ -909,7 +846,7 @@ sub setup_glassfish {
 	# amount of memory:
 	$gf_heap_default = ( int( $sys_mem_total / ( 8 / 3 * 1024 ) ) );
 
-	print "\nSetting the heap limit for Glassfish to " . $gf_heap_default . "MB. \n";
+	print "\nSetting the heap limit for Payara5 to " . $gf_heap_default . "MB. \n";
 	print "You may need to adjust this setting to better suit \n";
 	print "your system.\n\n";
 
@@ -919,7 +856,7 @@ sub setup_glassfish {
     else 
     {
 	print "\nCould not determine the amount of memory on your system.\n";
-	print "Setting the heap limit for Glassfish to 2GB. You may need \n";
+	print "Setting the heap limit for Payara5 to 2GB. You may need \n";
 	print "to  adjust the value to better suit your system.\n\n";
     }
 
@@ -927,12 +864,13 @@ sub setup_glassfish {
     $CONFIG_DEFAULTS{"DEF_MEM_SIZE"} = $gf_heap_default;
 
 # TODO:
+# is the below still the case with Payara5? 
 # if the system has more than 4GB of memory (I believe), glassfish must
 # be run with the 64 bit flag set explicitly (at least that was the case
 # with the MacOS glassfish build...). Verify, and if still the case,
 # add a check.
 
-    print "\nInstalling the Glassfish PostgresQL driver... ";
+    print "\nInstalling the PostgresQL driver for Payara5... ";
 #    system( "/bin/cp", "pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
     my $pgdriver_success = copy("pgdriver/" . $postgres_jdbc, $glassfish_dir . "/glassfish/lib" );
 
@@ -943,10 +881,19 @@ sub setup_glassfish {
 	exit 1;
     }
 
-# more diagnostics needed?
+    print "done!\n";
+
+    my $jsf_patch_success = copy($jsf_patch, $glassfish_dir . "/glassfish/modules" );
+
+    unless ($jsf_patch_success) 
+    {
+	print "\n*********************\n";
+	print "ERROR! Failed to copy " . $jsf_patch . " to " . $glassfish_dir . "/glassfish/modules - check the directory permissions!\n";
+	exit 1;
+    }
 
     print "done!\n";
-    
+
     print "\n*********************\n";
     print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
     print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
@@ -1012,7 +959,7 @@ sub setup_glassfish {
 # CHECK EXIT STATUS, BARF IF SETUP SCRIPT FAILED:
 
     unless ($success) {
-	print "\nERROR! Failed to configure Glassfish domain!\n";
+	print "\nERROR! Failed to configure Payara5 domain!\n";
 	print "(see the error messages above - if any)\n";
 	print "Aborting...\n";
 	
@@ -1061,9 +1008,9 @@ sub setup_glassfish {
 # The JHOVE conf file has an absolute PATH of the JHOVE config schema file (uh, yeah...)
 # - so it may need to be readjusted here: 
 
-    if ( $glassfish_dir ne "/usr/local/glassfish4" )
+    if ( $glassfish_dir ne "/usr/local/payara5" )
     {
-	system( "sed 's:/usr/local/glassfish4:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
+	system( "sed 's:/usr/local/payara5:$glassfish_dir:g' < " . $JHOVE_CONFIG_DIST . " > " . $glassfish_dir . "/glassfish/domains/domain1/config/" . $JHOVE_CONFIG);
     }
     else 
     {
@@ -1072,7 +1019,7 @@ sub setup_glassfish {
 
     print "done!\n";
     
-# 5f. check if glassfish is running:
+# 5f. check if payara is running:
 # TODO.
     
 # 5g. DEPLOY THE APPLICATION:
@@ -1091,7 +1038,7 @@ sub setup_glassfish {
     }
 
 
-    print "Finished configuring Glassfish and deploying the dataverse application.  \n";
+    print "Finished configuring Payara and deploying the dataverse application.  \n";
 
 
     return $success;
@@ -1102,7 +1049,7 @@ sub run_asadmin_script {
     my $failure = 0;
 
     # We are going to run a standalone shell script with a bunch of asadmin
-    # commands to set up all the glassfish components for the application.
+    # commands to set up all the Payara components for the application.
     # All the parameters must be passed to that script as environmental
     # variables:
 
@@ -1140,7 +1087,7 @@ sub run_asadmin_script {
     $ENV{'FILES_DIR'} =
       $CONFIG_DEFAULTS{'GLASSFISH_DIRECTORY'} . "/glassfish/domains/" . $ENV{'GLASSFISH_DOMAIN'} . "/files";
     
-    system("./glassfish-setup.sh");
+    system("./as-setup.sh");
 
     if ($?) {
         return $failure;
@@ -1475,7 +1422,7 @@ sub setup_postgres {
 		{
 		    exit 1;
 		}
-		else
+		else 
 		{
 		    print "\nPress any key to continue, or ctrl-C to exit the installer...\n\n";
         
@@ -1542,8 +1489,8 @@ sub setup_postgres {
 	print "\nCreating Postgres database:\n";
     
 	my $psql_command =
-	    $psql_exec_path
-	    . "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U $CONFIG_DEFAULTS{'POSTGRES_USER'} "
+	    $psql_admin_exec
+	    . "/createdb -h " . $CONFIG_DEFAULTS{'POSTGRES_SERVER'} . " -p " . $CONFIG_DEFAULTS{'POSTGRES_PORT'} . " -U " . $POSTGRES_ADMIN_USER ." "
 	    . $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} . " --owner="
 	    . $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
@@ -1601,7 +1548,7 @@ sub import_reference_data {
         print "\n";
         print "You can try this again, by executing the following on the command line:\n";
         print "   psql -U $CONFIG_DEFAULTS{'POSTGRES_USER'} -d $CONFIG_DEFAULTS{'POSTGRES_DATABASE'} -f $REFERENCE_DATA_SQL\n";
-        print "then re-start glassfish  \n\n";
+        print "then re-start payara  \n\n";
         print "\n";
         print "If it's still failing, please consult the installation manual and/or\n";
         print "seek support from the Dataverse team.\n\n";
@@ -1622,3 +1569,66 @@ sub import_reference_data {
     }
 }
 
+sub read_config_defaults {
+    my $config_file = shift @_;
+
+    unless ( -f $config_file ) 
+    {
+	print STDERR "Can't find the config file " . $config_file . "!\n";
+	exit 1;
+    }
+
+    open CF, $config_file || die "Can't open config file " . $config_file . " for reading.\n"; 
+
+    while (<CF>)
+    {
+	chop; 
+
+	if ( $_ =~/^[A-Z]/ && $_ =~/ *= */ ) 
+	{
+	    my ($name, $value) = split(/ *= */, $_, 2);
+	    $CONFIG_DEFAULTS{$name} = $value;
+	}
+    }
+    close CF;
+}
+
+sub read_interactive_config_values {
+    my $config_file = shift @_;
+
+    unless ( -f $config_file ) 
+    {
+	print STDERR "Can't find the config file " . $config_file . "!\n";
+	exit 1;
+    }
+
+    open CF, $config_file || die "Can't open config file " . $config_file . " for reading.\n"; 
+
+    my $mode = "";
+
+    while (<CF>)
+    {
+	chop; 
+
+	if ( $_ eq "[prompts]" || $_ eq "[comments]" )
+	{
+	    $mode = $_; 
+	}
+
+	if ( $_ =~/^[A-Z]/ && $_ =~/ *= */ ) 
+	{
+	    my ($name, $value) = split(/ *= */, $_, 2);
+	    
+	    if ( $mode eq "[prompts]" ) 
+	    {
+		$CONFIG_PROMPTS{$name} = $value;
+	    }
+	    elsif ( $mode eq "[comments]" )
+	    {
+		$value =~s/\\n/\n/g;
+		$CONFIG_COMMENTS{$name} = $value;
+	    }
+	}
+    }
+    close CF;
+}

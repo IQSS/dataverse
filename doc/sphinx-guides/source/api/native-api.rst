@@ -481,6 +481,8 @@ The fully expanded example above (without the environment variables) looks like 
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
+.. note:: Only a Dataverse account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
+
 Import a Dataset into a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -511,7 +513,7 @@ The JSON format is the same as that supported by the native API's :ref:`create d
 
 .. literalinclude:: ../../../../scripts/api/data/dataset-package-files.json
 
-Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by GlassFish.
+Before calling the API, make sure the data files referenced by the ``POST``\ ed JSON are placed in the dataset directory with filenames matching their specified storage identifiers. In installations using POSIX storage, these files must be made readable by the app server user.
 
 .. tip:: If possible, it's best to avoid spaces and special characters in the storage identifier in order to avoid potential portability problems. The storage identifier corresponds with the filesystem name (or bucket identifier) of the data file, so these characters may cause unpredictability with filesystem tools.
 
@@ -2434,7 +2436,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Dataverse Server Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple Java EE servers behind a load balancer:
+Get the server name. This is useful when a Dataverse system is composed of multiple app servers behind a load balancer:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2634,11 +2636,27 @@ List users with the options to search and "page" through results. Only accessibl
 * ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
 * ``selectedPage`` The page of results to return.  The default is 1.
+* ``sortKey`` A string that represents a field that is used for sorting the results. Possible values are "id", "useridentifier" (username), "lastname" (last name), "firstname" (first name), "email" (email address), "affiliation" (affiliation), "superuser" (flag that denotes if the user is an administrator of the site), "position", "createdtime" (created time), "lastlogintime" (last login time), "lastapiusetime" (last API use time). The default is "useridentifier".
 
-::
+.. code-block:: bash
 
-    GET http://$SERVER/api/admin/list-users
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
 
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/admin/list-users
+
+  # sort by createdtime (the creation time of the account)
+  curl -H "X-Dataverse-key:$API_TOKEN" "$SERVER_URL/api/admin/list-users?sortKey=createdtime"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" https://demo.dataverse.org/api/admin/list-users
+
+  # sort by createdtime (the creation time of the account)
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" "https://demo.dataverse.org/api/admin/list-users?sortKey=createdtime"
 
 Sample output appears below.
 
@@ -2887,6 +2905,25 @@ Recalculate the check sum value value of a datafile, by supplying the file's dat
 Validate an existing check sum value against one newly calculated from the saved file:: 
 
    curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/admin/validateDataFileHashValue/{fileId}
+
+.. _dataset-files-validation-api:
+
+Physical Files Validation in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following validates all the physical files in the dataset spcified, by recalculating the checksums and comparing them against the values saved in the database::
+
+  $SERVER_URL/api/admin/validate/dataset/files/{datasetId}
+
+It will report the specific files that have failed the validation. For example::
+   
+   curl http://localhost:8080/api/admin/validate/dataset/files/:persistentId/?persistentId=doi:10.5072/FK2/XXXXX
+     {"dataFiles": [
+     		  {"datafileId":2658,"storageIdentifier":"file://123-aaa","status":"valid"},
+		  {"datafileId":2659,"storageIdentifier":"file://123-bbb","status":"invalid","errorMessage":"Checksum mismatch for datafile id 2669"}, 
+		  {"datafileId":2659,"storageIdentifier":"file://123-ccc","status":"valid"}
+		  ]
+      }
   
 These are only available to super users.
 
@@ -2924,11 +2961,9 @@ This API streams its output in real time, i.e. it will start producing the outpu
 		  ]
       }
 
-Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your Glassfish configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
+Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your app server configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
-
-
 
 Workflows
 ~~~~~~~~~

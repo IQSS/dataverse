@@ -23,7 +23,7 @@ Testing in Depth
 
 `Security in depth <https://en.wikipedia.org/wiki/Defense_in_depth_(computing)>`_ might mean that your castle has a moat as well as high walls. Likewise, when testing, you should consider testing a various layers of the stack using both unit tests and integration tests.
 
-When writing tests, you may find it helpful to first map out which functions of your code you want to test, and then write a functional unit test for each which can later comprise a larger integration test. 
+When writing tests, you may find it helpful to first map out which functions of your code you want to test, and then write a functional unit test for each which can later comprise a larger integration test.
 
 Unit Tests
 ----------
@@ -32,7 +32,7 @@ Creating unit tests for your code is a helpful way to test what you've built pie
 
 Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continous integration services in the cloud.
 
-A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly. 
+A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly.
 
 Unit Test Automation Overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,6 +49,10 @@ Writing Unit Tests with JUnit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We are aware that there are newer testing tools such as TestNG, but we use `JUnit <http://junit.org>`_ because it's tried and true.
+We support both (legacy) JUnit 4.x tests (forming the majority of our tests) and
+newer JUnit 5 based testing.
+
+NOTE: When adding new tests, you should give JUnit 5 a go instead of adding more dependencies to JUnit 4.x.
 
 If writing tests is new to you, poke around existing unit tests which all end in ``Test.java`` and live under ``src/test``. Each test is annotated with ``@Test`` and should have at least one assertion which specifies the expected result. In Netbeans, you can run all the tests in it by clicking "Run" -> "Test File". From the test file, you should be able to navigate to the code that's being tested by right-clicking on the file and clicking "Navigate" -> "Go to Test/Tested class". Likewise, from the code, you should be able to use the same "Navigate" menu to go to the tests.
 
@@ -61,8 +65,21 @@ Refactoring Code to Make It Unit-Testable
 Existing code is not necessarily written in a way that lends itself to easy testing. Generally speaking, it is difficult to write unit tests for both JSF "backing" beans (which end in ``Page.java``) and "service" beans (which end in ``Service.java``) because they require the database to be running in order to test them. If service beans can be exercised via API they can be tested with integration tests (described below) but a good technique for making the logic testable it to move code to "util beans" (which end in ``Util.java``) that operate on Plain Old Java Objects (POJOs). ``PrivateUrlUtil.java`` is a good example of moving logic from ``PrivateUrlServiceBean.java`` to a "util" bean to make the code testable.
 
 Parameterized Tests and JUnit Theories
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Often times you will want to test a method multiple times with similar values. In order to avoid test bloat (writing a test for every data combination), JUnit offers Data-driven unit tests with ``Parameterized.class`` and ``Theories.class``. This allows a test to be run for each set of defined data values. For reference, take a look at issue https://github.com/IQSS/dataverse/issues/5619 .
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Often times you will want to test a method multiple times with similar values.
+In order to avoid test bloat (writing a test for every data combination),
+JUnit offers Data-driven unit tests. This allows a test to be run for each set
+of defined data values.
+
+JUnit 4 uses ``Parameterized.class`` and ``Theories.class``. For reference, take a look at issue https://github.com/IQSS/dataverse/issues/5619.
+
+JUnit 5 doesn't offer theories (see `jqwik <https://jqwik.net>`_ for this), but
+greatly extended parameterized testing. Some guidance how to write those:
+
+- https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests
+- https://www.baeldung.com/parameterized-tests-junit-5
+- https://blog.codefx.org/libraries/junit-5-parameterized-tests/
+- See also some examples in our codebase.
 
 Observing Changes to Code Coverage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -98,12 +115,22 @@ Integration Tests
 
 Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise Dataverse as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
 
-Unfortunately, the term "integration tests" can mean different things to different people. For our purposes, an integration test has the following qualities:
+Unfortunately, the term "integration tests" can mean different things to
+different people. For our purposes, an integration test can have to flavors:
 
-- Integration tests exercise Dataverse APIs.
-- Integration tests are not automatically on developers' laptops.
-- Integration tests operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
-- Integration tests are written using REST Assured.
+1. Be an API Test:
+
+   - Exercise Dataverse APIs.
+   - Running not automatically on developers' laptops.
+   - Operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
+   - Written using REST Assured.
+
+2. Be a `Testcontainers <https://testcontainers.org>`_ Test:
+
+   - Operates any dependencies via the Testcontainers API, using containers.
+   - Written as a JUnit test, using all things necessary to test.
+   - Makes use of the Testcontainers framework.
+   - Able to run anywhere having Docker around (podman support under construction).
 
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,7 +149,7 @@ Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the
 - ``dataverse.api.test_suite: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab glassfish, maven and other logs<https://github.com/IQSS/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab various logs <https://github.com/IQSS/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
 
 Finally, run the script:
 
@@ -130,7 +157,7 @@ Finally, run the script:
 
   $ ./ec2-create-instance.sh -g main.yml -l log_dir
 
-Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh<https://github.com/IQSS/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart glassfish. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
+Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh <https://github.com/IQSS/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart the app server. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
 
 .. code-block:: bash
 
@@ -141,7 +168,7 @@ Running the full API test suite using Docker
 
 To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
 
-Alternatively, you can run tests against Glassfish running on your laptop by following the "getting set up" steps below.
+Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +191,7 @@ Without this "burrito" key in place, REST Assured will not be able to create use
 Root Dataverse Permissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses" if it isn't set to this already. 
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a Dataverse account can add sub dataverses and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
@@ -182,24 +209,24 @@ When run locally (as opposed to a remote server), some of the REST Assured tests
 
 If ``dataverse.siteUrl`` is absent, you can add it with:
 
-``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"`` 
+``./asadmin create-jvm-options "-Ddataverse.siteUrl=http\://localhost\:8080"``
 
-Identifier Generation 
+Identifier Generation
 ^^^^^^^^^^^^^^^^^^^^^
 
 ``DatasetsIT.java`` exercises the feature where the "identifier" of a DOI can be a digit and requires a sequence to be added to your database.  See ``:IdentifierGenerationStyle`` under the :doc:`/installation/config` section for adding this sequence to your installation of PostgreSQL.
 
 
-Writing Integration Tests with REST Assured
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Writing API Tests with REST Assured
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before writing any new REST Assured tests, you should get the tests to pass in an existing REST Assured test file. ``BuiltinUsersIT.java`` is relatively small and requires less setup than other test files. 
+Before writing any new REST Assured tests, you should get the tests to pass in an existing REST Assured test file. ``BuiltinUsersIT.java`` is relatively small and requires less setup than other test files.
 
 You do not have to reinvent the wheel. There are many useful methods you can call in your own tests -- especially within UtilIT.java -- when you need your test to create and/or interact with generated accounts, files, datasets, etc. Similar methods can subsequently delete them to get them out of your way as desired before the test has concluded.
 
 For example, if you’re testing your code’s operations with user accounts, the method ``UtilIT.createRandomUser();`` can generate an account for your test to work with. The same account can then be deleted by your program by calling the ``UtilIT.deleteUser();`` method on the imaginary friend your test generated.
 
-Remember, it’s only a test (and it's not graded)! Some guidelines to bear in mind: 
+Remember, it’s only a test (and it's not graded)! Some guidelines to bear in mind:
 
 - Map out which logical functions you want to test
 - Understand what’s being tested and ensure it’s repeatable
@@ -208,9 +235,9 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``. 
+To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
-Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``. 
+Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
 + If you want to run just one particular API test, it’s as easy as you think:
 
@@ -226,36 +253,78 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
 To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
 
+
+Writing and Using a Testcontainers Test
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Most scenarios of integration testing involve having dependent services running.
+This is where `Testcontainers <https://www.testcontainers.org>`_ kicks in by
+providing a JUnit interface to drive them before and after executing your tests.
+
+Test scenarios are endless. Some examples are migration scripts, persistance,
+storage adapters etc.
+
+To run a test with Testcontainers, you will need to write a JUnit 5 test.
+`The upstream project provides some documentation about this. <https://www.testcontainers.org/test_framework_integration/junit_5>`_
+
+Please make sure to:
+
+1. End your test class with ``IT``
+2. Provide a ``@Tag("testcontainers")`` to be picked up during testing.
+
+.. code:: java
+
+   /** A very minimal example for a Testcontainers integration test class. */
+   @Testcontainers
+   @Tag("testcontainers")
+   class MyExampleIT { /* ... */ }
+
+If using upstream Modules, e.g. for PostgreSQL or similar, you will need to add
+a dependency to ``pom.xml`` if not present. `See the PostgreSQL module example. <https://www.testcontainers.org/modules/databases/postgres/>`_
+
+To run these tests, simply call out to Maven:
+
+.. code::
+
+	 mvn -P tc verify
+
+.. note::
+
+	 1. Remember to have Docker ready to serve or tests will fail.
+	 2. This will not run any unit tests or API tests.
+
 Measuring Coverage of Integration Tests
 ---------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/glassfish4" as the Glassfish directory and "glassfish" as the Glassfish Unix user.
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara5" as the Payara directory and "dataverse" as the Payara Unix user.
 
-Add jacocoagent.jar to Glassfish
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara 5.
 
-In order to get code coverage reports out of Glassfish we'll be adding jacocoagent.jar to the Glassfish "lib" directory.
+Add jacocoagent.jar to Payara
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to get code coverage reports out of Payara we'll be adding jacocoagent.jar to the Payara "lib" directory.
 
 First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
 
-Note that we are running the following commands as the user "glassfish". In short, we stop Glassfish, add the Jacoco jar file, and start up Glassfish again.
+Note that we are running the following commands as the user "dataverse". In short, we stop Payara, add the Jacoco jar file, and start up Payara again.
 
 .. code-block:: bash
 
-  su - glassfish
-  cd /home/glassfish
+  su - dataverse
+  cd /home/dataverse
   mkdir -p local/jacoco-0.8.1
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/glassfish4/bin/asadmin stop-domain
-  cp /home/glassfish/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/glassfish4/glassfish/lib
-  /usr/local/glassfish4/bin/asadmin start-domain
+  /usr/local/payara5/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara5/glassfish/lib
+  /usr/local/payara5/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As the "glassfish" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
+As the "dataverse" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
 
 - path to your pristine WAR file
 - path to the new WAR file the script will create with jacococli.jar in it
@@ -269,25 +338,25 @@ Deploy the Instrumented WAR File
 
 Please note that you'll want to undeploy the old WAR file first, if necessary.
 
-Run this as the "glassfish" user.
+Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/glassfish4/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara5/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~
 
-Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that Glassfish runs on to the ``run-test-suite.sh`` script.
+Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
-Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Glassfish. You must stop and start Glassfish before every run of the integration test suite.
+Note that "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/glassfish4/bin/asadmin stop-domain
-  /usr/local/glassfish4/bin/asadmin start-domain
+  /usr/local/payara5/bin/asadmin stop-domain
+  /usr/local/payara5/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   conf/docker-aio/run-test-suite.sh http://localhost:8080
@@ -297,12 +366,12 @@ Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" w
 Create Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run these commands as the "glassfish" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
+Run these commands as the "dataverse" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/glassfish/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -403,14 +472,14 @@ There are browser developer tools such as the `Wave toolbar <https://wave.webaim
 Future Work
 -----------
 
-We'd like to make improvements to our automated testing. See also 'this thread from our mailing list <https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA>'_ asking for ideas from the community, and discussion at 'this GitHub issue. <https://github.com/IQSS/dataverse/issues/2746>'_ 
+We'd like to make improvements to our automated testing. See also 'this thread from our mailing list <https://groups.google.com/forum/#!topic/dataverse-community/X8OrRWbPimA>'_ asking for ideas from the community, and discussion at 'this GitHub issue. <https://github.com/IQSS/dataverse/issues/2746>'_
 
 Future Work on Unit Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Review pull requests from @bencomp for ideas for approaches to testing: https://github.com/IQSS/dataverse/pulls?q=is%3Apr+author%3Abencomp
 - Come up with a way to test commands: http://irclog.iq.harvard.edu/dataverse/2015-11-04#i_26750
-- Test EJBs using Arquillian, embedded Glassfish, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
+- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
 
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -445,7 +514,7 @@ Future Work on Load/Performance Testing
 Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application. 
+- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
 
 ----
 
