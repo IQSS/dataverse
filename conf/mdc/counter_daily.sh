@@ -1,6 +1,8 @@
 #! /bin/bash
-sudo -u counter
-# control_daily.sh
+
+# counter_daily.sh
+
+cd /opt/counter-processor-0.0.1
 
 echo >>tmp/counter_daily.log
 date >>tmp/counter_daily.log
@@ -24,7 +26,8 @@ do
   d=$(date -I -d "$d + 1 day")
 done
 
-cd /opt/counter-processor-0.0.1
-YEAR_MONTH=$YEAR_MONTH python3 main.py >>tmp/counter_daily.log
+#run counter-processor as counter user
+
+sudo -u counter YEAR_MONTH=$YEAR_MONTH python3 main.py >>tmp/counter_daily.log
 
 curl -X POST "http://localhost:8080/api/admin/makeDataCount/addUsageMetricsFromSushiReport?reportOnDisk=/opt/counter-processor-0.0.1/tmp/make-data-count-report.json"
