@@ -177,6 +177,7 @@ function uploadFileDirectly(url, storageId) {
   }
 }
 
+var handlingUpload=false;
 function reportUpload(storageId, file){
     console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
     if(directUploadReport) {
@@ -192,9 +193,7 @@ function reportUpload(storageId, file){
       }
     ).then(
       md5 => {
-        //storageId is not the location - has a : separator and no path elements from dataset
-        //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-        handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
+        handleDirectUpload(storageId, file, md5);
       },
       err => console.error(err)
     );
@@ -203,6 +202,16 @@ function reportUpload(storageId, file){
     }
 }
 
+async function handleDirectUpload(storageId, file, md5) {
+        //Wait for each call to finish and update the DOM
+        while(handlingUpload === true) {
+          await sleep(500);
+        }                                                                                                                                                  console.log("Handling: " + storageId);
+        handlingUpload=true;
+        //storageId is not the location - has a : separator and no path elements from dataset
+        //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+        handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
+}
 
 function removeErrors() {
   var errors = document.getElementsByClassName("ui-fileupload-error");
@@ -258,7 +267,7 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
-
+  handlingUpload=false;
   numDone = finishFile();
   var total = curFile;
   var inProgress = filesInProgress;
