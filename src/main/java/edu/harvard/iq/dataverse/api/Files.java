@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -41,6 +42,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +50,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -382,6 +386,22 @@ public class Files extends AbstractApiBean {
                 
                 if (upFmd == null){
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
+                javax.json.JsonObject jsonObject = jsonReader.readObject();
+                String label = jsonObject.getString("label", null);
+                String directoryLabel = jsonObject.getString("directoryLabel", null);
+                String path = "";
+                if (directoryLabel != null) {
+                    path = directoryLabel + "/";
+                }
+                if (label == null) {
+                    label = df.getFileMetadata().getLabel();
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
+                    String incomingPathPlusFileName = path + label;
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
