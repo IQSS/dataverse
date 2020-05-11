@@ -2519,6 +2519,33 @@ Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
 
+.. _pids-api:
+
+PIDs
+----
+
+PIDs is short for Persistent IDentifiers. Examples include DOI or Handle.
+
+Get Info on a PID
+~~~~~~~~~~~~~~~~~
+
+Get information on a PID, especially its "state" such as "draft" or "findable". Currently, this API only works on DataCite DOIs:
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export PID=10.70122/FK2/9BXT5O
+
+  curl $SERVER_URL/api/pids?persistentId=$PID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl https://demo.dataverse.org/api/pids?persistentId=10.70122/FK2/9BXT5O
+
 .. _admin:
 
 Admin

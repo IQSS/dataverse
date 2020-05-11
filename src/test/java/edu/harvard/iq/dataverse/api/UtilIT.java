@@ -156,7 +156,13 @@ public class UtilIT {
                 .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
         return response;
     }
-    
+
+    public static Response getPid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/pids?persistentId=" + persistentId);
+        return response;
+    }
 
     public static Response computeDataFileHashValue(String fileId, String alg, String apiToken) {
         Response response = given()
