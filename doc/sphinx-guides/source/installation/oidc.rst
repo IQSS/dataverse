@@ -78,7 +78,7 @@ Now load the configuration into Dataverse using the same API as with :doc:`oauth
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file my-oidc-provider.json http://localhost:8080/api/admin/authenticationProviders``
 
-Dataverse will automatically try to load the provider and retrieve the metadata. Watch the Glassfish log for errors.
+Dataverse will automatically try to load the provider and retrieve the metadata. Watch the app server log for errors.
 You should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account`
 section of the User Guide.
 

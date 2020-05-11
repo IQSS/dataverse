@@ -1,10 +1,14 @@
 var fileList = [];
 var observer2=null;
+<<<<<<< HEAD
 var numDone=0;
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled=false;   
 
+=======
+var directUploadEnabled=false;
+>>>>>>> refs/remotes/IQSS/develop
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress=0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -69,6 +73,7 @@ function setupDirectUpload(enabled) {
   } //else ?
 }
 
+<<<<<<< HEAD
 function sleep(ms) {
   console.log("Sleeping");
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -104,6 +109,8 @@ if(directUploadEnabled) {
 }
 
 
+=======
+>>>>>>> refs/remotes/IQSS/develop
 function queueFileForDirectUpload(file) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
