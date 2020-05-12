@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.settings;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.filters.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
@@ -7,15 +10,22 @@ import edu.harvard.iq.dataverse.persistence.Setting;
 import edu.harvard.iq.dataverse.persistence.SettingDao;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Service bean accessing and manipulating application settings.
@@ -570,7 +580,7 @@ public class SettingsServiceBean {
         }
     }
 
-    private static final Logger logger = Logger.getLogger(SettingsServiceBean.class.getCanonicalName());
+    private static final Logger log = LoggerFactory.getLogger(SettingsServiceBean.class);
 
     @EJB
     private SettingDao settingDao;
@@ -581,6 +591,17 @@ public class SettingsServiceBean {
     @EJB
     private FileBasedSettingsFetcher fileBasedSettingsFetcher;
 
+    private final CacheLoader<String, String> settingCacheLoader = new CacheLoader<String, String>() {
+        @Override
+        public String load(String key) {
+            Setting s = settingDao.find(key);
+            return (s != null) ? s.getContent() : fileBasedSettingsFetcher.getSetting(key);
+        }
+    };
+
+    private final LoadingCache<String, String> settingCache = CacheBuilder.newBuilder()
+            .build(settingCacheLoader);
+
     // -------------------- LOGIC --------------------
 
     /**
@@ -590,8 +611,7 @@ public class SettingsServiceBean {
      * @return the actual setting or empty string.
      */
     public String get(String name) {
-        Setting s = settingDao.find(name);
-        return (s != null) ? s.getContent() : fileBasedSettingsFetcher.getSetting(name);
+        return settingCache.getUnchecked(name);
     }
 
     /**
@@ -643,10 +663,9 @@ public class SettingsServiceBean {
         }
 
         try {
-            long valAsInt = Long.parseLong(val);
-            return valAsInt;
+            return Long.parseLong(val);
         } catch (NumberFormatException ex) {
-            logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long.", new Object[]{val, key.toString()});
+            log.warn("Incorrect setting. Could not convert \"{}\" from setting {} to long.", val, key.toString());
             return null;
         }
 
@@ -664,8 +683,23 @@ public class SettingsServiceBean {
         return Arrays.asList(StringUtils.split(getValueForKey(key), ","));
     }
 
+    public List<Map<String, String>> getValueForKeyAsListOfMaps(Key key) {
+        List<Map<String, String>> list = new ArrayList<>();
+        try {
+            JSONArray entries = new JSONArray(getValueForKey(key));
+            for (Object obj : entries) {
+                JSONObject entry = (JSONObject) obj;
+                list.add(entry.keySet().stream()
+                        .collect(toMap(identity(), entry::getString)));
+            }
+        } catch (JSONException e) {
+            log.warn("Error parsing setting " + key + " as JSON", e);
+        }
+        return list;
+    }
 
     public Setting set(String name, String content) {
+        settingCache.invalidate(name);
         Setting s = settingDao.save(new Setting(name, content));
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                                  .setInfo(name + ": " + content));
@@ -697,6 +731,7 @@ public class SettingsServiceBean {
     }
 
     public void delete(String name) {
+        settingCache.invalidate(name);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
                                  .setInfo(name));
         settingDao.delete(name);
@@ -713,5 +748,4 @@ public class SettingsServiceBean {
 
         return mergedSettings;
     }
-
 }

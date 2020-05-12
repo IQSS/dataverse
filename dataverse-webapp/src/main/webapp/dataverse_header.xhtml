@@ -80,10 +80,28 @@
                             </ul>
                         </li>
     
-                        <li jsf:rendered="#{!empty settingsWrapper.getSettingValue(':NavbarAboutUrl')}">
-                            <h:outputLink value="#{settingsWrapper.getSettingValue(':NavbarAboutUrl')}" target="_blank">
-                                <h:outputText value="#{bundle['header.about']}"/>
-                            </h:outputLink>
+                        <li jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() == 1}">
+                            <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
+                                <h:outputLink value="#{about.key}" target="_blank">
+                                    <h:outputText value="#{about.value}"/>
+                                </h:outputLink>
+                            </ui:repeat>
+                        </li>
+
+                        <li class="dropdown" jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() > 1}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                               aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
+                                #{bundle['header.about']} <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
+                                    <li>
+                                        <h:outputLink value="#{about.key}" target="_blank">
+                                            <h:outputText value="#{about.value}"/>
+                                        </h:outputLink>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
                         </li>
 
                         <li class="dropdown">
