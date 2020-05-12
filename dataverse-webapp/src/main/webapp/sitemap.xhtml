@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+<h:head>
+</h:head>
+
+<h:body>
+    <ui:composition template="/dataverse_template.xhtml">
+        <ui:param name="pageTitle" value="#{bundle['sitemap.page.title']}"/>
+        <ui:param name="showDataverseHeader" value="false"/>
+        <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
+        <ui:param name="showMessagePanel" value="#{true}"/>
+        <ui:define name="body">
+            <f:metadata>
+                <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(),bundle['sitemap.page.title'])}"/>
+            </f:metadata>
+            <div>
+                <h3>
+                    <h:outputLink value="/">
+                        #{bundle['sitemap.links.mainpage']}
+                    </h:outputLink>
+                </h3>
+
+                <h3>
+                    <h:outputLink rendered="#{not empty settingsWrapper.metricsUrl}"
+                                  value="#{settingsWrapper.metricsUrl}" target="_blank">
+                        #{bundle['metrics.title']}
+                    </h:outputLink>
+                    <h:outputLink rendered="#{empty settingsWrapper.metricsUrl}"
+                                  value="/metrics.xhtml">
+                        #{bundle['metrics.title']}
+                    </h:outputLink>
+                </h3>
+
+                <h3>
+                    #{bundle['sitemap.links.mainmenu']}
+                </h3>
+                <h4>
+                    #{bundle['header.help']}
+                </h4>
+                <p>
+                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user" target="_blank">
+                        #{bundle['header.guides.user']}
+                    </h:outputLink>
+                </p>
+
+                <h3 jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered || systemConfig.showTermsOfUseFooterLinkRendered || systemConfig.showAccessibilityStatementFooterLinkRendered}">
+                    #{bundle['sitemap.links.pages']}
+                </h3>
+                <p jsf:rendered="#{systemConfig.showTermsOfUseFooterLinkRendered}">
+                    <h:outputLink value="/termsofuse.xhtml">
+                        #{bundle['footer.termsOfUse.link.name']}
+                    </h:outputLink>
+                </p>
+                <p jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered}">
+                    <h:outputLink value="/privacy-policy.xhtml">
+                        #{bundle['footer.privacyPolicy']}
+                    </h:outputLink>
+                </p>
+                <p jsf:rendered="#{systemConfig.showAccessibilityStatementFooterLinkRendered}">
+                    <h:outputLink value="/accessibility-statement.xhtml">
+                        #{bundle['footer.accessibility.link.name']}
+                    </h:outputLink>
+                </p>
+            </div>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
