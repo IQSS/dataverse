@@ -125,8 +125,13 @@
                                             <p:inputText id="stringSearchValue" styleClass="form-control"
                                                          value="#{item.fieldValue}"
                                                          rendered="#{item.searchFieldType == fieldTypeEnums.TEXT}"/>
-                                            <div>
-                                                <div style="display: inline-block; " jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
+                                            <div jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
+                                                <h:inputHidden id="dateRangeValidator" value="true" >
+                                                    <f:validator validatorId="dateRangeValidator" />
+                                                    <f:attribute name="dateFrom" value="#{dateFrom}" />
+                                                    <f:attribute name="dateTo" value="#{dateTo}" />
+                                                </h:inputHidden>
+                                                <div style="display: inline-block; ">
                                                     <p:outputLabel for="daterangeSearchMinimum"
                                                                    value="#{bundle['advanced.search.metadata.from']} "
                                                                    style="white-space: pre"
@@ -134,12 +139,13 @@
                                                                    />
                                                     <p:inputText id="daterangeSearchMinimum" style="padding-right: 5px"
                                                                    value="#{item.lowerLimit}"
+                                                                   binding="#{dateFrom}"
                                                                    rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                                   validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
-                                                        <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
+                                                    >
                                                     </p:inputText>
+                                                    <p:message for="daterangeSearchMinimum" display="text" />
                                                 </div>
-                                                <div style="display: inline-block;" jsf:rendered="#{item.searchFieldType == fieldTypeEnums.DATE}">
+                                                <div style="display: inline-block;" >
                                                     <p:outputLabel for="daterangeSearchMaximum"
                                                                    value=" #{bundle['advanced.search.metadata.to']} "
                                                                    style="white-space: pre"
@@ -147,11 +153,10 @@
                                                     />
                                                     <p:inputText id="daterangeSearchMaximum" style="padding-left: 5px"
                                                                    value="#{item.upperLimit}"
+                                                                   binding="#{dateTo}"
                                                                    rendered="#{item.searchFieldType == fieldTypeEnums.DATE}"
-                                                                   validatorMessage="#{bundle['advanced.search.wrong.daterange.format']}">
-                                                        <f:validateRegex pattern="^(\-?)[0-9]{4}((\-)([0-9]{2})){0,2}$" />
+                                                    >
                                                     </p:inputText>
-                                                    <p:message for="daterangeSearchMinimum" display="text" />
                                                     <p:message for="daterangeSearchMaximum" display="text" />
                                                 </div>
                                             </div>
