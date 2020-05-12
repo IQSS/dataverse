@@ -150,18 +150,21 @@ public class DuplicateFileChecker {
         List<FileMetadata> wvCopy = new ArrayList<>(workingVersion.getFileMetadatas());
         Iterator<FileMetadata> fmIt = wvCopy.iterator();
 
-        while (fmIt.hasNext()) {
+        while (fmIt.hasNext()) {            
             FileMetadata fm = fmIt.next();
-            String currentCheckSum = fm.getDataFile().getChecksumValue();
+            String currentCheckSum = fm.getDataFile().getChecksumValue();            
             if (currentCheckSum != null) {
+                if (currentCheckSum.equals(selectedCheckSum)) return true;
+                /*
                 if (checkSumMap.get(currentCheckSum) != null) {
                     checkSumMap.put(currentCheckSum, checkSumMap.get(currentCheckSum).intValue() + 1);
                 } else {
                     checkSumMap.put(currentCheckSum, 1);
-                }
+                }*/
             }
         }
-        return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
+        return false;
+       // return checkSumMap.get(selectedCheckSum) != null; // && checkSumMap.get(selectedCheckSum).intValue() > 1;
             
     }
     

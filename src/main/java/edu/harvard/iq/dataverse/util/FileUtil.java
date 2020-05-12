@@ -1774,5 +1774,29 @@ public class FileUtil implements java.io.Serializable  {
     	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
     	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
+    
+    public static boolean isFileAlreadyUploaded(DataFile dataFile, Map checksumMapNew, Map fileAlreadyExists) {
+        if (checksumMapNew == null) {
+            checksumMapNew = new HashMap<>();
+        }
+        
+        if (fileAlreadyExists == null) {
+            fileAlreadyExists = new HashMap<>();
+        }
+        
+        String chksum = dataFile.getChecksumValue();
+        
+        if (chksum == null) {
+            return false;
+        }
+        
+        if (checksumMapNew.get(chksum) != null) {
+            fileAlreadyExists.put(dataFile, checksumMapNew.get(chksum));
+            return true;
+        }
+        
+        checksumMapNew.put(chksum, dataFile);
+        return false;
+    }
 
 }

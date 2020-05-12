@@ -761,6 +761,17 @@ public class AddReplaceFileHelper{
         
     }
     
+    private void addErrorWarning(String errMsg){
+        if (errMsg == null){
+            throw new NullPointerException("errMsg cannot be null");
+        }
+ 
+        logger.severe(errMsg);
+        this.setDuplicateFileWarning(errMsg);
+        this.errorMessages.add(errMsg);
+        
+    }
+    
     
     private void addErrorSevere(String errMsg){
         
@@ -1188,7 +1199,9 @@ public class AddReplaceFileHelper{
                 //removeUnSavedFilesFromWorkingVersion();
                 //removeLinkedFileFromDataset(dataset, df);
                 //abandonOperationRemoveAllNewFilesFromDataset();
-                this.addErrorSevere(getBundleErr("duplicate_file") + " " + dupeName);   
+                this.addErrorWarning(getBundleErr("duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
+
+                finalFileList.add(df);
                 //return false;
             } else {
                 finalFileList.add(df);
@@ -1196,6 +1209,8 @@ public class AddReplaceFileHelper{
         }
         
         if (this.hasError()){
+            
+            System.out.print("is there an error here?");
             // We're recovering from the duplicate check.
             msg("We're recovering from a duplicate check 1");
             runMajorCleanup();
@@ -1911,6 +1926,16 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("Don't call this method without checking 'hasContentTypeWarning()'");
         }
         return contentTypeWarningString;
+    }
+    
+    private String duplicateFileWarning;
+
+    public String getDuplicateFileWarning() {
+        return duplicateFileWarning;
+    }
+
+    public void setDuplicateFileWarning(String duplicateFileWarning) {
+        this.duplicateFileWarning = duplicateFileWarning;
     }
     
 } // end class

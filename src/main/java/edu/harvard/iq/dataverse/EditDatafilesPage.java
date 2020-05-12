@@ -148,6 +148,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
+    private List<DataFile> uploadedInThisProcess = new ArrayList<>();
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
@@ -870,6 +871,40 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void deleteFilesCompleted(){
         
     }
+    
+    public void deleteMarkedAsDuplicateFiles() {
+        
+        /*
+        If a file is uploaded that is already in the current dataset version
+        or had already been uploaded in this session the user will be prompted with 
+        a popup. if they press delete the files marked as duplicate are removed here
+        */
+
+        for (DataFile remove : uploadedInThisProcess) {
+            if(remove.isMarkedAsDuplicate()){               
+                deleteTempFile(remove);
+            }
+        }
+        
+        Iterator<DataFile> dfItr = newFiles.iterator();
+        
+        while (dfItr.hasNext()){
+            DataFile test = dfItr.next();
+            if(test.isMarkedAsDuplicate()){
+                dfItr.remove();
+            }
+        }
+        
+        Iterator<FileMetadata> fmItr = fileMetadatas.iterator();
+        
+        while (fmItr.hasNext()){
+            FileMetadata test = fmItr.next();
+            if(test.isMarkedAsDuplicate()){
+                fmItr.remove();
+            }
+        }
+        
+    }
         
     public void deleteFiles() {
         logger.fine("entering bulk file delete (EditDataFilesPage)");
@@ -970,7 +1005,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// has to be kept encrypted even in temp files, and such. 
     	// But for now, we just delete the file directly on the 
     	// local filesystem: 
-
+System.out.print("are we deleting the temp file");
     	try {
     		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
     				Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
@@ -1092,6 +1127,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }    
         
     public String save() {
+        System.out.print("pressed save");
         if (!saveEnabled) {
             return "";
         }
@@ -1799,6 +1835,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
+                setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
+                    PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
+                    //context.execute("PF('fileTypeDifferentPopup').show();");
+                    PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 if (uploadWarningMessageIsNotAnError) {
                     FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 } else {
@@ -1829,14 +1869,24 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadSuccessMessage = null; 
     }
     
-    private String warningMessageForPopUp;
+    private String warningMessageForFileTypeDifferentPopUp;
 
-    public String getWarningMessageForPopUp() {
-        return warningMessageForPopUp;
+    public String getWarningMessageForFileTypeDifferentPopUp() {
+        return warningMessageForFileTypeDifferentPopUp;
     }
 
-    public void setWarningMessageForPopUp(String warningMessageForPopUp) {
-        this.warningMessageForPopUp = warningMessageForPopUp;
+    public void setWarningMessageForFileTypeDifferentPopUp(String warningMessageForPopUp) {
+        this.warningMessageForFileTypeDifferentPopUp = warningMessageForPopUp;
+    }
+    
+    private String warningMessageForAlreadyExistsPopUp;
+
+    public String getWarningMessageForAlreadyExistsPopUp() {
+        return warningMessageForAlreadyExistsPopUp;
+    }
+
+    public void setWarningMessageForAlreadyExistsPopUp(String warningMessageForAlreadyExistsPopUp) {
+        this.warningMessageForAlreadyExistsPopUp = warningMessageForAlreadyExistsPopUp;
     }
 
     private void handleReplaceFileUpload(FacesEvent event, InputStream inputStream, 
@@ -1864,7 +1914,7 @@ public class EditDatafilesPage implements java.io.Serializable {
              */
             if (fileReplacePageHelper.hasContentTypeWarning()){
                 //Add warning to popup instead of page for Content Type Difference
-                setWarningMessageForPopUp(fileReplacePageHelper.getContentTypeWarning());
+                setWarningMessageForFileTypeDifferentPopUp(fileReplacePageHelper.getContentTypeWarning());
                 /* 
                     Note on the info messages - upload errors, warnings and success messages:
                     Instead of trying to display the message here (commented out code below),
@@ -1928,7 +1978,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     		 */
     		if (fileReplacePageHelper.hasContentTypeWarning()){
     			//Add warning to popup instead of page for Content Type Difference
-    			setWarningMessageForPopUp(fileReplacePageHelper.getContentTypeWarning());
+    			setWarningMessageForFileTypeDifferentPopUp(fileReplacePageHelper.getContentTypeWarning());
     		}
     	} else {
     		uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
@@ -2143,6 +2193,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dFileList == null) {
             return null;
         }
+        
+        uploadedInThisProcess = new ArrayList();
 
         DataFile dataFile;
         String warningMessage = null;
@@ -2175,38 +2227,58 @@ public class EditDatafilesPage implements java.io.Serializable {
             // uploaded.
             // -----------------------------------------------------------
             if (isFileAlreadyInDataset(dataFile)) {
+                DataFile existingFile = fileAlreadyExists.get(dataFile);
+                String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
                 if (dupeFileNamesExisting == null) {
-                    dupeFileNamesExisting = dataFile.getFileMetadata().getLabel();
+                    dupeFileNamesExisting = alreadyExists;
                 } else {
-                    dupeFileNamesExisting = dupeFileNamesExisting.concat(", " + dataFile.getFileMetadata().getLabel());
+                    dupeFileNamesExisting = dupeFileNamesExisting.concat(", " + alreadyExists);
                     multipleDupesExisting = true;
                 }
-                // remove temp file
-                deleteTempFile(dataFile);
+                //now we are marking as duplicate and
+                //allowing the user to decide whether to delete
+                //   deleteTempFile(dataFile);
+                dataFile.setMarkedAsDuplicate(true);
+                dataFile.getFileMetadata().setMarkedAsDuplicate(true);
+
             } else if (isFileAlreadyUploaded(dataFile)) {
+                DataFile existingFile = checksumMapNew.get(dataFile.getChecksumValue());
+                String alreadyUploaded = dataFile.getFileMetadata().getLabel() + " uploaded as " + existingFile.getDisplayName();
+
                 if (dupeFileNamesNew == null) {
-                    dupeFileNamesNew = dataFile.getFileMetadata().getLabel();
+                    dupeFileNamesNew = alreadyUploaded;
                 } else {
-                    dupeFileNamesNew = dupeFileNamesNew.concat(", " + dataFile.getFileMetadata().getLabel());
+                    dupeFileNamesNew = dupeFileNamesNew.concat(", " + alreadyUploaded);
                     multipleDupesNew = true;
                 }
-                // remove temp file
-                deleteTempFile(dataFile);
+                //now we are marking as duplicate and
+                //allowing the user to decide whether to delete
+                //   deleteTempFile(dataFile);
+                dataFile.setMarkedAsDuplicate(true);
+                dataFile.getFileMetadata().setMarkedAsDuplicate(true);
             } else {
                 // OK, this one is not a duplicate, we want it. 
                 // But let's check if its filename is a duplicate of another 
                 // file already uploaded, or already in the dataset:
+                /*
                 dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));
                 if (isTemporaryPreviewAvailable(dataFile.getStorageIdentifier(), dataFile.getContentType())) {
                     dataFile.setPreviewImageAvailable(true);
                 }
                 uploadedFiles.add(dataFile);
+                */
                 // We are NOT adding the fileMetadata to the list that is being used
                 // to render the page; we'll do that once we know that all the individual uploads
                 // in this batch (as in, a bunch of drag-and-dropped files) have finished. 
                 //fileMetadatas.add(dataFile.getFileMetadata());
             }
-
+            
+            dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));
+            if (isTemporaryPreviewAvailable(dataFile.getStorageIdentifier(), dataFile.getContentType())) {
+                dataFile.setPreviewImageAvailable(true);
+            }
+            uploadedFiles.add(dataFile);
+            uploadedInThisProcess.add(dataFile);
             /*
              preserved old, pre 4.6 code - mainly as an illustration of how we used to do this. 
             
@@ -2252,7 +2324,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesExisting != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesExisting) {
-                duplicateFilesErrorMessage =  getBundleString("dataset.files.exist") + dupeFileNamesExisting + getBundleString("dataset.file.skip");
+                duplicateFilesErrorMessage =  getBundleString("dataset.files.exist") + dupeFileNamesExisting;
             } else {
             	duplicateFilesErrorMessage = getBundleString("dataset.file.exist") + dupeFileNamesExisting;
             }
@@ -2266,9 +2338,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (dupeFileNamesNew != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesNew) {
-            	duplicateFilesErrorMessage = getBundleString("dataset.files.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
+            	duplicateFilesErrorMessage = getBundleString("dataset.files.duplicate") + dupeFileNamesNew ;
             } else {
-            	duplicateFilesErrorMessage = getBundleString("dataset.file.duplicate") + dupeFileNamesNew + getBundleString("dataset.file.skip");
+            	duplicateFilesErrorMessage = getBundleString("dataset.file.duplicate") + dupeFileNamesNew ;
             }
 
             if (warningMessage == null) {
@@ -2344,8 +2416,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         return IngestUtil.duplicateFilenameCheck(fileMetadata, fileLabelsExisting);
     }
 
-    private  Map<String, Integer> checksumMapOld = null; // checksums of the files already in the dataset
-    private  Map<String, Integer> checksumMapNew = null; // checksums of the new files already uploaded
+    private  Map<String, DataFile> checksumMapOld = null; // checksums of the files already in the dataset
+    private  Map<String, DataFile> checksumMapNew = null; // checksums of the new files already uploaded
+    private Map<DataFile, DataFile> fileAlreadyExists = null;
     
     private void initChecksumMap() {
         checksumMapOld = new HashMap<>();
@@ -2357,7 +2430,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (fm.getDataFile() != null && fm.getDataFile().getId() != null) {
                 String chksum = fm.getDataFile().getChecksumValue();
                 if (chksum != null) {
-                    checksumMapOld.put(chksum, 1);
+                    checksumMapOld.put(chksum, fm.getDataFile());
 
                 }
             }
@@ -2370,16 +2443,29 @@ public class EditDatafilesPage implements java.io.Serializable {
             initChecksumMap();
         }
         
+        if (fileAlreadyExists == null) {
+            fileAlreadyExists = new HashMap<>();
+        }
+        
+
         String chksum = dataFile.getChecksumValue();
+        
+        if(checksumMapOld.get(chksum) != null){
+           fileAlreadyExists.put(dataFile, checksumMapOld.get(chksum));
+       }
         
         return chksum == null ? false : checksumMapOld.get(chksum) != null;
     }
     
     private boolean isFileAlreadyUploaded(DataFile dataFile) {
+
         if (checksumMapNew == null) {
             checksumMapNew = new HashMap<>();
         }
+                System.out.print(checksumMapNew);
+        return FileUtil.isFileAlreadyUploaded(dataFile, checksumMapNew, fileAlreadyExists);
         
+       /* 
         String chksum = dataFile.getChecksumValue();
         
         if (chksum == null) {
@@ -2392,6 +2478,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         checksumMapNew.put(chksum, 1);
         return false;
+        */
     }
     
  

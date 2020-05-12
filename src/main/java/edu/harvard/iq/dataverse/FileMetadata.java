@@ -461,6 +461,22 @@ public class FileMetadata implements Serializable {
         this.selected = selected;
     }
     
+    /*
+    For use during file upload so that the user may delete 
+    files that have already been uploaded to the current dataset version
+    */
+    
+    @Transient
+    private boolean markedAsDuplicate;
+
+    public boolean isMarkedAsDuplicate() {
+        return markedAsDuplicate;
+    }
+
+    public void setMarkedAsDuplicate(boolean markedAsDuplicate) {
+        this.markedAsDuplicate = markedAsDuplicate;
+    }
+    
     @Transient
     private boolean restrictedUI;
 

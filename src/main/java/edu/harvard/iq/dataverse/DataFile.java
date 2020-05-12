@@ -254,6 +254,22 @@ public class DataFile extends DvObject implements Comparable {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
+    
+    /*
+    For use during file upload so that the user may delete 
+    files that have already been uploaded to the current dataset version
+    */
+    
+    @Transient
+    private boolean markedAsDuplicate;
+
+    public boolean isMarkedAsDuplicate() {
+        return markedAsDuplicate;
+    }
+
+    public void setMarkedAsDuplicate(boolean markedAsDuplicate) {
+        this.markedAsDuplicate = markedAsDuplicate;
+    }
        
     /**
      * All constructors should use this method

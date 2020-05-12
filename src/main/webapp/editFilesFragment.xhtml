@@ -527,7 +527,7 @@
 
     <!-- Popups -->
     <p:dialog id="fileTypeDifferentPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.content_type.header']}" widgetVar="fileTypeDifferentPopup" modal="true">
-        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForPopUp}</p>
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForFileTypeDifferentPopUp}</p>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileTypeDifferentPopup').hide()" oncomplete="uploadWidgetDropMsg();"
                              action="#{EditDatafilesPage.deleteFiles()}"
@@ -537,6 +537,18 @@
             </button>
         </div>
     </p:dialog>
+    <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.already_exists.header']}" widgetVar="fileAlreadyExistsPopup" modal="true">
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForAlreadyExistsPopUp}</p>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
+                             action="#{EditDatafilesPage.deleteMarkedAsDuplicateFiles()}"
+                             update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
+            <button class="btn btn-default" onclick="PF('fileAlreadyExistsPopup').hide();" type="button">
+                #{bundle.continue}
+            </button>
+        </div>
+    </p:dialog>
+    
     <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
               header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment" modal="true">
         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>

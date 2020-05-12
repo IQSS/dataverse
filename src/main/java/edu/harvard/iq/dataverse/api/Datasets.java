@@ -1658,7 +1658,13 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                    return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                } else {
+                    return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                }
+                
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);

@@ -145,11 +145,10 @@ public class FilesIT {
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
         String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.duplicate_file");
-                
+        String errMsgFromResponse = JsonPath.from(addTwiceResponse.body().asString()).getString("message");        
         addTwiceResponse.then().assertThat()
-                .body("message", Matchers.startsWith(errMsg))
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(OK.getStatusCode());
+        assertTrue(errMsgFromResponse.contains(errMsg));
     }
 
     
