@@ -95,8 +95,8 @@
                                        disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                        actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
                             <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                                <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
-                                <f:param value="CSV"/> <!-- # {fileMetadata.dataFile.originalFormatLabel} -->
+                                <!-- TODO: FIX VALUE LENGTH OVERLAPS SUBMENU PULL-FLOAT -->
+                                <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                             </h:outputFormat>
                         </p:commandLink>
                         <p:commandLink rendered="#{downloadPopupRequired and !(fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}"
@@ -164,19 +164,16 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <h:commandLink id="risLinkFilePgNew" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
-                                    <!-- TODO - WHAT IS THIS ID FOR? -->
                                     <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
                                 </h:commandLink>
                             </li>
                             <li>
                                 <h:commandLink id="endNoteLinkFilePgNew" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
-                                    <!-- TODO - WHAT IS THIS ID FOR? -->
                                     <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
                                 </h:commandLink>
                             </li>
                             <li>
                                 <h:commandLink id="bibLinkFilePgNew" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
-                                    <!-- TODO - WHAT IS THIS ID FOR? -->
                                     <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
                                 </h:commandLink>
                             </li>
@@ -244,7 +241,7 @@
         </p:commandLink>
         <!-- END:DUPLICATE LINKS -->
         <!-- DUP SUBMENU LINK -->
-        <div class="btn-group dropdown" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+        <div class="btn-group" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
             <!-- Download Dropdown -->
             <a style="font-size:2em !important;" type="button" class="btn-download btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                           title="#{bundle.download}" id="downloadBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -387,8 +384,6 @@
                         id="requestAccessPopupLink"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 
-                <!-- WHAT IS THIS ID FOR? -->
-                
                 <!-- TODO fix disabled styling span vs a -->
                 
                 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
@@ -509,7 +504,7 @@
         <!-- END: FILE PG -->
         
         <!-- DATASET PG -->
-        <div class="btn-group dropdown" jsf:rendered="#{!isFilePg}">
+        <div class="btn-group" jsf:rendered="#{!isFilePg}">
             <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
                 <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip" 
                                title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
