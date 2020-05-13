@@ -28,7 +28,7 @@ import javax.persistence.NamedQuery;
 
 @Entity
 @Table(name = "fileaccessrequests", //having added the guestbookresponse_id column to fileaccessrequests
-    uniqueConstraints=@UniqueConstraint(columnNames={"datafile_id", "authenticated_user_id"}) //this may not make sense at some future point
+    uniqueConstraints=@UniqueConstraint(columnNames={"datafile_id", "authenticated_user_id","request_state"}) //this may not make sense at some future point
 )
 
 @NamedQueries({
@@ -69,7 +69,7 @@ public class FileAccessRequest implements Serializable{
     public enum RequestState {CREATED,EDITED,GRANTED,REJECTED,RESUBMIT,INVALIDATED,CLOSED};
     //private RequestState state;
     @Enumerated(EnumType.STRING)
-    @Column( nullable=false )
+    @Column(name="request_state", nullable=false )
     private RequestState requestState;
     
     public FileAccessRequest(){
