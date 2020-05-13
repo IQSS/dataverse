@@ -46,14 +46,19 @@ public class NavigationWrapper implements java.io.Serializable {
     
     // QDRCustom
     public String getShibLoginPath() {
-        String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");        
-        String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
+        String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");   
+        String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        //https://dev-aws.qdr.org/user/login?current_page=https://dv.dev-aws.qdr.org/dataverse.xhtml
+        String shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL + getRedirectPage();
+        
+        /*String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
                 
         if (!StringUtils.isEmpty(getRedirectPage())) {
            String redirectPageStr = getRedirectPage();
            redirectPageStr = redirectPageStr.replace("?redirectPage","%3FredirectPage");
            shibLoginPath = shibLoginPath.concat(redirectPageStr);
         }
+        */
         
         return shibLoginPath;                        
     }
