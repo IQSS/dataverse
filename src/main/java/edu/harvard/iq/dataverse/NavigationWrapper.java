@@ -49,7 +49,7 @@ public class NavigationWrapper implements java.io.Serializable {
         String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");   
         String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
         //https://dev-aws.qdr.org/user/login?current_page=https://dv.dev-aws.qdr.org/dataverse.xhtml
-        String shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL + getRedirectPage();
+        String shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL + getPageFromContext();
         
         /*String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
                 
