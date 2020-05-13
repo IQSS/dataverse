@@ -153,6 +153,25 @@ public class AddReplaceFileHelper{
     private boolean contentTypeWarningFound;
     private String contentTypeWarningString;
     
+    private boolean duplicateFileWarningFound;
+    private String duplicateFileWarningString;
+
+    public boolean isDuplicateFileWarningFound() {
+        return duplicateFileWarningFound;
+    }
+
+    public void setDuplicateFileWarningFound(boolean duplicateFileWarningFound) {
+        this.duplicateFileWarningFound = duplicateFileWarningFound;
+    }
+
+    public String getDuplicateFileWarningString() {
+        return duplicateFileWarningString;
+    }
+
+    public void setDuplicateFileWarningString(String duplicateFileWarningString) {
+        this.duplicateFileWarningString = duplicateFileWarningString;
+    }
+    
     public void resetFileHelper(){
         
         initErrorHandling();
@@ -1192,8 +1211,11 @@ public class AddReplaceFileHelper{
             // (2) Check for duplicates
             // -----------------------------------------------------------     
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
-                this.addErrorSevere(getBundleErr("replace.new_file_same_as_replacement"));                                
-                break;
+                this.addErrorWarning(getBundleErr("replace.new_file_same_as_replacement")); 
+                this.duplicateFileWarningFound = true;
+                System.out.print("replace with duplicate....");
+                this.duplicateFileWarningString = getBundleErr("replace.new_file_same_as_replacement");
+              //  break;
             } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
                 //removeUnSavedFilesFromWorkingVersion();
@@ -1201,11 +1223,9 @@ public class AddReplaceFileHelper{
                 //abandonOperationRemoveAllNewFilesFromDataset();
                 this.addErrorWarning(getBundleErr("duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
 
-                finalFileList.add(df);
-                //return false;
-            } else {
-                finalFileList.add(df);
-            }
+            } 
+            
+            finalFileList.add(df);
         }
         
         if (this.hasError()){

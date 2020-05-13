@@ -1319,7 +1319,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         // wait for it to ingest... 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5));
      //   sleep(10000);
      
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);

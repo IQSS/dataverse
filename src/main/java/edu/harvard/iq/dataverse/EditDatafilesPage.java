@@ -905,6 +905,15 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
         
+        if (isFileReplaceOperation()){
+            try {
+                deleteReplacementFile();
+            } catch (FileReplaceException ex) {
+                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return;
+        }
+        
     }
         
     public void deleteFiles() {
@@ -1804,6 +1813,7 @@ System.out.print("are we deleting the temp file");
     }
     
     public void uploadFinished() {
+        System.out.print("upload finished...");
         // This method is triggered from the page, by the <p:upload ... onComplete=...
         // attribute. 
         // Note that its behavior is different from that of of <p:upload ... onStart=...
@@ -1861,7 +1871,14 @@ System.out.print("are we deleting the temp file");
                     //context.execute("PF('fileTypeDifferentPopup').show();");
                     PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
         }
-
+        
+        if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
+            System.out.print("replace and upload warning message not null");
+                setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
+                    PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
+                    //context.execute("PF('fileTypeDifferentPopup').show();");
+                    PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+        }
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
@@ -2032,6 +2049,17 @@ System.out.print("are we deleting the temp file");
                     PrimeFaces.current().ajax().update("datasetForm:fileTypeDifferentPopup");
                     PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
             }
+            /*
+            
+
+            if(fileReplacePageHelper.){
+                    //RequestContext context = RequestContext.getCurrentInstance();
+                    //RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
+                    //context.execute("PF('fileTypeDifferentPopup').show();");
+                    PrimeFaces.current().ajax().update("datasetForm:fileTypeDifferentPopup");
+                    PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
+            }
+                        */
             return;
                
         }
