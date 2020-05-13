@@ -324,7 +324,7 @@ public class CreateEditDataversePage implements Serializable {
 
     private String setupViewForDataverseEdit() {
         dataverse = dataverseDao.find(dataverseId);
-        if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+        if (!permissionService.on(dataverse).has(Permission.EditDataverse)) {
             return permissionsWrapper.notAuthorized();
         }
 

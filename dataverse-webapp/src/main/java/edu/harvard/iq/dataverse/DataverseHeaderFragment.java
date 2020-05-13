@@ -277,8 +277,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         breadcrumbs.add(new Breadcrumb(url, linkString));
     }
 
-    public void addBreadcrumb(String linkString) {
-        breadcrumbs.add(new Breadcrumb(linkString));
+    public void addBreadcrumb(String text) {
+        breadcrumbs.add(new Breadcrumb(text));
     }
 
     // inner class used for breadcrumbs

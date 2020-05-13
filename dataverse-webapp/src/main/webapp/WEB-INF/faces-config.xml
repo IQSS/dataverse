@@ -9,6 +9,10 @@
             <base-name>Bundle</base-name>
             <var>bundle</var>
         </resource-bundle>
+        <resource-bundle>
+            <base-name>ValidationMessages</base-name>
+            <var>validationMessages</var>
+        </resource-bundle>
         <resource-handler>org.omnifaces.resourcehandler.UnmappedResourceHandler</resource-handler>
     </application>
     

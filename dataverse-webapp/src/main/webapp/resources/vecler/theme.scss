@@ -2258,6 +2258,32 @@ div.filesTable .ui-paginator {
 
 /* Main page end */
 
+/* Edit dataverse */
+
+#metadataFieldOptionsPanel-Body {
+    ul {
+        list-style: none;
+        padding:0;
+        
+        li {
+            border-top: 1px solid #e8e8e8;
+            padding-top: 22px;
+            padding-bottom: 20px;
+            
+            .child-field {
+                padding-left: 48px;
+                font-weight: normal;
+                line-height: 27px;
+                font-size: inherit;
+                color: inherit;
+                margin: 0;
+                border-bottom: 0;
+            }
+        }
+    }
+}
+
+
 /* Guestbook */
 
 .form-horizontal #guestbookForm\:customQuestions > .form-group {
