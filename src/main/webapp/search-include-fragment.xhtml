@@ -243,7 +243,7 @@
                         <!--BROWSE GUEST ZERO COUNTS-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.zero']}" escape="false">
-                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
+                                <f:param value="#{navigationWrapper.getShibLoginPath()}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
@@ -251,7 +251,7 @@
                         <!--BROWSE GUEST HIDDEN-->
                         <p>
                             <h:outputFormat value="#{bundle['dataverse.results.empty.browse.guest.hidden']}" escape="false">
-                                <f:param value="#{'/shib.xhtml'.concat(navigationWrapper.redirectPage)}"/>
+                                <f:param value="#{navigationWrapper.getShibLoginPath()}"/>
                             </h:outputFormat>
                         </p>
                     </ui:fragment>
