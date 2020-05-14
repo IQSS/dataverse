@@ -8,7 +8,7 @@ body {
   /* Sticky footer Margin bottom by footer height */
   margin-bottom:160px;
 }
-body.widget-view {margin-bottom:54px;}
+body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
 .ui-widget-content a {color: #337AB7;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
@@ -64,7 +64,7 @@ body .ui-widget {font-size: inherit;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
 #footer {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
-#footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; background:#fff;}
+#footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
 #footer .version {vertical-align:bottom;white-space:nowrap;}
@@ -637,11 +637,18 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 }
 
 .bg-citation {background:#ECF6FB; border: 0;}
+#iframeForm div.alert.bg-citation {margin-bottom:0 !important;}
 .bg-citation-file {background:#f5f5f5; border: 0;}
 .alert-danger.bg-danger {background:#F2DEDE; border: 0;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#333;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
-div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
+div.citation-block div.preview-icon-block img {max-width:100px; max-height:100px;}
+div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em; line-height:1.1; color:#428BCA;}
+@media(min-width:768px){
+    .preview-icon-block img {max-width:none; max-height:none;}
+    div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em;}
+}
+div.citation-block div.citation span.citation-select a {word-break: break-all;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 

@@ -77,117 +77,100 @@
                                     
                                     <!-- START: NEW RESPONSIVE ABOVE FOLD BLOCK -->
                                     <div class="row">
-                                        
+                                        <!-- CITATION BLOCK -->
                                         <div class="col-xs-12 col-sm-12 col-md-8 col-lg-9">
-                                            <!-- CITATION BLOCK -->
-                                            <div>
-                                                <!-- FILE CITATION -->
-                                                <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
-                                                <div class="citation-block">
-                                                    <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
-                                                        <div class="row">
-                                                            <div class="col-xs-12 citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}" style="word-wrap:break-word;">
-                                                                <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                                    <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true) : FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
-                                                                </span>
-                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
-                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
-                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                                            </div>
-                                                            <div class="col-xs-12 col-sm-4 col-md-3 citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                                                <div class="btn-group">
-                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                         #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
-                                                                    </button>
-                                                                    <ul class="dropdown-menu">
-                                                                        <li>
-                                                                            <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
-                                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                                            </a>
-                                                                        </li>
-                                                                        <li>
-                                                                            <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
-                                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                                            </a>
-                                                                        </li>
-                                                                        <li>
-                                                                            <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
-                                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                                            </a>
-                                                                        </li>
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
-                                                            <!-- BOOTSTRAP 3 CLEARFIX SPACER -->
-                                                            <div class="clearfix visible-xs" style="line-height:.5;">&#160;</div>
-                                                            <!-- END: BOOTSTRAP 3 CLEARFIX SPACER -->
-                                                            <div class="col-xs-12 col-sm-8 col-md-7 small text-muted citation-standards"
-                                                                 style="line-height:2.1;"
-                                                                 jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                                                <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
-                                                            </div>
+                                            <!-- FILE CITATION -->
+                                            <h:outputFormat styleClass="h5" value="#{bundle['file.citation.datafile']}" escape="false" />
+                                            <div class="citation-block">
+                                                <div style="padding:10px 10px 0px 10px;" class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
+                                                    <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
+                                                        <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                                            <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true) : FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
+                                                        </span>
+                                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
+                                                              data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
+                                                              data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                                    </div>
+                                                    <div class="pull-left row col-sm-8" style="padding:0;">
+                                                        <div class="col-sm-3 col-md-4 col-lg-3 btn-group citation-download" style="margin-bottom:10px;" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                            <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                 #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <a jsf:id="endNoteLink-2" jsf:action="#{FilePage.fileDownloadService.downloadCitationXML(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" >
+                                                                        #{bundle['dataset.cite.downloadBtn.xml']}
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a jsf:id="risLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationRIS(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}">
+                                                                        #{bundle['dataset.cite.downloadBtn.ris']}
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a jsf:id="bibLink-2" jsf:actionListener="#{FilePage.fileDownloadService.downloadCitationBibtex(FilePage.fileMetadata, null, FilePage.fileMetadata.dataFile.isIdentifierRegistered())}" target="_blank">
+                                                                        #{bundle['dataset.cite.downloadBtn.bib']}
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <div class="col-sm-9 col-md-8 col-lg-9 small text-muted citation-standards" style="padding-top:3px;margin-bottom:10px;" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                            <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- END: FILE CITATION -->
-
-                                                <!-- DATASET CITATION -->
-                                                <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
-                                                <div class="citation-block no-margin-bottom">
-                                                    <div class="col-xs-12 #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
-                                                        <div class="row">
-                                                            <div class="col-xs-12 citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}" style="word-wrap:break-word;">
-                                                                <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
-                                                                </span>
-                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
-                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
-                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                                                <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
-                                                                      data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                                            </div>
-                                                            <div class="col-xs-12 col-sm-4 col-md-3 citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                                                <div class="btn-group">
-                                                                    <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                                        #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
-                                                                    </button>
-                                                                    <ul class="dropdown-menu">
-                                                                        <li>
-                                                                            <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
-                                                                                #{bundle['dataset.cite.downloadBtn.xml']}
-                                                                            </a>
-                                                                        </li>
-                                                                        <li>
-                                                                            <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
-                                                                                #{bundle['dataset.cite.downloadBtn.ris']}
-                                                                            </a>
-                                                                        </li>
-                                                                        <li>
-                                                                            <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
-                                                                                #{bundle['dataset.cite.downloadBtn.bib']}
-                                                                            </a>
-                                                                        </li>
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
-                                                            <!-- BOOTSTRAP 3 CLEARFIX SPACER -->
-                                                            <div class="clearfix visible-xs" style="line-height:.5;">&#160;</div>
-                                                            <!-- END: BOOTSTRAP 3 CLEARFIX SPACER -->
-                                                            <div class="col-xs-12 col-sm-8 col-md-7 small text-muted citation-standards" 
-                                                                 style="line-height:2.1;" 
-                                                                 jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
-                                                                <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- END: DATASET CITATION -->
                                             </div>
-                                            <!-- END: CITATION BLOCK -->
+                                            <!-- END: FILE CITATION -->
+
+                                            <!-- DATASET CITATION -->
+                                            <h:outputFormat styleClass="h5" value="#{bundle['file.citation.dataset']}" escape="false" />
+                                            <div class="citation-block no-margin-bottom">
+                                                <div style="padding:10px 10px 0px 10px;" class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
+                                                    <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
+                                                        <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                                            <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
+                                                        </span>
+                                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
+                                                              data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
+                                                              data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
+                                                              data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                                                    </div>
+                                                    <div class="pull-left row col-sm-8" style="padding:0;">
+                                                        <div class="col-sm-3 col-md-4 col-lg-3 btn-group citation-download" style="margin-bottom:10px;" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                            <button type="button" style="padding:0;" class="btn btn-link dropdown-toggle downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <a jsf:id="endNoteLink" jsf:action="#{FilePage.fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}" >
+                                                                        #{bundle['dataset.cite.downloadBtn.xml']}
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a jsf:id="risLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}">
+                                                                        #{bundle['dataset.cite.downloadBtn.ris']}
+                                                                    </a>
+                                                                </li>
+                                                                <li>
+                                                                    <a jsf:id="bibLink" jsf:actionListener="#{FilePage.fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank">
+                                                                        #{bundle['dataset.cite.downloadBtn.bib']}
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        
+                                                        <div class="col-sm-9 col-md-8 col-lg-9 small text-muted citation-standards" style="padding-top:3px;margin-bottom:10px;" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
+                                                            <h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- END: DATASET CITATION -->
                                         </div>
-                                        
+                                        <!-- END: CITATION BLOCK -->
                                         
                                         <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom">
                                             <!-- ActionButtonBlock -->
