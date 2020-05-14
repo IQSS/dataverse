@@ -8,13 +8,7 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 >
 
-    <p class="help-block">
-        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-            <f:param value="#{bundle.htmlAllowedTags}"/>
-        </h:outputFormat>
-    </p>
-
-    <p:outputLabel styleClass="control-label" for="textarea" rendered="#{!hiddenLabel}">
+    <p:outputLabel styleClass="control-label" for="textEditor" rendered="#{!hiddenLabel}">
         <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
         <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
         <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -24,11 +18,10 @@
               data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
     </p:outputLabel>
 
-    <p:inputTextarea value="#{datasetField.value}" id="textarea"
-                     rows="5" cols="60" styleClass="form-control" />
-                     
-
-    <p:watermark for="textarea" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
+    <ui:include src="/WEB-INF/templates/textEditor.xhtml">
+        <ui:param name="editorValue" value="#{datasetField.value}" />
+        <ui:param name="editorWatermark" value="#{datasetField.datasetFieldType.localeWatermark}" />
+    </ui:include>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty datasetField.validationMessage}">
         <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>

@@ -336,6 +336,133 @@ function reinitializePrimefacesComponentsJS() {
            }
         });
     }
+
+    if(PrimeFaces.widget.TextEditor) {
+        PrimeFaces.widget.TextEditor.prototype._render = function() {
+            var $this = this;
+
+            //toolbar
+            this.toolbar = $(this.jqId + '_toolbar');
+            if(!this.toolbar.length && this.cfg.toolbarVisible) {
+                this.jq.prepend(this.toolbarTemplate);
+                this.toolbar = this.jq.children('.ui-editor-toolbar')
+                this.toolbar.attr('id', this.id + '_toolbar');
+            }
+
+            //configuration
+            if(this.cfg.height) {
+                this.editorContainer.height(this.cfg.height);
+            }
+
+            this.cfg.formats = [
+                'bold',
+                'header',
+                'italic',
+                'list',
+                'blockquote',
+                'script',
+                'strike',
+                'underline',
+                'code',
+            ];
+            this.cfg.theme = 'snow';
+            this.cfg.modules = {
+                toolbar: this.cfg.toolbarVisible ? PrimeFaces.escapeClientId(this.id + '_toolbar') : false,
+                clipboard: {
+                    matchVisual: false
+                },
+                keyboard: {
+                    bindings: {
+                        tab: {
+                            key: 9,
+                            handler: function() {
+                                return true;
+                            }
+                        },
+                        'remove tab': {
+                            key: 9,
+                            shiftKey: true,
+                            collapsed: true,
+                            prefix: /\t$/,
+                            handler: function() {
+                                return true;
+                            }
+                        },
+                        list: {
+                            key: 'Tab',
+                            shiftKey: true,
+                            format: ['list'],
+                            collapsed: true,
+                            handler: function () {
+                                return true;
+                            }
+                        },
+                        indent: {
+                            key: 'Tab',
+                            format: ['list', 'blockquote'],
+                            handler() {
+                                return true;
+                            },
+                        },
+                        outdent: {
+                            key: 'Tab',
+                            shiftKey: true,
+                            format: ['list', 'blockquote'],
+                            handler() {
+                                return true;
+                            },
+                        },
+                        'indent code-block': {
+                            key: 'Tab',
+                            shiftKey: true,
+                            format: ['blockquote'],
+                            handler() {
+                                return true;
+                            }
+                        },
+                        'outdent code-block': {
+                            key: 'Tab',
+                            shiftKey: true,
+                            format: ['blockquote'],
+                            handler() {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            };
+
+            //initialize
+            this.editor = new Quill(PrimeFaces.escapeClientId(this.id) + '_editor', this.cfg);
+
+            var events = ["keyup", "keydown", "click", "dblclick", "keypress", "mousedown", "mousemove", "mouseout",
+                "mouseover", "mouseup"];
+
+            $.each(events, function(index, value) {
+                $this.registerEvent(value);
+            });
+
+            //set initial value
+            this.input.val(this.getEditorValue());
+
+            //update input on change
+            this.editor.on('text-change', function(delta, oldDelta, source) {
+                $this.input.val($this.getEditorValue());
+                $this.callBehavior('change');
+            });
+            this.editor.on('selection-change', function(range, oldRange, source) {
+                if(range && !oldRange) {
+                    $this.callBehavior('focus');
+                }
+                if(!range && oldRange) {
+                    $this.callBehavior('blur');
+                }
+                if(range && oldRange) {
+                    $this.callBehavior('select');
+                }
+            });
+        }
+    }
     
     if(PrimeFaces.widget.Dialog) {
         // Dialog Listener For Calling handleResizeDialog
