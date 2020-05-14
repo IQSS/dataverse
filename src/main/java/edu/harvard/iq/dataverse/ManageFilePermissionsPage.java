@@ -428,7 +428,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         for (DataFile file : files) {
             if (assignRole(au, file, fileDownloaderRole)) {                
                 file.getFileAccessRequesters().remove(au);
-                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAllByAuthenticatedUserIdAndRequestState(au.getId(), FileAccessRequest.RequestState.CREATED);
+                List<FileAccessRequest> fileAccessRequests = fileAccessRequestService.findAll(au.getId(), file.getId(), FileAccessRequest.RequestState.CREATED);
                 for(FileAccessRequest far : fileAccessRequests){
                     far.setStateGranted();
                     fileAccessRequestService.save(far);
