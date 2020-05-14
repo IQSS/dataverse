@@ -30,7 +30,7 @@ public class FileAccessRequestServiceBean {
     public List<FileAccessRequest> findAll(Long authenticatedUserId, Long fileId, FileAccessRequest.RequestState requestState){
         return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserIdAndDataFileIdAndRequestState", FileAccessRequest.class)
                 .setParameter("authenticatedUserId",authenticatedUserId)
-                .setParameter("fileId",fileId)
+                .setParameter("dataFileId",fileId)
                 .setParameter("requestState",requestState)
                 .getResultList();
     }
