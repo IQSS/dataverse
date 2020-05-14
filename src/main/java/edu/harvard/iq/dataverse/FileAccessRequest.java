@@ -45,7 +45,9 @@ import javax.persistence.NamedQuery;
         @NamedQuery(name = "FileAccessRequest.findByGuestbookResponseIdAndRequestState",
                 query = "SELECT far FROM FileAccessRequest far WHERE far.guestbookResponse.id=:guestbookResponseId and far.requestState=:requestState"),
         @NamedQuery(name = "FileAccessRequest.findByDataFileIdAndRequestState",
-                query = "SELECT far FROM FileAccessRequest far WHERE far.dataFile.id=:dataFileId and far.requestState=:requestState")
+                query = "SELECT far FROM FileAccessRequest far WHERE far.dataFile.id=:dataFileId and far.requestState=:requestState"),
+        @NamedQuery(name = "FileAccessRequest.findByAuthenticatedUserIdAndDataFileIdAndRequestState",
+                query = "SELECT far FROM FileAccessRequest far WHERE far.user.id=:authenticatedUserId and far.dataFile.id=:dataFileId and far.requestState=:requestState")
 })
 
 public class FileAccessRequest implements Serializable{
