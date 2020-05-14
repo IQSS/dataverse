@@ -19,16 +19,14 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 import org.primefaces.model.DualListModel;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,7 +68,9 @@ public class DataversePage implements java.io.Serializable {
     @Inject
     private SavedSearchService savedSearchService;
 
-    private Dataverse dataverse = new Dataverse();
+    private Dataverse dataverse;
+    private String dataverseAlias;
+    private Long dataverseId;
     private LinkMode linkMode;
 
     private DualListModel<Dataverse> featuredDataverses = new DualListModel<>(new ArrayList<>(), new ArrayList<>());
@@ -106,6 +106,14 @@ public class DataversePage implements java.io.Serializable {
         return linkMode;
     }
 
+    public String getDataverseAlias() {
+        return dataverseAlias;
+    }
+
+    public Long getDataverseId() {
+        return dataverseId;
+    }
+
     public boolean isRootDataverse() {
         return dataverse.getOwner() == null;
     }
@@ -116,27 +124,23 @@ public class DataversePage implements java.io.Serializable {
 
     // -------------------- LOGIC --------------------
     public String init() {
-
-        if (dataverse.getAlias() != null) {
-            dataverse = dataverseDao.findByAlias(dataverse.getAlias());
-        } else if (dataverse.getId() != null) {
-            dataverse = dataverseDao.find(dataverse.getId());
+        if (StringUtils.isNotEmpty(dataverseAlias)) {
+            dataverse = dataverseDao.findByAlias(dataverseAlias);
+        } else if(dataverseId != null) {
+            dataverse = dataverseDao.find(dataverseId);
         } else {
-            try {
-                dataverse = dataverseDao.findRootDataverse();
-            } catch (EJBException e) {
-                // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root
-                dataverse = null;
-            }
+            Try.of(() -> dataverseDao.findRootDataverse())
+                    .onSuccess(rootDv -> dataverse = rootDv)
+                    .onFailure(throwable -> dataverse = null);
         }
 
-        // check if dv exists and user has permission
         if (dataverse == null) {
             return permissionsWrapper.notFound();
         }
         if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
             return permissionsWrapper.notAuthorized();
         }
+
         initFeaturedDataverses();
         carouselFeaturedDataverses = featuredDataverseService.findByDataverseIdQuick(dataverse.getId());
 
@@ -377,5 +381,13 @@ public class DataversePage implements java.io.Serializable {
 
     public void setFeaturedDataverses(DualListModel<Dataverse> featuredDataverses) {
         this.featuredDataverses = featuredDataverses;
+    }
+
+    public void setDataverseAlias(String dataverseAlias) {
+        this.dataverseAlias = dataverseAlias;
+    }
+
+    public void setDataverseId(Long dataverseId) {
+        this.dataverseId = dataverseId;
     }
 }

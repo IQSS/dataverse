@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -27,14 +26,13 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,8 +61,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     RoleAssigneeServiceBean roleAssigneeService;
     @EJB
     PermissionServiceBean permissionService;
-    @EJB
-    UserNotificationService userNotificationService;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -82,7 +78,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private DataverseRolePermissionHelper dataverseRolePermissionHelper;
     private List<DataverseRole> roleList;
 
-    DvObject dvObject = new Dataverse(); // by default we use a Dataverse, but this will be overridden in init by the findById
+    private DvObject dvObject;
+    private Long id;
 
     public DvObject getDvObject() {
         return dvObject;
@@ -99,10 +96,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
          }*/
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String init() {
-        //@todo deal with any kind of dvObject
-        if (dvObject.getId() != null) {
-            dvObject = dvObjectService.findDvObject(dvObject.getId());
+        if (id != null) {
+            dvObject = dvObjectService.findDvObject(id);
+        } else {
+            return permissionsWrapper.notFound();
         }
 
         // check if dvObject exists and user has permission
