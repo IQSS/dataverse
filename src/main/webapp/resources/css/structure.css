@@ -642,11 +642,11 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .alert-danger.bg-danger {background:#F2DEDE; border: 0;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#333;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
-div.citation-block div.preview-icon-block img {max-width:100px; max-height:100px;}
-div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em; line-height:1.1; color:#428BCA;}
-@media(min-width:768px){
-    .preview-icon-block img {max-width:none; max-height:none;}
-    div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em;}
+div.citation-block div.preview-icon-block img {max-width:140px; max-height:140px;}
+div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
+@media(max-width:767px){
+    div.citation-block div.preview-icon-block img {max-width:100px; max-height:100px;}
+    div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em;}
 }
 div.citation-block div.citation span.citation-select a {word-break: break-all;}
 
