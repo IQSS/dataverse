@@ -27,6 +27,14 @@ public class FileAccessRequestServiceBean {
         return em.createQuery("select object(o) from FileAccessRequest as o order by o.id", FileAccessRequest.class).getResultList();
     }
     
+    public List<FileAccessRequest> findAll(Long authenticatedUserId, Long fileId, FileAccessRequest.RequestState requestState){
+        return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserIdAndDataFileIdAndRequestState", FileAccessRequest.class)
+                .setParameter("authenticatedUserId",authenticatedUserId)
+                .setParameter("fileId",fileId)
+                .setParameter("requestState",requestState)
+                .getResultList();
+    }
+    
     public List<FileAccessRequest> findAllByAuthenticedUserId(Long authenticatedUserId){
         return em.createNamedQuery("FileAccessRequest.findByAuthenticatedUserId", FileAccessRequest.class)
                         .setParameter("authenticatedUserId", authenticatedUserId)
