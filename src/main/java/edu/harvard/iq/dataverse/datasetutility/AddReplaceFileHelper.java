@@ -1218,7 +1218,7 @@ public class AddReplaceFileHelper{
               //  break;
             } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
-                this.addErrorWarning(getBundleErr("duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
+                this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
             }             
             finalFileList.add(df);
         }

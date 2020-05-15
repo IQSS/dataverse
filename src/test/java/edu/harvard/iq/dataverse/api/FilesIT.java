@@ -116,20 +116,17 @@ public class FilesIT {
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
         String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
-
       
         addResponse.then().assertThat()
                 /**
                  * @todo We have a need to show human readable success messages
                  * via API in a consistent location.
                  */
-                //                .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
                 .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
-//                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
@@ -138,13 +135,13 @@ public class FilesIT {
         
         
         //------------------------------------------------
-        // Try to add the same file again -- and fail
+        // Try to add the same file again -- and get warning
         //------------------------------------------------
         Response addTwiceResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.duplicate_file");
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.warning.duplicate_file");
         String errMsgFromResponse = JsonPath.from(addTwiceResponse.body().asString()).getString("message");        
         addTwiceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
