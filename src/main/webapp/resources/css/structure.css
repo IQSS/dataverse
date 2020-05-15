@@ -135,38 +135,6 @@ table.selectManyCheckboxBlock label {font-weight:normal;}
 .normal-text {font-weight:normal;}
 .normal-text input {margin-right:4px;}
 
-table {
-  background-color: #FFFFFF;
-  width: 100%;
-  text-align: left;
-  border-collapse: collapse;
-}
-table td, table.blue th {
-  padding: 8px 8px;
-}
-
-table tr:nth-child(even) {
-  background: #E8E8ED;
-}
-table thead {
-  background: #4B74FF;
-}
-table thead th {
-  font-weight: bold;
-  color: #FFFFFF;
-}
-table tfoot td {
-  font-size: 14px;
-}
-table tfoot .links {
-  text-align: right;
-}
-table tfoot .links a{
-  display: inline-block;
-  padding: 8px 8px;
-  border-radius: 5px;
-}
-
 hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
