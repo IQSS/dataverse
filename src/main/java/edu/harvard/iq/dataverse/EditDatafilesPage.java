@@ -596,7 +596,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         if (mode == FileEditMode.UPLOAD) {
             if (settingsWrapper.getUploadMethodsCount() == 1){
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(settingsWrapper.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL))));
             } else if (settingsWrapper.getUploadMethodsCount() > 1) {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
             }
