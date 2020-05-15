@@ -631,7 +631,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         Long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
-        
+        System.out.print("newDfId: " + newDfId);
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for old file, will error");
         String updateDescription = "New description.";
@@ -644,6 +644,7 @@ public class FilesIT {
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for new file");
         //"junk" passed below is to test that it is discarded
+        System.out.print("params: " +  String.valueOf(newDfId) + " " + updateJsonString + " " + apiToken);
         Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
         assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();

@@ -1209,28 +1209,21 @@ public class AddReplaceFileHelper{
             
             // -----------------------------------------------------------
             // (2) Check for duplicates
+            // Only a warning now
             // -----------------------------------------------------------     
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
                 this.addErrorWarning(getBundleErr("replace.new_file_same_as_replacement")); 
                 this.duplicateFileWarningFound = true;
-                System.out.print("replace with duplicate....");
                 this.duplicateFileWarningString = getBundleErr("replace.new_file_same_as_replacement");
               //  break;
             } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
-                //removeUnSavedFilesFromWorkingVersion();
-                //removeLinkedFileFromDataset(dataset, df);
-                //abandonOperationRemoveAllNewFilesFromDataset();
                 this.addErrorWarning(getBundleErr("duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
-
-            } 
-            
+            }             
             finalFileList.add(df);
         }
         
         if (this.hasError()){
-            
-            System.out.print("is there an error here?");
             // We're recovering from the duplicate check.
             msg("We're recovering from a duplicate check 1");
             runMajorCleanup();
