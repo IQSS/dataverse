@@ -41,12 +41,12 @@
             <!--external tools-->
             <ui:repeat var="tool" value="#{exploreTools}">
                 <li>
-                    <h:commandLink rendered="#{!downloadPopupRequired}"
+                    <p:commandLink rendered="#{!downloadPopupRequired}"
                                    styleClass="#{(fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
                         #{tool.displayName}
-                    </h:commandLink>
+                    </p:commandLink>
                     <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
