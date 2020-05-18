@@ -410,7 +410,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {

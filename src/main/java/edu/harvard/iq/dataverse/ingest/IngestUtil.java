@@ -116,6 +116,17 @@ public class IngestUtil {
      * @return true if there is a conflict, false otherwise.
      */
     public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
+
+        //Remove from the metadatas list the name of the datafile in question
+        Iterator<FileMetadata> fmIt = fileMetadatas.iterator();
+
+        while (fmIt.hasNext()) {
+            FileMetadata fm = fmIt.next();
+            if (fm.getDataFile().equals(dataFile)) {
+                fmIt.remove();
+            }
+        }
+
         List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
         if (label != null || directoryLabel != null) {
             String path = "";
