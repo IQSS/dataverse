@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -98,6 +99,81 @@ public class IngestUtil {
 
         existingFileNames.add(pathName);
         return fileName;
+    }
+
+    /**
+     * Given a new proposed label or directoryLabel for a file, check against
+     * existing files if a duplicate directoryLabel/label combination would be
+     * created.
+     *
+     * @param label The new label (filename) that is being proposed. Can be
+     * null.
+     * @param directoryLabel The new directoryLabel (file path) that is being
+     * proposed. Can be null.
+     * @param fileMetadatas The list fileMetadatas to be compared against,
+     * probably from a draft.
+     * @param dataFile The file that is being updated with a new name or path.
+     * @return true if there is a conflict, false otherwise.
+     */
+    public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
+        List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
+        if (label != null || directoryLabel != null) {
+            String path = "";
+            if (directoryLabel != null) {
+                path = directoryLabel + "/";
+            }
+            if (label == null) {
+                label = dataFile.getFileMetadata().getLabel();
+            }
+            String incomingPathPlusFileName = path + label;
+            logger.fine(filePathsAndNames.toString());
+            logger.fine("incomingPathName: " + incomingPathPlusFileName);
+            if (filePathsAndNames.contains(incomingPathPlusFileName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Given a DatasetVersion, iterate across all the files (including their
+     * paths) and return any duplicates.
+     *
+     * @param datasetVersion
+     * @return A Collection of Strings in the form of path/to/file.txt
+     */
+    public static Collection<String> findDuplicateFilenames(DatasetVersion datasetVersion) {
+        List<String> allFileNamesWithPaths = getPathsAndFileNames(datasetVersion.getFileMetadatas());
+        return findDuplicates(allFileNamesWithPaths);
+    }
+
+    // https://stackoverflow.com/questions/7414667/identify-duplicates-in-a-list
+    private static <T> Set<T> findDuplicates(Collection<T> collection) {
+        Set<T> duplicates = new HashSet<>();
+        Set<T> uniques = new HashSet<>();
+        for (T t : collection) {
+            if (!uniques.add(t)) {
+                duplicates.add(t);
+            }
+        }
+        return duplicates;
+    }
+
+    /**
+     * @return A List of Strings in the form of path/to/file.txt
+     */
+    public static List<String> getPathsAndFileNames(List<FileMetadata> fileMetadatas) {
+        List<String> allFileNamesWithPaths = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String directoryLabel = fileMetadata.getDirectoryLabel();
+            String path = "";
+            if (directoryLabel != null) {
+                path = directoryLabel + "/";
+            }
+            String pathAndfileName = path + fileMetadata.getLabel();
+            allFileNamesWithPaths.add(pathAndfileName);
+        }
+        return allFileNamesWithPaths;
     }
 
     // This method is called on a single file, when we need to modify the name 

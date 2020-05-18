@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -18,8 +19,11 @@ import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -451,6 +455,46 @@ public class DataversesIT {
                 .body("message", equalTo("Role colonel not found."))
                 .statusCode(404);
 
+    }
+    
+    @Test
+    public void testDataFileAPIPermissions() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String pathToJsonFile = "src/test/resources/json/complete-dataset-with-files.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        
+        //should fail if non-super user and attempting to
+        //create a dataset with files
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //should be ok to create a dataset without files...
+        pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+        //As non-super user should be able to add a real file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response authorAttemptsToAddFileViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+
+        authorAttemptsToAddFileViaNative.prettyPrint();
+        authorAttemptsToAddFileViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+ 
     }
     
 }

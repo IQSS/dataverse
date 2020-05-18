@@ -74,6 +74,7 @@ import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
+import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -136,6 +137,11 @@ public class Admin extends AbstractApiBean {
         GroupServiceBean groupService;
         @EJB
         SettingsServiceBean settingsService;
+        @EJB
+        DatasetVersionServiceBean datasetVersionService;
+        @EJB
+        ExplicitGroupServiceBean explicitGroupService;
+        
 
 	// Make the session available
 	@Inject
@@ -324,18 +330,48 @@ public class Admin extends AbstractApiBean {
 		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
 	}
 
-	@DELETE
-	@Path("authenticatedUsers/{identifier}/")
-	public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + identifier + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @DELETE
+    @Path("authenticatedUsers/{identifier}/")
+    public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+    
+    @DELETE
+    @Path("authenticatedUsers/id/{id}/")
+    public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deleteAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deleteAuthenticatedUser(AuthenticatedUser au) {
         
+        //getDeleteUserErrorMessages does all of the tests to see
+        //if the user is 'deletable' if it returns an empty string the user 
+        //can be safely deleted.
         
+        String errorMessages = authSvc.getDeleteUserErrorMessages(au);
+        
+        if (!errorMessages.isEmpty()) {
+            return badRequest(errorMessages);
+        }
+        
+        //if the user is deletable we will delete access requests and group membership
+        // many-to-many relationships that couldn't be cascade deleted
+        authSvc.removeAuthentictedUserItems(au);
+        
+        authSvc.deleteAuthenticatedUser(au.getId());
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
+
+    }  
+    
+
         
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
@@ -376,8 +412,12 @@ public class Admin extends AbstractApiBean {
 	@GET
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
-	public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
-			@QueryParam("selectedPage") Integer selectedPage, @QueryParam("itemsPerPage") Integer itemsPerPage) {
+	public Response filterAuthenticatedUsers(
+			@QueryParam("searchTerm") String searchTerm,
+			@QueryParam("selectedPage") Integer selectedPage,
+			@QueryParam("itemsPerPage") Integer itemsPerPage,
+			@QueryParam("sortKey") String sortKey
+	) {
 
 		User authUser;
 		try {
@@ -394,7 +434,7 @@ public class Admin extends AbstractApiBean {
 
 		UserListMaker userListMaker = new UserListMaker(userService);
 
-		String sortKey = null;
+		// String sortKey = null;
 		UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
 
 		return ok(userListResult.toJSON());
@@ -811,16 +851,8 @@ public class Admin extends AbstractApiBean {
 		return ok(response);
 	}
 
-	@DELETE
-	@Path("authenticatedUsers/id/{id}/")
-	public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
-		AuthenticatedUser user = authSvc.findByID(id);
-		if (user != null) {
-			authSvc.deleteAuthenticatedUser(user.getId());
-			return ok("AuthenticatedUser " + id + " deleted. ");
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
-	}
+
+
 
 	@Path("roles")
 	@POST
@@ -1003,6 +1035,77 @@ public class Admin extends AbstractApiBean {
             }
         }
         return ok(msg);
+    }
+    
+    // This API does the same thing as /validateDataFileHashValue/{fileId}, 
+    // but for all the files in the dataset, with streaming output.
+    @GET
+    @Path("validate/dataset/files/{id}")
+    @Produces({"application/json"})
+    public Response validateDatasetDatafiles(@PathParam("id") String id) {
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datafiles in the dataset.
+        // The streaming mechanism is modeled after validate/datasets API.
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                Dataset dataset;
+        
+                try {
+                    dataset = findDatasetOrDie(id);
+                } catch (Exception ex) {
+                    throw new IOException(ex.getMessage());
+                }
+                
+                os.write("{\"dataFiles\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (DataFile dataFile : dataset.getFiles()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datafileId", dataFile.getId());
+                    output.add("storageIdentifier", dataFile.getStorageIdentifier());
+
+                    
+                    try {
+                        FileUtil.validateDataFileChecksum(dataFile);
+                        success = true;
+                    } catch (IOException ex) {
+                        output.add("status", "invalid");
+                        output.add("errorMessage", ex.getMessage());
+                    }
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } 
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
     }
 
 	@Path("assignments/assignees/{raIdtf: .*}")

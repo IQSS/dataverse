@@ -560,17 +560,12 @@ public class SolrSearchResult {
         }
         
         if (this.entity == null) {
-            
+
         } else {
             if (this.entity.isInstanceofDataset()) {
                 nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
                 Dataset ds = (Dataset) this.entity;
-                DatasetVersion dv;
-                if (this.isDraftState()) {
-                    dv = ds.getLatestVersion();
-                } else {
-                    dv = ds.getReleasedVersion();
-                }
+                DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
 
                 if (!dv.getKeywords().isEmpty()) {
                     JsonArrayBuilder keyWords = Json.createArrayBuilder();
@@ -579,6 +574,7 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("keywords", keyWords);
                 }
+
                 JsonArrayBuilder subjects = Json.createArrayBuilder();
                 for (String subject : dv.getDatasetSubjects()) {
                     subjects.add(subject);
@@ -587,13 +583,14 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
                 nullSafeJsonBuilder.add("versionId", dv.getId());
                 nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
-                if(this.isPublishedState()){
+                if (this.isPublishedState()) {
                     nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
                     nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
                 }
+
                 nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
                 nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
-                
+
                 if (!dv.getDatasetContacts().isEmpty()) {
                     JsonArrayBuilder contacts = Json.createArrayBuilder();
                     NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
@@ -604,7 +601,7 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("contacts", contacts);
                 }
-                if(!dv.getRelatedPublications().isEmpty()){
+                if (!dv.getRelatedPublications().isEmpty()) {
                     JsonArrayBuilder relPub = Json.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
                     for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
@@ -613,9 +610,9 @@ public class SolrSearchResult {
                         inner.add("url", dsRelPub.getUrl());
                         relPub.add(inner);
                     }
-                    nullSafeJsonBuilder.add("publications", relPub);                   
+                    nullSafeJsonBuilder.add("publications", relPub);
                 }
-                
+
                 if (!dv.getDatasetProducers().isEmpty()) {
                     JsonArrayBuilder producers = Json.createArrayBuilder();
                     for (String[] producer : dv.getDatasetProducers()) {
@@ -623,14 +620,14 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("producers", producers);
                 }
-                 if (!dv.getRelatedMaterial().isEmpty()) {
+                if (!dv.getRelatedMaterial().isEmpty()) {
                     JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
                     for (String relatedMaterial : dv.getRelatedMaterial()) {
                         relatedMaterials.add(relatedMaterial);
                     }
                     nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
                 }
-                
+
                 if (!dv.getGeographicCoverage().isEmpty()) {
                     JsonArrayBuilder geoCov = Json.createArrayBuilder();
                     NullSafeJsonBuilder inner = jsonObjectBuilder();
@@ -642,7 +639,7 @@ public class SolrSearchResult {
                         geoCov.add(inner);
                     }
                     nullSafeJsonBuilder.add("geographicCoverage", geoCov);
-                }  
+                }
                 if (!dv.getDataSource().isEmpty()) {
                     JsonArrayBuilder dataSources = Json.createArrayBuilder();
                     for (String dsource : dv.getDataSource()) {
@@ -652,7 +649,7 @@ public class SolrSearchResult {
                 }
             }
         }
-                
+
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept

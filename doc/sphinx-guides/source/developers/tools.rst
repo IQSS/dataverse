@@ -30,13 +30,15 @@ With Maven installed you can run ``mvn package`` and ``mvn test`` from the comma
 Vagrant
 +++++++
 
+Please note that the Vagrant environment is currently broken. For details, see https://github.com/IQSS/dataverse/issues/6849
+
 Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
 
 We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
 
 From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach an installation of Dataverse at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
 
-Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as Glassfish and Solr and any patches. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
+Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an app server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
 
 On Windows if you see an error like ``/usr/bin/perl^M: bad interpreter`` you might need to run ``dos2unix`` on the installation scripts. 
 
@@ -52,11 +54,11 @@ The Memory Analyzer Tool (MAT) from Eclipse can help you analyze heap dumps, sho
 
 It can be downloaded from http://www.eclipse.org/mat
 
-If the heap dump provided to you was created with ``gcore`` (such as with ``gcore -o /tmp/gf.core $glassfish_pid``) rather than ``jmap``, you will need to convert the file before you can open it in MAT. Using ``gf.core.13849`` as example of the original 33 GB file, here is how you could convert it into a 26 GB ``gf.core.13849.hprof`` file. Please note that this operation took almost 90 minutes:
+If the heap dump provided to you was created with ``gcore`` (such as with ``gcore -o /tmp/app.core $app_pid``) rather than ``jmap``, you will need to convert the file before you can open it in MAT. Using ``app.core.13849`` as example of the original 33 GB file, here is how you could convert it into a 26 GB ``app.core.13849.hprof`` file. Please note that this operation took almost 90 minutes:
 
-``/usr/java7/bin/jmap -dump:format=b,file=gf.core.13849.hprof /usr/java7/bin/java gf.core.13849``
+``/usr/java7/bin/jmap -dump:format=b,file=app.core.13849.hprof /usr/java7/bin/java app.core.13849``
 
-A file of this size may not "just work" in MAT. When you attempt to open it you may see something like "An internal error occurred during: "Parsing heap dump from '/tmp/heapdumps/gf.core.13849.hprof'". Java heap space". If so, you will need to increase the memory allocated to MAT. On Mac OS X, this can be done by editing ``MemoryAnalyzer.app/Contents/MacOS/MemoryAnalyzer.ini`` and increasing the value "-Xmx1024m" until it's high enough to open the file. See also http://wiki.eclipse.org/index.php/MemoryAnalyzer/FAQ#Out_of_Memory_Error_while_Running_the_Memory_Analyzer
+A file of this size may not "just work" in MAT. When you attempt to open it you may see something like "An internal error occurred during: "Parsing heap dump from '/tmp/heapdumps/app.core.13849.hprof'". Java heap space". If so, you will need to increase the memory allocated to MAT. On Mac OS X, this can be done by editing ``MemoryAnalyzer.app/Contents/MacOS/MemoryAnalyzer.ini`` and increasing the value "-Xmx1024m" until it's high enough to open the file. See also http://wiki.eclipse.org/index.php/MemoryAnalyzer/FAQ#Out_of_Memory_Error_while_Running_the_Memory_Analyzer
 
 PageKite
 ++++++++
@@ -71,7 +73,7 @@ Sign up at https://pagekite.net and follow the installation instructions or simp
 
 The first time you run ``./pagekite.py`` a file at ``~/.pagekite.rc`` will be
 created. You can edit this file to configure PageKite to serve up port 8080
-(the default GlassFish HTTP port) or the port of your choosing.
+(the default app server HTTP port) or the port of your choosing.
 
 According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as Dataverse.
 
@@ -131,7 +133,7 @@ Look for "RESOURCE_LEAK", for example.
 lsof
 ++++
 
-If file descriptors are not closed, eventually the open but unused resources can cause problems with system (glassfish in particular) stability.
+If file descriptors are not closed, eventually the open but unused resources can cause problems with system (app servers in particular) stability.
 Static analysis and heap dumps are not always sufficient to identify the sources of these problems.
 For a quick sanity check, it can be helpful to check that the number of file descriptors does not increase after a request has finished processing.
 
@@ -155,7 +157,7 @@ jmap allows you to look at the contents of the java heap. It can be used to crea
 
 .. code-block:: bash
 
-   $ jmap -histo <glassfish process id> 
+   $ jmap -histo <app process id> 
 
 will output a list of all classes, sorted by the number of instances of each individual class, with the size in bytes. 
 This can be very useful when looking for memory leaks in the application. Another useful tool is ``jstat``, that can be used in combination with ``jmap`` to monitor the effectiveness of garbage collection in reclaiming allocated memory. 
@@ -168,7 +170,7 @@ In the example script below we stress running Dataverse applicatione with GET re
 
    #!/bin/sh
 
-   # the script takes the numeric id of the glassfish process as the command line argument:
+   # the script takes the numeric id of the app server process as the command line argument:
    id=$1 
 
    while :
