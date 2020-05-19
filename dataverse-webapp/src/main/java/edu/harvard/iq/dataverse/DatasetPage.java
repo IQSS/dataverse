@@ -59,7 +59,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.application.FacesMessage.Severity;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
@@ -583,6 +582,7 @@ public class DatasetPage implements java.io.Serializable {
     public String submitDataset() {
         Try.of(() -> commandEngine.submit(new SubmitDatasetForReviewCommand(dvRequestService.getDataverseRequest(), dataset, contributorMessageToCurator)))
                 .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success")))
+                .onSuccess(ds -> stateChanged = true)
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Submitting for review failed:", throwable))
                 .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(throwable.getMessage()))));
 
