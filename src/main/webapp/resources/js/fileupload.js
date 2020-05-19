@@ -105,11 +105,24 @@ function queueFileForDirectUpload(file) {
   //Fire off the first 4 to start (0,1,2,3)
   if(filesInProgress < 4 ) {
     filesInProgress= filesInProgress+1;
-    requestDirectUploadUrl();
+    startRequestForDirectUploadUrl();
   }
 }
 
+async function startRequestForDirectUploadUrl() {
+  //Wait for each call to finish and update the DOM
+  while(inDataverseCall === true) {
+    await sleep(500);
+  }
+  inDataverseCall=true;
+  //storageId is not the location - has a : separator and no path elements from dataset
+  //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+  requestDirectUploadUrl();
+}
+
 function uploadFileDirectly(url, storageId) {
+  inDataverseCall=false;
+  
   if(directUploadEnabled) {
     var thisFile=curFile;
     //Pick the 'first-in' pending file
@@ -171,7 +184,7 @@ function uploadFileDirectly(url, storageId) {
   }
 }
 
-var handlingUpload=false;
+var inDataverseCall=false;
 function reportUpload(storageId, file){
     console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
     if(directUploadReport) {
@@ -198,10 +211,10 @@ function reportUpload(storageId, file){
 
 async function handleDirectUpload(storageId, file, md5) {
   //Wait for each call to finish and update the DOM
-  while(handlingUpload === true) {
+  while(inDataverseCall === true) {
     await sleep(500);
   }
-  handlingUpload=true;
+  inDataverseCall=true;
   //storageId is not the location - has a : separator and no path elements from dataset
   //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
   handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
@@ -261,7 +274,7 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
-  handlingUpload=false;
+  inDataverseCall=false;
   numDone = finishFile();
   var total = curFile;
   var inProgress = filesInProgress;
@@ -294,6 +307,8 @@ function uploadFailure(jqXHR, upid, filename) {
   // but others, (Firefox) don't support this. The calls below retrieve the status and other info
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
 
+  inDataverseCall=false;
+  
   //Retrieve the error number (status) and related explanation (statusText)
   var status = 0;
   var statusText =null;
