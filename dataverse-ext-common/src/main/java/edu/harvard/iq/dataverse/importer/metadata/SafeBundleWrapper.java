@@ -11,27 +11,34 @@ public class SafeBundleWrapper {
     private static final Logger logger = Logger.getLogger(SafeBundleWrapper.class.getSimpleName());
 
     private ResourceBundle bundle;
-    private boolean missingBundle;
+    private boolean missingBundle = false;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public SafeBundleWrapper(MetadataImporter importer, Locale locale) {
-        if (locale == null || importer == null) {
-            logger.warning("Null importer or locale received");
-            this.missingBundle = true;
-            return;
-        }
-        try {
-            this.bundle = importer.getBundle(locale);
-            this.missingBundle = false;
-        } catch (MissingResourceException | NullPointerException ex) {
-            logger.warning("Cannot find bundle for importer [" + importer
-                    + "] and locale [" + locale.toLanguageTag() +"]");
+    public SafeBundleWrapper(ResourceBundle bundle) {
+        if (bundle == null) {
+            logger.warning("Null bundle received");
             this.missingBundle = true;
         }
+        this.bundle = bundle;
     }
 
     // -------------------- LOGIC --------------------
+
+    public static SafeBundleWrapper createFromImporter(MetadataImporter importer, Locale locale) {
+        if (locale == null || importer == null) {
+            logger.warning("Null importer or locale received");
+            return new SafeBundleWrapper(null);
+        }
+        try {
+            ResourceBundle bundle = importer.getBundle(locale);
+            return new SafeBundleWrapper(bundle);
+        } catch (MissingResourceException | NullPointerException ex) {
+            logger.warning("Cannot find bundle for importer [" + importer
+                    + "] and locale [" + locale.toLanguageTag() +"]");
+            return new SafeBundleWrapper(null);
+        }
+    }
 
     public String getString(String key) {
         if (key == null) {

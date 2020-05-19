@@ -68,7 +68,7 @@ public class ImportersForView implements MapForView<MetadataImporter, ImportersF
         // -------------------- CONSTRUCTORS --------------------
 
         public ImporterItem(Map.Entry<String, MetadataImporter> importer, Locale locale) {
-            SafeBundleWrapper bundle = new SafeBundleWrapper(importer.getValue(), locale);
+            SafeBundleWrapper bundle = SafeBundleWrapper.createFromImporter(importer.getValue(), locale);
             this.name = bundle.getString(ImporterConstants.IMPORTER_NAME);
             this.description = bundle.getString(ImporterConstants.IMPORTER_DESCRIPTION);
         }

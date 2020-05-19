@@ -42,7 +42,7 @@
                             <h:inputHidden value="#{CreateDatasetPage.ownerId}" id="select_HostDataverse"/>
                         </div>
                     </div>
-                    <div class="form-group" jsf:rendered="#{!empty CreateDatasetPage.dataverseTemplates}">
+                    <div class="form-group" jsf:rendered="#{not empty CreateDatasetPage.dataverseTemplates}">
                         <label for="select_DatasetTemplate" class="col-sm-2 control-label">
                             #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
                             <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
@@ -68,19 +68,18 @@
                             </p:selectOneMenu>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="col-sm-12">
-                            <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText
-                                value="#{bundle['dataset.asterisk.tip']}"/>
-                        </div>
-                    </div>
                 </ui:fragment>
                 <ui:fragment>
                     <ui:include src="metadata-importers-fragment.xhtml">
-                        <ui:param name="importers" value="#{CreateDatasetPage.importers}"/>
-                        <ui:param name="selectedImporter" value="#{CreateDatasetPage.selectedImporter}"/>
+                        <ui:param name="pageBean" value="#{CreateDatasetPage}"/>
                     </ui:include>
                 </ui:fragment>
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText
+                            value="#{bundle['dataset.asterisk.tip']}"/>
+                    </div>
+                </div>
 
                 <ui:fragment>
                     <ui:include src="editMetadata.xhtml">

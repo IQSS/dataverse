@@ -52,6 +52,12 @@ public class DatasetFieldsByType {
         DatasetField newField = DatasetField.createNewEmptyDatasetField(datasetFieldType, null);
         datasetFields.add(position, newField);
     }
+
+    public DatasetField addAndReturnEmptyDatasetField(int position) {
+        addEmptyDatasetField(position);
+        return datasetFields.get(position);
+    }
+
     public void removeDatasetField(int position) {
         datasetFields.remove(position);
     }

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NotAuthenticatedException;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
+import edu.harvard.iq.dataverse.importers.ui.ImporterForm;
 import edu.harvard.iq.dataverse.importers.ui.ImportersForView;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -96,6 +97,7 @@ public class CreateDatasetPage implements Serializable {
 
     private ImportersForView importers;
     private MetadataImporter selectedImporter;
+    private ImporterForm importerForm;
 
     public String init() {
 
@@ -172,6 +174,10 @@ public class CreateDatasetPage implements Serializable {
         return selectedImporter;
     }
 
+    public ImporterForm getImporterForm() {
+        return importerForm;
+    }
+
     // -------------------- LOGIC --------------------
 
     public void updateSelectedTemplate(AjaxBehaviorEvent event) {
@@ -208,6 +214,10 @@ public class CreateDatasetPage implements Serializable {
             .onSuccess(addFilesResult -> dataset = addFilesResult.getDataset());
 
         return returnToDraftVersion();
+    }
+
+    public void initMetadataImportDialog() {
+        importerForm = ImporterForm.createInitializedForm(selectedImporter, session.getLocale(), this::getMetadataBlocksForEdit);
     }
 
     // -------------------- PRIVATE --------------------

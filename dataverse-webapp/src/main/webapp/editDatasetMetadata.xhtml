@@ -29,23 +29,28 @@
                 
                     <!-- Top dataset info -->
                     <ui:fragment>
-                        <div class="form-group row">
-                            <label for="select_HostDataverse" class="col-sm-2 control-label">
-                                #{bundle.hostDataverse}
-                                <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
-                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
-                            </label>
-                            <div class="col-sm-10">
-                                <h:outputText styleClass="highlightBold" value="#{editDatasetMetadataPage.dataset.owner.name}"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-sm-12">
-                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
+                        <div class="form-group">
+                            <div class="row">
+                                <label for="select_HostDataverse" class="col-sm-2 control-label">
+                                    #{bundle.hostDataverse}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.host.title']}"></span>
+                                </label>
+                                <div class="col-sm-10">
+                                    <h:outputText styleClass="highlightBold" value="#{editDatasetMetadataPage.dataset.owner.name}"/>
+                                </div>
                             </div>
                         </div>
                     </ui:fragment>
-                    
+                    <div class="row">
+                        <ui:fragment>
+                            <ui:include src="metadata-importers-fragment.xhtml">
+                                <ui:param name="pageBean" value="#{editDatasetMetadataPage}"/>
+                            </ui:include>
+                        </ui:fragment>
+                    </div>
+
+
                     <!-- Top action buttons -->
                     <div class="button-block form-top">
                         <p:commandButton value="#{bundle.saveChanges}"
@@ -58,13 +63,14 @@
                         <p:commandButton id="cancelTop" class="btn-access" value="#{bundle.cancel}" action="#{editDatasetMetadataPage.cancel}">
                         </p:commandButton>
                     </div>
+                    <div class="row">
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['dataset.asterisk.tip']}"/>
+                            </div>
+                        </div>
+                    </div>
 
-                    <ui:fragment>
-                        <ui:include src="metadata-importers-fragment.xhtml">
-                            <ui:param name="importers" value="#{editDatasetMetadataPage.importers}"/>
-                            <ui:param name="selectedImporter" value="#{editDatasetMetadataPage.selectedImporter}"/>
-                        </ui:include>
-                    </ui:fragment>
 
                     <!-- Main edit metadata content -->
                     <ui:include src="editMetadata.xhtml">
