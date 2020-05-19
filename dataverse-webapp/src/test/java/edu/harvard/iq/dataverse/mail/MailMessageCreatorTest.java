@@ -232,7 +232,7 @@ public class MailMessageCreatorTest {
 
     private String getFooterMessage() {
         return "\n\nYou may contact us for support at " + SYSTEMEMAIL + ".\n\nThank you,\n" +
-                BrandingUtil.getSupportTeamName(MailUtil.parseSystemAddress(SYSTEMEMAIL), ROOTDVNAME);
+                BrandingUtil.getSupportTeamName(MailUtil.parseSystemAddress(SYSTEMEMAIL), ROOTDVNAME, Locale.ENGLISH);
     }
 
     private String getAssignRoleMessage(String role, String dvObjectType) {

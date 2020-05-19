@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.common;
 
 import javax.mail.internet.InternetAddress;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class BrandingUtil {
 
@@ -21,6 +22,20 @@ public class BrandingUtil {
         }
         String saneDefault = BundleUtil.getStringFromBundle("dataverse");
         return BundleUtil.getStringFromBundle("contact.support", Arrays.asList(saneDefault));
+    }
+
+    public static String getSupportTeamName(InternetAddress systemAddress, String rootDataverseName, Locale locale) {
+        if (systemAddress != null) {
+            String personalName = systemAddress.getPersonal();
+            if (personalName != null) {
+                return personalName;
+            }
+        }
+        if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
+            return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support", locale);
+        }
+        String saneDefault = BundleUtil.getStringFromBundle("dataverse", locale);
+        return BundleUtil.getStringFromBundle("contact.support", locale, Arrays.asList(saneDefault));
     }
 
     public static String getSupportTeamEmailAddress(InternetAddress systemAddress) {

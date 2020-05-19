@@ -156,6 +156,11 @@ public class SystemConfig {
         return guidesBaseUrl + "/" + guidesLang;
     }
 
+    public String getGuidesBaseUrl(Locale locale) {
+        String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
+        return guidesBaseUrl + "/" + locale;
+    }
+
     public String getGuidesVersion() {
         String guidesVersion = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesVersion);
 

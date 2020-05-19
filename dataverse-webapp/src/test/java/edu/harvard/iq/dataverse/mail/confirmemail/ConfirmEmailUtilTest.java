@@ -9,6 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,7 +45,7 @@ public class ConfirmEmailUtilTest {
 
         @Test
         public void friendlyExpirationTimeTest() {
-            assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInMinutes));
+            assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInMinutes, Locale.ENGLISH));
         }
     }
 

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 
@@ -27,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.apache.commons.lang3.StringUtils.trim;
 
 @Stateless
 public class PasswordResetServiceBean {
@@ -61,8 +62,12 @@ public class PasswordResetServiceBean {
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
-        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);
-        BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
+        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(trim(emailAddress));
+
+        BuiltinUser user = null;
+        if(authUser != null) {
+            user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
+        }
 
         if (user != null) {
             return requestPasswordReset(user, true, PasswordResetData.Reason.FORGOT_PASSWORD);
@@ -122,13 +127,13 @@ public class PasswordResetServiceBean {
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 
-        String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
+        String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset", authUser.getNotificationsLanguage());
 
         String[] paramArray = {authUser.getName(), aUser.getUserName(), passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() + ""};
         String messageBody = MessageFormat.format(pattern, paramArray);
 
         String toAddress = authUser.getEmail();
-        String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
+        String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject", authUser.getNotificationsLanguage());
 
         String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
         boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));

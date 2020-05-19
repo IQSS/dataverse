@@ -27,8 +27,6 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,10 +108,10 @@ public class ConfirmEmailServiceBean {
      * change.
      */
     private void sendLinkOnEmailChange(AuthenticatedUser aUser, String confirmationUrl) throws ConfirmEmailException {
-        String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", Arrays.asList(
+        String messageBody = BundleUtil.getStringFromBundle("notification.email.changeEmail", aUser.getNotificationsLanguage(), Arrays.asList(
                 aUser.getFirstName(),
                 confirmationUrl,
-                ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires))
+                ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires), aUser.getNotificationsLanguage())
         ));
         logger.log(Level.FINE, "messageBody:{0}", messageBody);
 
@@ -125,7 +123,7 @@ public class ConfirmEmailServiceBean {
                     // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
                     UserNotification userNotification = new UserNotification();
                     userNotification.setType(NotificationType.CONFIRMEMAIL);
-                    String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", Lists.newArrayList(rootDataverseName));
+                    String subject = BundleUtil.getStringFromBundle("notification.email.verifyEmail.subject", aUser.getNotificationsLanguage(), Lists.newArrayList(rootDataverseName));
                     logger.fine("sending email to " + toAddress + " with this subject: " + subject);
 
                     String footerMailMessage = mailService.getFooterMailMessage(aUser.getNotificationsLanguage());
@@ -257,10 +255,10 @@ public class ConfirmEmailServiceBean {
             logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
-        String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
+        String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires), user.getNotificationsLanguage());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
         List<String> args = Arrays.asList(confirmEmailUrl, expTime);
-        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", args);
+        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", user.getNotificationsLanguage(), args);
         return optionalConfirmEmailMsg;
     }
 

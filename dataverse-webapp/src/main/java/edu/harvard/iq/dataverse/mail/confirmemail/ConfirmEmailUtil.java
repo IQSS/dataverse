@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.mail.confirmemail;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 
 import java.sql.Timestamp;
+import java.util.Locale;
 
 public class ConfirmEmailUtil {
 
@@ -43,6 +44,37 @@ public class ConfirmEmailUtil {
                 hasDecimal = true;
             }
             measurement = BundleUtil.getStringFromBundle("hours");
+        }
+        if (hasDecimal == true) {
+            expirationString = String.valueOf(expirationDouble);
+            return expirationString + " " + measurement;
+        } else {
+            expirationString = String.valueOf(expirationLong);
+            return expirationString + " " + measurement;
+        }
+    }
+
+    public static String friendlyExpirationTime(long expirationLong, Locale language) {
+        String measurement;
+        String expirationString;
+        boolean hasDecimal = false;
+        double expirationDouble = Double.valueOf(expirationLong);
+
+        if (expirationLong == 1) {
+            measurement = BundleUtil.getStringFromBundle("minute", language);
+        } else if (expirationLong < 60) {
+            measurement = BundleUtil.getStringFromBundle("minutes", language);
+        } else if (expirationLong == 60) {
+            expirationLong = expirationLong / 60;
+            measurement = BundleUtil.getStringFromBundle("hour", language);
+        } else {
+            if (expirationLong % 60 == 0) {
+                expirationLong = (long) (expirationLong / 60.0);
+            } else {
+                expirationDouble /= 60;
+                hasDecimal = true;
+            }
+            measurement = BundleUtil.getStringFromBundle("hours", language);
         }
         if (hasDecimal == true) {
             expirationString = String.valueOf(expirationDouble);

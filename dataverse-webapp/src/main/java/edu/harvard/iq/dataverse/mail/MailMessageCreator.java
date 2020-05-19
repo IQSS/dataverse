@@ -87,7 +87,8 @@ public class MailMessageCreator {
                                                             Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(
                                                                     systemAddress),
                                                                           BrandingUtil.getSupportTeamName(systemAddress,
-                                                                                                          rootDataverseName)));
+                                                                                                          rootDataverseName,
+                                                                                                        messageLocale)));
     }
 
     /**
@@ -489,11 +490,12 @@ public class MailMessageCreator {
                                                                           notificationDto.getNotificationReceiver().getNotificationsLanguage(),
                                                                           Arrays.asList(
                                                                                   rootDataverseName,
-                                                                                  systemConfig.getGuidesBaseUrl(),
+                                                                                  systemConfig.getGuidesBaseUrl(notificationDto.getNotificationReceiver().getNotificationsLanguage()),
                                                                                   systemConfig.getGuidesVersion(),
                                                                                   BrandingUtil.getSupportTeamName(
                                                                                           systemAddress,
-                                                                                          rootDataverseName),
+                                                                                          rootDataverseName,
+                                                                                          notificationDto.getNotificationReceiver().getNotificationsLanguage()),
                                                                                   BrandingUtil.getSupportTeamEmailAddress(
                                                                                           systemAddress)
                                                                           ));
