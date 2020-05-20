@@ -1261,8 +1261,8 @@ public class FilesIT {
         assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
         assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
-        
-        //We haven't published so the non-draft call should still give the pre-edit metadata
+
+//We haven't published so the non-draft call should still give the pre-edit metadata
         Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
         String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
         msg("Old Published (shouldn't be updated):");

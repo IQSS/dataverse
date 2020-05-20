@@ -378,9 +378,16 @@ public class Files extends AbstractApiBean {
                     // on *new* datafiles, that haven't been saved in the database yet;
                     // but it should never be the case in the context of this API) 
                     // -- L.A. Mar. 2020
+                    //SEK 5/2020 - we can't use checksum because it
+                    //is no longer guaranteed to be unique.
+                    /*
                     if(daf.getChecksumType().equals(df.getChecksumType())
                         && daf.getChecksumValue().equals(df.getChecksumValue())) {
                         upFmd = testFmd;
+                    }*/
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 

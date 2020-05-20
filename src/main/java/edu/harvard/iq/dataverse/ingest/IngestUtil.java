@@ -118,7 +118,11 @@ public class IngestUtil {
     public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
 
         //Remove from the metadatas list the name of the datafile in question
-        Iterator<FileMetadata> fmIt = fileMetadatas.iterator();
+        List <FileMetadata> copy = new ArrayList<>();
+        for (FileMetadata fm: fileMetadatas){
+            copy.add(fm);
+        }
+        Iterator<FileMetadata> fmIt = copy.iterator();
 
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
@@ -127,7 +131,7 @@ public class IngestUtil {
             }
         }
 
-        List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
+        List<String> filePathsAndNames = getPathsAndFileNames(copy);
         if (label != null || directoryLabel != null) {
             String path = "";
             if (directoryLabel != null) {
