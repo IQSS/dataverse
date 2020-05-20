@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.Command;
-import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -28,7 +27,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestUtil;
-import edu.harvard.iq.dataverse.search.FileView;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -37,16 +35,11 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,7 +63,6 @@ import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -80,6 +72,7 @@ import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.primefaces.PrimeFaces;
 
 /**
@@ -168,6 +161,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private Long maxFileUploadSizeInBytes = null;
     private Integer multipleUploadFilesLimit = null; 
+    
+    //MutableBoolean so it can be passed from DatasetPage, supporting DatasetPage.cancelCreate()
+    private MutableBoolean uploadInProgress = null;
     
     private final int NUMBER_OF_SCROLL_ROWS = 25;
     
@@ -421,7 +417,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionId = versionId;
     }
 
-    public String initCreateMode(String modeToken, DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
+    public String initCreateMode(String modeToken, DatasetVersion version, MutableBoolean inProgress, List<DataFile> newFilesList, List<DataFile> uploadedFilesList, List<FileMetadata> selectedFileMetadatasList) {
         if (modeToken == null) {
             logger.fine("Request to initialize Edit Files page with null token (aborting).");
             return null;
@@ -441,8 +437,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
+        uploadInProgress= inProgress;
         newFiles = newFilesList;
-        uploadedFiles = new ArrayList<>();
+        uploadedFiles = uploadedFilesList;
         selectedFiles = selectedFileMetadatasList;
         
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
@@ -462,7 +459,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         newFiles = new ArrayList<>();
-        uploadedFiles = new ArrayList<>(); 
+        uploadedFiles = new ArrayList<>();
+        uploadInProgress= new MutableBoolean(false);
         
         if (dataset.getId() != null){
             // Set Working Version and Dataset by Datasaet Id and Version
@@ -883,7 +881,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         for (DataFile remove : uploadedInThisProcess) {
             if(remove.isMarkedAsDuplicate()){               
-                deleteTempFile(remove);
+               // deleteTempFile();
+                FileUtil.deleteTempFile(remove, dataset, ingestService);
             }
         }
         
@@ -918,7 +917,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
     public void deleteFiles() {
         logger.fine("entering bulk file delete (EditDataFilesPage)");
-        if (isFileReplaceOperation()){
+        if (isFileReplaceOperation()) {
             try {
                 deleteReplacementFile();
             } catch (FileReplaceException ex) {
@@ -926,10 +925,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             return;
         }
-        
+
         String fileNames = null;
         for (FileMetadata fmd : this.getSelectedFiles()) {
-                // collect the names of the files, 
+            // collect the names of the files, 
             // to show in the success message:
             if (fileNames == null) {
                 fileNames = fmd.getLabel();
@@ -939,28 +938,28 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         for (FileMetadata markedForDelete : this.getSelectedFiles()) {
-            logger.fine("delete requested on file "+markedForDelete.getLabel());
-            logger.fine("file metadata id: "+markedForDelete.getId());
-            logger.fine("datafile id: "+markedForDelete.getDataFile().getId());
-            logger.fine("page is in edit mode "+mode.name());
-            
-                // has this filemetadata been saved already? (or is it a brand new
-                // filemetadata, created as part of a brand new version, created when 
-                // the user clicked 'delete', that hasn't been saved in the db yet?)
-                if (markedForDelete.getId() != null) {
-                    logger.fine("this is a filemetadata from an existing draft version");
+            logger.fine("delete requested on file " + markedForDelete.getLabel());
+            logger.fine("file metadata id: " + markedForDelete.getId());
+            logger.fine("datafile id: " + markedForDelete.getDataFile().getId());
+            logger.fine("page is in edit mode " + mode.name());
+
+            // has this filemetadata been saved already? (or is it a brand new
+            // filemetadata, created as part of a brand new version, created when 
+            // the user clicked 'delete', that hasn't been saved in the db yet?)
+            if (markedForDelete.getId() != null) {
+                logger.fine("this is a filemetadata from an existing draft version");
                 // so all we remove is the file from the fileMetadatas (from the
                 // file metadatas attached to the editVersion, and from the
                 // display list of file metadatas that are being edited)
                 // and let the delete be handled in the command (by adding it to the
                 // filesToBeDeleted list):
 
-                    dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                    fileMetadatas.remove(markedForDelete);
-                    filesToBeDeleted.add(markedForDelete);
-                } else {
-                    logger.fine("this is a brand-new (unsaved) filemetadata");
-                    // ok, this is a brand-new DRAFT version. 
+                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
+                fileMetadatas.remove(markedForDelete);
+                filesToBeDeleted.add(markedForDelete);
+            } else {
+                logger.fine("this is a brand-new (unsaved) filemetadata");
+                // ok, this is a brand-new DRAFT version. 
 
                 // if (mode != FileEditMode.CREATE) {
                 // If the bean is in the 'CREATE' mode, the page is using
@@ -968,96 +967,36 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // so there's no need to delete this meta from the local
                 // fileMetadatas list. (but doing both just adds a no-op and won't cause an
                 // error)
-
-                    // 1. delete the filemetadata from the local display list: 
+                // 1. delete the filemetadata from the local display list: 
                 removeFileMetadataFromList(fileMetadatas, markedForDelete);
-                    // 2. delete the filemetadata from the version: 
+                // 2. delete the filemetadata from the version: 
                 removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
-                        }
-
+            }
 
             if (markedForDelete.getDataFile().getId() == null) {
                 logger.fine("this is a brand new file.");
                 // the file was just added during this step, so in addition to 
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
-                
+
                 removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
                 removeDataFileFromList(newFiles, markedForDelete.getDataFile());
-                deleteTempFile(markedForDelete.getDataFile());
+                FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
                 // should be allowed/the checksum list is part of the state to clean-up
                 checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
-                    
-                        }
-                    }
+
+            }
+        }
         if (fileNames != null) {
             String successMessage = getBundleString("file.deleted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
-                    }
-                }
-                
-    private void deleteTempFile(DataFile dataFile) {
-    	// Before we remove the file from the list and forget about 
-    	// it:
-    	// The physical uploaded file is still sitting in the temporary
-    	// directory. If it were saved, it would be moved into its 
-    	// permanent location. But since the user chose not to save it,
-    	// we have to delete the temp file too. 
-    	// 
-    	// Eventually, we will likely add a dedicated mechanism
-    	// for managing temp files, similar to (or part of) the storage 
-    	// access framework, that would allow us to handle specialized
-    	// configurations - highly sensitive/private data, that 
-    	// has to be kept encrypted even in temp files, and such. 
-    	// But for now, we just delete the file directly on the 
-    	// local filesystem: 
-System.out.print("are we deleting the temp file");
-    	try {
-    		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
-    				Paths.get(FileUtil.getFilesTempDirectory()), dataFile.getStorageIdentifier());
-    		if (generatedTempFiles != null) {
-    			for (Path generated : generatedTempFiles) {
-    				logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
-    				try {
-    					Files.delete(generated);
-    				} catch (IOException ioex) {
-    					logger.warning("Failed to delete generated file " + generated.toString());
-    				}
-    			}
-    		}
-    		String si = dataFile.getStorageIdentifier();
-    		if (si.contains("://")) {
-    			//Direct upload files will already have a store id in their storageidentifier
-    			//but they need to be associated with a dataset for the overall storagelocation to be calculated
-    			//so we temporarily set the owner
-    			if(dataFile.getOwner()!=null) {
-    				logger.warning("Datafile owner was not null as expected");
-    			}
-    			dataFile.setOwner(dataset);
-    			//Use one StorageIO to get the storageLocation and then create a direct storage storageIO class to perform the delete 
-    			// (since delete is forbidden except for direct storage)
-    			String sl = DataAccess.getStorageIO(dataFile).getStorageLocation();
-    			DataAccess.getDirectStorageIO(sl).delete();
-    			dataFile.setOwner(null);
-    		} else {
-    			//Temp files sent to this method have no prefix, not even "tmp://"
-    			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
-    		}
-    	} catch (IOException ioEx) {
-    		// safe to ignore - it's just a temp file. 
-    		logger.warning(ioEx.getMessage());
-    		if(dataFile.getStorageIdentifier().contains("://")) {
-    			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
-    		} else {
-    			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
-    					+ dataFile.getStorageIdentifier());
-    		}
-    	}
+        }
     }
+
 
     private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
         Iterator<FileMetadata> fmit = fmds.iterator();
@@ -1414,18 +1353,19 @@ System.out.print("are we deleting the temp file");
 
     
     public String cancel() {
-        uploadInProgress = false;
-        if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
-            return returnToFileLandingPage();
-        }
+        uploadInProgress.setValue(false);
         //Files that have been finished and are now in the lower list on the page
         for (DataFile newFile : newFiles) {
-            deleteTempFile(newFile);
+            FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
 
         //Files in the upload process but not yet finished
         for (DataFile newFile : uploadedFiles) {
-            deleteTempFile(newFile);
+            FileUtil.deleteTempFile(newFile, dataset, ingestService);
+        }
+
+        if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
+            return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
             return returnToDraftVersion();
@@ -1549,8 +1489,8 @@ System.out.print("are we deleting the temp file");
      * @param event
      */
     public void handleDropBoxUpload(ActionEvent event) {
-        if (!uploadInProgress) {
-            uploadInProgress = true;
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
         }
         logger.fine("handleDropBoxUpload");
         uploadComponentId = event.getComponent().getClientId();
@@ -1679,10 +1619,10 @@ System.out.print("are we deleting the temp file");
                      }
                 }*/
             }
-            if(!uploadInProgress) {
+            if(uploadInProgress.isFalse()) {
                 logger.warning("Upload in progress cancelled");
                 for (DataFile newFile : datafiles) {
-                    deleteTempFile(newFile);
+                    FileUtil.deleteTempFile(newFile, dataset, ingestService);
                 }
             }
         }
@@ -1702,7 +1642,7 @@ System.out.print("are we deleting the temp file");
         // (either through drag-and-drop or select menu). 
         logger.fine("upload started");
         
-        uploadInProgress = true;        
+        uploadInProgress.setValue(true);        
     }
     
     
@@ -1843,9 +1783,9 @@ System.out.print("are we deleting the temp file");
         }
         
        
-        if(uploadInProgress) {
-            uploadedFiles = new ArrayList<>();
-            uploadInProgress = false;
+        if(uploadInProgress.isTrue()) {
+            uploadedFiles.clear();
+            uploadInProgress.setValue(false);
         }
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
@@ -2018,8 +1958,8 @@ System.out.print("are we deleting the temp file");
      */
     public void handleFileUpload(FileUploadEvent event) throws IOException {
         
-        if (!uploadInProgress) {
-            uploadInProgress = true;
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
         }
         
         if (event == null){
@@ -2095,10 +2035,10 @@ System.out.print("are we deleting the temp file");
             uploadComponentId = event.getComponent().getClientId();
         }
         
-        if(!uploadInProgress) {
+        if(uploadInProgress.isFalse()) {
             logger.warning("Upload in progress cancelled");
             for (DataFile newFile : dFileList) {
-                deleteTempFile(newFile);
+                FileUtil.deleteTempFile(newFile, dataset, ingestService);
             }
         }
     }
@@ -2121,8 +2061,8 @@ System.out.print("are we deleting the temp file");
         
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
-    	if (!uploadInProgress) {
-    		uploadInProgress = true;
+    	if (uploadInProgress.isFalse()) {
+    		uploadInProgress.setValue(true);
     	}
     	logger.fine("handleExternalUpload");
     	
@@ -2191,10 +2131,10 @@ System.out.print("are we deleting the temp file");
     				// -----------------------------------------------------------
     				uploadWarningMessage = processUploadedFileList(datafiles);
     			}
-    			if(!uploadInProgress) {
+    			if(uploadInProgress.isFalse()) {
     				logger.warning("Upload in progress cancelled");
     				for (DataFile newFile : datafiles) {
-    					deleteTempFile(newFile);
+    					FileUtil.deleteTempFile(newFile, dataset, ingestService);
     				}
     			}
     		}
@@ -2220,7 +2160,6 @@ System.out.print("are we deleting the temp file");
     private String dupeFileNamesNew = null;
     private boolean multipleDupesExisting = false;
     private boolean multipleDupesNew = false;
-    private boolean uploadInProgress = false;
     
     private String processUploadedFileList(List<DataFile> dFileList) {
         if (dFileList == null) {
