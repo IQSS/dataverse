@@ -30,9 +30,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.Future;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrServerException;
+
 
 /**
  *
@@ -50,6 +57,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
+    public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
+    
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
         this( aDataset, aRequest, false );
     }
@@ -61,6 +70,19 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
+        
+        // validate the physical files before we do anything else: 
+        // (unless specifically disabled; or a minor version)
+        if (theDataset.getLatestVersion().getVersionState() != RELEASED
+                && theDataset.getLatestVersion().getMinorVersionNumber() != null
+                && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)
+                && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()) {
+            // some imported datasets may already be released.
+
+            // validate the physical files (verify checksums):
+            validateDataFiles(theDataset, ctxt);
+            // (this will throw a CommandException if it fails)
+        }
         
         if ( theDataset.getGlobalIdCreateTime() == null ) {
             registerExternalIdentifier(theDataset, ctxt);
@@ -125,18 +147,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
-		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
+	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+            // some imported datasets may already be released.
+
+            if (!datasetExternallyReleased) {
+                publicizeExternalIdentifier(theDataset, ctxt);
+                // (will throw a CommandException, unless successful)
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
+        }
         
 
         // Remove locks
         ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
+        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.finalizePublication));
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.engine().submit( 
                     new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
@@ -225,6 +249,36 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
+    private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
+        try {
+            for (DataFile dataFile : dataset.getFiles()) {
+                // TODO: Should we validate all the files in the dataset, or only 
+                // the files that haven't been published previously?
+                logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
+                FileUtil.validateDataFileChecksum(dataFile);
+            }
+        } catch (Throwable e) {
+            
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
+                lock.setReason(DatasetLock.Reason.FileValidationFailed);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().updateDatasetLock(lock);
+            } else {            
+                // Lock the dataset with a new FileValidationFailed lock: 
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.FileValidationFailed, getRequest().getAuthenticatedUser()); //(AuthenticatedUser)getUser());
+                lock.setDataset(dataset);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().addDatasetLock(dataset, lock);
+            }
+            
+            // Throw a new CommandException; if the command is being called 
+            // synchronously, it will be intercepted and the page will display 
+            // the error message for the user.
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
+        }
+    }
+    
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
@@ -262,10 +316,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
-                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
+                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
+        /*
+         * for debugging only: (TODO: remove before making the final PR)
+        throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation()), this);
+         */
     }
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {

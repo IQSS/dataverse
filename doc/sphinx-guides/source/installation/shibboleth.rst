@@ -28,7 +28,7 @@ Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been te
 Install Apache
 ~~~~~~~~~~~~~~
 
-We will be "fronting" Glassfish with Apache so that we can make use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
+We will be "fronting" the app server with Apache so that we can make use of the ``mod_shib`` Apache module. We will also make use of the ``mod_proxy_ajp`` module built in to Apache.
 
 We include the ``mod_ssl`` package to enforce HTTPS per below.
 
@@ -65,26 +65,17 @@ Please note that during the installation it's ok to import GPG keys from the Shi
 
 ``yum install shibboleth``
 
-Configure Glassfish
--------------------
+Configure Payara
+----------------
 
-Apply GRIZZLY-1787 Patch
-~~~~~~~~~~~~~~~~~~~~~~~~
+App Server HTTP and HTTPS ports
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order for the Dataverse "download as zip" feature to work well with large files without causing ``OutOfMemoryError`` problems on Glassfish 4.1 when fronted with Apache, you should stop Glassfish, with ``./asadmin stop-domain domain1``, make a backup of ``glassfish4/glassfish/modules/glassfish-grizzly-extra-all.jar``, replace it with a patched version of ``glassfish-grizzly-extra-all.jar`` downloaded from :download:`here </_static/installation/files/issues/2180/grizzly-patch/glassfish-grizzly-extra-all.jar>` (the md5 is in the :download:`README <../_static/installation/files/issues/2180/grizzly-patch/readme.md>`), and start Glassfish again with ``./asadmin start-domain domain1``.
-
-For more background on the patch, please see https://java.net/jira/browse/GRIZZLY-1787 and https://github.com/IQSS/dataverse/issues/2180 and https://github.com/payara/Payara/issues/350
-
-This problem has been reported to Glassfish at https://java.net/projects/glassfish/lists/users/archive/2015-07/message/1 and while Glassfish 4.1.1 includes a new enough version of Grizzly to fix the bug, other complicating factors prevent its adoption (look for "Glassfish 4.1.1" in the :doc:`prerequisites` section for details on why it is not recommended).
-
-Glassfish HTTP and HTTPS ports
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Apache will be listening on ports 80 and 443 so we need to make sure Glassfish isn't using them. If you've been changing the default ports used by Glassfish per the :doc:`config` section, revert the Glassfish HTTP service to listen on 8080, the default port:
+Apache will be listening on ports 80 and 443 so we need to make sure the app server isn't using them. If you've been changing the default ports used by the app server per the :doc:`config` section, revert the HTTP service to listen on 8080, the default port:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.port=8080``
 
-Likewise, if necessary, revert the Glassfish HTTPS service to listen on port 8181:
+Likewise, if necessary, revert the HTTPS service to listen on port 8181:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=8181``
 
@@ -102,7 +93,9 @@ This enables the `AJP protocol <http://en.wikipedia.org/wiki/Apache_JServ_Protoc
 SSLEngine Warning Workaround
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When fronting Glassfish with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Glassfish server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null".
+This workaround was required for Glassfish 4 but it is unknown if it is required under Payara.
+
+When fronting Payara with Apache and using the jk-connector (AJP, mod_proxy_ajp), in your Payara server.log you can expect to see "WARNING ... org.glassfish.grizzly.http.server.util.RequestUtils ... jk-connector ... Unable to populate SSL attributes java.lang.IllegalStateException: SSLEngine is null".
 
 To hide these warnings, run ``./asadmin set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE`` so that the WARNING level is hidden as recommended at https://java.net/jira/browse/GLASSFISH-20694 and https://github.com/IQSS/dataverse/issues/643#issuecomment-49654847
 
@@ -127,14 +120,14 @@ Near the bottom of ``/etc/httpd/conf.d/ssl.conf`` but before the closing ``</Vir
 
 .. code-block:: text
 
-    # don't pass paths used by rApache and TwoRavens to Glassfish
+    # don't pass paths used by rApache and TwoRavens to Payara
     ProxyPassMatch ^/RApacheInfo$ !
     ProxyPassMatch ^/custom !
     ProxyPassMatch ^/dataexplore !
-    # don't pass paths used by Shibboleth to Glassfish
+    # don't pass paths used by Shibboleth to Payara
     ProxyPassMatch ^/Shibboleth.sso !
     ProxyPassMatch ^/shibboleth-ds !
-    # pass everything else to Glassfish
+    # pass everything else to Payara
     ProxyPass / ajp://localhost:8009/
 
     <Location /shib.xhtml>
@@ -305,7 +298,7 @@ The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``Me
 Add the Shibboleth Authentication Provider to Dataverse
 -------------------------------------------------------
 
-Now that you've configured Glassfish, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
+Now that you've configured your app server, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibAuthProvider.json
    :language: json
@@ -378,14 +371,14 @@ The installation and configuration of Shibboleth will result in the following ce
 - ``/etc/shibboleth/sp-cert.pem``
 - ``/etc/shibboleth/sp-key.pem``
 
-If you have more than one Glassfish server, you should use the same ``sp-cert.pem`` and ``sp-key.pem`` files on all of them. If these files are compromised and you need to regenerate them, you can ``cd /etc/shibboleth`` and run ``keygen.sh`` like this (substituting you own hostname):
+If you have more than one Payara server, you should use the same ``sp-cert.pem`` and ``sp-key.pem`` files on all of them. If these files are compromised and you need to regenerate them, you can ``cd /etc/shibboleth`` and run ``keygen.sh`` like this (substituting you own hostname):
 
 ``./keygen.sh -f -u shibd -g shibd -h dataverse.example.edu -e https://dataverse.example.edu/sp``
 
 Debugging
 ---------
 
-The :doc:`/admin/troubleshooting` section of the Admin Guide explains how to increase Glassfish logging levels. The relevant classes and packages are:
+The :doc:`/admin/troubleshooting` section of the Admin Guide explains how to increase Payara logging levels. The relevant classes and packages are:
 
 - edu.harvard.iq.dataverse.Shib
 - edu.harvard.iq.dataverse.authorization.providers.shib
@@ -405,7 +398,7 @@ If you are running in "remote and local" mode and have existing local users that
 - Log out of your local account.
 - Log in with your Shibboleth account.
 - If the email address associated with your local account matches the email address asserted by the Identity Provider (IdP), you will be prompted for the password of your local account and asked to confirm the conversion of your account. You're done! Browse around to ensure you see all the data you expect to see. Permissions have been preserved. 
-- If the email address asserted by the Identity Provider (IdP) does not match the email address of any local user, you will be prompted to create a new account. If you were expecting account conversion, you should decline creating a new Shibboleth account, log back in to your local account, and let Support know the email on file for your local account. Support may ask you to change your email address for your local account to the one that is being asserted by the Identity Provider. Someone with access to the Glassfish logs will see this email address there.
+- If the email address asserted by the Identity Provider (IdP) does not match the email address of any local user, you will be prompted to create a new account. If you were expecting account conversion, you should decline creating a new Shibboleth account, log back in to your local account, and let Support know the email on file for your local account. Support may ask you to change your email address for your local account to the one that is being asserted by the Identity Provider. Someone with access to the Payara logs will see this email address there.
 
 .. _converting-shibboleth-users-to-local:
 
