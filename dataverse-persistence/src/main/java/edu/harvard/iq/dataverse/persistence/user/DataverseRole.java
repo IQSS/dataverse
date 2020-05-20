@@ -103,11 +103,11 @@ public class DataverseRole implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    @Size(max = 255, message = "{desc.maxLength}")
+    @Size(max = 255, message = "{role.desc.maxLength}")
     private String description;
 
-    @Size(max = 16, message = "{alias.maxLength}")
-    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{alias.illegalCharacters}")
+    @Size(max = 16, message = "{role.alias.maxLength}")
+    @Pattern(regexp = "[a-zA-Z0-9\\_\\-]+", message = "{role.alias.illegalCharacters}")
     @Column(nullable = false, unique = true)
     private String alias;
 

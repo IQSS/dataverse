@@ -2,91 +2,104 @@
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui">
-
-    <p:dialog id="rolesPermissionsDialog" header="#{bundle['dataverse.permissions.roles.header']}" widgetVar="roleForm" modal="true" styleClass="largePopUp"> 
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    
+    <p:dialog id="rolesPermissionsDialog" header="#{empty managePermissionsPage.role.id ? bundle['dataverse.permissions.roles.add.header'] : bundle['dataverse.permissions.roles.header']}" widgetVar="roleForm" modal="true" styleClass="largePopUp">
+        
         <p:panel id="editRolePanel" styleClass="panelLayoutBlock" widgetVar="editRole">
+            <p:focus id="rolesPermissionsFocus" context="editRolePanel" rendered="#{facesContext.validationFailed}" />
+            
             <p:panel id="editRolePropertiesPanel" styleClass="panelLayoutBlock" widgetVar="roleProperties">
-                <div class="row form-horizontal">
+            
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                    </div>
+                </div>
+            
+                <div class="row clearfix">
                     <div class="col-sm-6 form-group">
-                        <label class="control-label" for="roleName">
-                            #{bundle['dataverse.permissions.roles.name']}
-                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
-                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}"></span>
-                        </label>
                         <div>
-                            <p:panelGrid columns="2" styleClass="noBorders">
+                            <p:outputLabel styleClass="control-label" for="roleName" indicateRequired="false">
+                                #{bundle['dataverse.permissions.roles.name']}
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            </p:outputLabel>
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                  aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['dataverse.permissions.roles.name']}"
+                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.name.title']}"></span>
+                        </div>
+                        <div>
                                 <p:inputText id="roleName" value="#{managePermissionsPage.role.name}"
-                                             required="#{param['DO_VALIDATION']}"
+                                             required="true"
                                              requiredMessage="#{bundle['dataverse.permissions.roles.name.requiredMsg']}"
                                 >
                                 </p:inputText>
-                            </p:panelGrid>
                             <p:message for="roleName" display="text"/>
                         </div>
                     </div>
                     <div class="col-sm-6 form-group">
-                        <label class="control-label" for="roleName">
-                            #{bundle['dataverse.permissions.roles.id']}
-                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
-                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}"></span>
-                        </label>
                         <div>
-                            <p:panelGrid columns="2" styleClass="noBorders">
-                                <p:inputText id="roleAlias" value="#{managePermissionsPage.role.alias}"
-                                             required="#{param['DO_VALIDATION']}"
-                                             requiredMessage="#{bundle['dataverse.permissions.roles.identifier.requiredMsg']}"
-                                >
-                                </p:inputText>
-                            </p:panelGrid>
+                            <p:outputLabel styleClass="control-label" for="roleAlias" indicateRequired="false">
+                                #{bundle['dataverse.permissions.roles.id']}
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            </p:outputLabel>
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                  aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['dataverse.permissions.roles.id']}"
+                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.id.title']}"></span>
+                        </div>
+                        <div>
+                            <p:inputText id="roleAlias" value="#{managePermissionsPage.role.alias}"
+                                         required="true"
+                                         requiredMessage="#{bundle['dataverse.permissions.roles.identifier.requiredMsg']}"
+                            >
+                            </p:inputText>
                             <p:message for="roleAlias" display="text"/>
                         </div>
                     </div>
-                </div>
-                <div class="row form-horizontal">
+                    
                     <div class="col-sm-12 form-group">
-                        <label class="control-label" for="roleName">
-                           #{bundle.description}
-                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
-                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}"></span>
-                        </label>
                         <div>
-                            <p:panelGrid columns="2" styleClass="noBorders" style="width:100%;">
-                                <h:panelGroup>
-                                    <p:inputText id="roleDescription" styleClass="form-control" value="#{managePermissionsPage.role.description}"/>
-                                </h:panelGroup>
-                                <p:message for="roleDescription"/>
-                            </p:panelGrid>
+                            <p:outputLabel styleClass="control-label" for="roleDescription">
+                               #{bundle.description}
+                            </p:outputLabel>
+                            <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                  aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['description']}"
+                                  data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataverse.permissions.roles.description.title']}"></span>
+                        </div>
+                        <div>
+                            <p:inputText id="roleDescription" styleClass="form-control" value="#{managePermissionsPage.role.description}"/>
+                            <p:message for="roleDescription" display="text"/>
                         </div>
                     </div>
                 </div>
             </p:panel>
-            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock form-group" header="#{bundle['dataverse.permissions.roles.roleList.header']}">
+            <p:panel id="editRolePermissionPanel" styleClass="panelLayoutBlock form-group" header="#{bundle['dataverse.permissions.roles.roleList.header']}"
+                     pt:role="group" pt:aria-label="#{bundle['dataverse.permissions.roles.roleList.header']}">
                 <p class="help-block">
-                    <span class="glyphicon glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">#{bundle['dataverse.permissions.roles.roleList.authorizedUserOnly']}</span>
+                    <span class="text-info">#{bundle['dataverse.permissions.roles.roleList.nonAuthorizedUser']}</span>
                 </p>
-                <c:set var="authOnlyRemark">
-                    <span class="glyphicon glyphicon glyphicon-asterisk text-info"></span>
-                </c:set>
                 <h:selectManyCheckbox value="#{managePermissionsPage.selectedPermissions}"
                                       layout="pageDirection" styleClass="selectManyCheckboxBlock">
                     <f:selectItems value="#{managePermissionsPage.permissions}" var="pmsn"
-                                   itemLabel="#{pmsn.humanName} &#160; &#60;span class=&#34;label label-default&#34;&#62;#{pmsn.displayName}&#60;/span&#62; #{not(pmsn.requiresAuthenticatedUser()) ? authOnlyRemark : '' }"
+                                   itemLabel="#{pmsn.humanName} &lt;span class='label label-default'&gt; #{pmsn.displayName} &lt;/span&gt;
+                                              #{not(pmsn.requiresAuthenticatedUser()) ? ' &lt;span class=\'text-info\' &gt; '.concat(bundle['dataverse.permissions.roles.roleList.nonAuthorizedUserLabel']).concat(' &lt;/span&gt;') : '' }"
                                    itemValue="#{pmsn.name()}"
                                    itemLabelEscaped="false"/>
                 </h:selectManyCheckbox>
             </p:panel>
             <div id="editRoleButtonPanel" class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" 
+                <p:commandButton id="saveRoleBtn" styleClass="btn btn-default" 
                                value="#{bundle.saveChanges}" 
                                oncomplete="if (args &amp;&amp; !args.validationFailed) PF('roleForm').hide();"
-                               update="roleDisplay availableRoles editRolePanel @([id$=Messages])"
+                               process="@widgetVar(roleForm)"
+                               update="roleDisplay availableRoles editRolePanel rolesFragment @([id$=Messages])"
                                actionListener="#{managePermissionsPage.updateRole}">
-                    <f:param name="DO_VALIDATION" value="true"/>
-                </p:commandLink>
+                </p:commandButton>
                 <button type="button" class="btn btn-default" onclick="PF('roleForm').hide()" value="#{bundle.cancel}">#{bundle.cancel}</button>
+                
+                <p:defaultCommand target="saveRoleBtn" scope="rolesPermissionsDialog" />
             </div>
         </p:panel>
     </p:dialog>

@@ -107,6 +107,11 @@ h1, h2, h3, h4, h5, h6 {
         display: inline;
     }
 }
+.panel-heading > h3 {
+    font-size: inherit;
+    margin-top: 0;
+    margin-bottom: 0;
+}
 
 .text-brand {
 	color: $icon-color;
@@ -577,6 +582,9 @@ div.ui-selectonemenu.form-control {
 .ui-selectcheckboxmenu-label-container {
 	display: inline-block;
 }
+.ui-selectoneradio.inline-labels label {
+    display: inline;
+}
 
 div.field-add-delete {
 	margin-left: -1em;
@@ -624,16 +632,18 @@ textarea {
 	   padding-bottom: 5px;
 	   color: $main-text-color;
     }
-    /* Overriding bootstrap defaults */
-    legend.control-label {
-        border-bottom: none;
-        font-size: inherit;
-        display: inherit;
-        
-        max-width: 100%;
-        font-weight: 700;
-    }
 }
+/* Overriding bootstrap defaults */
+legend.control-label {
+    border-bottom: none;
+    font-size: inherit;
+    display: inherit;
+    margin-bottom: 5px;
+
+    max-width: 100%;
+    font-weight: 700;
+}
+
 .ui-outputlabel.ui-state-error {
     background: inherit;
 }

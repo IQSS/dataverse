@@ -8,6 +8,10 @@ PrimeFaces.locales['en_US'].filterInputSelectCheckboxMenu = 'Filter Input'
 PrimeFaces.locales['en'].filterInputSelectCheckboxMenu = 'Filter Input'
 PrimeFaces.locales['en_US'].filterPickList = 'Filter'
 PrimeFaces.locales['en'].filterPickList = 'Filter'
+PrimeFaces.locales['en_US'].ariaSelectAutoComplete = 'Selected: '
+PrimeFaces.locales['en'].ariaSelectAutoComplete = 'Selected: '
+PrimeFaces.locales['en_US'].ariaUnselectAutoComplete = 'Unselected: '
+PrimeFaces.locales['en'].ariaUnselectAutoComplete = 'Unselected: '
 
 PrimeFaces.locales['pl'] = {
     closeText: 'Zamknij',
@@ -35,8 +39,16 @@ PrimeFaces.locales['pl'] = {
     day: 'Dzień',
     allDayText : 'Cały dzień',
     
+    aria: {
+        'datatable.sort.ASC': 'aktywuj by posortować wartości w kolumnie rosnąco',
+        'datatable.sort.DESC': 'aktywuj by posortować wartości w kolumnie malejąco',
+    },
+
+    
     cancelFileUpload: 'Przerwij przesyłanie pliku ',
     selectAllSelectCheckboxMenu: 'Zaznacz wszystko',
     filterInputSelectCheckboxMenu: 'Filtruj opcje',
-    filterPickList: 'Filtruj'
+    filterPickList: 'Filtruj',
+    ariaSelectAutoComplete: 'Zaznaczono: ',
+    ariaUnselectAutoComplete: 'Odznaczono: '
 };

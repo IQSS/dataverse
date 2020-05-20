@@ -546,6 +546,25 @@ function reinitializePrimefacesComponentsJS() {
             button.attr('aria-disabled', false);
         }
     }
+    
+
+    if (PrimeFaces.widget.AutoComplete) {
+        var originalAutocompleteInvokeItemSelectBehavior = PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior;
+        var originalAutocompleteRemoveItem = PrimeFaces.widget.AutoComplete.prototype.removeItem;
+        
+        PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior = function(event, itemValue) {
+            originalAutocompleteInvokeItemSelectBehavior.apply(this, [event, itemValue]);
+            if (this.cfg.multiple) {
+                this.displayAriaStatus(PrimeFaces.getLocaleSettings().ariaSelectAutoComplete + $(event.target).attr('data-item-label'));
+            }
+        };
+        PrimeFaces.widget.AutoComplete.prototype.removeItem = function(event, item) {
+            originalAutocompleteRemoveItem.apply(this, [event, item]);
+            if (this.cfg.multiple) {
+                this.displayAriaStatus(PrimeFaces.getLocaleSettings().ariaUnselectAutoComplete + $(item).text());
+            }
+        }
+    }
 }
 reinitializePrimefacesComponentsJS();
 

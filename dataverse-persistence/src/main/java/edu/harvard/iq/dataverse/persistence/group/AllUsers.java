@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.group;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssigneeDisplayInfo;
 
 /**
@@ -18,8 +19,6 @@ public final class AllUsers implements Group {
     public static final AllUsers instance = new AllUsers();
 
     private final String identifier = ":AllUsers";
-
-    private final String displayInfo = "Everyone (including guests)";
 
     public static final AllUsers get() {
         return instance;
@@ -43,7 +42,7 @@ public final class AllUsers implements Group {
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(displayInfo, null);
+        return new RoleAssigneeDisplayInfo(BundleUtil.getStringFromBundle("permission.everyone"), null);
     }
 
     @Override

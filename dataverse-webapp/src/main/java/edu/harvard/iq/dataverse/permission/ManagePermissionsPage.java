@@ -216,9 +216,11 @@ public class ManagePermissionsPage implements java.io.Serializable {
         return new ArrayList<>();
     }
 
-    public void createNewRole(ActionEvent e) {
-        setRole(new DataverseRole());
-        role.setOwner(dvObject);
+    public void createNewRole() {
+        DataverseRole newRole = new DataverseRole();
+        newRole.setOwner(dvObject);
+        
+        setRole(newRole);
     }
 
     public void cloneRole(String roleId) {
@@ -508,6 +510,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         // @todo currently only works for Dataverse since CreateRoleCommand only takes a dataverse
         // we need to decide if we want roles at the dataset level or not
         if (dvObject instanceof Dataverse) {
+            boolean isCreateRoleAction = role.getId() == null;
             role.clearPermissions();
             for (String pmsnStr : getSelectedPermissions()) {
                 role.addPermission(Permission.valueOf(pmsnStr));
@@ -515,7 +518,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             Try.of(() -> managePermissionsService.saveOrUpdateRole(role))
                     .onSuccess(this::setRole)
                     .onSuccess(modifiedRole -> {
-                        String roleState = role.getId() != null ? BundleUtil.getStringFromBundle("permission.updated") : BundleUtil.getStringFromBundle("permission.created");
+                        String roleState = !isCreateRoleAction ? BundleUtil.getStringFromBundle("permission.updated") : BundleUtil.getStringFromBundle("permission.created");
                         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", Collections.singletonList(roleState)));
                     })
                     .onFailure(this::handleUpdateRoleFailure);
