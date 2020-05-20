@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -32,10 +33,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.NoResultException;
@@ -233,7 +234,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     private enum HeaderType {
-
         METADATABLOCK, DATASETFIELD, CONTROLLEDVOCABULARY
     }
 
@@ -241,7 +241,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Consumes("text/tab-separated-values")
     @Path("load")
     public Response loadDatasetFields(File file) {
+
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "loadDatasetFields");
+
         alr.setInfo( file.getName() );
         BufferedReader br = null;
         String line;
@@ -298,12 +300,23 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             alr.setActionResult(ActionLogRecord.Result.BadRequest);
             alr.setInfo( alr.getInfo() + "// file not found");
             return error(Status.EXPECTATION_FAILED, "File not found");
-            
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Error parsing dataset fields:" + e.getMessage(), e);
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            String message = getArrayIndexOutOfBoundMessage(lineNumber, header, e);
+            logger.log(Level.WARNING, message, e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
-            alr.setInfo( alr.getInfo() + "// " + e.getMessage());
-            return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+            alr.setInfo(alr.getInfo() + "// " + message);
+            return error(Status.INTERNAL_SERVER_ERROR, message);
+
+        } catch (Exception e) {
+            String message = String.format(
+              "Error parsing metadata block in %s part, line #%d: %s",
+              header, lineNumber, e.getMessage()
+            );
+            logger.log(Level.WARNING, message, e);
+            alr.setActionResult(ActionLogRecord.Result.InternalError);
+            alr.setInfo( alr.getInfo() + "// " + message);
+            return error(Status.INTERNAL_SERVER_ERROR, message);
             
         } finally {
             if (br != null) {
@@ -317,6 +330,48 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
 
         return ok( Json.createObjectBuilder().add("added", responseArr) );
+    }
+
+    /**
+     * Provide a error string if ArrayIndexOutOfBoundsException happens
+     * @param lineNumber
+     * @param header
+     * @param e
+     * @return
+     */
+    private String getArrayIndexOutOfBoundMessage(int lineNumber,
+                                                  HeaderType header,
+                                                  ArrayIndexOutOfBoundsException e) {
+
+        List<String> columns = getColumnsByHeader(header);
+        int wrongIndex = Integer.parseInt(e.getMessage());
+
+        String column = columns.get(wrongIndex - 1);
+        return String.format(
+          "Error parsing metadata block in %s part, line #%d: missing '%s' column (#%d)",
+          header, lineNumber, column, wrongIndex + 1
+        );
+    }
+
+    /**
+     * Get the list of columns by the type of header
+     * @param header
+     * @return
+     */
+    private List<String> getColumnsByHeader(HeaderType header) {
+        List<String> columns = null;
+        if (header.equals(HeaderType.METADATABLOCK)) {
+            columns = Arrays.asList("name", "dataverseAlias", "displayName");
+        } else if (header.equals(HeaderType.DATASETFIELD)) {
+            columns = Arrays.asList("name", "title", "description", "watermark",
+              "fieldType", "displayOrder", "displayFormat", "advancedSearchField",
+              "allowControlledVocabulary", "allowmultiples", "facetable",
+              "displayoncreate", "required", "parent", "metadatablock_id");
+        } else if (header.equals(HeaderType.CONTROLLEDVOCABULARY)) {
+            columns = Arrays.asList("DatasetField", "Value", "identifier", "displayOrder");
+        }
+
+        return columns;
     }
 
     private String parseMetadataBlock(String[] values) {

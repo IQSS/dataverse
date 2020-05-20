@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -1366,6 +1368,14 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
+    }
+
+    static Response loadMetadataBlock(String apiToken, byte[] body) {
+        return given()
+          .header(API_TOKEN_HTTP_HEADER, apiToken)
+          .contentType("text/tab-separated-values; charset=utf-8")
+          .body(body)
+          .post("/api/admin/datasetfield/load");
     }
 
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
