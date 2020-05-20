@@ -1753,7 +1753,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public void uploadFinished() {
-        System.out.print("upload finished...");
         // This method is triggered from the page, by the <p:upload ... onComplete=...
         // attribute. 
         // Note that its behavior is different from that of of <p:upload ... onStart=...
@@ -1813,7 +1812,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
-            System.out.print("replace and upload warning message not null");
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     //context.execute("PF('fileTypeDifferentPopup').show();");
@@ -2434,23 +2432,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (checksumMapNew == null) {
             checksumMapNew = new HashMap<>();
         }
-                System.out.print(checksumMapNew);
+
         return FileUtil.isFileAlreadyUploaded(dataFile, checksumMapNew, fileAlreadyExists);
         
-       /* 
-        String chksum = dataFile.getChecksumValue();
-        
-        if (chksum == null) {
-            return false;
-        }
-        
-        if (checksumMapNew.get(chksum) != null) {
-            return true;
-        }
-        
-        checksumMapNew.put(chksum, 1);
-        return false;
-        */
     }
     
  
