@@ -529,10 +529,6 @@ public class SystemConfig {
         return settingsService.isTrueForKey(Key.ShowAccessibilityStatementFooterLink);
     }
 
-    public String getCustomThemeCssFilename() {
-        return settingsService.getValueForKey(Key.CustomThemeCssFilename);
-    }
-    
     private String getFromBundleIfEmptyLocalizedProperty(Key key, Locale locale, String bundleKey) {
         String result = getLocalizedProperty(key, locale);
         

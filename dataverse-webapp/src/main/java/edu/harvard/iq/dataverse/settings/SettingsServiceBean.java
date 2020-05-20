@@ -317,18 +317,6 @@ public class SettingsServiceBean {
          */
         LogoCustomizationFile,
 
-        /**
-         * Filename of the css used as a theme instead
-         * of the default one.
-         * File with this name must be placed inside of
-         * <GLASSFISH_DOMAIN>/docroot/assets/theme/ directory.
-         * <p>
-         * Note that if inside css there are links to some other
-         * resources like graphics or fonts they must be placed
-         * inside this directory also.
-         */
-        CustomThemeCssFilename,
-        
         // Option to override the navbar url underlying the "About" link
         NavbarAboutUrl,
 
