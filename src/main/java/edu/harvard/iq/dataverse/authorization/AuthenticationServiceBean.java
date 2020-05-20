@@ -6,26 +6,17 @@ import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.oidc.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationProviderFactoryNotFoundException;
-import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderFactory;
-import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
@@ -39,21 +30,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -73,21 +58,12 @@ import javax.validation.ValidatorFactory;
  * Register the providers in the {@link #startup()} method.
  */
 @Named
-@Singleton
+@Stateless
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
-    /**
-     * Where all registered authentication providers live.
-     */
-    final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
-    
-    /**
-     * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
-     */
-    final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
-    
-    final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationService;
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
@@ -131,121 +107,7 @@ public class AuthenticationServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
-    @PostConstruct
-    public void startup() {
         
-        // First, set up the factories
-        try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
-            registerProviderFactory( new ShibAuthenticationProviderFactory() );
-            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-            registerProviderFactory( new OIDCAuthenticationProviderFactory() );
-        
-        } catch (AuthorizationSetupException ex) { 
-            logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
-        }
-        
-        // Now, load the providers.
-        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
-                .getResultList().forEach((row) -> {
-                    try {
-                        registerProvider( loadProvider(row) );
-                        
-                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
-                        
-                    } catch (AuthorizationSetupException ex) {
-                        logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
-                    }
-        });
-    }
-    
-    public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
-    {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
-        }
-        providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
-                new Object[]{aFactory.getInfo(), aFactory.getAlias()});
-    }
-    
-    /**
-     * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
-     * @param aRow The row to load the provider from.
-     * @return The provider, if successful
-     * @throws AuthenticationProviderFactoryNotFoundException If the row specifies a non-existent factory
-     * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
-     */
-    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
-                throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
-        AuthenticationProviderFactory fact = getProviderFactory(aRow.getFactoryAlias());
-        
-        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
-        
-        return fact.buildProvider(aRow);
-    }
-    
-    public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
-        if ( authenticationProviders.containsKey(aProvider.getId()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate id " + aProvider.getId() + " for authentication provider.");
-        }
-        authenticationProviders.put( aProvider.getId(), aProvider);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
-            .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
-            oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
-        }
-        
-    }
-    
-    public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
-        return oAuth2authenticationProviders.get(id);
-    }
-    
-    public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
-        return new HashSet<>(oAuth2authenticationProviders.values());
-    }
-    
-    public void deregisterProvider( String id ) {
-        oAuth2authenticationProviders.remove( id );
-        if ( authenticationProviders.remove(id) != null ) {
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
-                .setInfo(id));
-            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-            logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
-        }
-    }
-    
-    public Set<String> getAuthenticationProviderIds() {
-        return authenticationProviders.keySet();
-    }
-
-    public Collection<AuthenticationProvider> getAuthenticationProviders() {
-        return authenticationProviders.values();
-    }
-    
-    public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
-        Set<String> retVal = new TreeSet<>();
-        for ( Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet() ) {
-            if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
-                retVal.add( p.getKey() );
-            }
-        }
-        return retVal;
-    }
-    
-    public AuthenticationProviderFactory getProviderFactory( String alias ) {
-        return providerFactories.get(alias);
-    }
-    
-    public AuthenticationProvider getAuthenticationProvider( String id ) {
-        return authenticationProviders.get( id );
-    }
-    
     public AuthenticatedUser findByID(Object pk){
         if (pk==null){
             return null;
@@ -260,10 +122,6 @@ public class AuthenticationServiceBean {
                 em.remove(apiToken);
             }
         }
-    }
-    
-    public boolean isOrcidEnabled() {
-        return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
     }
     
     /**
@@ -302,7 +160,7 @@ public class AuthenticationServiceBean {
             }
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
             
-            AuthenticationProvider prv = lookupProvider(user);
+            AuthenticationProvider prv = authProvidersRegistrationService.lookupProvider(user);
             if ( prv != null && prv.isUserDeletionAllowed() ) {
                 prv.deleteUser(user.getAuthenticatedUserLookup().getPersistentUserId());
             }
@@ -378,7 +236,7 @@ public class AuthenticationServiceBean {
      * @throws AuthenticationFailedException 
      */
     public AuthenticatedUser getUpdateAuthenticatedUser( String authenticationProviderId, AuthenticationRequest req ) throws AuthenticationFailedException {
-        AuthenticationProvider prv = getAuthenticationProvider(authenticationProviderId);
+        AuthenticationProvider prv = authProvidersRegistrationService.getAuthenticationProvider(authenticationProviderId);
         if ( prv == null ) throw new IllegalArgumentException("No authentication provider listed under id " + authenticationProviderId );
         if ( ! (prv instanceof CredentialsAuthenticationProvider) ) {
             throw new IllegalArgumentException( authenticationProviderId + " does not support credentials-based authentication." );
@@ -433,10 +291,6 @@ public class AuthenticationServiceBean {
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }
-    }
-    
-    public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
-        return authenticationProviders.get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
     public ApiToken findApiToken(String token) {
@@ -734,11 +588,6 @@ public class AuthenticationServiceBean {
 
     public List<AuthenticatedUser> findSuperUsers() {
         return em.createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
-    }
-    
-    
-    public Set<AuthenticationProviderFactory> listProviderFactories() {
-        return new HashSet<>( providerFactories.values() ); 
     }
     
     public Timestamp getCurrentTimestamp() {

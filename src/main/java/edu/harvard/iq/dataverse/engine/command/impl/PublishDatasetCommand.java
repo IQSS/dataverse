@@ -117,6 +117,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
             if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
                 String info = "Adding File PIDs asynchronously";
+                logger.info(info);
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
@@ -51,6 +52,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(OAuth2FirstLoginPage.class.getCanonicalName());
 
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegSvc;
+    
     @EJB
     AuthenticationServiceBean authenticationSvc;
 
@@ -171,7 +175,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
         setSelectedEmail(emailToSuggest);
 
-        authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
+        authProvider = authProvidersRegSvc.getAuthenticationProvider(newUser.getServiceId());
     }
 
     public String createNewAccount() {
@@ -214,7 +218,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
             session.setUser(existingUser);
             session.configureSessionTimeout();
-            AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
+            AuthenticationProvider newUserAuthProvider = authProvidersRegSvc.getAuthenticationProvider(newUser.getServiceId());
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
 
             return "/dataverse.xhtml?faces-redirect=true";
@@ -343,7 +347,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
-        AuthenticationProvider builtinAuthProvider = authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID);
+        AuthenticationProvider builtinAuthProvider = authProvidersRegSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID);
         return builtinAuthProvider != null;
     }
 

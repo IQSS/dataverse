@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
@@ -55,6 +56,9 @@ import javax.validation.ConstraintViolationException;
 @Named
 public class EjbDataverseEngine {
     private static final Logger logger = Logger.getLogger(EjbDataverseEngine.class.getCanonicalName());
+    
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegService;
     
     @EJB
     DatasetServiceBean datasetService;
@@ -513,6 +517,11 @@ public class EjbDataverseEngine {
                 public UserNotificationServiceBean notifications() {
                     return userNotificationService;
                 } 
+                
+                @Override
+                public AuthenticationProvidersRegistrationServiceBean authProviders() {
+                    return authProvidersRegService;
+                }
                 
                 @Override
                 public AuthenticationServiceBean authentication() {

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2APTest;
@@ -39,6 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2LoginBackingBeanTest {
@@ -46,6 +50,7 @@ class OAuth2LoginBackingBeanTest {
     OAuth2LoginBackingBean loginBackingBean = new OAuth2LoginBackingBean();
     @Spy static AbstractOAuth2AuthenticationProvider testIdp = new GitHubOAuth2APTest();
     
+    @Mock AuthenticationProvidersRegistrationServiceBean authenticationProvidersRegistrationServiceBean;
     @Mock AuthenticationServiceBean authenticationServiceBean;
     @Mock SystemConfig systemConfig;
     
@@ -68,9 +73,10 @@ class OAuth2LoginBackingBeanTest {
         // create a fixed (not running) clock for testing.
         // --> reset the clock for every test to the fixed time, to avoid sideeffects of a DeLorean time travel
         this.loginBackingBean.clock = constantClock;
+        this.loginBackingBean.authProvidersRegSvc = this.authenticationProvidersRegistrationServiceBean;
         this.loginBackingBean.authenticationSvc = this.authenticationServiceBean;
         this.loginBackingBean.systemConfig = this.systemConfig;
-        lenient().when(this.authenticationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
+        lenient().when(this.authenticationProvidersRegistrationServiceBean.getOAuth2Provider(testIdp.getId())).thenReturn(testIdp);
     }
     
     /**

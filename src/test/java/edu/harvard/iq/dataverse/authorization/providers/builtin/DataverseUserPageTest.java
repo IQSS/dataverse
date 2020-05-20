@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
@@ -25,6 +26,7 @@ public class DataverseUserPageTest {
   private AuthenticatedUser user;
   private ConfirmEmailServiceBean mockConfirmEmailService;
   private AuthenticationProvider mockAuthProvider;
+  private AuthenticationProvidersRegistrationServiceBean mockAuthProvidersRegService;
   private AuthenticationServiceBean mockAuthService;
 
   @BeforeEach
@@ -33,6 +35,7 @@ public class DataverseUserPageTest {
     user = new AuthenticatedUser();
     mockConfirmEmailService = mock(ConfirmEmailServiceBean.class);
     mockAuthProvider = mock(AuthenticationProvider.class);
+    mockAuthProvidersRegService = mock(AuthenticationProvidersRegistrationServiceBean.class);
     mockAuthService = mock(AuthenticationServiceBean.class);
   }
 
@@ -73,9 +76,10 @@ public class DataverseUserPageTest {
     }
 
     Mockito.when(mockAuthProvider.isEmailVerified()).thenReturn(emailVerified);
-    Mockito.when(mockAuthService.lookupProvider(user)).thenReturn(mockAuthProvider);
+    Mockito.when(mockAuthProvidersRegService.lookupProvider(user)).thenReturn(mockAuthProvider);
 
     dataverseUserPage.confirmEmailService = mockConfirmEmailService;
+    dataverseUserPage.authProvidersRegSvc = mockAuthProvidersRegService;
     dataverseUserPage.authenticationService = mockAuthService;
 
     assertEquals(expected, dataverseUserPage.showVerifyEmailButton());

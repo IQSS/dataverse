@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
@@ -82,6 +83,8 @@ public class DataverseUserPage implements java.io.Serializable {
     @Inject
     DataverseSession session;
     @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegSvc;
+    @EJB
     DataverseServiceBean dataverseService;
     @EJB
     UserNotificationServiceBean userNotificationService;
@@ -114,8 +117,6 @@ public class DataverseUserPage implements java.io.Serializable {
     @Inject
     PermissionsWrapper permissionsWrapper;
 
-    @EJB
-    AuthenticationServiceBean authSvc;
 
     private AuthenticatedUser currentUser;
     private BuiltinUser builtinUser;    
@@ -164,7 +165,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
         if ( session.getUser().isAuthenticated() ) {
             setCurrentUser((AuthenticatedUser) session.getUser());
-            userAuthProvider = authenticationService.lookupProvider(currentUser);
+            userAuthProvider = authProvidersRegSvc.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             
             switch (selectTab) {
@@ -571,7 +572,7 @@ public class DataverseUserPage implements java.io.Serializable {
     
     public AuthenticationProvider getUserAuthProvider() {
         if ( userAuthProvider == null  ) {
-            userAuthProvider = authenticationService.lookupProvider(currentUser);
+            userAuthProvider = authProvidersRegSvc.lookupProvider(currentUser);
         }
         return userAuthProvider;
     }
@@ -691,7 +692,7 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public boolean isNonLocalLoginEnabled() {
-        return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
+        return AuthUtil.isNonLocalLoginEnabled(authProvidersRegSvc.getAuthenticationProviders());
     }
 
     public String getReasonForReturn(DatasetVersion datasetVersion) {

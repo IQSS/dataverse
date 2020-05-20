@@ -2,18 +2,17 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -74,6 +73,9 @@ public class LoginPage implements java.io.Serializable {
     @Inject DataverseSession session;    
     
     @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegSvc;
+    
+    @EJB
     DataverseServiceBean dataverseService;
     
     @EJB
@@ -107,19 +109,20 @@ public class LoginPage implements java.io.Serializable {
     Long userSum;
 
     public void init() {
-        Iterator<String> credentialsIterator = authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
+        Iterator<String> credentialsIterator = authProvidersRegSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ).iterator();
         if ( credentialsIterator.hasNext() ) {
-            setCredentialsAuthProviderId(credentialsIterator.next());
+            String providerId = credentialsIterator.next();
+            setCredentialsAuthProviderId(providerId);
         }
         resetFilledCredentials(null);
-        authProvider = authSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
+        authProvider = authProvidersRegSvc.getAuthenticationProvider(systemConfig.getDefaultAuthProvider());
         random = new Random();
     }
 
     public List<AuthenticationProviderDisplayInfo> listCredentialsAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for ( String id : authSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ) ) {
-            AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
+        for ( String id : authProvidersRegSvc.getAuthenticationProviderIdsOfType( CredentialsAuthenticationProvider.class ) ) {
+            AuthenticationProvider authenticationProvider = authProvidersRegSvc.getAuthenticationProvider(id);
             infos.add( authenticationProvider.getInfo());
         }
         return infos;
@@ -131,7 +134,7 @@ public class LoginPage implements java.io.Serializable {
      */
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        List<AuthenticationProvider> idps = new ArrayList<>(authSvc.getAuthenticationProviders());
+        List<AuthenticationProvider> idps = new ArrayList<>(authProvidersRegSvc.getAuthenticationProviders());
         
         // sort by order first. in case of same order values, be deterministic in UI and sort by id, too.
         Collections.sort(idps, Comparator.comparing(AuthenticationProvider::getOrder).thenComparing(AuthenticationProvider::getId));
@@ -145,7 +148,7 @@ public class LoginPage implements java.io.Serializable {
     }
    
     public CredentialsAuthenticationProvider selectedCredentialsProvider() {
-        return (CredentialsAuthenticationProvider) authSvc.getAuthenticationProvider(getCredentialsAuthProviderId());
+        return (CredentialsAuthenticationProvider) authProvidersRegSvc.getAuthenticationProvider(getCredentialsAuthProviderId());
     }
     
     public boolean validatePassword(String username, String password) {
@@ -157,7 +160,6 @@ public class LoginPage implements java.io.Serializable {
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
         if ( filledCredentialsList == null ) {
-            logger.info("Credential list is null!");
             return null;
         }
         for ( FilledCredential fc : filledCredentialsList ) {       
@@ -166,7 +168,8 @@ public class LoginPage implements java.io.Serializable {
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
-            logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
+            logger.log(Level.INFO, "Login: {0}, {1}, {2}", new Object[]{r.getIdentifier(), r.getEmail(), FacesContext.getCurrentInstance().getExternalContext().getSessionId(false)});
+            
             session.setUser(r);
             session.configureSessionTimeout();
             
@@ -243,7 +246,7 @@ public class LoginPage implements java.io.Serializable {
     }
 
     public boolean isMultipleProvidersAvailable() {
-        return authSvc.getAuthenticationProviderIds().size()>1;
+        return authProvidersRegSvc.getAuthenticationProviderIds().size()>1;
     }
 
     public String getRedirectPage() {
@@ -260,7 +263,7 @@ public class LoginPage implements java.io.Serializable {
 
     public void setAuthProviderById(String authProviderId) {
         logger.fine("Setting auth provider to " + authProviderId);
-        this.authProvider = authSvc.getAuthenticationProvider(authProviderId);
+        this.authProvider = authProvidersRegSvc.getAuthenticationProvider(authProviderId);
     }
 
     public String getLoginButtonText() {

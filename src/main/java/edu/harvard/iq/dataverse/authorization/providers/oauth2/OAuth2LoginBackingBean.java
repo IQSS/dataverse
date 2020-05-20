@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -51,6 +52,9 @@ public class OAuth2LoginBackingBean implements Serializable {
     private OAuth2UserRecord oauthUser;
 
     @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegSvc;
+    
+    @EJB
     AuthenticationServiceBean authenticationSvc;
     
     @EJB
@@ -76,7 +80,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * @return A generated link for the OAuth2 provider login
      */
     public String linkFor(String idpId, String redirectPage) {
-        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
+        AbstractOAuth2AuthenticationProvider idp = authProvidersRegSvc.getOAuth2Provider(idpId);
         String state = createState(idp, toOption(redirectPage));
         return idp.buildAuthzUrl(state, systemConfig.getOAuth2CallbackUrl());
     }
@@ -176,7 +180,7 @@ public class OAuth2LoginBackingBean implements Serializable {
             logger.log(Level.INFO, "Wrong number of fields in state string", state);
             return Optional.empty();
         }
-        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
+        AbstractOAuth2AuthenticationProvider idp = authProvidersRegSvc.getOAuth2Provider(topFields[0]);
         if (idp == null) {
             logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
             return Optional.empty();
@@ -260,7 +264,7 @@ public class OAuth2LoginBackingBean implements Serializable {
      * TODO: Unused. Remove.
      */
     public List<AbstractOAuth2AuthenticationProvider> getProviders() {
-        return authenticationSvc.getOAuth2Providers().stream()
+        return authProvidersRegSvc.getOAuth2Providers().stream()
                 .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
     }
@@ -269,6 +273,6 @@ public class OAuth2LoginBackingBean implements Serializable {
      * TODO: Unused. Remove.
      */
     public boolean isOAuth2ProvidersDefined() {
-        return !authenticationSvc.getOAuth2Providers().isEmpty();
+        return !authProvidersRegSvc.getOAuth2Providers().isEmpty();
     }
 }
