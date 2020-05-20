@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -213,10 +214,24 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();
                 while (dv != null) {
-                    if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
+                    boolean newSubjectsAdded = false;
+                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {
+                    
+                        if (!dv.getDataverseSubjects().contains(cvv)) {
+                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                            newSubjectsAdded = true;
+                            dv.getDataverseSubjects().add(cvv);
+                        } else {
+                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                        }
+                    }
+                    if (newSubjectsAdded) {
+                        logger.fine("new dataverse subjects added - saving and reindexing");
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
                         ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
+                    } else {
+                        logger.fine("no new subjects added to the dataverse; skipping reindexing");
                     }
                     dv = dv.getOwner();
                 }
