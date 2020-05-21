@@ -164,6 +164,20 @@ public class UtilIT {
         return response;
     }
 
+    public static Response getUnreservedPids(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/pids/unreserved");
+        return response;
+    }
+
+    public static Response reservePid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/pids/:persistentId/reserve?persistentId=" + persistentId);
+        return response;
+    }
+
     public static Response computeDataFileHashValue(String fileId, String alg, String apiToken) {
         Response response = given()
                 .body(fileId)
