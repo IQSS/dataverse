@@ -1262,6 +1262,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         for (DataFile dataFile : uploadedFiles) {
             fileMetadatas.add(dataFile.getFileMetadata());
             newFiles.add(dataFile);
+            deleteTempFile(dataFile);
         }
         if (uploadInProgress) {
             uploadedFiles = new ArrayList<>();
