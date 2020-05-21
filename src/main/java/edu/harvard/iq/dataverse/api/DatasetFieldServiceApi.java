@@ -33,6 +33,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
@@ -241,9 +242,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     @Consumes("text/tab-separated-values")
     @Path("load")
     public Response loadDatasetFields(File file) {
-
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "loadDatasetFields");
-
         alr.setInfo( file.getName() );
         BufferedReader br = null;
         String line;
@@ -302,17 +301,14 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return error(Status.EXPECTATION_FAILED, "File not found");
 
         } catch (ArrayIndexOutOfBoundsException e) {
-            String message = getArrayIndexOutOfBoundMessage(lineNumber, header, e);
+            String message = getArrayIndexOutOfBoundMessage(header, lineNumber, e);
             logger.log(Level.WARNING, message, e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo(alr.getInfo() + "// " + message);
             return error(Status.INTERNAL_SERVER_ERROR, message);
 
         } catch (Exception e) {
-            String message = String.format(
-              "Error parsing metadata block in %s part, line #%d: %s",
-              header, lineNumber, e.getMessage()
-            );
+            String message = getGeneralErrorMessage(header, lineNumber, e.getMessage());
             logger.log(Level.WARNING, message, e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo( alr.getInfo() + "// " + message);
@@ -333,24 +329,49 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     /**
-     * Provide a error string if ArrayIndexOutOfBoundsException happens
+     * Provide a general error message including the part and line number
+     * @param header
+     * @param lineNumber
+     * @param message
+     * @return
+     */
+    private String getGeneralErrorMessage(HeaderType header, int lineNumber, String message) {
+        List<String> arguments = new ArrayList<>();
+        arguments.add(header.name());
+        arguments.add(String.valueOf(lineNumber));
+        arguments.add(message);
+        return BundleUtil.getStringFromBundle("api.admin.datasetfield.load.GeneralErrorMessage", arguments);
+    }
+
+    /**
+     * Turn ArrayIndexOutOfBoundsException into an informative error message
      * @param lineNumber
      * @param header
      * @param e
      * @return
      */
-    private String getArrayIndexOutOfBoundMessage(int lineNumber,
-                                                  HeaderType header,
+    private String getArrayIndexOutOfBoundMessage(HeaderType header,
+                                                  int lineNumber,
                                                   ArrayIndexOutOfBoundsException e) {
 
         List<String> columns = getColumnsByHeader(header);
         int wrongIndex = Integer.parseInt(e.getMessage());
 
         String column = columns.get(wrongIndex - 1);
+        System.err.println("column: " + column);
+        List<String> arguments = new ArrayList<>();
+        arguments.add(header.name());
+        arguments.add(String.valueOf(lineNumber));
+        arguments.add(column);
+        arguments.add(String.valueOf(wrongIndex + 1));
+        return BundleUtil.getStringFromBundle("api.admin.datasetfield.load.ArrayIndexOutOfBoundMessage", arguments);
+
+        /*
         return String.format(
           "Error parsing metadata block in %s part, line #%d: missing '%s' column (#%d)",
           header, lineNumber, column, wrongIndex + 1
         );
+         */
     }
 
     /**

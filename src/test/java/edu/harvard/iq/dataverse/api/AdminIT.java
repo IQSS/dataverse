@@ -701,7 +701,7 @@ public class AdminIT {
 
         String message = JsonPath.from(body).getString("message");
         assertEquals(
-          "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' cell (#5)",
+          "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
           message
         );
     }
