@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.workflow;
 
-import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -18,7 +16,6 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
-import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -56,9 +53,6 @@ public class WorkflowServiceBean {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
 
-    @EJB
-    DatasetDao datasets;
-
     @Inject
     SettingsServiceBean settings;
 
@@ -69,28 +63,7 @@ public class WorkflowServiceBean {
     EjbDataverseEngine engine;
 
     @Inject
-    DataverseRequestServiceBean dvRequestService;
-
-    final Map<String, WorkflowStepSPI> providers = new HashMap<>();
-
-    public WorkflowServiceBean() {
-        providers.put(":internal", new InternalWorkflowStepSP());
-
-//        Re-enable code below, if we allow .jars in the classpath to provide WorkflowStepProviders.
-//        ServiceLoader<WorkflowStepSPI> loader = ServiceLoader.load(WorkflowStepSPI.class);
-//        try {
-//            for ( WorkflowStepSPI wss : loader ) {
-//                logger.log(Level.INFO, "Found WorkflowStepProvider: {0}", wss.getClass().getCanonicalName());
-//                providers.put( wss.getClass().getCanonicalName(), wss );
-//            }
-//            logger.log(Level.INFO, "Searching for Workflow Step Providers done.");
-//        } catch (NoClassDefFoundError ncdfe) {
-//            logger.log(Level.WARNING, "Class not found: " + ncdfe.getMessage(), ncdfe);
-//        } catch (ServiceConfigurationError serviceError) {
-//            logger.log(Level.WARNING, "Service Error loading workflow step providers: " + serviceError.getMessage(), serviceError);
-//        }
-
-    }
+    WorkflowStepRegistry stepRegistry;
 
     /**
      * Starts executing workflow {@code wf} under the passed context.
@@ -434,12 +407,7 @@ public class WorkflowServiceBean {
     }
 
     private WorkflowStep createStep(WorkflowStepData wsd) {
-        WorkflowStepSPI provider = providers.get(wsd.getProviderId());
-        if (provider == null) {
-            logger.log(Level.SEVERE, "Cannot find a step provider with id ''{0}''", wsd.getProviderId());
-            throw new IllegalArgumentException("Bad WorkflowStepSPI id: '" + wsd.getProviderId() + "'");
-        }
-        return provider.getStep(wsd.getStepType(), wsd.getStepParameters());
+        return stepRegistry.getStep(wsd.getProviderId(), wsd.getStepType(), wsd.getStepParameters());
     }
 
     private WorkflowContext refresh(WorkflowContext ctxt) {

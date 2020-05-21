@@ -62,6 +62,7 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
  */
 @Stateless
 public class EjbDataverseEngine {
+
     private static final Logger logger = Logger.getLogger(EjbDataverseEngine.class.getCanonicalName());
 
     @EJB

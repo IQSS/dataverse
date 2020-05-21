@@ -32,6 +32,7 @@ derby.log
 
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
+dataverse-webapp/overlays
 
 # dependencies I'm not sure we're allowed to redistribute / have in version control
 conf/docker-aio/dv/deps/
