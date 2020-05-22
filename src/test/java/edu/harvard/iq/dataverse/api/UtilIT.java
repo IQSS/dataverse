@@ -1368,6 +1368,14 @@ public class UtilIT {
                 .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
     }
 
+    static Response loadMetadataBlock(String apiToken, byte[] body) {
+        return given()
+          .header(API_TOKEN_HTTP_HEADER, apiToken)
+          .contentType("text/tab-separated-values; charset=utf-8")
+          .body(body)
+          .post("/api/admin/datasetfield/load");
+    }
+
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
