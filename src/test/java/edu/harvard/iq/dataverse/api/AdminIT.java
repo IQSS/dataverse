@@ -13,11 +13,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.Test;
 import org.junit.BeforeClass;
+
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -677,6 +680,48 @@ public class AdminIT {
         migrateIdentifierResponse.prettyPrint();
         migrateIdentifierResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
+    }
+
+    @Test
+    public void testLoadMetadataBlock_NoErrorPath() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        byte[] updatedContent = null;
+        try {
+            updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/citation.tsv"));
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            assertEquals(0,1);
+        }
+        Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
+        assertEquals(200, response.getStatusCode());
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String body = response.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+
+        Map<String, List<Map<String, String>>> data = JsonPath.from(body).getMap("data");
+        assertEquals(1, data.size());
+        List<Map<String, String>> addedElements = data.get("added");
+        assertEquals(321, addedElements.size());
+
+        Map<String, Integer> statistics = new HashMap<>();
+        for (Map<String, String> unit : addedElements) {
+            assertEquals(2, unit.size());
+            assertTrue(unit.containsKey("name"));
+            assertTrue(unit.containsKey("type"));
+            String type = unit.get("type");
+            if (!statistics.containsKey(type))
+                statistics.put(type, 0);
+            statistics.put(type, statistics.get(type) + 1);
+        }
+
+        assertEquals(3, statistics.size());
+        assertEquals(1, (int) statistics.get("MetadataBlock"));
+        assertEquals(78, (int) statistics.get("DatasetField"));
+        assertEquals(242, (int) statistics.get("Controlled Vocabulary"));
     }
 
     @Test
