@@ -2529,22 +2529,65 @@ PIDs is short for Persistent IDentifiers. Examples include DOI or Handle.
 Get Info on a PID
 ~~~~~~~~~~~~~~~~~
 
-Get information on a PID, especially its "state" such as "draft" or "findable". Currently, this API only works on DataCite DOIs:
+Get information on a PID, especially its "state" such as "draft" or "findable". Currently, this API only works on DataCite DOIs. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
 .. code-block:: bash
 
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export PID=10.70122/FK2/9BXT5O
 
-  curl $SERVER_URL/api/pids?persistentId=$PID
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/pids?persistentId=$PID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl https://demo.dataverse.org/api/pids?persistentId=10.70122/FK2/9BXT5O
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids?persistentId=10.70122/FK2/9BXT5O
+
+List Unreserved PIDs
+~~~~~~~~~~~~~~~~~~~
+
+Get a list of PIDs that have not been reserved on the PID provider side. This can happen, for example, if a dataset is created while the PID provider is down. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/pids/unreserved
+
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids/unreserved
+
+Reserve a PID
+~~~~~~~~~~~~~
+
+Reserved a PID for a dataset. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PID=10.70122/FK2/9BXT5O
+
+  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/pids/:persistentId/reserve?persistentId=$PID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids/:persistentId/reserve?persistentId=10.70122/FK2/9BXT5O
 
 .. _admin:
 
