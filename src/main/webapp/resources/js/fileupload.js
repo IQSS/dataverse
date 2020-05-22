@@ -49,7 +49,7 @@ function setupDirectUpload(enabled) {
     var callback = function(mutations) {
       mutations.forEach(function(mutation) {
         for(i=0; i<mutation.addedNodes.length;i++) {
-          //Add a listener on any replacedment file 'select' widget
+          //Add a listener on any replacement file 'select' widget
           if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
             fileInput=mutation.addedNodes[i];
             mutation.addedNodes[i].addEventListener('change', function(event) {
@@ -214,7 +214,12 @@ async function handleDirectUpload(storageId, file, md5) {
   while(inDataverseCall === true) {
     await sleep(500);
   }
+
   inDataverseCall=true;
+  if(file.size < 1000) {
+	  //artificially slow reporting of the upload of tiny files to avoid problems with maintaining JSF state
+	  await sleep(500);
+  }
   //storageId is not the location - has a : separator and no path elements from dataset
   //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
   handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
