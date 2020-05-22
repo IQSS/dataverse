@@ -11,7 +11,6 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
@@ -60,9 +59,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -3575,13 +3571,6 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDraftVersion(){      
          return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";    
     }
-    
- //   private String returnToParentDataverse(){
-//    	String alias = dataset.getOwner().getAlias();
-//    	logger.info("alias: " + alias);
-//        return "/dataverse.xhtml?alias=" + alias + "&faces-redirect=true";    
-//   }
-   
 
     public String cancel() {
         return  returnToLatestVersion();
@@ -3591,20 +3580,20 @@ public class DatasetPage implements java.io.Serializable {
     	//Stop any uploads in progress (so that uploadedFiles doesn't change)
     	uploadInProgress.setValue(false);
     	
-    	logger.info("Cancelling: " + newFiles.size() + " : " + uploadedFiles.size());
+    	logger.fine("Cancelling: " + newFiles.size() + " : " + uploadedFiles.size());
     	
         //Files that have been finished and are now in the lower list on the page
         for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
-        logger.info("Deleted newFiles");
+    	logger.fine("Deleted newFiles");
     	
         //Files in the upload process but not yet finished
         //ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
         for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
-        logger.info("Deleted uploadedFiles");
+    	logger.fine("Deleted uploadedFiles");
     	
         try {
         	String alias = dataset.getOwner().getAlias();
@@ -3613,8 +3602,6 @@ public class DatasetPage implements java.io.Serializable {
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
-        
-//        return  returnToParentDataverse();
     }
     
     private HttpClient getClient() {

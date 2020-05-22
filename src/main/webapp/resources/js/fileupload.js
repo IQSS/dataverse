@@ -1,14 +1,10 @@
 var fileList = [];
 var observer2=null;
-<<<<<<< HEAD
 var numDone=0;
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
-var directUploadEnabled=false;   
-
-=======
 var directUploadEnabled=false;
->>>>>>> refs/remotes/IQSS/develop
+
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress=0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -73,56 +69,60 @@ function setupDirectUpload(enabled) {
   } //else ?
 }
 
-<<<<<<< HEAD
 function sleep(ms) {
-  console.log("Sleeping");
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function cancelDatasetCreate() {
   //Page is going away - don't upload any more files, finish reporting current uploads, and then call calncelCreateCommand to clean up temp files
-if(directUploadEnabled) {
-  fileList = [];
-  directUploadEnabled=false;
-  while(curFile!=numDone) {
-console.log("Waiting on files: " + numDone + ":" + curFile);
-$("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
-$("#datasetSave").prop('disabled', true);
-
-await sleep(1000);
-}
-console.log("Calling cancel");
-  cancelCreateCommand();
-} else {
-  cancelCreateCommand();
-}
+  if(directUploadEnabled) {
+    fileList = [];
+    directUploadEnabled=false;
+    while(curFile!=numDone) {
+      $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
+      $("#datasetSave").prop('disabled', true);
+      await sleep(1000);
+    }
+      cancelCreateCommand();
+    } else {
+      cancelCreateCommand();
+  }
 }
 
 var directUploadReport = true;
 async function cancelDatasetEdit() {
   //Don't upload any more files and don't send any more file entries to Dataverse, report any direct upload files that didn't get handled
-if(directUploadEnabled) {
-  fileList = [];
-  directUploadEnabled=false;
-  directUploadReport = false;
-}
+  if(directUploadEnabled) {
+    fileList = [];
+    directUploadEnabled=false;
+    directUploadReport = false;
+  }
 }
 
-
-=======
->>>>>>> refs/remotes/IQSS/develop
 function queueFileForDirectUpload(file) {
   if(fileList.length === 0) {uploadWidgetDropRemoveMsg();}
   fileList.push(file);
   //Fire off the first 4 to start (0,1,2,3)
   if(filesInProgress < 4 ) {
     filesInProgress= filesInProgress+1;
-    requestDirectUploadUrl();
+    startRequestForDirectUploadUrl();
   }
 }
 
+async function startRequestForDirectUploadUrl() {
+  //Wait for each call to finish and update the DOM
+  while(inDataverseCall === true) {
+    await sleep(500);
+  }
+  inDataverseCall=true;
+  //storageId is not the location - has a : separator and no path elements from dataset
+  //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+  requestDirectUploadUrl();
+}
+
 function uploadFileDirectly(url, storageId) {
-    console.log("UFD : " + directUploadEnabled + " : " + storageId);
+  inDataverseCall=false;
+  
   if(directUploadEnabled) {
     var thisFile=curFile;
     //Pick the 'first-in' pending file
@@ -184,7 +184,7 @@ function uploadFileDirectly(url, storageId) {
   }
 }
 
-var handlingUpload=false;
+var inDataverseCall=false;
 function reportUpload(storageId, file){
     console.log('S3 Upload complete for ' + file.name + ' : ' + storageId);
     if(directUploadReport) {
@@ -210,14 +210,14 @@ function reportUpload(storageId, file){
 }
 
 async function handleDirectUpload(storageId, file, md5) {
-        //Wait for each call to finish and update the DOM
-        while(handlingUpload === true) {
-          await sleep(500);
-        }                                                                                                                                                  console.log("Handling: " + storageId);
-        handlingUpload=true;
-        //storageId is not the location - has a : separator and no path elements from dataset
-        //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
-        handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
+  //Wait for each call to finish and update the DOM
+  while(inDataverseCall === true) {
+    await sleep(500);
+  }
+  inDataverseCall=true;
+  //storageId is not the location - has a : separator and no path elements from dataset
+  //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
+  handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
 }
 
 function removeErrors() {
@@ -274,7 +274,7 @@ function uploadFinished(fileupload) {
 }
 
 function directUploadFinished() {
-  handlingUpload=false;
+  inDataverseCall=false;
   numDone = finishFile();
   var total = curFile;
   var inProgress = filesInProgress;
@@ -307,6 +307,8 @@ function uploadFailure(jqXHR, upid, filename) {
   // but others, (Firefox) don't support this. The calls below retrieve the status and other info
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
 
+  inDataverseCall=false;
+  
   //Retrieve the error number (status) and related explanation (statusText)
   var status = 0;
   var statusText =null;
