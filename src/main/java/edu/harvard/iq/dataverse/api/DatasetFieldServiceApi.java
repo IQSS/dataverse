@@ -234,7 +234,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         }
     }
 
-    private enum HeaderType {
+    public enum HeaderType {
         METADATABLOCK, DATASETFIELD, CONTROLLEDVOCABULARY
     }
 
@@ -335,7 +335,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      * @param message
      * @return
      */
-    private String getGeneralErrorMessage(HeaderType header, int lineNumber, String message) {
+    public String getGeneralErrorMessage(HeaderType header, int lineNumber, String message) {
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());
         arguments.add(String.valueOf(lineNumber));
@@ -350,28 +350,23 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      * @param e
      * @return
      */
-    private String getArrayIndexOutOfBoundMessage(HeaderType header,
-                                                  int lineNumber,
-                                                  ArrayIndexOutOfBoundsException e) {
+    public String getArrayIndexOutOfBoundMessage(HeaderType header,
+                                                 int lineNumber,
+                                                 ArrayIndexOutOfBoundsException e) {
 
         List<String> columns = getColumnsByHeader(header);
         int wrongIndex = Integer.parseInt(e.getMessage());
 
         String column = columns.get(wrongIndex - 1);
-        System.err.println("column: " + column);
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());
         arguments.add(String.valueOf(lineNumber));
         arguments.add(column);
         arguments.add(String.valueOf(wrongIndex + 1));
-        return BundleUtil.getStringFromBundle("api.admin.datasetfield.load.ArrayIndexOutOfBoundMessage", arguments);
-
-        /*
-        return String.format(
-          "Error parsing metadata block in %s part, line #%d: missing '%s' column (#%d)",
-          header, lineNumber, column, wrongIndex + 1
+        return BundleUtil.getStringFromBundle(
+            "api.admin.datasetfield.load.ArrayIndexOutOfBoundMessage",
+            arguments
         );
-         */
     }
 
     /**
