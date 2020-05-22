@@ -67,20 +67,6 @@ public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
     
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-    
-    private EntityManagerFactory entityManagerFactory;
-
-    @Before
-    public void init() {
-        entityManagerFactory = Persistence.createEntityManagerFactory( "VDCNet-ejbPU" );
-    }
-
-    @After
-    public void destroy() {
-        entityManagerFactory.close();
-    }
     
 
     @BeforeClass
