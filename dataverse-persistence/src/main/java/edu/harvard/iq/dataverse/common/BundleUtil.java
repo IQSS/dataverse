@@ -28,6 +28,9 @@ public class BundleUtil {
 
     // -------------------- LOGIC --------------------
 
+    /**
+     * @return value or empty string if not found.
+     */
     public static String getStringFromBundle(String key) {
         return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, getCurrentLocale());
     }

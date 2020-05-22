@@ -8,19 +8,27 @@ package edu.harvard.iq.dataverse.persistence.datafile.ingest;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Leonid Andreev
@@ -52,8 +60,12 @@ public class IngestReport implements Serializable {
     @JoinColumn(nullable = false)
     private DataFile dataFile;
 
-    @Lob
-    private String report;
+    @Enumerated(EnumType.STRING)
+    private IngestError errorKey;
+
+    @ElementCollection
+    @OrderColumn
+    private List<String> errorArguments = new ArrayList<>();
 
     private int type;
 
@@ -89,12 +101,12 @@ public class IngestReport implements Serializable {
         this.status = INGEST_STATUS_FAILURE;
     }
 
-    public String getReport() {
-        return report;
+    public IngestError getErrorKey() {
+        return errorKey;
     }
 
-    public void setReport(String report) {
-        this.report = report;
+    public void setErrorKey(IngestError errorKey) {
+        this.errorKey = errorKey;
     }
 
     public DataFile getDataFile() {
@@ -119,6 +131,44 @@ public class IngestReport implements Serializable {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public List<String> getErrorArguments() {
+        return errorArguments;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    public String getIngestReportMessage() {
+
+        return Optional.ofNullable(errorKey)
+                .orElse(IngestError.UNKNOWN_ERROR)
+                .getErrorMessage(Optional.ofNullable(errorArguments).
+                        orElseGet(Collections::emptyList));
+    }
+
+    public static IngestReport createIngestFailureReport(DataFile dataFile, IngestException ingestException) {
+        return createIngestFailureReport(dataFile,
+                                         ingestException.getErrorKey(),
+                                         ingestException.getErrorArguments().toArray(new String[0]));
+
+    }
+
+    public static IngestReport createIngestFailureReport(DataFile dataFile, IngestError errorKey, String... errorArguments) {
+        List<String> args = Optional.ofNullable(errorArguments).map(Arrays::asList).orElseGet(Collections::emptyList);
+
+        return createIngestFailureReport(dataFile, errorKey, args);
+    }
+
+    public static IngestReport createIngestFailureReport(DataFile dataFile, IngestError errorKey, List<String> errorArguments) {
+
+        IngestReport errorReport = new IngestReport();
+        errorReport.setFailure();
+        errorReport.setErrorKey(errorKey);
+        errorReport.setDataFile(dataFile);
+        errorReport.getErrorArguments().addAll(errorArguments);
+
+        return errorReport;
     }
 
     @Override

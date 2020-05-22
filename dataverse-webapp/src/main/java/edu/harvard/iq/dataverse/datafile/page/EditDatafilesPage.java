@@ -1394,11 +1394,11 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Check for ingest warnings
             // -----------------------------------------------------------
             if (dataFile.isIngestProblem()) {
-                if (dataFile.getIngestReportMessage() != null) {
+                if (dataFile.getIngestReport() != null) {
                     if (warningMessage == null) {
-                        warningMessage = dataFile.getIngestReportMessage();
+                        warningMessage = dataFile.getIngestReport().getIngestReportMessage();
                     } else {
-                        warningMessage = warningMessage.concat("; " + dataFile.getIngestReportMessage());
+                        warningMessage = warningMessage.concat("; " + dataFile.getIngestReport().getIngestReportMessage());
                     }
                 }
                 dataFile.setIngestDone();

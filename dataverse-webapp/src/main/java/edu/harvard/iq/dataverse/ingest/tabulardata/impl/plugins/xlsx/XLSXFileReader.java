@@ -20,12 +20,13 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.xlsx;
 
 
-import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -50,6 +51,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -96,17 +98,17 @@ public class XLSXFileReader extends TabularDataFileReader {
         try {
             processSheet(stream, dataTable, firstPassWriter);
         } catch (Exception ex) {
-            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.parse", Arrays.asList(ex.getMessage())));
+            dbglog.log(Level.FINE, "Could not parse Excel/XLSX spreadsheet.", ex);
+            throw new IngestException(IngestError.EXCEL_PARSE);
         }
 
         if (dataTable.getCaseQuantity() == null || dataTable.getCaseQuantity().intValue() < 1) {
-            String errorMessage;
+
             if (dataTable.getVarQuantity() == null || dataTable.getVarQuantity().intValue() < 1) {
-                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.norows");
+                throw new IngestException(IngestError.EXCEL_NO_ROWS);
             } else {
-                errorMessage = BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.onlyonerow");
+                throw new IngestException(IngestError.EXCEL_ONLY_ONE_ROW);
             }
-            throw new IOException(errorMessage);
         }
 
         // 2nd pass:
@@ -129,16 +131,23 @@ public class XLSXFileReader extends TabularDataFileReader {
             valueTokens = line.split("" + delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.failed", Arrays.asList(Integer.toString(lineCounter + 1))));
+
+                throw new IngestException(IngestError.EXCEL_READ_FAIL,
+                                          Integer.toString(lineCounter + 1));
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.mismatch", Arrays.asList(Integer.toString(lineCounter + 1), Integer.toString(varQnty), Integer.toString(valueTokens.length))));
+
+                throw new IngestException(IngestError.EXCEL_MISMATCH,
+                                          Arrays.asList(Integer.toString(lineCounter + 1),
+                                                        Integer.toString(varQnty),
+                                                        Integer.toString(valueTokens.length)));
             }
 
             for (int i = 0; i < varQnty; i++) {
                 if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
-                    if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase("NA")) {
+                    if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase(
+                            "NA")) {
                         // Missing value - represented as an empty string in 
                         // the final tab file
                         caseRow[i] = "";
@@ -161,7 +170,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                             Double testDoubleValue = new Double(valueTokens[i]);
                             caseRow[i] = testDoubleValue.toString();
                         } catch (Exception ex) {
-                            throw new IOException("Failed to parse a value recognized as numeric in the first pass! column: " + i + ", value: " + valueTokens[i]);
+                            throw new IngestException(IngestError.EXCEL_NUMERIC_PARSE, String.valueOf(i), valueTokens[i]);
                         }
                     }
                 } else {
@@ -199,7 +208,7 @@ public class XLSXFileReader extends TabularDataFileReader {
         finalWriter.close();
 
         if (dataTable.getCaseQuantity().intValue() != lineCounter) {
-            throw new IOException(BundleUtil.getStringFromBundle("xlsxfilereader.ioexception.linecount"));
+            throw new IngestException(IngestError.EXCEL_LINE_COUNT);
         }
 
         dataTable.setUnf("UNF:6:NOTCALCULATED");

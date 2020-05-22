@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -80,7 +81,7 @@ public class NewDTAFileReaderTest {
         assertEquals(expected, FileUtils.readFileToString(result.getTabDelimitedFile()));
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IngestException.class)
     public void testNull() throws IOException {
         instance = new NewDTAFileReader(null, 117);
         TabularDataIngest result = instance.read(null, new File(""));

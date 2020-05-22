@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringUtils;
 
@@ -514,7 +516,7 @@ public class DTAFileReader extends TabularDataFileReader {
         dbgLog.info("***** DTAFileReader: read() start *****");
 
         if (dataFile != null) {
-            throw new IOException("this plugin does not support external raw data files");
+            throw new IngestException(IngestError.PLUGIN_RAW_FILES);
         }
 
         try {
@@ -529,7 +531,7 @@ public class DTAFileReader extends TabularDataFileReader {
 
             ingesteddata.setDataTable(dataTable);
         } catch (IllegalArgumentException iaex) {
-            throw new IOException(iaex.getMessage());
+            throw new IngestException(IngestError.UNKNOWN_ERROR, iaex);
         }
 
         dbgLog.info("***** DTAFileReader: read() end *****");

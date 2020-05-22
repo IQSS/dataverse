@@ -27,6 +27,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.VariableCategory;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -63,6 +65,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -195,10 +198,6 @@ public class PORFileReader extends TabularDataFileReader {
 
         try {
             bfReader = new BufferedReader(new InputStreamReader(new FileInputStream(tempPORfile.getAbsolutePath()), StandardCharsets.US_ASCII));
-            if (bfReader == null) {
-                dbgLog.fine("bfReader is null");
-                throw new IOException("bufferedReader is null");
-            }
 
             decodeSec2(bfReader);
 
@@ -211,7 +210,7 @@ public class PORFileReader extends TabularDataFileReader {
                 dbgLog.fine("////////////////////// headerId=" + headerId + "//////////////////////");
 
                 if (headerId.equals("Z")) {
-                    throw new IOException("reading failure: wrong headerId(Z) here");
+                    throw new IngestException(IngestError.WRONG_HEADER);
                 }
 
                 if (headerId.equals("F")) {
@@ -243,7 +242,7 @@ public class PORFileReader extends TabularDataFileReader {
                     bfReader.close();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                dbgLog.log(Level.SEVERE, "", ex);
             }
 
             if (tempPORfile.exists()) {

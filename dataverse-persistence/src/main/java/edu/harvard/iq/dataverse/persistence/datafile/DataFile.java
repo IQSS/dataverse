@@ -337,15 +337,6 @@ public class DataFile extends DvObject implements Comparable {
         this.ingestRequest = ingestRequest;
     }
 
-    public String getIngestReportMessage() {
-        if (ingestReports != null && ingestReports.size() > 0) {
-            if (ingestReports.get(0).getReport() != null && !"".equals(ingestReports.get(0).getReport())) {
-                return ingestReports.get(0).getReport();
-            }
-        }
-        return "Ingest failed. No further information is available.";
-    }
-
     public boolean isTabularData() {
         return getDataTables() != null && getDataTables().size() > 0;
     }

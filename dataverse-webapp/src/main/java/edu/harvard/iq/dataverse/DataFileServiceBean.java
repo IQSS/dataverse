@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -33,6 +34,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -64,16 +67,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
+import static edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport.createIngestFailureReport;
 import static edu.harvard.iq.dataverse.util.FileUtil.calculateChecksum;
 import static edu.harvard.iq.dataverse.util.FileUtil.canIngestAsTabular;
-import static edu.harvard.iq.dataverse.util.FileUtil.createIngestFailureReport;
 import static edu.harvard.iq.dataverse.util.FileUtil.determineFileType;
 import static edu.harvard.iq.dataverse.util.FileUtil.getFilesTempDirectory;
 
@@ -87,7 +88,7 @@ import static edu.harvard.iq.dataverse.util.FileUtil.getFilesTempDirectory;
 @Named
 public class DataFileServiceBean implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(DataFileServiceBean.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(DataFileServiceBean.class.getCanonicalName());
     @EJB
     DvObjectServiceBean dvObjectService;
     @EJB
@@ -180,7 +181,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 //                return findCheapAndEasy(qr.longValue());
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error finding datafile by storageID and DataSetVersion: " + e.getMessage());
+            logger.error("Error finding datafile by storageID and DataSetVersion: " + e.getMessage(), e);
             return null;
         }
     }
@@ -601,21 +602,21 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         UUID uid = UUID.randomUUID();
 
-        logger.log(Level.FINE, "UUID value: {0}", uid.toString());
+        logger.info("UUID value: {0}", uid.toString());
 
         // last 6 bytes, of the random UUID, in hex: 
 
         String hexRandom = uid.toString().substring(24);
 
-        logger.log(Level.FINE, "UUID (last 6 bytes, 12 hex digits): {0}", hexRandom);
+        logger.info("UUID (last 6 bytes, 12 hex digits): {0}", hexRandom);
 
         String hexTimestamp = Long.toHexString(new Date().getTime());
 
-        logger.log(Level.FINE, "(not UUID) timestamp in hex: {0}", hexTimestamp);
+        logger.info("(not UUID) timestamp in hex: {0}", hexTimestamp);
 
         String storageIdentifier = hexTimestamp + "-" + hexRandom;
 
-        logger.log(Level.FINE, "timestamp/UUID hybrid: {0}", storageIdentifier);
+        logger.info("timestamp/UUID hybrid: {0}", storageIdentifier);
         return storageIdentifier;
     }
 
@@ -649,7 +650,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If this file already has the "thumbnail generated" flag set,
         // we'll just trust that:
         if (file.isPreviewImageAvailable()) {
-            logger.fine("returning true");
+            logger.info("returning true");
             return true;
         }
 
@@ -943,7 +944,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         if (!df.isReleased()) {
             // An unpublished SHOULD NOT have a replacment
             String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
-            logger.severe(errMsg);
+            logger.error(errMsg);
 
             throw new Exception(errMsg);
         } else if (dataFiles.size() == 1) {
@@ -951,7 +952,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
 
             String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
-            logger.severe(errMsg);
+            logger.error(errMsg);
 
             throw new Exception(errMsg);
         }
@@ -980,7 +981,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         } else if (df.getPreviousDataFileId() < 1) {
             String errMSg = "Stop! previousDataFileId should either be null or a number greater than 0";
-            logger.severe(errMSg);
+            logger.error(errMSg);
             return false;
             // blow up -- this shouldn't happen!
             //throw new FileReplaceException(errMSg);
@@ -1143,8 +1144,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             try {
                 finalizeFileDelete(dataFileId, storageLocation, new DataAccess());
             } catch (IOException ioex) {
-                logger.warning("Failed to delete the physical file associated with the deleted datafile id="
-                                       + dataFileId + ", storage location: " + storageLocation);
+                logger.warn("Failed to delete the physical file associated with the deleted datafile id="
+                                       + dataFileId + ", storage location: " + storageLocation, ioex);
             }
         });
     }
@@ -1240,7 +1241,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     public List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
-        String warningMessage = null;
+        IngestError errorKey = null;
 
         // save the file, in the temporary location for now:
         Path tempFile = null;
@@ -1253,7 +1254,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             // the DataStore framework for this - the assumption is that
             // temp files will always be stored on the local filesystem.
             //          -- L.A. Jul. 2014
-            logger.fine("Will attempt to save the file as: " + tempFile.toString());
+            logger.info("Will attempt to save the file as: " + tempFile.toString());
             Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
             // A file size check, before we do anything else:
@@ -1272,7 +1273,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             throw new IOException("Temp directory is not configured.");
         }
-        logger.fine("mime type supplied: " + suppliedContentType);
+        logger.info("mime type supplied: " + suppliedContentType);
         // Let's try our own utilities (Jhove, etc.) to determine the file type
         // of the uploaded file. (We may already have a mime type supplied for this
         // file - maybe the type that the browser recognized on upload; or, if
@@ -1284,7 +1285,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         String finalType = null;
         try {
             recognizedType = determineFileType(tempFile.toFile(), fileName);
-            logger.fine("File utility recognized the file as " + recognizedType);
+            logger.info("File utility recognized the file as " + recognizedType);
             if (recognizedType != null && !recognizedType.equals("")) {
                 // is it any better than the type that was supplied to us,
                 // if any?
@@ -1323,7 +1324,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             }
 
         } catch (Exception ex) {
-            logger.warning("Failed to run the file utility mime type check on file " + fileName);
+            logger.warn("Failed to run the file utility mime type check on file " + fileName, ex);
         }
 
         if (finalType == null) {
@@ -1373,8 +1374,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 try {
                     tempFile.toFile().delete();
                 } catch (SecurityException ex) {
-                    // (this is very non-fatal)
-                    logger.warning("Failed to delete temporary file " + tempFile.toString());
+                    logger.warn("Failed to delete temporary file " + tempFile.toString(), ex);
                 }
 
                 datafiles.add(datafile);
@@ -1414,11 +1414,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 }
                 */
 
-                if (charset != null) {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()), charset);
-                } else {
-                    unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
-                }
+                unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
 
                 while (true) {
                     try {
@@ -1430,8 +1426,8 @@ public class DataFileServiceBean implements java.io.Serializable {
                         // but that's what happens if the file name of the next
                         // entry is not valid in the current CharSet.
                         //      -- L.A.
-                        warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.unpack.failure");
-                        logger.warning("Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.");
+                        errorKey = IngestError.UNZIP_FAIL;
+                        logger.warn("Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.", iaex);
                         throw new IOException();
                     }
 
@@ -1443,13 +1439,13 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                     if (!zipEntry.isDirectory()) {
                         if (datafiles.size() > fileNumberLimit) {
-                            logger.warning("Zip upload - too many files.");
-                            warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.uploadFilesLimit.exceeded", fileNumberLimit);
+                            logger.warn("Zip upload - too many files.");
+                            errorKey = IngestError.UNZIP_FILE_LIMIT_FAIL;
                             throw new IOException();
                         }
 
                         String fileEntryName = zipEntry.getName();
-                        logger.fine("ZipEntry, file: " + fileEntryName);
+                        logger.info("ZipEntry, file: " + fileEntryName);
 
                         if (fileEntryName != null && !fileEntryName.equals("")) {
 
@@ -1473,7 +1469,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                                     // slashes with a single slash:
                                     String directoryName = fileEntryName.replaceFirst("[\\/][\\/]*[^\\/]*$", "").replaceFirst("^[\\/]*", "").replaceAll("[\\/][\\/]*", "/");
                                     if (!"".equals(directoryName)) {
-                                        logger.fine("setting the directory label to " + directoryName);
+                                        logger.info("setting the directory label to " + directoryName);
                                         datafile.getFileMetadata().setDirectoryLabel(directoryName);
                                     }
                                 }
@@ -1487,12 +1483,12 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                                     try {
                                         recognizedType = determineFileType(new File(tempFileName), shortName);
-                                        logger.fine("File utility recognized unzipped file as " + recognizedType);
+                                        logger.info("File utility recognized unzipped file as " + recognizedType);
                                         if (recognizedType != null && !recognizedType.equals("")) {
                                             datafile.setContentType(recognizedType);
                                         }
                                     } catch (Exception ex) {
-                                        logger.warning("Failed to run the file utility mime type check on file " + fileName);
+                                        logger.warn("Failed to run the file utility mime type check on file " + fileName, ex);
                                     }
 
                                     datafiles.add(datafile);
@@ -1508,15 +1504,15 @@ public class DataFileServiceBean implements java.io.Serializable {
                 // just clear the datafiles list and let
                 // ingest default to creating a single DataFile out
                 // of the unzipped file.
-                logger.warning("Unzipping failed; rolling back to saving the file as is.");
-                if (warningMessage == null) {
-                    warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.unzip.failure");
+                logger.warn("Failed to unzip the file. Saving the file as is.", ioex);
+                if (errorKey == null) {
+                    errorKey = IngestError.UNZIP_FAIL;
                 }
 
                 datafiles.clear();
             } catch (FileExceedsMaxSizeException femsx) {
-                logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                warningMessage = BundleUtil.getStringFromBundle("dataset.file.zip.uploadFileSizeLimit.exceeded");
+                logger.warn("One of the unzipped files exceeds the size limit resorting to saving the file as is, unzipped.", femsx);
+                errorKey = IngestError.UNZIP_SIZE_FAIL;
                 datafiles.clear();
             } finally {
                 if (unZippedIn != null) {
@@ -1546,7 +1542,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     Files.delete(tempFile);
                 } catch (IOException ioex) {
                     // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                    logger.warn("Could not remove temp file " + tempFile.getFileName().toString(), ioex);
                 }
                 // and return:
                 return datafiles;
@@ -1564,7 +1560,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             boolean didProcessWork = shpIngestHelper.processFile();
             if (!(didProcessWork)) {
-                logger.severe("Processing of zipped shapefile failed.");
+                logger.error("Processing of zipped shapefile failed.");
                 return null;
             }
 
@@ -1573,7 +1569,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     FileInputStream finalFileInputStream = new FileInputStream(finalFile);
                     finalType = determineContentType(finalFile);
                     if (finalType == null) {
-                        logger.warning("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
+                        logger.warn("Content type is null; but should default to 'MIME_TYPE_UNDETERMINED_DEFAULT'");
                         continue;
                     }
 
@@ -1583,13 +1579,13 @@ public class DataFileServiceBean implements java.io.Serializable {
                     if (new_datafile != null) {
                         datafiles.add(new_datafile);
                     } else {
-                        logger.severe("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
+                        logger.error("Could not add part of rezipped shapefile. new_datafile was null: " + finalFile.getName());
                     }
                     finalFileInputStream.close();
 
                 }
             } catch (FileExceedsMaxSizeException femsx) {
-                logger.severe("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage());
+                logger.error("One of the unzipped shape files exceeded the size limit; giving up. " + femsx.getMessage(), femsx);
                 datafiles.clear();
             }
 
@@ -1602,14 +1598,14 @@ public class DataFileServiceBean implements java.io.Serializable {
                     Files.delete(tempFile);
                 } catch (IOException ioex) {
                     // do nothing - it's just a temp file.
-                    logger.warning("Could not remove temp file " + tempFile.getFileName().toString());
+                    logger.warn("Could not remove temp file " + tempFile.getFileName().toString(), ioex);
                 } catch (SecurityException se) {
-                    logger.warning("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
-                                           + se.getMessage());
+                    logger.warn("Unable to delete: " + tempFile.toString() + "due to Security Exception: "
+                                           + se.getMessage(), se);
                 }
                 return datafiles;
             } else {
-                logger.severe("No files added from directory of rezipped shapefiles");
+                logger.error("No files added from directory of rezipped shapefiles");
             }
             return null;
 
@@ -1620,10 +1616,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
         DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, checksumType);
 
-        if (datafile != null && tempFile.toFile() != null) {
+        if (datafile != null) {
 
-            if (warningMessage != null) {
-                createIngestFailureReport(datafile, warningMessage);
+            if (errorKey != null) {
+
+                if (errorKey.equals(IngestError.UNZIP_FILE_LIMIT_FAIL) && fileSizeLimit != null) {
+                    datafile.setIngestReport(createIngestFailureReport(datafile, errorKey, fileSizeLimit.toString()));
+                } else {
+                    datafile.setIngestReport(createIngestFailureReport(datafile, errorKey));
+                }
+
                 datafile.SetIngestProblem();
             }
             datafiles.add(datafile);
@@ -1724,7 +1726,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             datafile.setChecksumType(checksumType);
             datafile.setChecksumValue(calculateChecksum(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier(), datafile.getChecksumType()));
         } catch (Exception cksumEx) {
-            logger.warning("Could not calculate " + checksumType + " signature for the new file " + fileName);
+            logger.warn("Could not calculate " + checksumType + " signature for the new file " + fileName, cksumEx);
         }
 
         return datafile;
@@ -1741,7 +1743,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String tempDirectory = getFilesTempDirectory();
         if (tempDirectory == null) {
-            logger.severe("Failed to retrieve tempDirectory, null was returned");
+            logger.error("Failed to retrieve tempDirectory, null was returned");
             return null;
         }
         String datestampedFileName = "shp_" + new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSS").format(new Date());
@@ -1756,7 +1758,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             try {
                 Files.createDirectories(Paths.get(datestampedFolderName));
             } catch (IOException ex) {
-                logger.severe("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName);
+                logger.error("Failed to create temp. directory to unzip shapefile: " + datestampedFolderName, ex);
                 return null;
             }
         }
@@ -1774,7 +1776,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         try {
             contentType = determineFileType(fileObject, fileObject.getName());
         } catch (Exception ex) {
-            logger.warning("FileUtil.determineFileType failed for file with name: " + fileObject.getName());
+            logger.warn("FileUtil.determineFileType failed for file with name: " + fileObject.getName(), ex);
             contentType = null;
         }
 

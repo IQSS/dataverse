@@ -881,9 +881,9 @@ public class AddReplaceFileHelper {
             // (1) Check for ingest warnings
             // -----------------------------------------------------------
             if (df.isIngestProblem()) {
-                if (df.getIngestReportMessage() != null) {
+                if (df.getIngestReport() != null) {
                     // may collect multiple error messages
-                    this.addError(df.getIngestReportMessage());
+                    this.addError(df.getIngestReport().getIngestReportMessage());
                 }
                 df.setIngestDone();
             }

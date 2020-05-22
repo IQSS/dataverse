@@ -19,9 +19,10 @@
 */
 package edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.rdata;
 
-import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
@@ -68,13 +69,12 @@ public class RTabFileParser implements java.io.Serializable {
         try {
             varQnty = dataTable.getVarQuantity().intValue();
         } catch (Exception ex) {
-            //return -1;
-            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser1"));
+
+            throw new IngestException(IngestError.RTAB_VARQNTY_MISSING, ex);
         }
 
         if (varQnty == 0) {
-            //return -1;
-            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.parser2"));
+            throw new IngestException(IngestError.RTAB_VARQNTY_ZERO);
         }
 
         dbgLog.fine("CSV reader; varQnty: " + varQnty);
@@ -142,12 +142,14 @@ public class RTabFileParser implements java.io.Serializable {
             valueTokens = line.split("" + delimiterChar, -2);
 
             if (valueTokens == null) {
-                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.failed", Arrays.asList(Integer.toString(lineCounter + 1))));
+                throw new IngestException(IngestError.RTAB_FAIL, Integer.toString(lineCounter + 1));
 
             }
 
             if (valueTokens.length != varQnty) {
-                throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.mismatch", Arrays.asList(Integer.toString(lineCounter + 1), Integer.toString(varQnty), Integer.toString(valueTokens.length))));
+                throw new IngestException(IngestError.RTAB_MISMATCH, Arrays.asList(Integer.toString(lineCounter + 1),
+                                                                                       Integer.toString(varQnty),
+                                                                                       Integer.toString(valueTokens.length)));
             }
 
             //dbgLog.fine("case: "+lineCounter);
@@ -239,10 +241,10 @@ public class RTabFileParser implements java.io.Serializable {
                             // Legit case - Missing Value!
                             caseRow[i] = charToken;
                         } else {
-                            throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.boolean", Arrays.asList(Integer.toString(+i))) + charToken);
+                            throw new IngestException(IngestError.RTAB_BOOLEAN_FAIL, +i + charToken);
                         }
                     } else {
-                        throw new IOException(BundleUtil.getStringFromBundle("rtabfileparser.ioexception.read", Arrays.asList(Integer.toString(i))));
+                        throw new IngestException(IngestError.RTAB_UNREDABLE_BOOLEAN, Integer.toString(i));
                     }
 
 

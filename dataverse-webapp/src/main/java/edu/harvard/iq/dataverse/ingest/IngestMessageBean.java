@@ -23,6 +23,7 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestError;
 import edu.harvard.iq.dataverse.persistence.datafile.ingest.IngestReport;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
@@ -98,11 +99,7 @@ public class IngestMessageBean implements MessageListener {
                             datafile.SetIngestProblem();
                             IngestReport errorReport = new IngestReport();
                             errorReport.setFailure();
-                            if (ex.getMessage() != null) {
-                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database: " + ex.getMessage());
-                            } else {
-                                errorReport.setReport("Ingest succeeded, but failed to save the ingested tabular data in the database; no further information is available");
-                            }
+                            errorReport.setErrorKey(IngestError.DB_FAIL);
                             errorReport.setDataFile(datafile);
                             datafile.setIngestReport(errorReport);
                             datafile.setDataTables(null);
