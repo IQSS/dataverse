@@ -16,11 +16,12 @@ public class PidUtilTest {
     public void testGetDoi() throws IOException {
         String username = System.getenv("DataCiteUsername");
         String password = System.getenv("DataCitePassword");
-        String baseUrl = "https://api.test.datacite.org/dois/";
+        String baseUrl = "https://api.test.datacite.org";
         String persistentId = "";
-        persistentId = "10.70122/FK2/9BXT5O"; // findable
-        persistentId = "10.70122/FK2/DOES-NOT-EXIST"; // does not exist
-        persistentId = "10.70122/87W6-F672"; // draft
+        persistentId = "doi:10.70122/FK2/9BXT5O"; // findable
+        persistentId = "doi:10.70122/FK2/DOES-NOT-EXIST"; // does not exist
+        persistentId = "doi:10.70122/87W6-F672"; // draft
+        persistentId = "doi:10.70122/87W6-F672"; // draft
         JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
         String out = JsonUtil.prettyPrint(result.build());
         System.out.println("out: " + out);

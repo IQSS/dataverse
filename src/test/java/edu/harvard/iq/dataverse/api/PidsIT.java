@@ -22,8 +22,8 @@ public class PidsIT {
     @Test
     public void testGetPid() {
         String pid = "";
-        pid = "10.70122/FK2/9BXT5O"; // findable
-        pid = "10.70122/FK2/DNEUDP"; // draft
+        pid = "doi:10.70122/FK2/9BXT5O"; // findable
+        pid = "doi:10.70122/FK2/DNEUDP"; // draft
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();

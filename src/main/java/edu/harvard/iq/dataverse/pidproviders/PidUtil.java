@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
+import edu.harvard.iq.dataverse.GlobalId;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,9 +14,10 @@ import javax.json.JsonObjectBuilder;
 public class PidUtil {
 
     public static JsonObjectBuilder queryDoi(String persistentId, String baseUrl, String username, String password) {
+        String doi = acceptOnlyDoi(persistentId);
         URL url;
         try {
-            url = new URL(baseUrl + persistentId);
+            url = new URL(baseUrl + "/dois/" + doi);
         } catch (MalformedURLException ex) {
             return Json.createObjectBuilder().add("response", ex.getLocalizedMessage());
         }
@@ -58,6 +60,18 @@ public class PidUtil {
                 .add("id", id)
                 .add("state", state);
         return ret;
+    }
+
+    /**
+     * @param PID in the form doi:10.7910/DVN/TJCLKP
+     * @return DOI in the form 10.7910/DVN/TJCLKP (no "doi:")
+     */
+    private static String acceptOnlyDoi(String persistentId) {
+        GlobalId globalId = new GlobalId(persistentId);
+        if (!GlobalId.DOI_PROTOCOL.equals(globalId.getProtocol())) {
+            throw new IllegalArgumentException("Only doi: is supported.");
+        }
+        return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
 
 }

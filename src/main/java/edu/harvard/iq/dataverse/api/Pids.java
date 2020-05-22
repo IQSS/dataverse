@@ -39,7 +39,7 @@ public class Pids extends AbstractApiBean {
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
             }
-            String baseUrl = System.getProperty("doi.baseurlstringnext") + "/dois/";
+            String baseUrl = System.getProperty("doi.baseurlstringnext");
             String username = System.getProperty("doi.username");
             String password = System.getProperty("doi.password");
             JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
