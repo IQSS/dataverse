@@ -1948,7 +1948,7 @@ public class DatasetsIT {
 
     }
     
-        @Test
+    @Test
     public void testLinkingDatasets() {
 
         Response createUser = UtilIT.createRandomUser();
@@ -1993,26 +1993,23 @@ public class DatasetsIT {
 
         UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
-        
+
         // Link dataset to second dataverse.
         //should fail if dataset is not published
         Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
-                .body("message", equalTo( BundleUtil.getStringFromBundle("dataset.link.not.available")))
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.available")))
                 .statusCode(FORBIDDEN.getStatusCode());
-        
-        
+
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
-        
+
         //Once published you should be able to link it
         linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
-
 
 //Experimental code for trying to trick test into thinking the dataset has been harvested
 /*
@@ -2041,9 +2038,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         linkDataset.prettyPrint();
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
- */
+         */
     }
 
-
-    
 }
