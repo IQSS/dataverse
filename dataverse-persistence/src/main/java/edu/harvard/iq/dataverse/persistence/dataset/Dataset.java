@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.link.DatasetLinkingDataver
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -42,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * @author skraffmiller
@@ -91,6 +93,32 @@ public class Dataset extends DvObjectContainer {
 
     public static final String TARGET_URL = "/citation?persistentId=";
     private static final long serialVersionUID = 1L;
+
+    /**
+     * DataFile tags presented by default
+     */
+    private enum BuiltInTag {
+        CODE ("code"),
+        DOCUMENTATION ("documentation"),
+        DATA ("data"),
+        CODEBOOK ("codebook"),
+        QUESTIONNAIRE ("questionnaire"),
+        DESCRIPTIVE_STATISTICS ("descriptiveStats");
+
+        private String name;
+
+        BuiltInTag(String name) {
+            this.name = name;
+        }
+
+        public String getLocaleName() {
+            return BundleUtil.getStringFromBundle("dataset.category." + StringUtils.trim(name));
+        }
+
+        public static Stream<BuiltInTag> stream() {
+            return Stream.of(BuiltInTag.values());
+        }
+    }
 
     @OneToMany(mappedBy = "owner", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @OrderBy("id")
@@ -415,17 +443,9 @@ public class Dataset extends DvObjectContainer {
     public Collection<String> getCategoriesByName() {
         Collection<String> ret = getCategoryNames();
 
-        // "Documentation", "Data" and "Code" are the 3 default categories that we 
-        // present by default:
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.documentation"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.documentation"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.data"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.data"));
-        }
-        if (!ret.contains(BundleUtil.getStringFromBundle("dataset.category.code"))) {
-            ret.add(BundleUtil.getStringFromBundle("dataset.category.code"));
-        }
+        BuiltInTag.stream()
+                .filter(tag -> !ret.contains(tag.getLocaleName()))
+                .forEach(tag -> ret.add(tag.getLocaleName()));
 
         return ret;
     }
