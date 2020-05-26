@@ -6,65 +6,81 @@
 
     <!--@elvariable id="roleAssignee" type="edu.harvard.iq.dataverse.persistence.user.RoleAssignee"-->
     
-    <p:dialog id="explicitGroupNewDialog" width="65%" header="#{bundle['dataverse.permissions.explicitGroupEditDialog.title.new']}" widgetVar="explicitGroupForm" modal="true">
+    <p:dialog id="explicitGroupNewDialog" header="#{bundle['dataverse.permissions.explicitGroupEditDialog.title.new']}" widgetVar="explicitGroupForm" modal="true">
         <p:fragment id="explicitGroupNewDialogContent">
+            <p:focus id="explicitGroupNewFocus" context="explicitGroupNewDialogContent" rendered="#{facesContext.validationFailed}" />
+            
             <div class="form-horizontal">
-                <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.help']}</p>
+                
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                    </div>
+                </div>
+                
                 <div class="form-group">
-                    <label for="explicitGroupName" class="col-sm-3 control-label">
-                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                    </label>
+                    <p:outputLabel for="explicitGroupName" class="col-sm-3 control-label" indicateRequired="false">
+                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupName']}
+                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                    </p:outputLabel>
                     <div class="col-sm-9">
-                        <p:panelGrid columns="1" styleClass="noBorders">
                             <p:inputText id="explicitGroupName" styleClass="form-control" value="#{manageGroupsPage.explicitGroupName}"
-                                         required="#{param['DO_GROUP_VALIDATION']}"
+                                         required="true"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupName.required']}"/>
                             <p:message for="explicitGroupName" display="text"/>
-                        </p:panelGrid>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="explicitGroupIdentifier" class="col-sm-3 control-label">
-                        #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}
-                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                    <div class="col-sm-3 control-label-with-tooltip">
+                        <p:outputLabel for="explicitGroupIdentifier" class="control-label" indicateRequired="false">
+                            #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        </p:outputLabel>
                         <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                              aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier']}"
                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.tip']}"></span>
-                    </label>
+                    </div>
                     <div class="col-sm-9">
-                        <p:panelGrid columns="1" styleClass="noBorders">
+                            <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText']}</p>
                             <p:inputText id="explicitGroupIdentifier" styleClass="form-control"
-										 value="#{manageGroupsPage.explicitGroupIdentifier}"
-                                         required="#{param['DO_GROUP_VALIDATION']}"
+                                         value="#{manageGroupsPage.explicitGroupIdentifier}"
+                                         required="true"
                                          requiredMessage="#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.required']}"
-                                         validator="#{manageGroupsPage.validateGroupIdentifier}"
-										 binding="#{manageGroupsPage.explicitGroupIdentifierField}"/>
+                                         validator="#{manageGroupsPage.validateGroupIdentifier}" />
                             <p:message for="explicitGroupIdentifier" display="text"/>
-                        </p:panelGrid>
-                        <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.groupIdentifier.helpText']}</p>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="newExplicitGroupDescription" class="col-sm-3 control-label">
+                    <p:outputLabel for="newExplicitGroupDescription" class="col-sm-3 control-label" indicateRequired="false">
                         #{bundle['dataverse.permissions.explicitGroupEditDialog.groupDescription']}
-                    </label>
-                    <div class="col-sm-6">
+                    </p:outputLabel>
+                    <div class="col-sm-9">
                         <h:inputTextarea id="newExplicitGroupDescription" styleClass="form-control" value="#{manageGroupsPage.newExplicitGroupDescription}"/>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="roleAssigneeName" class="col-sm-3 control-label">
+                    <p:outputLabel for="roleAssigneeName" class="col-sm-3 control-label" indicateRequired="false">
                         #{bundle['dataverse.permissions.explicitGroupEditDialog.roleAssigneeNames']}
-                    </label>
+                    </p:outputLabel>
                     <div class="col-sm-9">
                         <p:autoComplete id="roleAssigneeName" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
-                                        multiple="true" scrollHeight="180" forceSelection="true" 
-                                        minQueryLength="2" queryDelay="1000"                                      
-                                        groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"                                        
-                                        emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                                        multiple="true" scrollHeight="180"
+                                        minQueryLength="2" queryDelay="1000"
+                                        groupBy="#{roleAssignee.identifier.startsWith('@')?
+                                                    bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.groupBy.users'] :
+                                                    bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.groupBy.groups']}"
                                         value="#{manageGroupsPage.newExplicitGroupRoleAssignees}"
                                         completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                         var="roleAssignee" 
-                                        itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
+                                        styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
+                                        itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter"
+                                        
+                                        resultsMessage=" #{bundle['common.forms.autocomplete.resultsMessage']}"
+                                        emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                                        autoSelection="false"
+                                        autoHighlight="false"
+                                        forceSelection="true">
                             <p:column>
                                 <h:outputText value="#{roleAssignee.displayInfo.title}"/> 
                                 <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
@@ -75,22 +91,22 @@
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />
                         </p:autoComplete>
-                        <!-- tried handle_dropdown_popup_scroll() fix here, conflicts -->
                     </div>
                 </div>
             </div>
             <div class="button-block">
-                <p:commandLink type="button" styleClass="btn btn-default" 
+                <p:commandButton id="saveNewGroupButton" styleClass="btn btn-default" 
                                value="#{bundle['dataverse.permissions.explicitGroupEditDialog.createGroup']}"
                                actionListener="#{manageGroupsPage.createExplicitGroup}"
-                               update="explicitGroupNewDialogContent manage-groups-content manageGroupsMessage"
+                               process="explicitGroupNewDialogContent"
+                               update="explicitGroupNewDialogContent manage-groups-content"
                                oncomplete="if (args &amp;&amp; !args.validationFailed) {PF('explicitGroupForm').hide();}">
-                    <f:param name="DO_GROUP_VALIDATION" value="true"/>
-                </p:commandLink>
-                <p:commandLink type="button" styleClass="btn btn-default"
-                               oncomplete="PF('explicitGroupForm').hide()"
-                               update="manageGroupsForm"
+                </p:commandButton>
+                <p:commandButton type="button" styleClass="btn btn-default"
+                               onclick="PF('explicitGroupForm').hide();"
                                value="#{bundle.cancel}" />
+
+                <p:defaultCommand target="saveNewGroupButton" scope="explicitGroupNewDialog" />
             </div>
         </p:fragment>
     </p:dialog>

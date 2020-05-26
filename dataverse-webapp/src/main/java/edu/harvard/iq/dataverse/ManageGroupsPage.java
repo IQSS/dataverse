@@ -64,7 +64,6 @@ public class ManageGroupsPage implements java.io.Serializable {
     private String explicitGroupIdentifier = "";
     private String explicitGroupName = "";
     private String newExplicitGroupDescription = "";
-    private UIInput explicitGroupIdentifierField;
     private List<RoleAssignee> newExplicitGroupRoleAssignees = new LinkedList<>();
 
     // -------------------- CONSTRUCTORS --------------------
@@ -116,10 +115,6 @@ public class ManageGroupsPage implements java.io.Serializable {
         return explicitGroupIdentifier;
     }
 
-    public UIInput getExplicitGroupIdentifierField() {
-        return explicitGroupIdentifierField;
-    }
-
     public List<RoleAssignee> getNewExplicitGroupRoleAssignees() {
         return newExplicitGroupRoleAssignees;
     }
@@ -168,7 +163,7 @@ public class ManageGroupsPage implements java.io.Serializable {
     }
 
     public void viewSelectedGroup(ExplicitGroup selectedGroup) {
-        this.selectedGroup = selectedGroup;
+        this.selectedGroup = explicitGroupService.findByAlias(selectedGroup.getAlias());
 
         // initialize member list for autocomplete interface
         setSelectedGroupAddRoleAssignees(new LinkedList<>());
@@ -237,6 +232,7 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void removeMemberFromSelectedGroup(RoleAssignee ra) {
         selectedGroup.remove(ra);
+        selectedGroupRoleAssignees.remove(ra);
     }
 
     public List<RoleAssignee> completeRoleAssignee(String query) {
@@ -273,16 +269,9 @@ public class ManageGroupsPage implements java.io.Serializable {
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", args));
             })
             .onFailure(throwable -> {
-                if(throwable instanceof CreateExplicitGroupCommand.GroupAliasExistsException) {
-                    explicitGroupIdentifierField.setValid(false);
-                    FacesContext.getCurrentInstance().addMessage(explicitGroupIdentifierField.getClientId(),
-                            new FacesMessage(FacesMessage.SEVERITY_ERROR, throwable.getMessage(), null));
-                } else {
-                    logger.log(Level.WARNING, "Group creation failed", throwable);
-                    JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                            BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"),
-                            throwable.getMessage());
-                }
+                logger.log(Level.WARNING, "Group creation failed", throwable);
+                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR,
+                        BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"), "");
             })
         ;
     }
@@ -293,9 +282,10 @@ public class ManageGroupsPage implements java.io.Serializable {
             .onSuccess((eg) -> {
                 List<String> args = Arrays.asList(eg.get().getDisplayName());
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.save.success", args));
+                explicitGroups.set(explicitGroups.indexOf(eg.get()), eg.get());
             })
-            .onFailure(throwable -> JsfHelper.JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
-                    throwable.getMessage()))
+            .onFailure(throwable -> JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
+                    ""))
         ;
     }
 
@@ -304,8 +294,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         UIInput input = (UIInput) toValidate;
         input.setValid(true); // Optimistic approach
 
-        if (context.getExternalContext().getRequestParameterMap().get("DO_GROUP_VALIDATION") != null
-                && !StringUtils.isEmpty(value)) {
+        if (!StringUtils.isEmpty(value)) {
 
             // cheap test - regex
             if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", value)) {
@@ -350,10 +339,6 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void setExplicitGroupIdentifier(String explicitGroupName) {
         this.explicitGroupIdentifier = explicitGroupName;
-    }
-
-    public void setExplicitGroupIdentifierField(UIInput explicitGroupIdentifierField) {
-        this.explicitGroupIdentifierField = explicitGroupIdentifierField;
     }
 
     public void setNewExplicitGroupRoleAssignees(List<RoleAssignee> newExplicitGroupRoleAssignees) {

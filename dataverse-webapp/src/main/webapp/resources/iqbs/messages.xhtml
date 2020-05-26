@@ -64,15 +64,16 @@
                     </div>
                 </ui:fragment>
             </o:messages>
-    </p:outputPanel>
 
-    <o:messages id="successMessage" var="message" showDetail="true"
-                rendered="#{not empty facesContext.getMessageList('successMessage')}" redisplay="false">
-        <div class="alert alert-success" role="alert" aria-atomic="true">
-            <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{message.summary}</strong> –
-            <h:outputText escape="false" value="#{message.detail}"/>
-        </div>
-    </o:messages>
+        <o:messages id="successMessage" var="message" showDetail="true"
+                    rendered="#{not empty facesContext.getMessageList('successMessage')}" redisplay="false">
+            <div class="alert alert-success" role="alert" aria-atomic="true">
+                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{message.summary}</strong> –
+                <h:outputText escape="false" value="#{message.detail}"/>
+            </div>
+        </o:messages>
+    
+    </p:outputPanel>
     
     </div>
 </cc:implementation>

@@ -551,6 +551,8 @@ function reinitializePrimefacesComponentsJS() {
     if (PrimeFaces.widget.AutoComplete) {
         var originalAutocompleteInvokeItemSelectBehavior = PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior;
         var originalAutocompleteRemoveItem = PrimeFaces.widget.AutoComplete.prototype.removeItem;
+        var originalAutocompleteBindStaticEvents = PrimeFaces.widget.AutoComplete.prototype.bindStaticEvents;
+        
         
         PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior = function(event, itemValue) {
             originalAutocompleteInvokeItemSelectBehavior.apply(this, [event, itemValue]);
@@ -563,6 +565,18 @@ function reinitializePrimefacesComponentsJS() {
             if (this.cfg.multiple) {
                 this.displayAriaStatus(PrimeFaces.getLocaleSettings().ariaUnselectAutoComplete + $(item).text());
             }
+        }
+        PrimeFaces.widget.AutoComplete.prototype.bindStaticEvents = function() {
+            originalAutocompleteBindStaticEvents.apply(this);
+            
+            var $this = this;
+            
+            $( window ).scroll(function() {
+                var isActive = $this.panel.is(':visible');
+                if(isActive) {
+                    $this.alignPanel();
+                }
+            });
         }
     }
 }
@@ -843,23 +857,6 @@ function fixBodyWidth(dialogElement) {
         doc.css('width', dialog.width() + 'px');
         wrapper.css('max-width', document.documentElement.clientWidth + 'px');
     }
-}
-
-
-/*
- * fixes autoComplete dropdown in popups not moving with page scroll
- */
-function handle_dropdown_popup_scroll(){
-    $( window ).scroll(function() {
-        var isActive = $(".DropdownPopupPanel").is(':visible');
-        if(isActive) {
-            $(".DropdownPopupPanel").position({
-                my: "left top",
-                at: "left bottom",
-                of: $(".DropdownPopup")
-            });
-        }
-    });
 }
 
 /*

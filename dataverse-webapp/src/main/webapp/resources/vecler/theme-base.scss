@@ -633,6 +633,21 @@ textarea {
 	   color: $main-text-color;
     }
 }
+
+@media screen and (min-width: $screen-sm-min) {
+    .form-horizontal {
+        .control-label-with-tooltip {
+            text-align: right;
+        }
+        .control-label.section-title {
+            padding-top: 7px;
+        }
+    }
+}
+.form-horizontal .control-label-with-tooltip .control-label {
+    display: inline;
+}
+
 /* Overriding bootstrap defaults */
 legend.control-label {
     border-bottom: none;

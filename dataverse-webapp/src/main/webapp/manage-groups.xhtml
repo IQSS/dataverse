@@ -3,8 +3,10 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs">
 
 <!--@elvariable id="roleAssignee" type="edu.harvard.iq.dataverse.persistence.user.RoleAssignee"-->
 
@@ -18,34 +20,35 @@
         <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGroupsPage.dataverse, bundle['dataverse.manageGroups.pageTitle'])}"/>
     </f:metadata>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{bundle['dataverse.manageGroups.pageTitle']}"/>
+        <ui:param name="pageTitle" value="#{bundle['dataverse.manageGroups.pageTitle']} - #{manageGroupsPage.dataverse.name}"/>
         <ui:param name="dataverse" value="#{manageGroupsPage.dataverse}"/>
-        <ui:param name="showMessagePanel" value="false"/>
         <ui:define name="body">
+        
+            <h2 class="no-margin-top">#{bundle['dataverse.manageGroups.pageTitle']}</h2>
+            
             <h:form id="manageGroupsForm">
-                <p:fragment id="manageGroupsMessage">
-                    <div class="container messagePanel">
-                        <iqbs:messages collapsible="true" rendered="#{not facesContext.validationFailed}"/>
-                    </div>
-                </p:fragment>
+            
                 <div class="form-group clearfix">
                     <div class="pull-right">
-                        <p:commandLink type="button" id="createGroup" styleClass="btn btn-default"
+                        <p:commandLink id="createGroup" styleClass="btn btn-default"
                                        actionListener="#{manageGroupsPage.initExplicitGroupDialog}"
-                                       update="explicitGroupNewDialog" oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');">
-                            <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.manageGroups.createBtn']}
+                                       process="@this @widgetVar(explicitGroupForm)"
+                                       update="explicitGroupNewDialog"
+                                       oncomplete="PF('explicitGroupForm').show();handleResizeDialog('explicitGroupNewDialog');">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true" /> #{bundle['dataverse.manageGroups.createBtn']}
+                            <o:skipValidators />
                         </p:commandLink>
                     </div>
                 </div>
                 <h:panelGroup id="manage-groups-content" layout="block">
                     <div id="no-groups-message" class="panel panel-default" jsf:rendered="#{empty manageGroupsPage.explicitGroups}">
                         <div class="panel-body">
-                            <span class="help-block h3">#{bundle['dataverse.manageGroups.noGroups.why.header']}</span>
+                            <h3><span class="help-block h3">#{bundle['dataverse.manageGroups.noGroups.why.header']}</span></h3>
                             <ul>
                                 <li><h:outputText value="#{bundle['dataverse.manageGroups.noGroups.why.reason1']}" escape="false"/></li>
                                 <li><h:outputText value="#{bundle['dataverse.manageGroups.noGroups.why.reason2']}" escape="false"/></li>
                             </ul>
-                            <span class="help-block h3">#{bundle['dataverse.manageGroups.noGroups.how.header']}</span>
+                            <h3><span class="help-block h3">#{bundle['dataverse.manageGroups.noGroups.how.header']}</span></h3>
                             <ul>
                                 <li><h:outputText value="#{bundle['dataverse.manageGroups.noGroups.how.tip1']}" escape="false"/></li>
                                 <li>
@@ -76,19 +79,23 @@
                         <p:column width="30%" class="col-manage-action col-button-action text-center" headerText="#{bundle['dataverse.manageGroups.tab.header.action']}">
                             <div class="button-block">
                                 <div class="btn-group" role="group">
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGroupsPage.viewSelectedGroup(explicitGroup)}"
                                                    oncomplete="PF('viewGroup').show();"
-                                                   update=":manageGroupsForm"
+                                                   process="@this @widgetVar(viewGroup)"
+                                                   update="@widgetVar(viewGroup)"
+                                                   ariaLabel="#{bundle['dataverse.manageGroups.tab.action.btn.edit']} #{explicitGroup.displayName}"
                                                    title="#{bundle['dataverse.manageGroups.tab.action.btn.edit']}">
-                                        <span class="glyphicon glyphicon-edit"></span>
+                                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                                     </p:commandLink>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    action="#{manageGroupsPage.setSelectedGroup(explicitGroup)}"
                                                    oncomplete="PF('deleteConfirmation').show()"
+                                                   process="@this"
                                                    update=":manageGroupsForm"
+                                                   ariaLabel="#{bundle['dataverse.manageGroups.tab.action.btn.delete']} #{explicitGroup.displayName}"
                                                    title="#{bundle['dataverse.manageGroups.tab.action.btn.delete']}">
-                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                     </p:commandLink>
                                 </div>
                             </div>
@@ -100,16 +107,23 @@
                         <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                     </p>
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all" />
+                        <p:commandButton value="#{bundle.continue}" 
+                                actionListener="#{manageGroupsPage.deleteGroup()}"
+                                oncomplete="PF('deleteConfirmation').hide()"
+                                process="@this"
+                                update="@form" />
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
                     </div>
                 </p:dialog>
-                <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
+
+                <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.edit.dialog.header']}" widgetVar="viewGroup" modal="true">
                     <div class="form-horizontal">
+                        <p class="help-block">#{bundle['dataverse.permissions.explicitGroupEditDialog.help']}</p>
+                        
                         <div class="form-group">
-                            <label for="select_GroupName" class="col-sm-3 control-label">
-                                #{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.group']}
-                            </label>
+                            <div class="col-sm-3 control-label section-title">
+                                #{bundle['dataverse.manageGroups.edit.dialog.group']}
+                            </div>
                             <div class="col-sm-7">
                                 <p class="form-control-static">
                                     #{manageGroupsPage.selectedGroup.displayName}
@@ -117,20 +131,27 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="select_GroupMembers" class="col-sm-3 control-label">
-                                #{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupMembers']}
-                            </label>
+                            <p:outputLabel for="addRoleAssigneeName" class="col-sm-3 control-label">
+                                #{bundle['dataverse.manageGroups.edit.dialog.newGroupMembers']}
+                            </p:outputLabel>
                             <div class="col-sm-7">
-                                <p:autoComplete id="addRoleAssigneeName" placeholder="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.enterName']}"
-                                                multiple="true" scrollHeight="180" forceSelection="true"
+                                <p:autoComplete id="addRoleAssigneeName" placeholder="#{bundle['dataverse.manageGroups.edit.dialog.enterName']}"
+                                                multiple="true" scrollHeight="180"
                                                 minQueryLength="2" queryDelay="1000"
-                                                groupBy="#{roleAssignee.identifier.startsWith('@')?'Users':'Groups'}"
-                                                emptyMessage="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.invalidMsg']}"
+                                                groupBy="#{roleAssignee.identifier.startsWith('@')?
+                                                    bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.groupBy.users'] :
+                                                    bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.groupBy.groups']}"
                                                 value="#{manageGroupsPage.selectedGroupAddRoleAssignees}"
                                                 completeMethod="#{manageGroupsPage.completeRoleAssignee}"
                                                 var="roleAssignee"
                                                 styleClass="DropdownPopup" panelStyleClass="DropdownPopupPanel"
-                                                itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter">
+                                                itemLabel="#{roleAssignee.displayInfo.title}" itemValue="#{roleAssignee}" converter="roleAssigneeConverter"
+                                                
+                                                resultsMessage=" #{bundle['common.forms.autocomplete.resultsMessage']}"
+                                                emptyMessage="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.invalidMsg']}"
+                                                autoSelection="false"
+                                                autoHighlight="false"
+                                                forceSelection="true">
                                     <p:column>
                                         <h:outputText value="#{roleAssignee.displayInfo.title}"/>
                                         <h:outputText value=" (#{roleAssignee.displayInfo.affiliation})" rendered="#{!empty roleAssignee.displayInfo.affiliation}"/>
@@ -141,49 +162,52 @@
                                     <p:ajax process="@this" event="itemSelect" />
                                     <p:ajax process="@this" event="itemUnselect" />
                                 </p:autoComplete>
-                                <script type="text/javascript">
-                                    handle_dropdown_popup_scroll();
-                                </script>
-                                <!-- <p:message for="roleAssigneeName" display="text"/> -->
+                                <p:message for="addRoleAssigneeName" display="text"/>
                             </div>
                         </div>
                     </div>
                     <p:dataTable id="groupMembers"
                                  var="groupMember"
-                                 value="#{manageGroupsPage.getExplicitGroupMembers(manageGroupsPage.selectedGroup)}">
+                                 value="#{manageGroupsPage.selectedGroupRoleAssignees}"
+                                 emptyMessage="#{bundle['dataverse.manageGroups.nomembers']}">
                         <!-- Member Name -->
                         <p:column width="31%"
                                   sortBy="#{groupMember.getDisplayInfo().getTitle()}"
-                                  headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.name']}">
+                                  headerText="#{bundle['dataverse.manageGroups.edit.dialog.members.name']}">
                             <h:outputText value="#{groupMember.getDisplayInfo().getTitle()}" />
                         </p:column>
                         <!-- Member Type -->
                         <p:column width="13%"
-                                  headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.type']}">
+                                  headerText="#{bundle['dataverse.manageGroups.edit.dialog.members.type']}">
                             <h:outputText value="#{manageGroupsPage.getRoleAssigneeTypeString(groupMember)}" />
                         </p:column>
                         <!-- Action  -->
                         <p:column width="13%"
-                                  headerText="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.action']}">
-                            <p:commandLink type="button"
+                                  headerText="#{bundle['dataverse.manageGroups.edit.dialog.members.action']}">
+                            <p:commandLink
                                            styleClass="btn btn-default bootstrap-button-tooltip"
+                                           process="@this"
                                            update="groupMembers"
-                                           action="#{manageGroupsPage.removeMemberFromSelectedGroup(groupMember)}"
-                                           title="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.groupView.delete']}">
-                                <span class="glyphicon glyphicon-trash"></span>
+                                           actionListener="#{manageGroupsPage.removeMemberFromSelectedGroup(groupMember)}"
+                                           ariaLabel="#{bundle['dataverse.manageGroups.edit.dialog.members.delete']} #{groupMember.getDisplayInfo().getTitle()}"
+                                           title="#{bundle['dataverse.manageGroups.edit.dialog.members.delete']}">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                             </p:commandLink>
                         </p:column>
                     </p:dataTable>
                     <!-- Add Group Members -->
                     <div class="button-block">
-                        <p:commandLink type="button"
+                        <p:commandButton
                                        id="saveGroup"
                                        actionListener="#{manageGroupsPage.editExplicitGroup}"
                                        styleClass="btn btn-default btn-access"
                                        value="#{bundle.saveChanges}"
-                                       update="@all">
-                        </p:commandLink>
+                                       process="@this"
+                                       update="@form">
+                        </p:commandButton>
                         <p:commandButton type="button" styleClass="btn btn-default btn-access" value="#{bundle.cancel}" onclick="PF('viewGroup').hide()" />
+                        
+                        <p:defaultCommand target="saveGroup" scope="viewGroup" />
                     </div>
                 </p:dialog>
                 <!-- Explicit Group Edit Popup -->
