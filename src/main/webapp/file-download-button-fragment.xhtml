@@ -190,7 +190,7 @@
     <!-- END: FILE PG -->
     <!-- DATASET PG -->
         <ui:fragment rendered="#{!isFilePg}">
-        <!-- DUPLICATE LINKS -->
+        <!-- DOWNLOAD LINKS -->
         <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                   and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
                        styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
@@ -202,7 +202,7 @@
             <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 'package')}" />
             <!-- package data file: -->
             <!-- no guest book/terms of use/etc. - straight package popup -->
-            <span class="glyphicon glyphicon-download-alt"/>
+            <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
         </p:commandLink>
         <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
                                   and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
@@ -215,7 +215,7 @@
             <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
             <!-- package data file: -->
             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-            <span class="glyphicon glyphicon-download-alt"/>
+            <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
         </p:commandLink>
         <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                     and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
@@ -226,7 +226,7 @@
                        process="@this" actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
             <!-- non-tabular data file: -->
             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-            <span class="glyphicon glyphicon-download-alt"/>
+            <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
         </p:commandLink>
         <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
                                     and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
@@ -237,15 +237,15 @@
                        action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                        process="@this" update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
             <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-            <span class="glyphicon glyphicon-download-alt"/>
+            <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
         </p:commandLink>
-        <!-- END:DUPLICATE LINKS -->
-        <!-- DUP SUBMENU LINK -->
+        <!-- END:DOWNLOAD LINKS -->
+        <!-- TABULAR SUBMENU LINKS -->
         <div class="btn-group" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
             <!-- Download Dropdown -->
             <a style="font-size:2em !important;" type="button" class="btn-download btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                           title="#{bundle.download}" id="downloadBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="glyphicon glyphicon-download-alt"/><span class="caret"></span>
+                <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span><span class="caret"></span>
             </a>
             <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="downloadBtn">
                 <ui:remove>
@@ -356,7 +356,7 @@
                 </li>
             </ul>
         </div>
-        <!-- END: DUP SUBMENU LINK -->
+        <!-- END: TABULAR SUBMENU LINKS -->
         </ui:fragment>
     <!-- END: DATASET PG -->
     </ui:fragment>
@@ -406,29 +406,29 @@
         
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and !requestAccessPopupRequired}"
-                       title="EMPTY1 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
                        update="@this"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-            <span class="glyphicon glyphicon-bullhorn"/>
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                               and requestAccessPopupRequired}"
-                       title="EMPTY2 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
                        onclick="PF('requestAccessPopup').show()"
                        id="requestAccessPopupButton"
                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-            <span class="glyphicon glyphicon-bullhorn"/>
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
         <p:commandLink style="font-size:2em !important;" styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{!fileDownloadHelper.session.user.authenticated}"
-                       title="EMPTY3 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        onclick="PF('accessSignUpLogIn_popup').show()">
             <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-            <span class="glyphicon glyphicon-bullhorn"/>
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
         <!-- END: DATASET PG -->
         </ui:fragment>
@@ -508,13 +508,13 @@
             <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
                 <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip" 
                                title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
-                    <span class="glyphicon glyphicon-equalizer"/>
+                    <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span>
                 </a>
             </ui:fragment>
             <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
                 <a style="font-size:2em !important;" class="btn-explore btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                                title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="glyphicon glyphicon-equalizer"/><span class="caret"></span>
+                    <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span><span class="caret"></span>
                 </a>
             </ui:fragment>
             <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
@@ -577,7 +577,7 @@
                   title="#{bundle['file.compute']}" value="#{DatasetPage.getComputeUrl(fileMetadata)}"
                   target="_blank" rel="noopener"
                   rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
-        <span class="glyphicon glyphicon-flash"/>
+        <span class="glyphicon glyphicon-flash"/><span class="sr-only">#{bundle['file.compute']}</span>
     </h:outputLink>
     <!-- END: Compute Button *DATASET PG only*: -->
  
