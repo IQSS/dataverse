@@ -101,7 +101,9 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 @Named("EditDatafilesPage")
 public class EditDatafilesPage implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
+    private static final long TEMP_VALID_TIME_MILLIS = 24 * 60 * 60 * 1000;
+	
+	private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
 
     public enum FileEditMode {
 
@@ -380,6 +382,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         newFiles = new ArrayList<>();
         uploadedFiles = new ArrayList<>();
+        cleanupTempFiles();
 
         this.maxFileUploadSizeInBytes = settingsService.getValueForKeyAsLong(Key.MaxFileUploadSizeInBytes);
         this.multipleUploadFilesLimit = settingsService.getValueForKeyAsLong(Key.MultipleUploadFilesLimit);
@@ -593,6 +596,23 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
+    private void cleanupTempFiles() {
+        final long purgeTime = System.currentTimeMillis() - TEMP_VALID_TIME_MILLIS;
+        final File tempDirectory = new File(FileUtil.getFilesTempDirectory());
+        if (tempDirectory.exists() && tempDirectory.isDirectory()) {
+        	final File[] tempFilesList = tempDirectory.listFiles();
+        	for (File tempFile : tempFilesList) {
+        		if (tempFile.isFile() && tempFile.lastModified() < purgeTime) {
+        			if (!tempFile.delete()) {
+        				logger.warning("Failed to delete temporary file " + tempFile.getName());
+        			}
+        		}
+        	}
+        } else {
+        	logger.warning("Failed to cleanup temporary file " + FileUtil.getFilesTempDirectory());
+        }
+	}
+    
     private void deleteTempFile(DataFile dataFile) {
         // Before we remove the file from the list and forget about
         // it:
