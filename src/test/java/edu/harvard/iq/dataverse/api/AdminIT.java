@@ -8,15 +8,24 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import org.junit.Test;
 import org.junit.BeforeClass;
+
+import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
@@ -26,6 +35,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Ignore;
 
 public class AdminIT {
+
+    private static final Logger logger = Logger.getLogger(AdminIT.class.getCanonicalName());
 
     @BeforeClass
     public static void setUp() {
@@ -671,4 +682,72 @@ public class AdminIT {
                 .statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testLoadMetadataBlock_NoErrorPath() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        byte[] updatedContent = null;
+        try {
+            updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/citation.tsv"));
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            assertEquals(0,1);
+        }
+        Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
+        assertEquals(200, response.getStatusCode());
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        String body = response.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+
+        Map<String, List<Map<String, String>>> data = JsonPath.from(body).getMap("data");
+        assertEquals(1, data.size());
+        List<Map<String, String>> addedElements = data.get("added");
+        assertEquals(321, addedElements.size());
+
+        Map<String, Integer> statistics = new HashMap<>();
+        for (Map<String, String> unit : addedElements) {
+            assertEquals(2, unit.size());
+            assertTrue(unit.containsKey("name"));
+            assertTrue(unit.containsKey("type"));
+            String type = unit.get("type");
+            if (!statistics.containsKey(type))
+                statistics.put(type, 0);
+            statistics.put(type, statistics.get(type) + 1);
+        }
+
+        assertEquals(3, statistics.size());
+        assertEquals(1, (int) statistics.get("MetadataBlock"));
+        assertEquals(78, (int) statistics.get("DatasetField"));
+        assertEquals(242, (int) statistics.get("Controlled Vocabulary"));
+    }
+
+    @Test
+    public void testLoadMetadataBlock_ErrorHandling() {
+        Response createUser = UtilIT.createRandomUser();
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        byte[] updatedContent = null;
+        try {
+            updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/test.tsv"));
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            assertEquals(0,1);
+        }
+        Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
+        assertEquals(500, response.getStatusCode());
+        response.then().assertThat().statusCode(INTERNAL_SERVER_ERROR.getStatusCode());
+
+        String body = response.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+
+        String message = JsonPath.from(body).getString("message");
+        assertEquals(
+          "Error parsing metadata block in DATASETFIELD part, line #5: missing 'watermark' column (#5)",
+          message
+        );
+    }
 }
