@@ -396,8 +396,6 @@ form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block .button-container,
 .button-block span.btn.ui-state-disabled, .button-block span.btn.disabled {margin-right:1em;}
 
-/*td.col-file-action span.ingest-warning, .button-block span.ingest-warning {margin-left:.5em;}*/
-
 .btn.btn-default.btn-access {background-color: #fff;background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
 .col-manage-action .button-block button, .col-manage-action .button-block a.btn, .col-manage-action .button-block input.btn, 
@@ -602,14 +600,14 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-block {/*margin-bottom:20px;*/}
 
 /* -- OLD LAYOUT -- */
-#metrics-block {border:1px solid #eee; padding:0;}
+#metrics-block1 {border:1px solid #eee; padding:0;}
 #metrics-label {color:#333;background:#eee;padding:8px 10px;}
 #metrics-label a {color:#333;display:block;}
 #metrics-label a:hover {text-decoration:none;}
 #metrics-content {color:#333;background:#fff;padding:8px 10px;}
-
-#metrics-heading {font-weight:bold;color:#333;background:#eee;padding:8px 10px;}
-#metrics-body {border:1px solid #EEE;border-top-width:0;padding:8px 10px;}
+/* -- NEW LAYOUT -- */
+#metrics-block {border:0; margin-top:6px;}
+#metrics-body {border:1px solid #EEE;border-width:1px 0 0 0;padding:8px 0;}
 #metrics-block .metrics-count-block:not(:last-child) {margin-bottom:.5em;padding-bottom:.5em;border-bottom:1px solid #EEE}
 
 /* -------- SHARRRE -------- */
@@ -627,7 +625,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #datasetVersionBlock span.label {vertical-align:text-top; line-height:normal; margin-left: .5em;}
 #title-label-block span:first-of-type {margin-left:0 !important;}
 
-#title {font-size:1.5em;font-weight:bold;}
+#title {font-size:36px !important;line-height:1.1;font-weight:bold;}
 #author, #contact {display:block; margin-bottom:.5em;}
 
 /* RESPONSIVE ORDER HACK BOOTSTRAP 3 https://stackoverflow.com/a/24834574 */
@@ -642,6 +640,8 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 .alert-danger.bg-danger {background:#F2DEDE; border: 0;}
 div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#333;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
+div.citation-block div.alert {padding:10px 10px 0px 10px;}
+div.citation-block div.preview-icon-block {padding-right:10px;padding-bottom:10px;}
 div.citation-block div.preview-icon-block img {max-width:140px; max-height:140px;}
 div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
 @media(max-width:767px){
@@ -649,6 +649,8 @@ div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; 
     div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em;}
 }
 div.citation-block div.citation span.citation-select a {word-break: break-all;}
+div.citation-block div.citation-download.margin-bottom {margin-bottom:10px;}
+div.citation-block div.citation-standard.margin-bottom {margin-bottom:10px;padding-top:3px;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
 
@@ -759,6 +761,7 @@ div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
 div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.file-tags-block a.ui-commandlink {margin-right:.5em;}
 div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
 div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0;}
+div[id$="filesTable"] td.col-file-action .btn-group .btn-link {font-size:2em !important;}
 div[id$="filesTable"] td.col-file-access {width:50%;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
@@ -832,8 +835,7 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-span.ingest-warning {/*display:inline-block;*/ font-size:2em !important; line-height:1; vertical-align: middle;}
-/*span.ingest-warning span.glyphicon {top:3px}*/
+span.ingest-warning {font-size:2em !important; line-height:1; vertical-align: middle;}
 
 /* DOWNLOAD POPUP */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
@@ -886,8 +888,9 @@ thead.ui-datatable-scrollable-theadclone {display:none}
     }
 }
 
-#file-title-block span.file-title-label {font-size:1.5em;font-weight:bold;margin-right:.5em;}
+#file-title-block span.file-title-label {font-size:36px !important;line-height:1.1;font-weight:bold;margin-right:.5em;}
 #file-title-block span.label {margin-right:.5em;vertical-align: text-top;}
+#file-title-block span.ingest-warning {vertical-align:text-bottom;font-size:30px;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
 
 /* BLOCK UI */
