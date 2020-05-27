@@ -21,6 +21,8 @@ import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -45,8 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
 
@@ -57,7 +57,7 @@ import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecord
 @Named
 public class DatasetVersionServiceBean implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(DatasetVersionServiceBean.class.getCanonicalName());
+    private static final Logger log = LoggerFactory.getLogger(DatasetVersionServiceBean.class);
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
@@ -183,27 +183,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         } catch (NumberFormatException n) {
             return null;
         }
-        if (minorVersionNumber != null) {
-            String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
-            DatasetVersion foundDatasetVersion = null;
-            try {
-                Query query = em.createQuery(queryStr);
-                query.setParameter("datasetId", datasetId);
-                query.setParameter("majorVersionNumber", majorVersionNumber);
-                query.setParameter("minorVersionNumber", minorVersionNumber);
-                foundDatasetVersion = (DatasetVersion) query.getSingleResult();
-            } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
-                // DO nothing, just return null.
-            }
-            return foundDatasetVersion;
-        }
+        return findByVersionNumber(datasetId, majorVersionNumber, minorVersionNumber);
+    }
 
-        if (majorVersionNumber == null && minorVersionNumber == null) {
+    public DatasetVersion findByVersionNumber(Long datasetId, Long majorVersionNumber, Long minorVersionNumber) {
+        if (majorVersionNumber == null) {
             return null;
         }
 
-        if (majorVersionNumber != null && minorVersionNumber == null) {
+        if (minorVersionNumber == null) {
             try {
                 TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
                 typedQuery.setParameter("datasetId", datasetId);
@@ -221,12 +209,22 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 }
                 return retVal;
             } catch (javax.persistence.NoResultException e) {
-                logger.warning("no ds version found: " + datasetId + " " + friendlyVersionNumber);
-                // DO nothing, just return null.
+                log.warn("no ds version found: {} {}", datasetId, majorVersionNumber);
+                return null;
             }
-
         }
-        return null;
+
+        String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
+        try {
+            Query query = em.createQuery(queryStr);
+            query.setParameter("datasetId", datasetId);
+            query.setParameter("majorVersionNumber", majorVersionNumber);
+            query.setParameter("minorVersionNumber", minorVersionNumber);
+            return (DatasetVersion) query.getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            log.warn("no ds version found: {} {}.{}", datasetId, majorVersionNumber, minorVersionNumber);
+            return null;
+        }
     }
 
 
@@ -438,10 +436,10 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         } catch (javax.persistence.NoResultException e) {
             msg("DatasetVersion not found: " + queryString);
-            logger.log(Level.FINE, "DatasetVersion not found: {0}", queryString);
+            log.trace("DatasetVersion not found: {}", queryString);
             return null;
         } catch (EJBException e) {
-            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            log.warn("EJBException exception: {}", e.getMessage());
             return null;
         }
     } // end getDatasetVersionByQuery
@@ -560,7 +558,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         try {
             parsedId = new GlobalId(persistentId);   // [ protocol, authority, identifier]
         } catch (IllegalArgumentException e) {
-            logger.log(Level.WARNING, "Failed to parse persistentID: {0}", persistentId);
+            log.warn("Failed to parse persistentID: {}", persistentId);
             return null;
         }
 
@@ -724,7 +722,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
 
         if (thumbnailFileId != null) {
-            logger.fine("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version " + versionId + ": " + thumbnailFileId);
+            log.trace("DatasetVersionService,getThumbnailByVersionid(): found already generated thumbnail for version {}: {}", versionId, thumbnailFileId);
             assignDatasetThumbnailByNativeQuery(versionId, thumbnailFileId);
             return thumbnailFileId;
         }
@@ -751,7 +749,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
 
             if (thumbnailFileId != null) {
-                logger.fine("obtained file id: " + thumbnailFileId);
+                log.trace("obtained file id: {}", thumbnailFileId);
                 DataFile thumbnailFile = datafileService.find(thumbnailFileId);
                 if (thumbnailFile != null) {
                     if (datafileService.isThumbnailAvailable(thumbnailFile)) {
@@ -919,7 +917,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         String query = "SELECT df.md5 FROM datafile df, filemetadata fm WHERE fm.datasetversion_id = " + datasetVersion.getId() + " AND fm.datafile_id = df.id;";
 
-        logger.log(Level.FINE, "query: {0}", query);
+        log.trace("query: {}", query);
         Query nativeQuery = em.createNativeQuery(query);
 
         return nativeQuery.getResultList();
@@ -1166,7 +1164,7 @@ w
         Set<ConstraintViolation> constraintViolations = editVersion.validate();
 
         if (!constraintViolations.isEmpty()) {
-            constraintViolations.forEach(constraintViolation -> logger.warning(constraintViolation.getMessage()));
+            constraintViolations.forEach(constraintViolation -> log.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during updating dataset attempt with id: " + editVersion.getDataset().getId());
         }
 

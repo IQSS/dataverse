@@ -20,10 +20,10 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
-import java.io.IOException;
-
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.IOException;
 
 /**
  * @author Leonid Andreev
@@ -33,7 +33,13 @@ public class DataAccess {
 
     private static final String DEFAULT_STORAGE_DRIVER_IDENTIFIER = System.getProperty("dataverse.files.storage-driver-id");
 
+    private static final DataAccess INSTANCE = new DataAccess();
+
     // -------------------- LOGIC --------------------
+
+    public static DataAccess dataAccess() {
+        return INSTANCE;
+    }
 
     /**
      * The getStorageIO() methods initialize StorageIO objects for
