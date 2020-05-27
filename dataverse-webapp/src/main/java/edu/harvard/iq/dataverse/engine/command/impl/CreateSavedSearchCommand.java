@@ -9,15 +9,15 @@ import edu.harvard.iq.dataverse.persistence.dataverse.link.SavedSearch;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.json.JsonObjectBuilder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
 
-    private static final Logger logger = Logger.getLogger(SavedSearchServiceBean.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(CreateSavedSearchCommand.class);
 
     private final SavedSearch savedSearchToCreate;
 
@@ -43,9 +43,9 @@ public class CreateSavedSearchCommand extends AbstractCommand<SavedSearch> {
             try {
                 DataverseRequest dataverseRequest = new DataverseRequest(savedSearchToCreate.getCreator(), SavedSearchServiceBean.getHttpServletRequest());
                 JsonObjectBuilder result = ctxt.savedSearches().makeLinksForSingleSavedSearch(dataverseRequest, persistedSavedSearch, true);
-                logger.log(Level.INFO, "result from attempt to make links from saved search: {0}", result.build().toString());
+                logger.info("result from attempt to make links from saved search: {0}", result.build().toString());
             } catch (SearchException ex) {
-                logger.info(ex.getLocalizedMessage());
+                logger.info(ex.getLocalizedMessage(), ex);
             }
             return persistedSavedSearch;
         } else {

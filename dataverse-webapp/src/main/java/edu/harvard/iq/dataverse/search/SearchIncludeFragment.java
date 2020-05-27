@@ -20,12 +20,11 @@ import edu.harvard.iq.dataverse.search.response.FacetCategory;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -267,7 +266,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse), 
-                    queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder, 
+                    queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder,
                     paginationStart, numRows, false);
             
             // This 2nd search() is for populating the facets: -- L.A. 

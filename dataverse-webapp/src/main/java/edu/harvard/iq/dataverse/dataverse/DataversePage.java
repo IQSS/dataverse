@@ -77,13 +77,13 @@ public class DataversePage implements java.io.Serializable {
     private List<Dataverse> dataversesForLinking;
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
-    private Dataverse linkingDataverse;
+    private Dataverse targetDataverseLink;
     private List<Dataverse> carouselFeaturedDataverses = null;
 
     // -------------------- GETTERS --------------------
 
-    public Dataverse getLinkingDataverse() {
-        return linkingDataverse;
+    public Dataverse getTargetDataverseLink() {
+        return targetDataverseLink;
     }
 
     public List<SelectItem> getLinkingDVSelectItems() {
@@ -185,7 +185,7 @@ public class DataversePage implements java.io.Serializable {
         Try.of(() -> dataverseService.saveLinkedDataverse(dataverseDao.find(linkingDataverseId), dataverse))
                 .onFailure(ex -> handleSaveLinkedDataverseExceptions(ex, linkingDataverseId))
                 .onSuccess(savedLinkingDv -> {
-                    linkingDataverse = savedLinkingDv.getLinkingDataverse();
+                    targetDataverseLink = savedLinkingDv.getLinkingDataverse();
 
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
                 });
@@ -207,7 +207,7 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.link.select"));
             return "";
         }
-        linkingDataverse = dataverseDao.find(linkingDataverseId);
+        targetDataverseLink = dataverseDao.find(linkingDataverseId);
 
         AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
         if (savedSearchCreator == null) {
@@ -218,9 +218,10 @@ public class DataversePage implements java.io.Serializable {
         }
 
 
-        Try.of(() -> savedSearchService.saveSavedDataverseSearch(searchIncludeFragment.getQuery(), searchIncludeFragment.getFilterQueriesDebug(), dataverse))
+        Try.of(() -> savedSearchService.saveSavedDataverseSearch(searchIncludeFragment.getQuery(), searchIncludeFragment.getFilterQueriesDebug(), targetDataverseLink))
                 .onSuccess(savedSearch -> {
-                    String hrefArgument = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+                    String hrefArgument = "<a href=\"/dataverse/" + targetDataverseLink.getAlias() + "\">" + StringEscapeUtils.escapeHtml(targetDataverseLink
+                                                                                                                                                  .getDisplayName()) + "</a>";
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.success", Collections.singleton(hrefArgument)));
                 })
                 .onFailure(ex -> {
@@ -284,7 +285,8 @@ public class DataversePage implements java.io.Serializable {
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         arguments.add(StringEscapeUtils.escapeHtml(dataverse.getDisplayName()));
-        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+        String linkString = "<a href=\"/dataverse/" + targetDataverseLink.getAlias() + "\">" + StringEscapeUtils.escapeHtml(targetDataverseLink
+                                                                                                                                    .getDisplayName()) + "</a>";
         arguments.add(linkString);
         return arguments;
     }
@@ -343,8 +345,8 @@ public class DataversePage implements java.io.Serializable {
         }
 
         if (dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
-            linkingDataverse = dataversesForLinking.get(0);
-            linkingDataverseId = linkingDataverse.getId();
+            targetDataverseLink = dataversesForLinking.get(0);
+            linkingDataverseId = targetDataverseLink.getId();
         }
     }
 
@@ -354,8 +356,8 @@ public class DataversePage implements java.io.Serializable {
 
     // -------------------- SETTERS --------------------
 
-    public void setLinkingDataverse(Dataverse linkingDataverse) {
-        this.linkingDataverse = linkingDataverse;
+    public void setTargetDataverseLink(Dataverse targetDataverseLink) {
+        this.targetDataverseLink = targetDataverseLink;
     }
 
     public void setLinkingDVSelectItems(List<SelectItem> linkingDVSelectItems) {
