@@ -421,7 +421,7 @@
 
                                         <!-- Contact/Share Button Group -->
                                         <div class="btn-group btn-group-justified">
-                                            <p:commandLink styleClass="btn btn-default btn-xs btn-contact" title="#{bundle['dataset.email.datasetContactBtn']}"
+                                            <p:commandLink styleClass="btn btn-default btn-xs btn-contact" title="#{bundle['dataset.email.datasetContactTitle']}"
                                                            update=":contactDialog" oncomplete="PF('contactForm').show()" actionListener="#{sendFeedbackDialog.initUserInput}">
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
                                                 <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
@@ -1435,7 +1435,7 @@
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
-                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}" widgetVar="linkDatasetForm" modal="true" rendered="#{DatasetPage.showLinkingPopup}">
+                    <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link.title']}" widgetVar="linkDatasetForm" modal="true" rendered="#{DatasetPage.showLinkingPopup}">
                         <p:focus for="dataverseLinkName"/>
                         <div class="form-horizontal">
                             <p class="help-block">

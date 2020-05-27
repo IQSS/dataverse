@@ -641,7 +641,7 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#333;}
 .citation span.glyphicon-question-sign {margin-left:.5em; margin-bottom:2px; vertical-align: middle;}
 div.citation-block div.alert {padding:10px 10px 0px 10px;}
-div.citation-block div.preview-icon-block {padding-right:10px;padding-bottom:10px;}
+div.citation-block div.preview-icon-block {padding-right:10px;padding-bottom:10px; min-height:140px;} /* min-height needed for colorder bootstrap layout hack */
 div.citation-block div.preview-icon-block img {max-width:140px; max-height:140px;}
 div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
 @media(max-width:767px){
