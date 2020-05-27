@@ -91,4 +91,21 @@ public class PidsIT {
          */
     }
 
+    @Ignore
+    @Test
+    public void testDeletePid() {
+        String pid = "";
+        pid = "doi:10.70122/FK2/UA98UD";
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response deletePid = UtilIT.deletePid(pid, apiToken);
+        deletePid.prettyPrint();
+    }
 }

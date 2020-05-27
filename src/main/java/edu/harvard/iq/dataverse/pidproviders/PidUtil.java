@@ -7,11 +7,14 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Base64;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 public class PidUtil {
+
+    private static final Logger logger = Logger.getLogger(PidUtil.class.getCanonicalName());
 
     public static JsonObjectBuilder queryDoi(String persistentId, String baseUrl, String username, String password) {
         String doi = acceptOnlyDoi(persistentId);
@@ -72,6 +75,27 @@ public class PidUtil {
             throw new IllegalArgumentException("Only doi: is supported.");
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
+    }
+
+    /**
+     * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
+     * (only possible for "draft" DOIs), 405 (method not allowed) if the DOI
+     * wasn't deleted (because it's in "findable" state, for example, 404 if the
+     * DOI wasn't found, and possibly other status codes such as 500 if DataCite
+     * is down.
+     */
+    public static int deleteDoi(String persistentId, String baseUrl, String username, String password) throws IOException {
+        String doi = acceptOnlyDoi(persistentId);
+        URL url = new URL(baseUrl + "/dois/" + doi);
+        HttpURLConnection connection = null;
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("DELETE");
+        String userpass = username + ":" + password;
+        String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+        connection.setRequestProperty("Authorization", basicAuth);
+        int status = connection.getResponseCode();
+        logger.fine("deleteDoi status for " + persistentId + ": " + status);
+        return status;
     }
 
 }

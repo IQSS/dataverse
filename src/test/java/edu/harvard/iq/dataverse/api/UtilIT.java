@@ -178,6 +178,13 @@ public class UtilIT {
         return response;
     }
 
+    public static Response deletePid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/pids/:persistentId/delete?persistentId=" + persistentId);
+        return response;
+    }
+
     public static Response computeDataFileHashValue(String fileId, String alg, String apiToken) {
         Response response = given()
                 .body(fileId)

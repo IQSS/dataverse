@@ -6,25 +6,34 @@ import javax.json.JsonObjectBuilder;
 import org.junit.Test;
 import org.junit.Ignore;
 
+/**
+ * Useful for testing but requires DataCite credentials, etc.
+ */
 public class PidUtilTest {
 
-    /**
-     * Useful for testing but requires DataCite credentials, etc.
-     */
     @Ignore
     @Test
     public void testGetDoi() throws IOException {
         String username = System.getenv("DataCiteUsername");
         String password = System.getenv("DataCitePassword");
         String baseUrl = "https://api.test.datacite.org";
-        String persistentId = "";
-        persistentId = "doi:10.70122/FK2/9BXT5O"; // findable
-        persistentId = "doi:10.70122/FK2/DOES-NOT-EXIST"; // does not exist
-        persistentId = "doi:10.70122/87W6-F672"; // draft
-        persistentId = "doi:10.70122/87W6-F672"; // draft
-        JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+        String pid = "";
+        pid = "doi:10.70122/QE5A-XN55";
+        JsonObjectBuilder result = PidUtil.queryDoi(pid, baseUrl, username, password);
         String out = JsonUtil.prettyPrint(result.build());
         System.out.println("out: " + out);
+    }
+
+    @Ignore
+    @Test
+    public void testDeleteDoi() throws IOException {
+        String username = System.getenv("DataCiteUsername");
+        String password = System.getenv("DataCitePassword");
+        String baseUrl = "https://api.test.datacite.org";
+        String pid = "";
+        pid = "doi:10.70122/FK2/UAESPI";
+        int result = PidUtil.deleteDoi(pid, baseUrl, username, password);
+        System.out.println("out: " + result);
     }
 
 }

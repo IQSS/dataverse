@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -11,6 +12,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -89,6 +91,19 @@ public class Pids extends AbstractApiBean {
             Dataset dataset = findDatasetOrDie(idSupplied);
             execCommand(new ReservePidCommand(createDataverseRequest(findUserOrDie()), dataset));
             return ok("PID reserved for " + dataset.getGlobalId().asString());
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{id}/delete")
+    public Response deletePid(@PathParam("id") String idSupplied) {
+        try {
+            Dataset dataset = findDatasetOrDie(idSupplied);
+            execCommand(new DeletePidCommand(createDataverseRequest(findUserOrDie()), dataset));
+            return ok("PID deleted for " + dataset.getGlobalId().asString());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
