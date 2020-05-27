@@ -701,10 +701,6 @@ public class DatasetFilesTab implements Serializable {
         Set<Long> searchResultsIdSet = null;
         List<FileMetadata> retList = new ArrayList<>();
 
-        if (fileMetadatasSearch.isEmpty()) {
-            return retList;
-        }
-
         if (searchTerm != null && !searchTerm.equals("")) {
             List<Integer> searchResultsIdList = datafileService.findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(), searchTerm, new FileSortFieldAndOrder("", SortOrder.asc));
             searchResultsIdSet = new HashSet<>();

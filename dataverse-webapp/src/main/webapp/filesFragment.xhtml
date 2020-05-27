@@ -31,7 +31,7 @@
         </div>
     </ui:fragment>
 
-    <ui:fragment rendered="#{!empty datasetFilesTab.fileMetadatasSearch or not datasetFilesTab.dataset.hasEverBeenPublished()}">
+    <ui:fragment rendered="#{!empty datasetFilesTab.workingVersion.fileMetadatas or !empty datasetFilesTab.fileMetadatasSearch or not datasetFilesTab.dataset.hasEverBeenPublished()}">
         <o:importFunctions type="java.lang.Math" />
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
@@ -50,7 +50,7 @@
                      var="fileMetadata"
                      widgetVar="filesTable"
                      rendered="#{datasetFilesTab.workingVersion != null}"
-                     emptyMessage="#{bundle['file.notFound.tip']}"
+                     emptyMessage="#{(empty datasetFilesTab.fileLabelSearchTerm)? bundle['file.datasetEmpty.tip'] : bundle['file.notFound.tip']}"
                      styleClass="filesTable"
         >
             <p:ajax event="page" listener="#{datasetFilesTab.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
@@ -73,7 +73,7 @@
                                          action="#{datasetFilesTab.updateFileSearch()}"
                                          process="@this @widgetVar(inputSearchTerm)"
                                          update="@form" partialSubmit="true"
-                                         onstart="PF('filesTable').paginator.setPage(0);"
+                                         onstart="if (PF('filesTable').paginator) PF('filesTable').paginator.setPage(0);"
                         >
                             <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
                         </p:remoteCommand>
@@ -84,7 +84,7 @@
                                            process="@this @widgetVar(inputSearchTerm)"
                                            update="@form"
                                            partialSubmit="true"
-                                           onstart="PF('filesTable').paginator.setPage(0);"
+                                           onstart="if (PF('filesTable').paginator) PF('filesTable').paginator.setPage(0);"
                             >
                                 <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
                                 <f:actionListener binding="#{datasetFilesTab.clearSelection()}" />
@@ -150,7 +150,7 @@
                         <p:commandLink action="#{datasetFilesTab.selectAllFiles}" update="@form">
                             <h:outputFormat value="#{bundle['file.selectAllFiles']}">
                                 <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
-                                <f:param value="#{datasetFilesTab.fileLabelSearchTerm.equals('') ? '.' : bundle['file.selectAllFiles.suffixForSearching']}" />
+                                <f:param value="#{(empty datasetFilesTab.fileLabelSearchTerm) ? '.' : '&#160;'.concat(bundle['file.selectAllFiles.suffixForSearching'])}" />
                             </h:outputFormat>
                         </p:commandLink>
                         </ui:fragment>
