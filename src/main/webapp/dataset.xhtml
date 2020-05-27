@@ -832,7 +832,7 @@
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
-                        <button id="cancelCreate" styleClass="btn btn-link" value="#{bundle.cancel}" onclick="cancelDatasetCreate();return false;" rendered="#{DatasetPage.editMode == 'CREATE'}">#{bundle.cancel}</button>
+                        <button id="cancelCreate" class="btn btn-link" value="#{bundle.cancel}" onclick="cancelDatasetCreate();return false;" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">#{bundle.cancel}</button>
                         <p:remoteCommand name="cancelCreateCommand" process="@this" partialSubmit="true" async="true" update="" action="#{DatasetPage.cancelCreate}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>     
                         <p:commandButton value="Direct" id="datasetSave"
                                          style="display:none"
