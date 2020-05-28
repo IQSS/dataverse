@@ -154,4 +154,44 @@ public class PidsIT {
                 .statusCode(FORBIDDEN.getStatusCode());
     }
 
+    @Ignore
+    @Test
+    public void testDeleteDraftPidOnDelete() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        JsonPath createdDataset = JsonPath.from(createDataset.body().asString());
+        String pid = createdDataset.getString("data.persistentId");
+        int datasetId = createdDataset.getInt("data.id");
+
+        Response getPidBeforeDelete = UtilIT.getPid(pid, apiToken);
+        getPidBeforeDelete.prettyPrint(); // draft
+
+        Response deleteDataset = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDataset.prettyPrint();
+        deleteDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getPidAfterDelete = UtilIT.getPid(pid, apiToken);
+        getPidAfterDelete.prettyPrint(); // 404
+    }
+
 }
