@@ -27,12 +27,12 @@
             </ui:define>
             <ui:define name="body">
                 <f:metadata>
-                    <f:viewParam name="fileId" value="#{FilePage.fileId}"/>
+                    <o:viewParam name="fileId" value="#{FilePage.fileId}"/>
                     <f:viewParam name="version" value="#{FilePage.version}"/>
                     <f:viewParam name="persistentId" value="#{FilePage.persistentId}"/>
                     <f:viewParam name="datasetVersionId" value="#{FilePage.datasetVersionId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{FilePage.init}" />
+                    <f:viewAction action="#{FilePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(FilePage.fileMetadata)}"/>
                 </f:metadata>
                 <h:form id="fileForm">
