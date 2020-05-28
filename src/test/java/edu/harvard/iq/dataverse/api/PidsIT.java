@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -108,4 +111,47 @@ public class PidsIT {
         Response deletePid = UtilIT.deletePid(pid, apiToken);
         deletePid.prettyPrint();
     }
+
+    @Ignore
+    @Test
+    public void testCannotPublishUntilReserved() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        UtilIT.makeSuperUser(username).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        JsonPath createdDataset = JsonPath.from(createDataset.body().asString());
+        String pid = createdDataset.getString("data.persistentId");
+
+        Response deletePid = UtilIT.deletePid(pid, apiToken);
+        deletePid.prettyPrint();
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
+        publishDataverse.prettyPrint();
+        publishDataverse.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Publishing fails because the PID is not reserved (see deletePid above).
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(pid, "major", apiToken);
+        publishDataset.prettyPrint();
+        publishDataset.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode());
+    }
+
 }
