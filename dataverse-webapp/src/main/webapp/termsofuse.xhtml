@@ -27,7 +27,7 @@
             </div>
 
             <div class="checkbox">
-                <p:repeat value="#{consents}" var="consent">
+                <ui:repeat value="#{consents}" var="consent">
 
                     <p:selectBooleanCheckbox id="consent"
                                              value="#{consent.consentDetails.accepted}"
@@ -45,7 +45,7 @@
 
 
                     <p:message for="consent" display="text"/>
-                </p:repeat>
+                </ui:repeat>
             </div>
         </div>
     </div>
