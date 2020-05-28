@@ -16,22 +16,26 @@
             <ui:param name="loginRedirectPage" value="dataverse.xhtml"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+                <f:metadata>
+                    <f:viewAction action="#{sendFeedbackDialog.initUserInput}">
+                        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+                        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+                        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+                    </f:viewAction>
+                </f:metadata>
+
+
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
                     <o:form useRequestURI="true">
                         <h:outputText value="#{bundle['error.404.message']} " escape="false"/>
                         <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                             <o:param>
                                 <p:commandLink value="#{installationConfig.supportTeamName}"
-                                               oncomplete="PF('contactForm').show()" update=":contactDialog"
-                                               actionListener="#{sendFeedbackDialog.initUserInput}">
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-                                    <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-                                </p:commandLink>                                
+                                               oncomplete="PF('contactForm').show()" update=":contactDialog" />
                             </o:param>
                         </h:outputFormat>   
-                    </o:form>                  
+                    </o:form>
                 </div>                   
                 <div class="row text-center" jsf:rendered="#{!widgetWrapper.widgetView}">
                     <o:form useRequestURI="true">

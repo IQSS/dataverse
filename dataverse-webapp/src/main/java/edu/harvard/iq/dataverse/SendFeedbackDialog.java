@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.validator.routines.EmailValidator;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -18,10 +17,10 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.mail.internet.InternetAddress;
-
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -96,7 +95,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
         return userEmail;
     }
 
-    public void initUserInput(ActionEvent ae) {
+    public void initUserInput() {
         userEmail = "";
         userMessage = "";
         messageSubject = "";
@@ -106,6 +105,10 @@ public class SendFeedbackDialog implements java.io.Serializable {
         userSum = null;
         String systemEmail = settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail);
         systemAddress = MailUtil.parseSystemAddress(systemEmail);
+    }
+
+    public void initUserInput(ActionEvent ae) {
+        initUserInput();
     }
 
     public Long getOp1() {
@@ -186,7 +189,6 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public void validateUserSum(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         if (op1 + op2 != (Long) value) {
-            // TODO: Remove this English "Sum is incorrect" string. contactFormFragment.xhtml uses contact.sum.invalid instead.
             FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("contact.sum.invalid"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             throw new ValidatorException(msg);
