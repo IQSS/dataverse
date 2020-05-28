@@ -45,7 +45,7 @@
                                        var="searchField">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">
-                                        #{searchField.displayName}
+                                        <h:outputText value="#{searchField.displayName}" escape="false"/>
                                         <span data-toggle="tooltip" data-placement="top"
                                               jsf:rendered="#{not empty searchField.description}"
                                               class="glyphicon glyphicon-question-sign text-primary"
@@ -112,7 +112,7 @@
 
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">
-                                            #{item.displayName}
+                                            <h:outputText value="#{item.displayName}" escape="false"/>
                                             <span data-toggle="tooltip" data-placement="top"
                                                   jsf:rendered="#{not empty item.description}"
                                                   class="glyphicon glyphicon-question-sign text-primary"
@@ -227,7 +227,7 @@
                                        var="fileSearchFields">
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">
-                                        #{fileSearchFields.displayName}
+                                        <h:outputText value="#{fileSearchFields.displayName}" escape="false"/>
                                         <span class="glyphicon glyphicon-question-sign text-primary"
                                               jsf:rendered="#{not empty fileSearchFields.description}"
                                               tabindex="0" role="button"

@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -10,7 +12,6 @@
     <!--@elvariable id="fieldsByType" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType"-->
 
     <div class="col-sm-9">
-        
         <ui:fragment rendered="#{fieldsByType.datasetFieldType.name == 'datasetContact'}">
             <p class="help-block">
                 <h:outputText value="#{bundle['dataset.contact.tip']}"/>
@@ -18,26 +19,28 @@
         </ui:fragment>
         
         <ui:repeat var="datasetField" value="#{fieldsByType.datasetFields}" varStatus="fieldsLoop">
-            <ui:fragment rendered="#{!fieldsLoop.first and fieldsByType.datasetFieldType.compound}">
-                <br/>
-            </ui:fragment>
-            <h:outputText rendered="#{!fieldsLoop.first and !fieldsByType.datasetFieldType.compound}"
-                value="; " />
+            <div style="#{fieldsLoop.last ? '': 'padding-bottom: 10px;'}">
             
-            
-            <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
-                <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
-                              escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
-            </ui:repeat>
-            
-            <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
-                <h:outputText value="#{childField.parentDisplayFormat}" rendered="#{!childLoop.first}" />
-                <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
+                <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
                     <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
-                                escape="#{childField.datasetFieldType.isEscapeOutputText()}"/>
+                                  escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
                 </ui:repeat>
-            </ui:repeat>
+                
+                <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
+                    <div jsf:rendered="#{childField.parentDisplayFormatIsNewLine}">
+                        <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
+                            <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
+                                        escape="false"/>
+                        </ui:repeat>
+                    </div>
+                    <h:outputText value="#{childField.parentDisplayFormat} " rendered="#{!childLoop.first and !childField.parentDisplayFormatIsNewLine}" escape="false" />
+                    <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
+                        <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }" rendered="#{!childField.parentDisplayFormatIsNewLine}"
+                                    escape="false"/>
+                    </ui:repeat>
+                </ui:repeat>
             
+            </div>
         </ui:repeat>
     </div>
 

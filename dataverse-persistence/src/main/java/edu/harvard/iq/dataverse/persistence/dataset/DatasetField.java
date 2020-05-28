@@ -272,9 +272,18 @@ public class DatasetField implements Serializable {
         return this.getDatasetFieldParent()
                 .map(DatasetField::getDatasetFieldType)
                 .map(DatasetFieldType::getDisplayFormat)
+                .filter(displayFormat -> !StringUtils.equals(displayFormat, "#NEWLINE"))
                 .getOrElse(StringUtils.EMPTY);
     }
 
+    public boolean getParentDisplayFormatIsNewLine() {
+        return this.getDatasetFieldParent()
+                .map(DatasetField::getDatasetFieldType)
+                .map(DatasetFieldType::getDisplayFormat)
+                .map(displayFormat -> StringUtils.equals(displayFormat, "#NEWLINE"))
+                .getOrElse(false);
+    }
+    
     public String getRawValue() {
         String returnString = "";
         for (String value : getRawValuesList()) {
