@@ -24,32 +24,21 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import org.apache.commons.validator.routines.DomainValidator;
+
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
+import java.util.*;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import java.util.stream.Collectors;
+import javax.json.*;
 import javax.json.JsonValue.ValueType;
 
 /**
@@ -247,6 +236,32 @@ public class JsonParser {
         }
 
         return retVal;
+    }
+    
+    public MailDomainGroup parseMailDomainGroup(JsonObject obj) throws JsonParseException {
+        MailDomainGroup grp = new MailDomainGroup();
+        
+        if (obj.containsKey("id")) {
+            grp.setId(obj.getJsonNumber("id").longValue());
+        }
+        grp.setDisplayName(getMandatoryString(obj, "name"));
+        grp.setDescription(obj.getString("description", null));
+        grp.setPersistedGroupAlias(getMandatoryString(obj, "alias"));
+        if ( obj.containsKey("domains") ) {
+            List<String> domains =
+                Optional.ofNullable(obj.getJsonArray("domains"))
+                    .orElse(Json.createArrayBuilder().build())
+                    .getValuesAs(JsonString.class)
+                    .stream()
+                    .map(JsonString::getString)
+                    .filter(d -> DomainValidator.getInstance().isValid(d))
+                    .collect(Collectors.toList());
+            grp.setEmailDomains(domains);
+        } else {
+            throw new JsonParseException("Field domains is mandatory.");
+        }
+        
+        return grp;
     }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
