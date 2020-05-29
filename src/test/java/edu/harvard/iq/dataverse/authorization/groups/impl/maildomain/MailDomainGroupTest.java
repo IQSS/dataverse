@@ -11,7 +11,7 @@ import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MailDomainGroupTest {
+public class MailDomainGroupTest {
     
     DataverseRequest dvr = Mockito.mock(DataverseRequest.class);
     
@@ -77,12 +77,13 @@ class MailDomainGroupTest {
     }
     
     static Random rnd = new Random();
-    static MailDomainGroup genGroup() {
+    public static MailDomainGroup genGroup() {
         MailDomainGroup t = new MailDomainGroup();
         t.setId(rnd.nextLong());
-        t.setPersistedGroupAlias(RandomStringUtils.randomAlphanumeric(12));
-        t.setDisplayName(RandomStringUtils.randomAlphanumeric(12));
-        t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5)+"."+RandomStringUtils.randomAlphanumeric(2)+";"+RandomStringUtils.randomAlphanumeric(5)+"."+RandomStringUtils.randomAlphanumeric(3));
+        t.setPersistedGroupAlias(RandomStringUtils.randomAlphanumeric(4));
+        t.setDisplayName(RandomStringUtils.randomAlphanumeric(8));
+        t.setDescription(RandomStringUtils.randomAlphanumeric(8));
+        t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5)+".com;"+RandomStringUtils.randomAlphanumeric(5)+".co.uk");
         return t;
     }
 }

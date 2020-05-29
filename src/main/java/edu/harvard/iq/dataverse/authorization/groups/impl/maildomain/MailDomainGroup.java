@@ -38,7 +38,7 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     /**
      * Empty Constructor for JPA.
      */
-    protected MailDomainGroup() {}
+    public MailDomainGroup() {}
     
     public void setEmailDomains(String domains) {
         this.emailDomains = domains;
@@ -109,6 +109,6 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     
     @Override
     public String toString() {
-        return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": " + this.emailDomains + "]";
+        return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": id=" + this.getId() + " domains="+this.emailDomains+" ]";
     }
 }
