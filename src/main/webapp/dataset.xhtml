@@ -43,7 +43,12 @@
                                                                      and DatasetPage.canPublishDataverse()
                                                                      and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)
                                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles() and (!DatasetPage.workingVersion.deaccessioned
+            <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
+            <!-- ADDED TOOLS SPECIFIC LOGIC TO DatasetPage.canDownloadFiles() RENDER LOGIC, CAN BE REMOVED WHEN DOWNLOAD ALL FILES IS WIRED UP -->
+            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() 
+                                                                        and (DatasetPage.datasetExploreTools.size() >= 1 
+                                                                        or (DatasetPage.sessionUserAuthenticated and DatasetPage.showComputeButton())))
+                                                                   and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{DatasetPage.description}"/>
@@ -146,6 +151,8 @@
                                                     #{bundle['dataset.accessBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
+                                                    
+                                                    <ui:remove>
                                                     <!-- DOWNLOAD -->
                                                     <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
                                                     <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
@@ -155,6 +162,7 @@
                                                         </li>
                                                     </ui:fragment>
                                                     <!-- END: DOWNLOAD -->
+                                                    </ui:remove>
 
                                                     <!-- EXPLORE -->
                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
