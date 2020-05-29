@@ -573,7 +573,7 @@ public class DatasetFilesTab implements Serializable {
     /* This method handles saving both "tabular file tags" and
      * "file categories" (which are also considered "tags" in 4.0)
      */
-    public String saveFileTagsAndCategories(Collection<FileMetadata> selectedFiles,
+    public void saveFileTagsAndCategories(Collection<FileMetadata> selectedFiles,
                                             Collection<String> selectedFileMetadataTags,
                                             Collection<String> selectedDataFileTags,
                                             boolean removeUnusedTags) {
@@ -594,7 +594,11 @@ public class DatasetFilesTab implements Serializable {
         }
 
         save();
-        return returnToDraftVersion();
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(returnToDraftVersion());
+        } catch (IOException e) {
+            logger.info("Failed to issue a redirect to draft version url.");
+        }
     }
 
     public String deleteFilesAndSave() {
