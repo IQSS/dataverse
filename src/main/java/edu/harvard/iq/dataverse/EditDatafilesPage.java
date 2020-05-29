@@ -2198,7 +2198,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             if (isFileAlreadyInDataset(dataFile)) {
                 DataFile existingFile = fileAlreadyExists.get(dataFile);
-                String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
+                
+               // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
+                 String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " +   existingFile.getDisplayName();
+    
                 if (dupeFileNamesExisting == null) {
                     dupeFileNamesExisting = alreadyExists;
                 } else {
