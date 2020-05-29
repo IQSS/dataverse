@@ -184,7 +184,7 @@ public class DataCiteRESTfullClient implements Closeable {
         if (response.getStatusLine().getStatusCode() != 201) {
             String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
             logger.log(Level.SEVERE, errMsg);
-            throw new RuntimeException(errMsg);
+            throw new IOException(errMsg);
         }
         return data;
     }
