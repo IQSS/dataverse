@@ -31,11 +31,11 @@
         </argLine>
 
         <aws.version>1.11.538</aws.version>
-        <jackson.version>2.9.6</jackson.version>
+        <jackson.version>2.5.1</jackson.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <duracloud.version>4.4.6</duracloud.version>
         <slf4j.version>1.7.7</slf4j.version>
-
+        
         <junit.version>4.12</junit.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <junit.vintage.version>5.5.2</junit.vintage.version>
@@ -101,11 +101,16 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.omnifaces</groupId>
@@ -242,6 +247,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+            <version>${junit.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>hamcrest-core</artifactId>
