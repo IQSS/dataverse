@@ -129,7 +129,7 @@ public class MailDomainGroupServiceBean {
      * @param email
      * @return Domain part or empty Optional
      */
-    Optional<String> getDomainFromMail(String email) {
+    static Optional<String> getDomainFromMail(String email) {
         String[] parts = email.split("@");
         if (parts.length < 2) { return Optional.empty(); }
         return Optional.of(parts[parts.length-1]);
