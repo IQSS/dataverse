@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -16,6 +18,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -68,6 +72,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     AuthenticationServiceBean authService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    SettingsServiceBean settingsService;
 
     @Inject
     DataverseSession session;
@@ -119,21 +125,47 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         
         // OK, this is a real batch (multi-file) download. 
+        
+        String customZipDownloadUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
+        boolean useCustomZipService = customZipDownloadUrl != null; 
+        String zipServiceKey = null; 
+
         // Do we need to write GuestbookRecord entries for the files? 
-        if (!doNotSaveGuestbookRecord) {
+        if (!doNotSaveGuestbookRecord || useCustomZipService) {
 
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
-
+            Timestamp timestamp = null; 
+            
             for (String idAsString : list) {
-                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
+                //DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
+                DataFile df = datafileService.find(new Long(idAsString));
                 if (df != null) {
-                    guestbookResponse.setDataFile(df);
-                    writeGuestbookResponseRecord(guestbookResponse);
+                    if (!doNotSaveGuestbookRecord) {
+                        guestbookResponse.setDataFile(df);
+                        writeGuestbookResponseRecord(guestbookResponse);
+                    }
+                    
+                    if (useCustomZipService) {
+                        if (zipServiceKey == null) {
+                            zipServiceKey = generateServiceKey();
+                        }
+                        if (timestamp == null) {
+                            timestamp = new Timestamp(new Date().getTime());
+                        }
+                        
+                        //FileMetadata fm = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(guestbookResponse.getDatasetVersion().getId(), new Long(idAsString));
+                        addFileToCustomZipJob(zipServiceKey, df, timestamp);
+                    }
                 }
             }
         }
-
-        redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
+        
+        if (useCustomZipService) {
+            redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey, "original".equals(guestbookResponse.getFileFormat()));
+        } else {
+            // Use the "normal" /api/access/datafiles/ API:
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
+        }
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
@@ -218,6 +250,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             logger.info("Failed to issue a redirect to file download url.");
         }
 
+    }
+    
+    private void redirectToCustomZipDownloadService(String customZipServiceUrl, String jobKey, Boolean downloadOriginal) {
+        
+        customZipServiceUrl += "?" + jobKey; 
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(customZipServiceUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to the custom Zip download service.");
+        }
     }
 
     private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
@@ -490,6 +533,40 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
 
-    }    
+    } 
+    
+    public String generateServiceKey() {
+        UUID uid = UUID.randomUUID();
+        // last 8 bytes, of the random UUID, 16 hex digits: 
+        return uid.toString().substring(20);
+    }
+    
+    public void addFileToCustomZipJob(String key, DataFile dataFile, Timestamp timestamp) {
+        String location = null; 
+        String fileName = null; 
+        
+        try {
+            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile);
+            location = storageIO.getStorageLocation();
+        } catch (IOException ioex) {
+            logger.info("Failed to open StorageIO for datafile " + dataFile.getId());
+        }
+        
+        if (dataFile.getFileMetadata() != null) {
+            fileName = dataFile.getFileMetadata().getLabel();
+        }
+                
+        if (location != null && fileName != null) {
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
+                    + "'" + key + "',"
+                    + "'" + location + "',"
+                    + "'" + fileName + "',"
+                    + "'" + timestamp + "');").executeUpdate();
+        }
+        
+        // TODO: 
+        // While we are here, issue another query, to delete all the entries that are 
+        // more than 5 minutes (or so?) old
+    }
     
 }
