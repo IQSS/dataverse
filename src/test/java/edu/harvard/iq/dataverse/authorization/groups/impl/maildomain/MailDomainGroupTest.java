@@ -1,11 +1,13 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,5 +74,15 @@ class MailDomainGroupTest {
         // when & then
         assertEquals(a, c);
         assertNotEquals(a, b);
+    }
+    
+    static Random rnd = new Random();
+    static MailDomainGroup genGroup() {
+        MailDomainGroup t = new MailDomainGroup();
+        t.setId(rnd.nextLong());
+        t.setPersistedGroupAlias(RandomStringUtils.randomAlphanumeric(12));
+        t.setDisplayName(RandomStringUtils.randomAlphanumeric(12));
+        t.setEmailDomains(RandomStringUtils.randomAlphanumeric(5)+"."+RandomStringUtils.randomAlphanumeric(2)+";"+RandomStringUtils.randomAlphanumeric(5)+"."+RandomStringUtils.randomAlphanumeric(3));
+        return t;
     }
 }
