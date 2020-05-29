@@ -3,7 +3,11 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
@@ -41,9 +45,9 @@ public class MailDomainGroupServiceBean {
     }
     
     /**
-     * Find groups for users mail when email has a domain and is verified
+     * Find groups for users mail address. Only done when email has been verified.
      * @param user
-     * @return
+     * @return A collection of groups with matching email domains
      */
     public Set<MailDomainGroup> findAllWithDomain(AuthenticatedUser user) {
         
@@ -51,21 +55,36 @@ public class MailDomainGroupServiceBean {
         if (!confirmEmailSvc.hasVerifiedEmail(user)) { return Collections.emptySet(); }
         
         // otherwise start to bisect the mail and lookup groups.
+        // NOTE: the email from the user has been validated via {@link EMailValidator} when persisted.
         Optional<String> oDomain = getDomainFromMail(user.getEmail());
         if ( oDomain.isPresent() ) {
+            // transform to lowercase, in case someone uses uppercase letters. (we store the comparison values in lowercase)
+            String domain = oDomain.get().toLowerCase();
+            
+            // get all groups and filter
             List<MailDomainGroup> rs = em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
             for(MailDomainGroup g : rs) {
-                if ( g.getEmailDomainsAsList().contains(oDomain.get()) == false ) rs.remove(g);
+                if ( g.getEmailDomainsAsList().contains(domain) == false ) rs.remove(g);
             }
+            
             return new HashSet<>(rs);
         }
         return Collections.emptySet();
     }
     
+    /**
+     * Get all mail domain groups from the database.
+     * @return A result list from the database. May be null if no results found.
+     */
     public List<MailDomainGroup> findAll() {
         return em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
     }
     
+    /**
+     * Find a specific mail domain group by it's alias.
+     * @param groupAlias
+     * @return
+     */
     Optional<MailDomainGroup> findByAlias(String groupAlias) {
         try  {
             return Optional.of(
@@ -105,6 +124,11 @@ public class MailDomainGroupServiceBean {
         em.remove( mailDomainGroup );
     }
     
+    /**
+     * Retrieve the domain part only from a given email.
+     * @param email
+     * @return Domain part or empty Optional
+     */
     Optional<String> getDomainFromMail(String email) {
         String[] parts = email.split("@");
         if (parts.length < 2) { return Optional.empty(); }
