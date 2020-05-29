@@ -130,15 +130,6 @@ public class DOIDataCiteRegisterService {
                 retString = client.postMetadata(xmlMetadata);
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (RuntimeException ex) {
-                /**
-                 * We're catching this runtime exception because we want the
-                 * dataset to be created even if DataCite is down and we can't
-                 * reserve the DOI.
-                 */
-                String msg = "Unable to reserve DOI from DataCite: " + ex.getLocalizedMessage();
-                logger.severe(msg);
-                retString = msg;
             }
         }
         return retString;
@@ -177,7 +168,7 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
-    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
 
             String metadataString = getMetadataForDeactivateIdentifier(identifier, metadata, dvObject);
