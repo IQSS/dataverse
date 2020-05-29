@@ -1212,10 +1212,10 @@ public class AddReplaceFileHelper{
             // Only a warning now
             // -----------------------------------------------------------     
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
-                this.addErrorWarning(getBundleErr("replace.new_file_same_as_replacement")); 
+                this.addError(getBundleErr("replace.new_file_same_as_replacement"));                
                 this.duplicateFileWarningFound = true;
                 this.duplicateFileWarningString = getBundleErr("replace.new_file_same_as_replacement");
-              //  break;
+                break;
             } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
                 this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 

@@ -403,6 +403,7 @@
                                         </ui:repeat>
                                     </ui:fragment>
                                 </div>
+                                <h:outputText value="#{fileMetadata.dataFile.duplicateFilename}"/>
                             </p:column>
                             <p:column class="col-file-action text-right">
                                 <f:facet name="header" class="col-file-action text-right">
@@ -540,7 +541,7 @@
     <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.already_exists.header']}" widgetVar="fileAlreadyExistsPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForAlreadyExistsPopUp}</p>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
+            <p:commandButton rendered="#{!EditDatafilesPage.fileReplaceOperation}" styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
                              action="#{EditDatafilesPage.deleteMarkedAsDuplicateFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage"/>
             <button class="btn btn-default" onclick="PF('fileAlreadyExistsPopup').hide();" type="button">

@@ -1803,7 +1803,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
-        if(isFileReplaceOperation() && fileReplacePageHelper.hasContentTypeWarning()){
+        if(isFileReplaceOperation() && fileReplacePageHelper.wasPhase1Successful() && fileReplacePageHelper.hasContentTypeWarning()){
                     //RequestContext context = RequestContext.getCurrentInstance();
                     //RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
                     PrimeFaces.current().ajax().update("datasetForm:fileTypeDifferentPopup");
@@ -1980,7 +1980,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                     uFile.getContentType(),
                                     event,
                                     null);
-            if(fileReplacePageHelper.hasContentTypeWarning()){
+            if( fileReplacePageHelper.wasPhase1Successful() && fileReplacePageHelper.hasContentTypeWarning()){
                     //RequestContext context = RequestContext.getCurrentInstance();
                     //RequestContext.getCurrentInstance().update("datasetForm:fileTypeDifferentPopup");
                     //context.execute("PF('fileTypeDifferentPopup').show();");
@@ -2213,6 +2213,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
                 dataFile.getFileMetadata().setMarkedAsDuplicate(true);
+                dataFile.setDuplicateFilename(alreadyExists);
 
             } else if (isFileAlreadyUploaded(dataFile)) {
                 DataFile existingFile = checksumMapNew.get(dataFile.getChecksumValue());

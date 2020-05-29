@@ -270,6 +270,21 @@ public class DataFile extends DvObject implements Comparable {
     public void setMarkedAsDuplicate(boolean markedAsDuplicate) {
         this.markedAsDuplicate = markedAsDuplicate;
     }
+    
+    @Transient
+    private String duplicateFilename;
+
+    public String getDuplicateFilename() {
+        return duplicateFilename;
+    }
+
+    public void setDuplicateFilename(String duplicateFilename) {
+        this.duplicateFilename = duplicateFilename;
+    }
+    
+    
+    
+    
        
     /**
      * All constructors should use this method
