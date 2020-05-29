@@ -2548,7 +2548,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids?persistentId=10.70122/FK2/9BXT5O
 
 List Unreserved PIDs
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Get a list of PIDs that have not been reserved on the PID provider side. This can happen, for example, if a dataset is created while the PID provider is down. A superuser API token is required.
 
@@ -2588,6 +2588,28 @@ The fully expanded example above (without environment variables) looks like this
 .. code-block:: bash
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids/:persistentId/reserve?persistentId=10.70122/FK2/9BXT5O
+
+Delete a PID
+~~~~~~~~~~~~
+
+Delete PID from DataCite (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PID=10.70122/FK2/9BXT5O
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/pids/delete?persistentId=$PID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X DELETE https://demo.dataverse.org/api/pids/delete?persistentId=10.70122/FK2/9BXT5O
+
 
 .. _admin:
 
