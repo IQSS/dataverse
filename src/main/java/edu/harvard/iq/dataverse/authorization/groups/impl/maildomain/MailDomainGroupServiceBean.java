@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -63,11 +65,10 @@ public class MailDomainGroupServiceBean {
             
             // get all groups and filter
             List<MailDomainGroup> rs = em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
-            for(MailDomainGroup g : rs) {
-                if ( g.getEmailDomainsAsList().contains(domain) == false ) rs.remove(g);
-            }
-            
-            return new HashSet<>(rs);
+    
+            return rs.stream()
+                .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
+                .collect(Collectors.toSet());
         }
         return Collections.emptySet();
     }
