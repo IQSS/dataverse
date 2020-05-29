@@ -40,10 +40,6 @@ public class MailDomainGroup extends PersistedGlobalGroup {
      */
     protected MailDomainGroup() {}
     
-    public MailDomainGroup(MailDomainGroupProvider prv) {
-        provider = prv;
-    }
-    
     public void setEmailDomains(String domains) {
         this.emailDomains = domains;
     }
@@ -113,6 +109,6 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     
     @Override
     public String toString() {
-        return "[MailDomainGroup " + this.getPersistedGroupAlias() + "]";
+        return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": " + this.emailDomains + "]";
     }
 }
