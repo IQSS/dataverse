@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -56,11 +57,11 @@ public class DeletePidCommand extends AbstractVoidCommand {
                 dataset.setIdentifierRegistered(false);
                 ctxt.datasets().merge(dataset);
             } else {
-                String message = "Unable to delete PID for dataset id " + dataset.getId() + ". Status code:  " + result + ".";
+                String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureExpected", Arrays.asList(dataset.getId().toString(), Integer.toString(result)));
                 throw new IllegalCommandException(message, this);
             }
         } catch (IOException ex) {
-            String message = "Problem deleting PID for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage();
+            String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureOther", Arrays.asList(dataset.getId().toString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

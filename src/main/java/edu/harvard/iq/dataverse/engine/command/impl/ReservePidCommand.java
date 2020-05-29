@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -51,7 +52,7 @@ public class ReservePidCommand extends AbstractVoidCommand {
             // We don't setIdentifierRegistered(true) yet.
             ctxt.datasets().merge(dataset);
         } catch (Throwable ex) {
-            String message = "Problem reserving PID for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage();
+            String message = BundleUtil.getStringFromBundle("pids.commands.reservePid.failure", Arrays.asList(dataset.getId().toString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

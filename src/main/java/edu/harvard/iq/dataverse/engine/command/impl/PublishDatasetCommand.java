@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.util.Date;
@@ -74,7 +75,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
         if (reservingPidsSupported) {
             if (theDataset.getGlobalIdCreateTime() == null) {
-                throw new IllegalCommandException("Cannot publish dataset because its persistent identifier has not been reserved.", this);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
             }
         }
 

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
 import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.util.Arrays;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -90,7 +91,7 @@ public class Pids extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             execCommand(new ReservePidCommand(createDataverseRequest(findUserOrDie()), dataset));
-            return ok("PID reserved for " + dataset.getGlobalId().asString());
+            return ok(BundleUtil.getStringFromBundle("pids.api.reservePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
@@ -103,7 +104,7 @@ public class Pids extends AbstractApiBean {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
             execCommand(new DeletePidCommand(createDataverseRequest(findUserOrDie()), dataset));
-            return ok("PID deleted for " + dataset.getGlobalId().asString());
+            return ok(BundleUtil.getStringFromBundle("pids.api.deletePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

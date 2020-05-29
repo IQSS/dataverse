@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.pidproviders;
 
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -46,8 +48,13 @@ public class PidUtil {
             return Json.createObjectBuilder().add("response", ex.getLocalizedMessage());
         }
         if (status != 200) {
-            JsonObject out = Json.createReader(connection.getErrorStream()).readObject();
-            return Json.createObjectBuilder().add("response", out);
+            InputStream errorStream = connection.getErrorStream();
+            if (errorStream != null) {
+                JsonObject out = Json.createReader(connection.getErrorStream()).readObject();
+                return Json.createObjectBuilder().add("response", out);
+            } else {
+                return Json.createObjectBuilder().add("response", BundleUtil.getStringFromBundle("pids.datacite.errors.noErrorStream"));
+            }
         }
         JsonObject out;
         try {
@@ -72,7 +79,7 @@ public class PidUtil {
     private static String acceptOnlyDoi(String persistentId) {
         GlobalId globalId = new GlobalId(persistentId);
         if (!GlobalId.DOI_PROTOCOL.equals(globalId.getProtocol())) {
-            throw new IllegalArgumentException("Only doi: is supported.");
+            throw new IllegalArgumentException(BundleUtil.getStringFromBundle("pids.datacite.errors.DoiOnly"));
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
