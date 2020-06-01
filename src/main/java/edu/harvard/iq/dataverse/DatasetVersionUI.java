@@ -110,8 +110,8 @@ public class DatasetVersionUI implements Serializable {
                 if (this.datasetRelPublications.isEmpty()) {
                     for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
                         DatasetRelPublication datasetRelPublication = new DatasetRelPublication();
-                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getTitle());
-                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getDescription());
+                        datasetRelPublication.setTitle(dsf.getDatasetFieldType().getLocaleTitle());
+                        datasetRelPublication.setDescription(dsf.getDatasetFieldType().getLocaleDescription());
                         for (DatasetField subField : relPubVal.getChildDatasetFields()) {
                             if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationCitation)) {
                                 datasetRelPublication.setText(subField.getValue());
