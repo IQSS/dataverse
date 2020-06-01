@@ -167,24 +167,14 @@
                                                     <!-- EXPLORE -->
                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
-                                                        <li class="#{DatasetPage.datasetExploreTools.size()>1 ? 'dropdown-submenu pull-left' : ''}">
-                                                            <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()==1}">
-                                                                <a tabindex="-1" href="#" class="btn-explore" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">#{bundle.explore}</a>
-                                                            </ui:fragment>
-                                                            <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size()>1}">
-                                                                <a tabindex="-1" href="#" class="btn-explore">#{bundle.explore}</a>
-                                                            </ui:fragment>
-                                                            <ul class="dropdown-menu">
-                                                                <!-- Explore tool links -->
-                                                                <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
-                                                                    <li>
-                                                                        <h:commandLink styleClass="ui-commandlink ui-widget" action="#{DatasetPage.explore(tool)}">
-                                                                            <h:outputText value="#{tool.getDisplayNameLang()}"/>
-                                                                        </h:commandLink>
-                                                                    </li>
-                                                                </ui:repeat>
-                                                            </ul>
-                                                        </li>
+                                                        <!-- Explore tool links -->
+                                                        <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
+                                                            <li>
+                                                                <h:commandLink action="#{DatasetPage.explore(tool)}">
+                                                                    <h:outputText value="#{tool.getDisplayNameLang()}"/>
+                                                                </h:commandLink>
+                                                            </li>
+                                                        </ui:repeat>
                                                     </ui:fragment>
                                                     <!-- END: EXPLORE -->
 
