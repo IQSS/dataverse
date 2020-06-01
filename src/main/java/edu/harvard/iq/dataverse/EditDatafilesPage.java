@@ -2201,6 +2201,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
                // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
                  String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " +   existingFile.getDisplayName();
+                 
+                 String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
     
                 if (dupeFileNamesExisting == null) {
                     dupeFileNamesExisting = alreadyExists;
@@ -2213,7 +2215,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
                 dataFile.getFileMetadata().setMarkedAsDuplicate(true);
-                dataFile.setDuplicateFilename(alreadyExists);
+                dataFile.setDuplicateFilename(inLineMessage);
 
             } else if (isFileAlreadyUploaded(dataFile)) {
                 DataFile existingFile = checksumMapNew.get(dataFile.getChecksumValue());
