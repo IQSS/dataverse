@@ -15,7 +15,10 @@ import java.util.Set;
 public class SearchForTypes {
 
     private Set<SearchObjectType> types = new HashSet<>();
-    
+    private boolean containsDataverse;
+    private boolean containsDataset;
+    private boolean containsFiles;
+
     // -------------------- CONSTRUCTORS --------------------
     
     private SearchForTypes(Set<SearchObjectType> types) {
@@ -27,6 +30,18 @@ public class SearchForTypes {
     
     public Set<SearchObjectType> getTypes() {
         return types;
+    }
+
+    public boolean isContainsDataverse() {
+        return types.contains(SearchObjectType.DATAVERSES);
+    }
+
+    public boolean isContainsDataset() {
+        return types.contains(SearchObjectType.DATASETS);
+    }
+
+    public boolean isContainsFiles() {
+        return types.contains(SearchObjectType.FILES);
     }
 
     // -------------------- LOGIC --------------------
@@ -83,5 +98,19 @@ public class SearchForTypes {
      */
     public static SearchForTypes all() {
         return byTypes(SearchObjectType.values());
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setContainsDataverse(boolean containsDataverse) {
+        this.containsDataverse = containsDataverse;
+    }
+
+    public void setContainsDataset(boolean containsDataset) {
+        this.containsDataset = containsDataset;
+    }
+
+    public void setContainsFiles(boolean containsFiles) {
+        this.containsFiles = containsFiles;
     }
 }

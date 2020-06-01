@@ -22,7 +22,6 @@
 <!-- start: panel -->
 
     <div class="row" id="my_data_filter_column2">
-        <h:form>
         <div class="panelSearchForm #{widgetWrapper.widgetView ? 'col-md-12' : 'col-md-6'}">
 
                 <p:inputText id="searchBasic" styleClass="search-input"
@@ -47,7 +46,6 @@
         </div>
             <p:remoteCommand name="submitsearch"
                              action="#{MyDataSearchFragment.searchRedirect(DataverseUserPage.redirectPage)}"/>
-        </h:form>
     </div>
 <!-- start: panel body -->
 <div class="panel-body clearfix">
@@ -56,7 +54,6 @@
     <div id="search-row-panel" class="row row-offcanvas row-offcanvas-left" >
         <div id="dv-sidebar" class="col-sm-4 col-md-3 sidebar-offcanvas">
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
-            <h:form id="facetType">
                 <!--DATAVERSE TOGGLE-->
                 <div class="clearfix">
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" tabindex="-1"
@@ -73,7 +70,7 @@
                         </c:forEach>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox
-                                value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATAVERSES)}"
+                                value="#{MyDataSearchFragment.selectedTypes.containsDataverse}"
                                 disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATAVERSES)}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
@@ -113,7 +110,7 @@
                         </c:forEach>
                         <f:param name="page" value="1"/>
                         <p:selectBooleanCheckbox
-                                value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.DATASETS)}"
+                                value="#{MyDataSearchFragment.selectedTypes.containsDataset}"
                                 disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.DATASETS)}"/>
                     </h:outputLink>
                     <!--DATASETS ONLY-->
@@ -152,7 +149,7 @@
                             <f:param name="rf#{status.index}" value='#{clickedRoleFilter}'/>
                         </c:forEach>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{MyDataSearchFragment.selectedTypes.contains(searchObjectTypeEnum.FILES)}"
+                        <p:selectBooleanCheckbox value="#{MyDataSearchFragment.selectedTypes.containsFiles}"
                                                  disabled="#{MyDataSearchFragment.selectedTypes.containsOnly(searchObjectTypeEnum.FILES)}"/>
                     </h:outputLink>
                     <!--FILES ONLY-->
@@ -176,10 +173,9 @@
                         </h:outputFormat>
                     </h:outputLink>
                 </div>
-            </h:form>
 
             <!--NON-TYPE FACETS-->
-            <h:form id="facetCategoryForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
+            <p:outputPanel id="facetCategoryForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
                 <p:dataList id="facetCategoryList" value="#{MyDataSearchFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{MyDataSearchFragment.getNumberOfFacets(facetCategory.name,5)}">
@@ -219,7 +215,7 @@
                     <hr />
 
                     <!--ROLES-->
-                    <h:form id="rolesForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
+                    <p:outputPanel id="rolesForm" rendered="#{MyDataSearchFragment.searchResultsCount > 0}">
                         <h:outputText value="#{bundle['facets.search.role']}" styleClass="facetCategoryName"/>
                         <p:dataList id="rolesList" value="#{MyDataSearchFragment.myRoles}" var="role" rows="#{MyDataSearchFragment.myRoles.size()}">
                             <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!MyDataSearchFragment.roleFilters.contains(role)}" styleClass="facetLink">
@@ -250,9 +246,9 @@
                                 <f:param name="uId" value="#{MyDataSearchFragment.searchUserId}"/>
                             </h:outputLink>
                         </p:dataList>
-                    </h:form>
+                    </p:outputPanel>
                 </p:dataList>
-            </h:form>
+            </p:outputPanel>
         </div>
         <div id="dv-main" class="col-sm-8 col-md-9">
             <!--DEBUG BEGIN-->
