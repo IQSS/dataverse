@@ -686,7 +686,7 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
     }
     public boolean isShibAttributeCharacterSetConversionEnabled() {
-        boolean defaultResponse = false;
+        boolean defaultResponse = true;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAttributeCharacterSetConversionEnabled, defaultResponse);
     }
 
