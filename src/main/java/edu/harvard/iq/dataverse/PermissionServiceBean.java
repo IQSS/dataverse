@@ -733,6 +733,34 @@ public class PermissionServiceBean {
             }
         }
     }
+    
+    public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators. They can still make edits.
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                }
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+        }
+    }
 
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {

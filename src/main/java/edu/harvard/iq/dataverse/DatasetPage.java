@@ -3783,12 +3783,29 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean lockedFromDownloadVar;    
     private boolean lockedDueToDcmUpload;
     private Boolean lockedDueToIngestVar;
+    private Boolean lockedFromPublishingVar;
+
+    /**
+     * Authors are not allowed to publish but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromPublishing() {
+        if (null == lockedFromPublishingVar || stateChanged) {
+            try {
+                permissionService.checkPublishDatasetLock(dataset, dvRequestService.getDataverseRequest(), new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), true));
+                lockedFromPublishingVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromPublishingVar = true;
+            }
+        }
+        return lockedFromPublishingVar;
+    }
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        if(null == lockedFromEditsVar || stateChanged) {
+        if (null == lockedFromEditsVar || stateChanged) {
             try {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
@@ -3797,6 +3814,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return lockedFromEditsVar;
+
     }
     
     /**

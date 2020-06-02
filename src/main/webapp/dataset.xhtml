@@ -240,8 +240,8 @@
                                         <!-- PUBLISH DATASET -->
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishButtonGroup}">
                                             <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.locked and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                        disabled="#{DatasetPage.locked and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset) ? 'disabled' : ''}">
+                                                <button type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                        disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
                                                     #{bundle['dataset.publishBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
