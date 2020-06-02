@@ -147,6 +147,7 @@ public class ZipDownloadService {
             // TODO: folders
             // TODO: String zipEntryName = checkZipEntryName(fileName);
             if (inputStream != null && this.zipOutputStream != null) {
+                
                 ZipEntry entry = new ZipEntry(fileName);
 
                 byte[] bytes = new byte[2 * 8192];
@@ -154,6 +155,11 @@ public class ZipDownloadService {
                 long readSize = 0L;
 
                 try {
+                    // Does this file have a folder name? 
+                    if (hasFolder(fileName)) {
+                        addFolderToZipStream(getFolderName(fileName), zippedFolders);
+                    }
+
                     this.zipOutputStream.putNextEntry(entry);
 
                     while ((read = inputStream.read(bytes)) != -1) {
@@ -162,7 +168,7 @@ public class ZipDownloadService {
                     }
                     inputStream.close();
                     this.zipOutputStream.closeEntry();
-                    
+
                     /*if (fileSize == readSize) {
                         //System.out.println("Read "+readSize+" bytes;");
                     } else {
@@ -188,7 +194,45 @@ public class ZipDownloadService {
     
     public void openZipStream() {
         if (this.zipOutputStream == null) {
-            this.zipOutputStream = new ZipOutputStream(new ChunkingOutputStream(System.out));
+            if (this.zipOnly) {
+                this.zipOutputStream = new ZipOutputStream(System.out);
+            } else {
+                this.zipOutputStream = new ZipOutputStream(new ChunkingOutputStream(System.out));
+            }
+        }
+    }
+    
+    private boolean hasFolder(String fileName) {
+        if (fileName == null) {
+            return false;
+        }
+        return fileName.indexOf('/') >= 0;
+    }
+    
+    private String getFolderName(String fileName) {
+        if (fileName == null) {
+            return "";
+        }
+        String folderName = fileName.substring(0, fileName.lastIndexOf('/'));
+        // If any of the saved folder names start with with slashes,            
+        // we want to remove them:                                              
+        // (i.e., ///foo/bar will become foo/bar)                               
+        while (folderName.startsWith("/")) {
+            folderName = folderName.substring(1);
+        }
+        return folderName;
+    }
+    
+    private void addFolderToZipStream(String folderName, Set<String> zippedFolders) throws IOException {
+        // We don't want to create folders in the output Zip file that have 
+        // already been added:
+        if (!"".equals(folderName)) {
+            if (!zippedFolders.contains(folderName)) {
+                ZipEntry d = new ZipEntry(folderName + "/");
+                zipOutputStream.putNextEntry(d);
+                zipOutputStream.closeEntry();
+                zippedFolders.add(folderName);
+            }
         }
     }
 }
