@@ -422,7 +422,13 @@ public class SettingsServiceBean {
         /**
          * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
          */
-        ShibAffiliationAttribute
+        ShibAffiliationAttribute,
+        /*Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8 */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
+         * Validate physical files for all the datafiles in the dataset when publishing
+         */
+        FileValidationOnPublishEnabled
         ;
 
         @Override

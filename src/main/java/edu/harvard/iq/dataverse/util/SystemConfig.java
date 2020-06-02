@@ -684,6 +684,10 @@ public class SystemConfig {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
     }
+    public boolean isShibAttributeCharacterSetConversionEnabled() {
+        boolean defaultResponse = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAttributeCharacterSetConversionEnabled, defaultResponse);
+    }
 
     /**
      * getPVDictionaries
