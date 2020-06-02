@@ -42,8 +42,7 @@ download our users will not be able to utilize `wget --continue`, or
 any similar "resume" functionality - because it's impossible to resume
 generating a zipped stream from a certain offset.
 
-The implementation is a hack. It relies on direct access to everything
-- storage locations (filesystem or S3) and the database.
+The implementation is a hack. It relies on direct access to everything - storage locations (filesystem or S3) and the database.
 
 There are no network calls between the Application and the zipper (an
 implementation relying on such a call was discussed early
