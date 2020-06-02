@@ -653,15 +653,16 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // ---------------------------------
         // (1) Initialize filterParams and check for Errors
         // ---------------------------------
-        DataverseRequest dataverseRequest = dataverseRequestService.getDataverseRequest();
+        DataverseRequest originalRequest = dataverseRequestService.getDataverseRequest();
+        DataverseRequest requestWithSearchedUser = new DataverseRequest(authUser, originalRequest.getSourceAddress());
         
         selectedTypes = SearchForTypes.byTypes(
                 Arrays.stream(selectedTypesString.split(":"))
-                    .map(typeString -> SearchObjectType.fromSolrValue(typeString))
+                    .map(SearchObjectType::fromSolrValue)
                     .collect(Collectors.toList()));
 
         List<Long> roleIdsForFilters = roleFilters.isEmpty() ? rolePermissionHelper.getRoleIdList() : rolePermissionHelper.findRolesIdsByNames(roleFilters);
-        MyDataFilterParams filterParams = new MyDataFilterParams(dataverseRequest, toMyDataFinderFormat(selectedTypes),
+        MyDataFilterParams filterParams = new MyDataFilterParams(requestWithSearchedUser, toMyDataFinderFormat(selectedTypes),
                 pub_states, roleIdsForFilters, searchTerm);
         if (filterParams.hasError()) {
             return filterParams.getErrorMessage() + filterParams.getErrorMessage();
@@ -699,7 +700,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         SolrQueryResponse solrQueryResponse;
         try {
             solrQueryResponse = searchService.search(
-                    dataverseRequest,
+                    requestWithSearchedUser,
                     null,
                     searchTerm,
                     selectedTypes,
@@ -728,7 +729,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
             // we need to populate roleTagRetriver object with roles for all objects and not only for those from current page (int.max_value)
             try {
                 SolrQueryResponse fullSolrQueryResponse = searchService.search(
-                        dataverseRequest,
+                        requestWithSearchedUser,
                         null,
                         searchTerm,
                         selectedTypes,
@@ -739,7 +740,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                         1000
                 );
                 roleTagRetriever = new RoleTagRetriever(rolePermissionHelper, roleAssigneeService, this.dvObjectServiceBean);
-                roleTagRetriever.loadRoles(dataverseRequest, fullSolrQueryResponse);
+                roleTagRetriever.loadRoles(requestWithSearchedUser, fullSolrQueryResponse);
 
                 List<String> roles = new ArrayList<>();
                 for(SolrSearchResult dvObjId : fullSolrQueryResponse.getSolrSearchResults()) {
@@ -750,7 +751,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
                 logger.severe("Solr SearchException: " + ex.getMessage());
             }
 
-            roleTagRetriever.loadRoles(dataverseRequest, solrQueryResponse);
+            roleTagRetriever.loadRoles(requestWithSearchedUser, solrQueryResponse);
             for(FacetCategory facetCat : solrQueryResponse.getFacetCategoryList()) {
                 if(facetCat.getName().equals("publicationStatus")) {
                     this.facetCategoryList.add(facetCat);

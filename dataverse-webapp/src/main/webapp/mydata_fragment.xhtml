@@ -29,7 +29,7 @@
                              value="#{MyDataSearchFragment.query}"
                              onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{bundle['mydataFragment.search']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{MyDataSearchFragment.searchRedirect(DataverseUserPage.redirectPage)}">
+                <p:commandLink id="searchbutton" styleClass="btn btn-default" action="#{MyDataSearchFragment.searchRedirect('')}">
                     <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
                 </p:commandLink>
         </div>
@@ -45,7 +45,7 @@
                 <p:watermark for="searchUserId" value="#{MyDataSearchFragment.searchUserId}"/>
         </div>
             <p:remoteCommand name="submitsearch"
-                             action="#{MyDataSearchFragment.searchRedirect(DataverseUserPage.redirectPage)}"/>
+                             action="#{MyDataSearchFragment.searchRedirect('')}"/>
     </div>
 <!-- start: panel body -->
 <div class="panel-body clearfix">
