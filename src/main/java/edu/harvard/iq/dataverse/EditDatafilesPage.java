@@ -1789,10 +1789,21 @@ public class EditDatafilesPage implements java.io.Serializable {
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
-                setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
+                if (dupeFileNamesExisting != null || dupeFileNamesNew != null) {
+                   
+                    String popupExplainer = "";
+                    if (multipleDupesExisting || multipleDupesNew) {
+                        popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.multiple.one");
+                        popupExplainer =  popupExplainer.concat(" " + BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.multiple.two"));
+                    } else {
+                        popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.one");
+                        popupExplainer =  popupExplainer.concat(" " +BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.two"));
+                    }
+                    setWarningMessageForAlreadyExistsPopUp(popupExplainer);
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
-                    //context.execute("PF('fileTypeDifferentPopup').show();");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                }
+                
                 if (uploadWarningMessageIsNotAnError) {
                     FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
                 } else {

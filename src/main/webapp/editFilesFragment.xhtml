@@ -403,7 +403,7 @@
                                         </ui:repeat>
                                     </ui:fragment>
                                 </div>
-                                <h:outputText value="#{fileMetadata.dataFile.duplicateFilename}"/>
+                                <h:outputText value="#{fileMetadata.dataFile.duplicateFilename}"  styleClass="label label-info" />
                             </p:column>
                             <p:column class="col-file-action text-right">
                                 <f:facet name="header" class="col-file-action text-right">
@@ -538,6 +538,7 @@
             </button>
         </div>
     </p:dialog>
+    
     <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.already_exists.header']}" widgetVar="fileAlreadyExistsPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForAlreadyExistsPopUp}</p>
         <div class="button-block">
