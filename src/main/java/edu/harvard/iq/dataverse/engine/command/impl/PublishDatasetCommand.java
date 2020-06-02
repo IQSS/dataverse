@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -114,15 +115,23 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             if ( registerGlobalIdsForFiles ){
                 registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
 	    }
+            
+            boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
-                String info = "Adding File PIDs asynchronously";
+            if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
+                    && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
+                // TODO? The time it takes to validate the physical files in the dataset
+                // is a function of the total file size, NOT the number of files; 
+                // so that's what we should be checking. 
+                String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
+                info += "Validating Datafiles Asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
+                theDataset = ctxt.em().merge(theDataset);
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
@@ -150,10 +159,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
         
         if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
-                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) ) {
+                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
+        }
+        
+        if ( getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+            throw new IllegalCommandException("This dataset cannot be published because some files have been found missing or corrupted. " 
+                    + ". Please contact support to address this.", this);
         }
         
         if ( datasetExternallyReleased ) {

@@ -75,15 +75,20 @@ public class SiteMapUtilTest {
         deaccessioned.setVersions(datasetVersions);
         datasets.add(deaccessioned);
 
-        File oldSitemapFile = new File("/tmp/sitemap.xml");
-        if (oldSitemapFile.exists()) {
-            oldSitemapFile.delete();
-        }
+        Path tmpDirPath = Files.createTempDirectory(null);
+        String tmpDir = tmpDirPath.toString();
+        File docroot = new File(tmpDir + File.separator + "docroot");
+        docroot.mkdirs();
+        System.setProperty("com.sun.aas.instanceRoot", tmpDir);
+
         SiteMapUtil.updateSiteMap(dataverses, datasets);
+
+        String pathToTest = tmpDirPath + File.separator + "docroot" + File.separator + "sitemap";
+        String pathToSiteMap = pathToTest + File.separator + "sitemap.xml";
 
         Exception wellFormedXmlException = null;
         try {
-            assertTrue(XmlValidator.validateXmlWellFormed("/tmp/sitemap.xml"));
+            assertTrue(XmlValidator.validateXmlWellFormed(pathToSiteMap));
         } catch (Exception ex) {
             System.out.println("Exception caught checking that XML is well formed: " + ex);
             wellFormedXmlException = ex;
@@ -92,14 +97,14 @@ public class SiteMapUtilTest {
 
         Exception notValidAgainstSchemaException = null;
         try {
-            assertTrue(XmlValidator.validateXmlSchema("/tmp/sitemap.xml", new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
+            assertTrue(XmlValidator.validateXmlSchema(pathToSiteMap, new URL("https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd")));
         } catch (MalformedURLException | SAXException ex) {
             System.out.println("Exception caught validating XML against the sitemap schema: " + ex);
             notValidAgainstSchemaException = ex;
         }
         assertNull(notValidAgainstSchemaException);
 
-        File sitemapFile = new File("/tmp/sitemap.xml");
+        File sitemapFile = new File(pathToSiteMap);
         String sitemapString = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(sitemapFile.getAbsolutePath()))));
         System.out.println("sitemap: " + sitemapString);
 
@@ -108,6 +113,8 @@ public class SiteMapUtilTest {
         assertFalse(sitemapString.contains(unpublishedPid));
         assertFalse(sitemapString.contains(harvestedPid));
         assertFalse(sitemapString.contains(deaccessionedPid));
+
+        System.clearProperty("com.sun.aas.instanceRoot");
 
     }
 

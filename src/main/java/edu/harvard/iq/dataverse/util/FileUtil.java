@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import java.awt.image.BufferedImage;
@@ -82,6 +83,10 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import java.util.Arrays;
+import org.apache.commons.io.IOUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1675,10 +1680,161 @@ public class FileUtil implements java.io.Serializable  {
     	return s3io;
     }
     
+    public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
+        DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+        if (checksumType == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        StorageIO<DataFile> storage = dataFile.getStorageIO();
+        InputStream in = null;
+        
+        try {
+            storage.open(DataAccessOption.READ_ACCESS);
+            
+            if (!dataFile.isTabularData()) {
+                in = storage.getInputStream();
+            } else {
+                // if this is a tabular file, read the preserved original "auxiliary file"
+                // instead:
+                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+            }
+        } catch (IOException ioex) {
+            in = null;
+        }
+
+        if (in == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        String recalculatedChecksum = null;
+        try {
+            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+        } catch (RuntimeException rte) {
+            recalculatedChecksum = null;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+
+        if (recalculatedChecksum == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        // TODO? What should we do if the datafile does not have a non-null checksum?
+        // Should we fail, or should we assume that the recalculated checksum
+        // is correct, and populate the checksumValue field with it?
+        if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+            // There's one possible condition that is 100% recoverable and can
+            // be automatically fixed (issue #6660):
+            boolean fixed = false;
+            if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
+                // try again, see if the .orig file happens to be there:
+                try {
+                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                } catch (IOException ioex) {
+                    in = null;
+                }
+                if (in != null) {
+                    try {
+                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                    } catch (RuntimeException rte) {
+                        recalculatedChecksum = null;
+                    } finally {
+                        IOUtils.closeQuietly(in);
+                    }
+                    // try again: 
+                    if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                        fixed = true;
+                        try {
+                            storage.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        } catch (IOException ioex) {
+                            fixed = false;
+                        }
+                    }
+                }
+            }
+            
+            if (!fixed) {
+                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+                logger.log(Level.INFO, info);
+                throw new IOException(info);
+            }
+        }
+
+        logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
+    }
+    
     public static String getStorageIdentifierFromLocation(String location) {
     	int driverEnd = location.indexOf("://") + 3;
     	int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
     	return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
+    }
+    
+    public static void deleteTempFile(DataFile dataFile, Dataset dataset, IngestServiceBean ingestService) {
+    	logger.info("Deleting " + dataFile.getStorageIdentifier());
+    	// Before we remove the file from the list and forget about 
+    	// it:
+    	// The physical uploaded file is still sitting in the temporary
+    	// directory. If it were saved, it would be moved into its 
+    	// permanent location. But since the user chose not to save it,
+    	// we have to delete the temp file too. 
+    	// 
+    	// Eventually, we will likely add a dedicated mechanism
+    	// for managing temp files, similar to (or part of) the storage 
+    	// access framework, that would allow us to handle specialized
+    	// configurations - highly sensitive/private data, that 
+    	// has to be kept encrypted even in temp files, and such. 
+    	// But for now, we just delete the file directly on the 
+    	// local filesystem: 
+
+    	try {
+    		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+    				Paths.get(getFilesTempDirectory()), dataFile.getStorageIdentifier());
+    		if (generatedTempFiles != null) {
+    			for (Path generated : generatedTempFiles) {
+    				logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+    				try {
+    					Files.delete(generated);
+    				} catch (IOException ioex) {
+    					logger.warning("Failed to delete generated file " + generated.toString());
+    				}
+    			}
+    		}
+    		String si = dataFile.getStorageIdentifier();
+    		if (si.contains("://")) {
+    			//Direct upload files will already have a store id in their storageidentifier
+    			//but they need to be associated with a dataset for the overall storagelocation to be calculated
+    			//so we temporarily set the owner
+    			if(dataFile.getOwner()!=null) {
+    				logger.warning("Datafile owner was not null as expected");
+    			}
+    			dataFile.setOwner(dataset);
+    			//Use one StorageIO to get the storageLocation and then create a direct storage storageIO class to perform the delete 
+    			// (since delete is forbidden except for direct storage)
+    			String sl = DataAccess.getStorageIO(dataFile).getStorageLocation();
+    			DataAccess.getDirectStorageIO(sl).delete();
+    		} else {
+    			//Temp files sent to this method have no prefix, not even "tmp://"
+    			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
+    		}
+    	} catch (IOException ioEx) {
+    		// safe to ignore - it's just a temp file. 
+    		logger.warning(ioEx.getMessage());
+    		if(dataFile.getStorageIdentifier().contains("://")) {
+    			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
+    		} else {
+    			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+    					+ dataFile.getStorageIdentifier());
+    		}
+    	} finally {
+    		dataFile.setOwner(null);
+    	}
     }
 
 }

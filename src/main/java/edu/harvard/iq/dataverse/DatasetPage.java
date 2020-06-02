@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
-import edu.harvard.iq.dataverse.PackagePopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -20,6 +19,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -50,6 +51,8 @@ import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
@@ -79,7 +82,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -88,11 +91,9 @@ import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
@@ -114,6 +115,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -121,8 +123,6 @@ import org.primefaces.event.CloseEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.event.data.PageEvent;
 
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
-import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FacetLabel;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
@@ -130,10 +130,6 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
 import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.TimeZone;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -251,6 +247,9 @@ public class DatasetPage implements java.io.Serializable {
     private Long versionId;
     private int selectedTabIndex;
     private List<DataFile> newFiles = new ArrayList<>();
+    private List<DataFile> uploadedFiles = new ArrayList<>();
+    private MutableBoolean uploadInProgress = new MutableBoolean(false);
+
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private int releaseRadio = 1;
@@ -1119,6 +1118,22 @@ public class DatasetPage implements java.io.Serializable {
         this.newFiles = newFiles;
     }
     
+    public List<DataFile> getUploadedFiles() {
+        return uploadedFiles;
+    }
+    
+    public void setUploadedFiles(List<DataFile> uploadedFiles) {
+        this.uploadedFiles = uploadedFiles;
+    }
+    
+    public MutableBoolean getUploadInProgress() {
+        return uploadInProgress;
+    }
+    
+    public void setUploadInProgress(MutableBoolean inProgress) {
+        this.uploadInProgress = inProgress;
+    }
+    
     public Dataverse getLinkingDataverse() {
         return linkingDataverse;
     }
@@ -1762,8 +1777,14 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
             ownerId = dataset.getOwner().getId();
             logger.info("New host dataverse id: "+ownerId);
-            // discard the dataset already created:
+            // discard the dataset already created
+            //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
+            GlobalId gid = dataset.getGlobalId();
             dataset = new Dataset();
+            if(gid!=null) {
+            	dataset.setGlobalId(gid);
+            }
+         
             // initiate from scratch: (isolate the creation of a new dataset in its own method?)
             init(true);
             // rebuild the bred crumbs display:
@@ -1938,14 +1959,19 @@ public class DatasetPage implements java.io.Serializable {
             dataset.setOwner(dataverseService.find(ownerId));
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
-            //Wait until the create command before actually getting an identifier  
 
             if (dataset.getOwner() == null) {
                 return permissionsWrapper.notFound();
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
-                        
+            //Wait until the create command before actually getting an identifier, except if we're using directUpload  
+        	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
+            if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
+            	CommandContext ctxt = commandEngine.getContext();
+            	GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
+                dataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(dataset, idServiceBean));
+            }                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
                 dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
@@ -1995,43 +2021,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
                 
-        // Various info messages, when the dataset is locked (for various reasons):
-        if (dataset.isLocked() && canUpdateDataset()) {
-            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.message.details"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
-                        BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
-                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
-                lockedDueToDcmUpload = true;
-            }
-            //This is a hack to remove dataset locks for File PID registration if 
-                //the dataset is released
-                //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
-                    datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
-                }*/
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
-                        BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
-            }
-        }
-        
-            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
-                lockedDueToIngestVar = true;
-            }
+        displayLockInfo(dataset);
             
         for(DataFile f : dataset.getFiles()) {
             if(f.isTabularData()) {
@@ -2053,6 +2043,58 @@ public class DatasetPage implements java.io.Serializable {
         
         
         return null;
+    }
+    
+    private void displayLockInfo(Dataset dataset) {
+        // Various info messages, when the dataset is locked (for various reasons):
+        if (dataset.isLocked() && canUpdateDataset()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.message.details"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
+                        BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
+                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+                lockedDueToDcmUpload = true;
+            }
+            //This is a hack to remove dataset locks for File PID registration if 
+            //the dataset is released
+            //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
+            /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.finalizePublication)){
+                datasetService.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.finalizePublication);
+            }*/
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                // "finalizePublication" lock is used to lock the dataset while 
+                // the FinalizeDatasetPublicationCommand is running asynchronously. 
+                // the tasks currently performed by the command are the  pid registration 
+                // for files and (or) physical file validation (either or both 
+                // of these two can be disabled via database settings). More 
+                // such asynchronous processing tasks may be added in the future. 
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
+                        BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                // the dataset is locked, because one or more datafiles in it 
+                // failed validation during an attempt to publish it. 
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.message"),
+                        BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
+            } 
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                String rootDataverseName = dataverseService.findRootDataverse().getName();
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+            }
+        }
+        
+        if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
+            lockedDueToIngestVar = true;
+        }
     }
     
     private Boolean fileTreeViewRequired = null; 
@@ -2559,7 +2601,13 @@ public class DatasetPage implements java.io.Serializable {
                 }
                 
             } catch (CommandException ex) {
-                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                Dataset testDs = datasetService.find(dataset.getId());
+                if (testDs != null && !testDs.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                    // If the dataset could not be published because it has failed 
+                    // physical file validation, the messaging will be handled via
+                    // the lock info system. 
+                    JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                }
                 logger.severe(ex.getMessage());
             }
             
@@ -3527,6 +3575,34 @@ public class DatasetPage implements java.io.Serializable {
     public String cancel() {
         return  returnToLatestVersion();
     }
+    
+    public void cancelCreate() {
+    	//Stop any uploads in progress (so that uploadedFiles doesn't change)
+    	uploadInProgress.setValue(false);
+
+    	logger.fine("Cancelling: " + newFiles.size() + " : " + uploadedFiles.size());
+
+    	//Files that have been finished and are now in the lower list on the page
+    	for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
+    		FileUtil.deleteTempFile(newFile, dataset, ingestService);
+    	}
+    	logger.fine("Deleted newFiles");
+
+    	//Files in the upload process but not yet finished
+    	//ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
+    	for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
+    		FileUtil.deleteTempFile(newFile, dataset, ingestService);
+    	}
+    	logger.fine("Deleted uploadedFiles");
+
+    	try {
+    		String alias = dataset.getOwner().getAlias();
+    		logger.info("alias: " + alias);
+    		FacesContext.getCurrentInstance().getExternalContext().redirect("/dataverse.xhtml?alias=" + alias);
+    	} catch (IOException ex) {
+    		logger.info("Failed to issue a redirect to file download url.");
+    	}
+    }
 
     private HttpClient getClient() {
         // TODO: 
@@ -3633,8 +3709,10 @@ public class DatasetPage implements java.io.Serializable {
         if (dataset.getId() != null) {
             Dataset testDataset = datasetService.find(dataset.getId());
             if (testDataset != null && testDataset.getId() != null) {
-                logger.log(Level.FINE, "checking lock status of dataset {0}", dataset.getId());
                 if (testDataset.getLocks().size() > 0) {
+                    // Refresh the info messages, in case the dataset has been 
+                    // re-locked with a different lock type:
+                    displayLockInfo(testDataset);
                     return true;
                 }
             }
@@ -4541,7 +4619,7 @@ public class DatasetPage implements java.io.Serializable {
 
             InputStream uploadStream = null;
             try {
-                uploadStream = file.getInputstream();
+                uploadStream = file.getInputStream();
             } catch (IOException ioex) {
                 logger.log(Level.WARNING, ioex, ()->"the file "+file.getFileName()+" failed to upload!");
                 List<String> args = Arrays.asList(file.getFileName());

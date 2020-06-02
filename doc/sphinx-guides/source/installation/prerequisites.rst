@@ -4,11 +4,9 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure Linux, Java, Glassfish, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
+Before running the Dataverse installation script, you must install and configure Linux, Java, Payara, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
-
-You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
 .. contents:: |toctitle|
 	:local:
@@ -44,79 +42,54 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 
         # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
-.. _glassfish:
+.. _payara:
 
-Glassfish
----------
+Payara
+------
 
-Glassfish Version 4.1 is required. There are known issues with newer versions of the Glassfish 4.x series so it should be avoided. For details, see https://github.com/IQSS/dataverse/issues/2628 . The issue we are using the track support for Glassfish 5 is https://github.com/IQSS/dataverse/issues/4248 .
+Payara 5.201 is recommended. Newer versions might work fine.
 
-Installing Glassfish
-====================
+Installing Payara
+=================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose.
 
-- Download and install Glassfish (installed in ``/usr/local/glassfish4`` in the example commands below)::
+- Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget http://dlc-cdn.sun.com/glassfish/4.1/release/glassfish-4.1.zip
-	# unzip glassfish-4.1.zip
-	# mv glassfish4 /usr/local
+	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
+	# unzip payara-5.201.zip
+	# mv payara5 /usr/local
 
-If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the below directories:
+If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
 
 - Set service account permissions::
 
-	# chown -R root:root /usr/local/glassfish4
-	# chown glassfish /usr/local/glassfish4/glassfish/lib
-	# chown -R glassfish:glassfish /usr/local/glassfish4/glassfish/domains/domain1
+	# chown -R root:root /usr/local/payara5
+	# chown dataverse /usr/local/payara5/glassfish/lib
+	# chown -R dataverse:dataverse /usr/local/payara5/glassfish/domains/domain1
 
 After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
-Once Glassfish is installed, you'll need a newer version of the Weld library (v2.2.10.SP1) to fix a serious issue in the library supplied with Glassfish 4.1 (see https://github.com/IQSS/dataverse/issues/647 for details). If you plan to front Glassfish with Apache you must also patch Grizzly as explained in the :doc:`shibboleth` section.
-
-- Remove the stock Weld jar; download Weld v2.2.10.SP1 and install it in the modules folder::
-
-	# cd /usr/local/glassfish4/glassfish/modules
-	# rm weld-osgi-bundle.jar
-	# curl -L -O https://search.maven.org/remotecontent?filepath=org/jboss/weld/weld-osgi-bundle/2.2.10.Final/weld-osgi-bundle-2.2.10.Final-glassfish4.jar
-
 - Change from ``-client`` to ``-server`` under ``<jvm-options>-client</jvm-options>``::
 
-	# vim /usr/local/glassfish4/glassfish/domains/domain1/config/domain.xml
+	# vim /usr/local/payara5/glassfish/domains/domain1/config/domain.xml
 
 This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4-performance-tuning-monitoring-and-troubleshooting.php among other places.
 
-- Start Glassfish and verify the Weld version::
+Launching Payara on System Boot
+===============================
 
-	# /usr/local/glassfish4/bin/asadmin start-domain
-	# /usr/local/glassfish4/bin/asadmin osgi lb | grep 'Weld OSGi Bundle'
+The Dataverse installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
-The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
+- This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
+- This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Payara service account, or
+- This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
 
-- The actual expiration date is August 22, 2018, which you can see with the following command::
+It is not necessary for Payara to be running before you execute the Dataverse installation script; it will start Payara for you.
 
-	# keytool -list -v -keystore /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
+Please note that you must run Payara in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
-- Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
-
-	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4/glassfish/domains/domain1/config/cacerts.jks
-	# /usr/local/glassfish4/bin/asadmin stop-domain
-	# /usr/local/glassfish4/bin/asadmin start-domain
-
-Launching Glassfish on system boot
-==================================
-
-The Dataverse installation script will start Glassfish if necessary, but you may find the following scripts helpful to launch Glassfish start automatically on boot.
-
-- This :download:`Systemd file<../_static/installation/files/etc/systemd/glassfish.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
-- This :download:`init script<../_static/installation/files/etc/init.d/glassfish.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Glassfish service account, or
-- This :download:`Glassfish init script <../_static/installation/files/etc/init.d/glassfish.init.root>` may be helpful if you're just going to run Glassfish as root.
-
-It is not necessary for Glassfish to be running before you execute the Dataverse installation script; it will start Glassfish for you.
-
-Please note that you must run Glassfish in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
-
-Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
+Also note that Payara may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our Payara init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
 
 	# sudo prlimit --pid pid --nofile=32768:32768
 
@@ -128,20 +101,23 @@ Installing PostgreSQL
 
 Version 9.6 is strongly recommended because it is the version developers and QA test with::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 
-Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must install Postgres 10 or higher::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql96-server
-	# service postgresql-9.6 initdb
-	# service postgresql-9.6 start
+	# yum install -y postgresql10-server
+	# /usr/pgsql-10/bin/postgresql-10-setup initdb
+	# systemctl start postgresql-10
+	# systemctl enable postgresql-10
+
+Note that the Dataverse installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer)
 =======================================================================================
@@ -149,7 +125,7 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
 
-- If PostgreSQL is running on the same server as Glassfish, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this::
+- If PostgreSQL is running on the same server as Payara, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this::
 
   	host all all 127.0.0.1/32 md5
 
@@ -167,7 +143,7 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
         host all all [ADDRESS]      255.255.255.255 md5
 
-  Where ``[ADDRESS]`` is the numeric IP address of the Glassfish server. Enter this address when the installer asks for the PostgreSQL server address.
+  Where ``[ADDRESS]`` is the numeric IP address of the Payara server. Enter this address when the installer asks for the PostgreSQL server address.
 
 - In some distributions, PostgreSQL is pre-configured so that it doesn't accept network connections at all. Check that the ``listen_address`` line in the configuration file ``postgresql.conf`` is not commented out and looks like this::
 
@@ -261,11 +237,11 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy. 
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
 
 It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
-If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es). 
+If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
 
 We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
 
@@ -279,7 +255,7 @@ or simply prepend each command you would run as the Solr user with "sudo -u solr
 
         # sudo -u solr command
 
-Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised. 
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised.
 
 jq
 --
@@ -316,7 +292,7 @@ When installed using standard ``yum`` mechanism, above, the executable for the I
 
 On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew.
 
-If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
+If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Payara configuration using the JVM option, below. For example::
 
    <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
 

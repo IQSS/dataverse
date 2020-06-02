@@ -424,6 +424,15 @@ public class Dataset extends DvObjectContainer {
         }
         return null;
     }
+    
+    public DatasetVersion getVersionFromId(Long datasetVersionId) {
+        for (DatasetVersion version : this.getVersions()) {
+            if (datasetVersionId == version.getId().longValue()) {
+                return version;
+            }
+        }
+        return null;
+    }
 
     public List<DataFileCategory> getCategories() {
         return dataFileCategories;

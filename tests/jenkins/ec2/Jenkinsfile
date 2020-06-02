@@ -26,14 +26,21 @@ pipeline {
         }
 	sh '/usr/bin/curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh'
 	sh '/bin/rm -f groupvars.yml'
-	sh '/usr/bin/curl -o groupvars.yml https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/tests/group_vars/vagrant.yml'
-	sh '/usr/bin/bash ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${EC2_REPO} -t jenkins_delete_me -l target -g groupvars.yml'
+	sh '/usr/bin/curl -o groupvars.yml https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/tests/group_vars/jenkins.yml'
+	sh '/usr/bin/bash ec2-create-instance.sh -b ${CHANGE_BRANCH} -r ${EC2_REPO} -t jenkins_delete_me -l target -g groupvars.yml -s t2.large -d'
       }
     }
 
     stage('Post') {
       steps {
 	junit 'target/surefire-reports/*.xml'
+	step(
+	  [$class: 'JacocoPublisher', 
+	  execPattern: 'target/*.exec',
+	  classPattern: 'target/classes',
+	  sourcePattern: 'src/main/java',
+	  exclusionPattern: 'src/test*']
+	)
       }
     }
   }

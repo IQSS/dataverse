@@ -12,11 +12,11 @@ Now that the :doc:`prerequisites` are in place, we are ready to execute the Data
 Running the Dataverse Installer
 -------------------------------
 
-A scripted, interactive installer is provided. This script will configure your Glassfish environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
+A scripted, interactive installer is provided. This script will configure your app server environment, create the database, set some required options and start the application. Some configuration tasks will still be required after you run the installer! So make sure to consult the next section. 
 
 As mentioned in the :doc:`prerequisites` section, RHEL/CentOS is the recommended Linux distribution. (The installer is also known to work on Mac OS X for setting up a development environment.)
 
-Generally, the installer has a better chance of succeeding if you run it against a freshly installed Glassfish node that still has all the default configuration settings. In any event, please make sure that it is still configured to accept http connections on port 8080 - because that's where the installer expects to find the application once it's deployed.
+Generally, the installer has a better chance of succeeding if you run it against a freshly installed Payara node that still has all the default configuration settings. In any event, please make sure that it is still configured to accept http connections on port 8080 - because that's where the installer expects to find the application once it's deployed.
 
 You should have already downloaded the installer from https://github.com/IQSS/dataverse/releases when setting up and starting Solr under the :doc:`prerequisites` section. Again, it's a zip file with "dvinstall" in the name.
 
@@ -24,31 +24,31 @@ Unpack the zip file - this will create the directory ``dvinstall``.
 
 **Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
 
-Execute the installer script like this (but first read the note below about not running the installer as root)::
-
-        $ cd dvinstall
-        $ ./install
-
-
 **It is no longer necessary to run the installer as root!**
 
 Just make sure the user running the installer has write permission to:
 
-- /usr/local/glassfish4/glassfish/lib
-- /usr/local/glassfish4/glassfish/domains/domain1
+- /usr/local/payara5/glassfish/lib
+- /usr/local/payara5/glassfish/domains/domain1
 - the current working directory of the installer (it currently writes its logfile there), and
 - your jvm-option specified files.dir
 
-**NEW in v.4.19:** We have added a new implementation of the installer script written in Python. It is intended to eventually replace the old installer above (written in Perl). But for now it is being offered as an (experimental) alternative. See README_python.txt, included in the installer bundle, for more information on how to run it.
+The only reason to run Payara as root would be to allow Payara itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Payara run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
 
+Read the installer script directions like this::
 
-The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+        $ cd dvinstall
+        $ less README_python.txt
+
+Alternatively you can download :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` from this guides.
+
+Follow the instructions in the text file.
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
 - Internet Address of your host: localhost
-- Glassfish Directory: /usr/local/glassfish4
-- Glassfish User: current user running the installer script
+- Payara Directory: /usr/local/payara5
+- Payara User: current user running the installer script
 - Administrator email address for this Dataverse: (none)
 - SMTP (mail) server to relay notification messages: localhost
 - Postgres Server Address: [127.0.0.1]
@@ -70,15 +70,17 @@ If desired, these default values can be configured by creating a ``default.confi
 
 This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
-All the Glassfish configuration tasks performed by the installer are isolated in the shell script ``dvinstall/glassfish-setup.sh`` (as ``asadmin`` commands). 
+All the Payara configuration tasks performed by the installer are isolated in the shell script ``dvinstall/as-setup.sh`` (as ``asadmin`` commands). 
 
-**IMPORTANT:** As a security measure, the ``glassfish-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Glassfish's ``domain.xml`` file:
+The installer patches the app server, copying ``jakarta.faces_dv.jar`` into ``/usr/local/payara5/glassfish/modules``. For details on this patch, see https://github.com/eclipse-ee4j/mojarra/issues/4647
+
+**IMPORTANT:** As a security measure, the ``as-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Payara's ``domain.xml`` file:
 
 - ``db_password_alias``
 - ``doi_password_alias``
 - ``rserve_password_alias``
 
-Glassfish does not provide up to date documentation but Payara (a fork of Glassfish) does so for more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
+For more information, please see https://docs.payara.fish/documentation/payara-server/password-aliases/password-alias-asadmin-commands.html
 
 **IMPORTANT:** The installer will also ask for an external site URL for Dataverse. It is *imperative* that this value be supplied accurately, or a long list of functions will be inoperable, including:
 
@@ -95,16 +97,14 @@ The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 
-Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/glassfish4/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Glassfish.
+Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/payara5/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Payara.
 
 .. _JHOVE: http://jhove.openpreservation.org
-
-The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
 Logging In
 ----------
 
-Out of the box, Glassfish runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall, if needed. 
+Out of the box, Payara runs on port 8080 and 8181 rather than 80 and 443, respectively, so visiting http://localhost:8080 (substituting your hostname) should bring up a login page. See the :doc:`shibboleth` page for more on ports, but for now, let's confirm we can log in by using port 8080. Poke a temporary hole in your firewall, if needed. 
 
 Superuser Account
 ^^^^^^^^^^^^^^^^^
@@ -128,7 +128,7 @@ Next you'll want to check out the :doc:`config` section, especially the section 
 Troubleshooting
 ---------------
 
-If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``glassfish4/glassfish/domains/domain1/logs/server.log`` for debugging.
+If the following doesn't apply, please get in touch as explained in the :doc:`intro`. You may be asked to provide ``payara5/glassfish/domains/domain1/logs/server.log`` for debugging.
 
 Dataset Cannot Be Published
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -138,22 +138,22 @@ Check to make sure you used a fully qualified domain name when installing Datave
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^
 
-If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
+If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Payara asadmin command:
 
 ``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
 
 This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
 
-If the command returns a host you don't want to use, you can modify your notifyMailSession with the Glassfish ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
+If the command returns a host you don't want to use, you can modify your notifyMailSession with the Payara ``asadmin set`` command with necessary options (`click here for the manual page <https://docs.oracle.com/cd/E18930_01/html/821-2433/set-1.html>`_), or via the admin console at http://localhost:4848 with your domain running. 
 
 If your mail host requires a username/password for access, continue to the next section.
 
 Mail Host Configuration & Authentication
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Glassfish admin console or via command line. 
+If you need to alter your mail host address, user, or provide a password to connect with, these settings are easily changed in the Payara admin console or via command line. 
 
-For the Glassfish console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
+For the Payara console, load a browser with your domain online, navigate to http://localhost:4848 and on the side panel find JavaMail Sessions. By default, Dataverse uses a session named mail/notifyMailSession for routing outgoing emails. Click this mail session in the window to modify it.
 
 When fine tuning your JavaMail Session, there are a number of fields you can edit. The most important are:
 
@@ -193,7 +193,7 @@ The mail session can also be set from command line. To use this method, you will
 - Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
-Be sure you save the changes made here and then restart your Glassfish server to test it out.
+Be sure you save the changes made here and then restart your Payara server to test it out.
 
 UnknownHostException While Deploying
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -205,17 +205,17 @@ If you are seeing "Caused by: java.net.UnknownHostException: myhost: Name or ser
 Fresh Reinstall
 ---------------
 
-Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Glassfish, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Glassfish, a common helpful process is to:
+Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Payara, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Payara, a common helpful process is to:
 
-- Stop Glassfish; 
+- Stop Payara; 
 - Remove the ``generated`` and ``osgi-cache`` directories; 
 - Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
-- Start Glassfish
+- Start Payara
 
 Drop database
 ^^^^^^^^^^^^^
 
-In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
+In order to drop the database, you have to stop Payara, which will have open connections. Before you stop Payara, you may as well undeploy the war file. First, find the name like this:
 
 ``./asadmin list-applications``
 
@@ -223,11 +223,11 @@ Then undeploy it like this:
 
 ``./asadmin undeploy dataverse-VERSION``
 
-Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
+Stop Payara with the init script provided in the :doc:`prerequisites` section or just use:
 
 ``./asadmin stop-domain``
 
-With Glassfish down, you should now be able to drop your database and recreate it:
+With Payara down, you should now be able to drop your database and recreate it:
 
 ``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
 
@@ -244,7 +244,7 @@ Deleting Uploaded Files
 
 The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
 
-``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
+``rm -rf /usr/local/payara5/glassfish/domains/domain1/files``
 
 Rerun Installer
 ^^^^^^^^^^^^^^^
