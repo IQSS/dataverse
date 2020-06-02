@@ -121,10 +121,6 @@ public class CreateDatasetPage implements Serializable {
         workingVersion = dataset.getLatestVersion();
         resetDatasetFields();
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.message.publicInstall"));
-        }
-
         return StringUtils.EMPTY;
     }
 
@@ -218,6 +214,10 @@ public class CreateDatasetPage implements Serializable {
 
     public void initMetadataImportDialog() {
         importerForm = ImporterForm.createInitializedForm(selectedImporter, session.getLocale(), this::getMetadataBlocksForEdit);
+    }
+
+    public boolean isInstallationPublic() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
     }
 
     // -------------------- PRIVATE --------------------

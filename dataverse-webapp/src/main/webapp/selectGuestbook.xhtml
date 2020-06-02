@@ -25,6 +25,15 @@
                 <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(selectGuestbookPage.dataset)}"/>
             </f:metadata>
             <h:form id="selectGuestbookForm">
+                <!-- static Messages -->
+                <p:outputPanel>
+                    <div class="alert alert-info" role="alert" aria-atomic="true">
+                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.editTerms.label']}</strong> –
+                        <h:outputText escape="false" value="#{bundle['dataset.message.editTerms.message']} "/>
+                    </div>
+                </p:outputPanel>
+                <!-- END static Messages -->
+
                 <!-- Edit editMode -->
                 <div class="button-block form-top">
                     <p:commandButton id="saveTop" value="#{bundle.saveChanges}"

@@ -232,11 +232,11 @@ public class EditSingleFilePage implements java.io.Serializable {
             versionString = "DRAFT";
         }
 
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
-        }
-
         return null;
+    }
+
+    public boolean isInstallationPublic() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
     }
 
     public String save() {

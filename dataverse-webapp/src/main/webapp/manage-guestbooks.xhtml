@@ -22,6 +22,16 @@
             <ui:define name="body">
                 <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
                 <h:form id="manageGuestbooksForm">
+
+                    <!-- static Messages -->
+                    <p:outputPanel>
+                        <div jsf:rendered="#{manageGuestbooksPage.displayDownloadAll}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.manageGuestbooks.tip.title']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.manageGuestbooks.tip.downloadascsv']} "/>
+                        </div>
+                    </p:outputPanel>
+                    <!-- END static Messages -->
+
                     <div class="row" id="resultsCountPaginatorBlock">
                         <div class="col-xs-6">
                             <div class="results-count margin-top" jsf:rendered="#{manageGuestbooksPage.dataverse.owner ne null}">

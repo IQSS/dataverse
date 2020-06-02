@@ -163,14 +163,11 @@ public class DataverseUserPage implements java.io.Serializable {
         }
 
         if (editMode == EditMode.CREATE) {
-            if (session.getUser().isAuthenticated()) {
+            if (isUserAuthenticated()) {
                 editMode = null; // we can't be in create mode for an existing user
 
             } else {
                 // in create mode for new user
-                JH.addMessage(FacesMessage.SEVERITY_INFO,
-                              BundleUtil.getStringFromBundle("user.message.signup.label"),
-                              BundleUtil.getStringFromBundle("user.message.signup.tip"));
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
                 consents = consentService.prepareConsentsForView(session.getLocale());
 
@@ -178,7 +175,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
 
-        if (session.getUser().isAuthenticated()) {
+        if (isUserAuthenticated()) {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationDao.findByUser(currentUser.getId());
@@ -212,6 +209,10 @@ public class DataverseUserPage implements java.io.Serializable {
         }
 
         return "";
+    }
+
+    public boolean isUserAuthenticated() {
+        return session.getUser().isAuthenticated();
     }
 
     public void edit(ActionEvent e) {
@@ -412,7 +413,7 @@ public class DataverseUserPage implements java.io.Serializable {
             return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
 
             //Happens if user is logged out while editing
-        } else if (!session.getUser().isAuthenticated()) {
+        } else if (!isUserAuthenticated()) {
             logger.info("Redirecting");
             return permissionsWrapper.notAuthorized() + "faces-redirect=true";
         } else {

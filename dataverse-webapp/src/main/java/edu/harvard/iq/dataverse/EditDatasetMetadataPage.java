@@ -146,13 +146,7 @@ public class EditDatasetMetadataPage implements Serializable {
         workingVersion.setDatasetFields(datasetFields);
 
         inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
-
         metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
-
-        JH.addMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"),
-                BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
-
 
         return StringUtils.EMPTY;
     }

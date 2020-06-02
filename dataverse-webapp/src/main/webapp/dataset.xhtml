@@ -82,6 +82,35 @@
                 <!-- Header / Button Panel -->
                 <!-- View editMode -->
                 <p:fragment id="topDatasetBlockFragment">
+                    <!-- static Messages -->
+                    <p:outputPanel id="staticMessagesPanel">
+                        <div jsf:rendered="#{DatasetPage.isLockedBy('Workflow')}" class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.message']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.locked.message.details']} "/>
+                        </div>
+                        <div jsf:rendered="#{DatasetPage.isLockedBy('InReview')}" class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.inReview.message']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.inreview.infoMessage']} "/>
+                        </div>
+                        <div jsf:rendered="#{DatasetPage.isLockedBy('DcmUpload')}" class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['file.rsyncUpload.inProgressMessage.summary']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['file.rsyncUpload.inProgressMessage.details']} "/>
+                        </div>
+                        <div jsf:rendered="#{DatasetPage.isLockedBy('pidRegister')}" class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.publish.workflow.message']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.pidRegister.workflow.inprogress']} "/>
+                        </div>
+
+                        <div jsf:rendered="#{not empty DatasetPage.privateUrl and not DatasetPage.isViewedFromPrivateUrl()}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageAuthor.title']}</strong> –
+                            <h:outputText escape="false" value="#{DatasetPage.privateUrlMessageDetails}"/>
+                        </div>
+                        <div jsf:rendered="#{DatasetPage.isViewedFromPrivateUrl()}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageReviewer.title']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.privateurl.infoMessageReviewer.details']}"/>
+                        </div>
+                    </p:outputPanel>
+                    <!-- END static Messages -->
                     <div id="topDatasetBlock">
                         <div id="actionButtonBlock" class="button-block clearfix"
                              jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -825,15 +854,15 @@
                         <div class="button-block">
                             <p:commandButton value="#{bundle['dataset.privateurl.createPrivateUrl']}"
                                              action="#{DatasetPage.createPrivateUrl()}"
-                                             update="privateUrlPanel,:messagePanel"
-                                             rendered="#{empty(DatasetPage.privateUrl)}"/>
+                                             update="privateUrlPanel, staticMessagesPanel, :messagePanel"
+                                             rendered="#{empty(DatasetPage.privateUrl)}" />
                             <p:commandButton value="#{bundle['dataset.privateurl.disablePrivateUrl']}"
                                              action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}"
                                              onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()"
-                                             rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
+                                             rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel, staticMessagesPanel"/>
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.close}"
                                              onclick="PF('privateUrlConfirmation').hide();"
-                                             update="privateUrlPanel"/>
+                                             update="privateUrlPanel, staticMessagesPanel"/>
                         </div>
                     </p:fragment>
                 </p:dialog>
@@ -845,7 +874,7 @@
                     <div class="button-block">
                         <p:commandButton value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}"
                                          action="#{DatasetPage.disablePrivateUrl()}"
-                                         update="privateUrlPanel,:messagePanel"
+                                         update="privateUrlPanel staticMessagesPanel, :messagePanel"
                                          onclick="PF('disablePrivateUrlConfirmation').hide();"/>
                         <p:commandButton value="#{bundle.cancel}"
                                          onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();"

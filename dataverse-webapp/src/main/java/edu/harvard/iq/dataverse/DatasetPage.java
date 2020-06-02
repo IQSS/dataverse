@@ -158,12 +158,12 @@ public class DatasetPage implements java.io.Serializable {
     private Date currentEmbargoDate;
 
     // This is the Dataset-level thumbnail;
-    // it's either the thumbnail of the designated datafile, 
+    // it's either the thumbnail of the designated datafile,
     // or scaled down uploaded "logo" file, or randomly selected
-    // image datafile from this dataset. 
+    // image datafile from this dataset.
     public String getThumbnailString() {
         // This method gets called 30 (!) times, just to load the page!
-        // - so let's cache that string the first time it's called. 
+        // - so let's cache that string the first time it's called.
 
         if (thumbnailString != null) {
             if ("".equals(thumbnailString)) {
@@ -249,7 +249,7 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
-    // Another convenience method - to cache Update Permission on the dataset: 
+    // Another convenience method - to cache Update Permission on the dataset:
     public boolean canUpdateDataset() {
         return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
@@ -393,13 +393,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private String init(boolean initFull) {
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset     
+        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
             // ---------------------------------------
             // Set the workingVersion and Dataset
-            // ---------------------------------------           
+            // ---------------------------------------
             if (persistentId != null) {
                 logger.fine("initializing DatasetPage with persistent ID " + persistentId);
                 // Set Working Version and Dataset by PersistentID
@@ -471,7 +471,7 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            // Check permisisons           
+            // Check permisisons
             if (!(workingVersion.isReleased() || workingVersion.isDeaccessioned()) && !this.canViewUnpublishedDataset()) {
                 return permissionsWrapper.notAuthorized();
             }
@@ -512,46 +512,25 @@ public class DatasetPage implements java.io.Serializable {
         }
         try {
             privateUrl = commandEngine.submit(new GetPrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
-            if (privateUrl != null) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
-            }
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
         }
+
+        return null;
+    }
+
+    public boolean isViewedFromPrivateUrl() {
         if (session.getUser() instanceof PrivateUrlUser) {
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
             if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
+                return true;
             }
         }
+        return false;
+    }
 
-        // Various info messages, when the dataset is locked (for various reasons):
-        if (dataset.isLocked() && canUpdateDataset()) {
-            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"),
-                              BundleUtil.getStringFromBundle("dataset.locked.message.details"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.inReview.message"),
-                              BundleUtil.getStringFromBundle("dataset.inreview.infoMessage"));
-            }
-            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
-                              BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
-            }
-            //This is a hack to remove dataset locks for File PID registration if 
-            //the dataset is released
-            //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
-                /*if(dataset.getLatestVersion().isReleased() && dataset.isLockedFor(DatasetLock.Reason.pidRegister)){
-                    datasetDao.removeDatasetLocks(dataset.getId(), DatasetLock.Reason.pidRegister);
-                }*/
-            if (dataset.isLockedFor(DatasetLock.Reason.pidRegister)) {
-                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.publish.workflow.message"),
-                              BundleUtil.getStringFromBundle("dataset.pidRegister.workflow.inprogress"));
-            }
-        }
-
-        return null;
+    public boolean isLockedBy(String reason) {
+        return dataset.isLocked() && canUpdateDataset() && dataset.isLockedFor(reason);
     }
 
     public String releaseDraft() {
@@ -624,10 +603,10 @@ public class DatasetPage implements java.io.Serializable {
                         new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
                 );
                 dataset = result.getDataset();
-                // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset 
-                // has been published. If a publishing workflow is configured, this may have sent the 
-                // dataset into a workflow limbo, potentially waiting for a third party system to complete 
-                // the process. So it may be premature to show the "success" message at this point. 
+                // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset
+                // has been published. If a publishing workflow is configured, this may have sent the
+                // dataset into a workflow limbo, potentially waiting for a third party system to complete
+                // the process. So it may be premature to show the "success" message at this point.
 
                 if (result.isCompleted()) {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
@@ -746,16 +725,16 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (retrieveDatasetVersionResponse == null) {
-            // TODO: 
-            // should probably redirect to the 404 page, if we can't find 
-            // this version anymore. 
-            // -- L.A. 4.2.3 
+            // TODO:
+            // should probably redirect to the 404 page, if we can't find
+            // this version anymore.
+            // -- L.A. 4.2.3
             return;
         }
         this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
 
         if (this.workingVersion == null) {
-            // TODO: 
+            // TODO:
             // same as the above
 
             return;
@@ -763,7 +742,7 @@ public class DatasetPage implements java.io.Serializable {
 
 
         if (dataset == null) {
-            // this would be the case if we were retrieving the version by 
+            // this would be the case if we were retrieving the version by
             // the versionId, above.
             this.dataset = this.workingVersion.getDataset();
         }
@@ -784,7 +763,7 @@ public class DatasetPage implements java.io.Serializable {
             cmd = new DestroyDatasetCommand(dataset, dvRequestService.getDataverseRequest());
             commandEngine.submit(cmd);
             deleteCommandSuccess = true;
-            /* - need to figure out what to do 
+            /* - need to figure out what to do
              Update notification in Delete Dataset Method
              for (UserNotification und : userNotificationService.findByDvObject(dataset.getId())){
              userNotificationService.delete(und);
@@ -861,6 +840,10 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
+    public String getPrivateUrlMessageDetails() {
+        return BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor.details", Arrays.asList(getPrivateUrlLink(privateUrl)));
+    }
+
     private String linkingDataverseErrorMessage = "";
 
 
@@ -878,7 +861,7 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean saveLink(Dataverse dataverse) {
         boolean retVal = true;
         if (readOnly) {
-            // Pass a "real", non-readonly dataset the the LinkDatasetCommand: 
+            // Pass a "real", non-readonly dataset the the LinkDatasetCommand:
             dataset = datasetDao.find(dataset.getId());
         }
         LinkDatasetCommand cmd = new LinkDatasetCommand(dvRequestService.getDataverseRequest(), dataverse, dataset);
@@ -998,13 +981,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setLocked(boolean locked) {
-        // empty method, so that we can use DatasetPage.locked in a hidden 
-        // input on the page. 
+        // empty method, so that we can use DatasetPage.locked in a hidden
+        // input on the page.
     }
 
     public void setLockedForAnyReason(boolean locked) {
-        // empty method, so that we can use DatasetPage.locked in a hidden 
-        // input on the page. 
+        // empty method, so that we can use DatasetPage.locked in a hidden
+        // input on the page.
     }
 
     public boolean isStateChanged() {
@@ -1012,11 +995,11 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setStateChanged(boolean stateChanged) {
-        // empty method, so that we can use DatasetPage.stateChanged in a hidden 
-        // input on the page. 
+        // empty method, so that we can use DatasetPage.stateChanged in a hidden
+        // input on the page.
     }
 
-    
+
     private boolean existReleasedVersion;
 
     public boolean isExistReleasedVersion() {
@@ -1077,7 +1060,6 @@ public class DatasetPage implements java.io.Serializable {
         try {
             PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
             privateUrl = createdPrivateUrl;
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
             privateUrlWasJustCreated = true;
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
@@ -1202,7 +1184,7 @@ public class DatasetPage implements java.io.Serializable {
     public DatasetRelPublication getFirstRelPublication() {
         List<DatasetRelPublication> datasetRelPublications = workingVersion.getRelatedPublications();
         DatasetRelPublication firstRelPublication = datasetRelPublications.size() > 0 ? datasetRelPublications.get(0) : null;
-        
+
         return firstRelPublication;
     }
 

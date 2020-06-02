@@ -11,16 +11,13 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 
-import javax.faces.application.FacesMessage;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 @ViewScoped
 @Named("selectGuestbookPage")
@@ -100,10 +97,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
         selectedGuestbook = dataset.getGuestbook();
         availableGuestbooks = dataset.getDataverseContext().getAvailableGuestbooks();
-
-        JH.addMessage(FacesMessage.SEVERITY_INFO,
-                      BundleUtil.getStringFromBundle("dataset.message.editTerms.label"),
-                      BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
 
         return StringUtils.EMPTY;
     }

@@ -117,10 +117,6 @@ public class ManageTemplatesPage implements java.io.Serializable {
 
         templatesForView.addAll(dataverse.getTemplates());
 
-        if (!templatesForView.isEmpty()) {
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.manageTemplates.label"), BundleUtil.getStringFromBundle("dataset.message.manageTemplates.message"));
-        }
-
         return StringUtils.EMPTY;
     }
 

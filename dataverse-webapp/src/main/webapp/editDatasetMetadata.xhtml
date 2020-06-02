@@ -26,6 +26,14 @@
                 </f:metadata>
                 
                 <h:form id="editMetadataForm">
+                    <!-- static Messages -->
+                    <p:outputPanel>
+                        <div class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.editMetadata.label']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.editMetadata.message']} "/>
+                        </div>
+                    </p:outputPanel>
+                    <!-- END static Messages -->
                 
                     <!-- Top dataset info -->
                     <ui:fragment>

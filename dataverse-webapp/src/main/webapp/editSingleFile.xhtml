@@ -38,6 +38,15 @@
 
             <h:form id="fileForm">
                 <p:focus context="fileForm" rendered="#{facesContext.validationFailed}" />
+
+                <!-- static Messages -->
+                <p:outputPanel>
+                    <div jsf:rendered="#{EditSingleFilePage.isInstallationPublic()}" class="alert alert-warning" role="alert" aria-atomic="true">
+                        <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.publicInstall.title']}</strong> –
+                        <h:outputText escape="false" value="#{bundle['dataset.message.publicInstall.details']} "/>
+                    </div>
+                </p:outputPanel>
+                <!-- END static Messages -->
                 
                 <div class="form-group row">
                     <div class="col-sm-12">

@@ -39,6 +39,24 @@
                 </f:metadata>
                 <h:form id="datasetForm">
 
+                    <!-- static Messages -->
+                    <p:outputPanel>
+                        <div jsf:rendered="#{EditDatafilesPage.isInstallationPublic()}" class="alert alert-warning" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.publicInstall.title']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.publicInstall.details']} "/>
+                        </div>
+
+                        <div jsf:rendered="#{EditDatafilesPage.isInUploadMode() and settingsWrapper.getUploadMethodsCount() eq 1}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.uploadFiles.label']}</strong> –
+                            <h:outputText escape="false" value="#{EditDatafilesPage.getMultiUploadDetailsMessage()}"/>
+                        </div>
+                        <div jsf:rendered="#{EditDatafilesPage.isInUploadMode() and settingsWrapper.getUploadMethodsCount() gt 1}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.uploadFiles.label']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.uploadFilesMultiple.message']}"/>
+                        </div>
+                    </p:outputPanel>
+                    <!-- END static Messages -->
+
                     <div id="contentTabs">
 
                     <ui:include src="editFilesFragment.xhtml">

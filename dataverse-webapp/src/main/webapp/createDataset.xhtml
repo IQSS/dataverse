@@ -26,6 +26,14 @@
                 <f:viewAction action="#{EditDatafilesPage.initCreateMode(CreateDatasetPage.workingVersion, CreateDatasetPage.newFiles, CreateDatasetPage.selectedFiles)}"/>
             </f:metadata>
             <h:form id="datasetForm">
+                <!-- static Messages -->
+                <p:outputPanel>
+                    <div jsf:rendered="#{CreateDatasetPage.isInstallationPublic()}" class="alert alert-warning" role="alert" aria-atomic="true">
+                        <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.publicInstall.title']}</strong> –
+                        <h:outputText escape="false" value="#{bundle['dataset.message.publicInstall.details']} "/>
+                    </div>
+                </p:outputPanel>
+                <!-- END static Messages -->
 
                 <!-- Create editMode -->
                 <p:fragment id="formContent">

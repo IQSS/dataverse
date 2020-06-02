@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -105,9 +104,6 @@ public class DashboardDatamovePage implements Serializable {
         if (user == null || !user.isAuthenticated() || !user.isSuperuser()) {
             return permissionsWrapper.notAuthorized();
         }
-
-        JsfHelper.addMessage(FacesMessage.SEVERITY_INFO,  getStringFromBundle("dashboard.datamove.manage"),
-                getStringFromBundle("dashboard.datamove.message", settings.getGuidesBaseUrl(), settings.getGuidesVersion()));
         return StringUtils.EMPTY;
     }
 
@@ -179,6 +175,10 @@ public class DashboardDatamovePage implements Serializable {
             JsfHelper.addErrorMessage(null,
                     getStringFromBundle("dashboard.datamove.dataverse.message.failure.summary"), StringUtils.EMPTY);
         }
+    }
+
+    public String getMessageDetails() {
+        return getStringFromBundle("dashboard.datamove.message.details", settings.getGuidesBaseUrl(), settings.getGuidesVersion());
     }
 
     // -------------------- PRIVATE --------------------

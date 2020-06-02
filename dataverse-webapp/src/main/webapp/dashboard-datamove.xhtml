@@ -25,6 +25,15 @@
                   value="#{bundle['dashboard.datamove.header']} - #{dataverseServiceBean.findRootDataverse().name} #{bundle.dataverse}"/>
         <ui:param name="showDataverseHeader" value="false"/>
         <ui:define name="body">
+            <!-- static Messages -->
+            <p:outputPanel>
+                <div class="alert alert-info" role="alert" aria-atomic="true">
+                    <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dashboard.datamove.message.title']}</strong> –
+                    <h:outputText escape="false" value="#{DashboardDatamovePage.getMessageDetails()} "/>
+                </div>
+            </p:outputPanel>
+            <!-- END static Messages -->
+
             <p:tabView styleClass="no-bottom-border">
                 <p:focus for="sourceDatasetMenu"/>
                 <p:tab title="#{bundle['dashboard.datamove.tab.dataset.move']}">

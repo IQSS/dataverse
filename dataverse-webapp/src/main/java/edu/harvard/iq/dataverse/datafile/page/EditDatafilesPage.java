@@ -468,22 +468,20 @@ public class EditDatafilesPage implements java.io.Serializable {
             setUpRsync();
         }
 
-        if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
-            }
-
-        }
-
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
-            JH.addMessage(FacesMessage.SEVERITY_WARN, getBundleString("dataset.message.publicInstall"));
-        }
-
         return null;
     }
 
+    public boolean isInUploadMode() {
+        return mode == FileEditMode.UPLOAD;
+    }
+
+    public String getMultiUploadDetailsMessage() {
+        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion()));
+    }
+
+    public boolean isInstallationPublic() {
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall);
+    }
 
     private List<FileMetadata> selectedFiles;
 

@@ -20,6 +20,16 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <h:form id="manageTemplatesForm">
+
+                    <!-- static Messages -->
+                    <p:outputPanel>
+                        <div jsf:rendered="#{manageTemplatesPage.templatesForView.size() ne 0}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.manageTemplates.label']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.manageTemplates.message']} "/>
+                        </div>
+                    </p:outputPanel>
+                    <!-- END static Messages -->
+
                     <div class="form-group clearfix">
                         <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
                             <label for="templateRoot" class="normal-text" style="width: 25%">

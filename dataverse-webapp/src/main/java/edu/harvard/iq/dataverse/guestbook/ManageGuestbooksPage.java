@@ -112,11 +112,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
         if (totalResponses.intValue() > 0) {
             displayDownloadAll = true;
-            FacesContext.getCurrentInstance().addMessage(null,
-                                                         new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                                                          BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.title"),
-                                                                          BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.downloadascsv")));
-
         }
 
         dvpage.setDataverse(dataverse);
