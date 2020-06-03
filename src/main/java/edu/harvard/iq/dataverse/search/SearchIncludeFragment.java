@@ -455,7 +455,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
             for(FacetCategory fc: facetCategoryList) {
                 logger.info("Found facet: " + fc.getName());
                 if(fc.getName()==SearchFields.PUBLICATION_YEAR) {
-                    Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());        
+                    logger.info("Before: " + fc.getFacetLabel().toString());
+                    Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());     
+                    logger.info("After: " + fc.getFacetLabel().toString());
                 }
             }
             

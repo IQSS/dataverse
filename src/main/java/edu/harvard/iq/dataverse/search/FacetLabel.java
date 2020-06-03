@@ -50,5 +50,9 @@ public class FacetLabel implements Comparable<FacetLabel>{
     public int compareTo(FacetLabel otherFacetLabel) {
         return name.compareTo(otherFacetLabel.getName());
     }
+    
+    public String toString() {
+        return getName() + "(" + getCount() + ")";
+    }
 
 }
