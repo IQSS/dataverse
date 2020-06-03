@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -449,6 +450,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
             
             setDisplayCardValues();
+            
+            //Sort Pub Year Chronologically (alphabetically descending - works until 10000 AD)
+            for(FacetCategory fc: facetCategoryList) {
+                if(fc.getName()==SearchFields.PUBLICATION_YEAR) {
+                    Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());        
+                }
+            }
+            
             
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
