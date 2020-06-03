@@ -48,11 +48,10 @@ public class FacetLabel implements Comparable<FacetLabel>{
 
     @Override
     public int compareTo(FacetLabel otherFacetLabel) {
+        // This is used to 'chronologically' order entries in the Publication Year facet
+        // display. That should work for 4 digit years (until 10K AD), but this could be
+        // changed to do a real numberical comparison instead.
         return name.compareTo(otherFacetLabel.getName());
-    }
-    
-    public String toString() {
-        return getName() + "(" + getCount() + ")";
     }
 
 }
