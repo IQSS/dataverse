@@ -622,31 +622,67 @@ function bind_bsui_components(){
     
 }
 
+/*
+    Binds popovers and tooltips according to the wcag 1.4.13
+ */
 function bind_tooltip_popover(){
-    // rebind tooltips and popover to all necessary elements
-    $(".bootstrap-button-tooltip, [data-toggle='tooltip']").tooltip({container: 'body'});
-    $("[data-toggle='popover']").popover({container: 'body'});
-    
-    // CLOSE OPEN TOOLTIPS + POPOVERS ON BODY CLICKS
-    $('body').on("touchstart", function(e){
-        $(".bootstrap-button-tooltip, [data-toggle='tooltip']").each(function () {
-            // hide any open tooltips when anywhere else in body is clicked
-            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.tooltip').has(e.target).length === 0) {
-                $(this).tooltip('hide');
-            }////end if
-        });
-        $("a.popoverHTML, [data-toggle='popover']").each(function () {
-            //the 'is' for buttons that trigger popups
-            //the 'has' for icons within a button that triggers a popup
-            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('div.popover').has(e.target).length === 0) {
-                $(this).popover('hide');
-            }
-        });
-    });
-    
-    // CLOSE OPEN TOOLTIPS ON BUTTON CLICKS
-    $('.bootstrap-button-tooltip').on('click', function () {
-        $(this).tooltip('hide');
+
+    bindPopovers();
+    bindTooltips();
+    bindEscapeKey();
+}
+
+function bindTooltips() {
+    $('.bootstrap-button-tooltip, [data-toggle="tooltip"]')
+        .tooltip({container: 'body', trigger: 'manual'})
+        .on("mouseover", event => {
+            $(event.target).tooltip("show");
+            $(".tooltip").on("mouseleave", function () {
+                $(event.target).tooltip("hide");
+            });
+        })
+        .on("mouseout", event => {
+            setTimeout(() => {
+                if (!$(".tooltip:hover").length) $(event.target).tooltip("hide");
+            }, 200);
+        })
+        .on("focus", event => {
+            $(event.target).tooltip("show");
+        })
+        .on("blur", event => {
+            $(event.target).tooltip("hide");
+        })
+}
+
+function bindPopovers() {
+    $('[data-toggle="popover"]')
+        .attr("tabindex", 0)
+        .popover({container: 'body', trigger: 'manual'})
+        .on("mouseover", event => {
+            $(event.currentTarget).popover('show');
+            $(".popover").on("mouseleave", function () {
+                $(event.currentTarget).popover("hide");
+            });
+        })
+        .on("mouseout", event => {
+            setTimeout(() => {
+                if (!$("[data-toggle='popover']:hover").length && !$(".popover-content:hover").length) $(event.currentTarget).popover("hide");
+            }, 200);
+        })
+        .on("focus", event => {
+            $(event.currentTarget).popover("show");
+        })
+        .on("blur", event => {
+            $(event.currentTarget).popover("hide");
+        })
+}
+
+function bindEscapeKey() {
+    $("body").on("keydown", event => {
+        if (event.key === "Esc" || event.key === "Escape") {
+            $('[data-toggle="tooltip"], .bootstrap-button-tooltip').tooltip("hide");
+            $('[data-toggle="popover"]').popover("hide");
+        }
     });
 }
 
