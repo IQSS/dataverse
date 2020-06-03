@@ -453,6 +453,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             //Sort Pub Year Chronologically (alphabetically descending - works until 10000 AD)
             for(FacetCategory fc: facetCategoryList) {
+                logger.info("Found facet: " + fc.getName());
                 if(fc.getName()==SearchFields.PUBLICATION_YEAR) {
                     Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());        
                 }
