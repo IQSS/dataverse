@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.search;
 import javax.inject.Named;
 
 @Named
-public class FacetLabel {
+public class FacetLabel implements Comparable<FacetLabel>{
 
     private String name;
     private Long count;
@@ -44,6 +44,11 @@ public class FacetLabel {
 
     public void setFilterQuery(String filterQuery) {
         this.filterQuery = filterQuery;
+    }
+
+    @Override
+    public int compareTo(FacetLabel otherFacetLabel) {
+        return name.compareTo(otherFacetLabel.getName());
     }
 
 }
