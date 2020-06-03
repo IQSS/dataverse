@@ -31,8 +31,8 @@
             <h:form id="publishedDatasetsForm">
                 <h4><h:outputText value="#{bundle['metrics.section.datasets.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="model" value="#{PublishedDatasetsChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="model" value="#{PublishedDatasetsChart.mode}">
                             <p:ajax event="change" update="publishedDatasetsForm" listener="#{PublishedDatasetsChart.changeDatasetMetricsModel}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.datasets.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.datasets.radiobutton.yearly.label']}" itemValue="YEAR"/>
@@ -75,8 +75,8 @@
             <h:form id="filesCountForm">
                 <h4><h:outputText value="#{bundle['metrics.section.files.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="files_mode" value="#{FilesChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="files_mode" value="#{FilesChart.mode}">
                             <p:ajax event="change" update="filesCountForm" listener="#{FilesChart.changeChartGrouping}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.files.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.files.radiobutton.yearly.label']}" itemValue="YEAR"/>
@@ -118,8 +118,8 @@
             <h:form id="filesStorageCountForm">
                 <h4><h:outputText value="#{bundle['metrics.section.filesStorage.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="filesStorage_mode" value="#{FilesStorageChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="filesStorage_mode" value="#{FilesStorageChart.mode}">
                             <p:ajax event="change" update="filesStorageCountForm" listener="#{FilesStorageChart.changeChartGrouping}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.filesStorage.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.filesStorage.radiobutton.yearly.label']}" itemValue="YEAR"/>
@@ -161,8 +161,8 @@
             <h:form id="filesDownloaded">
                 <h4><h:outputText value="#{bundle['metrics.section.filesDownloaded.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="filesDownloaded_mode" value="#{FilesDownloadedChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="filesDownloaded_mode" value="#{FilesDownloadedChart.mode}">
                             <p:ajax event="change" update="filesDownloaded" listener="#{FilesDownloadedChart.changeChartGrouping}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.filesDownloaded.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.filesDownloaded.radiobutton.yearly.label']}" itemValue="YEAR"/>
@@ -205,8 +205,8 @@
             <h:form id="datasetsDownloaded">
                 <h4><h:outputText value="#{bundle['metrics.section.datasetsDownloaded.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="datasetsDownloaded_mode" value="#{DatasetsDownloadedChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="datasetsDownloaded_mode" value="#{DatasetsDownloadedChart.mode}">
                             <p:ajax event="change" update="datasetsDownloaded" listener="#{DatasetsDownloadedChart.changeChartGrouping}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.datasetsDownloaded.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.datasetsDownloaded.radiobutton.yearly.label']}" itemValue="YEAR"/>
@@ -249,8 +249,8 @@
             <h:form id="usersCountForm">
                 <h4><h:outputText value="#{bundle['metrics.section.users.title']}" /></h4>
                 <p:panelGrid>
-                    <h:panelGrid columns="3" style="margin-bottom:10px;" cellpadding="25">
-                        <p:selectOneRadio id="users_mode" value="#{UsersChart.mode}" style="padding-left: 10px">
+                    <h:panelGrid columns="3" cellpadding="25" class="table-metrics">
+                        <p:selectOneRadio id="users_mode" value="#{UsersChart.mode}">
                             <p:ajax event="change" update="usersCountForm" listener="#{UsersChart.changeChartGrouping}"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.users.radiobutton.yearlyCumulative.label']}" itemValue="YEAR_CUMULATIVE"/>
                             <f:selectItem itemLabel="#{bundle['metrics.section.users.radiobutton.yearly.label']}" itemValue="YEAR"/>

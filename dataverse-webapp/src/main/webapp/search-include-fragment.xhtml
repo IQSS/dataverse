@@ -101,8 +101,10 @@
                             styleClass="facetTypeChBox">
                         <p:ajax process="@form" update="@form" />
                     </p:selectBooleanCheckbox>
+
+                    <i class="icon-dataverse text-icon-inline"></i>
+                    
                     <p:outputLabel for="checkDataverses" styleClass="facetTypeLink chkbox-label-margin">
-                        <i class="icon-dataverse text-icon-inline"></i>
                         <h:outputFormat styleClass="facetTypeDataverse" value="#{bundle['dataverse.results.types.dataverses']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDataverses}"/>
                         </h:outputFormat>
@@ -114,8 +116,10 @@
                         styleClass="facetTypeChBox">
                         <p:ajax process="@form" update="@form" />
                     </p:selectBooleanCheckbox>
+
+                    <i class="icon-dataset text-icon-inline"></i>
+
                     <p:outputLabel for="checkDatasets" styleClass="facetTypeLink chkbox-label-margin">
-                        <i class="icon-dataset text-icon-inline"></i>
                         <h:outputFormat styleClass="facetTypeDataset" value="#{bundle['dataverse.results.types.datasets']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountDatasets}"/>
                         </h:outputFormat>
@@ -127,8 +131,10 @@
                         styleClass="facetTypeChBox">
                         <p:ajax process="@form" update="@form" />
                     </p:selectBooleanCheckbox>
+
+                    <i class="icon-file text-icon-inline"></i>
+
                     <p:outputLabel for="checkFiles" styleClass="facetTypeLink chkbox-label-margin">
-                        <i class="icon-file text-icon-inline"></i>
                         <h:outputFormat styleClass="facetTypeFile" value="#{bundle['dataverse.results.types.files']} &#40;{0}&#41;">
                             <f:param value="#{SearchIncludeFragment.facetCountFiles}"/>
                         </h:outputFormat>
@@ -320,7 +326,7 @@
 
             <div id="resultsCountPaginatorBlock" class="row" jsf:rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
                 <!-- RESULTS COUNT -->
-                <div class="results-count col-xs-6">
+                <div class="results-count col-sm-6">
                     <h:outputFormat value="#{bundle['dataverse.results.count.toofresults']}">
                         <f:param value="#{SearchIncludeFragment.paginationGuiStart}"/>
                         <f:param value="#{SearchIncludeFragment.paginationGuiEnd}"/>
@@ -328,7 +334,7 @@
                     </h:outputFormat>
                 </div>
                 <!-- SORT + PAGINATOR -->
-                <div class="results-sort-pagination col-xs-6">
+                <div class="results-sort-pagination col-sm-6">
                     <!-- SORT BY -->
                     <div class="btn-group pull-right">
                         <button id="sortResults" type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"

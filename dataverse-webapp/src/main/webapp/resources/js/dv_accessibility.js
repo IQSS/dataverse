@@ -7,6 +7,7 @@
  * @type {Object.<string, string>} Setting name in storage, Setting class name prefix
  */
 var accessibilityUserPreferencesData = {
+    fontSize: "font-size",
     highContrastMode: "high-contrast"
 }
 
@@ -62,8 +63,8 @@ function accessibilityRemoveSettingClass(setting) {
     var element = document.body;
     var prefix = accessibilityUserPreferencesData[setting];
 
-    for(var i = element.classList.length - 1; i >= 0; i--) {
-        if(element.classList[i].startsWith(prefix)) {
+    for (var i = element.classList.length - 1; i >= 0; i--) {
+        if (element.classList[i].startsWith(prefix)) {
             element.classList.remove(element.classList[i]);
         }
     }
@@ -81,11 +82,39 @@ function accessibilityApplySetting(setting, value) {
     
     if (value && value !== "default") {
         accessibilitySetSetting(setting, value);
+        accessibilityRemoveSettingClass(setting);
         accessibilityAddSettingClass(setting);
+
+        if (setting === "fontSize") {
+            accessibilityTogglenavbar(true);
+        }
     }
     else {
         accessibilityRemoveSetting(setting);
         accessibilityRemoveSettingClass(setting);
+
+        if (setting === "fontSize") {
+            accessibilityTogglenavbar(false);
+        }
+    }
+}
+
+/**
+ * Toggle the visibility of the mobile navbar.
+ * @param boolean true -> visible, false -> hidden
+ */
+function accessibilityTogglenavbar(visible) {
+    var navbar = document.getElementById("topNavBar");
+
+    if (visible) {
+        navbar.classList.add("in");
+        navbar.setAttribute("aria-expanded", "true");
+        navbar.style = "";
+    }
+    else {
+        navbar.classList.remove("in");
+        navbar.setAttribute("aria-expanded", "false");
+        navbar.style = "height: 1px";
     }
 }
 
@@ -106,8 +135,9 @@ function accessibilityBindButtonEvents() {
         var buttons = document.querySelectorAll("#" + accessibilityUserPreferencesData[key] + "-mode-selector button");
         // not using for...of loop to keep IE compatibility
         for (var i=0; i<buttons.length; i++) {
+            buttons[i].setAttribute("data-accessibility", key);
             buttons[i].addEventListener("click", function() {
-                accessibilityApplySetting(key, this.className);
+                accessibilityApplySetting(this.dataset.accessibility, this.className);
             }, false);
         }
     }

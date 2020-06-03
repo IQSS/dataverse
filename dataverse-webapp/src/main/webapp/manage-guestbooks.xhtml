@@ -33,7 +33,7 @@
                     <!-- END static Messages -->
 
                     <div class="row" id="resultsCountPaginatorBlock">
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="results-count margin-top" jsf:rendered="#{manageGuestbooksPage.dataverse.owner ne null}">
                             <label for="guestbookRoot" class="normal-text">
                                 <h:selectBooleanCheckbox id="guestbookRoot" value="#{manageGuestbooksPage.inheritGuestbooksValue}">
@@ -45,7 +45,7 @@
                             </label>
                             </div>
                         </div>
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <p class="button-block text-right">
                                 <h:outputLink type="button" styleClass="btn btn-default btn-access"
                                               value="/guestbook.xhtml?ownerId=#{manageGuestbooksPage.dataverse.id}">

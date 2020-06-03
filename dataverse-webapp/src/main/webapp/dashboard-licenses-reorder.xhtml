@@ -47,7 +47,7 @@
                 <p:dataTable id="licenseTable" var="license" value="#{LicenseReorderPage.licenses}"
                              widgetVar="licenseTable"
                              rowIndexVar="rowIndex" draggableRows="true"
-                             style="width: 80%">
+                             class="table-right-offset">
                              
                     <p:ajax event="rowReorder" listener="#{LicenseReorderPage.onRowReorder}" update="@form" />
                     
@@ -56,7 +56,7 @@
                     </p:column>
                     
                     <p:column headerText="#{bundle['license.reorder.actions.header']}"
-                              styleClass="text-center change-order-buttons-cell" width="120">
+                              styleClass="text-center change-order-buttons-cell">
                         <p:commandLink title="#{bundle['license.reorder.moveUp']}"
                                        styleClass="btn btn-default btn-sm bootstrap-button-tooltip move-up-button"
                                        actionListener="#{LicenseReorderPage.moveUp(rowIndex)}"

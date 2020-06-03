@@ -60,7 +60,7 @@
                                             </div>
 
                                             <!-- Sub Fields -->
-                                            <div class="col-xs-9 form-col-container" jsf:rendered="#{fieldsByType.datasetFieldType.compound}">
+                                            <div class="col-xs-9 form-col-container field-add-delete-input" jsf:rendered="#{fieldsByType.datasetFieldType.compound}">
                                                 <ui:repeat id="subfields" value="#{datasetField.datasetFieldsChildren}" var="subdsf">
                                                     <div class="form-col-container
                                                             #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).renderInTwoColumns()) ? 'col-sm-6' : 'col-sm-12'}
