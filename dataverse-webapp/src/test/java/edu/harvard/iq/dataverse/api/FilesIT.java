@@ -30,7 +30,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertNotNull;
 
 public class FilesIT {
@@ -147,7 +147,7 @@ public class FilesIT {
         String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.duplicate_file");
 
         addTwiceResponse.then().assertThat()
-                .body("message", Matchers.startsWith(errMsg))
+                .body("message", startsWith(errMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
                 .statusCode(BAD_REQUEST.getStatusCode());
     }
@@ -685,7 +685,7 @@ public class FilesIT {
         replaceResp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .body("message", Matchers.startsWith(errMsgUnpublished))
+                .body("message", startsWith(errMsgUnpublished))
         ;
 
         // -------------------------
@@ -795,7 +795,7 @@ public class FilesIT {
         replaceResp.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .body("message", Matchers.startsWith(errMsgDeleted))
+                .body("message", startsWith(errMsgDeleted))
         ;
 
     }

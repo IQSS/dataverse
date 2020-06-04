@@ -71,7 +71,7 @@ import java.util.Set;
         , @Index(columnList = "creator_id")
         , @Index(columnList = "releaseuser_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"authority","protocol","identifier"}))
-public abstract class DvObject extends DataverseEntity implements java.io.Serializable {
+public abstract class DvObject extends DataverseEntity implements java.io.Serializable, JpaEntity<Long> {
 
     public static final String DATAVERSE_DTYPE_STRING = "Dataverse";
     public static final String DATASET_DTYPE_STRING = "Dataset";

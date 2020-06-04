@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 /**
  * Base class for commands involved in Dataset publication. Mostly needed for code reuse.
@@ -17,8 +18,8 @@ public abstract class AbstractPublishDatasetCommand<T> extends AbstractDatasetCo
         super(aRequest, datasetIn);
     }
 
-    protected WorkflowContext buildContext(Dataset theDataset, WorkflowContext.TriggerType triggerType, boolean datasetExternallyReleased) {
-        return new WorkflowContext(getRequest(), theDataset, triggerType, datasetExternallyReleased);
+    protected WorkflowContext buildContext(Dataset theDataset, TriggerType triggerType, boolean datasetExternallyReleased) {
+        return new WorkflowContext(triggerType, theDataset, getRequest(), datasetExternallyReleased);
     }
 
 }

@@ -1,14 +1,9 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
-import org.jboss.arquillian.transaction.api.annotation.Transactional;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-
 import java.util.List;
 import java.util.Locale;
 
@@ -21,8 +16,6 @@ import static org.junit.Assert.assertThat;
 /**
  * @author madryk
  */
-@RunWith(Arquillian.class)
-@Transactional(TransactionMode.ROLLBACK)
 public class LicenseDAOIT extends PersistenceArquillianDeployment {
 
     @Inject

@@ -1,12 +1,11 @@
 package edu.harvard.iq.dataverse.workflow;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.user.ApiToken;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * The context in which a workflow is performed. Contains information steps might
@@ -23,78 +22,74 @@ public class WorkflowContext {
         PrePublishDataset, PostPublishDataset
     }
 
-    private final DataverseRequest request;
-    private final Dataset dataset;
-    private final long nextVersionNumber;
-    private final long nextMinorVersionNumber;
-    private final TriggerType type;
-    private final ApiToken apiToken;
-    private final boolean datasetExternallyReleased;
-    private Map<String, Object> settings;
+    protected final TriggerType type;
+    protected final Dataset dataset;
+    protected final long nextVersionNumber;
+    protected final long nextMinorVersionNumber;
+    protected final DataverseRequest request;
+    protected final boolean datasetExternallyReleased;
 
-    private String invocationId = UUID.randomUUID().toString();
+    // -------------------- CONSTRUCTORS --------------------
 
-    public WorkflowContext(DataverseRequest aRequest, Dataset aDataset, TriggerType aTriggerType, boolean datasetExternallyReleased) {
-        this(aRequest, aDataset,
-             aDataset.getLatestVersion().getVersionNumber(),
-             aDataset.getLatestVersion().getMinorVersionNumber(),
-             aTriggerType, null, null, datasetExternallyReleased);
+    WorkflowContext(WorkflowContext other) {
+        this(other.type, other.dataset, other.nextVersionNumber, other.nextMinorVersionNumber,
+                other.request, other.datasetExternallyReleased);
     }
 
-    public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber,
-                           long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased) {
-        this.request = request;
+    public WorkflowContext(TriggerType type, Dataset dataset, DataverseRequest request, boolean datasetExternallyReleased) {
+        this(type, dataset, dataset.getLatestVersion().getVersionNumber(),
+                dataset.getLatestVersion().getMinorVersionNumber(), request, datasetExternallyReleased);
+    }
+
+    public WorkflowContext(TriggerType type, Dataset dataset, long nextVersionNumber, long nextMinorVersionNumber,
+                           DataverseRequest request, boolean datasetExternallyReleased) {
+        this.type = type;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
         this.nextMinorVersionNumber = nextMinorVersionNumber;
-        this.type = type;
-        this.settings = settings;
-        this.apiToken = apiToken;
+        this.request = request;
         this.datasetExternallyReleased = datasetExternallyReleased;
+    }
+
+    // -------------------- GETTERS --------------------
+
+    public TriggerType getType() {
+        return type;
     }
 
     public Dataset getDataset() {
         return dataset;
     }
 
+    public long getNextVersionNumber() {
+        return nextVersionNumber;
+    }
+
     public long getNextMinorVersionNumber() {
         return nextMinorVersionNumber;
     }
 
-    public long getNextVersionNumber() {
-        return nextVersionNumber;
+    public boolean isMinorRelease() {
+        return nextMinorVersionNumber != 0;
     }
 
     public DataverseRequest getRequest() {
         return request;
     }
 
-    public boolean isMinorRelease() {
-        return getNextMinorVersionNumber() != 0;
-    }
-
-    public void setInvocationId(String invocationId) {
-        this.invocationId = invocationId;
-    }
-
-    public String getInvocationId() {
-        return invocationId;
-    }
-
-    public TriggerType getType() {
-        return type;
-    }
-
-    public Map<String, Object> getSettings() {
-        return settings;
-    }
-
-    public ApiToken getApiToken() {
-        return apiToken;
-    }
-
-    public boolean getDatasetExternallyReleased() {
+    public boolean isDatasetExternallyReleased() {
         return datasetExternallyReleased;
     }
 
+    // -------------------- LOGIC --------------------
+
+    WorkflowExecution asExecutionOf(Workflow workflow) {
+        return new WorkflowExecution(workflow.getId(), type.name(),
+                dataset.getId(), nextVersionNumber, nextMinorVersionNumber,
+                datasetExternallyReleased, workflow.getName());
+    }
+
+    void save(DatasetRepository datasets) {
+        datasets.save(getDataset());
+    }
 }

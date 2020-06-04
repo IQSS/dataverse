@@ -11,11 +11,11 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PrePublishDataset;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -80,13 +80,13 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
 
-        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
+        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(PrePublishDataset);
         if (prePubWf.isPresent()) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(),
-                                   buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
+            ctxt.workflowExecutions().start(
+                    prePubWf.get(), buildContext(theDataset, PrePublishDataset, datasetExternallyReleased));
             return new PublishDatasetResult(theDataset, false);
 
         } else {

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -13,7 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static edu.harvard.iq.dataverse.workflow.WorkflowContextObjectMother.givenWorkflowContext;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
+import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
+import static edu.harvard.iq.dataverse.workflow.WorkflowContextMother.givenWorkflowExecutionContext;
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.ARGUMENTS_PARAM_NAME;
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.COMMAND_PARAM_NAME;
 import static edu.harvard.iq.dataverse.workflow.internalspi.SystemProcessStep.PROCESS_ID_PARAM_NAME;
@@ -25,6 +28,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SystemProcessStepTest {
+
+    long datasetId = 1L;
+    Workflow workflow = givenWorkflow(1L,
+            givenWorkflowStep(SystemProcessStep.STEP_ID)
+    );
 
     Map<String, String> inputParams = new HashMap<>();
 
@@ -51,7 +59,7 @@ class SystemProcessStepTest {
         inputParams.put(ARGUMENTS_PARAM_NAME, "test");
         SystemProcessStep step = new SystemProcessStep(inputParams);
         // when
-        WorkflowStepResult result = step.run(givenWorkflowContext());
+        WorkflowStepResult result = step.run(givenWorkflowExecutionContext(datasetId, workflow));
         // then
         assertThat(result).isInstanceOf(Success.class);
         // and
@@ -66,7 +74,7 @@ class SystemProcessStepTest {
         inputParams.put(COMMAND_PARAM_NAME, UUID.randomUUID().toString());
         SystemProcessStep step = new SystemProcessStep(inputParams);
         // when
-        WorkflowStepResult result = step.run(givenWorkflowContext());
+        WorkflowStepResult result = step.run(givenWorkflowExecutionContext(datasetId, workflow));
         // then
         assertThat(result).isInstanceOf(Failure.class);
         assertThat(result.getData().get(REASON_PARAM_NAME)).endsWith("No such file or directory");

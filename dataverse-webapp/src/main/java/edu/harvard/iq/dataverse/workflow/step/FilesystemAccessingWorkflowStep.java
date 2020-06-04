@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
     // -------------------- LOGIC --------------------
 
     @Override
-    public final WorkflowStepResult run(WorkflowContext context) {
+    public final WorkflowStepResult run(WorkflowExecutionContext context) {
         try {
             Path workDir = createWorkDir(context);
 
@@ -55,7 +55,7 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
         }
     }
 
-    protected abstract WorkflowStepResult.Source runInternal(WorkflowContext context, Path workDir) throws Exception;
+    protected abstract WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception;
 
     protected WorkflowStepResult handleError(Exception e) {
         log.error("Failed workflow step", e);
@@ -64,11 +64,11 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
 
     // -------------------- PRIVATE --------------------
 
-    private Path createWorkDir(WorkflowContext context) throws IOException {
+    private Path createWorkDir(WorkflowExecutionContext context) throws IOException {
         return Files.createDirectories(resolveWorkDir(context));
     }
 
-    private Path resolveWorkDir(WorkflowContext context) {
+    private Path resolveWorkDir(WorkflowExecutionContext context) {
         if (workDirParam == null) {
             return Paths.get(System.getProperty("java.io.tmpdir"),
                     "dataverse",

@@ -3,8 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
-import edu.harvard.iq.dataverse.persistence.workflow.PendingWorkflowInvocation;
-import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionServiceBean;
 
 import javax.ejb.EJB;
 import javax.ws.rs.POST;
@@ -17,8 +16,7 @@ import java.util.logging.Logger;
 
 /**
  * API Endpoint for external systems to report the results of workflow step
- * execution. Pending workflows (stored as {@link PendingWorkflowInvocation}s)
- * wait for external systems to post a result on this endpoint.
+ * execution. Pending workflows wait for external systems to post a result on this endpoint.
  *
  * @author michael
  */
@@ -26,7 +24,7 @@ import java.util.logging.Logger;
 public class Workflows extends AbstractApiBean {
 
     @EJB
-    WorkflowServiceBean workflows;
+    WorkflowExecutionServiceBean workflowExecutions;
 
     private IpGroup whitelist = new IpGroup();
     private long lastWhitelistUpdate = 0;
@@ -34,8 +32,6 @@ public class Workflows extends AbstractApiBean {
     @Path("{invocationId}")
     @POST
     public Response resumeWorkflow(@PathParam("invocationId") String invocationId, String body) {
-        PendingWorkflowInvocation pending = workflows.getPendingWorkflow(invocationId);
-
         String remoteAddrStr = httpRequest.getRemoteAddr();
         IpAddress remoteAddr = IpAddress.valueOf((remoteAddrStr != null) ? remoteAddrStr : "0.0.0.0");
         if (!isAllowed(remoteAddr)) {
@@ -43,13 +39,12 @@ public class Workflows extends AbstractApiBean {
         }
         Logger.getLogger(Workflows.class.getName()).log(Level.INFO, "Resume request from: {0}", httpRequest.getRemoteAddr());
 
-        if (pending == null) {
-            return notFound("Cannot find workflow invocation with id " + invocationId);
-        }
-
-        workflows.resume(pending, body);
-
-        return Response.accepted("/api/datasets/" + pending.getDataset().getId()).build();
+        return workflowExecutions.getPendingWorkflow(invocationId).map(execution -> {
+            workflowExecutions.resume(execution, body);
+            return Response.accepted("/api/datasets/" + execution.getDatasetId()).build();
+        }).orElseGet(() ->
+                notFound("Cannot find workflow invocation with id " + invocationId)
+        );
     }
 
     private boolean isAllowed(IpAddress addr) {

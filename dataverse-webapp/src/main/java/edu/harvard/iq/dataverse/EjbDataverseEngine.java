@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
@@ -181,6 +182,9 @@ public class EjbDataverseEngine {
 
     @EJB
     WorkflowServiceBean workflowService;
+
+    @EJB
+    WorkflowExecutionServiceBean workflowExecutionService;
 
     @EJB
     FileDownloadServiceBean fileDownloadService;
@@ -481,6 +485,11 @@ public class EjbDataverseEngine {
                 @Override
                 public WorkflowServiceBean workflows() {
                     return workflowService;
+                }
+
+                @Override
+                public WorkflowExecutionServiceBean workflowExecutions() {
+                    return workflowExecutionService;
                 }
 
                 @Override

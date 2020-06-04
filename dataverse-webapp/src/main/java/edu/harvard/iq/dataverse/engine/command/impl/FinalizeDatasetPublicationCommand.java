@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -30,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState.RELEASED;
+import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PostPublishDataset;
 
 /**
  * Takes the last internal steps in publishing a dataset.
@@ -125,9 +125,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
         final Dataset ds = ctxt.em().merge(theDataset);
 
-        ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
+        ctxt.workflows().getDefaultWorkflow(PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
+                ctxt.workflowExecutions().start(wf, buildContext(ds, PostPublishDataset, datasetExternallyReleased));
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }

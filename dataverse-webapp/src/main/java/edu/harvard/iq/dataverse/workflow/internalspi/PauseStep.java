@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -33,21 +33,21 @@ public class PauseStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult run(WorkflowContext context) {
+    public WorkflowStepResult run(WorkflowExecutionContext context) {
         final Pending result = new Pending();
         result.getData().putAll(params);
         return result;
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
         logger.log(Level.INFO, "local parameters match: {0}", internalData.equals(params));
         logger.log(Level.INFO, "externalData: \"{0}\"", externalData);
         return externalData.trim().equals(FAILURE_RESPONSE) ? new Failure("Simulated fail") : new Success();
     }
 
     @Override
-    public void rollback(WorkflowContext context, Failure reason) {
+    public void rollback(WorkflowExecutionContext context, Failure reason) {
         // nothing to roll back
     }
 }

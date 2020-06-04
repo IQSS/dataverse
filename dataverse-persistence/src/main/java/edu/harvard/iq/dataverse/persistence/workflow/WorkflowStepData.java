@@ -24,7 +24,7 @@ public class WorkflowStepData implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    Long id;
 
     @ManyToOne
     private Workflow parent;

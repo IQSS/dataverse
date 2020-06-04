@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * Interface for step factories. Implement this interface and register an instance
- * of it with the {@link WorkflowServiceBean} in order to make the steps available
+ * of it with the {@link WorkflowStepRegistry} in order to make the steps available
  * to workflows.
  *
  * @author michael

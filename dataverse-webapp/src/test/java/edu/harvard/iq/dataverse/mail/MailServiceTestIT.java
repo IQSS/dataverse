@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.mail;
 
-
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -48,8 +47,7 @@ public class MailServiceTestIT extends WebappArquillianDeployment {
     @Test
     public void sendMail_whenOverseerActive() {
         // given
-        Assume.assumeThat("Property [MailOverseerAddress] should be set to valid mail in domain mailinator.com or gmail.com",
-                overseerEmail, not(emptyOrNullString()));
+        Assume.assumeThat(overseerEmail, not(emptyOrNullString()));
 
         // when
         mailService.sendMail(userMailAddress, content);

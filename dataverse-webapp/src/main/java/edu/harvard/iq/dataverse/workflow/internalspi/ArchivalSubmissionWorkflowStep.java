@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -30,7 +30,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult run(WorkflowContext context) {
+    public WorkflowStepResult run(WorkflowExecutionContext context) {
         Map<String, String> requestedSettings = new HashMap<String, String>();
         Map<String, Object> typedSettings = context.getSettings();
         for (String setting : (typedSettings.keySet())) {
@@ -57,12 +57,12 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("Not supported yet."); // This class does not need to resume.
     }
 
     @Override
-    public void rollback(WorkflowContext context, Failure reason) {
+    public void rollback(WorkflowExecutionContext context, Failure reason) {
         logger.log(Level.INFO, "rolling back workflow invocation {0}", context.getInvocationId());
         logger.warning("Manual cleanup of Archive for: " + context.getDataset().getGlobalId().asString() + ", version: " + context.getDataset().getReleasedVersion() + " may be required");
     }

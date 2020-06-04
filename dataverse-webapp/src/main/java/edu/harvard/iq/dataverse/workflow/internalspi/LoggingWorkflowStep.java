@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -27,7 +27,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult run(WorkflowContext context) {
+    public WorkflowStepResult run(WorkflowExecutionContext context) {
         logger.info("Logging step:");
         logger.log(Level.INFO, "Invocation id {0}", context.getInvocationId());
         logger.log(Level.INFO, "Dataset id:{0}", context.getDataset().getId());
@@ -41,12 +41,12 @@ public class LoggingWorkflowStep implements WorkflowStep {
     }
 
     @Override
-    public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
+    public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
         throw new UnsupportedOperationException("Not supported yet."); // This class does not need to resume.
     }
 
     @Override
-    public void rollback(WorkflowContext context, Failure reason) {
+    public void rollback(WorkflowExecutionContext context, Failure reason) {
         logger.log(Level.INFO, "rolling back workflow invocation {0}", context.getInvocationId());
     }
 }

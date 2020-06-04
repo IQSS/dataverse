@@ -14,7 +14,6 @@
 
     <name>dataverse-persistence</name>
 
-
     <dependencies>
         <dependency>
             <groupId>edu.harvard.iq</groupId>
@@ -61,13 +60,19 @@
             <artifactId>javax.json</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
+                    <reuseForks>false</reuseForks>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>

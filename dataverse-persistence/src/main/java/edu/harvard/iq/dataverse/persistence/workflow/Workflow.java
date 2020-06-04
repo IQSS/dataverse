@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.persistence.workflow;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import java.io.Serializable;
@@ -21,12 +21,8 @@ import java.util.Objects;
  *
  * @author michael
  */
-@NamedQueries({
-        @NamedQuery(name = "Workflow.listAll", query = "Select w from Workflow w"),
-        @NamedQuery(name = "Workflow.deleteById", query = "Delete from Workflow w WHERE w.id=:id")
-})
 @Entity
-public class Workflow implements Serializable {
+public class Workflow implements Serializable, JpaEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -100,6 +96,4 @@ public class Workflow implements Serializable {
         }
         return Objects.deepEquals(this.steps, other.steps);
     }
-
-
 }

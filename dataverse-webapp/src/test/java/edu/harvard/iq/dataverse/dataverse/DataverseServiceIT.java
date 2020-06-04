@@ -133,7 +133,7 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         Either<DataverseError, Dataverse> updatedDataverse = dataverseService.saveEditedDataverse(Lists.newArrayList(), dataverse, new DualListModel<>());
 
         //then
-        Assert.assertNotEquals(oldDataverseName, updatedDataverse.get().getName());
+        Assertions.assertNotEquals(oldDataverseName, updatedDataverse.get().getName());
 
     }
 

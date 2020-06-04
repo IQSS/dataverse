@@ -55,7 +55,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @GET
     public Response listWorkflows() {
         return ok(workflows.listWorkflows().stream()
-                          .map(wf -> brief.json(wf)).collect(toJsonArray()));
+                .map(brief::json)
+                .collect(toJsonArray()));
     }
 
     @Path("default/{triggerType}")
