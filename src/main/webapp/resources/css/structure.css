@@ -226,7 +226,7 @@ a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none
 }
 
 /* -------- HEADER -------- */
-#dataverse-header-block {padding-top:50px;}
+#dataverse-header-block {padding-top:10px;}
 nav {display: none;}
 body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader {margin:0 auto;}
@@ -235,7 +235,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderLogo {padding-right:1em; text-align:center;}
 #dataverseHeader .dataverseHeaderLogo img {max-width:940px; max-height:120px;}
 #dataverseHeader .dataverseHeaderCell.dataverseHeaderLogo img {max-width:100px; max-height:100px;}
-#dataverseHeader .dataverseHeaderName {padding:2em 1em 2em 0em;}
+#dataverseHeader .dataverseHeaderName {padding:7em 1em 0em 0em;}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName {
   font-size: 2.5em;
   text-align: center;
@@ -250,7 +250,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 /*QDR*/
-#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;}
+#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #4B74FF;padding:0.5em;background:#E8E8ED; color:black;}
 
 
 /* -------- FOOTER -------- */
@@ -459,7 +459,6 @@ div.panelSearchForm .button-block {
 	margin-top: -35px;
 }
 
-#search-row-panel {padding: 10px 0;}
 #dv-sidebar {}
 #dv-main {}
 #dv-main.nofacets {width:100%;float:none;}
@@ -499,7 +498,7 @@ div.panelSearchForm .button-block {
 
 /*#resultsCountPaginatorBlock {overflow:hidden;}*/
 #resultsCountPaginatorBlock div.results-count {padding:6px 12px; font-weight:bold;}
-#resultsCountPaginatorBlock div.results-sort-pagination div.btn-group {margin-right: 96px;}
+#resultsCountPaginatorBlock div.results-sort-pagination div.btn-group {margin-right: 22px;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
 span.search-term-match {font-weight: bold;}
@@ -625,7 +624,7 @@ div.ui-tabs-panels .ui-tabs.ui-tabs-top .ui-tabs-nav.ui-widget-header {border-bo
 div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:inline-block; margin-bottom:4px;}
 
 /* -------- METRICS -------- */
-#metrics-block {margin-bottom:20px;}
+#metrics-block {margin-bottom:0px;}
 
 /* -- OLD LAYOUT -- */
 #metrics-block {border:1px solid #eee; padding:0;}
@@ -1064,6 +1063,9 @@ div.container {
   overflow: visible;
 }
 
+#search-row-panel {
+	padding-top:10px;
+}
 #search-row-panel-backdrop {
   width: 100vw;
   height: 100%;
@@ -1142,7 +1144,7 @@ div.container {
   height: 70px;
   width: 70px;
   display: block;
-  margin: auto;
+  margin:auto;
 }
 
 .add-data-plus-wrapper span {
