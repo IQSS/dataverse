@@ -441,7 +441,7 @@ div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 #metadataFieldOptions div.checkbox.child-field {padding-left:18px;}
 
 /* -------- SEARCH -------- */
-div.panelSearchForm {margin-bottom: 30px;}
+div.panelSearchForm {margin-bottom: 10px;}
 div.panelSearchForm input.search-input {
   margin: auto;
   padding: 4px;
@@ -455,8 +455,11 @@ div.panelSearchForm input.search-input {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
+div.panelSearchForm .button-block {
+	margin-top: -35px;
+}
 
-#search-row-panel {padding: 45px 0;}
+#search-row-panel {padding: 10px 0;}
 #dv-sidebar {}
 #dv-main {}
 #dv-main.nofacets {width:100%;float:none;}
@@ -1126,9 +1129,11 @@ div.container {
 .add-data-plus-wrapper {
   background: none;
   border: none;
-  position: absolute;
   right: 15px;
   z-index: 1;
+}
+.add-data-plus-wrapper:focus {
+	outline:none;
 }
 
 .add-data-plus-wrapper div {
@@ -1137,6 +1142,7 @@ div.container {
   height: 70px;
   width: 70px;
   display: block;
+  margin: auto;
 }
 
 .add-data-plus-wrapper span {
