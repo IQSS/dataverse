@@ -24,16 +24,16 @@ public class SolrField {
              * prefixes for Solr dynamicField's specified in schema.xml
              */
             if (solrType.equals(SolrType.STRING)) {
-                nameSearchable = "dsf_str_" + name;
+                nameSearchable = SearchDynamicFieldPrefix.STR.getPrefix() + name;
             } else if (solrType.equals(SolrType.TEXT_EN) ||
                     solrType.equals(SolrType.EMAIL)) {
-                nameSearchable = "dsf_txt_" + name;
+                nameSearchable = SearchDynamicFieldPrefix.TXT.getPrefix() + name;
             } else if (solrType.equals(SolrType.DATE)) {
-                nameSearchable = "dsf_dtr_" + name;
+                nameSearchable = SearchDynamicFieldPrefix.DTR.getPrefix() + name;
             } else if (solrType.equals(SolrType.INTEGER)) {
-                nameSearchable = "dsf_int_" + name;
+                nameSearchable = SearchDynamicFieldPrefix.INT.getPrefix() + name;
             } else if (solrType.equals(SolrType.FLOAT)) {
-                nameSearchable = "dsf_flt_" + name;
+                nameSearchable = SearchDynamicFieldPrefix.FLT.getPrefix() + name;
                 this.facetable = false;
             } else {
                 nameSearchable = name;

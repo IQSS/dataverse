@@ -56,10 +56,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -213,11 +215,9 @@ public class SearchServiceBean {
             String displayName = datasetFieldType.getDisplayName();
             solrFieldsToHightlightOnMap.put(solrField, displayName);
         }
-        for (Map.Entry<String, String> entry : solrFieldsToHightlightOnMap.entrySet()) {
-            String solrField = entry.getKey();
-            // String displayName = entry.getValue();
-            solrQuery.addHighlightField(solrField);
-        }
+
+        solrQuery = addHighlightFields(solrQuery, solrFieldsToHightlightOnMap);
+
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
@@ -830,6 +830,28 @@ public class SearchServiceBean {
         }
 
         return facetLabelName;
+    }
+
+    private SolrQuery addHighlightFields(SolrQuery solrQuery, Map<String, String> solrFieldsToHightlightOnMap) {
+        Set<String> dynamicDatasetFieldsPrefixes = new HashSet<>();
+
+        for(String field : solrFieldsToHightlightOnMap.keySet()) {
+            if(isFieldDynamic(field)) {
+                dynamicDatasetFieldsPrefixes.add(field.substring(0, 8));
+            } else {
+                solrQuery.addHighlightField(field);
+            }
+        }
+
+        for (String dynamicFieldPrefix : dynamicDatasetFieldsPrefixes) {
+            solrQuery.addHighlightField(dynamicFieldPrefix + "*");
+        }
+
+        return solrQuery;
+    }
+
+    private boolean isFieldDynamic(String field) {
+        return field.length() > 8 && SearchDynamicFieldPrefix.contains(field.substring(0, 8));
     }
 
     private String removeSolrFieldSuffix(String name) {
