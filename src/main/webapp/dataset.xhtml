@@ -19,24 +19,18 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
-	    <ui:param name="showMessagePanel" value="#{true}"/>            
-            <ui:param name="showPublishButtonGroup" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
-                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                             and DatasetPage.dataset.latestVersion.inReview}"/>
-            
-            <ui:param name="showPublishButton" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
+	    <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                              and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
                                                              and !DatasetPage.dataset.latestVersion.inReview}"/>
-            <ui:param name="showSubmitForReviewButton" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+            <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                             and !DatasetPage.datasetLockedInWorkflow
                                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                             and DatasetPage.canUpdateDataset()
                                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            
-            <ui:param name="showReturnToAuthor" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
-                                                                               and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+            <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
+                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
         <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
             <!-- ADDED TOOLS SPECIFIC LOGIC TO DatasetPage.canDownloadFiles() RENDER LOGIC, CAN BE REMOVED WHEN DOWNLOAD ALL FILES IS WIRED UP -->
             <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() 
@@ -232,57 +226,40 @@
                                         <!-- END: DOWNLOAD/ACCESS DATASET -->
 
                                         <!-- PUBLISH DATASET -->
-                                        <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishButtonGroup}">
+                                        <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                         disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
                                                     #{bundle['dataset.publishBtn']} <span class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
-                                                    <!-- Publish  -->
-                                                    <li class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
-                                                        <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"                                                                       
-                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"                                      
+                                                    <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
+                                                        <!-- Publish LINK  -->
+                                                        <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
+                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                        action="#{DatasetPage.processPublishButton()}">
                                                             #{bundle['dataset.publish.btn']}
                                                         </p:commandLink>
                                                     </li>
-                                                    <!-- END: Publish LINKS -->
-                                                    <ui:fragment rendered="#{showReturnToAuthor}">
+                                                    <li jsf:rendered="#{showReturnToAuthorLink}" class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
                                                         <!-- Return to Author LINK -->
-                                                        <li class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
-                                                            <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
-                                                                           disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
-                                                                           onclick="PF('sendBackToContributor').show()">
-                                                                #{bundle['dataset.rejectBtn']}
-                                                            </p:commandLink>
-                                                        </li>
-                                                        <!-- END: Return to Author LINK -->
-                                                    </ui:fragment>
+                                                        <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                                       onclick="PF('sendBackToContributor').show()">
+                                                            #{bundle['dataset.rejectBtn']}
+                                                        </p:commandLink>
+                                                    </li>
+                                                    <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
+                                                        <!-- Submit for Review LINK -->
+                                                        <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
+                                                                       disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
+                                                                       onclick="PF('inreview').show()">
+                                                            #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                                        </p:commandLink>
+                                                    </li>
                                                 </ul>
                                             </div>
-                                        </div>                                                                                                                         
-                                        <ui:fragment rendered="#{showPublishButton}">
-                                            <!-- Single Publish Button -->
-                                                    <li class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
-                                                        <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"                                                                       
-                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"                                      
-                                                                       action="#{DatasetPage.processPublishButton()}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                    </li>                                            
-                                        </ui:fragment>
-                                        <ui:fragment rendered="#{showSubmitForReviewButton}">
-                                            <!-- Submit for Review LINK -->
-                                            <li class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
-                                                <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                               disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
-                                                               onclick="PF('inreview').show()">
-                                                                #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                                </p:commandLink>
-                                            </li>
-                                            <!-- End: Submit for Review LINK -->
-                                        </ui:fragment>
+                                        </div>
                                         <!-- END: Publish -->
 
                                         <!-- Edit Dataset -->
@@ -381,7 +358,7 @@
 
                                         <!-- LINK -->
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}">
-                                            <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"   
+                                            <p:commandLink styleClass="btn btn-default btn-access btn-xs btn-block btn-link-dataset"
                                                            action="#{DatasetPage.setShowLinkingPopup(true)}"
                                                            oncomplete="PF('linkDatasetForm').show();bind_bsui_components();"
                                                            update="@form">
