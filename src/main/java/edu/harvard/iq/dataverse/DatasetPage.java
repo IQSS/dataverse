@@ -3778,6 +3778,35 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public void processPublishButton() {
+
+        if (dataset.isReleased()) {
+            PrimeFaces.current().executeScript("PF('releaseDraft').show()");
+        }
+
+        if (!dataset.isReleased()) {
+            if (dataset.getOwner().isReleased()) {
+                PrimeFaces.current().executeScript("PF('publishConfirm').show()");
+                return;
+            }
+            if (!dataset.getOwner().isReleased()) {
+                if (canPublishDataverse()) {
+                    if (dataset.getOwner().getOwner() == null
+                            || (dataset.getOwner().getOwner() != null && dataset.getOwner().getOwner().isReleased())) {
+                        PrimeFaces.current().executeScript("PF('publishParent').show()");
+                        return;
+                    }
+                    if ((dataset.getOwner().getOwner() != null && !dataset.getOwner().getOwner().isReleased())) {
+                        PrimeFaces.current().executeScript("PF('maynotPublishParent').show()");
+                    }
+
+                } else {
+                    PrimeFaces.current().executeScript("PF('mayNotRelease').show()");
+                }
+            }
+        }
+    }
 
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
