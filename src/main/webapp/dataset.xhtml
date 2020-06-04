@@ -22,8 +22,8 @@
 	    <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)
-                                                             and !DatasetPage.dataset.latestVersion.inReview}"/>
+                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+            
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                             and !DatasetPage.datasetLockedInWorkflow
                                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -229,17 +229,15 @@
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
                                                 <!-- Publish DROPDOWN btn -->
-                                                <button jsf:rendered="#{true}" type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                        disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
-                                                    #{bundle['dataset.publishBtn']} <span class="caret"></span>
+                                                <button jsf:rendered="#{showSubmitForReviewLink or showReturnToAuthorLink}" type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    #{bundle['dataset.publishBtn']}<span class="caret"></span>
                                                 </button>
                                                 <!-- TO-DO... 
                                                      add render logic to display this single-click btn and hide the dropdown btn 
                                                      if the only option link displayed is a single publish link... -->
                                                 <!-- Publish SINGLE-CLICK btn -->
-                                                <button jsf:rendered="#{false}" type="button" class="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"
-                                                        onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );"
-                                                        disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
+                                                <button jsf:rendered="#{!(showSubmitForReviewLink or showReturnToAuthorLink)}" type="button" class="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"
+                                                        onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
                                                     #{bundle['dataset.publishBtn']}
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
