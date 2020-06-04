@@ -186,9 +186,13 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
-                    globalIdServiceBean.createIdentifier(theDataset);
-                    theDataset.setGlobalIdCreateTime(getTimestamp());
-                    theDataset.setIdentifierRegistered(true);
+                    try {
+                        globalIdServiceBean.createIdentifier(theDataset);
+                        theDataset.setGlobalIdCreateTime(getTimestamp());
+                        theDataset.setIdentifierRegistered(true);
+                    } catch (Throwable ex) {
+                        logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
+                    }
 
                 } catch (Throwable e) {
                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);

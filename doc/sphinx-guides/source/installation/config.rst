@@ -1038,6 +1038,20 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
+.. _doi.baseurlstringnext
+
+doi.baseurlstringnext
++++++++++++++++++++++
+
+Dataverse uses multiple APIs from DataCite:
+
+- The DataCite MDS API is older, XML-based, and configured using :ref:`doi.baseurlstring`.
+- The DataCite REST API is newer, JSON-based, and configured using ``doi.baseurlstringnext``.
+
+In production, ``doi.baseurlstringnext`` should be set to ``https://api.datacite.org``
+
+While testing, ``doi.baseurlstringnext`` should be set to ``https://api.test.datacite.org``
+
 .. _doi.mdcbaseurlstring:
 
 doi.mdcbaseurlstring
