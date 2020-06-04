@@ -72,6 +72,8 @@ Enable or Disable Display of Make Data Count Metrics
 
 By default, when MDC logging is enabled (when ``:MDCLogPath`` is set), Dataverse will display MDC metrics instead of it's internal (legacy) metrics. You can avoid this (e.g. to collect MDC metrics for some period of time before starting to display them) by setting ``:DisplayMDCMetrics`` to false.
 
+The following discussion assumes ``:MDCLogPath`` has been set to ``/usr/local/payara5/glassfish/domains/domain1/logs/mdc``
+
 Configure Counter Processor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -92,7 +94,7 @@ Configure Counter Processor
 Populate Views and Downloads for the First Time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Soon we will be setting up a cron job to run nightly but we start with a single successful configuration and run of Counter Processor and calls to Dataverse APIs.
+Soon we will be setting up a cron job to run nightly but we start with a single successful configuration and manual run of Counter Processor and calls to Dataverse APIs. (The scripts discussed in the next section automate the steps described here, including creating empty log files if you're starting mid-month.) 
 
 * Change to the directory where you installed Counter Processor.
 
@@ -100,7 +102,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs``
+  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs/mdc``
 
   * ``touch counter_2019-02-01.log``
   
@@ -126,6 +128,8 @@ Populate Views and Downloads Nightly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse API to process it should be added as a cron job.
+
+Dataverse provides example scripts that run the steps to process new accesses and uploads and update Dataverse's database (`counter_daily.sh</_static/util/counter_daily.sh>`) and to retrieve citations for all Datasets from DataCite (`counter_weekly.sh</_static/util/counter_weekly.sh>`). These scripts should be configured for your environment and can be run manually or as cron jobs.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
