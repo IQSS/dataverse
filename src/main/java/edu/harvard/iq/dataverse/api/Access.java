@@ -538,11 +538,7 @@ public class Access extends AbstractApiBean {
     @Produces({ "application/zip" })
     public Response postDownloadDatafiles(String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         
-        fileIds = fileIds.substring(8); // String "fileIds=" from the front
-        /* Note - fileIds also has a ',' after the last file id number and before a
-         * final '\n' - the latter appears to stop the last item from being parsed in
-         * the fileIds.split(","); line below.
-         */
+
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
     /*
@@ -558,7 +554,7 @@ public class Access extends AbstractApiBean {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
 
-    private Response downloadDatafiles(String fileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -568,10 +564,19 @@ public class Access extends AbstractApiBean {
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
-        if (fileIds == null || fileIds.equals("")) {
+        if (rawFileIds == null || rawFileIds.equals("")) {
             throw new BadRequestException();
         }
-
+        final String fileIds;
+        if(rawFileIds.startsWith("fileIds=")) {
+            fileIds = rawFileIds.substring(8); // String "fileIds=" from the front
+        } else {
+            fileIds=rawFileIds;
+        }
+        /* Note - fileIds coming from the POST ends in '\n' and a ',' has been added after the last file id number and before a
+         * final '\n' - this stops the last item from being parsed in the fileIds.split(","); line below.
+         */
+        
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
                 ? headers.getHeaderString(API_KEY_HEADER) 
                 : apiTokenParam;
