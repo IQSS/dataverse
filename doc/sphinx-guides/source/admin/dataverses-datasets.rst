@@ -115,6 +115,11 @@ Forces update to metadata provided to the PID provider of a published dataset. O
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
 
+Check for Unreserved PIDs and Reserve Them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :ref:`pids-api` in the API Guide for details.
+
 Make Metadata Updates Without Changing Dataset Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

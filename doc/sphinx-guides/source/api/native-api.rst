@@ -2524,7 +2524,7 @@ Each user can get a dump of their notifications by passing in their API token::
 PIDs
 ----
 
-PIDs is short for Persistent IDentifiers. Examples include DOI or Handle.
+PIDs is short for Persistent IDentifiers. Examples include DOI or Handle. There are some additional PID operations listed in the :doc:`/admin/dataverses-datasets` section of the Admin Guide.
 
 Get Info on a PID
 ~~~~~~~~~~~~~~~~~
