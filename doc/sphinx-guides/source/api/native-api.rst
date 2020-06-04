@@ -2579,15 +2579,15 @@ Reserved a PID for a dataset. A superuser API token is required.
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PID=10.70122/FK2/9BXT5O
+  export PID=doi:10.70122/FK2/9BXT5O
 
-  curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/pids/:persistentId/reserve?persistentId=$PID
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/pids/:persistentId/reserve?persistentId=$PID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/pids/:persistentId/reserve?persistentId=10.70122/FK2/9BXT5O
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/pids/:persistentId/reserve?persistentId=doi:10.70122/FK2/9BXT5O
 
 Delete a PID
 ~~~~~~~~~~~~
@@ -2600,15 +2600,15 @@ Delete PID from DataCite (this is only possible for PIDs that are in the "draft"
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export PID=10.70122/FK2/9BXT5O
+  export PID=doi:10.70122/FK2/9BXT5O
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/pids/delete?persistentId=$PID
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/pids/:persistentId/delete?persistentId=$PID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X DELETE https://demo.dataverse.org/api/pids/delete?persistentId=10.70122/FK2/9BXT5O
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X DELETE https://demo.dataverse.org/api/pids/:persistentId/delete?persistentId=doi:10.70122/FK2/9BXT5O
 
 
 .. _admin:
