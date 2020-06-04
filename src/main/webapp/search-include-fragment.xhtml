@@ -39,7 +39,7 @@
                         <span> #{bundle['dataverse.results.btn.addData']} </span>
                     </button>
                 </ui:fragment>
-                <h:form id="addDataForm" class="btn-form"
+                <h:form id="altAddDataForm" class="btn-form"
                         rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse))}">
                         <button type="button" class="add-data-plus-wrapper" onclick = "location.href='/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}'">
                           <div></div>
