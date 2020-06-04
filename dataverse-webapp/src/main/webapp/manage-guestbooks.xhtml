@@ -26,8 +26,10 @@
                     <!-- static Messages -->
                     <p:outputPanel>
                         <div jsf:rendered="#{manageGuestbooksPage.displayDownloadAll}" class="alert alert-info" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.manageGuestbooks.tip.title']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['dataset.manageGuestbooks.tip.downloadascsv']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.manageGuestbooks.tip.title']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['dataset.manageGuestbooks.tip.downloadascsv']} "/>
+                            </p>
                         </div>
                     </p:outputPanel>
                     <!-- END static Messages -->

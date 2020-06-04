@@ -1921,6 +1921,28 @@ $navbar-height: 102px;
 	}
 }
 
+#eighty-limit-mode-selector button {
+	position: relative;
+	border: 1px solid $main-text-color;
+	background: #fff;
+	color: $main-color;
+	font-weight: bold;
+	text-decoration: none;
+	overflow: hidden;
+
+	&::before {
+		position: absolute;
+		content: "80";
+	}
+	&::after {
+		opacity: 0;
+		content: "Aa";
+	}
+}
+body.eighty-limit-toggle #eighty-limit-mode-selector button {
+	color: $focus-color;
+}
+
 #font-size-mode-selector button {
 	position: relative;
 	border: 1px solid $main-text-color;
@@ -3019,6 +3041,18 @@ div.ui-dialog.largePopUp {
     border-bottom: none !important;
 }
 
+
+/**
+ * 80 CHARACTERS LIMIT SWITCH BELOW
+ */
+
+p.text-block {
+	margin-bottom: 0;
+}
+
+body.eighty-limit-toggle p.text-block {
+	max-width: 36.4em;
+}
 
 
 /**
@@ -4353,6 +4387,20 @@ body.font-size-percent-200 {
 
 	#accessibility-controls {
 		background: $contrast-background-color;
+	}
+
+	#eighty-limit-mode-selector button {
+		border-color: $contrast-foreground-color;
+		background: $contrast-background-color;
+		color: $contrast-foreground-color;
+
+		&::before {
+			text-decoration: underline;
+		}
+	}
+
+	&.eighty-limit-toggle #eighty-limit-mode-selector button {
+		color: $contrast-alt-focus-color;
 	}
 
 	#font-size-mode-selector button {

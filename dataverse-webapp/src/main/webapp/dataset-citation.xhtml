@@ -11,15 +11,17 @@
         <div class="col-xs-12  #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
             <div class="row ">
                 <div class="#{DatasetPage.workingVersion.deaccessioned ? 'col-sm-12' : 'col-sm-7 col-md-8'} citation">
-                    <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                        <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                    </span>
-                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{!DatasetPage.dataset.released}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                    <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
-                          data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                    <p class="text-block">
+                        <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                            <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
+                        </span>
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{!DatasetPage.dataset.released}" 
+                            data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
+                            data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
+                            data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
+                    </p>
                 </div>
                 <div class="col-sm-5 col-md-4 text-right citation-download" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                     <div class="dropdown">
@@ -44,7 +46,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="small text-muted text-right citation-standards"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
+                    <div class="small text-muted text-right citation-standards"><p class="text-block"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></p></div>
                 </div>
             </div>
         </div>

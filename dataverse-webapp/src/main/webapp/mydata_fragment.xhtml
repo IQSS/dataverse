@@ -479,7 +479,9 @@
                             </h:outputLink>
     
                             <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
-                                <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
+                                <p class="text-block">
+                                    <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
+                                </p>
                             </div>
     
                             <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>

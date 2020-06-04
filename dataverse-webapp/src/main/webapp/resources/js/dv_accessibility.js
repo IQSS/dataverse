@@ -3,10 +3,42 @@
  */
 
 /**
+ * Denotes whether to print debug info to console.
+ * @type boolean true = enabled, false = disabled
+ */
+
+var accessibilityDebugEnabled = false;
+
+/**
+ * Prints debug info to console.
+ * @param string Message to print.
+ */
+
+function accessibilityDebugLog(msg) {    
+    if (accessibilityDebugEnabled) {
+        console.log(msg);
+    }
+}
+
+/**
+ * Prints debug error to console.
+ * @param string Message to print.
+ */
+
+function accessibilityDebugErr(msg) {
+    if (accessibilityDebugEnabled) {
+        console.err(msg);
+    }
+}
+
+
+
+/**
  * Stores the information about the user settings (not the values themselves).
  * @type {Object.<string, string>} Setting name in storage, Setting class name prefix
  */
 var accessibilityUserPreferencesData = {
+    eightyCharactersLimit: "eighty-limit",
     fontSize: "font-size",
     highContrastMode: "high-contrast"
 }
@@ -19,7 +51,9 @@ var accessibilityUserPreferencesData = {
  * @return Setting value.
  */
 function accessibilityGetSetting(key) {
-    return localStorage.getItem(key);
+    var returnValue = localStorage.getItem(key);
+    accessibilityDebugLog("Reading key \"" + key + "\", received value \"" + returnValue + "\"");
+    return returnValue;
 }
 
 /**
@@ -29,6 +63,7 @@ function accessibilityGetSetting(key) {
  */
 function accessibilitySetSetting(key, value) {
     localStorage.setItem(key, value);
+    accessibilityDebugLog("Set key \"" + key + "\" value to \"" + value + "\"");
 }
 
 /**
@@ -37,6 +72,7 @@ function accessibilitySetSetting(key, value) {
  */
 function accessibilityRemoveSetting(key) {
     localStorage.removeItem(key);
+    accessibilityDebugLog("Removed \"" + key + "\" from storage");
 }
 
 
@@ -47,11 +83,14 @@ function accessibilityRemoveSetting(key) {
  */
 function accessibilityAddSettingClass(setting) {
     if (!(setting in accessibilityUserPreferencesData)) {
+        accessibilityDebugErr("This setting is not defined in accessibilityUserPreferencesData");
         return;
     }
 
     if (accessibilityGetSetting(setting)) {
-        document.body.classList.add(accessibilityUserPreferencesData[setting] + "-" + accessibilityGetSetting(setting));
+        var className = accessibilityUserPreferencesData[setting] + "-" + accessibilityGetSetting(setting)
+        document.body.classList.add(className);
+        accessibilityDebugLog("Added class \"" + className + "\" to body tag");
     }
 }
 
@@ -65,6 +104,7 @@ function accessibilityRemoveSettingClass(setting) {
 
     for (var i = element.classList.length - 1; i >= 0; i--) {
         if (element.classList[i].startsWith(prefix)) {
+            accessibilityDebugLog("Removed class \"" + element.classList[i] + "\" class from body tag");
             element.classList.remove(element.classList[i]);
         }
     }
@@ -77,24 +117,40 @@ function accessibilityRemoveSettingClass(setting) {
  */
 function accessibilityApplySetting(setting, value) {
     if (!(setting in accessibilityUserPreferencesData)) {
+        accessibilityDebugErr("This setting is not defined in accessibilityUserPreferencesData");
         return;
     }
-    
-    if (value && value !== "default") {
+
+    if (value && value === "toggle") {
+        if (document.body.classList.contains(accessibilityUserPreferencesData[setting] + "-" + value)) {
+            accessibilityDebugLog("Toggling setting \"" + setting + "\" off");
+            accessibilityRemoveSetting(setting);
+            accessibilityRemoveSettingClass(setting);
+        }
+        else {
+            accessibilityDebugLog("Toggling setting \"" + setting + "\" on");
+            accessibilitySetSetting(setting, value);
+            accessibilityRemoveSettingClass(setting);
+            accessibilityAddSettingClass(setting);
+        }
+    }
+    else if (value && value !== "default") {
+        accessibilityDebugLog("Changing setting \"" + setting + "\"to \"" + value + "\"");
         accessibilitySetSetting(setting, value);
         accessibilityRemoveSettingClass(setting);
         accessibilityAddSettingClass(setting);
 
         if (setting === "fontSize") {
-            accessibilityTogglenavbar(true);
+            accessibilityToggleNavbar(true);
         }
     }
     else {
+        accessibilityDebugLog("Changing setting \"" + setting + "\"to default");
         accessibilityRemoveSetting(setting);
         accessibilityRemoveSettingClass(setting);
 
         if (setting === "fontSize") {
-            accessibilityTogglenavbar(false);
+            accessibilityToggleNavbar(false);
         }
     }
 }
@@ -103,18 +159,20 @@ function accessibilityApplySetting(setting, value) {
  * Toggle the visibility of the mobile navbar.
  * @param boolean true -> visible, false -> hidden
  */
-function accessibilityTogglenavbar(visible) {
+function accessibilityToggleNavbar(visible) {
     var navbar = document.getElementById("topNavBar");
 
     if (visible) {
         navbar.classList.add("in");
         navbar.setAttribute("aria-expanded", "true");
         navbar.style = "";
+        accessibilityDebugLog("Toggled navbar to its visible state");
     }
     else {
         navbar.classList.remove("in");
         navbar.setAttribute("aria-expanded", "false");
         navbar.style = "height: 1px";
+        accessibilityDebugLog("Toggled navbar to its hidden state");
     }
 }
 
@@ -123,6 +181,7 @@ function accessibilityTogglenavbar(visible) {
  */
 function accessibilityApplyAllClasses() {
     for (key in accessibilityUserPreferencesData) {
+        accessibilityDebugLog("Parsing accessibility setting \"" + key + "\"");
         accessibilityAddSettingClass(key);
     }
 }
@@ -139,6 +198,7 @@ function accessibilityBindButtonEvents() {
             buttons[i].addEventListener("click", function() {
                 accessibilityApplySetting(this.dataset.accessibility, this.className);
             }, false);
+            accessibilityDebugLog("Bound button event to \"" + key + "\"");
         }
     }
 }

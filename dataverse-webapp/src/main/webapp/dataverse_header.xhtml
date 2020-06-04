@@ -247,6 +247,12 @@
 
                 </nav>
                     <div id="accessibility-controls">
+                        <h:outputText value="#{bundle['header.accessibility.eightyLimit']}" />: 
+                        <ul id="eighty-limit-mode-selector">
+                            <li>
+                                <button class="toggle" title="#{bundle['header.accessibility.eightyLimit.toggle']}"></button>
+                            </li>
+                        </ul>
                         <h:outputText value="#{bundle['header.accessibility.font']}" />: 
                         <ul id="font-size-mode-selector">
                             <li>

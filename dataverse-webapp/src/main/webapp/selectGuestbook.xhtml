@@ -28,8 +28,10 @@
                 <!-- static Messages -->
                 <p:outputPanel>
                     <div class="alert alert-info" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.editTerms.label']}</strong> –
-                        <h:outputText escape="false" value="#{bundle['dataset.message.editTerms.message']} "/>
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.editTerms.label']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.editTerms.message']} "/>
+                        </p>
                     </div>
                 </p:outputPanel>
                 <!-- END static Messages -->

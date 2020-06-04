@@ -134,7 +134,7 @@ function clearPaginationResults(){ $("#div-pagination").html(''); }
 function setWarningAlert(alert_msg){
     clearCardResults();
     clearPaginationResults();
-    var alert_html = '<div class="alert alert-warning" role="alert">' + alert_msg + '</div>';
+    var alert_html = '<div class="alert alert-warning" role="alert"><p class="text-block">' + alert_msg + '</p></div>';
     $('#div-result-message').html(alert_html);
 }
 

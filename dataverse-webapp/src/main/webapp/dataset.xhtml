@@ -85,29 +85,41 @@
                     <!-- static Messages -->
                     <p:outputPanel id="staticMessagesPanel">
                         <div jsf:rendered="#{DatasetPage.isLockedBy('Workflow')}" class="alert alert-warning" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.message']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['dataset.locked.message.details']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.message']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['dataset.locked.message.details']} "/>
+                            </p>
                         </div>
                         <div jsf:rendered="#{DatasetPage.isLockedBy('InReview')}" class="alert alert-warning" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.inReview.message']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['dataset.inreview.infoMessage']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.locked.inReview.message']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['dataset.inreview.infoMessage']} "/>
+                            </p>
                         </div>
                         <div jsf:rendered="#{DatasetPage.isLockedBy('DcmUpload')}" class="alert alert-warning" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['file.rsyncUpload.inProgressMessage.summary']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['file.rsyncUpload.inProgressMessage.details']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['file.rsyncUpload.inProgressMessage.summary']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['file.rsyncUpload.inProgressMessage.details']} "/>
+                            </p>
                         </div>
                         <div jsf:rendered="#{DatasetPage.isLockedBy('pidRegister')}" class="alert alert-warning" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.publish.workflow.message']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['dataset.pidRegister.workflow.inprogress']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.publish.workflow.message']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['dataset.pidRegister.workflow.inprogress']} "/>
+                            </p>
                         </div>
 
                         <div jsf:rendered="#{not empty DatasetPage.privateUrl and not DatasetPage.isViewedFromPrivateUrl()}" class="alert alert-info" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageAuthor.title']}</strong> –
-                            <h:outputText escape="false" value="#{DatasetPage.privateUrlMessageDetails}"/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageAuthor.title']}</strong> –
+                                <h:outputText escape="false" value="#{DatasetPage.privateUrlMessageDetails}"/>
+                            </p>
                         </div>
                         <div jsf:rendered="#{DatasetPage.isViewedFromPrivateUrl()}" class="alert alert-info" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageReviewer.title']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['dataset.privateurl.infoMessageReviewer.details']}"/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.privateurl.infoMessageReviewer.title']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['dataset.privateurl.infoMessageReviewer.details']}"/>
+                            </p>
                         </div>
                     </p:outputPanel>
                     <!-- END static Messages -->
@@ -485,7 +497,11 @@
                                                       data-toggle="tooltip" data-placement="auto right"
                                                       data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                             </label>
-                                            <div class="col-sm-9">#{DatasetPage.keywordsDisplaySummary}</div>
+                                            <div class="col-sm-9">
+                                                <p class="text-block">
+                                                    #{DatasetPage.keywordsDisplaySummary}
+                                                </p>
+                                            </div>
                                         </div>
                                         <div id="publication" class="form-group"
                                              jsf:rendered="#{!empty DatasetPage.firstRelPublication and 
@@ -498,29 +514,31 @@
                                                       data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-9">
-                                                <h:outputText
-                                                        value="#{DatasetPage.firstRelPublication.text}"
-                                                        escape="false"/>
-                                                <b>#{DatasetPage.firstRelPublication.url}</b>
-                                                <ui:fragment
-                                                        rendered="#{not empty DatasetPage.firstRelPublication.url}">
-                                                    <a href="#{DatasetPage.firstRelPublication.url}"
-                                                       title="#{DatasetPage.firstRelPublication.url}"
-                                                       target="_blank">
+                                                <p class="text-block">
+                                                    <h:outputText
+                                                            value="#{DatasetPage.firstRelPublication.text}"
+                                                            escape="false"/>
+                                                    <b>#{DatasetPage.firstRelPublication.url}</b>
+                                                    <ui:fragment
+                                                            rendered="#{not empty DatasetPage.firstRelPublication.url}">
+                                                        <a href="#{DatasetPage.firstRelPublication.url}"
+                                                        title="#{DatasetPage.firstRelPublication.url}"
+                                                        target="_blank">
+                                                            <h:outputText
+                                                                    value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}"/>
+                                                        </a>
+                                                    </ui:fragment>
+                                                    <ui:fragment rendered="#{empty DatasetPage.firstRelPublication.url}">
                                                         <h:outputText
                                                                 value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}"/>
-                                                    </a>
-                                                </ui:fragment>
-                                                <ui:fragment rendered="#{empty DatasetPage.firstRelPublication.url}">
-                                                    <h:outputText
-                                                            value="#{DatasetPage.firstRelPublication.idType}: #{DatasetPage.firstRelPublication.idNumber}"/>
-                                                </ui:fragment>
+                                                    </ui:fragment>
+                                                </p>
                                             </div>
                                         </div>
 
                                         <div class="form-group"
                                              jsf:rendered="#{fieldsByType.datasetFieldType.name!='publication' and fieldsByType.datasetFieldType.name!='keyword'  }">
-                                            <label for="metadata_#{dsf.datasetFieldType.name}"
+                                            <label for="metadata_#{fieldsByType.datasetFieldType.name}"
                                                    class="col-sm-3 control-label">
                                                 <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
@@ -545,7 +563,9 @@
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
                                             <div class="col-sm-9">
-                                                #{bundle['dataset.files.license.multiple']}
+                                                <p class="text-block">
+                                                    #{bundle['dataset.files.license.multiple']}
+                                                </p>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -560,7 +580,9 @@
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
                                             <div class="col-sm-9">
-                                                #{DatasetPage.termsOfUseOfFirstFile.get().license.getLocalizedName(dataverseSession.locale)}
+                                                <p class="text-block">
+                                                    #{DatasetPage.termsOfUseOfFirstFile.get().license.getLocalizedName(dataverseSession.locale)}
+                                                </p>
                                             </div>
                                         </div>
                                         <div class="form-group"
@@ -572,7 +594,9 @@
                                                       data-original-title="#{bundle['dataset.files.license.description']}"></span>
                                             </label>
                                             <div class="col-sm-9">
-                                                #{bundle['file.allRightsReserved']}
+                                                <p class="text-block">
+                                                    #{bundle['file.allRightsReserved']}
+                                                </p>
                                             </div>
                                         </div>
                                         <div class="form-group"
@@ -584,13 +608,15 @@
                                                       data-original-title="#{bundle['dataset.files.termsOfAccess.description']}"></span>
                                             </label>
                                             <div class="col-sm-9">
-                                                #{bundle['file.termsOfAccess.restricted']} -
-                                                <h:outputText
+                                                <p class="text-block">
+                                                    #{bundle['file.termsOfAccess.restricted']} -
+                                                    <h:outputText
                                                         value="#{bundle['file.termsOfAccess.restricted.'.concat(DatasetPage.termsOfUseOfFirstFile.get().restrictType)]}"
                                                         rendered="#{DatasetPage.termsOfUseOfFirstFile.get().restrictType != restrictTypeEnum.CUSTOM}"/>
-                                                <h:outputText
+                                                    <h:outputText
                                                         value="#{DatasetPage.termsOfUseOfFirstFile.get().restrictCustomText}"
                                                         rendered="#{DatasetPage.termsOfUseOfFirstFile.get().restrictType == restrictTypeEnum.CUSTOM}"/>
+                                                </p>
                                             </div>
                                         </div>
                                     </ui:fragment>
@@ -605,7 +631,9 @@
                                                   data-original-title="#{bundle['dataset.embargo.datasetSummary.tip']}"></span>
                                         </label>
                                         <div class="col-sm-9">
-                                            #{DatasetPage.currentEmbargoDateForDisplay}
+                                            <p class="text-block">
+                                                #{DatasetPage.currentEmbargoDateForDisplay}
+                                            </p>
                                         </div>
                                     </div>
                                     </ui:fragment>

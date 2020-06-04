@@ -563,10 +563,10 @@ For our help/information, success, warning, and error message blocks we use a cu
 
 .. code-block:: html
 
-   <div class="alert alert-success" role="alert">...</div>
-   <div class="alert alert-info" role="alert">...</div>
-   <div class="alert alert-warning" role="alert">...</div>
-   <div class="alert alert-danger" role="alert">...</div>
+   <div class="alert alert-success" role="alert"><p class="text-block">...</p></div>
+   <div class="alert alert-info" role="alert"><p class="text-block">...</p></div>
+   <div class="alert alert-warning" role="alert"><p class="text-block">...</p></div>
+   <div class="alert alert-danger" role="alert"><p class="text-block">...</p></div>
 
 
 Message Classes

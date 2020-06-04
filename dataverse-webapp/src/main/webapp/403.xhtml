@@ -24,15 +24,17 @@
                     </f:viewAction>
                 </f:metadata>
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-                    <o:form useRequestURI="true">
-                        <h:outputText value="#{bundle['error.403.message']} " escape="false"/>
-                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
-                            <o:param>
-                                <p:commandLink value="#{installationConfig.supportTeamName}"
-                                               oncomplete="PF('contactForm').show()" update=":contactDialog" />
-                            </o:param>
-                        </h:outputFormat>   
-                    </o:form>
+                    <p class="text-block">
+                        <o:form useRequestURI="true">
+                            <h:outputText value="#{bundle['error.403.message']} " escape="false"/>
+                            <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                                <o:param>
+                                    <p:commandLink value="#{installationConfig.supportTeamName}"
+                                                oncomplete="PF('contactForm').show()" update=":contactDialog" />
+                                </o:param>
+                            </h:outputFormat>   
+                        </o:form>
+                    </p>
                 </div>               
             </ui:define>
         </ui:composition>

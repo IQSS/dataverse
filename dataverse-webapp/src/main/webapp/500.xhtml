@@ -14,7 +14,9 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-                    <h:outputText value="#{bundle['error.500.message']}" escape="false"/>
+                    <p class="text-block">
+                        <h:outputText value="#{bundle['error.500.message']}" escape="false"/>
+                    </p>
                 </div>
             </ui:define>
         </ui:composition>

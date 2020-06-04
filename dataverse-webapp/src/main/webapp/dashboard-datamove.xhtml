@@ -28,8 +28,10 @@
             <!-- static Messages -->
             <p:outputPanel>
                 <div class="alert alert-info" role="alert" aria-atomic="true">
-                    <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dashboard.datamove.message.title']}</strong> –
-                    <h:outputText escape="false" value="#{DashboardDatamovePage.getMessageDetails()} "/>
+                    <p class="text-block">
+                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dashboard.datamove.message.title']}</strong> –
+                        <h:outputText escape="false" value="#{DashboardDatamovePage.getMessageDetails()} "/>
+                    </p>
                 </div>
             </p:outputPanel>
             <!-- END static Messages -->

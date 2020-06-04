@@ -27,11 +27,13 @@
                         <div class="row">
                             <div class="col-xs-12">
                                 <div id="no-clients-message" class="alert alert-warning" role="alert">
-                                    <span class="glyphicon glyphicon-warning-sign"/>
-                                    <h:outputFormat value=" #{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
-                                        <f:param value="#{guestbookResponsesPage.displayLimit}"/>
-                                        <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
-                                    </h:outputFormat>
+                                    <p class="text-block">
+                                        <span class="glyphicon glyphicon-warning-sign"/>
+                                        <h:outputFormat value=" #{bundle['dataset.guestbooksResponses.tooManyResponses.message']}" escape="false">
+                                            <f:param value="#{guestbookResponsesPage.displayLimit}"/>
+                                            <f:param value="#{guestbookResponsesPage.guestbook.responseCount}"/>
+                                        </h:outputFormat>
+                                    </p>
                                 </div>
                             </div>
                         </div>

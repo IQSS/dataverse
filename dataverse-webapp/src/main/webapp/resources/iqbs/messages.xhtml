@@ -31,31 +31,39 @@
             <o:messages globalOnly="true" var="globalMessage" >
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_ERROR}">
                     <div class="alert alert-danger" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                        <h:outputText value="#{globalMessage.detail}" escape="false"/>
-                        <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
-                            <o:param>
-                                <p:commandLink value="#{installationConfig.supportTeamName}"
-                                               oncomplete="PF('contactForm').show()" update=":contactDialog" />
-                            </o:param>
-                        </h:outputFormat>
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                            <h:outputText value="#{globalMessage.detail}" escape="false"/>
+                            <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
+                                <o:param>
+                                    <p:commandLink value="#{installationConfig.supportTeamName}"
+                                                oncomplete="PF('contactForm').show()" update=":contactDialog" />
+                                </o:param>
+                            </h:outputFormat>
+                        </p>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_INFO}">
                     <div class="alert alert-info" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                        <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                            <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                        </p>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_WARN}">
                     <div class="alert alert-warning" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
-                        <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
+                            <h:outputText escape="false" value="#{globalMessage.detail} "/>
+                        </p>
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{facesContext.validationFailed}">
                     <div class="alert alert-danger" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{bundle['messages.validation']}</strong> – #{bundle['messages.validation.msg']}
+                        </p>
                     </div>
                 </ui:fragment>
             </o:messages>
@@ -63,8 +71,10 @@
         <o:messages id="successMessage" var="message" showDetail="true"
                     rendered="#{not empty facesContext.getMessageList('successMessage')}" redisplay="false">
             <div class="alert alert-success" role="alert" aria-atomic="true">
-                <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{message.summary}</strong> –
-                <h:outputText escape="false" value="#{message.detail}"/>
+                <p class="text-block">
+                    <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&#160;<strong>#{message.summary}</strong> –
+                    <h:outputText escape="false" value="#{message.detail}"/>
+                </p>
             </div>
         </o:messages>
     

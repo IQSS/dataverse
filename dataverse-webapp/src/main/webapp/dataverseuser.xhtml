@@ -66,8 +66,10 @@
                     <!-- static Messages -->
                     <p:outputPanel>
                         <div jsf:rendered="#{DataverseUserPage.editMode eq 'CREATE' and not DataverseUserPage.isUserAuthenticated()}" class="alert alert-info" role="alert" aria-atomic="true">
-                            <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['user.message.signup.label']}</strong> –
-                            <h:outputText escape="false" value="#{bundle['user.message.signup.tip']} "/>
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['user.message.signup.label']}</strong> –
+                                <h:outputText escape="false" value="#{bundle['user.message.signup.tip']} "/>
+                            </p>
                         </div>
                     </p:outputPanel>
                     <!-- END static Messages -->

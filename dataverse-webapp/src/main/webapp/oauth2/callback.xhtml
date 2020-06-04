@@ -23,13 +23,13 @@
             <ui:param name="showMessagePanel" value="true"/>
             <ui:define name="body">
 	    <div class="alert alert-danger" role="alert" style="margin-top:3em;">
-		    <p>
+		    <p class="text-block">
                     <h:outputFormat value="#{bundle['oauth2.callback.message']}" escape="false">
                                     <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                     <f:param value="#{settingsWrapper.guidesVersion}"/>
 				    </h:outputFormat>
 				    </p>
-				    <p>
+				    <p class="text-block">
 				    <h:outputText value="#{OAuth2Page.error.message}"/>
 				    </p>
                     <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
@@ -46,9 +46,9 @@
                         </h:outputFormat>
                 </div>
 
-                <ui:remove><p>Http Return Code: <code>#{OAuth2Page.error.httpReturnCode}</code></p>
+                <ui:remove><p class="text-block">Http Return Code: <code>#{OAuth2Page.error.httpReturnCode}</code></p>
                 
-                <p>Raw message body:</p>
+                <p class="text-block">Raw message body:</p>
                 
                 <pre><code>
                     #{OAuth2Page.error.messageBody}

@@ -42,8 +42,10 @@
                 <!-- static Messages -->
                 <p:outputPanel>
                     <div jsf:rendered="#{EditSingleFilePage.isInstallationPublic()}" class="alert alert-warning" role="alert" aria-atomic="true">
-                        <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.publicInstall.title']}</strong> –
-                        <h:outputText escape="false" value="#{bundle['dataset.message.publicInstall.details']} "/>
+                        <p class="text-block">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;<strong>#{bundle['dataset.message.publicInstall.title']}</strong> –
+                            <h:outputText escape="false" value="#{bundle['dataset.message.publicInstall.details']} "/>
+                        </p>
                     </div>
                 </p:outputPanel>
                 <!-- END static Messages -->
