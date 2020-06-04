@@ -42,14 +42,14 @@ public class Pids extends AbstractApiBean {
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
             }
-            String baseUrl = System.getProperty("doi.baseurlstringnext");
-            String username = System.getProperty("doi.username");
-            String password = System.getProperty("doi.password");
-            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
-            return ok(result);
         } catch (WrappedResponse ex) {
-            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
         }
+        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String username = System.getProperty("doi.username");
+        String password = System.getProperty("doi.password");
+        JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+        return ok(result);
     }
 
     @GET
@@ -61,27 +61,28 @@ public class Pids extends AbstractApiBean {
             if (!user.isSuperuser()) {
                 return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("admin.api.auth.mustBeSuperUser"));
             }
-            JsonArrayBuilder unreserved = Json.createArrayBuilder();
-            for (Dataset dataset : datasetSvc.findAll()) {
-                if (dataset.isReleased()) {
-                    continue;
-                }
-                if (dataset.getGlobalIdCreateTime() == null) {
-                    unreserved.add(Json.createObjectBuilder()
-                            .add("id", dataset.getId())
-                            .add("pid", dataset.getGlobalId().asString())
-                    );
-                }
-            }
-            JsonArray finalUnreserved = unreserved.build();
-            int size = finalUnreserved.size();
-            return ok(Json.createObjectBuilder()
-                    .add("numUnreserved", size)
-                    .add("count", finalUnreserved)
-            );
         } catch (WrappedResponse ex) {
-            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
         }
+
+        JsonArrayBuilder unreserved = Json.createArrayBuilder();
+        for (Dataset dataset : datasetSvc.findAll()) {
+            if (dataset.isReleased()) {
+                continue;
+            }
+            if (dataset.getGlobalIdCreateTime() == null) {
+                unreserved.add(Json.createObjectBuilder()
+                        .add("id", dataset.getId())
+                        .add("pid", dataset.getGlobalId().asString())
+                );
+            }
+        }
+        JsonArray finalUnreserved = unreserved.build();
+        int size = finalUnreserved.size();
+        return ok(Json.createObjectBuilder()
+                .add("numUnreserved", size)
+                .add("count", finalUnreserved)
+        );
     }
 
     @POST
