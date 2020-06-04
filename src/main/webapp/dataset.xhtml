@@ -228,9 +228,19 @@
                                         <!-- PUBLISH DATASET -->
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                <!-- Publish DROPDOWN btn -->
+                                                <button jsf:rendered="#{true}" type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                         disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
                                                     #{bundle['dataset.publishBtn']} <span class="caret"></span>
+                                                </button>
+                                                <!-- TO-DO... 
+                                                     add render logic to display this single-click btn and hide the dropdown btn 
+                                                     if the only option link displayed is a single publish link... -->
+                                                <!-- Publish SINGLE-CLICK btn -->
+                                                <button jsf:rendered="#{false}" type="button" class="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"
+                                                        onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );"
+                                                        disabled="#{DatasetPage.lockedFromPublishing ? 'disabled' : ''}">
+                                                    #{bundle['dataset.publishBtn']}
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
                                                     <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
