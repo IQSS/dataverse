@@ -106,6 +106,10 @@ body .ui-widget .ui-widget-content {background: none;}
 #messagePanel div.messagePanel {margin-top:1em;}
 .messagePanel .glyphicon {font-size: 1.5em; vertical-align: bottom;}
 
+.dropdown-menu>li>a {
+	font-family:AntoniaH2;
+}
+
 .highlightBold, a.highlightBold, .dropdown-menu > li > a.highlightBold {font-weight:bold;}
 tr.ui-state-highlight, .ui-widget-content tr.ui-state-highlight, .ui-widget-header tr.ui-state-highlight {background-color: #ffffcc; background-image: none; color: #333333;}
 tr.ui-state-highlight label, .ui-widget-content tr.ui-state-highlight label, .ui-widget-header tr.ui-state-highlight label {color: #333333;}
