@@ -54,14 +54,15 @@ public class DataverseRequest {
         }
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
         
-
-        String ip = "Not Found";
-        for (String header : HEADERS_TO_TRY) {
-            ip = aHttpServletRequest.getHeader(header);
-            logger.info("IP from : " + header + ": " + ip);
-           // if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-           //     break;
-           // }
+        if (aHttpServletRequest != null) {
+            String ip = "Not Found";
+            for (String header : HEADERS_TO_TRY) {
+                ip = aHttpServletRequest.getHeader(header);
+                logger.info("IP from : " + header + ": " + ip);
+                // if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+                // break;
+                // }
+            }
         }
 
         
