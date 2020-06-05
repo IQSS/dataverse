@@ -24,7 +24,7 @@
                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                              and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             
-            <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
+            <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
                                                                             and !DatasetPage.datasetLockedInWorkflow
                                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
                                                                             and DatasetPage.canUpdateDataset()
