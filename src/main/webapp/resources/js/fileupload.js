@@ -301,7 +301,7 @@ async function directUploadFinished() {
     }  else {
       if((inProgress < 4) && (inProgress < inList)) {
         filesInProgress= filesInProgress+1;
-        requestDirectUploadUrl();
+        startRequestForDirectUploadUrl();
       }
     }
   }
