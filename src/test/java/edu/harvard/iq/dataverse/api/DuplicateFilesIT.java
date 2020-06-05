@@ -263,4 +263,52 @@ public class DuplicateFilesIT {
 
     }
 
+    /**
+     * In this test we make sure that other changes in the absence of label and
+     * directoryLabel go through, such as changing a file description.
+     */
+    @Test
+    public void modifyFileDescription() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Path pathtoReadme1 = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
+        Files.write(pathtoReadme1, "File 1".getBytes());
+        System.out.println("README: " + pathtoReadme1);
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme1.toString(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("README.md"));
+
+        Integer idOfReadme1 = JsonPath.from(uploadReadme1.getBody().asString()).getInt("data.files[0].dataFile.id");
+        System.out.println("id: " + idOfReadme1);
+
+        JsonObjectBuilder renameFile = Json.createObjectBuilder()
+                .add("description", "This file is awesome.");
+        Response renameFileResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme1), renameFile.build().toString(), apiToken);
+        renameFileResponse.prettyPrint();
+
+    }
+
 }

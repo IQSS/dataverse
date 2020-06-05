@@ -392,6 +392,11 @@ public class Files extends AbstractApiBean {
                 javax.json.JsonObject jsonObject = jsonReader.readObject();
                 String label = jsonObject.getString("label", null);
                 String directoryLabel = jsonObject.getString("directoryLabel", null);
+                // If the user is trying to change the label/directoryLabel or not.
+                boolean labelChange = true;
+                if (label == null && directoryLabel == null) {
+                    labelChange = false;
+                }
                 String path = "";
                 if (directoryLabel != null) {
                     path = directoryLabel + "/";
@@ -399,7 +404,7 @@ public class Files extends AbstractApiBean {
                 if (label == null) {
                     label = df.getFileMetadata().getLabel();
                 }
-                if (IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
+                if (labelChange && IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
                     String incomingPathPlusFileName = path + label;
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
                 }
