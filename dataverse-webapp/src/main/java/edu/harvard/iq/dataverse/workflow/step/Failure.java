@@ -1,11 +1,17 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Result returned when step execution fails.
  *
  * @author michael
  */
 public class Failure implements WorkflowStepResult {
+
+    public static final String REASON_PARAM_NAME = "reason";
+    public static final String MESSAGE_PARAM_NAME = "message";
 
     private final String reason;
     private final String message;
@@ -44,9 +50,15 @@ public class Failure implements WorkflowStepResult {
     }
 
     @Override
+    public Map<String, String> getData() {
+        Map<String, String> data = new HashMap<>();
+        data.put(REASON_PARAM_NAME, reason);
+        data.put(MESSAGE_PARAM_NAME, message);
+        return data;
+    }
+
+    @Override
     public String toString() {
         return "WorkflowStepResult.Failure{" + "reason=" + reason + ", message=" + message + '}';
     }
-
-
 }

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
+import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.httpclient.HttpClient;
@@ -22,8 +23,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import static edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.OK;
 
 /**
  * A workflow step that sends a HTTP request, and then pauses, waiting for a response.
@@ -66,7 +65,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
         Pattern pat = Pattern.compile(params.get("expectedResponse"));
         String response = externalData.trim();
         if (pat.matcher(response).matches()) {
-            return OK;
+            return new Success();
         } else {
             logger.log(Level.WARNING, "Remote system returned a bad reposonse: {0}", externalData);
             return new Failure("Response from remote server did not match expected one (response:" + response + ")");

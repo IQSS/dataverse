@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
+import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
@@ -36,7 +37,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
         params.entrySet().forEach(kv -> logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}));
         logger.info("/Logging Step");
 
-        return WorkflowStepResult.OK;
+        return new Success();
     }
 
     @Override

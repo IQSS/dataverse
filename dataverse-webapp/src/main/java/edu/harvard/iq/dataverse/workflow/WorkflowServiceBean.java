@@ -18,9 +18,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
+import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
@@ -36,8 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Service bean for managing and executing {@link Workflow}s
@@ -47,7 +48,8 @@ import java.util.logging.Logger;
 @Stateless
 public class WorkflowServiceBean {
 
-    private static final Logger logger = Logger.getLogger(WorkflowServiceBean.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(WorkflowServiceBean.class);
+
     private static final String WORKFLOW_ID_KEY = "WorkflowServiceBean.WorkflowId:";
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -79,7 +81,6 @@ public class WorkflowServiceBean {
         forward(wf, ctxt);
     }
 
-
     private ApiToken getCurrentApiToken(AuthenticatedUser au) {
         if (au != null) {
             CommandContext ctxt = engine.getContext();
@@ -106,8 +107,7 @@ public class WorkflowServiceBean {
                     break;
                 }
                 case "long": {
-                    retrievedSettings.put(setting,
-                                          settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
+                    retrievedSettings.put(setting, settings.getValueForKeyAsLong(SettingsServiceBean.Key.valueOf(setting)));
                     break;
                 }
             }
@@ -131,7 +131,6 @@ public class WorkflowServiceBean {
         doResume(pending, body);
     }
 
-
     @Asynchronous
     private void forward(Workflow wf, WorkflowContext ctxt) {
         executeSteps(wf, ctxt, 0);
@@ -141,7 +140,8 @@ public class WorkflowServiceBean {
         Workflow wf = pending.getWorkflow();
         List<WorkflowStepData> stepsLeft = wf.getSteps().subList(pending.getPendingStepIdx(), wf.getSteps().size());
 
-        WorkflowStep pendingStep = createStep(stepsLeft.get(0));
+        WorkflowStepData wsd = stepsLeft.get(0);
+        WorkflowStep pendingStep = stepRegistry.getStep(wsd.getProviderId(), wsd.getStepType(), wsd.getStepParameters());
         WorkflowContext newCtxt = reCreateContext(pending, roleAssignees);
         
         final WorkflowContext ctxt = refresh(newCtxt, retrieveRequestedSettings(wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
@@ -172,24 +172,22 @@ public class WorkflowServiceBean {
 
         for (int stepIdx = lastCompletedStepIdx; stepIdx >= 0; --stepIdx) {
             WorkflowStepData wsd = steps.get(stepIdx);
-            WorkflowStep step = createStep(wsd);
+            WorkflowStep step = stepRegistry.getStep(wsd.getProviderId(), wsd.getStepType(), wsd.getStepParameters());
 
             try {
-                logger.log(Level.INFO, "Workflow {0} step {1}: Rollback", new Object[]{ctxt.getInvocationId(), stepIdx});
+                log.info("Workflow {} step {}: Rollback", ctxt.getInvocationId(), stepIdx);
                 rollbackStep(step, ctxt, failure);
-
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Workflow " + ctxt.getInvocationId()
+                log.warn("Workflow " + ctxt.getInvocationId()
                         + " step " + stepIdx + ": Rollback error: " + e.getMessage(), e);
             }
-
         }
 
-        logger.log(Level.INFO, "Removing workflow lock");
+        log.info("Removing workflow lock");
         try {
             unlockDataset(ctxt);
         } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
+            log.error("Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
     }
 
@@ -203,30 +201,35 @@ public class WorkflowServiceBean {
     private void executeSteps(Workflow wf, WorkflowContext ctxt, int initialStepIdx) {
         final List<WorkflowStepData> steps = wf.getSteps();
 
+        Map<String, String> stepParameters = new HashMap<>();
         for (int stepIdx = initialStepIdx; stepIdx < steps.size(); stepIdx++) {
             WorkflowStepData wsd = steps.get(stepIdx);
-            WorkflowStep step = createStep(wsd);
-            WorkflowStepResult res = runStep(step, ctxt);
+            stepParameters.putAll(wsd.getStepParameters());
+            WorkflowStep step = stepRegistry.getStep(wsd.getProviderId(), wsd.getStepType(), stepParameters);
 
             try {
-                if (res == WorkflowStepResult.OK) {
-                    logger.log(Level.INFO, "Workflow {0} step {1}: OK", new Object[]{ctxt.getInvocationId(), stepIdx});
+                WorkflowStepResult stepResult = runStep(step, ctxt);
+
+                if (stepResult instanceof Success) {
+                    log.info("Workflow {} step {}: OK", ctxt.getInvocationId(), stepIdx);
                     em.merge(ctxt.getDataset());
                     ctxt = refresh(ctxt);
-                } else if (res instanceof Failure) {
-                    logger.log(Level.WARNING, "Workflow {0} failed: {1}", new Object[]{ctxt.getInvocationId(), ((Failure) res).getReason()});
-                    rollback(wf, ctxt, (Failure) res, stepIdx - 1);
+                    stepParameters.clear();
+                    stepParameters.putAll(((Success) stepResult).getData());
+
+                } else if (stepResult instanceof Failure) {
+                    log.warn("Workflow {} failed: {}", ctxt.getInvocationId(), ((Failure) stepResult).getReason());
+                    rollback(wf, ctxt, (Failure) stepResult, stepIdx - 1);
                     return;
 
-                } else if (res instanceof Pending) {
-                    pauseAndAwait(wf, ctxt, (Pending) res, stepIdx);
+                } else if (stepResult instanceof Pending) {
+                    pauseAndAwait(wf, ctxt, (Pending) stepResult, stepIdx);
                     return;
                 }
-
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Workflow {0} step {1}: Uncought exception:", new Object[]{ctxt.getInvocationId(), e.getMessage()});
-                logger.log(Level.WARNING, "Trace:", e);
-                rollback(wf, ctxt, (Failure) res, stepIdx - 1);
+                log.warn("Workflow {} step {}: Uncaught exception:", ctxt.getInvocationId(), e.getMessage());
+                log.warn("Trace:", e);
+                rollback(wf, ctxt, new Failure(e.getMessage()), stepIdx - 1);
                 return;
             }
         }
@@ -280,7 +283,7 @@ public class WorkflowServiceBean {
         List<DatasetLock> locks = lockCounter.getResultList();
         for (DatasetLock lock : locks) {
             if (lock.getReason() == DatasetLock.Reason.Workflow) {
-                logger.fine("Removing lock");
+                log.trace("Removing lock");
                 em.remove(lock);
             }
         }
@@ -308,21 +311,20 @@ public class WorkflowServiceBean {
     }
 
     private void workflowCompleted(Workflow wf, WorkflowContext ctxt) {
-        logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
+        log.info("Workflow {} completed.", ctxt.getInvocationId());
 
         try {
             if (ctxt.getType() == TriggerType.PrePublishDataset) {
                 unlockDataset(ctxt);
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
-                logger.fine("Removing workflow lock");
+                log.trace("Removing workflow lock");
                 unlockDataset(ctxt);
             }
         } catch (CommandException ex) {
-            logger.log(Level.SEVERE, "Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
+            log.error("Exception finalizing workflow " + ctxt.getInvocationId() + ": " + ex.getMessage(), ex);
             rollback(wf, ctxt, new Failure("Exception while finalizing the publication: " + ex.getMessage()), wf.getSteps().size() - 1);
         }
-
     }
 
     public List<Workflow> listWorkflows() {
@@ -404,10 +406,6 @@ public class WorkflowServiceBean {
 
     private String workflowSettingKey(WorkflowContext.TriggerType type) {
         return WORKFLOW_ID_KEY + type.name();
-    }
-
-    private WorkflowStep createStep(WorkflowStepData wsd) {
-        return stepRegistry.getStep(wsd.getProviderId(), wsd.getStepType(), wsd.getStepParameters());
     }
 
     private WorkflowContext refresh(WorkflowContext ctxt) {

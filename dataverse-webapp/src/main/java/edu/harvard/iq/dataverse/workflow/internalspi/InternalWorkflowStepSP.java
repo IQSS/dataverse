@@ -23,6 +23,8 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 return new HttpSendReceiveClientStep(stepParameters);
             case "archiver":
                 return new ArchivalSubmissionWorkflowStep(stepParameters);
+            case SystemProcessStep.STEP_ID:
+                return new SystemProcessStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

@@ -38,22 +38,8 @@
         </dependency>
         <dependency>
             <groupId>edu.harvard.iq</groupId>
-            <artifactId>dataverse-test-common</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.iq</groupId>
             <artifactId>dataverse-extension-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.iq</groupId>
-            <artifactId>dataverse-persistence</artifactId>
-            <version>${project.version}</version>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.dom4j</groupId>
@@ -194,6 +180,11 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+            <artifactId>owasp-java-html-sanitizer</artifactId>
+            <version>20191001.1</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -434,6 +425,26 @@
             <version>5.2.0</version>
         </dependency>
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>edu.harvard.iq</groupId>
+            <artifactId>dataverse-test-common</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.iq</groupId>
+            <artifactId>dataverse-persistence</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.sleroy</groupId>
             <artifactId>fakesmtp-junit-runner</artifactId>
             <version>0.1.1</version>
@@ -446,19 +457,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>4.0.1</version>
-            <scope>compile</scope>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.16.1</version>
+            <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer -->
-        <dependency>
-            <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
-            <artifactId>owasp-java-html-sanitizer</artifactId>
-            <version>20191001.1</version>
-        </dependency>
-
-
     </dependencies>
 
     <build>
