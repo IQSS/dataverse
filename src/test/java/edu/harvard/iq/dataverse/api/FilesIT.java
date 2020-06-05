@@ -638,7 +638,8 @@ public class FilesIT {
         String updateDescription = "New description.";
         String updateCategory = "New category";
         //"junk" passed below is to test that it is discarded
-        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        // label=foo.tsv is passed to avoid "Filename already exists at data.tsv" but should it be necessary?
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\",\"label\":\"foo.tsv\"}";
         Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
         assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponse.getStatusCode());  
         
@@ -646,6 +647,7 @@ public class FilesIT {
         msg("Update file metadata for new file");
         //"junk" passed below is to test that it is discarded
         Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
+        updateMetadataResponse.prettyPrint();
         assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
         Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(newDfId, apiToken);
