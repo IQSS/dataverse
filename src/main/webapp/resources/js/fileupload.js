@@ -83,7 +83,7 @@ async function cancelDatasetCreate() {
     directUploadEnabled=false;
     while(curFile!=numDone) {
       $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
-      $("#datasetSave").prop('disabled', true);
+      $("#datasetForm:save").prop('disabled', true);
       await sleep(1000);
     }
       cancelCreateCommand();
