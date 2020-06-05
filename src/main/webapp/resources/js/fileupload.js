@@ -1,7 +1,7 @@
 var fileList = [];
 var observer2=null;
 var numDone=0;
-var delay=200; //milliseconds
+var delay=100; //milliseconds
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled=false;
