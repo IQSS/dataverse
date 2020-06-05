@@ -3,6 +3,10 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+
+import java.util.logging.Logger;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -12,10 +16,28 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author michael
  */
+
+
 public class DataverseRequest {
     
     private final User user;
     private final IpAddress sourceAddress;
+    
+    private static final Logger logger = Logger.getLogger(DataverseRequest.class.getCanonicalName());
+
+    private static final String[] HEADERS_TO_TRY = {
+            "X-Forwarded-For",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA",
+            "REMOTE_ADDR" };
+
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
@@ -31,6 +53,17 @@ public class DataverseRequest {
             }
         }
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
+        
+
+        String ip = "Not Found";
+        for (String header : HEADERS_TO_TRY) {
+            ip = aHttpServletRequest.getHeader(header);
+            if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+                break;
+            }
+        }
+logger.info("IP from Headers: " + ip);
+        
     }
 
     public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
