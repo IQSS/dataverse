@@ -228,21 +228,24 @@
                                         <!-- PUBLISH DATASET -->
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
-                                                <!-- Publish DROPDOWN btn -->
-                                                <button jsf:rendered="#{showSubmitForReviewLink or showReturnToAuthorLink}" type="button" class="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    #{bundle['dataset.publishBtn']}<span class="caret"></span>
-                                                </button>
-                                                <!-- TO-DO... 
-                                                     add render logic to display this single-click btn and hide the dropdown btn 
-                                                     if the only option link displayed is a single publish link... -->
-                                                <!-- Publish SINGLE-CLICK btn -->
-                                                <button jsf:rendered="#{!(showSubmitForReviewLink or showReturnToAuthorLink)}" type="button" class="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"
-                                                        onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
-                                                    #{bundle['dataset.publishBtn']}
-                                                </button>
+                                                <!-- Publish BTN -->
+                                                <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
+                                                    <c:if test="#{!(showSubmitForReviewLink or showReturnToAuthorLink)}">
+                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                        <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
+                                                    </c:if>
+                                                    <c:if test="#{showSubmitForReviewLink or showReturnToAuthorLink}">
+                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                        <f:passThroughAttribute name="data-toggle" value="dropdown"/>
+                                                        <f:passThroughAttribute name="aria-haspopup" value="true"/>
+                                                        <f:passThroughAttribute name="aria-expanded" value="false"/>
+                                                    </c:if>
+                                                    #{bundle['dataset.publishBtn']} <span jsf:rendered="#{showSubmitForReviewLink or showReturnToAuthorLink}" class="caret"></span>
+                                                </h:outputLink>
+                                                <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                 <ul class="dropdown-menu pull-right text-left">
                                                     <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
-                                                        <!-- Publish LINK  -->
+                                                        <!-- Publish LINK -->
                                                         <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
                                                                        disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                        action="#{DatasetPage.processPublishButton()}">
