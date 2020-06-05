@@ -26,7 +26,7 @@ function setupDirectUpload(enabled) {
   if(enabled) {
     directUploadEnabled=true;
     //An indicator as to which version is being used - should keep updated.
-    console.log('Dataverse Direct Upload v4.20-beta-3');
+    console.log('Dataverse Direct Upload for v5.0');
     $('.ui-fileupload-upload').hide();
     $('.ui-fileupload-cancel').hide();
     //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
