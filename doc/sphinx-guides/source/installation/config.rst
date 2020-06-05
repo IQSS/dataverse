@@ -1887,6 +1887,17 @@ To check the current value of ``:ShibAffiliationAttribute``:
 
 ``curl -X GET http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
 
+:ShibAttributeCharacterSetConversionEnabled
++++++++++++++++++++++++++++++++++++++++++++
+
+It seems that the application server (usually Glassfish or Payara) will interpret all Shibboleth attributes that come through AJP as ISO-8859-1, even if they where originally UTF-8.
+To circumvent that, we re-encode all received Shibboleth attributes manually as UTF-8 by default. 
+In the case you get garbled characters in Shibboleth-supplied fields (e.g. given name, surname, affiliation), you can disable this behaviour by setting ShibAttributeCharacterSetConversionEnabled to false:
+
+``curl -X PUT -d false http://localhost:8080/api/admin/settings/:ShibAttributeCharacterSetConversionEnabled``
+
+If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
+
 .. _:ComputeBaseUrl:
 
 :ComputeBaseUrl
