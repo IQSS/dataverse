@@ -1,6 +1,7 @@
 var fileList = [];
 var observer2=null;
 var numDone=0;
+var delay=200; //milliseconds
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled=false;
@@ -114,7 +115,7 @@ function queueFileForDirectUpload(file) {
 async function startRequestForDirectUploadUrl() {
   //Wait for each call to finish and update the DOM
   while(inDataverseCall === true) {
-    await sleep(500);
+    await sleep(delay);
   }
   inDataverseCall=true;
   //storageId is not the location - has a : separator and no path elements from dataset
@@ -123,7 +124,7 @@ async function startRequestForDirectUploadUrl() {
 }
 
 async function uploadFileDirectly(url, storageId) {
-  await sleep(500);	
+  await sleep(delay);	
   inDataverseCall=false;
   
   if(directUploadEnabled) {
@@ -215,13 +216,13 @@ function reportUpload(storageId, file){
 async function handleDirectUpload(storageId, file, md5) {
   //Wait for each call to finish and update the DOM	
   while(inDataverseCall === true) {
-    await sleep(500);
+    await sleep(delay);
   }
 
   inDataverseCall=true;
   if(file.size < 1000) {
 	  //artificially slow reporting of the upload of tiny files to avoid problems with maintaining JSF state
-  //	  await sleep(500);
+  //	  await sleep(delay);
   }
   //storageId is not the location - has a : separator and no path elements from dataset
   //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
@@ -305,7 +306,7 @@ async function directUploadFinished() {
       }
     }
   }
-  await sleep(500);
+  await sleep(delay);
 
   inDataverseCall=false;
 }
@@ -319,7 +320,7 @@ async function uploadFailure(jqXHR, upid, filename) {
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
 	
   if(directUploadEnabled) {
-    await sleep(500);
+    await sleep(delay);
   }
   inDataverseCall=false;
   
