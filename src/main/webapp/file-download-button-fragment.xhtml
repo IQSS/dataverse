@@ -380,16 +380,6 @@
                 
                 #{bundle['file.requestAccess']}
             </p:commandLink>
-            <script type="text/javascript">
-                // NOTE... because of duplicate links for file and dataset pgs, also duplicated code from commit 73e42e24d6ed21c64a881391b03dbdc1e45361f0
-                function downloadFiles(url, filelist) {
-                  filelist=filelist + ','; //Prevents last file from being dropped on server
-                  var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
-                  form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
-                  //Submit and then remove form
-                  form.appendTo('body').submit().remove();
-                }
-            </script>
         </li>
         <!-- END: FILE PG -->
         <ui:fragment rendered="#{!isFilePg}">
@@ -424,16 +414,6 @@
             <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
-        <script type="text/javascript">
-            // NOTE... because of duplicate links for file and dataset pgs, also duplicated code from commit 73e42e24d6ed21c64a881391b03dbdc1e45361f0
-            function downloadFiles(url, filelist) {
-              filelist=filelist + ','; //Prevents last file from being dropped on server
-              var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
-              form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
-              //Submit and then remove form
-              form.appendTo('body').submit().remove();
-            }
-        </script>
         <!-- END: DATASET PG -->
         </ui:fragment>
     </ui:fragment>
@@ -570,5 +550,14 @@
         <span class="glyphicon glyphicon-flash"/><span class="sr-only">#{bundle['file.compute']}</span>
     </h:outputLink>
     <!-- END: Compute Button *DATASET PG only*: -->
- 
+    
+    <script type="text/javascript">
+        function downloadFiles(url, filelist) {
+          filelist=filelist + ','; //Prevents last file from being dropped on server
+          var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
+          form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
+          //Submit and then remove form
+          form.appendTo('body').submit().remove();
+        }
+    </script>
 </ui:composition>
