@@ -397,12 +397,19 @@ public class Files extends AbstractApiBean {
                 if (label == null && directoryLabel == null) {
                     labelChange = false;
                 }
+                String oldLabel = df.getFileMetadata().getLabel();
+                String oldDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String oldPathPlusName = oldDirectoryLabel + oldLabel;
+                String incomingPathPlusName = directoryLabel + label;
+                if (oldPathPlusName.equals(incomingPathPlusName)) {
+                    labelChange = false;
+                }
                 String path = "";
                 if (directoryLabel != null) {
                     path = directoryLabel + "/";
                 }
                 if (label == null) {
-                    label = df.getFileMetadata().getLabel();
+                    label = oldLabel;
                 }
                 if (labelChange && IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
                     String incomingPathPlusFileName = path + label;

@@ -304,10 +304,65 @@ public class DuplicateFilesIT {
         Integer idOfReadme1 = JsonPath.from(uploadReadme1.getBody().asString()).getInt("data.files[0].dataFile.id");
         System.out.println("id: " + idOfReadme1);
 
-        JsonObjectBuilder renameFile = Json.createObjectBuilder()
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
                 .add("description", "This file is awesome.");
-        Response renameFileResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme1), renameFile.build().toString(), apiToken);
-        renameFileResponse.prettyPrint();
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme1), updateFileMetadata.build().toString(), apiToken);
+        updateFileMetadataResponse.prettyPrint();
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+    }
+
+    /**
+     * In this test we make sure that that if you keep the label the same, you
+     * are still able to change other metadata such as file description.
+     */
+    @Test
+    public void modifyFileDescriptionSameLabel() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Path pathtoReadme1 = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
+        Files.write(pathtoReadme1, "File 1".getBytes());
+        System.out.println("README: " + pathtoReadme1);
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("directoryLabel", "code");
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoReadme1.toString(), json1.build(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("README.md"));
+
+        Integer idOfReadme1 = JsonPath.from(uploadReadme1.getBody().asString()).getInt("data.files[0].dataFile.id");
+        System.out.println("id: " + idOfReadme1);
+
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", "README.md")
+                .add("directoryLabel", "code")
+                .add("description", "This file is awesome.");
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfReadme1), updateFileMetadata.build().toString(), apiToken);
+        updateFileMetadataResponse.prettyPrint();
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
 
     }
 
