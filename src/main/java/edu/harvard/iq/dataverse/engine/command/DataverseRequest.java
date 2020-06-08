@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 
 import java.util.logging.Logger;
 
+import javax.ejb.Stateful;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,8 +22,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author michael
  */
 
-@ViewScoped
-@Named
+@Stateful
 public class DataverseRequest {
     
     @Inject
