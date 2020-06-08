@@ -3782,11 +3782,14 @@ public class DatasetPage implements java.io.Serializable {
     public void processPublishButton() {
 
         if (dataset.isReleased()) {
+
             PrimeFaces.current().executeScript("PF('releaseDraft').show()");
         }
 
         if (!dataset.isReleased()) {
             if (dataset.getOwner().isReleased()) {
+                setPublishInfo(" more stuff about release");
+                System.out.print(getPublishInfo());
                 PrimeFaces.current().executeScript("PF('publishConfirm').show()");
                 return;
             }
@@ -4137,12 +4140,32 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retList;
     }
+    
+    private String publishInfo;
+
+    public String getPublishInfo() {
+        return publishInfo;
+    }
+
+    public void setPublishInfo(String publishInfo) {
+        this.publishInfo = publishInfo;
+    }
+    
+
+    
+    public boolean isDisplayPublishPopupCustomText(){
+        
+        if(dataset.isReleased()){
+            return isDatasetPublishPopupCustomTextOnAllVersions() && !getDatasetPublishCustomText().isEmpty();
+        }
+        
+        return !getDatasetPublishCustomText().isEmpty();
+    }
 
     public String getDatasetPublishCustomText(){
         String datasetPublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
-            return datasetPublishCustomText;
-            
+            return datasetPublishCustomText;        
         }
         return "";
     }
