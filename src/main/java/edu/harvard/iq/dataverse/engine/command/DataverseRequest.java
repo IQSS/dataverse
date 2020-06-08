@@ -52,20 +52,19 @@ public class DataverseRequest {
                 remoteAddressStr = remoteAddressFromRequest;
             }
         }
-        sourceAddress = IpAddress.valueOf( remoteAddressStr );
+        
         
         if (aHttpServletRequest != null) {
             String ip = "Not Found";
             for (String header : HEADERS_TO_TRY) {
                 ip = aHttpServletRequest.getHeader(header);
-                logger.info("IP from : " + header + ": " + ip);
-                // if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-                // break;
-                // }
+                if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+                  remoteAddressStr = ip;
+                  break;
+                }
             }
         }
-
-        
+        sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
     public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
