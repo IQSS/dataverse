@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command;
 
+import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -7,6 +8,10 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 
 import java.util.logging.Logger;
 
+import javax.ejb.Stateful;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -17,8 +22,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author michael
  */
 
-
+@Stateful
 public class DataverseRequest {
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
     
     private final User user;
     private final IpAddress sourceAddress;
@@ -46,24 +54,29 @@ public class DataverseRequest {
         String saneDefault = undefined;
         String remoteAddressStr = saneDefault;
 
-        if (aHttpServletRequest != null) {
-            String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
-            if (remoteAddressFromRequest != null) {
-                remoteAddressStr = remoteAddressFromRequest;
-            }
-        }
-        
-        
-        if (aHttpServletRequest != null) {
-            String ip = "Not Found";
-            for (String header : HEADERS_TO_TRY) {
-                ip = aHttpServletRequest.getHeader(header);
-                if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-                  remoteAddressStr = ip;
-                  break;
+        String headerToUse = settingsWrapper.getUserIPAddressSourceHeader();
+
+        if (headerToUse != null) {
+            if (aHttpServletRequest != null) {
+                String ip = "Not Found";
+                for (String header : HEADERS_TO_TRY) {
+                    ip = aHttpServletRequest.getHeader(header);
+                    if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+                        remoteAddressStr = ip;
+                        break;
+                    }
                 }
             }
         }
+        if (remoteAddressStr.equals(saneDefault)) {
+            // default - use the request remote address
+            if (aHttpServletRequest != null) {
+                String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
+                if (remoteAddressFromRequest != null) {
+                    remoteAddressStr = remoteAddressFromRequest;
+                }
+            }
+        }   
         sourceAddress = IpAddress.valueOf( remoteAddressStr );
     }
 
