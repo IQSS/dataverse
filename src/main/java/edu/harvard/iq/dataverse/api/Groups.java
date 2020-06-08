@@ -2,14 +2,19 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+
 import javax.ejb.Stateless;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -35,6 +40,7 @@ public class Groups extends AbstractApiBean {
 
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
+    private MailDomainGroupProvider mailDomainGroupPrv;
 
     Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
 
@@ -42,6 +48,7 @@ public class Groups extends AbstractApiBean {
     void postConstruct() {
         ipGroupPrv = groupSvc.getIpGroupProvider();
         shibGroupPrv = groupSvc.getShibGroupProvider();
+        mailDomainGroupPrv = groupSvc.getMailDomainGroupProvider();
     }
 
     /**
@@ -208,5 +215,98 @@ public class Groups extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "Could not find Shibboleth group with an id of " + id);
         }
     }
+    
+    
+    /**
+     * Creates a new {@link MailDomainGroup}. The name of the group is based on the
+     * {@code alias:} field, but might be changed to ensure uniqueness.
+     * @param dto
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
+    @POST
+    @Path("domain")
+    public Response createMailDomainGroup( JsonObject dto ){
+        try {
+            MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+            mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
+    
+            return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
+    
+        } catch ( Exception e ) {
+            logger.log( Level.WARNING, "Error while updating a mail domain group: " + e.getMessage(), e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+        }
+    }
+    
+    /**
+     * Creates or updates the {@link MailDomainGroup} named {@code groupName}.
+     * @param groupName Name of the group.
+     * @param dto data of the group.
+     * @return Response describing the created group or the error that prevented
+     *         that group from being created.
+     */
+    @PUT
+    @Path("domain/{groupName}")
+    public Response updateMailDomainGroups(@PathParam("groupName") String groupName, JsonObject dto ){
+        try {
+            if ( groupName == null || groupName.trim().isEmpty() ) {
+                return badRequest("Group name cannot be empty");
+            }
+            if ( ! legalGroupName.matcher(groupName).matches() ) {
+                return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
+            }
+            
+            MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+            mailDomainGroupPrv.saveOrUpdate(Optional.of(groupName), grp);
+            
+            return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
+            
+        } catch ( Exception e ) {
+            logger.log( Level.WARNING, "Error while updating a mail domain group: " + e.getMessage(), e);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+        }
+    }
+    
+    @GET
+    @Path("domain")
+    public Response listMailDomainGroups() {
+        return ok( mailDomainGroupPrv.findGlobalGroups()
+            .stream().map(g->json(g)).collect(toJsonArray()) );
+    }
+    
+    @GET
+    @Path("domain/{groupIdtf}")
+    public Response getMailDomainGroup( @PathParam("groupIdtf") String groupIdtf ) {
+        MailDomainGroup grp = mailDomainGroupPrv.get(groupIdtf);
+        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
+    }
+    
+    /*
+    @DELETE
+    @Path("domain/{groupIdtf}")
+    public Response deleteMailDomainGroup( @PathParam("groupIdtf") String groupIdtf ) {
+        MailDomainGroup grp = mailDomainGroupPrv.get(groupIdtf);
+        if (grp == null) return notFound( "Group " + groupIdtf + " not found");
+        
+        try {
+            mailDomainGroupPrv.deleteGroup(grp);
+            return ok("Group " + grp.getAlias() + " deleted.");
+        } catch ( Exception topExp ) {
+            // get to the cause (unwraps EJB exception wrappers).
+            Throwable e = topExp;
+            while ( e.getCause() != null ) {
+                e = e.getCause();
+            }
+            
+            if ( e instanceof IllegalArgumentException ) {
+                return error(Response.Status.BAD_REQUEST, e.getMessage());
+            } else {
+                throw topExp;
+            }
+        }
+    }
+    
+     */
 
 }
