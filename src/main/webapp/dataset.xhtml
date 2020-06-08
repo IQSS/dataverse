@@ -38,6 +38,9 @@
                                                                         or (DatasetPage.sessionUserAuthenticated and DatasetPage.showComputeButton())))
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
+            <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
+            <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
+            <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{DatasetPage.description}"/>
             </ui:define>
@@ -1533,83 +1536,65 @@
                         </div>
                     </p:dialog>
                     <!-- Publish/Submit for Review Dialogs -->
-                    <p:dialog id="publishConfirm" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishConfirm" modal="true">
-                        <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
-                        </p>
-                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
+                    <p:dialog id="publishDataset" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishDataset" modal="true">
+                        <ui:fragment  rendered="#{publishDataset}">
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
+                            </p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{releaseBoth}">
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign"/>
+                                <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
+                                    <o:param>
+                                        <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                            <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                        </a>
+                                    </o:param>
+                                </h:outputFormat>
+                            </p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{releaseDraft}">
+                            <p:focus for="options"/>
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign" /> #{bundle['dataset.republish.tip']}
+                            </p>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{releaseBoth}">
+                            <p class="help-block">
+                            #{bundle['dataset.publishBoth.tip']}
+                            </p>
+                        </ui:fragment>
+                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.displayPublishPopupCustomText}">
                             <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
                         </div>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
-                                             onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"/>
-                            <button class="btn btn-link" onclick="PF('publishConfirm').hide();PF('blockDatasetForm').hide();" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="publishParent" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishParent" modal="true">
-                        <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/>
-                            <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
-                                <o:param>
-                                    <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
-                                        <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
-                                    </a>
-                                </o:param>
-                            </h:outputFormat>
-                        </p>
-                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
-                        </div>
-                        <p class="help-block">
-                            #{bundle['dataset.publishBoth.tip']}
-                        </p>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.mayNotBePublished.both.button']}" 
-                                             onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseParentDVAndDataset}" immediate="true"/>
-                            <button class="btn btn-link" onclick="PF('publishParent').hide();PF('blockDatasetForm').hide();" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="releaseDraft" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="releaseDraft" modal="true">
-                        <p:focus for="options"/>
-                        <p class="text-warning">
-                            <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
-                        </p>
-                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">
-                            <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
-                        </div>
-                        <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
-                            <p class="help-block">
+                        <ui:fragment rendered="#{releaseDraft}">
+                            <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
+                                <p class="help-block">
                                 #{bundle['dataset.selectVersionNumber']}
+                                </p>
+                                <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
+                                    <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
+                                    <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />
+                                    <c:if test="#{dataverseSession.user.isSuperuser()}">
+                                        <f:selectItem rendered="#" itemLabel="#{bundle['dataset.updateRelease']}" itemValue="3" />
+                                    </c:if>
+                                </p:selectOneRadio>
+                            </ui:fragment>
+                            <p>
+                                <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
+                                    <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
+                                </h:outputFormat>
                             </p>
-                            <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
-                                <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
-                                <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />
-                                <c:if test="#{dataverseSession.user.isSuperuser()}">
-                                    <f:selectItem rendered="#" itemLabel="#{bundle['dataset.updateRelease']}" itemValue="3" />
-                                </c:if>
-                            </p:selectOneRadio>
                         </ui:fragment>
-                        <p>
-                            <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
-                                <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
-                            </h:outputFormat>
-                        </p>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
-                                             rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}"
-                                             onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDraft}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
-                                             rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}"
-                                             onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseMajor}" immediate="true"/>
-                            <button class="btn btn-link" onclick="PF('releaseDraft').hide();PF('blockDatasetForm').hide();" type="button">
+                                             onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"/>
+                            <button class="btn btn-link" onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
-                    </p:dialog>
+                    </p:dialog>                     
                     <p:dialog id="mayNotRelease" header="#{bundle['dataset.publish.header']}" widgetVar="mayNotRelease" modal="true">
                         <p class="text-danger">
                             <span class="glyphicon glyphicon-exclamation-sign"/>

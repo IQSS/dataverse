@@ -1816,7 +1816,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
+        if (this.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -2432,22 +2432,6 @@ public class DatasetPage implements java.io.Serializable {
         this.readOnly = false;
     }
 
-    public String releaseDraft() {
-        if (releaseRadio == 1) {
-            return releaseDataset(true);
-        } else if(releaseRadio ==2) {
-            return releaseDataset(false);
-        } else if(releaseRadio ==3) {
-            return updateCurrentVersion();
-        } else {
-            return "Invalid Choice";
-        }
-    }
-
-    public String releaseMajor() {
-        return releaseDataset(false);
-    }
-
     public String sendBackToContributor() {
         try {
             //FIXME - Get Return Comment from sendBackToContributor popup
@@ -2498,7 +2482,22 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String releaseDataset() {
-        return releaseDataset(false);
+        if(!dataset.getOwner().isReleased()){
+            releaseParentDV();
+        }       
+        if(publishDatasetPopup()|| publishBothPopup() || !dataset.getLatestVersion().isMinorUpdate()){
+            return releaseDataset(false);
+        }        
+        switch (releaseRadio) {
+            case 1:
+                return releaseDataset(true);
+            case 2:
+                return releaseDataset(false);
+            case 3:
+                return updateCurrentVersion();
+            default:
+                return "Invalid Choice";
+        }
     }
     
     private void releaseParentDV(){
@@ -3780,24 +3779,20 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void processPublishButton() {
-
         if (dataset.isReleased()) {
-
-            PrimeFaces.current().executeScript("PF('releaseDraft').show()");
+            PrimeFaces.current().executeScript("PF('publishDataset').show()");
         }
 
         if (!dataset.isReleased()) {
             if (dataset.getOwner().isReleased()) {
-                setPublishInfo(" more stuff about release");
-                System.out.print(getPublishInfo());
-                PrimeFaces.current().executeScript("PF('publishConfirm').show()");
+                PrimeFaces.current().executeScript("PF('publishDataset').show()");
                 return;
             }
             if (!dataset.getOwner().isReleased()) {
                 if (canPublishDataverse()) {
                     if (dataset.getOwner().getOwner() == null
                             || (dataset.getOwner().getOwner() != null && dataset.getOwner().getOwner().isReleased())) {
-                        PrimeFaces.current().executeScript("PF('publishParent').show()");
+                        PrimeFaces.current().executeScript("PF('publishDataset').show()");
                         return;
                     }
                     if ((dataset.getOwner().getOwner() != null && !dataset.getOwner().getOwner().isReleased())) {
@@ -3811,6 +3806,39 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
 
+    public boolean releaseDraftPopup(){
+        return dataset.isReleased();
+    }
+    
+    public boolean publishDatasetPopup(){
+        if (!dataset.isReleased()) {
+            return dataset.getOwner().isReleased();
+        }
+       return false; 
+    }
+    
+    public boolean publishBothPopup() {
+        if (!dataset.getOwner().isReleased()) {
+            if (canPublishDataverse()) {
+                if (dataset.getOwner().getOwner() == null
+                        || (dataset.getOwner().getOwner() != null && dataset.getOwner().getOwner().isReleased())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } 
+    
+    public String getPublishButtonLabel(){
+        if(publishDatasetPopup() || releaseDraftPopup()){
+            BundleUtil.getStringFromBundle("continue");  
+        }
+        if(publishBothPopup()){
+            BundleUtil.getStringFromBundle("dataset.mayNotBePublished.both.button");
+        }        
+        return "";
+    }
+    
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
     private boolean lockedDueToDcmUpload;
@@ -4141,24 +4169,10 @@ public class DatasetPage implements java.io.Serializable {
         return retList;
     }
     
-    private String publishInfo;
-
-    public String getPublishInfo() {
-        return publishInfo;
-    }
-
-    public void setPublishInfo(String publishInfo) {
-        this.publishInfo = publishInfo;
-    }
-    
-
-    
-    public boolean isDisplayPublishPopupCustomText(){
-        
-        if(dataset.isReleased()){
+    public boolean isDisplayPublishPopupCustomText() {
+        if (dataset.isReleased()) {
             return isDatasetPublishPopupCustomTextOnAllVersions() && !getDatasetPublishCustomText().isEmpty();
         }
-        
         return !getDatasetPublishCustomText().isEmpty();
     }
 
