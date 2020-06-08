@@ -60,7 +60,11 @@
 
  {% elif card_info.type == "dataset" %}
             <div class="card-preview-icon-block text-center">
+                {% if card_info.is_draft_state %}
+                <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}&version=DRAFT"><span class="icon-dataset text-info"></span></a>
+                {% else %}
                 <a href="/dataset.xhtml?persistentId={{ card_info.global_id }}"><span class="icon-dataset text-info"></span></a>
+                {% endif %}
             </div>
             <span class="text-muted">{{ card_info.date_to_display_on_card }}
                 - <a href="/dataverse/{{ card_info.parent_alias }}">{{ card_info.parentName }}</a>
