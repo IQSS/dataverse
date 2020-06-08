@@ -380,6 +380,16 @@
                 
                 #{bundle['file.requestAccess']}
             </p:commandLink>
+            <script type="text/javascript">
+                // NOTE... because of duplicate links for file and dataset pgs, also duplicated code from commit 73e42e24d6ed21c64a881391b03dbdc1e45361f0
+                function downloadFiles(url, filelist) {
+                  filelist=filelist + ','; //Prevents last file from being dropped on server
+                  var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
+                  form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
+                  //Submit and then remove form
+                  form.appendTo('body').submit().remove();
+                }
+            </script>
         </li>
         <!-- END: FILE PG -->
         <ui:fragment rendered="#{!isFilePg}">
@@ -414,6 +424,16 @@
             <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
+        <script type="text/javascript">
+            // NOTE... because of duplicate links for file and dataset pgs, also duplicated code from commit 73e42e24d6ed21c64a881391b03dbdc1e45361f0
+            function downloadFiles(url, filelist) {
+              filelist=filelist + ','; //Prevents last file from being dropped on server
+              var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
+              form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
+              //Submit and then remove form
+              form.appendTo('body').submit().remove();
+            }
+        </script>
         <!-- END: DATASET PG -->
         </ui:fragment>
     </ui:fragment>
@@ -527,84 +547,28 @@
                         #{bundle['file.mapData.worldMap']}
                     </p:commandLink>
                 </li>
-            </ui:fragment>
-            <li>
-                <p:commandLink rendered="#{!downloadPopupRequired}"
-                               process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
-                    #{bundle['file.downloadBtn.format.var']}
-                </p:commandLink>
-                <p:commandLink rendered="#{downloadPopupRequired}"
-                               process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}" 
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                    #{bundle['file.downloadBtn.format.var']}
-                </p:commandLink>
-            </li>
-            <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
-                        </h:commandLink>
-                    </li>
-                    <li>
-                        <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
-                        </h:commandLink>
-                    </li>
-                    <li>
-                        <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
-                        </h:commandLink>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </div>        
-    <p:commandLink styleClass="btn btn-default btn-request" rendered="#{(fileDownloadHelper.session.user.authenticated 
-                                                                          and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
-                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata)))
-                                                                          and !requestAccessPopupRequired}"
-                   process="@this"
-                   actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
-                   update="@this"
-                   disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-        <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-    </p:commandLink>
-    <p:commandLink styleClass="btn btn-default btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
-                                                                          and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
-                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata))
-                                                                          and requestAccessPopupRequired}"
-                   process="@this"
-                   actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
-                   onclick="PF('requestAccessPopup').show()"
-                   id="requestAccessPopupButton"
-                   disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-        <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-    </p:commandLink>
-    <p:commandLink styleClass="btn btn-default btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated 
-                                                                          and !fileMetadata.datasetVersion.deaccessioned
-                                                                          and fileMetadata.dataFile.owner.fileAccessRequest 
-                                                                          and !(fileDownloadHelper.canDownloadFile(fileMetadata))}"
-                   process="@this"
-                   onclick="PF('accessSignUpLogIn_popup').show()">
-        <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-        <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-    </p:commandLink>
-    <script type="text/javascript">
-      function downloadFiles(url, filelist) {
-        filelist=filelist + ','; //Prevents last file from being dropped on server
-        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
-        form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
-        //Submit and then remove form
-        form.appendTo('body').submit().remove();
-      }
-    </script>
+            </ul>
+        </div>
+        <!-- END: DATASET PG -->
+    </ui:fragment>
+    <!-- Explore button -->
+
+    <!-- Compute Button *FILE PG only*: -->
+    <li jsf:rendered="#{isFilePg and FilePage.showComputeButton() and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+        <h:outputLink value="#{FilePage.computeUrl}" styleClass="btn-compute" 
+                      target="_blank" rel="noopener">
+            #{bundle['file.compute']}
+        </h:outputLink>
+    </li>
+    <!-- END: Compute Button *FILE PG only*: -->
+ 
+    <!-- Compute Button *DATASET PG only*: -->
+    <h:outputLink styleClass="btn-compute btn btn-link bootstrap-button-tooltip" 
+                  title="#{bundle['file.compute']}" value="#{DatasetPage.getComputeUrl(fileMetadata)}"
+                  target="_blank" rel="noopener"
+                  rendered="#{!isFilePg and DatasetPage.showComputeButton(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}"> 
+        <span class="glyphicon glyphicon-flash"/><span class="sr-only">#{bundle['file.compute']}</span>
+    </h:outputLink>
+    <!-- END: Compute Button *DATASET PG only*: -->
+ 
 </ui:composition>
