@@ -91,6 +91,17 @@ public class MailDomainGroupProvider implements GroupProvider<MailDomainGroup> {
     }
     
     /**
+     * Update an existing instance (if found) or create a new (if groupName = null).
+     * @param groupName String with the group alias of the group to update or empty if new entity
+     * @param grp The group to update or add
+     * @return The saved entity, including updated group provider attribute
+     */
+    public MailDomainGroup saveOrUpdate(Optional<String> groupName, MailDomainGroup grp) {
+        grp.setGroupProvider(this);
+        return emailGroupSvc.saveOrUpdate(groupName, grp);
+    }
+    
+    /**
      * Sets the provider of the passed explicit group to {@code this}.
      * @param eg the collection
      * @return the passed group, updated.

@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 
+import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 
@@ -18,6 +20,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.NotFoundException;
 
 /**
  * A bean providing the {@link MailDomainGroupProvider}s with container services, such as database connectivity.
@@ -34,6 +37,8 @@ public class MailDomainGroupServiceBean {
     
     @Inject
     ConfirmEmailServiceBean confirmEmailSvc;
+    @Inject
+    ActionLogServiceBean actionLogSvc;
 	
     MailDomainGroupProvider provider;
     
@@ -97,29 +102,46 @@ public class MailDomainGroupServiceBean {
         }
     }
     
-    /*
-    public MailDomainGroup persist( MailDomainGroup g ) {
-        if ( g.getId() == null ) {
-            em.persist( g );
-            return g;
-        } else {
-            // clean stale data once in a while
-            if ( Math.random() >= 0.5 ) {
-                Set<String> stale = new TreeSet<>();
-                for ( String idtf : g.getContainedRoleAssignees()) {
-                    if ( roleAssigneeSvc.getRoleAssignee(idtf) == null ) {
-                        stale.add(idtf);
-                    }
-                }
-                if ( ! stale.isEmpty() ) {
-                    g.getContainedRoleAssignees().removeAll(stale);
-                }
+    /**
+     * Update an existing instance (if found) or create a new (if groupName = null or groupName matches alias of grp).
+     * This method is idempotent.
+     * This being an EJB bean makes this method transactional, rolling back on unchecked exceptions.
+     * @param groupName String with the group alias of the group to update or empty if new entity
+     * @param grp The group to update or add
+     * @return The saved entity, including updated group provider attribute
+     * @throws NotFoundException if groupName does not match both a group in database and the alias of the provided group
+     */
+    public MailDomainGroup saveOrUpdate(Optional<String> groupName, MailDomainGroup grp ) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainCreate");
+        alr.setInfo(grp.getIdentifier());
+        
+        // groupName present means PUT means idempotence.
+        if (groupName.isPresent()) {
+            Optional<MailDomainGroup> old = findByAlias(groupName.get());
+    
+            // if an old instance is found, update:
+            // (triggering persistence once we leave the function)
+            if (old.isPresent()) {
+                old.get().update(grp);
+                
+                alr.setActionSubType("mailDomainUpdate");
+                actionLogSvc.log( alr );
+                
+                return grp;
             }
-            
-            return em.merge( g );
+    
+            // otherwise check if path param and supplied group match. (so people use it according to RFC-2616)
+            // if not -> throw exception!
+            if (!groupName.equals(grp.getPersistedGroupAlias())) {
+                throw new NotFoundException();
+            }
         }
+        // or add new ...
+        em.persist(grp);
+        actionLogSvc.log( alr );
+        
+        return grp;
     }
-    */
     
     public void removeGroup(MailDomainGroup mailDomainGroup) {
         em.remove( mailDomainGroup );

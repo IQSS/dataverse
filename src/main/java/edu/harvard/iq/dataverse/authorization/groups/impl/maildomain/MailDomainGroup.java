@@ -111,4 +111,13 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     public String toString() {
         return "[MailDomainGroup " + this.getPersistedGroupAlias() + ": id=" + this.getId() + " domains="+this.emailDomains+" ]";
     }
+    
+    public MailDomainGroup update(MailDomainGroup src) {
+        setPersistedGroupAlias(src.getPersistedGroupAlias());
+        setDisplayName(src.getDisplayName());
+        setDescription(src.getDescription());
+        setEmailDomains(src.getEmailDomains());
+        setGroupProvider(src.getGroupProvider());
+        return this;
+    }
 }
