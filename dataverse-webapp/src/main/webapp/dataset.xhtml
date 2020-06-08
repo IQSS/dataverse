@@ -1021,20 +1021,26 @@
                                     <h:outputText
                                             value="#{termsDiff.fileSummary.fileChecksumType}: #{termsDiff.fileSummary.fileChecksumValue}"/>
                                 </p:column>
-                                <p:column
-                                        styleClass="versionDetails"
-                                        headerText="#{bundle['dataset.submitForReview.diffTable.version.lastreleased']}: #{DatasetPage.dataset.releasedVersion.semanticVersion}
+                                <p:column styleClass="versionDetails">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{bundle['dataset.submitForReview.diffTable.version.lastreleased']}: #{DatasetPage.dataset.releasedVersion.semanticVersion}
                                                     &lt;br/&gt;
                                                     #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.dataset.releasedVersion.localeLastUpdateTime}"
-                                >
+                                                      escape="false"
+                                                      style="white-space:pre-line;"
+                                        />
+                                    </f:facet>
                                     <dv:displayTermsOfUse termsOfUse="#{termsDiff.oldTerms}"/>
                                 </p:column>
-                                <p:column
-                                        styleClass="versionDetails"
-                                        headerText="#{bundle['dataset.submitForReview.diffTable.version.draft']}
+                                <p:column styleClass="versionDetails">
+                                    <f:facet name="header">
+                                        <h:outputText value="#{bundle['dataset.submitForReview.diffTable.version.draft']}
                                                     &lt;br/&gt;
                                                     #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.workingVersion.localeLastUpdateTime}"
-                                >
+                                                      escape="false"
+                                                      style="white-space:pre-line;"
+                                        />
+                                    </f:facet>
                                     <dv:displayTermsOfUse termsOfUse="#{termsDiff.newTerms}"/>
                                 </p:column>
                             </p:dataTable>
