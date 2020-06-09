@@ -283,5 +283,10 @@ public class SettingsWrapper implements java.io.Serializable {
         
     }
 
+    public String getUserIPAddressSourceHeader() {
+        return getValueForKey(SettingsServiceBean.Key.UserIPAddressSourceHeader);
+    }
+    
+
 }
 
