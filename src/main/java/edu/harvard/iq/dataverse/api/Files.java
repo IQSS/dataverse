@@ -394,9 +394,6 @@ public class Files extends AbstractApiBean {
                 String directoryLabel = jsonObject.getString("directoryLabel", null);
                 // If the user is trying to change the label/directoryLabel or not.
                 boolean labelChange = true;
-                if (label == null && directoryLabel == null) {
-                    labelChange = false;
-                }
                 String oldLabel = df.getFileMetadata().getLabel();
                 String oldDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
                 String oldPathPlusName = oldDirectoryLabel + "/" + oldLabel;
