@@ -39,6 +39,12 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Payara might be a compelling enough reason to front Payara with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+Recording User IP Addresses
++++++++++++++++++++++++++++
+
+By default, Dataverse captures the IP address from which requests originate. This is used for multiple purposes including blocking access to the admin API and Make Data Count reporting. When Dataverse is configured behind a proxy such as a load balancer, the default setting may not capture the correct IP address. ...(Leonid to expand...) 
+
+
 .. _PrivacyConsiderations:
 
 Privacy Considerations
@@ -1149,6 +1155,28 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+dataverse.useripaddresssourceheader
++++++++++++++++++++++++++++++++++++
+
+
+If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. Useful in cases 
+such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct 
+(e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this 
+could be used as a way to spoof the user's address. Allowed values are: ``"X-Forwarded-For",
+            "Proxy-Client-IP",
+            "WL-Proxy-Client-IP",
+            "HTTP_X_FORWARDED_FOR",
+            "HTTP_X_FORWARDED",
+            "HTTP_X_CLUSTER_CLIENT_IP",
+            "HTTP_CLIENT_IP",
+            "HTTP_FORWARDED_FOR",
+            "HTTP_FORWARDED",
+            "HTTP_VIA",
+            "REMOTE_ADDR"``
+
+        
+
 
 .. _database-settings:
 
