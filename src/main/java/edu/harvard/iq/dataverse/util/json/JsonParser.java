@@ -256,6 +256,8 @@ public class JsonParser {
                     .map(JsonString::getString)
                     .filter(d -> DomainValidator.getInstance().isValid(d))
                     .collect(Collectors.toList());
+            if (domains.isEmpty())
+                throw new JsonParseException("Field domains may not be an empty array or contain invalid domains.");
             grp.setEmailDomains(domains);
         } else {
             throw new JsonParseException("Field domains is mandatory.");
