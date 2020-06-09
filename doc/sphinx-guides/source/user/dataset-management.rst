@@ -71,6 +71,8 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
+Beginning with Dataverse version 5.0 files with duplicate content may be included in a single dataset version. On upload of a file whose content matches the content on an already existing file in the dataset the user will be warned and will have the option to delete the duplicate file before saving it to the dataset draft version. In any case, duplicate file path and name combinations are not allowed. Dataverse will adjust duplicate file path and names by adding a "-1", or "-2", etc. on upload as applicable.
+
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
 
 
