@@ -399,14 +399,14 @@ public class Files extends AbstractApiBean {
                 }
                 String oldLabel = df.getFileMetadata().getLabel();
                 String oldDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
-                String oldPathPlusName = oldDirectoryLabel + oldLabel;
+                String oldPathPlusName = oldDirectoryLabel + "/" + oldLabel;
                 if (directoryLabel == null) {
                     directoryLabel = oldDirectoryLabel;
                 }
                 if (label == null) {
                     label = oldLabel;
                 }
-                String incomingPathPlusName = directoryLabel + label;
+                String incomingPathPlusName = directoryLabel + "/" + label;
                 if (oldPathPlusName.equals(incomingPathPlusName)) {
                     labelChange = false;
                 }
