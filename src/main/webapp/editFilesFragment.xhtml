@@ -541,6 +541,12 @@
     
     <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.already_exists.header']}" widgetVar="fileAlreadyExistsPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForAlreadyExistsPopUp}</p>
+            <p class="help-block no-margin-top">                                           
+                <h:outputFormat value="#{bundle['dataset.file.upload.popup.explanation.tip']}" escape="false">
+                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                    <f:param value="#{systemConfig.guidesVersion}"/>
+                </h:outputFormat>
+            </p>
         <div class="button-block">
             <p:commandButton rendered="#{!EditDatafilesPage.fileReplaceOperation}" styleClass="btn btn-default" value="#{bundle['file.delete.duplicate']}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
                              action="#{EditDatafilesPage.deleteMarkedAsDuplicateFiles()}"
