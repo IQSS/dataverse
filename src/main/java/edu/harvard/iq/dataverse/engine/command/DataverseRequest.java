@@ -1,19 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command;
 
-import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
-
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.logging.Logger;
-
-import javax.ejb.Stateful;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -24,17 +15,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author michael
  */
 
-@Stateful
 public class DataverseRequest {
-    
-    @Inject
-    SettingsWrapper settingsWrapper;
-    
+
     private final User user;
     private final IpAddress sourceAddress;
     
-    private static final Logger logger = Logger.getLogger(DataverseRequest.class.getCanonicalName());
-
     private static String headerToUse = System.getProperty("dataverse.useripaddresssourceheader");
     
     private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList( 
