@@ -400,20 +400,24 @@ public class Files extends AbstractApiBean {
                 String oldLabel = df.getFileMetadata().getLabel();
                 String oldDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
                 String oldPathPlusName = oldDirectoryLabel + oldLabel;
-                String incomingPathPlusName = directoryLabel + label;
-                if (oldPathPlusName.equals(incomingPathPlusName)) {
-                    labelChange = false;
-                }
-                String path = "";
-                if (directoryLabel != null) {
-                    path = directoryLabel + "/";
+                if (directoryLabel == null) {
+                    directoryLabel = oldDirectoryLabel;
                 }
                 if (label == null) {
                     label = oldLabel;
                 }
+                String incomingPathPlusName = directoryLabel + label;
+                if (oldPathPlusName.equals(incomingPathPlusName)) {
+                    labelChange = false;
+                }
                 if (labelChange && IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
-                    String incomingPathPlusFileName = path + label;
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
+                    String pathPlusFilename = "";
+                    if (directoryLabel != null) {
+                        pathPlusFilename = directoryLabel + "/" + label;
+                    } else {
+                        pathPlusFilename = label;
+                    }
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);

@@ -366,4 +366,57 @@ public class DuplicateFilesIT {
 
     }
 
+    /**
+     * What if the directory for the file exists and you pass the filename
+     * (label) while changing the description? This should be allowed.
+     */
+    @Test
+    public void existingDirectoryPassLabelChangeDescription() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Path pathToFile = Paths.get(Files.createTempDirectory(null) + File.separator + "label");
+        Files.write(pathToFile, "File 1".getBytes());
+        System.out.println("file: " + pathToFile);
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("directory", "code");
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), json1.build(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("label"));
+
+        Integer idOfFile = JsonPath.from(uploadFile.getBody().asString()).getInt("data.files[0].dataFile.id");
+        System.out.println("id: " + idOfFile);
+
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                .add("label", "label")
+                .add("description", "This file is awesome.");
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfFile), updateFileMetadata.build().toString(), apiToken);
+        updateFileMetadataResponse.prettyPrint();
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+    }
+
 }
