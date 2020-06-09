@@ -258,6 +258,18 @@ public class DatasetPage implements java.io.Serializable {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
 
+    public boolean canPublishDataset() {
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
+    }
+
+    public boolean canDeleteDataset() {
+        return permissionsWrapper.canIssueDeleteDatasetCommand(dataset);
+    }
+
+    public boolean canManagePermissions() {
+        return permissionsWrapper.canManagePermissions(dataset);
+    }
+
     public boolean isLatestDatasetWithAnyFilesIncluded(){
         return !dataset.getLatestVersion().getFileMetadatas().isEmpty();
     }
