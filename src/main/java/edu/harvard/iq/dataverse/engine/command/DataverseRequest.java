@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateful;
@@ -33,7 +35,9 @@ public class DataverseRequest {
     
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getCanonicalName());
 
-    private static final String[] HEADERS_TO_TRY = {
+    private static String headerToUse = System.getProperty("dataverse.useripaddresssourceheader");
+    
+    private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList( 
             "X-Forwarded-For",
             "Proxy-Client-IP",
             "WL-Proxy-Client-IP",
@@ -44,40 +48,43 @@ public class DataverseRequest {
             "HTTP_FORWARDED_FOR",
             "HTTP_FORWARDED",
             "HTTP_VIA",
-            "REMOTE_ADDR" };
-
+            "REMOTE_ADDR" ));
+     
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
 
         final String undefined = "0.0.0.0";
+        final String localhost = "127.0.0.1";
         String saneDefault = undefined;
         String remoteAddressStr = saneDefault;
 
-        String headerToUse = settingsWrapper.getUserIPAddressSourceHeader();
-
-        if (headerToUse != null) {
-            if (aHttpServletRequest != null) {
+        if (aHttpServletRequest != null) {
+            //Security check - make sure any supplied header is one that is used to forward IP addresses
+            if (headerToUse != null && ALLOWED_HEADERS.contains(headerToUse)) {
                 String ip = "Not Found";
-                for (String header : HEADERS_TO_TRY) {
-                    ip = aHttpServletRequest.getHeader(header);
-                    if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-                        remoteAddressStr = ip;
-                        break;
-                    }
+                ip = aHttpServletRequest.getHeader(headerToUse);
+                if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
+                    remoteAddressStr = ip;
                 }
             }
-        }
-        if (remoteAddressStr.equals(saneDefault)) {
-            // default - use the request remote address
-            if (aHttpServletRequest != null) {
+            /*
+             * If there was no header/no value from the header, or the header claims the
+             * request is from localhost, use the remoteAddress. (Hard to imagine a
+             * legitimate case where a header would be localhost, but misconfiguration could
+             * allow a nefarious agent to try spoofing a localhost address via the header
+             * (e.g. to gain access to admin functions.)
+             * 
+             */
+            if (remoteAddressStr.equals(saneDefault) || remoteAddressStr.equals(localhost)) {
+                // use the request remote address
                 String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
                 if (remoteAddressFromRequest != null) {
                     remoteAddressStr = remoteAddressFromRequest;
                 }
             }
-        }   
-        sourceAddress = IpAddress.valueOf( remoteAddressStr );
+        }
+        sourceAddress = IpAddress.valueOf(remoteAddressStr);
     }
 
     public DataverseRequest( User aUser, IpAddress aSourceAddress ) {
