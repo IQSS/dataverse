@@ -6,9 +6,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainG
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 
 import javax.ejb.Stateless;
+import javax.interceptor.Interceptors;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -226,17 +228,11 @@ public class Groups extends AbstractApiBean {
      */
     @POST
     @Path("domain")
-    public Response createMailDomainGroup( JsonObject dto ){
-        try {
-            MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
-            mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
-    
-            return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
-    
-        } catch ( Exception e ) {
-            logger.log( Level.WARNING, "Error while updating a mail domain group: " + e.getMessage(), e);
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
-        }
+    public Response createMailDomainGroup( JsonObject dto ) throws JsonParseException {
+        MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+        mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
+
+        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
     
     /**
@@ -248,24 +244,18 @@ public class Groups extends AbstractApiBean {
      */
     @PUT
     @Path("domain/{groupName}")
-    public Response updateMailDomainGroups(@PathParam("groupName") String groupName, JsonObject dto ){
-        try {
-            if ( groupName == null || groupName.trim().isEmpty() ) {
-                return badRequest("Group name cannot be empty");
-            }
-            if ( ! legalGroupName.matcher(groupName).matches() ) {
-                return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
-            }
-            
-            MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
-            mailDomainGroupPrv.saveOrUpdate(Optional.of(groupName), grp);
-            
-            return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
-            
-        } catch ( Exception e ) {
-            logger.log( Level.WARNING, "Error while updating a mail domain group: " + e.getMessage(), e);
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error: " + e.getMessage() );
+    public Response updateMailDomainGroups(@PathParam("groupName") String groupName, JsonObject dto ) throws JsonParseException {
+        if ( groupName == null || groupName.trim().isEmpty() ) {
+            return badRequest("Group name cannot be empty");
         }
+        if ( ! legalGroupName.matcher(groupName).matches() ) {
+            return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
+        }
+        
+        MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
+        mailDomainGroupPrv.saveOrUpdate(Optional.of(groupName), grp);
+        
+        return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
     
     @GET
