@@ -67,6 +67,8 @@ Multiple File ("bundle") download
 
 ``/api/access/datafiles/$id1,$id2,...$idN``
 
+Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
+
 Returns the files listed, zipped. 
 
 .. note:: If the request can only be completed partially - if only *some* of the requested files can be served (because of the permissions and/or size restrictions), the file MANIFEST.TXT included in the zipped bundle will have entries specifying the reasons the missing files could not be downloaded. IN THE FUTURE the API will return a 207 status code to indicate that the result was a partial success. (As of writing this - v.4.11 - this hasn't been implemented yet)
