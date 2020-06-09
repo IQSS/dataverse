@@ -228,7 +228,7 @@ public class Groups extends AbstractApiBean {
      */
     @POST
     @Path("domain")
-    public Response createMailDomainGroup( JsonObject dto ) throws JsonParseException {
+    public Response createMailDomainGroup(JsonObject dto) throws JsonParseException {
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
         mailDomainGroupPrv.saveOrUpdate(Optional.empty(), grp);
 
@@ -237,23 +237,23 @@ public class Groups extends AbstractApiBean {
     
     /**
      * Creates or updates the {@link MailDomainGroup} named {@code groupName}.
-     * @param groupName Name of the group.
+     * @param groupAlias Name of the group.
      * @param dto data of the group.
      * @return Response describing the created group or the error that prevented
      *         that group from being created.
      */
     @PUT
-    @Path("domain/{groupName}")
-    public Response updateMailDomainGroups(@PathParam("groupName") String groupName, JsonObject dto ) throws JsonParseException {
-        if ( groupName == null || groupName.trim().isEmpty() ) {
+    @Path("domain/{groupAlias}")
+    public Response updateMailDomainGroups(@PathParam("groupAlias") String groupAlias, JsonObject dto) throws JsonParseException {
+        if ( groupAlias == null || groupAlias.trim().isEmpty() ) {
             return badRequest("Group name cannot be empty");
         }
-        if ( ! legalGroupName.matcher(groupName).matches() ) {
+        if ( ! legalGroupName.matcher(groupAlias).matches() ) {
             return badRequest("Group name can contain only letters, digits, and the chars '-' and '_'");
         }
         
         MailDomainGroup grp = new JsonParser().parseMailDomainGroup(dto);
-        mailDomainGroupPrv.saveOrUpdate(Optional.of(groupName), grp);
+        mailDomainGroupPrv.saveOrUpdate(Optional.of(groupAlias), grp);
         
         return created("/groups/domain/" + grp.getPersistedGroupAlias(), json(grp) );
     }
@@ -266,37 +266,17 @@ public class Groups extends AbstractApiBean {
     }
     
     @GET
-    @Path("domain/{groupIdtf}")
-    public Response getMailDomainGroup( @PathParam("groupIdtf") String groupIdtf ) {
-        MailDomainGroup grp = mailDomainGroupPrv.get(groupIdtf);
-        return (grp == null) ? notFound( "Group " + groupIdtf + " not found") : ok(json(grp));
+    @Path("domain/{groupAlias}")
+    public Response getMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
+        MailDomainGroup grp = mailDomainGroupPrv.get(groupAlias);
+        return (grp == null) ? notFound( "Group " + groupAlias + " not found") : ok(json(grp));
     }
     
-    /*
     @DELETE
-    @Path("domain/{groupIdtf}")
-    public Response deleteMailDomainGroup( @PathParam("groupIdtf") String groupIdtf ) {
-        MailDomainGroup grp = mailDomainGroupPrv.get(groupIdtf);
-        if (grp == null) return notFound( "Group " + groupIdtf + " not found");
-        
-        try {
-            mailDomainGroupPrv.deleteGroup(grp);
-            return ok("Group " + grp.getAlias() + " deleted.");
-        } catch ( Exception topExp ) {
-            // get to the cause (unwraps EJB exception wrappers).
-            Throwable e = topExp;
-            while ( e.getCause() != null ) {
-                e = e.getCause();
-            }
-            
-            if ( e instanceof IllegalArgumentException ) {
-                return error(Response.Status.BAD_REQUEST, e.getMessage());
-            } else {
-                throw topExp;
-            }
-        }
+    @Path("domain/{groupAlias}")
+    public Response deleteMailDomainGroup(@PathParam("groupAlias") String groupAlias) {
+        mailDomainGroupPrv.delete(groupAlias);
+        return ok("Group " + groupAlias + " deleted.");
     }
-    
-     */
 
 }

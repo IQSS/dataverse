@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import org.ocpsoft.rewrite.config.Not;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -106,18 +107,18 @@ public class MailDomainGroupServiceBean {
      * Update an existing instance (if found) or create a new (if groupName = null or groupName matches alias of grp).
      * This method is idempotent.
      * This being an EJB bean makes this method transactional, rolling back on unchecked exceptions.
-     * @param groupName String with the group alias of the group to update or empty if new entity
+     * @param groupAlias String with the group alias of the group to update or empty if new entity
      * @param grp The group to update or add
      * @return The saved entity, including updated group provider attribute
      * @throws NotFoundException if groupName does not match both a group in database and the alias of the provided group
      */
-    public MailDomainGroup saveOrUpdate(Optional<String> groupName, MailDomainGroup grp ) {
+    public MailDomainGroup saveOrUpdate(Optional<String> groupAlias, MailDomainGroup grp ) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainCreate");
         alr.setInfo(grp.getIdentifier());
         
-        // groupName present means PUT means idempotence.
-        if (groupName.isPresent()) {
-            Optional<MailDomainGroup> old = findByAlias(groupName.get());
+        // groupAlias present means PUT means idempotence.
+        if (groupAlias.isPresent()) {
+            Optional<MailDomainGroup> old = findByAlias(groupAlias.get());
     
             // if an old instance is found, update:
             // (triggering persistence once we leave the function)
@@ -132,7 +133,7 @@ public class MailDomainGroupServiceBean {
     
             // otherwise check if path param and supplied group match. (so people use it according to RFC-2616)
             // if not -> throw exception!
-            if (!groupName.equals(grp.getPersistedGroupAlias())) {
+            if (!groupAlias.get().equals(grp.getPersistedGroupAlias())) {
                 throw new NotFoundException();
             }
         }
@@ -143,8 +144,18 @@ public class MailDomainGroupServiceBean {
         return grp;
     }
     
-    public void removeGroup(MailDomainGroup mailDomainGroup) {
-        em.remove( mailDomainGroup );
+    /**
+     * Delete a mail domain group if exists.
+     * @param groupAlias
+     * @throws NotFoundException if no group with given groupAlias exists.
+     */
+    public void delete(String groupAlias) {
+        ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainDelete");
+        alr.setInfo(groupAlias);
+    
+        Optional<MailDomainGroup> tbd = findByAlias(groupAlias);
+        em.remove(tbd.orElseThrow(() -> new NotFoundException("Cannot find a group with alias "+groupAlias)));
+        actionLogSvc.log( alr );
     }
     
     /**
