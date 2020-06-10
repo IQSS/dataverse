@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip;
 
 import java.util.Arrays;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -9,6 +10,11 @@ import static org.junit.Assert.*;
  * @author michael
  */
 public class IpAddressTest {
+    
+    @Test
+    public void testNullSafety() {
+        assertNull(IpAddress.valueOf(null));
+    }
     
     @Test
     public void testValueOfIPv4() {
@@ -41,6 +47,17 @@ public class IpAddressTest {
             assertEquals( IpAddress.valueOf(tp[1]), IpAddress.valueOf(tp[0]));
         }
         
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testDefaultNull() throws IllegalArgumentException {
+        IpAddress.valueOf("127.0.0.1", null);
+    }
+    
+    @Test
+    public void testDefault() {
+        IpAddress test = new IPv4Address(127,0,0,1);
+        assertEquals(test, IpAddress.valueOf("IM.NOT.AN.IP", test));
     }
 
 }
