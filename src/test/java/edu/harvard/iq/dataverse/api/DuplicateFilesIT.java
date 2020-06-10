@@ -15,6 +15,7 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -417,6 +418,79 @@ public class DuplicateFilesIT {
         updateFileMetadataResponse.prettyPrint();
         updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
 
+    }
+
+    /**
+     * This test is for the following scenario.
+     *
+     * What if the database has null for the directoryLabel? What if you pass in
+     * directory as “” (because you don’t realize you can just not pass it).
+     * when it check and compares, the old directory is null. so will that mean
+     * labelChange = true and it will fail even though you didn’t really change
+     * the directory?
+     *
+     * While "labelChange" does end up being true,
+     * IngestUtil.conflictsWithExistingFilenames returns false, so the change is
+     * allowed to go through. The description is allowed to be changed and the
+     * directoryLabel remains null even though the user passed in an empty
+     * string, which is what we want.
+     */
+    @Test
+    public void existingDirectoryNullPassEmptyStringChangeDescription() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        Path pathToFile = Paths.get(Files.createTempDirectory(null) + File.separator + "file1.txt");
+        Files.write(pathToFile, "File 1".getBytes());
+        System.out.println("file: " + pathToFile);
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "This is my file.");
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), json1.build(), apiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("file1.txt"));
+
+        Integer idOfFile = JsonPath.from(uploadFile.getBody().asString()).getInt("data.files[0].dataFile.id");
+        System.out.println("id: " + idOfFile);
+
+        JsonObjectBuilder updateFileMetadata = Json.createObjectBuilder()
+                // It doesn't make sense to pass "" as a directoryLabel.
+                .add("directoryLabel", "")
+                .add("description", "This file is awesome.");
+        Response updateFileMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(idOfFile), updateFileMetadata.build().toString(), apiToken);
+        updateFileMetadataResponse.prettyPrint();
+        updateFileMetadataResponse.then().statusCode(OK.getStatusCode());
+
+        Response datasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        datasetJson.prettyPrint();
+        datasetJson.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("file1.txt"))
+                .body("data.latestVersion.files[0].description", equalTo("This file is awesome."))
+                // Even though we tried to set directoryValue to "" above, it's correctly null in the database.
+                .body("data.latestVersion.files[0].directoryLabel", nullValue());
     }
 
 }

@@ -407,6 +407,7 @@ public class Files extends AbstractApiBean {
                 if (oldPathPlusName.equals(incomingPathPlusName)) {
                     labelChange = false;
                 }
+                logger.fine("For file id " + df.getId() + " user is trying to change the label: " + labelChange);
                 if (labelChange && IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
                     String pathPlusFilename = "";
                     if (directoryLabel != null) {
