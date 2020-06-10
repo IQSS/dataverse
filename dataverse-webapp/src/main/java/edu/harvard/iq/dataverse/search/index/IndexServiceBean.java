@@ -960,21 +960,24 @@ public class IndexServiceBean {
                     if (fileMetadata != null) {
                         String filenameComplete = fileMetadata.getLabel();
                         if (filenameComplete != null) {
-                            String filenameWithoutExtension = "";
-                            // String extension = "";
                             int i = filenameComplete.lastIndexOf('.');
                             if (i > 0) {
-                                // extension = filenameComplete.substring(i + 1);
                                 try {
-                                    filenameWithoutExtension = filenameComplete.substring(0, i);
+                                    String fileExtension = filenameComplete.substring(i + 1);
+                                    datafileSolrInputDocument.addField(SearchFields.FILE_EXTENSION, fileExtension);
+                                } catch (IndexOutOfBoundsException ex) {
+                                    logger.fine("problem with filename '" + filenameComplete + "': no extension");
+                                }
+
+                                try {
+                                    String filenameWithoutExtension = filenameComplete.substring(0, i);
                                     datafileSolrInputDocument.addField(SearchFields.FILENAME_WITHOUT_EXTENSION, filenameWithoutExtension);
                                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameWithoutExtension);
                                 } catch (IndexOutOfBoundsException ex) {
-                                    filenameWithoutExtension = "";
+                                    logger.fine("problem with filename '" + filenameComplete + "': not valid filename");
                                 }
                             } else {
                                 logger.fine("problem with filename '" + filenameComplete + "': no extension? empty string as filename?");
-                                filenameWithoutExtension = filenameComplete;
                             }
                             filenameCompleteFinal = filenameComplete;
                         }

@@ -238,9 +238,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
                                                   BundleUtil.getStringFromBundle("description"),
                                                   BundleUtil.getStringFromBundle("advanced.search.files.description.tip")));
 
-        filesSearchFields.add(new TextSearchField(SearchFields.FILE_TYPE_SEARCHABLE,
-                                                  BundleUtil.getStringFromBundle("advanced.search.files.fileType"),
-                                                  BundleUtil.getStringFromBundle("advanced.search.files.fileType.tip")));
+        filesSearchFields.add(new TextSearchField(SearchFields.FILE_EXTENSION,
+                BundleUtil.getStringFromBundle("advanced.search.files.fileExtension"),
+                BundleUtil.getStringFromBundle("advanced.search.files.fileExtension.tip")));
 
         filesSearchFields.add(new TextSearchField(SearchFields.FILE_PERSISTENT_ID,
                                                   BundleUtil.getStringFromBundle("advanced.search.files.persistentId"),

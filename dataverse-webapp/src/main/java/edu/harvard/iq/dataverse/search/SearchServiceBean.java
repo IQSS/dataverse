@@ -202,6 +202,7 @@ public class SearchServiceBean {
          * https://redmine.hmdc.harvard.edu/issues/3848
          */
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, BundleUtil.getStringFromBundle("facets.search.fieldtype.fileNameWithoutExtension.label"));
+        solrFieldsToHightlightOnMap.put(SearchFields.FILE_EXTENSION, BundleUtil.getStringFromBundle("advanced.search.files.fileExtension"));
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_TAG_SEARCHABLE, BundleUtil.getStringFromBundle("facets.search.fieldtype.fileTag.label"));
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
         for (DatasetFieldType datasetFieldType : datasetFields) {
@@ -218,6 +219,7 @@ public class SearchServiceBean {
 
         solrQuery = addHighlightFields(solrQuery, solrFieldsToHightlightOnMap);
 
+        solrQuery.setHighlightRequireFieldMatch(true);
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
