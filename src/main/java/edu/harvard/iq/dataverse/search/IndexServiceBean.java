@@ -1418,8 +1418,7 @@ public class IndexServiceBean {
         solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, object.getId().toString()));
 
         QueryResponse res = solrClientService.getSolrClient().query(solrQuery);
-        Dataset ds = null;
-        Dataverse dv  = null;
+        
         if (!res.getResults().isEmpty()) {            
             SolrDocument doc = res.getResults().get(0);
             SolrInputDocument sid = new SolrInputDocument();
@@ -1427,24 +1426,16 @@ public class IndexServiceBean {
             for (String fieldName : doc.getFieldNames()) {
                 sid.addField(fieldName, doc.getFieldValue(fieldName));
             }
-            List<String> paths = new ArrayList();
 
-            if(object.isInstanceofDataset()){
-               ds  = datasetService.find(object.getId());
-               paths =   retrieveDVOPaths(ds);
-            }
-
-            if(object.isInstanceofDataverse()){
-               dv  = dataverseService.find(object.getId());
-               paths =   retrieveDVOPaths(dv);
-            } 
-
+            List<String> paths =  object.isInstanceofDataset() ? retrieveDVOPaths(datasetService.find(object.getId())) 
+                    : retrieveDVOPaths(dataverseService.find(object.getId()));
+  
             sid.removeField(SearchFields.SUBTREE);
             sid.addField(SearchFields.SUBTREE, paths);
             UpdateResponse addResponse = solrClientService.getSolrClient().add(sid);
             UpdateResponse commitResponse = solrClientService.getSolrClient().commit();
-            if (ds != null) {
-                for (DataFile df : ds.getFiles()) {
+            if (object.isInstanceofDataset()) {
+                for (DataFile df : datasetService.find(object.getId()).getFiles()) {
                     solrQuery.setQuery(SearchUtil.constructQuery(SearchFields.ENTITY_ID, df.getId().toString()));
                     res = solrClientService.getSolrClient().query(solrQuery);
                     if (!res.getResults().isEmpty()) {
