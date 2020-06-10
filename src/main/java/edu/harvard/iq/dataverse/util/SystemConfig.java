@@ -1056,4 +1056,8 @@ public class SystemConfig {
 	public boolean directUploadEnabled(Dataset dataset) {
     	return Boolean.getBoolean("dataverse.files." + dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
 	}
+	
+	public String getUserIpAddressSourceHeaderField() {
+        return System.getProperty("dataverse.useripaddresssourceheader", null);
+    }
 }
