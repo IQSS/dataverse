@@ -527,6 +527,7 @@
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
                             <reuseForks>false</reuseForks>
                             <groups>edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests</groups>
                         </configuration>

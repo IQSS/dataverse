@@ -72,14 +72,6 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- https://github.com/arquillian/arquillian-container-glassfish/issues/24 -->
-                    <reuseForks>false</reuseForks>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>
