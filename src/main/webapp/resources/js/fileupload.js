@@ -1,6 +1,7 @@
 var fileList = [];
 var observer2=null;
 var numDone=0;
+var delay=100; //milliseconds
 
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled=false;
@@ -24,6 +25,8 @@ var finishFile = (function () {
 function setupDirectUpload(enabled) {
   if(enabled) {
     directUploadEnabled=true;
+    //An indicator as to which version is being used - should keep updated.
+    console.log('Dataverse Direct Upload for v5.0');
     $('.ui-fileupload-upload').hide();
     $('.ui-fileupload-cancel').hide();
     //Catch files entered via upload dialog box. Since this 'select' widget is replaced by PF, we need to add a listener again when it is replaced
@@ -49,7 +52,7 @@ function setupDirectUpload(enabled) {
     var callback = function(mutations) {
       mutations.forEach(function(mutation) {
         for(i=0; i<mutation.addedNodes.length;i++) {
-          //Add a listener on any replacedment file 'select' widget
+          //Add a listener on any replacement file 'select' widget
           if(mutation.addedNodes[i].id == 'datasetForm:fileUpload_input') {
             fileInput=mutation.addedNodes[i];
             mutation.addedNodes[i].addEventListener('change', function(event) {
@@ -80,7 +83,7 @@ async function cancelDatasetCreate() {
     directUploadEnabled=false;
     while(curFile!=numDone) {
       $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
-      $("#datasetSave").prop('disabled', true);
+      $("#datasetForm\\:save").prop('disabled', true);
       await sleep(1000);
     }
       cancelCreateCommand();
@@ -112,7 +115,7 @@ function queueFileForDirectUpload(file) {
 async function startRequestForDirectUploadUrl() {
   //Wait for each call to finish and update the DOM
   while(inDataverseCall === true) {
-    await sleep(500);
+    await sleep(delay);
   }
   inDataverseCall=true;
   //storageId is not the location - has a : separator and no path elements from dataset
@@ -120,7 +123,8 @@ async function startRequestForDirectUploadUrl() {
   requestDirectUploadUrl();
 }
 
-function uploadFileDirectly(url, storageId) {
+async function uploadFileDirectly(url, storageId) {
+  await sleep(delay);	
   inDataverseCall=false;
   
   if(directUploadEnabled) {
@@ -210,11 +214,16 @@ function reportUpload(storageId, file){
 }
 
 async function handleDirectUpload(storageId, file, md5) {
-  //Wait for each call to finish and update the DOM
+  //Wait for each call to finish and update the DOM	
   while(inDataverseCall === true) {
-    await sleep(500);
+    await sleep(delay);
   }
+
   inDataverseCall=true;
+  if(file.size < 1000) {
+	  //artificially slow reporting of the upload of tiny files to avoid problems with maintaining JSF state
+  //	  await sleep(delay);
+  }
   //storageId is not the location - has a : separator and no path elements from dataset
   //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
   handleExternalUpload([{name:'uploadComponentId', value:'datasetForm:fileUpload'}, {name:'fullStorageIdentifier', value:storageId}, {name:'fileName', value:file.name}, {name:'contentType', value:file.type}, {name:'checksumType', value:'MD5'}, {name:'checksumValue', value:md5}]);
@@ -273,8 +282,8 @@ function uploadFinished(fileupload) {
     }
 }
 
-function directUploadFinished() {
-  inDataverseCall=false;
+async function directUploadFinished() {
+
   numDone = finishFile();
   var total = curFile;
   var inProgress = filesInProgress;
@@ -293,20 +302,26 @@ function directUploadFinished() {
     }  else {
       if((inProgress < 4) && (inProgress < inList)) {
         filesInProgress= filesInProgress+1;
-        requestDirectUploadUrl();
+        startRequestForDirectUploadUrl();
       }
     }
   }
+  await sleep(delay);
+
+  inDataverseCall=false;
 }
 
-function uploadFailure(jqXHR, upid, filename) {
+async function uploadFailure(jqXHR, upid, filename) {
   // This handles HTTP errors (non-20x reponses) such as 0 (no connection at all), 413 (Request too large),
   // and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
   // It notifies the user and provides info about the error (status, statusText)
   // On some browsers, the status is available in an event: window.event.srcElement.status
   // but others, (Firefox) don't support this. The calls below retrieve the status and other info
   // from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
-
+	
+  if(directUploadEnabled) {
+    await sleep(delay);
+  }
   inDataverseCall=false;
   
   //Retrieve the error number (status) and related explanation (statusText)
