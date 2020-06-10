@@ -88,7 +88,7 @@ public class Dataverse extends DvObjectContainer {
      */
     @NotBlank(message = "{dataverse.alias}")
     @Column(nullable = false, unique = true)
-    @Size(max = 60, message = "{dataverse.aliasLength}")
+    @Size(max = 100, message = "{dataverse.aliasLength}")
     @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
             @Pattern(regexp = ".*\\D.*", message = "{dataverse.aliasNotnumber}")})
     private String alias;

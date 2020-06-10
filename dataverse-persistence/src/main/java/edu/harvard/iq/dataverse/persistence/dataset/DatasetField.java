@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Entity
 @ValidateDatasetFieldType
 @Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "datasetversion_id"),
-        @Index(columnList = "parentdatasetfieldcompoundvalue_id"), @Index(columnList = "template_id")})
+        @Index(columnList = "template_id")})
 public class DatasetField implements Serializable {
     private static final long serialVersionUID = 1L;
 
