@@ -510,6 +510,14 @@ public class UtilIT {
                 .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
     }
+    
+    static Response loadMetadataBlock(String apiToken, byte[] body) {
+        return given()
+          .header(API_TOKEN_HTTP_HEADER, apiToken)
+          .contentType("text/tab-separated-values; charset=utf-8")
+          .body(body)
+          .post("/api/admin/datasetfield/load");
+    }
 
     static private String getDatasetXml(String title, String author, String description) {
         String xmlIn = "<?xml version=\"1.0\"?>\n"
@@ -1395,12 +1403,13 @@ public class UtilIT {
                 .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
     }
 
-    static Response loadMetadataBlock(String apiToken, byte[] body) {
+    /**
+     * @param trueOrWidthInPixels Passing "true" will result in the default width in pixels (64).
+     */
+    static Response getFileThumbnail(String fileDatabaseId, String trueOrWidthInPixels, String apiToken) {
         return given()
-          .header(API_TOKEN_HTTP_HEADER, apiToken)
-          .contentType("text/tab-separated-values; charset=utf-8")
-          .body(body)
-          .post("/api/admin/datasetfield/load");
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileDatabaseId + "?imageThumb=" + trueOrWidthInPixels);
     }
 
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {

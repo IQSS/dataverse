@@ -76,6 +76,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -1281,9 +1282,9 @@ public class Admin extends AbstractApiBean {
 			return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
 		}
 		JsonObjectBuilder data = Json.createObjectBuilder();
-		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 		data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
+		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 		if (datasetThumbnail != null) {
 			data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
 			DataFile dataFile = datasetThumbnail.getDataFile();
