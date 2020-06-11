@@ -518,8 +518,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
-                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{result.title}"/>                               
-                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
+                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}"/>
                             </a>
                         </div>
 

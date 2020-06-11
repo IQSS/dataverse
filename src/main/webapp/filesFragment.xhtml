@@ -132,11 +132,11 @@
 
                             <!-- UPLOAD FILES BUTTON -->
                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                          type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'ui-state-disabled' : ''}"
+                                          type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
                                           disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
                                                                                         and DatasetPage.canUpdateDataset()
                                                                                         and !widgetWrapper.widgetView}">
-                                <span class="glyphicon #{DatasetPage.lockedFromEdits ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                                <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                             </h:outputLink>
                         </div>
                     </p:outputPanel>
@@ -529,7 +529,7 @@
                                     and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                     and DatasetPage.isHasTabular()}">
                         <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
-                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
+                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                         </button>
                         <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                             <li >
@@ -577,35 +577,8 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-            </f:facet>          
-            <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
-                <!-- Ingest in progress... -->
-                #{bundle['file.ingestInProgress']}
-            </div>
+            </f:facet>
             
-            <!---Modular configure-->
-            <ui:fragment rendered="#{!widgetWrapper.widgetView and DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                <ui:include src="file-configure-dropdown-fragment.xhtml">
-                    <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                    <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
-                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                </ui:include>
-            </ui:fragment>
-
-            <div class="btn-group" jsf:rendered="#{!fileMetadata.dataFile.filePackage or
-                fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
-                <ui:include src="file-download-button-fragment.xhtml">
-                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                    <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
-                    <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
-                    <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
-                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                    <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
-                    <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                </ui:include>
-            </div>
             <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
                 and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') 
                 }">
@@ -616,6 +589,56 @@
                     <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                 </ui:include>
             </div>
+            
+            <!-- FILE LEVEL INLINE INDICATORS, MSG, ICON, ET AL -->
+            <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
+                <!-- Ingest in progress... -->
+                #{bundle['file.ingestInProgress']}
+            </div>
+            <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
+                <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
+                <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
+                    <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                </span>
+            </ui:fragment>
+            <!-- END: FILE LEVEL INLINE INDICATORS, MSG, ICON, ET AL -->
+            
+            
+            <div class="btn-group" role="group" aria-label="TODO: ACCESSIBILITY LABEL FILE LEVEL ACTIONS">
+            
+                <!---Modular configure-->
+                <ui:fragment rendered="#{!widgetWrapper.widgetView 
+                                         and DatasetPage.sessionUserAuthenticated 
+                                         and DatasetPage.canUpdateDataset() 
+                                         and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 
+                                                or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) 
+                                                or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                    <ui:include src="file-configure-dropdown-fragment.xhtml">
+                        <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        <ui:param name="isFilePg" value="false"/>
+                        <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                    </ui:include>
+                </ui:fragment>
+
+                <ui:fragment rendered="#{!fileMetadata.dataFile.filePackage or
+                    fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
+
+                    <ui:include src="file-download-button-fragment.xhtml">
+                        <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+
+                        <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                        <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                        <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
+                        <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
+                        <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                        <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
+                        <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                    </ui:include>
+                </ui:fragment>
+            
+            </div>
+            
         </p:column>
     </p:dataTable>
     
