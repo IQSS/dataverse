@@ -462,12 +462,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     DatasetFieldType dft = facet.getDatasetFieldType();
                     if (dft.getFieldType() == FieldType.DATE) {
                         facetsToSort.add(dft.getName());
+                        logger.info("Adding facet to sort: " + dft.getName());
                     }
                 }
 
                 // Sort Pub Year Chronologically (alphabetically descending - works until 10000
                 // AD)
                 for (FacetCategory fc : facetCategoryList) {
+                    logger.info("Found facet: " + fc.getName());
                     if (facetsToSort.contains(fc.getName())) {
                         Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());
                     }
