@@ -2049,3 +2049,12 @@ Allows Cross-Origin Resource sharing(CORS). By default this setting is absent an
 If you don’t want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
+
+:ChronologicalDateFacets
++++++++++++++++
+
+Unlike other facets, those indexed by Date/Year are sorted chronologically by default, with the most recent value first. To have them sorted by number of hits, e.g. with the year with the most results first, set this to false 
+
+If you don’t want date facets to be sorted chronologically, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``

@@ -454,7 +454,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             setDisplayCardValues();
             
-            if (settingsWrapper.sortDateFacets()) {
+            if (settingsWrapper.displayChronologicalDateFacets()) {
                 Set<String> facetsToSort = new HashSet<String>();
                 facetsToSort.add(SearchFields.PUBLICATION_YEAR);
                 List<DataverseFacet> facets = dataversePage.getDataverse().getDataverseFacets();

@@ -266,9 +266,9 @@ public class SettingsWrapper implements java.io.Serializable {
     
     }
     
-    public boolean sortDateFacets() {
+    public boolean displayChronologicalDateFacets() {
         //Defaults to true
-        return isTrueForKey(SettingsServiceBean.Key.SortDateFacets, true);
+        return isTrueForKey(SettingsServiceBean.Key.ChronologicalDateFacets, true);
     
     }
 
