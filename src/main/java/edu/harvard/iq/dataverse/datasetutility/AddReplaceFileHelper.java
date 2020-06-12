@@ -153,9 +153,30 @@ public class AddReplaceFileHelper{
     private boolean contentTypeWarningFound;
     private String contentTypeWarningString;
     
+    private boolean duplicateFileErrorFound;
+
+    private String duplicateFileErrorString;
+
     private boolean duplicateFileWarningFound;
     private String duplicateFileWarningString;
+    
+    
+    public boolean isDuplicateFileErrorFound() {
+        return duplicateFileErrorFound;
+    }
 
+    public void setDuplicateFileErrorFound(boolean duplicateFileErrorFound) {
+        this.duplicateFileErrorFound = duplicateFileErrorFound;
+    }
+
+    public String getDuplicateFileErrorString() {
+        return duplicateFileErrorString;
+    }
+
+    public void setDuplicateFileErrorString(String duplicateFileErrorString) {
+        this.duplicateFileErrorString = duplicateFileErrorString;
+    }
+    
     public boolean isDuplicateFileWarningFound() {
         return duplicateFileWarningFound;
     }
@@ -1213,12 +1234,17 @@ public class AddReplaceFileHelper{
             // -----------------------------------------------------------     
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
                 this.addError(getBundleErr("replace.new_file_same_as_replacement"));                
-                this.duplicateFileWarningFound = true;
-                this.duplicateFileWarningString = getBundleErr("replace.new_file_same_as_replacement");
+                this.duplicateFileErrorFound = true;
+                this.duplicateFileErrorString = getBundleErr("replace.new_file_same_as_replacement");
                 break;
-            } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
+            } 
+            
+            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
+                this.duplicateFileWarningFound = true;
+                this.duplicateFileWarningString = getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue");
                 this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
+
             }             
             finalFileList.add(df);
         }

@@ -1822,10 +1822,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                     PrimeFaces.current().executeScript("PF('fileTypeDifferentPopup').show();");
         }
         
+        if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileErrorFound() ) {
+                setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString());
+                    PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
+                    PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+        }
+        
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
-                    //context.execute("PF('fileTypeDifferentPopup').show();");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
         }
         // We clear the following duplicate warning labels, because we want to 
