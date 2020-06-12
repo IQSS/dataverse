@@ -46,7 +46,7 @@ public class DataverseRequest {
         String header = System.getProperty("dataverse.useripaddresssourceheader");
         // Security check - make sure any supplied header is one that is used to forward
         // IP addresses (case insensitive)
-        if(ALLOWED_HEADERS.contains(header.toLowerCase())) {
+        if((header!=null) && (ALLOWED_HEADERS.contains(header.toLowerCase()))) {
             headerToUse=header;
         }
     }
