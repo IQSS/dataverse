@@ -161,7 +161,7 @@
                                                         <!-- Explore tool links -->
                                                         <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
                                                             <li>
-                                                                <h:commandLink action="#{DatasetPage.explore(tool)}">
+                                                                <h:commandLink styleClass="btn-explore" action="#{DatasetPage.explore(tool)}">
                                                                     <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                                 </h:commandLink>
                                                             </li>
