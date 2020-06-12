@@ -265,6 +265,12 @@ public class SettingsWrapper implements java.io.Serializable {
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
     
     }
+    
+    public boolean sortDateFacets() {
+        //Defaults to true
+        return isTrueForKey(SettingsServiceBean.Key.SortDateFacets, true);
+    
+    }
 
 }
 
