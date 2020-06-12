@@ -24,11 +24,10 @@ public class DataverseRequest {
     private final IpAddress sourceAddress;
     
     private final static String undefined = "0.0.0.0";
-    private final static String localhost = "127.0.0.1";
     
     private static final Logger logger = Logger.getLogger(DataverseRequest.class.getName());
     
-    private static String headerToUse = System.getProperty("dataverse.useripaddresssourceheader");
+    private static String headerToUse = null;
     
     private static final HashSet<String> ALLOWED_HEADERS = new HashSet<String>(Arrays.asList( 
             "x-forwarded-for",
@@ -43,20 +42,23 @@ public class DataverseRequest {
             "http_via",
             "remote_addr" ));
      
+    static {
+        String header = System.getProperty("dataverse.useripaddresssourceheader");
+        // Security check - make sure any supplied header is one that is used to forward
+        // IP addresses (case insensitive)
+        if(ALLOWED_HEADERS.contains(header.toLowerCase())) {
+            headerToUse=header;
+        }
+    }
     
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
-
-        String saneDefault = undefined;
-        String remoteAddressStr = saneDefault;
 
         IpAddress address = null;
 
         if (aHttpServletRequest != null) {
 
-            // Security check - make sure any supplied header is one that is used to forward
-            // IP addresses (case insensitive)
-            if (headerToUse != null && ALLOWED_HEADERS.contains(headerToUse.toLowerCase())) {
+            if (headerToUse != null) {
                 /*
                  * The optional case of using a header to determine the IP address is discussed
                  * at length in https://github.com/IQSS/dataverse/pull/6973 and the related
@@ -85,7 +87,7 @@ public class DataverseRequest {
                     }
                     // Always get the last value if more than one in the string, which should be the
                     // IP address closest to the reporting proxy
-                    int index = ip.indexOf(',');
+                    int index = ip.lastIndexOf(',');
                     if (index >= 0) {
                         ip = ip.substring(index + 1);
                     }
@@ -120,11 +122,11 @@ public class DataverseRequest {
                     // use the request remote address
                     String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
                     if (remoteAddressFromRequest != null) {
-                        remoteAddressStr = remoteAddressFromRequest;
+                        String remoteAddressStr = remoteAddressFromRequest;
                         try {
                             address = IpAddress.valueOf(remoteAddressStr);
                         } catch (IllegalArgumentException iae) {
-                            address = IpAddress.valueOf(saneDefault);
+                            address = IpAddress.valueOf(undefined);
                         }
                     }
                 }
