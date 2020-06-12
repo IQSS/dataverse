@@ -461,15 +461,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 for (DataverseFacet facet : facets) {
                     DatasetFieldType dft = facet.getDatasetFieldType();
                     if (dft.getFieldType() == FieldType.DATE) {
-                        facetsToSort.add(dft.getName());
-                        logger.info("Adding facet to sort: " + dft.getName());
+                        // Currently all date fields are stored in solr as strings and so get an "_s" appended. 
+                        // If these someday are indexed as dates, this should change
+                        facetsToSort.add(dft.getName()+"_s");
                     }
                 }
 
                 // Sort Pub Year Chronologically (alphabetically descending - works until 10000
                 // AD)
                 for (FacetCategory fc : facetCategoryList) {
-                    logger.info("Found facet: " + fc.getName());
                     if (facetsToSort.contains(fc.getName())) {
                         Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());
                     }
