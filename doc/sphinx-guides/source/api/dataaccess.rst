@@ -58,14 +58,16 @@ the following parameter values are supported (for image and pdf files only):
 ==============  ===========
 Value           Description
 ==============  ===========
-true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
-``N``           Rescales the image to ``N`` pixels.
+true            Generates a thumbnail image by rescaling to the default thumbnail size (64 pixels wide).
+``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
 
 Multiple File ("bundle") download
 ---------------------------------
 
 ``/api/access/datafiles/$id1,$id2,...$idN``
+
+Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
 
 Returns the files listed, zipped. 
 

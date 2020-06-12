@@ -103,9 +103,11 @@ import javax.ws.rs.core.UriInfo;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.ServiceUnavailableException;
@@ -525,15 +527,34 @@ public class Access extends AbstractApiBean {
     }
     
     /* 
-     * API method for downloading zipped bundles of multiple files:
+     * API method for downloading zipped bundles of multiple files. Uses POST to avoid long lists of file IDs that can make the URL longer than what's supported by browsers/servers
     */
     
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
+    // TODO: Rather than only supporting looking up files by their database IDs,
+    // consider supporting persistent identifiers.
+    @Path("datafiles")
+    @POST
+    @Consumes("text/plain")
+    @Produces({ "application/zip" })
+    public Response postDownloadDatafiles(String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        
+
+        return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
+    }
+    /*
+     * API method for downloading zipped bundles of multiple files:
+     */
+
+    // TODO: Rather than only supporting looking up files by their database IDs,
+    // consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
+    }
 
+    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -543,10 +564,19 @@ public class Access extends AbstractApiBean {
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
-        if (fileIds == null || fileIds.equals("")) {
+        if (rawFileIds == null || rawFileIds.equals("")) {
             throw new BadRequestException();
         }
-
+        final String fileIds;
+        if(rawFileIds.startsWith("fileIds=")) {
+            fileIds = rawFileIds.substring(8); // String "fileIds=" from the front
+        } else {
+            fileIds=rawFileIds;
+        }
+        /* Note - fileIds coming from the POST ends in '\n' and a ',' has been added after the last file id number and before a
+         * final '\n' - this stops the last item from being parsed in the fileIds.split(","); line below.
+         */
+        
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
                 ? headers.getHeaderString(API_KEY_HEADER) 
                 : apiTokenParam;
