@@ -444,7 +444,11 @@ public class SettingsServiceBean {
         /**
          * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
          */
-        ShibAffiliationAttribute
+        ShibAffiliationAttribute,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        SortDateFacets
         ;
 
         @Override

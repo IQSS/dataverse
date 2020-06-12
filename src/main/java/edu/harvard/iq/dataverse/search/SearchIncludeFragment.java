@@ -5,9 +5,12 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -451,13 +454,27 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             setDisplayCardValues();
             
-            //Sort Pub Year Chronologically (alphabetically descending - works until 10000 AD)
-            for(FacetCategory fc: facetCategoryList) {
-                if(fc.getName().equals(SearchFields.PUBLICATION_YEAR)) {
-                    Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());     
+            if (settingsWrapper.sortDateFacets()) {
+                Set<String> facetsToSort = new HashSet<String>();
+                facetsToSort.add(SearchFields.PUBLICATION_YEAR);
+                List<DataverseFacet> facets = dataversePage.getDataverse().getDataverseFacets();
+                for (DataverseFacet facet : facets) {
+                    DatasetFieldType dft = facet.getDatasetFieldType();
+                    if (dft.getFieldType() == FieldType.DATE) {
+                        facetsToSort.add(dft.getName());
+                    }
+                }
+
+                // Sort Pub Year Chronologically (alphabetically descending - works until 10000
+                // AD)
+                for (FacetCategory fc : facetCategoryList) {
+                    if (facetsToSort.contains(fc.getName())) {
+                        Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());
+                    }
                 }
             }
             
+
             
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
