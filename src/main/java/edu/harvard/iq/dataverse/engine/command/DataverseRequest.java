@@ -113,24 +113,25 @@ public class DataverseRequest {
                         }
                     }
                 }
-                /*
-                 * If there was no header/no usable value from the header, use the
-                 * remoteAddress.
-                 * 
-                 */
-                if (address == null) {
-                    // use the request remote address
-                    String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
-                    if (remoteAddressFromRequest != null) {
-                        String remoteAddressStr = remoteAddressFromRequest;
-                        try {
-                            address = IpAddress.valueOf(remoteAddressStr);
-                        } catch (IllegalArgumentException iae) {
-                            address = IpAddress.valueOf(undefined);
-                        }
+            }
+            /*
+             * If there was no header/no usable value from the header, use the
+             * remoteAddress.
+             * 
+             */
+            if (address == null) {
+                // use the request remote address
+                String remoteAddressFromRequest = aHttpServletRequest.getRemoteAddr();
+                if (remoteAddressFromRequest != null) {
+                    String remoteAddressStr = remoteAddressFromRequest;
+                    try {
+                        address = IpAddress.valueOf(remoteAddressStr);
+                    } catch (IllegalArgumentException iae) {
+                        address = IpAddress.valueOf(undefined);
                     }
                 }
             }
+
         }
         sourceAddress = address;
     }
