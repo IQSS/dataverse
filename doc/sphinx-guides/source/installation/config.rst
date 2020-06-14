@@ -39,10 +39,21 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Payara might be a compelling enough reason to front Payara with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+
+.. _user-ip-addresses-proxy-security:
+
 Recording User IP Addresses
 +++++++++++++++++++++++++++
 
-By default, Dataverse captures the IP address from which requests originate. This is used for multiple purposes including blocking access to the admin API and Make Data Count reporting. When Dataverse is configured behind a proxy such as a load balancer, the default setting may not capture the correct IP address. ...(Leonid to expand...) 
+By default, Dataverse captures the IP address from which requests originate. This is used for multiple purposes including controlling access to the admin API, IP-based user groups and Make Data Count reporting. When Dataverse is configured behind a proxy such as a load balancer, this default setup may not capture the correct IP address. In this case all the incoming requests will be logged in the access logs, MDC logs etc., as if they are all coming from the IP address(es) of the load balancer itself. Proxies usually save the original address in an added HTTP header, from which it can be extracted. For example, AWS LB records the "true" original address in the standard `X-Forwarded-For` header. If your Dataverse is running behind an IP-masking proxy, but you would like to use IP groups, or record the true geographical location of the incoming requests with Make Data Count, you may enable the IP address lookup from the proxy header using the JVM option  `dataverse.useripaddresssourceheader`, described further below. 
+Before doing so however, you must absolutely **consider the security risks involved**! This option must be enabled **only** on a Dataverse that is in fact fully behind a proxy that properly, and consistently, adds the `X-Forwarded-For` (or a similar) header to every request it forwards. Consider the implications of activating this option on a Dataverse that is not running behind a proxy, *or running behind one, but still accessible from the insecure locations bypassing the proxy*: Anyone can now add the header above to an incoming reqest, supplying an arbitrary IP address that Dataverse will trust as the true origin of  the call. Thus giving an attacker an easy way to, for example, get in a privileged IP group. The implications could be even more severe if an attacker were able to pretend to be coming from `localhost`, if Dataverse is configured to trust localhost connections for unrestricted access to the admin API! We have addressed this by making it so that Dataverse should never accept `localhost`, `127.0.0.1`, `0:0:0:0:0:0:0:1` etc. when supplied in such a header. But if you have reasons to still find this risk unacceptable, you may want to consider turning open localhost access to the API off (See :ref:`Securing Your Installation <securing-your-installation>` for more information.)
+This is how to verify that your proxy or load balancer, etc. is handling the originating address headers properly and securely: Make sure access logging is enabled in your application server (Payara) configuration. (`<http-service access-logging-enabled="true">` in the `domain.xml`). Add the address header to the access log format. For example, on a system behind AWS ELB, you may want to use something like `%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%`. Once enabled, access the Dataverse from outside the LB. You should now see the real IP address of your remote client in the access log. For example, something like: 
+`"1.2.3.4" "01/Jun/2020:12:00:00 -0500" "GET /dataverse.xhtml HTTP/1.1" 200 81082  "NULL-REFERER" "128.64.32.16"` 
+In this example, `128.64.32.16` is your remote address (that you should verify), and `1.2.3.4` is the address of your LB. If you're not seeing your remote address in the log, do not activate the JVM option! Also, verify that all the entries in the log have this header populated. The only entries in the access log that you should be seeing without this header (logged as `"NULL-HEADER-X-FORWARDED-FOR"`) are local requests, made from localhost, etc. In this case, since the request is not coming through the proxy, the local IP address should be logged as the primary one (as the first value in the log entry, `%client.name%`). If you see any requests coming in from remote, insecure subnets without this header - do not use the JVM option! 
+Once you are ready, enable the :ref:`JVM option <useripaddresssourceheader>`. Verify that the remote locations are properly tracked in your MDC metrics, and/or your IP groups are working. As a final test, if your Dataverse is allowing unrestricted localhost access to the admin API, imitate an attack in which a malicious request is pretending to be coming from `127.0.0.1`. Try the following from a remote, insecure location:
+`curl https://your.dataverse.edu/api/admin/settings --header "X-FORWARDED-FOR: 127.0.0.1"`
+First of all, confirm that access is denied! If you are in fact able to access the settings api from a location outside the proxy, **something is seriously wrong**, so please let us know, and stop using the JVM option.  Otherwise check the access log entry for the header value. What you should see is something like `"127.0.0.1, 128.64.32.16"`. Where the second address should be the real IP of your remote client. The fact that the "fake" `127.0.0.1` you sent over is present in the header is perfectly ok. This is the proper proxy behavior - it preserves any incoming values in the X-Forwarded-Header, if supplied, and adds the detected incoming address to it, *on the right*. It is only this rightmost comma-separated value that Dataverse should ever be using. 
+Still feel like activating this option in your configuration? - Have fun and be safe!
 
 
 .. _PrivacyConsiderations:
@@ -1156,9 +1167,13 @@ Please note that there are other reasons why download URLs may not be included f
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
+.. _useripaddresssourceheader:
+
 dataverse.useripaddresssourceheader
 +++++++++++++++++++++++++++++++++++
 
+**Make sure** to read the section about the :ref:`Security Implications 
+<user-ip-addresses-proxy-security>` of using this option earlier in the guide!
 
 If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. Useful in cases 
 such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct 
