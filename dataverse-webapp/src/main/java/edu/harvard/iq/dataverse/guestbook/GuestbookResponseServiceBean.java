@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.CustomQuestion;
 import edu.harvard.iq.dataverse.persistence.guestbook.CustomQuestionResponse;
@@ -57,6 +58,7 @@ public class GuestbookResponseServiceBean {
             + "where "
             + " df.datasetfieldtype_id = 1 "
             + " and df.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+            + " and df.source = '" + DatasetField.DEFAULT_SOURCE + "'"
             + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
             + " and m.datafile_id = r.datafile_id "
             + " and r.dataset_id = o.id "
@@ -71,6 +73,7 @@ public class GuestbookResponseServiceBean {
             + "where "
             + " df.datasetfieldtype_id = 1 "
             + " and df.datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id ) "
+            + " and df.source = '" + DatasetField.DEFAULT_SOURCE + "'"
             + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
             + " and m.datafile_id = r.datafile_id "
             + " and r.dataset_id = o.id ";

@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
@@ -423,6 +424,7 @@ public class DatasetDao implements java.io.Serializable {
                                                          + " join datasetfieldvalue dfv on df.id = dfv.datasetfield_id "
                                                          + " join datasetfieldtype dft on df.datasetfieldtype_id  = dft.id "
                                                          + " where dft.name = '" + DatasetFieldConstant.title + "' and  v.dataset_id =" + datasetId
+                                                         + " and df.source = '" + DatasetField.DEFAULT_SOURCE + "'"
                                                          + whereDraft
                                                          + " order by v.versionnumber desc, v.minorVersionNumber desc limit 1 "
                                                          + ";").getSingleResult();

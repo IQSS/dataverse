@@ -411,8 +411,6 @@ public class ExportServiceTest {
                 DatasetField dsContactName = new DatasetField();
                 dsContactName.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactName, FieldType.TEXT, true));
 
-                contactChild.setDatasetFields(Lists.newArrayList(dsContactName));
-
                 dsContactName.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
                 .setDatasetFieldParent(dsContactName).setFieldValue("Admin, Dataverse")));
             }
@@ -423,8 +421,6 @@ public class ExportServiceTest {
                 DatasetField dsContactAffiliation = new DatasetField();
                 dsContactAffiliation.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactAffiliation, FieldType.TEXT, true));
 
-                contactChild.setDatasetFields(Lists.newArrayList(dsContactAffiliation));
-
                 dsContactAffiliation.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
                 .setDatasetFieldParent(dsContactAffiliation).setFieldValue("Dataverse.org")));
             }
@@ -434,8 +430,6 @@ public class ExportServiceTest {
 
                 DatasetField dsContactEmail = new DatasetField();
                 dsContactEmail.setDatasetFieldType(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.EMAIL, true));
-
-                contactChild.setDatasetFields(Lists.newArrayList(dsContactEmail));
 
                 dsContactEmail.setDatasetFieldsChildren(Lists.newArrayList(new DatasetField()
                 .setDatasetFieldParent(dsContactEmail).setFieldValue("dataverse@mailinator.com")));
