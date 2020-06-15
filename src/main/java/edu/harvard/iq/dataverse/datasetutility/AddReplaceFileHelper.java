@@ -160,6 +160,15 @@ public class AddReplaceFileHelper{
     private boolean duplicateFileWarningFound;
     private String duplicateFileWarningString;
     
+    private String duplicateFileComponentMessage;
+
+    public String getDuplicateFileComponentMessage() {
+        return duplicateFileComponentMessage;
+    }
+
+    public void setDuplicateFileComponentMessage(String duplicateFileComponentMessage) {
+        this.duplicateFileComponentMessage = duplicateFileComponentMessage;
+    }
     
     public boolean isDuplicateFileErrorFound() {
         return duplicateFileErrorFound;
@@ -1243,6 +1252,7 @@ public class AddReplaceFileHelper{
                 String dupeName = df.getFileMetadata().getLabel();
                 this.duplicateFileWarningFound = true;
                 this.duplicateFileWarningString = getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue");
+                this.duplicateFileComponentMessage= BundleUtil.getStringFromBundle("dataset.file.exist") + " " + dupeName;
                 this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
 
             }             

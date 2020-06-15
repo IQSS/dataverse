@@ -1832,6 +1832,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileComponentMessage(), fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileComponentMessage()));
         }
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 
