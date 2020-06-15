@@ -390,31 +390,20 @@ public class Files extends AbstractApiBean {
 
                 JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
                 javax.json.JsonObject jsonObject = jsonReader.readObject();
-                String label = jsonObject.getString("label", null);
-                String directoryLabel = jsonObject.getString("directoryLabel", null);
-                // If the user is trying to change the label/directoryLabel or not.
-                boolean labelChange = true;
-                String oldLabel = df.getFileMetadata().getLabel();
-                String oldDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
-                String oldPathPlusName = oldDirectoryLabel + "/" + oldLabel;
-                if (directoryLabel == null) {
-                    directoryLabel = oldDirectoryLabel;
-                }
-                if (label == null) {
-                    label = oldLabel;
-                }
-                String incomingPathPlusName = directoryLabel + "/" + label;
-                if (oldPathPlusName.equals(incomingPathPlusName)) {
-                    labelChange = false;
-                }
-                logger.fine("For file id " + df.getId() + " user is trying to change the label: " + labelChange);
-                if (labelChange && IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
-                    String pathPlusFilename = "";
-                    if (directoryLabel != null) {
-                        pathPlusFilename = directoryLabel + "/" + label;
-                    } else {
-                        pathPlusFilename = label;
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
                     }
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
                     return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
