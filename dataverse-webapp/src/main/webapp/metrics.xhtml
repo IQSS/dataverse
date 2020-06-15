@@ -44,12 +44,13 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="newDatasetsChart"
+                    <div class="chart-wrapper">
+                        <p:chart id="newDatasetsChart"
                              type="bar"
                              model="#{PublishedDatasetsChart.chartModel}"
-                             style="height:300px; min-width: 500px"
-                             responsive="true"
-                    />
+                             responsive="true" />
+                    </div>
+                    
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">
@@ -88,11 +89,12 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="newFilesChart"
+                    <div class="chart-wrapper">
+                        <p:chart id="newFilesChart"
                              type="bar"
                              model="#{FilesChart.chartModel}"
-                             style="height:300px; min-width: 500px"
                              responsive="true" />
+                    </div>
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">
@@ -131,11 +133,13 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="newFilesStorageChart"
+                    <div class="chart-wrapper">
+                        <p:chart id="newFilesStorageChart"
                              type="bar"
                              model="#{FilesStorageChart.chartModel}"
-                             style="height:300px; min-width: 500px"
                              responsive="true" />
+                    </div>
+                    
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">
@@ -174,12 +178,12 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="filesDownloadedChart"
-                             type="bar"
-                             model="#{FilesDownloadedChart.chartModel}"
-                             style="height:300px; min-width: 500px"
-                             responsive="true"
-                    />
+                    <div class="chart-wrapper">
+                        <p:chart id="filesDownloadedChart"
+                                type="bar"
+                                model="#{FilesDownloadedChart.chartModel}"
+                                responsive="true" />
+                    </div>
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">
@@ -218,12 +222,13 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="datasetsDownloadedChart"
+                    <div class="chart-wrapper">
+                        <p:chart id="datasetsDownloadedChart"
                              type="bar"
                              model="#{DatasetsDownloadedChart.chartModel}"
-                             style="height:300px; min-width: 500px"
-                             responsive="true"
-                    />
+                             responsive="true" />
+                    </div>
+                    
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">
@@ -262,12 +267,13 @@
                                            itemLabel="#{metrics.year}" itemValue="#{metrics.year}"/>
                         </p:selectOneMenu>
                     </h:panelGrid>
-                    <p:chart id="newUsersChart"
+                    <div class="chart-wrapper">
+                        <p:chart id="newUsersChart"
                              type="bar"
                              model="#{UsersChart.chartModel}"
-                             style="height:300px; min-width: 500px"
-                             responsive="true"
-                    />
+                             responsive="true" />
+                    </div>
+                    
                 </p:panelGrid>
 
                 <div class="visuallyhidden" tabindex="0">

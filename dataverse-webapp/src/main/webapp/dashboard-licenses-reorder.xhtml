@@ -47,7 +47,7 @@
                 <p:dataTable id="licenseTable" var="license" value="#{LicenseReorderPage.licenses}"
                              widgetVar="licenseTable"
                              rowIndexVar="rowIndex" draggableRows="true"
-                             class="table-right-offset">
+                             class="table-right-offset no-min-width">
                              
                     <p:ajax event="rowReorder" listener="#{LicenseReorderPage.onRowReorder}" update="@form" />
                     

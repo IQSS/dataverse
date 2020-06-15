@@ -701,6 +701,14 @@ input, textarea {
 	}
 }
 
+@media screen and (max-width: $screen-xs-max) {
+	.ui-inputfield {
+		&[style*="width:60%"], &[style*="width: 60%"] {
+			width: 100% !important;
+		}
+	}
+}
+
 textarea {
 	resize: vertical;
 }
@@ -1495,6 +1503,24 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 	}
 }
 
+/* Scrollable tables */
+
+.ui-datatable:not(.headerless-table):not(.no-min-width) {
+	table {
+		min-width: 65em;
+	}
+	&.medium-min-width table {
+		min-width: 40em;
+	}
+}
+
+div.manageTable,
+div.filesTable {
+	&.ui-datatable.ui-widget div.ui-datatable-tablewrapper {
+		overflow-x: auto;
+	}
+}
+
 .panel-default > .panel-heading {
 	border-radius: $border-radius $border-radius 0 0;
 	display: block;
@@ -1645,6 +1671,16 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 /* Change cursor from pointer to default to avoid confusion */
 .ui-datatable-selectable td {
 	cursor: default;
+}
+
+/* Charts */
+
+.chart-wrapper {
+	overflow-x: auto;
+
+	> div {
+		min-width: 500px;
+	}
 }
 
 /* AJAX loading spinner */
@@ -3205,7 +3241,7 @@ body.font-size-percent-200 {
 		form[id$="Form"], form[id$="form"], .form-group, .row.panelSearchForm, .resultsCountPaginatorBlock, #footer {
 			*[class*="col-md"],
 			*[class*="col-sm"] {
-				&:not([role="gridcell"]):not([role="columnheader"]):not(.field-add-delete-input):not(.field-add-delete):not(#file-preview-icon-block):not(#file-preview-description-block) {
+				&:not([role="gridcell"]):not([role="columnheader"]):not(.field-add-delete-input):not(.field-add-delete):not(#file-preview-icon-block):not(#file-preview-description-block):not(#dv-sidebar):not(#dv-main) {
 					width: auto;
 					display: block;
 					float: none;
@@ -3215,7 +3251,7 @@ body.font-size-percent-200 {
 
 			*[class*="col-md-offset"],
 			*[class*="col-sm-offset"] {
-				&:not([role="gridcell"]):not([role="columnheader"]):not(.field-add-delete-input):not(.field-add-delete):not(#file-preview-icon-block):not(#file-preview-description-block) {
+				&:not([role="gridcell"]):not([role="columnheader"]):not(.field-add-delete-input):not(.field-add-delete):not(#file-preview-icon-block):not(#file-preview-description-block):not(#dv-sidebar):not(#dv-main) {
 					margin-left: 0;
 				}
 			}
@@ -3342,6 +3378,12 @@ body.font-size-percent-200 {
 
 		input {
 			width: 100%;
+		}
+	}
+
+	.ui-inputfield {
+		&[style*="width:60%"], &[style*="width: 60%"] {
+			width: 100% !important;
 		}
 	}
 
