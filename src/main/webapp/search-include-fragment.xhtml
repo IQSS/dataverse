@@ -40,21 +40,23 @@
                     </button>
                 </ui:fragment>
                 <h:form id="altAddDataForm" class="btn-form"
-                        rendered="#{dataverseSession.user.authenticated and (permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse))}">
+                        rendered="#{dataverseSession.user.authenticated and (!permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)) and permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)}">
                         <button type="button" class="add-data-plus-wrapper" onclick = "location.href='/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}'">
                           <div></div>
                           <span>#{bundle['dataverse.results.btn.addData.newDataset']}</span>
                         </button>
                 </h:form>
                 <h:form id="addDataForm" class="btn-form"
-                        rendered="#{dataverseSession.user.authenticated and !permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)
-                                     and permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse)}">
+                        rendered="#{dataverseSession.user.authenticated and permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse)}">
                     <div class="btn-group">
                         <button type="button" class="add-data-plus-wrapper dropdown-toggle" data-toggle="dropdown">
                           <div></div>
                           <span>#{bundle['dataverse.results.btn.addData']}</span>
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
+                            <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
+                                <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
+                            </ui:fragment>
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDatasetCommand(SearchIncludeFragment.dataverse) }">
                                 <li><a href="/dataset.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataset']}</a></li>
                             </ui:fragment>
