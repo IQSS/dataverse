@@ -375,7 +375,7 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (!readOnly) {
-            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+            DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
             if (datasetThumbnail == null) {
                 thumbnailString = "";
                 return null;
@@ -391,7 +391,10 @@ public class DatasetPage implements java.io.Serializable {
 
             thumbnailString = datasetThumbnail.getBase64image();
         } else {
-            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(),!workingVersion.isDraft());
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, 
+                    workingVersion.getId(),
+                    !workingVersion.isDraft(),
+                    ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE);
             if (thumbnailString == null) {
                 thumbnailString = "";
                 return null;
@@ -1057,6 +1060,17 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
     }
+    
+    public boolean canDownloadFiles(){
+        //returns true if the page user has permission to download at least one file
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+             if (fileDownloadHelper.canDownloadFile(fmd)) {
+                 return true;
+             }
+        }
+        return false;
+    }
+    
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
     for the temporary url of only ONE datafile within the dataset. This is because in the 
@@ -1802,7 +1816,7 @@ public class DatasetPage implements java.io.Serializable {
         String nonNullDefaultIfKeyNotFound = "";
         protocol = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         authority = settingsWrapper.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-        if (dataset.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
+        if (this.getId() != null || versionId != null || persistentId != null) { // view mode for a dataset
 
             DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
 
@@ -2418,22 +2432,6 @@ public class DatasetPage implements java.io.Serializable {
         this.readOnly = false;
     }
 
-    public String releaseDraft() {
-        if (releaseRadio == 1) {
-            return releaseDataset(true);
-        } else if(releaseRadio ==2) {
-            return releaseDataset(false);
-        } else if(releaseRadio ==3) {
-            return updateCurrentVersion();
-        } else {
-            return "Invalid Choice";
-        }
-    }
-
-    public String releaseMajor() {
-        return releaseDataset(false);
-    }
-
     public String sendBackToContributor() {
         try {
             //FIXME - Get Return Comment from sendBackToContributor popup
@@ -2484,7 +2482,22 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String releaseDataset() {
-        return releaseDataset(false);
+        if(!dataset.getOwner().isReleased()){
+            releaseParentDV();
+        }       
+        if(publishDatasetPopup()|| publishBothPopup() || !dataset.getLatestVersion().isMinorUpdate()){
+            return releaseDataset(false);
+        }        
+        switch (releaseRadio) {
+            case 1:
+                return releaseDataset(true);
+            case 2:
+                return releaseDataset(false);
+            case 3:
+                return updateCurrentVersion();
+            default:
+                return "Invalid Choice";
+        }
     }
     
     private void releaseParentDV(){
@@ -3764,17 +3777,95 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
+    
+    public void processPublishButton() {
+        if (dataset.isReleased()) {
+            PrimeFaces.current().executeScript("PF('publishDataset').show()");
+        }
 
+        if (!dataset.isReleased()) {
+            if (dataset.getOwner().isReleased()) {
+                PrimeFaces.current().executeScript("PF('publishDataset').show()");
+                return;
+            }
+            if (!dataset.getOwner().isReleased()) {
+                if (canPublishDataverse()) {
+                    if (dataset.getOwner().getOwner() == null
+                            || (dataset.getOwner().getOwner() != null && dataset.getOwner().getOwner().isReleased())) {
+                        PrimeFaces.current().executeScript("PF('publishDataset').show()");
+                        return;
+                    }
+                    if ((dataset.getOwner().getOwner() != null && !dataset.getOwner().getOwner().isReleased())) {
+                        PrimeFaces.current().executeScript("PF('maynotPublishParent').show()");
+                    }
+
+                } else {
+                    PrimeFaces.current().executeScript("PF('mayNotRelease').show()");
+                }
+            }
+        }
+    }
+
+    public boolean releaseDraftPopup(){
+        return dataset.isReleased();
+    }
+    
+    public boolean publishDatasetPopup(){
+        if (!dataset.isReleased()) {
+            return dataset.getOwner().isReleased();
+        }
+       return false; 
+    }
+    
+    public boolean publishBothPopup() {
+        if (!dataset.getOwner().isReleased()) {
+            if (canPublishDataverse()) {
+                if (dataset.getOwner().getOwner() == null
+                        || (dataset.getOwner().getOwner() != null && dataset.getOwner().getOwner().isReleased())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } 
+    
+    public String getPublishButtonLabel(){
+        if(publishDatasetPopup() || releaseDraftPopup()){
+            BundleUtil.getStringFromBundle("continue");  
+        }
+        if(publishBothPopup()){
+            BundleUtil.getStringFromBundle("dataset.mayNotBePublished.both.button");
+        }        
+        return "";
+    }
+    
     private Boolean lockedFromEditsVar;
     private Boolean lockedFromDownloadVar;    
     private boolean lockedDueToDcmUpload;
     private Boolean lockedDueToIngestVar;
+    private Boolean lockedFromPublishingVar;
+
+    /**
+     * Authors are not allowed to publish but curators are allowed - when Dataset is inReview
+     * For all other locks edit should be locked for all editors.
+     */
+    public boolean isLockedFromPublishing() {
+        if (null == lockedFromPublishingVar || stateChanged) {
+            try {
+                permissionService.checkPublishDatasetLock(dataset, dvRequestService.getDataverseRequest(), new PublishDatasetCommand(dataset, dvRequestService.getDataverseRequest(), true));
+                lockedFromPublishingVar = false;
+            } catch (IllegalCommandException ex) {
+                lockedFromPublishingVar = true;
+            }
+        }
+        return lockedFromPublishingVar;
+    }
     /**
      * Authors are not allowed to edit but curators are allowed - when Dataset is inReview
      * For all other locks edit should be locked for all editors.
      */
     public boolean isLockedFromEdits() {
-        if(null == lockedFromEditsVar || stateChanged) {
+        if (null == lockedFromEditsVar || stateChanged) {
             try {
                 permissionService.checkEditDatasetLock(dataset, dvRequestService.getDataverseRequest(), new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest()));
                 lockedFromEditsVar = false;
@@ -3783,6 +3874,7 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return lockedFromEditsVar;
+
     }
     
     /**
@@ -4076,12 +4168,18 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retList;
     }
+    
+    public boolean isDisplayPublishPopupCustomText() {
+        if (dataset.isReleased()) {
+            return isDatasetPublishPopupCustomTextOnAllVersions() && !getDatasetPublishCustomText().isEmpty();
+        }
+        return !getDatasetPublishCustomText().isEmpty();
+    }
 
     public String getDatasetPublishCustomText(){
         String datasetPublishCustomText = settingsWrapper.getValueForKey(SettingsServiceBean.Key.DatasetPublishPopupCustomText);
         if( datasetPublishCustomText!= null && !datasetPublishCustomText.isEmpty()){
-            return datasetPublishCustomText;
-            
+            return datasetPublishCustomText;        
         }
         return "";
     }
