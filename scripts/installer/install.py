@@ -269,8 +269,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search('(1.8|11|14)', java_version):
-      sys.exit("Dataverse requires Java 1.8, 11 or 14. Please make sure it's in your PATH, and try again.")
+   if not re.search('(1.8|11)', java_version):
+      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
