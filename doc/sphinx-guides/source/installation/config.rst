@@ -966,6 +966,7 @@ If the Dataverse server has multiple DNS names, this option specifies the one to
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
 .. note::
+
 	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
 	``https://{dataverse.fqdn}/``
 	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
@@ -976,6 +977,7 @@ dataverse.siteUrl
 +++++++++++++++++
 
 .. note::
+
 	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
 	For example, configured in domain.xml:
 	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
