@@ -116,7 +116,7 @@
             </h:form>
 
             <p:dialog modal="true" widgetVar="licenseEdit" id="licenseEdit"
-                      styleClass="disable-scroll" width="600"
+                      styleClass="disable-scroll"
                       draggable="false" closable="false" resizable="false">
                 <h:form id="licenseEditForm">
 
@@ -178,7 +178,7 @@
             </p:dialog>
 
             <p:dialog modal="true" widgetVar="licenseLocalizedPreview" id="licenseLocalizedPreview"
-                      styleClass="disable-scroll" width="600"
+                      styleClass="disable-scroll"
                       draggable="false" closable="false" resizable="false">
                 <p:outputPanel id="licenseLocalizedPreviewContent">
                     <div style="display: grid; grid-template-columns: repeat(2, 25%); grid-row-gap: 10%;">
@@ -200,7 +200,7 @@
                 </p:outputPanel>
             </p:dialog>
 
-            <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll" width="750"
+            <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll"
                       draggable="false" closable="false" resizable="false"
                       header="#{bundle['dashboard.license.newLicense.add']}">
 
@@ -260,7 +260,7 @@
                         <div style="grid-column: 2;">
                             <p:fileUpload id="icon" label="#{bundle.selectFile}"
                                           listener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
-                                          mode="advanced" skinSimple="true" auto="true" style="width: 77%"/>
+                                          mode="advanced" skinSimple="true" auto="true"/>
                         </div>
                     </div>
 

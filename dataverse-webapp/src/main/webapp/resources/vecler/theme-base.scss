@@ -389,6 +389,7 @@ body .ui-widget {
 }
 
 .dropdown-menu {
+	max-width: calc(100vw - 20px);
 	font-size: 0.933em;
 	border-color: $gray-border-color;
 
@@ -2494,8 +2495,6 @@ table[id$="resultsTable"] {
 	} 
 
 	.card-content-container {
-		margin-left: 3.333em;
-
 		> a, > span.text-muted, .card-title-icon-block + div {
 			font-size: 0.867em;
 		}
@@ -2531,6 +2530,12 @@ table[id$="resultsTable"] {
 	.resultDatasetCitationBlock {
 		margin-top: 1em;
 		margin-left: 0;
+	}
+}
+
+@media screen and (min-width: $screen-sm-min) {
+	.card-content-container {
+		margin-left: 3.333em;
 	}
 }
 
@@ -2810,8 +2815,9 @@ div.filesTable {
 	transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
-.ui-dialog.ui-widget-content {
+.ui-dialog.ui-widget.ui-widget-content {
 	min-height: 200px;
+	min-width: 320px;
 	border: none;
 	border-radius: $border-radius;
 	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
@@ -2828,7 +2834,10 @@ div.filesTable {
 	}
 
 	.ui-dialog-titlebar-close {
-		margin-top: 16px;
+		position: absolute;
+		top: 25px;
+		right: 15px;
+		margin-top: 0;
 	}
 
 	.ui-dialog-content, .help-block {
@@ -2968,6 +2977,26 @@ div.filesTable {
 	}
 }
 
+@mixin modal-grid-mobile {
+	.ui-dialog-content div[style*="display: grid"] {
+		display: block !important;
+
+		> div {
+			display: block;
+			width: 100%;
+
+			input {
+				width: 100%;
+			}
+		}
+	}
+}
+
+/* Fixed grid modals mobile view */
+@media screen and (max-width: $screen-xs-max) {
+	@include modal-grid-mobile;
+}
+
 .form-horizontal .button-block {
 	button.button-cancel, a.button-cancel {
 		padding: 6px 12px;
@@ -3087,6 +3116,7 @@ div.ui-dialog.largePopUp {
 
 p.text-block {
 	margin-bottom: 0;
+	word-break: break-word;
 }
 
 body.eighty-limit-toggle p.text-block {
@@ -3384,6 +3414,10 @@ body.font-size-percent-200 {
 		}
 	}
 
+	.card-content-container {
+		margin-left: 0;
+  }
+  
 	.ui-inputfield {
 		&[style*="width:60%"], &[style*="width: 60%"] {
 			width: 100% !important;
@@ -3391,6 +3425,7 @@ body.font-size-percent-200 {
 	}
 
 	@include table-metrics-mobile;
+	@include modal-grid-mobile;
 }
 
 /* Font sizes */
