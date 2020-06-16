@@ -265,12 +265,12 @@ Note that the "\-Ddataverse.files.directory", if defined, continues to control w
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
-::
+.. code-block::
 
-  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+	./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+	./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
-  It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
+It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
 File Storage
 ++++++++++++
@@ -339,7 +339,7 @@ In this example, you would be setting the expiration length for one hour.
 
 
 Setting up Compute with Swift
-#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
@@ -562,6 +562,7 @@ Migrating from Local Storage to S3
 ##################################
 
 Is currently documented on the :doc:`/developers/deployment` page.
+
 
 .. _Branding Your Installation:
 
