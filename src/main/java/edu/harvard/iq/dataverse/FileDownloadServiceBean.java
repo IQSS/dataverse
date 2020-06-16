@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -96,6 +97,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+        boolean original = true; 
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
@@ -153,15 +155,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                             timestamp = new Timestamp(new Date().getTime());
                         }
                         
-                        //FileMetadata fm = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(guestbookResponse.getDatasetVersion().getId(), new Long(idAsString));
-                        addFileToCustomZipJob(zipServiceKey, df, timestamp);
+                        addFileToCustomZipJob(zipServiceKey, df, timestamp, original);
                     }
                 }
             }
         }
         
         if (useCustomZipService) {
-            redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey, "original".equals(guestbookResponse.getFileFormat()));
+            redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
             // Use the "normal" /api/access/datafiles/ API:
             redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
@@ -252,7 +253,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     }
     
-    private void redirectToCustomZipDownloadService(String customZipServiceUrl, String jobKey, Boolean downloadOriginal) {
+    private void redirectToCustomZipDownloadService(String customZipServiceUrl, String jobKey) {
         
         customZipServiceUrl += "?" + jobKey; 
         
@@ -541,19 +542,26 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         return uid.toString().substring(20);
     }
     
-    public void addFileToCustomZipJob(String key, DataFile dataFile, Timestamp timestamp) {
+    public void addFileToCustomZipJob(String key, DataFile dataFile, Timestamp timestamp, boolean orig) {
         String location = null; 
         String fileName = null; 
         
         try {
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile);
             location = storageIO.getStorageLocation();
+            if (orig && dataFile.isTabularData()) {
+                location = location.concat(".orig");
+            }
         } catch (IOException ioex) {
             logger.info("Failed to open StorageIO for datafile " + dataFile.getId());
         }
         
         if (dataFile.getFileMetadata() != null) {
-            fileName = dataFile.getFileMetadata().getLabel();
+            if (orig && dataFile.isTabularData()) {
+                fileName = dataFile.getOriginalFileName();
+            } else {
+                fileName = dataFile.getFileMetadata().getLabel();
+            }
         }
                 
         if (location != null && fileName != null) {
@@ -564,9 +572,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                     + "'" + timestamp + "');").executeUpdate();
         }
         
-        // TODO: 
+        // TODO:
         // While we are here, issue another query, to delete all the entries that are 
-        // more than 5 minutes (or so?) old
+        // more than N seconds old?
+        Timestamp deleteTime = new Timestamp(new Date().getTime() - 300000L);
+        em.createNativeQuery("DELETE FROM CUSTOMZIPSERVICEREQUEST WHERE ISSUETIME < " 
+                + "'" + deleteTime + "';").executeUpdate();
     }
     
 }

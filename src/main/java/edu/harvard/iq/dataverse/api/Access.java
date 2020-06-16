@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -82,6 +83,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -116,6 +118,8 @@ import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.net.URISyntaxException;
+import javax.ws.rs.RedirectionException;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -169,6 +173,8 @@ public class Access extends AbstractApiBean {
     DataverseRoleServiceBean roleService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    FileDownloadServiceBean fileDownloadService; 
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
@@ -533,6 +539,11 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/zip"})
     public Response datafiles(@PathParam("fileIds") String fileIds,  @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+        String customZipServiceUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
+        boolean useCustomZipService = customZipServiceUrl != null; 
+        if (fileIds == null || fileIds.equals("")) {
+            throw new BadRequestException();
+        }
 
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
@@ -542,10 +553,6 @@ public class Access extends AbstractApiBean {
         final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
         
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
-        
-        if (fileIds == null || fileIds.equals("")) {
-            throw new BadRequestException();
-        }
 
         String apiToken = (apiTokenParam == null || apiTokenParam.equals("")) 
                 ? headers.getHeaderString(API_KEY_HEADER) 
@@ -560,6 +567,24 @@ public class Access extends AbstractApiBean {
                 getOrig = true;
             }
         }
+        
+        if (useCustomZipService) {
+            URI redirect_uri = null; 
+            try {
+                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, gbrecs, true); 
+            } catch (WebApplicationException wae) {
+                throw wae;
+            }
+            
+            Response redirect = Response.seeOther(redirect_uri).build();
+            logger.fine("Issuing redirect to the file location on S3.");
+            throw new RedirectionException(redirect);
+
+        }
+        
+        // Not using the "custom service" - API will zip the file,  
+        // and stream the output, in the "normal" manner:
+        
         final boolean getOriginal = getOrig; //to use via anon inner class
         
         StreamingOutput stream = new StreamingOutput() {
@@ -1640,9 +1665,74 @@ public class Access extends AbstractApiBean {
         return apiTokenUser;
     }
 
+    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean gbrecs, boolean orig) throws WebApplicationException {
+        String zipServiceKey = null; 
+        Timestamp timestamp = null; 
+        
+        String fileIdParams[] = fileIds.split(",");
+        int validIdCount = 0; 
+        int validFileCount = 0;
+        int downloadAuthCount = 0; 
 
+        if (fileIdParams == null || fileIdParams.length == 0) {
+            throw new BadRequestException();
+        }
+        
+        for (int i = 0; i < fileIdParams.length; i++) {
+            Long fileId = null;
+            try {
+                fileId = new Long(fileIdParams[i]);
+                validIdCount++;
+            } catch (NumberFormatException nfe) {
+                fileId = null;
+            }
+            if (fileId != null) {
+                DataFile file = dataFileService.find(fileId);
+                if (file != null) {
+                    validFileCount++;
+                    if (isAccessAuthorized(file, apiToken)) {
+                        logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
+                        if (gbrecs != true && file.isReleased()) {
+                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                            guestbookResponseService.save(gbr);
+                            MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
+                            mdcLogService.logEntry(entry);
+                        }
 
-            
-            
-            
+                        if (zipServiceKey == null) {
+                            zipServiceKey = fileDownloadService.generateServiceKey();
+                        }
+                        if (timestamp == null) {
+                            timestamp = new Timestamp(new Date().getTime());
+                        }
+
+                        fileDownloadService.addFileToCustomZipJob(zipServiceKey, file, timestamp, true);
+                        downloadAuthCount++;
+                    }
+                }
+            }
+        }
+
+        if (validIdCount == 0) {
+            throw new BadRequestException();
+        }
+        
+        if (validFileCount == 0) {
+            // no supplied id translated into an existing DataFile
+            throw new NotFoundException();
+        }
+        
+        if (downloadAuthCount == 0) {
+            // none of the DataFiles were authorized for download
+            throw new ForbiddenException();
+        }
+        
+        URI redirectUri = null;
+        try {
+            redirectUri = new URI(customZipServiceUrl + "?" + zipServiceKey);
+        } catch (URISyntaxException use) {
+            throw new BadRequestException(); 
+        }
+        return redirectUri;
+    }           
 }
