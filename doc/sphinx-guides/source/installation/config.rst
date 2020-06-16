@@ -1178,18 +1178,10 @@ dataverse.useripaddresssourceheader
 If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. Useful in cases 
 such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct 
 (e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this 
-could be used as a way to spoof the user's address. Allowed values are: ``"X-Forwarded-For",
-            "Proxy-Client-IP",
-            "WL-Proxy-Client-IP",
-            "HTTP_X_FORWARDED_FOR",
-            "HTTP_X_FORWARDED",
-            "HTTP_X_CLUSTER_CLIENT_IP",
-            "HTTP_CLIENT_IP",
-            "HTTP_FORWARDED_FOR",
-            "HTTP_FORWARDED",
-            "HTTP_VIA",
-            "REMOTE_ADDR"``
+could be used as a way to spoof the user's address. Allowed values are: 
+``"X-Forwarded-For", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_X_FORWARDED_FOR", "HTTP_X_FORWARDED", "HTTP_X_CLUSTER_CLIENT_IP", "HTTP_CLIENT_IP", "HTTP_FORWARDED_FOR", "HTTP_FORWARDED", "HTTP_VIA", "REMOTE_ADDR"``
 
+``./asadmin create-jvm-options '-Ddataverse.useripaddresssourceheader=X-Forwarded-For'``
         
 
 
