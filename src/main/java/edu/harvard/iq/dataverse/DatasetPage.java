@@ -3592,31 +3592,31 @@ public class DatasetPage implements java.io.Serializable {
     public void cancelCreate() {
     	//Stop any uploads in progress (so that uploadedFiles doesn't change)
     	uploadInProgress.setValue(false);
-    	
+
     	logger.fine("Cancelling: " + newFiles.size() + " : " + uploadedFiles.size());
-    	
-        //Files that have been finished and are now in the lower list on the page
-        for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
-            FileUtil.deleteTempFile(newFile, dataset, ingestService);
-        }
+
+    	//Files that have been finished and are now in the lower list on the page
+    	for (DataFile newFile : newFiles.toArray(new DataFile[0])) {
+    		FileUtil.deleteTempFile(newFile, dataset, ingestService);
+    	}
     	logger.fine("Deleted newFiles");
-    	
-        //Files in the upload process but not yet finished
-        //ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
-        for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
-            FileUtil.deleteTempFile(newFile, dataset, ingestService);
-        }
+
+    	//Files in the upload process but not yet finished
+    	//ToDo - if files are added to uploadFiles after we access it, those files are not being deleted. With uploadInProgress being set false above, this should be a fairly rare race condition.
+    	for (DataFile newFile : uploadedFiles.toArray(new DataFile[0])) {
+    		FileUtil.deleteTempFile(newFile, dataset, ingestService);
+    	}
     	logger.fine("Deleted uploadedFiles");
-    	
-        try {
-        	String alias = dataset.getOwner().getAlias();
-        	logger.info("alias: " + alias);
-            FacesContext.getCurrentInstance().getExternalContext().redirect("/dataverse.xhtml?alias=" + alias);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
+
+    	try {
+    		String alias = dataset.getOwner().getAlias();
+    		logger.info("alias: " + alias);
+    		FacesContext.getCurrentInstance().getExternalContext().redirect("/dataverse.xhtml?alias=" + alias);
+    	} catch (IOException ex) {
+    		logger.info("Failed to issue a redirect to file download url.");
+    	}
     }
-    
+
     private HttpClient getClient() {
         // TODO: 
         // cache the http client? -- L.A. 4.0 alpha
