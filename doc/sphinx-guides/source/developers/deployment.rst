@@ -84,7 +84,7 @@ Once you have done the configuration above, you are ready to try running the "ec
 
 Download :download:`ec2-create-instance.sh<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
-To run it with default values you just need the script, but you may also want a current copy of the ansible :download:`group vars<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_ file.
+To run it with default values you just need the script, but you may also want a current copy of the ansible `group vars <https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_ file.
 
 ec2-create-instance accepts a number of command-line switches, including:
 

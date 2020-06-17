@@ -250,7 +250,7 @@ Dataverse can alternately store files in a Swift or S3-compatible object store, 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
 Multi-store Basics
-+++++++++++++++++
+++++++++++++++++++
 
 To support multiple stores, Dataverse now requires an id, type, and label for each store (even for a single store configuration). These are configured by defining two required jvm options:
 
@@ -259,16 +259,16 @@ To support multiple stores, Dataverse now requires an id, type, and label for ea
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=<type>"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
 
-Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
+Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`/admin/dataverses-datasets` section).
 
 Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
-.. code-block::
+.. code-block:: none
 
-	./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
-	./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+    ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
 It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
@@ -526,9 +526,9 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-=========================================    ==================  ==================================================================  =============
+===========================================  ==================  ==================================================================  =============
 JVM Option                                   Value               Description                                                         Default value
-=========================================    ==================  ==================================================================  =============
+===========================================  ==================  ==================================================================  =============
 dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
 dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
 dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
@@ -540,7 +540,7 @@ dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when 
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
 dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
 dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-=========================================    ==================  ==================================================================  =============
+===========================================  ==================  ==================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -1068,7 +1068,7 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.baseurlstringnext
+.. _doi.baseurlstringnext:
 
 doi.baseurlstringnext
 +++++++++++++++++++++
@@ -1565,7 +1565,7 @@ Note that this will override the default behaviour for the "Support" menu option
 :MetricsUrl
 +++++++++++
 
-Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools` section of the Admin Guide.
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools-and-queries` section of the Admin Guide.
 
 ``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
 
@@ -1584,6 +1584,8 @@ You can make the text clickable and include an additional message in a pop up by
 Alongside the ``:StatusMessageHeader`` you need to add StatusMessageText for the message to show.:
 
 ``curl -X PUT -d "This appears in a popup." http://localhost:8080/api/admin/settings/:StatusMessageText``
+
+.. _:MaxFileUploadSizeInBytes:
 
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
