@@ -78,8 +78,10 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -126,10 +128,8 @@ import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -152,8 +152,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-
-import com.amazonaws.services.s3.model.PartETag;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -1522,114 +1520,6 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 		return wr.getResponse();
 	}
 }
-
-@GET
-@Path("{id}/mpupload")
-public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
-	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
-
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URLs for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-		}
-		if (!canUpdateDataset) {
-            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-        }
-        S3AccessIO<DataFile> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-        if(s3io == null) {
-        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
-		}
-		JsonObjectBuilder urlsBuilder = null;
-        String storageIdentifier = null;
-		try {
-			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-			urlsBuilder = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
-        	
-        } catch (IOException io) {
-        	logger.warning(io.getMessage());
-        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
-		}
-		
-		JsonObjectBuilder response = Json.createObjectBuilder()
-	            .add("urls", urlsBuilder)
-	            .add("storageIdentifier", storageIdentifier );
-		return ok(response);
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
-
-@DELETE
-@Path("{id}/mpupload")
-public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
-	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
-
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting aborting upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-		}
-		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-		}
-		try {
-			S3AccessIO.abortMultipartUpload(dataset, storageidentifier, uploadId);
-		} catch (IOException io) {
-			logger.warning("Multipart upload abort failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
-			logger.warning(io.getMessage());
-			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload")); 
-		}
-		return Response.noContent().build();
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
-
-@PUT
-@Path("{id}/mpupload")
-public Response completeMPUpload(String partETagBody, @PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
-	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
-		List<PartETag> eTagList = new ArrayList<PartETag>();
-
-		try {
-			JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
-			JsonObject object = jsonReader.readObject();
-			jsonReader.close();
-			for(String partNo : object.keySet()) {
-				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
-			}
-		} catch (JsonException je) {
-			logger.info("Unable to parse eTags from: " + partETagBody);
-			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
-		}
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while completing upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-		}
-		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-		}
-		try {
-			S3AccessIO.completeMultipartUpload(dataset, storageidentifier, uploadId, eTagList);
-		} catch (IOException io) {
-			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
-			logger.warning(io.getMessage());
-			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload")); 
-		}
-		return ok("Multipart Upload completed");
-	} catch (WrappedResponse wr) {
-		return wr.getResponse();
-	}
-}
-
     /**
      * Add a File to an existing Dataset
      * 

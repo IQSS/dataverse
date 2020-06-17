@@ -9,10 +9,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectTaggingRequest;
@@ -20,8 +17,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
@@ -910,54 +905,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return urlString;
     }
     
-	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) {
-		
-		long chunkSize=5*1024*1024l; //5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
-		JsonObjectBuilder response = Json.createObjectBuilder();
-		try {
-			key = getMainFileKey();
-			java.util.Date expiration = new java.util.Date();
-			long msec = expiration.getTime();
-			msec += 60 * 1000 * getUrlExpirationMinutes();
-			expiration.setTime(msec);
-			InitiateMultipartUploadRequest initiationRequest = new InitiateMultipartUploadRequest(bucketName, key);
-			initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
-			InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
-			String uploadId = initiationResponse.getUploadId();
-			for(int i=1;i<=(fileSize/chunkSize) + (fileSize%chunkSize > 0 ? 1: 0);i++) {
-				GeneratePresignedUrlRequest uploadPartUrlRequest = 
-						new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
-				uploadPartUrlRequest.addRequestParameter("uploadId", uploadId);
-				uploadPartUrlRequest.addRequestParameter("partNumber", Integer.toString(i));
-				URL presignedUrl; 
-				try {
-					presignedUrl = s3.generatePresignedUrl(uploadPartUrlRequest);
-				} catch (SdkClientException sce) {
-					logger.warning("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
-					presignedUrl = null; 
-				}
-				String urlString = null;
-				if (presignedUrl != null) {
-					String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
-					String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
-					if(proxy!=null) {
-						urlString = presignedUrl.toString().replace(endpoint, proxy);
-					} else {
-						urlString = presignedUrl.toString();
-					}
-				}
-				response.add(Integer.toString(i), urlString);
-			}
-			  response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
-			  response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
-			} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return response;
-	}
-
-    
     int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes"); 
         if (optionValue != null) {
@@ -1078,26 +1025,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 			e.printStackTrace();
 		}
 		
-	}
-
-	public static void abortMultipartUpload(Dataset owner, String storageIdentifier, String uploadId) throws IOException {
-	 String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
-	 String driverId = info[0]; 
-	  AmazonS3 s3Client = getClient(driverId);
-	  String bucketName = getBucketName(driverId);
-	  String key = getMainFileKey(owner, storageIdentifier, driverId);
-	  AbortMultipartUploadRequest req = new AbortMultipartUploadRequest(bucketName, key, uploadId);
-	  s3Client.abortMultipartUpload(req);
-	}
-
-	public static void completeMultipartUpload(Dataset owner, String storageIdentifier, String uploadId, List<PartETag> etags) throws IOException {
-		String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
-		 String driverId = info[0]; 
-		  AmazonS3 s3Client = getClient(driverId);
-		  String bucketName = getBucketName(driverId);
-		  String key = getMainFileKey(owner, storageIdentifier, driverId);
-		  CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
-		  s3Client.completeMultipartUpload(req);
 	}
 
 }
