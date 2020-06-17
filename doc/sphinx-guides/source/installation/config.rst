@@ -1188,10 +1188,11 @@ dataverse.useripaddresssourceheader
 **Make sure** to read the section about the :ref:`Security Implications 
 <user-ip-addresses-proxy-security>` of using this option earlier in the guide!
 
-If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. Useful in cases 
-such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct 
-(e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this 
-could be used as a way to spoof the user's address. Allowed values are: 
+If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.useripaddresssourceheader=X-Forwarded-For'``
+
+This setting is useful in cases such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct (e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this could be used as a way to spoof the user's address. Allowed values are: 
 
 .. code::
 
