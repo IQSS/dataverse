@@ -115,8 +115,12 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
   # enable comet support
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
+
+  # bump the http-listener timeout from 900 to 3600
+  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
 
   ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
 
@@ -140,9 +144,6 @@ function preliminary_setup()
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
-
-  # bump the http-listener timeout from 900 to 3600
-  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=${GLASSFISH_REQUEST_TIMEOUT}
 }
 
 function final_setup(){
