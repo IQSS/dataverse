@@ -918,8 +918,8 @@ Before going live, you might want to consider setting up integrations to make it
 
 .. _jvm-options:
 
-JVM (and other) Options
------------------------
+JVM Options
+-----------
 
 JVM stands for Java Virtual Machine and as a Java application, Payara can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
@@ -1150,12 +1150,17 @@ Please note that there are other reasons why download URLs may not be included f
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
+.. _:ApplicationServerSettings:
+
+Application Server Settings
+---------------------------
+
 http.request-timeout-seconds
 ++++++++++++++++++++++++++++
 
-To facilitate large file upload and download, the Dataverse installer bumps the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds** setting from its default 900 seconds (15 minutes) to 3600 (1 hour). Should you wish to shorten or lengthen this window, issue:
+To facilitate large file upload and download, the Dataverse installer bumps the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds** setting from its default 900 seconds (15 minutes) to 1800 (30 minutes). Should you wish to shorten or lengthen this window, issue for example:
 
-``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=nnn``
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
 
 and restart Payara to apply your change.
 
