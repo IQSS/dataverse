@@ -39,6 +39,30 @@ Forcing HTTPS
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Payara might be a compelling enough reason to front Payara with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
 
+
+.. _user-ip-addresses-proxy-security:
+
+Recording User IP Addresses
++++++++++++++++++++++++++++
+
+By default, Dataverse captures the IP address from which requests originate. This is used for multiple purposes including controlling access to the admin API, IP-based user groups and Make Data Count reporting. When Dataverse is configured behind a proxy such as a load balancer, this default setup may not capture the correct IP address. In this case all the incoming requests will be logged in the access logs, MDC logs etc., as if they are all coming from the IP address(es) of the load balancer itself. Proxies usually save the original address in an added HTTP header, from which it can be extracted. For example, AWS LB records the "true" original address in the standard ``X-Forwarded-For`` header. If your Dataverse is running behind an IP-masking proxy, but you would like to use IP groups, or record the true geographical location of the incoming requests with Make Data Count, you may enable the IP address lookup from the proxy header using the JVM option  ``dataverse.useripaddresssourceheader``, described further below. 
+
+Before doing so however, you must absolutely **consider the security risks involved**! This option must be enabled **only** on a Dataverse that is in fact fully behind a proxy that properly, and consistently, adds the ``X-Forwarded-For`` (or a similar) header to every request it forwards. Consider the implications of activating this option on a Dataverse that is not running behind a proxy, *or running behind one, but still accessible from the insecure locations bypassing the proxy*: Anyone can now add the header above to an incoming reqest, supplying an arbitrary IP address that Dataverse will trust as the true origin of  the call. Thus giving an attacker an easy way to, for example, get in a privileged IP group. The implications could be even more severe if an attacker were able to pretend to be coming from ``localhost``, if Dataverse is configured to trust localhost connections for unrestricted access to the admin API! We have addressed this by making it so that Dataverse should never accept ``localhost``, ``127.0.0.1``, ``0:0:0:0:0:0:0:1`` etc. when supplied in such a header. But if you have reasons to still find this risk unacceptable, you may want to consider turning open localhost access to the API off (See :ref:`Securing Your Installation <securing-your-installation>` for more information.)
+
+This is how to verify that your proxy or load balancer, etc. is handling the originating address headers properly and securely: Make sure access logging is enabled in your application server (Payara) configuration. (``<http-service access-logging-enabled="true">`` in the ``domain.xml``). Add the address header to the access log format. For example, on a system behind AWS ELB, you may want to use something like ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%``. Once enabled, access the Dataverse from outside the LB. You should now see the real IP address of your remote client in the access log. For example, something like: 
+``"1.2.3.4" "01/Jun/2020:12:00:00 -0500" "GET /dataverse.xhtml HTTP/1.1" 200 81082  "NULL-REFERER" "128.64.32.16"`` 
+
+In this example, ``128.64.32.16`` is your remote address (that you should verify), and ``1.2.3.4`` is the address of your LB. If you're not seeing your remote address in the log, do not activate the JVM option! Also, verify that all the entries in the log have this header populated. The only entries in the access log that you should be seeing without this header (logged as ``"NULL-HEADER-X-FORWARDED-FOR"``) are local requests, made from localhost, etc. In this case, since the request is not coming through the proxy, the local IP address should be logged as the primary one (as the first value in the log entry, ``%client.name%``). If you see any requests coming in from remote, insecure subnets without this header - do not use the JVM option! 
+
+Once you are ready, enable the :ref:`JVM option <useripaddresssourceheader>`. Verify that the remote locations are properly tracked in your MDC metrics, and/or your IP groups are working. As a final test, if your Dataverse is allowing unrestricted localhost access to the admin API, imitate an attack in which a malicious request is pretending to be coming from ``127.0.0.1``. Try the following from a remote, insecure location:
+
+``curl https://your.dataverse.edu/api/admin/settings --header "X-FORWARDED-FOR: 127.0.0.1"``
+
+First of all, confirm that access is denied! If you are in fact able to access the settings api from a location outside the proxy, **something is seriously wrong**, so please let us know, and stop using the JVM option.  Otherwise check the access log entry for the header value. What you should see is something like ``"127.0.0.1, 128.64.32.16"``. Where the second address should be the real IP of your remote client. The fact that the "fake" ``127.0.0.1`` you sent over is present in the header is perfectly ok. This is the proper proxy behavior - it preserves any incoming values in the ``X-Forwarded-Header``, if supplied, and adds the detected incoming address to it, *on the right*. It is only this rightmost comma-separated value that Dataverse should ever be using. 
+
+Still feel like activating this option in your configuration? - Have fun and be safe!
+
+
 .. _PrivacyConsiderations:
 
 Privacy Considerations
@@ -241,12 +265,12 @@ Note that the "\-Ddataverse.files.directory", if defined, continues to control w
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
-::
+.. code-block::
 
-  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+	./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+	./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
-  It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
+It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
 File Storage
 ++++++++++++
@@ -315,7 +339,7 @@ In this example, you would be setting the expiration length for one hour.
 
 
 Setting up Compute with Swift
-#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
@@ -538,6 +562,7 @@ Migrating from Local Storage to S3
 ##################################
 
 Is currently documented on the :doc:`/developers/deployment` page.
+
 
 .. _Branding Your Installation:
 
@@ -814,9 +839,9 @@ Once this configuration is complete, you, as a user with the *PublishDataset* pe
 
 where:
 
-{id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
 
-{version} is the friendly version number, e.g. "1.2".
+``{version}`` is the friendly version number, e.g. "1.2".
 
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
@@ -826,7 +851,8 @@ PostPublication Workflow
 ++++++++++++++++++++++++
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
-. The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
+
+The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
 
@@ -940,19 +966,23 @@ If the Dataverse server has multiple DNS names, this option specifies the one to
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-| ``https://{dataverse.fqdn}/``
-| If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+.. note::
+
+	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
+	``https://{dataverse.fqdn}/``
+	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-| and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
-| For example, configured in domain.xml:
-| ``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-| ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+.. note::
+
+	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
+	For example, configured in domain.xml:
+	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
+	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
 
 dataverse.files.directory
 +++++++++++++++++++++++++
@@ -1149,6 +1179,34 @@ By default, download URLs to files will be included in Schema.org JSON-LD output
 Please note that there are other reasons why download URLs may not be included for certain files such as if a guestbook entry is required or if the file is restricted.
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
+
+.. _useripaddresssourceheader:
+
+dataverse.useripaddresssourceheader
++++++++++++++++++++++++++++++++++++
+
+**Make sure** to read the section about the :ref:`Security Implications 
+<user-ip-addresses-proxy-security>` of using this option earlier in the guide!
+
+If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.useripaddresssourceheader=X-Forwarded-For'``
+
+This setting is useful in cases such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct (e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this could be used as a way to spoof the user's address. Allowed values are: 
+
+.. code::
+
+	"X-Forwarded-For",
+	"Proxy-Client-IP",
+	"WL-Proxy-Client-IP",
+	"HTTP_X_FORWARDED_FOR",
+	"HTTP_X_FORWARDED",
+	"HTTP_X_CLUSTER_CLIENT_IP",
+	"HTTP_CLIENT_IP",
+	"HTTP_FORWARDED_FOR",
+	"HTTP_FORWARDED",
+	"HTTP_VIA",
+	"REMOTE_ADDR"
 
 .. _:ApplicationServerSettings:
 
@@ -1861,31 +1919,32 @@ The Shibboleth affiliation attribute holds information about the affiliation of 
 
 If the attribute is not yet set for the Shibboleth, please consult the Shibboleth Administrators at your institution. Typically it requires changing of the `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
 
-```
+.. code::
+
     <Attribute name="urn:oid:2.5.4.11" id="ou">
         <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
     </Attribute>
-```
+
 
 In order to implement the change, you should restart Shibboleth and Apache2 services:
 
-```
-sudo service shibd restart
-sudo service apache2 restart
-```
+.. code::
+
+	sudo service shibd restart
+	sudo service apache2 restart
 
 To check if the attribute is sent, you should log in again to Dataverse and check Shibboleth's transaction log. You should see something like this:
 
-```
-INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
-INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
-INFO Shibboleth-TRANSACTION [25]: }
-```
+.. code::
+
+	INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
+	INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
+	INFO Shibboleth-TRANSACTION [25]: }
 
 If you see the attribue you requested in this list, you can set the attribute in Dataverse.
 
