@@ -35,16 +35,20 @@
                     </div>
                 </ui:fragment>
                 <ui:fragment rendered="#{!sendFeedbackDialog.isLoggedIn()}">
-                <!-- from email (not logged in) -->
+                    <!-- sender email (not logged in) -->
                     <div class="form-group">
-                        <p:outputLabel for="userEmail" styleClass="col-sm-3 control-label" indicateRequired="false">
-                            #{bundle['contact.from']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        <p:outputLabel for="senderEmail" styleClass="col-sm-3 control-label" indicateRequired="false">
+                            #{bundle['contact.sender']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p:outputLabel>
                         <div class="col-sm-9">
-                            <p:inputText id="userEmail" styleClass="form-control" size="30" value="#{sendFeedbackDialog.userEmail}"
-                                         validator="#{sendFeedbackDialog.validateUserEmail}" validatorMessage="#{bundle['contact.from.invalid']}"
-                                         requiredMessage="#{bundle['contact.from.required']}" required="true"/>
-                        <p:message for="userEmail" styleClass="bg-danger text-danger" display="text"/>
+                            <p:inputText id="senderEmail"
+                                         styleClass="form-control"
+                                         size="30"
+                                         value="#{sendFeedbackDialog.userEmail}"
+                                         validator="#{sendFeedbackDialog.validateUserEmail}"
+                                         required="true"
+                            />
+                            <p:message for="senderEmail" styleClass="bg-danger text-danger" display="text"/>
                         </div>
                     </div>
                 </ui:fragment>
