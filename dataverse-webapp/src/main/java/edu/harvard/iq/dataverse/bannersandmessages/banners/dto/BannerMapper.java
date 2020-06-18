@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.imgscalr.Scalr;
 import org.primefaces.model.DefaultStreamedContent;
-import org.springframework.util.StreamUtils;
 
 import javax.ejb.Stateless;
 import javax.imageio.ImageIO;
@@ -122,12 +121,7 @@ public class BannerMapper {
             dataverseLocalizedBanner.setImage(new byte[0]);
         } else {
 
-            try {
-                dataverseLocalizedBanner.setImage(StreamUtils.copyToByteArray(fuDto.getDisplayedImage().getStream()));
-            } catch (IOException e) {
-                throw new IllegalStateException("There was a problem converting display image to byte array", e);
-            }
-
+            dataverseLocalizedBanner.setImage(fuDto.getFile().getContent());
             dataverseLocalizedBanner.setContentType(fuDto.getDisplayedImage().getContentType());
             dataverseLocalizedBanner.setImageName(fuDto.getDisplayedImage().getName());
         }
