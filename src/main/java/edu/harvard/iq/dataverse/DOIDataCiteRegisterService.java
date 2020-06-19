@@ -586,11 +586,11 @@ class DataCiteMetadataTemplate {
                         if (identifier != null && identifier.length() != 0) {
                             if (pubIdType.equalsIgnoreCase("arXiv")) {
                                 pubIdType = "arXiv";
-                            } else if (!pubIdType.equals("bibcode")) {
-                                pubIdType = pubIdType.toUpperCase();
                             } else if (pubIdType.equalsIgnoreCase("handle")) {
                                 //Initial cap required for handle
                                 pubIdType="Handle";
+                            } else if (!pubIdType.equals("bibcode")) {
+                                pubIdType = pubIdType.toUpperCase();
                             }
                             // For all others, do a generic attempt to match the identifier type to the
                             // datacite schema and send the raw identifier as the value
