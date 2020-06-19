@@ -220,7 +220,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
+        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 
@@ -586,8 +586,11 @@ class DataCiteMetadataTemplate {
                         if (identifier != null && identifier.length() != 0) {
                             if (pubIdType.equalsIgnoreCase("arXiv")) {
                                 pubIdType = "arXiv";
-                            } else if (!pubIdType.equals("bibcode") && !pubIdType.equals("Handle")) {
+                            } else if (!pubIdType.equals("bibcode")) {
                                 pubIdType = pubIdType.toUpperCase();
+                            } else if (pubIdType.equalsIgnoreCase("handle")) {
+                                //Initial cap required for handle
+                                pubIdType="Handle";
                             }
                             // For all others, do a generic attempt to match the identifier type to the
                             // datacite schema and send the raw identifier as the value
