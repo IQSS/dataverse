@@ -27,6 +27,8 @@ import org.primefaces.component.fileupload.FileUpload;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -51,6 +53,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class ImporterForm {
+    private static final Logger logger = LoggerFactory.getLogger(ImporterForm.class);
+
+    private static final String METADATA_IMPORT_RESULT_ERROR = "metadata.import.result.error";
 
     public enum ImportStep {
         FIRST, SECOND;
@@ -131,10 +136,16 @@ public class ImporterForm {
             showValidationMessages(validationResults);
             return;
         }
-        List<ResultField> resultFields = importer.fetchMetadata(toImporterInput(items));
-        resultGroups = new ResultGroupsCreator()
-                .createResultGroups(new ResultItemsCreator(lookup).createItemsForView(resultFields));
-        step = ImportStep.SECOND;
+        try {
+            List<ResultField> resultFields = importer.fetchMetadata(toImporterInput(items));
+            resultGroups = new ResultGroupsCreator()
+                    .createResultGroups(new ResultItemsCreator(lookup).createItemsForView(resultFields));
+            step = ImportStep.SECOND;
+        } catch (RuntimeException re) {
+            logger.warn("Exception during importer invocation", re);
+            JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle(METADATA_IMPORT_RESULT_ERROR));
+        }
     }
 
     public void fillFormAndCleanUp(Map<MetadataBlock, List<DatasetFieldsByType>> metadata) {
@@ -242,8 +253,8 @@ public class ImporterForm {
             if (component instanceof UIInput) {
                 ((UIInput) component).setValid(false);
             }
-            String clientId = component.getClientId();
-            fctx.addMessage(clientId, new FacesMessage(FacesMessage.SEVERITY_ERROR, StringUtils.EMPTY, result.message));
+            fctx.addMessage(component.getClientId(),
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, StringUtils.EMPTY, bundleWrapper.getString(result.message)));
         }
     }
 

@@ -67,6 +67,7 @@
                             to the end of id, e.g.: "#{item.viewId}_sth", otherwise it will break validation message
                             logic.
                     -->
+                    <p:messages><p:autoUpdate/></p:messages>
                     <c:forEach items="#{pageBean.importerForm.items}" var="item">
                         <div class="row">
                             <c:choose>
@@ -168,7 +169,7 @@
                                             <p:fragment id="compoundResultField" rendered="#{item.itemType eq ItemType.COMPOUND}">
                                                     <div class="panel panel-default">
                                                     <div class="panel-heading">
-                                                        <p:selectBooleanCheckbox value="#{item.shouldProcess}" itemLabel="#{item.localizedName} #{itemStatus.index + 1} (#{bundle['metadata.import.form.collapse.on.uncheck.text']})"
+                                                        <p:selectBooleanCheckbox value="#{item.shouldProcess}" itemLabel="#{item.localizedName} #{group.items.size() > 1 ? itemStatus.index + 1 : ''} (#{bundle['metadata.import.form.collapse.on.uncheck.text']})"
                                                                                  onchange="$('#collapse#{groupStatus.index}_#{itemStatus.index}').collapse('toggle')"/>
                                                     </div>
                                                     <div class="panel-body collapse in" id="collapse#{groupStatus.index}_#{itemStatus.index}">
