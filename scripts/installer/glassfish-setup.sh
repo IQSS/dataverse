@@ -11,6 +11,11 @@
 # ASADMIN_OPTS
 # MEM_HEAP_SIZE
 #
+# activemq configuration:
+# ACTIVEMQ_ROOT
+# ACTIVEMQ_USER
+# ACTIVEMQ_PASS
+#
 # database configuration: 
 # DB_PORT
 # DB_HOST
@@ -51,20 +56,18 @@ function preliminary_setup()
   # avoid OutOfMemoryError: PermGen per http://eugenedvorkin.com/java-lang-outofmemoryerror-permgen-space-error-during-deployment-to-glassfish/
   #./asadmin $ASADMIN_OPTS list-jvm-options
   ./asadmin $ASADMIN_OPTS delete-jvm-options "-XX\:MaxPermSize=192m"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:MaxPermSize=512m"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:PermSize=256m"
   ./asadmin $ASADMIN_OPTS delete-jvm-options -client
 
   # alias passwords
   for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
   do
-      set -- $alias
-      echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
-      ./asadmin $ASADMIN_OPTS create-password-alias --passwordfile /tmp/$1.txt $1
-      rm /tmp/$1.txt
+    set -- $alias
+    echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
+    ./asadmin $ASADMIN_OPTS create-password-alias --passwordfile /tmp/$1.txt $1
+    rm /tmp/$1.txt
   done
 
-    ###
+  ###
   # Add the necessary JVM options: 
   # 
   # location of the datafiles directory: 
@@ -89,68 +92,161 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
+
   # enable comet support
-  ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
+  ./asadmin $ASADMIN_OPTS set \
+    server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled="true"
 
-  ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
-
-  # no need to explicitly delete the connector resource for the connection pool deleted in the step 
-  # above - the cascade delete takes care of it.
-  #./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
+  ./asadmin $ASADMIN_OPTS delete-connector-connection-pool \
+    --cascade=true \
+    jms/__defaultConnectionFactory-Connection-Pool
 
   # http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
-  ./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
+  ./asadmin $ASADMIN_OPTS create-connector-connection-pool \
+    --steadypoolsize 1 \
+    --maxpoolsize 250 \
+    --poolresize 2 \
+    --maxwait 60000 \
+    --raname jmsra \
+    --connectiondefinition javax.jms.QueueConnectionFactory \
+    jms/IngestQueueConnectionFactoryPool
 
   # http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
-  ./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
+  ./asadmin $ASADMIN_OPTS create-connector-resource \
+    --poolname jms/IngestQueueConnectionFactoryPool \
+    --description "ingest connector resource" \
+    jms/IngestQueueConnectionFactory
 
   # http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
-  ./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
-
-  # no need to explicitly create the resource reference for the connection factory created above -
-  # the "create-connector-resource" creates the reference automatically.
-  #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
-
+  ./asadmin $ASADMIN_OPTS create-admin-object \
+    --restype javax.jms.Queue \
+    --raname jmsra \
+    --description "sample administered object" \
+    --property Name=DataverseIngest \
+    jms/DataverseIngest
 
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
-  ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
+  ./asadmin $ASADMIN_OPTS create-network-listener \
+    --protocol http-listener-1 \
+    --listenerport 8009 \
+    --jkenabled true \
+    jk-connector
+
+  # deploy ActiveMQ resource adapter definition
+  ./asadmin $ASADMIN_OPTS deploy \
+    --name "activemq-rar" \
+    --type rar \
+    "${ACTIVEMQ_ROOT}/activemq-rar-5.14.5.rar"
+
+  # create ActiveMQ resource adapter thread pool
+  ./asadmin $ASADMIN_OPTS create-threadpool \
+    --minthreadpoolsize 2 \
+    --maxthreadpoolsize 8 \
+    "activemq-thread-pool"
+
+  # create ActiveMQ resource adapter
+  ./asadmin $ASADMIN_OPTS create-resource-adapter-config \
+    --threadpoolid "activemq-thread-pool" \
+    --property ServerUrl="vm\://localhost\:61616":BrokerXmlConfig="xbean\:file\:${GLASSFISH_ROOT}/glassfish/domains/${GLASSFISH_DOMAIN}/config/activemq.xml":UserName="${ACTIVEMQ_USER}":Password="{$ACTIVEMQ_PASS}" \
+    "activemq-rar"
+
+  # create ActiveMQ connection factory resource
+  ./asadmin $ASADMIN_OPTS create-connector-connection-pool \
+    --raname "activemq-rar" \
+    --connectiondefinition "javax.jms.ConnectionFactory" \
+    --ping true \
+    --steadypoolsize 2 \
+    --maxpoolsize 8 \
+    --poolresize 1 \
+    --idletimeout 300 \
+    --maxwait 60000 \
+    --isconnectvalidatereq true \
+    "jms/activemqConnectionPool"
+
+  # create ActiveMQ connection resource
+  ./asadmin $ASADMIN_OPTS create-connector-resource \
+    --poolname "jms/activemqConnectionPool" \
+    --enabled true \
+    "jms/activemqConnection"
+
+  # create ActiveMQ queue resource
+  ./asadmin $ASADMIN_OPTS create-admin-object \
+    --raname "activemq-rar" \
+    --restype "javax.jms.Queue" \
+    --enabled true \
+    --property PhysicalName="dataverseWorkflow" \
+    "jms/queue/dataverseWorkflow"
+
+  # configure ActiveMQ web console
+  # make ActiveMQ web console configurable by system properties
+  ./asadmin $ASADMIN_OPTS create-jvm-options \
+    -Dwebconsole.type="properties"
+  # point ActiveMQ web console to the broker
+  ./asadmin $ASADMIN_OPTS create-jvm-options \
+    -Dwebconsole.jms.url="tcp\://localhost\:61616"
+  # point ActiveMQ web console to application server JMX endpoint
+  ./asadmin $ASADMIN_OPTS create-jvm-options \
+    -Dwebconsole.jmx.url="service\:jmx\:rmi\:///jndi/rmi\://localhost\:8686/jmxrmi"
+
+  # apply ActiveMQ web console configuration
+  ./asadmin $ASADMIN_OPTS stop-domain ${GLASSFISH_DOMAIN}
+  ./asadmin $ASADMIN_OPTS start-domain ${GLASSFISH_DOMAIN}
+
+  # deploy ActiveMQ web console
+  ./asadmin $ASADMIN_OPTS deploy \
+    --name "activemq-console" \
+    --type war \
+    --contextroot "/activemq-console" \
+    "${ACTIVEMQ_ROOT}/activemq-web-console-5.14.5.war"
 }
 
 function final_setup(){
-        ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
-        ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
+  ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
+  ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
 
+  ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool \
+    --restype javax.sql.DataSource \
+    --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
+    --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
+    dvnDbPool
 
-        ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
-                                        --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
-                                        dvnDbPool
+  ./asadmin $ASADMIN_OPTS set \
+    resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
 
-       ./asadmin $ASADMIN_OPTS set resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
+  ###
+  # Create data sources
+  ./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
 
-        ###
-        # Create data sources
-        ./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
+  ###
+  # Set up the data source for the timers
 
-        ###
-        # Set up the data source for the timers
+  ./asadmin $ASADMIN_OPTS set \
+    configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
 
-        ./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS
+  ./asadmin $ASADMIN_OPTS create-jvm-options \
+    "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 
-        ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
+  ###
+  # Mail server setup:
+  # delete any existing mail/notifyMailSession; configure port, if provided:
 
-	### 
-	# Mail server setup: 
-	# delete any existing mail/notifyMailSession; configure port, if provided:
+  ./asadmin delete-javamail-resource mail/notifyMailSession
 
-	./asadmin delete-javamail-resource mail/notifyMailSession
-
-	if [ $SMTP_SERVER_PORT"x" != "x" ]
-	then
-            ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" --property mail.smtp.port="${SMTP_SERVER_PORT}" mail/notifyMailSession
-	else
-	    ./asadmin $ASADMIN_OPTS create-javamail-resource --mailhost "$SMTP_SERVER" --mailuser "dataversenotify" --fromaddress "do-not-reply@${HOST_ADDRESS}" mail/notifyMailSession
-	fi
+  if [ $SMTP_SERVER_PORT"x" != "x" ]
+  then
+    ./asadmin $ASADMIN_OPTS create-javamail-resource \
+      --mailhost "$SMTP_SERVER" \
+      --mailuser "dataversenotify" \
+      --fromaddress "do-not-reply@${HOST_ADDRESS}" \
+      --property mail.smtp.port="${SMTP_SERVER_PORT}" \
+      mail/notifyMailSession
+  else
+    ./asadmin $ASADMIN_OPTS create-javamail-resource \
+      --mailhost "$SMTP_SERVER" \
+      --mailuser "dataversenotify" \
+      --fromaddress "do-not-reply@${HOST_ADDRESS}" \
+      mail/notifyMailSession
+  fi
 
 }
 
@@ -305,7 +401,7 @@ if [ -z "$MY_POD_NAME" ]
     if [ $MY_POD_NAME == "dataverse-glassfish-0" ]
       then
         echo "I am in a container so I am doing much less"
-            final_setup
+        final_setup
     fi
 fi
 

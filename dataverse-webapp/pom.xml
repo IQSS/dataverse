@@ -28,6 +28,26 @@
             <artifactId>dataverse-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Must be defined before dataverse-test-common -->
         <!-- this ensures that xml writing will use this implementation -->
@@ -35,11 +55,6 @@
         <dependency>
             <groupId>org.codehaus.woodstox</groupId>
             <artifactId>wstx-asl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.iq</groupId>
-            <artifactId>dataverse-extension-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dom4j</groupId>
@@ -56,9 +71,9 @@
             <version>1.1.0</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <scope>test</scope>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -117,7 +132,6 @@
             <!-- a dependency of commons-fileupload, but newer version required by tika -->
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -126,7 +140,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>27.0.1-jre</version>
         </dependency>
         <!-- Should be refactored and removed once on Java EE 8 -->
         <dependency>
@@ -137,12 +150,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scribe</groupId>
-            <artifactId>scribe</artifactId>
-            <version>1.3.7</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -269,27 +276,6 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>2.4.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hamcrest-core</artifactId>
-                    <groupId>org.hamcrest</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>hamcrest-library</artifactId>
-                    <groupId>org.hamcrest</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>5.0.3.Final</version>
         </dependency>
         <!-- Added for DataCite -->
         <dependency>
@@ -435,6 +421,139 @@
             <artifactId>awaitility</artifactId>
             <version>4.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
+        <dependency>
+            <groupId>org.swordapp</groupId>
+            <artifactId>sword2-server</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+            <classifier>classes</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.swordapp</groupId>
+            <artifactId>sword2-server</artifactId>
+            <!--
+            Built from https://github.com/IQSS/swordv2-java-server-library
+            to return a proper SWORD error message rather than a Glassfish
+            Exception per https://github.com/IQSS/dataverse/issues/893
+            If the fix is merged upstream at
+            https://github.com/swordapp/JavaServer2.0/issues/6
+            we can switch back to the official SWORD library.
+            -->
+            <version>1.1-SNAPSHOT</version>
+            <type>war</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- END Data Deposit API v1 (SWORD v2) -->
+
+        <!-- fits.jar, not available from network repos, supplied in local_lib -->
+        <dependency>
+            <groupId>nom.tam.fits</groupId>
+            <artifactId>fits</artifactId>
+            <version>2012-10-25-generated</version>
+        </dependency>
+        <dependency>
+            <groupId>net.handle</groupId>
+            <artifactId>handle</artifactId>
+            <version>8.1.1</version>
+        </dependency>
+        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
+        <dependency>
+            <groupId>edu.harvard.iq.dvn</groupId>
+            <artifactId>unf5</artifactId>
+            <version>5.0</version>
+        </dependency>
+        <!-- (new) UNF v6: -->
+        <dependency>
+            <groupId>org.dataverse</groupId>
+            <artifactId>unf</artifactId>
+            <version>6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-module</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.harvard.hul.ois.jhove</groupId>
+            <artifactId>jhove-handler</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
+        <!-- EXPERIMENTAL: -->
+        <!-- lyncode xoai OAI-PMH implementation: -->
+        <!-- unfortunately, their 4.10 version -->
+        <!-- is still buggy. As an experiment, I'm using -->
+        <!-- a patched version I built locally. -->
+        <!-- (pull requests pending - L.A. -->
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-common</artifactId>
+            <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-data-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.lyncode</groupId>
+            <artifactId>xoai-service-provider</artifactId>
+            <version>4.1.0-header-patch</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>edu.harvard.iq</groupId>
@@ -451,6 +570,33 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scribe</groupId>
+            <artifactId>scribe</artifactId>
+            <version>1.3.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.restassured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>2.4.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hamcrest-core</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>hamcrest-library</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.github.sleroy</groupId>
             <artifactId>fakesmtp-junit-runner</artifactId>
             <version>0.1.1</version>
@@ -465,32 +611,13 @@
     </dependencies>
 
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>*.properties</include>
-                    <include>**/mime.types</include>
-                    <include>**/*.R</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.sql</include>
-                    <include>**/*.xml</include>
-                    <include>**/*.conf</include>
-                    <include>**/*.png</include>
-                    <include>**/*.xsd</include>
-                    <include>**/*.providers</include>
-                    <include>**/firstNames/*.*</include>
-                </includes>
+                <excludes>
+                    <exclude>config/version.properties</exclude>
+                </excludes>
+                <filtering>false</filtering>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
@@ -528,7 +655,6 @@
                 </configuration>
             </plugin>
         </plugins>
-        
     </build>
 
 </project>

@@ -35,6 +35,8 @@
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <duracloud.version>4.4.6</duracloud.version>
         <slf4j.version>1.7.7</slf4j.version>
+        <postgresql.version>42.2.11</postgresql.version>
+        <eclipselink.version>2.6.1</eclipselink.version>
         
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <junit.vintage.version>5.5.2</junit.vintage.version>
@@ -83,10 +85,9 @@
     <modules>
         <module>dataverse-test-common</module>
         <module>dataverse-persistence</module>
-        <module>dataverse-ext-common</module>
         <module>dataverse-webapp</module>
+        <module>dataverse-dist</module>
     </modules>
-
 
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
          versions of dependencies used both directly and transitive are managed here. -->
@@ -135,6 +136,11 @@
                 <type>pom</type>
             </dependency>
             <dependency>
+                <groupId>javax</groupId>
+                <artifactId>javaee-api</artifactId>
+                <version>7.0</version>
+            </dependency>
+            <dependency>
                 <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>2.1.1</version>
@@ -143,7 +149,6 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.2.4</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>commons-validator</groupId>
@@ -155,6 +160,16 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.jsoup</groupId>
@@ -198,6 +213,46 @@
                 <artifactId>slf4j-jdk14</artifactId> <!-- JUL binding -->
                 <version>${slf4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>27.0.1-jre</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>0.10.0</version>
+            </dependency>
+            <dependency>
+                <groupId>jaxen</groupId>
+                <artifactId>jaxen</artifactId>
+                <version>1.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>5.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>eclipselink</artifactId>
+                <version>${eclipselink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>5.1.3.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>2.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -206,35 +261,6 @@
          manage the version above and add the direct dependency here WITHOUT version tag, too.
     -->
     <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.2.11</version>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -277,134 +303,11 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <!--
-            Built from https://github.com/IQSS/swordv2-java-server-library
-            to return a proper SWORD error message rather than a Glassfish
-            Exception per https://github.com/IQSS/dataverse/issues/893
-            If the fix is merged upstream at
-            https://github.com/swordapp/JavaServer2.0/issues/6
-            we can switch back to the official SWORD library.
-            -->
-            <version>1.1-SNAPSHOT</version>
-            <type>war</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- END Data Deposit API v1 (SWORD v2) -->
-        
-        <!-- fits.jar, not available from network repos, supplied in local_lib -->
-        <dependency>
-            <groupId>nom.tam.fits</groupId>
-            <artifactId>fits</artifactId>
-            <version>2012-10-25-generated</version>
-        </dependency>
-        <dependency>
-            <groupId>net.handle</groupId>
-            <artifactId>handle</artifactId>
-            <version>8.1.1</version>
-        </dependency>
-        <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
-        <dependency>
-            <groupId>edu.harvard.iq.dvn</groupId>
-            <artifactId>unf5</artifactId>
-            <version>5.0</version>
-        </dependency>
-        <!-- (new) UNF v6: -->
-        <dependency>
-            <groupId>org.dataverse</groupId>
-            <artifactId>unf</artifactId>
-            <version>6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        
-        <!-- EXPERIMENTAL: -->
-        <!-- lyncode xoai OAI-PMH implementation: -->
-        <!-- unfortunately, their 4.10 version -->
-        <!-- is still buggy. As an experiment, I'm using -->
-        <!-- a patched version I built locally. -->
-        <!-- (pull requests pending - L.A. -->
-        <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xoai-common</artifactId>
-            <version>4.1.0-header-patch</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xoai-data-provider</artifactId>
-            <version>4.1.0-header-patch</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.lyncode</groupId>
-            <artifactId>xoai-service-provider</artifactId>
-            <version>4.1.0-header-patch</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        
-        <dependency>
-            <groupId>io.vavr</groupId>
-            <artifactId>vavr</artifactId>
-            <version>0.10.0</version>
-        </dependency>
-    
     </dependencies>
 
     <build>

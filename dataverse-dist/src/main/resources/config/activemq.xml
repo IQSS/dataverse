@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="jdbc:postgresql://localhost/activemq"/>
+        <property name="username" value="postgres"/>
+        <property name="password" value="dataverse"/>
+        <property name="poolPreparedStatements" value="true"/>
+    </bean>
+
+    <!--
+    JMX is used by ActiveMQ web console to manage the broker;
+    shutdown hook is disabled as RAR classloader may be gone at shutdown
+    -->
+    <broker xmlns="http://activemq.apache.org/schema/core"
+            xsi:schemaLocation="http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.14.5.xsd"
+            useJmx="true" useShutdownHook="false">
+
+        <managementContext>
+            <!--
+            use appserver provided context instead of creating one;
+            meaning JMX connections to the broker are handled by appserver JMX endpoint, not a separate one
+            -->
+            <managementContext createConnector="false"/>
+        </managementContext>
+
+        <persistenceAdapter>
+            <jdbcPersistenceAdapter dataSource="#dataSource" lockKeepAlivePeriod="5000">
+                <adapter>
+                    <postgresql-jdbc-adapter />
+                </adapter>
+                <locker>
+                    <lease-database-locker lockAcquireSleepInterval="10000"/>
+                </locker>
+            </jdbcPersistenceAdapter>
+        </persistenceAdapter>
+
+        <transportConnectors>
+            <transportConnector name="openwire" uri="tcp://localhost:61616"/>
+        </transportConnectors>
+
+    </broker>
+</beans>

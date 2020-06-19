@@ -1,5 +1,5 @@
 INSTALLER_ZIP_DIR=dvinstall
-DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
+DISTRIBUTION_FILE=${INSTALLER_ZIP_DIR}/glassfish
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/glassfish-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
@@ -15,9 +15,9 @@ installer:	dvinstall.zip
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${DISTRIBUTION_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -26,17 +26,16 @@ ${INSTALL_SCRIPT}: install
 	mkdir -p ${INSTALLER_ZIP_DIR}
 	/bin/cp install ${INSTALLER_ZIP_DIR}
 
-${DISTRIBUTION_WAR_FILE}: 
-	@echo copying war file...
+${DISTRIBUTION_FILE}:
+	@echo copying distribution file...
 	@mkdir -p ${INSTALLER_ZIP_DIR}
-	@VERSION_NUMBER=`grep -m1 '<version>' ../../pom.xml | sed 's/ *<\/*version>//g'`; export VERSION_NUMBER; \
-	BUILT_WAR_FILE=../../target/dataverse-$$VERSION_NUMBER.war; export BUILT_WAR_FILE; \
-	if [ -f $$BUILT_WAR_FILE ]; \
+	@BUILT_DIST_DIR=../../dataverse-dist/target/dist; export BUILT_DIST_DIR; \
+	if [ -d $$BUILT_DIST_DIR ]; \
 	then \
-		/bin/cp $$BUILT_WAR_FILE ${DISTRIBUTION_WAR_FILE}; \
+		/bin/cp -r $$BUILT_DIST_DIR/* ${INSTALLER_ZIP_DIR}; \
 	else \
-		echo "ERROR: can't find application .war file ($${BUILT_WAR_FILE})!"; \
-		echo "Build the Dataverse application war file, then try again."; \
+		echo "ERROR: can't find application distribution ($${BUILT_DIST_DIR})!"; \
+		echo "Build the Dataverse application distribution, then try again."; \
 		exit 1; \
 	fi
 

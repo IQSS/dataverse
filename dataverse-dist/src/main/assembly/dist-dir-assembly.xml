@@ -1,0 +1,67 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+
+    <formats>
+        <format>dir</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <outputDirectory>glassfish/domain</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <file>
+            <source>${project.build.directory}/org.eclipse.persistence.moxy-patched.jar</source>
+            <outputDirectory>glassfish/modules</outputDirectory>
+        </file>
+        <file>
+            <source>${project.build.directory}/activemq-rar-${activemq.version}.zip</source>
+            <destName>activemq-rar-${activemq.version}.rar</destName>
+            <outputDirectory>activemq</outputDirectory>
+        </file>
+    </files>
+
+    <dependencySets>
+        <dependencySet>
+            <scope>provided</scope>
+            <includes>
+                <include>*:*:jar:*</include>
+            </includes>
+            <excludes>
+                <exclude>org.eclipse.persistence:org.eclipse.persistence.moxy</exclude>
+            </excludes>
+            <outputDirectory>glassfish/modules</outputDirectory>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+        <dependencySet>
+            <scope>runtime</scope>
+            <includes>
+                <include>*:*:jar:*</include>
+            </includes>
+            <outputDirectory>glassfish/domain/lib</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+        <dependencySet>
+            <includes>
+                <include>org.apache.activemq:activemq-web-console:war</include>
+            </includes>
+            <outputDirectory>activemq</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+        <dependencySet>
+            <includes>
+                <include>edu.harvard.iq:dataverse-webapp:war</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
+</assembly>

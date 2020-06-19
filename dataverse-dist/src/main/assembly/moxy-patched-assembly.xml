@@ -1,0 +1,33 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/moxy-patched</directory>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <scope>provided</scope>
+            <includes>
+                <include>org.eclipse.persistence:org.eclipse.persistence.moxy</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <excludes>
+                    <!-- this is the only thing that is patched -->
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                </excludes>
+            </unpackOptions>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
+</assembly>
