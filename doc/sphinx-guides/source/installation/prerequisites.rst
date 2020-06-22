@@ -211,7 +211,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 	# yum install lsof
 
-Finally, you need to tell Solr to create the core "collection1" on startup:
+Finally, you need to tell Solr to create the core "collection1" on startup::
 
         echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
 
@@ -243,15 +243,15 @@ It is **very important** not to allow direct access to the Solr API from outside
 
 If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
 
-We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
         # usermod -s /sbin/nologin solr
 
-For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell::
 
         # usermod -s /bin/bash solr
 
-or simply prepend each command you would run as the Solr user with "sudo -u solr":
+or simply prepend each command you would run as the Solr user with "sudo -u solr"::
 
         # sudo -u solr command
 
