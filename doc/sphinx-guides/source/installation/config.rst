@@ -416,23 +416,23 @@ Please make note of the following details:
 
 - **Endpoint URL** - consult the documentation of your service on how to find it.
 
-    * Example: https://play.minio.io:9000
+  * Example: https://play.minio.io:9000
 
 - **Region:** Optional, but some services might use it. Consult your service documentation.
 
-    * Example: *us-east-1*
+  * Example: *us-east-1*
 
 - **Access key ID and secret access key:** Usually you can generate access keys within the user profile of your service.
 
-    * Example:
+  * Example:
 
-      - ID: *Q3AM3UQ867SPQQA43P2F*
+    - ID: *Q3AM3UQ867SPQQA43P2F*
 
-      - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+    - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
 
 - **Bucket name:** Dataverse will fail opening and uploading files on S3 if you don't create one.
 
-    * Example: *dataverse*
+  * Example: *dataverse*
 
 Manually Set Up Credentials File
 ################################
@@ -494,7 +494,8 @@ Second: Configure Dataverse to use S3 Storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To set up an S3 store, you must define the id, type, and label as for any store:
-.. code-block:: none
+
+.. code-block:: bash
 
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=s3"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
