@@ -19,6 +19,8 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.handler.WorkflowFailureHandler;
+import edu.harvard.iq.dataverse.workflow.handler.WorkflowSuccessHandler;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -31,6 +33,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Date;
@@ -72,6 +75,12 @@ public class WorkflowExecutionServiceBean {
 
     @EJB
     private EjbDataverseEngine engine;
+
+    @Inject
+    private Instance<WorkflowSuccessHandler> workflowSuccessHandlers;
+
+    @Inject
+    private Instance<WorkflowFailureHandler> workflowFailureHandlers;
 
     private final Clock clock;
 
@@ -218,15 +227,16 @@ public class WorkflowExecutionServiceBean {
             log.error("Exception finalizing workflow " + ctx.getInvocationId() + ": " + ex.getMessage(), ex);
             rollback(ctx, new Failure("Exception while finalizing the publication: " + ex.getMessage()));
         }
+
+        workflowSuccessHandlers.forEach(success -> success.handleSuccess(ctx));
     }
 
-    @Asynchronous
     private void rollback(WorkflowExecutionContext ctx, Failure failure) {
-        ctx = refresh(ctx);
-        ctx.finish(executions, clock);
+        WorkflowExecutionContext refreshedCtx = refresh(ctx);
+        refreshedCtx.finish(executions, clock);
 
-        while (ctx.hasMoreStepsToRollback()) {
-            WorkflowExecutionStepContext step = ctx.nextStepToRollback(executions);
+        while (refreshedCtx.hasMoreStepsToRollback()) {
+            WorkflowExecutionStepContext step = refreshedCtx.nextStepToRollback(executions);
             try {
                 log.info("{} - rollback", step);
                 runInNewTransaction(
@@ -238,10 +248,12 @@ public class WorkflowExecutionServiceBean {
         }
 
         try {
-            unlockDatasetForWorkflow(ctx);
+            unlockDatasetForWorkflow(refreshedCtx);
         } catch (CommandException ex) {
             log.error("Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
         }
+
+        workflowFailureHandlers.forEach(failureHandler -> failureHandler.handleFailure(refreshedCtx));
     }
 
     private WorkflowExecutionContext refresh(WorkflowExecutionContext ctx) {

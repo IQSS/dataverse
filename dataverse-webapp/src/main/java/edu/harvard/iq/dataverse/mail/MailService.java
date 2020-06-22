@@ -173,6 +173,14 @@ public class MailService implements java.io.Serializable {
                                                           getSystemAddress());
     }
 
+    public InternetAddress getSystemAddress() {
+        String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
+
+        return Try.of(() -> new InternetAddress(systemEmail))
+                  .getOrElseThrow(throwable -> new IllegalArgumentException(
+                          "Email will not be sent due to invalid email: " + systemEmail));
+    }
+
     // -------------------- PRIVATE --------------------
 
     private EmailPopulatingBuilder newMailWithOverseerIfExists() {
@@ -188,14 +196,6 @@ public class MailService implements java.io.Serializable {
         return StringUtils.isNotBlank(overseerEmail)
                 ? Option.some(new Recipient(null, overseerEmail, Message.RecipientType.BCC))
                 : Option.none();
-    }
-
-    private InternetAddress getSystemAddress() {
-        String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
-
-        return Try.of(() -> new InternetAddress(systemEmail))
-                .getOrElseThrow(throwable -> new IllegalArgumentException(
-                        "Email will not be sent due to invalid email: " + systemEmail));
     }
 
     // -------------------- SETTERS --------------------

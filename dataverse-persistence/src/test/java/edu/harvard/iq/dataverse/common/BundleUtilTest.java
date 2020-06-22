@@ -30,7 +30,7 @@ public class BundleUtilTest {
                             "check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Management - " +
                             "Dataverse User Guide\" target=\"_blank\">User Guide</a>.",
                     BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"))),
-            () -> assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null, "")),
+            () -> assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null)),
             () -> assertEquals(StringUtils.EMPTY, BundleUtil.getStringFromBundle(null, Locale.ENGLISH)),
             () -> assertEquals("Your new dataverse named "
                                  + "dvName (view at dvUrl) "
