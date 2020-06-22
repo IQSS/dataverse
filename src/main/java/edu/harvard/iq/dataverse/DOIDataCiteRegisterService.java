@@ -180,7 +180,8 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
-            String description = dataset.getLatestVersion().getDescriptionPlainText();
+            //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
+            String description = StringEscapeUtils.escapeXml(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
