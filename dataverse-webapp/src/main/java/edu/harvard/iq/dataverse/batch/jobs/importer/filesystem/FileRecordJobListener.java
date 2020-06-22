@@ -77,7 +77,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
     public static final String SEP = System.getProperty("file.separator");
 
-    private static final NotificationType notifyType = NotificationType.FILESYSTEMIMPORT;
+    private static final String notifyType = NotificationType.FILESYSTEMIMPORT;
 
     @Inject
     private JobContext jobContext;

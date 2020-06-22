@@ -1,0 +1,18 @@
+ALTER TABLE usernotification ALTER COLUMN type TYPE varchar(255);
+UPDATE usernotification SET type = 'ASSIGNROLE' WHERE type ='0';
+UPDATE usernotification SET type = 'REVOKEROLE' WHERE type ='1';
+UPDATE usernotification SET type = 'CREATEDV' WHERE type ='2';
+UPDATE usernotification SET type = 'CREATEDS' WHERE type ='3';
+UPDATE usernotification SET type = 'CREATEACC' WHERE type ='4';
+UPDATE usernotification SET type = 'MAPLAYERUPDATED' WHERE type ='5';
+UPDATE usernotification SET type = 'MAPLAYERDELETEFAILED' WHERE type ='6';
+UPDATE usernotification SET type = 'SUBMITTEDDS' WHERE type ='7';
+UPDATE usernotification SET type = 'RETURNEDDS' WHERE type ='8';
+UPDATE usernotification SET type = 'PUBLISHEDDS' WHERE type ='9';
+UPDATE usernotification SET type = 'REQUESTFILEACCESS' WHERE type ='10';
+UPDATE usernotification SET type = 'GRANTFILEACCESS' WHERE type ='11';
+UPDATE usernotification SET type = 'REJECTFILEACCESS' WHERE type ='12';
+UPDATE usernotification SET type = 'FILESYSTEMIMPORT' WHERE type ='13';
+UPDATE usernotification SET type = 'CHECKSUMIMPORT' WHERE type ='14';
+UPDATE usernotification SET type = 'CHECKSUMFAIL' WHERE type ='15';
+UPDATE usernotification SET type = 'CONFIRMEMAIL' WHERE type ='16';

@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
-import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +62,7 @@ public class ManagePermissionsServiceTest {
         when(commandEngine.submit(any(AssignRoleCommand.class))).thenReturn(new RoleAssignment(role, roleAssignee, dvObject, null));
         when(commandEngine.submit(any(CreateRoleCommand.class))).thenReturn(this.role);
         when(commandEngine.submit(any(UpdateDataverseDefaultContributorRoleCommand.class))).thenReturn(this.dvObject);
-        doNothing().when(userNotificationService).sendNotificationWithEmail(any(AuthenticatedUser.class), any(Timestamp.class), any(NotificationType.class), any(Long.class), any(NotificationObjectType.class));
+        doNothing().when(userNotificationService).sendNotificationWithEmail(any(AuthenticatedUser.class), any(Timestamp.class), any(String.class), any(Long.class), any(NotificationObjectType.class));
     }
 
     @Test

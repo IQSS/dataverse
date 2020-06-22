@@ -65,10 +65,27 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.ASSIGNROLE;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CHECKSUMFAIL;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CHECKSUMIMPORT;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEACC;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEDS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEDV;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.FILESYSTEMIMPORT;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.GRANTFILEACCESS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.MAPLAYERDELETEFAILED;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.MAPLAYERUPDATED;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.PUBLISHEDDS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REJECTFILEACCESS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REQUESTFILEACCESS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.RETURNEDDS;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REVOKEROLE;
+import static edu.harvard.iq.dataverse.persistence.user.NotificationType.SUBMITTEDDS;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
@@ -559,6 +576,13 @@ public class DataverseUserPage implements java.io.Serializable {
                 case CHECKSUMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
+
+                default:
+                    if (!isBaseNotification(userNotification)) {
+                        Optional.ofNullable(datasetDao.find(userNotification.getObjectId()))
+                                .ifPresent(userNotification::setTheObject);
+                    }
+                    break;
             }
 
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
@@ -568,6 +592,8 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
     }
+
+
 
     public void sendConfirmEmail() {
         logger.fine("called sendConfirmEmail()");
@@ -705,7 +731,7 @@ public class DataverseUserPage implements java.io.Serializable {
         this.dataverseId = dataverseId;
     }
 
-    public List getNotificationsList() {
+    public List<UserNotification> getNotificationsList() {
         return notificationsList;
     }
 
@@ -811,6 +837,18 @@ public class DataverseUserPage implements java.io.Serializable {
 
     private String getLocalizedDisplayNameForLanguage(Locale language) {
         return language.getDisplayName(session.getLocale());
+    }
+
+    /**
+     Returns true if notification display is handled by main Dataverse repository.
+     <p>
+     Note that external notifications only works if object associated with notification ({@link #getObjectId()})
+     is a {@link Dataset}
+     <p>
+     Notifications should be redesigned to properly support external notifications.
+     */
+    private boolean isBaseNotification(UserNotification userNotification) {
+        return NotificationType.getTypes().contains(userNotification.getType());
     }
 
     // -------------------- SETTERS --------------------

@@ -118,6 +118,9 @@
                                 <ui:repeat value="#{DataverseUserPage.notificationsList}" var="item">
                                     <div class="notification-item #{item.displayAsRead ? '' : 'bg-warning'}">
                                         <div class="notification-item-cell">
+                                            <ui:include src="pluggable/notifications.xhtml">
+                                                <ui:param name="item" value="#{item}" />
+                                            </ui:include>
                                             <ui:fragment rendered="#{item.theObject == null}">
                                                  <h:outputText value="#{bundle['notification.generic.objectDeleted']}" />
                                             </ui:fragment>

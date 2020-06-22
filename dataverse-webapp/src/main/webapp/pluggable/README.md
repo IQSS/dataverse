@@ -1,0 +1,1 @@
+This directory contains files that can be overridden by repository extensions with their domain specific logic to extend base functionality. Use the file provided here as templates and fill them in with extension specific logic.  

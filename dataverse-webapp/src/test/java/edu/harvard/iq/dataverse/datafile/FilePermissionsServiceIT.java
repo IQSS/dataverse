@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.mail.FakeSmtpServerUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -224,7 +222,7 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
     }
     
     private void assertUserNotification(UserNotification actualNotification,
-            NotificationType expectedType, long expectedObjectId, boolean expectedEmailed) {
+            String expectedType, long expectedObjectId, boolean expectedEmailed) {
         
         assertEquals(expectedType, actualNotification.getType());
         assertEquals(Long.valueOf(expectedObjectId), actualNotification.getObjectId());

@@ -106,7 +106,7 @@ public class ManagePermissionsService implements Serializable {
      * @param ra   The {@code RoleAssignee} to be notified.
      * @param type The type of notification.
      */
-    private void notifyRoleChange(RoleAssignee ra, DvObject dvObject, NotificationType type) {
+    private void notifyRoleChange(RoleAssignee ra, DvObject dvObject, String type) {
         if (ra instanceof AuthenticatedUser) {
             userNotificationService.sendNotificationWithEmail((AuthenticatedUser) ra, Timestamp.from(Instant.now()), type, dvObject.getId(), determineObjectType(dvObject));
         } else if (ra instanceof ExplicitGroup) {

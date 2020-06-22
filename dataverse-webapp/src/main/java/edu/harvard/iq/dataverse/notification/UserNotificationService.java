@@ -48,7 +48,7 @@ public class UserNotificationService {
     /**
      * Saves notification to database, hereby sends notification to users dashboard.
      */
-    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type) {
+    public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type) {
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type);
 
         userNotificationDao.save(userNotification);
@@ -62,7 +62,7 @@ public class UserNotificationService {
      */
     public void sendNotificationWithEmail(AuthenticatedUser dataverseUser,
                                           Timestamp sendDate,
-                                          NotificationType type,
+                                          String type,
                                           Long dvObjectId,
                                           NotificationObjectType notificationObjectType) {
 
@@ -82,7 +82,7 @@ public class UserNotificationService {
      */
     public void sendNotificationWithEmail(AuthenticatedUser dataverseUser,
                                           Timestamp sendDate,
-                                          NotificationType type,
+                                          String type,
                                           Long dvObjectId,
                                           NotificationObjectType notificationObjectType,
                                           AuthenticatedUser requestor) {
@@ -102,7 +102,7 @@ public class UserNotificationService {
      */
     public void sendNotificationWithEmail(AuthenticatedUser dataverseUser,
                                           Timestamp sendDate,
-                                          NotificationType type,
+                                          String type,
                                           Long dvObjectId,
                                           NotificationObjectType notificationObjectType,
                                           AuthenticatedUser requestor,
@@ -123,7 +123,7 @@ public class UserNotificationService {
      */
     public void sendNotificationWithEmail(AuthenticatedUser dataverseUser,
                                           Timestamp sendDate,
-                                          NotificationType type,
+                                          String type,
                                           Long dvObjectId,
                                           NotificationObjectType notificationObjectType,
                                           String comment) {
@@ -185,7 +185,7 @@ public class UserNotificationService {
         return emailSent;
     }
 
-    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type,
+    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type,
                                               Long dvObjectId, AuthenticatedUser requestor) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
@@ -199,7 +199,7 @@ public class UserNotificationService {
         return userNotification;
     }
 
-    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type,
+    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type,
                                               Long dvObjectId, AuthenticatedUser requestor, String userMessage) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
@@ -214,7 +214,7 @@ public class UserNotificationService {
         return userNotification;
     }
 
-    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type, Long dvObjectId) {
+    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type, Long dvObjectId) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
@@ -226,7 +226,7 @@ public class UserNotificationService {
         return userNotification;
     }
 
-    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type, Long dvObjectId, String userMessage) {
+    private UserNotification sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type, Long dvObjectId, String userMessage) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
@@ -239,7 +239,7 @@ public class UserNotificationService {
         return userNotification;
     }
 
-    private UserNotification createUserNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, NotificationType type) {
+    private UserNotification createUserNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type) {
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);

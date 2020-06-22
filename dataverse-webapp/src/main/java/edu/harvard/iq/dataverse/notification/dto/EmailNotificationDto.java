@@ -2,14 +2,13 @@ package edu.harvard.iq.dataverse.notification.dto;
 
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import org.apache.commons.lang.StringUtils;
 
 public class EmailNotificationDto {
 
     private long userNotificationId;
     private String userEmail;
-    private NotificationType notificationType;
+    private String notificationType;
     private Long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
@@ -18,7 +17,7 @@ public class EmailNotificationDto {
     // -------------------- CONSTRUCTORS --------------------
 
 
-    public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
+    public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
                                 Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
@@ -29,7 +28,7 @@ public class EmailNotificationDto {
         this.customUserMessage = StringUtils.EMPTY;
     }
 
-    public EmailNotificationDto(long userNotificationId, String userEmail, NotificationType notificationType,
+    public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
                                 Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String customUserMessage) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
@@ -58,7 +57,7 @@ public class EmailNotificationDto {
         return userEmail;
     }
 
-    public NotificationType getNotificationType() {
+    public String getNotificationType() {
         return notificationType;
     }
 
