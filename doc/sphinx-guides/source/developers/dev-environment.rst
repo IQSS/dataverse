@@ -34,7 +34,7 @@ On Linux, you are welcome to use the OpenJDK available from package managers.
 Install Netbeans or Maven
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NetBeans IDE (Java EE bundle) is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Java EE projects, and includes a required build tool, Maven.
+NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
 Below we describe how to build the Dataverse war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
@@ -53,7 +53,13 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 Build the Dataverse War File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project. Click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
+To build the Dataverse war file using versions of Netbeans newer than 8.2 requires some setup because Jakarta EE support is not enabled by default. An alternative is to build the war file with Maven, which is explained below.
+
+Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+
+If you are using Netbeans 8.2, Jakarta EE support should "just work" but if you are using a newer version of Netbeans, you will see "dataverse (broken)". If you see "broken", click "Tools", "Plugins", and "Installed". Check the box next to "Java Web and EE" and click "Activate". Let Netbeans install all the dependencies. You will observe that the green "Active" checkmark does not appear next to "Java Web and EE". Restart Netbeans.
+
+In Netbeans, select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
 
 If you installed Maven instead of Netbeans, run ``mvn package``.
 
@@ -71,29 +77,29 @@ On Mac, run this command:
 
 On Linux, install ``jq`` from your package manager or download a binary from http://stedolan.github.io/jq/
 
-Install Glassfish
-~~~~~~~~~~~~~~~~~
+Install Payara
+~~~~~~~~~~~~~~
 
-Glassfish 4.1 is required.
+Payara 5.201 or higher is required.
 
-To install Glassfish, run the following commands:
+To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O http://download.oracle.com/glassfish/4.1/release/glassfish-4.1.zip``
+``sudo curl -O -L https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip``
 
-``sudo unzip glassfish-4.1.zip``
+``sudo unzip payara-5.201.zip``
 
-``sudo chown -R $USER /usr/local/glassfish4``
+``sudo chown -R $USER /usr/local/payara5``
 
-Test Glassfish Startup Time on Mac
-++++++++++++++++++++++++++++++++++
+Test Payara Startup Time on Mac
++++++++++++++++++++++++++++++++
 
-``cd /usr/local/glassfish4/glassfish/bin``
+``cd /usr/local/payara5/glassfish/bin``
 
 ``./asadmin start-domain``
 
-``grep "startup time" /usr/local/glassfish4/glassfish/domains/domain1/logs/server.log``
+``grep "startup time" /usr/local/payara5/glassfish/domains/domain1/logs/server.log``
 
 If you are seeing startup times in the 30 second range (31,584ms for "Felix" for example) please be aware that startup time can be greatly reduced (to less than 1.5 seconds in our testing) if you make a small edit to your ``/etc/hosts`` file as described at https://stackoverflow.com/questions/39636792/jvm-takes-a-long-time-to-resolve-ip-address-for-localhost/39698914#39698914 and https://thoeni.io/post/macos-sierra-java/
 
@@ -125,7 +131,7 @@ On Linux, you should just install PostgreSQL from your package manager without w
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 7.3.1 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 7.7.2 is required.
 
 To install Solr, execute the following commands:
 
@@ -135,40 +141,42 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/7.3.1/solr-7.3.1.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/7.7.2/solr-7.7.2.tgz``
 
-``tar xvfz solr-7.3.1.tgz``
+``tar xvfz solr-7.7.2.tgz``
 
-``cd solr-7.3.1/server/solr``
+``cd solr-7.7.2/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema.xml``
 
-``mv schema.xml collection1/conf``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema_dv_mdb_fields.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.3.1/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema_dv_mdb_copies.xml``
+
+``mv schema*.xml collection1/conf``
+
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-7.3.1``
+``cd /usr/local/solr/solr-7.7.2``
 
-``bin/solr start``
+(Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
+
+``bin/solr start -j "-Djetty.host=127.0.0.1"``
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
 Run the Dataverse Installer Script
 ----------------------------------
 
-Navigate to the directory where you cloned the Dataverse git repo and run these commands:
+Navigate to the directory where you cloned the Dataverse git repo change directories to the ``scripts/installer`` directory like this:
 
 ``cd scripts/installer``
 
-``./install``
-
-It's fine to accept the default values.
-
-After a while you will see ``Enter admin user name [Enter to accept default]>`` and you can just hit Enter.
+Follow the instructions in :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` which can be found in the directory above.
 
 Verify Dataverse is Running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

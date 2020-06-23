@@ -149,7 +149,7 @@ public class HarvestingServerIT {
         // (this is asynchronous - so we should probably wait a little)
         Response exportSetResponse = UtilIT.exportOaiSet(setName);
         assertEquals(200, exportSetResponse.getStatusCode());
-
+        //SEK 09/04/2019 resonable wait time for export OAI? #6128
         Thread.sleep(5000L);
 
         // Run ListIdentifiers on this newly-created set:

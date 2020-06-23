@@ -62,8 +62,10 @@ public class DataverseRole implements Serializable  {
      * Heads up that this says "editor" which comes from
      * scripts/api/data/role-editor.json but the name is "Contributor". The
      * *alias* is "editor". Don't be fooled!
+     * #6644 change EDITOR string to contributor to coincide with the "name" value 
+     * - see above note SEK 2/13/2020
      */
-    public static final String EDITOR = "editor";
+    public static final String EDITOR = "contributor";
     public static final String MANAGER = "manager";
     public static final String CURATOR = "curator";
     public static final String MEMBER = "member";

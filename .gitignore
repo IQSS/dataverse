@@ -2,6 +2,9 @@ nb-configuration.xml
 target
 infer-out
 nbactions.xml
+.settings
+.classpath
+.project
 michael-local
 GPATH
 GTAGS
@@ -49,3 +52,16 @@ scripts/installer/default.config
 .idea
 **/*.iml
 /bin/
+
+# do not track Visual Studio Code files
+.vscode
+
+# ignore UI testing related files
+tests/node_modules
+tests/package-lock.json
+venv
+
+# from thumbnail tests in SearchIT
+scripts/search/data/binary/trees.png.thumb140
+src/main/webapp/resources/images/cc0.png.thumb140
+src/main/webapp/resources/images/dataverseproject.png.thumb140

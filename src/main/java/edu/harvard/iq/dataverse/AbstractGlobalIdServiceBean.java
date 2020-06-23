@@ -29,6 +29,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     DataFileServiceBean datafileService;
     @EJB
     SystemConfig systemConfig;
+    
+    public static String UNAVAILABLE = ":unav";
 
     @Override
     public String getIdentifierForLookup(String protocol, String authority, String identifier) {
@@ -56,23 +58,41 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
     protected Map<String, String> addBasicMetadata(DvObject dvObjectIn, Map<String, String> metadata) {
 
         String authorString = dvObjectIn.getAuthorString();
-
-        if (authorString.isEmpty()) {
-            authorString = ":unav";
+        if (authorString.isEmpty() || authorString.contains(DatasetField.NA_VALUE)) {
+            authorString = UNAVAILABLE;
         }
 
         String producerString = dataverseService.findRootDataverse().getName();
 
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
+        if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
+            producerString = UNAVAILABLE;
         }
-        
+
+        String titleString = dvObjectIn.getCurrentName();
+
+        if (titleString.isEmpty() || titleString.equals(DatasetField.NA_VALUE)) {
+            titleString = UNAVAILABLE;
+        }
+
         metadata.put("datacite.creator", authorString);
-        metadata.put("datacite.title", dvObjectIn.getDisplayName());
+        metadata.put("datacite.title", titleString);
         metadata.put("datacite.publisher", producerString);
-        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));        
+        metadata.put("datacite.publicationyear", generateYear(dvObjectIn));
         return metadata;
-    }   
+    } 
+    
+    protected Map<String, String> addDOIMetadataForDestroyedDataset(DvObject dvObjectIn) {
+        Map<String, String> metadata = new HashMap<>();
+        String authorString = UNAVAILABLE;
+        String producerString = UNAVAILABLE;
+        String titleString = "This item has been removed from publication";
+
+        metadata.put("datacite.creator", authorString);
+        metadata.put("datacite.title", titleString);
+        metadata.put("datacite.publisher", producerString);
+        metadata.put("datacite.publicationyear", "9999");
+        return metadata;
+    } 
 
     protected String getTargetUrl(DvObject dvObjectIn) {
         logger.log(Level.FINE,"getTargetUrl");
@@ -416,10 +436,10 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
 
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
-        metadataTemplate.setTitle(dvObject.getDisplayName());
+        metadataTemplate.setTitle(dvObject.getCurrentName());
         String producerString = dataverseService.findRootDataverse().getName();
-        if (producerString.isEmpty()) {
-            producerString = ":unav";
+        if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
+            producerString = UNAVAILABLE;
         }
         metadataTemplate.setPublisher(producerString);
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));

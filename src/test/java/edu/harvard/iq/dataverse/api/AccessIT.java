@@ -27,6 +27,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 /**
  *
@@ -108,7 +114,6 @@ public class AccessIT {
         tabFile1Name = "120745.dta";
         tabFile1NameConvert = tabFile1Name.substring(0, tabFile1Name.indexOf(".dta")) + ".tab";
         String tab1PathToFile = "scripts/search/data/tabular/" + tabFile1Name;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab1AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab1PathToFile, apiToken);
         tabFile1Id = JsonPath.from(tab1AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         //String origFilePid = JsonPath.from(addResponse.body().asString()).getString("data.files[0].dataFile.persistentId");
@@ -116,17 +121,24 @@ public class AccessIT {
         tabFile2Name = "stata13-auto.dta";
         tabFile2NameConvert = tabFile2Name.substring(0, tabFile2Name.indexOf(".dta")) + ".tab";
         String tab2PathToFile = "scripts/search/data/tabular/" + tabFile2Name;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile2Name, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
         Response tab2AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab2PathToFile, apiToken);
         tabFile2Id = JsonPath.from(tab2AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
         
         tabFile3NameRestricted = "stata13-auto-withstrls.dta";
         tabFile3NameRestrictedConvert = tabFile3NameRestricted.substring(0, tabFile3NameRestricted.indexOf(".dta")) + ".tab";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestricted;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));     
+        
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab3PathToFile, apiToken);
+
         tabFile3IdRestricted = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Thread.sleep(3000); //Dataverse needs more time...
+        
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile3NameRestricted , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestricted.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -142,7 +154,6 @@ public class AccessIT {
         tabFile4NameUnpublished = "stata14-auto-withstrls.dta";
         tabFile4NameUnpublishedConvert = tabFile4NameUnpublished.substring(0, tabFile4NameUnpublished.indexOf(".dta")) + ".tab";
         String tab4PathToFile = "scripts/search/data/tabular/" + tabFile4NameUnpublished;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
                         
@@ -170,17 +181,22 @@ public class AccessIT {
         Response anonDownloadConverted = UtilIT.downloadFile(tabFile1Id);
         // ... and download the same tabular data file, but without the variable name header added:
         Response anonDownloadTabularNoHeader = UtilIT.downloadTabularFileNoVarHeader(tabFile1Id);
+        // ... and download the same tabular file, this time requesting the "format=tab" explicitly:
+        Response anonDownloadTabularWithFormatName = UtilIT.downloadTabularFile(tabFile1Id);
         assertEquals(OK.getStatusCode(), anonDownloadOriginal.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadConverted.getStatusCode());
         assertEquals(OK.getStatusCode(), anonDownloadTabularNoHeader.getStatusCode());
+        assertEquals(OK.getStatusCode(), anonDownloadTabularWithFormatName.getStatusCode());
         int origSizeAnon = anonDownloadOriginal.getBody().asByteArray().length;
         int convertSizeAnon = anonDownloadConverted.getBody().asByteArray().length;
         int tabularSizeNoVarHeader = anonDownloadTabularNoHeader.getBody().asByteArray().length;
+        int tabularSizeWithFormatName = anonDownloadTabularWithFormatName.getBody().asByteArray().length;
         System.out.println("origSize: "+origSizeAnon + " | convertSize: " + convertSizeAnon + " | convertNoHeaderSize: " + tabularSizeNoVarHeader);
 
-        assertEquals(origSizeAnon, tabFile1SizeOriginal);
-        assertEquals(convertSizeAnon, tabFile1SizeConvertedWithVarHeader);        
-        assertEquals(tabularSizeNoVarHeader, tabFile1SizeConverted);
+        assertEquals(tabFile1SizeOriginal, origSizeAnon);
+        assertEquals(tabFile1SizeConvertedWithVarHeader, convertSizeAnon);        
+        assertEquals(tabFile1SizeConverted, tabularSizeNoVarHeader);
+        assertEquals(tabFile1SizeConvertedWithVarHeader, tabularSizeWithFormatName);
         
         //Not logged in restricted
         Response anonDownloadOriginalRestricted = UtilIT.downloadFileOriginal(tabFile3IdRestricted);
@@ -436,13 +452,19 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetIdNew = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        basicFileName = "004.txt";
+        String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
+        Response basicAddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), basicPathToFile, apiToken);
+        basicFileId = JsonPath.from(basicAddResponse.body().asString()).getInt("data.files[0].dataFile.id");
 
         String tabFile3NameRestrictedNew = "stata13-auto-withstrls.dta";
         String tab3PathToFile = "scripts/search/data/tabular/" + tabFile3NameRestrictedNew;
-        Thread.sleep(1000); //Added because tests are failing during setup, test is probably going too fast. Especially between first and second file
         Response tab3AddResponse = UtilIT.uploadFileViaNative(datasetIdNew.toString(), tab3PathToFile, apiToken);
         Integer tabFile3IdRestrictedNew = JsonPath.from(tab3AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
-        Thread.sleep(3000); //Dataverse needs more time...
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tab3PathToFile , UtilIT.sleepForLock(datasetIdNew.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        
         Response restrictResponse = UtilIT.restrictFile(tabFile3IdRestrictedNew.toString(), true, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
@@ -486,6 +508,15 @@ public class AccessIT {
         //grant file access
         Response grantFileAccessResponse = UtilIT.grantFileAccess(tabFile3IdRestrictedNew.toString(), "@" + apiIdentifierRando, apiToken);
         assertEquals(200, grantFileAccessResponse.getStatusCode());
+        
+        //if you make a request while you have been granted access you should get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        
+        //if you make a request of a public file you should also get a command exception
+        requestFileAccessResponse = UtilIT.requestFileAccess(basicFileId.toString(), apiTokenRando);
+        assertEquals(400, requestFileAccessResponse.getStatusCode());
+        
 
         //Now should be able to download
         randoDownload = UtilIT.downloadFile(tabFile3IdRestrictedNew, apiTokenRando);
@@ -504,8 +535,7 @@ public class AccessIT {
     // zipped bundle - that should have the folder hierarchy preserved. 
     @Test
     public void testZipUploadAndDownload() throws IOException {
-        // sleep for a couple of sec. - there may still be a tab. ingest in progress:
-        try {Thread.sleep(3000);}catch(Exception ex){}
+        
         System.out.println("Testing round trip zip upload-and-download");
         // Upload the zip file that has a mix of files with and without folders:
         Response uploadZipResponse = UtilIT.uploadFileViaNative(datasetId.toString(), testZipFileWithFolders, apiToken);

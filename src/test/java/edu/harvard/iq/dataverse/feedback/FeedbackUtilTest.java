@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
@@ -478,40 +479,6 @@ public class FeedbackUtilTest {
         assertEquals("Help!", feedback.getBody());
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         assertEquals("First.Last@someU.edu", feedback.getFromEmail());
-    }
-
-    // We are starting to accumulate a lot of these. See DDIExporterTest, SchemaDotOrgExporterTest, JsonParserTest, and JsonPrinterTest.
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-
-        public DatasetFieldType add(DatasetFieldType t) {
-            if (t.getId() == null) {
-                t.setId(nextId++);
-            }
-            fieldTypes.put(t.getName(), t);
-            return t;
-        }
-
-        @Override
-        public DatasetFieldType findByName(String name) {
-            return fieldTypes.get(name);
-        }
-
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-            return findByName(name);
-        }
-
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
-
     }
 
 }

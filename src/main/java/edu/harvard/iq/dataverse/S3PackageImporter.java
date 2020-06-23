@@ -21,7 +21,7 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordWriter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -69,7 +69,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         
         String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = System.getProperty("dataverse.files.s3.bucket-name");
 
         String dvDatasetKey = getS3DatasetKey(dataset);
         
@@ -137,7 +137,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         //This is a brittle calculation, changes of the dcm post_upload script will blow this up
         String rootPackageName = "package_" + folderName.replace("/", "");
 
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = System.getProperty("dataverse.files.s3.bucket-name");
         String dvDatasetKey = getS3DatasetKey(dataset);
 
         //getting the name of the .sha file via substring, ${packageName}.sha

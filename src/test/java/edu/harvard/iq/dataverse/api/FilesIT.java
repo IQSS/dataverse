@@ -7,10 +7,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
+import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static java.lang.Thread.sleep;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -24,6 +26,7 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -32,6 +35,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class FilesIT {
 
@@ -40,14 +45,7 @@ public class FilesIT {
     @BeforeClass
     public static void setUpClass() {
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
-
     }
-    
 
     /**
      * Create user and get apiToken
@@ -104,10 +102,11 @@ public class FilesIT {
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -116,7 +115,7 @@ public class FilesIT {
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
-        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
       
         addResponse.then().assertThat()
@@ -129,9 +128,10 @@ public class FilesIT {
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
 //                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
                 .body("data.files[0].description", equalTo("my description"))
                 .statusCode(OK.getStatusCode());
@@ -144,7 +144,7 @@ public class FilesIT {
 
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.duplicate_file");
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.duplicate_file");
                 
         addTwiceResponse.then().assertThat()
                 .body("message", Matchers.startsWith(errMsg))
@@ -163,7 +163,7 @@ public class FilesIT {
         String datasetId = "cat"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative("cat", pathToFile, apiToken);
         //msgt("Here it is: " + addResponse.prettyPrint());
 
@@ -184,13 +184,13 @@ public class FilesIT {
         String datasetId = "9999"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
 
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        //String errMsg Start = ResourceBundle.getBundle("Bundle").getString("find.dataset.error.dataset.not.found.id");
+        //String errMsg Start = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id");
         String errMsg = BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(datasetId));
                 
          addResponse.then().assertThat()
@@ -210,12 +210,12 @@ public class FilesIT {
         String datasetId = "1"; //createDatasetGetId(dataverseAlias, apiToken);
        
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, apiToken);
 
         msgt("Here it is: " + addResponse.prettyPrint());
 
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.auth");
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.auth");
         
         addResponse.then().assertThat()
                 .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
@@ -235,7 +235,7 @@ public class FilesIT {
         // Create Dataset
         Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         String junkJson = "thisIsNotJson";
 
@@ -247,7 +247,7 @@ public class FilesIT {
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo(""))
                 .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
                 .body("data.files[0].description", equalTo(""))
                 .statusCode(OK.getStatusCode());
@@ -270,14 +270,14 @@ public class FilesIT {
         String apiTokenUnauthorizedUser = createUserGetToken();
 
         
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiTokenUnauthorizedUser);
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
         
         
-        String errMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.no_edit_dataset_permission");        
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.no_edit_dataset_permission");
 
       
         addResponse.then().assertThat()
@@ -307,7 +307,7 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/replace_test/003.txt";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -368,6 +368,7 @@ public class FilesIT {
         String pathToFile2 = "scripts/search/data/replace_test/004.txt";
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "My Text File")
+                .add("directoryLabel", "data/subdir1")
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
@@ -375,7 +376,7 @@ public class FilesIT {
         
         msgt(replaceResp.prettyPrint());
         
-        String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");        
+        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
         replaceResp.then().assertThat()
                 /**
@@ -386,6 +387,7 @@ public class FilesIT {
                 .body("data.files[0].label", equalTo("004.txt"))
                 .body("data.files[0].dataFile.contentType", startsWith("text/plain"))
                 .body("data.files[0].description", equalTo("My Text File"))
+                .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 //.body("data.rootDataFileId", equalTo(origFileId))              
                 .statusCode(OK.getStatusCode());
@@ -490,7 +492,8 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
 
         // give file time to ingest
-        sleep(10000);
+       // sleep(10000);
+       assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
 
         Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
 //        ddi.prettyPrint();
@@ -543,7 +546,7 @@ public class FilesIT {
             return;
         }
 
-        String successMsg2 = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.replace");
+        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
 
         replaceResp.then().assertThat()
                 .body("message", equalTo(successMsg2))
@@ -561,8 +564,9 @@ public class FilesIT {
 
     }
 
+    //This test first tests forceReplace, and after that ensures that updates only work on the latest file
     @Test
-    public void testForceReplace() {
+    public void testForceReplaceAndUpdate() {
         msgt("testForceReplace");
 
         // Create user
@@ -581,7 +585,7 @@ public class FilesIT {
         String pathToFile = "src/main/webapp/resources/images/cc0.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
@@ -626,6 +630,54 @@ public class FilesIT {
                 .body("data.files[0].description", equalTo("not an image"))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .statusCode(OK.getStatusCode());
+        
+        Long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for old file, will error");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        //"junk" passed below is to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"categories\":[\""+updateCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponse.getStatusCode());  
+        
+        //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
+        msg("Update file metadata for new file");
+        //"junk" passed below is to test that it is discarded
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(newDfId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
+        
+        //what if we delete? Should get bad request since file is not part of current version
+
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        
+        Response deleteFile = UtilIT.deleteFile(newDfId.intValue(), apiToken);
+        deleteFile.prettyPrint();
+        assertEquals(NO_CONTENT.getStatusCode(), deleteFile.getStatusCode()); 
+        publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        publishDatasetResp.prettyPrint();
+        assertEquals(OK.getStatusCode(), publishDatasetResp.getStatusCode()); 
+        msg("Update file metadata for deleted file, will error");
+        String delDescription = "Deleted description.";
+        String deletedCategory = "Deleted category";
+        //"junk" passed below is to test that it is discarded
+        String deletedJsonString = "{\"description\":\""+delDescription+"\",\"categories\":[\""+deletedCategory+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataFailResponseDeleted = UtilIT.updateFileMetadata(newDfId.toString(), deletedJsonString, apiToken);
+        updateMetadataFailResponseDeleted.prettyPrint();
+        assertEquals(BAD_REQUEST.getStatusCode(), updateMetadataFailResponseDeleted.getStatusCode()); 
+        
+
 
     }
     
@@ -645,10 +697,10 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -657,7 +709,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -680,7 +732,7 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgUnpublished = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.unpublished_file_cannot_be_replaced");
+        String errMsgUnpublished = BundleUtil.getStringFromBundle("file.addreplace.error.unpublished_file_cannot_be_replaced");
         
         replaceResp.then().assertThat()
                .statusCode(BAD_REQUEST.getStatusCode())
@@ -732,10 +784,10 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
       
         addResponse.then().assertThat()
                 /**
@@ -744,7 +796,7 @@ public class FilesIT {
                  */
                 //                .body("message", equalTo(successMsgAdd))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
         
         
@@ -788,7 +840,7 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgDeleted = ResourceBundle.getBundle("Bundle").getString("file.addreplace.error.existing_file_not_in_latest_published_version");
+        String errMsgDeleted = BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_not_in_latest_published_version");
         
         msgt("replace resp: " + replaceResp.prettyPrint());
         
@@ -816,14 +868,14 @@ public class FilesIT {
         // -------------------------
         // Add initial file
         // -------------------------
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -877,7 +929,7 @@ public class FilesIT {
         String pathToFile = "scripts/search/data/tabular/1char";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 /**
@@ -916,14 +968,14 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         System.out.println("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -936,14 +988,14 @@ public class FilesIT {
         Response restrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponse.prettyPrint();
         restrictResponse.then().assertThat()
-                .body("data.message", equalTo("File favicondataverse.png restricted."))
+                .body("data.message", equalTo("File dataverseproject.png restricted."))
                 .statusCode(OK.getStatusCode());
 
         //restrict already restricted file bad
         Response restrictResponseBad = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         restrictResponseBad.prettyPrint();
         restrictResponseBad.then().assertThat()
-                .body("message", equalTo("Problem trying to update restriction status on favicondataverse.png: File favicondataverse.png is already restricted"))
+                .body("message", equalTo("Problem trying to update restriction status on dataverseproject.png: File dataverseproject.png is already restricted"))
                 .statusCode(BAD_REQUEST.getStatusCode());
 
         //unrestrict file
@@ -951,7 +1003,7 @@ public class FilesIT {
         Response unrestrictResponse = UtilIT.restrictFile(origFileId.toString(), restrict, apiToken);
         unrestrictResponse.prettyPrint();
         unrestrictResponse.then().assertThat()
-                .body("data.message", equalTo("File favicondataverse.png unrestricted."))
+                .body("data.message", equalTo("File dataverseproject.png unrestricted."))
                 .statusCode(OK.getStatusCode());
 
         //reset public install
@@ -983,7 +1035,7 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
 
         JsonObjectBuilder json = Json.createObjectBuilder()
                 .add("description", "my description")
@@ -996,11 +1048,11 @@ public class FilesIT {
 
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
-        String successMsg = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");        
+        String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
         
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode()); 
 
         //reset public install
@@ -1026,14 +1078,14 @@ public class FilesIT {
         // Add initial file
         // -------------------------
         msg("Add initial file");
-        String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
-        String successMsgAdd = ResourceBundle.getBundle("Bundle").getString("file.addreplace.success.add");
+        String successMsgAdd = BundleUtil.getStringFromBundle("file.addreplace.success.add");
 
         addResponse.then().assertThat()
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].label", equalTo("favicondataverse.png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
                 .statusCode(OK.getStatusCode());
 
         long fileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
@@ -1041,12 +1093,7 @@ public class FilesIT {
         Response searchShouldFindNothingBecauseUnpublished = UtilIT.search("id:datafile_" + fileId + "_draft", apiToken);
         searchShouldFindNothingBecauseUnpublished.prettyPrint();
         searchShouldFindNothingBecauseUnpublished.then().assertThat()
-                // This is normal. "limited to published data" http://guides.dataverse.org/en/4.7/api/search.html
-                .body("data.total_count", equalTo(0))
-                .statusCode(OK.getStatusCode());
-        // Let's temporarily allow searching of drafts.
-        Response enableNonPublicSearch = UtilIT.enableSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        enableNonPublicSearch.then().assertThat()
+                .body("data.total_count", equalTo(1))
                 .statusCode(OK.getStatusCode());
 
         Response searchResponse = UtilIT.searchAndShowFacets("id:datafile_" + fileId + "_draft", apiToken);
@@ -1055,17 +1102,12 @@ public class FilesIT {
                 // Now we can search unpublished data. Just for testing!                
                 // FIXME - SEK (9/20/17) the checksum type test was failing previously - commenting out for now 
                 .body("data.total_count", equalTo(1))
-                .body("data.items[0].name", equalTo("favicondataverse.png"))
+                .body("data.items[0].name", equalTo("dataverseproject.png"))
  //               .body("data.items[0].checksum.type", equalTo("SHA-1"))
                 .body("data.facets", CoreMatchers.not(equalTo(null)))
                 // No "fileAccess" facet because :PublicInstall is set to true.
                 .body("data.facets[0].publicationStatus", CoreMatchers.not(equalTo(null)))
                 .statusCode(OK.getStatusCode());
-
-        Response removeSearchApiNonPublicAllowed = UtilIT.deleteSetting(SettingsServiceBean.Key.SearchApiNonPublicAllowed);
-        removeSearchApiNonPublicAllowed.prettyPrint();
-        removeSearchApiNonPublicAllowed.then().assertThat()
-                .statusCode(200);
 
         //reset public install
         UtilIT.setSetting(SettingsServiceBean.Key.PublicInstall, "false");
@@ -1097,7 +1139,7 @@ public class FilesIT {
             // Create Dataset
             Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
 
-            String pathToFile = "src/main/webapp/resources/images/favicondataverse.png";
+            String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
             Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
             //msgt("Here it is: " + addResponse.prettyPrint());
 
@@ -1144,11 +1186,232 @@ public class FilesIT {
 
         long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
         assertNotNull(origFileId);    // If checkOut fails, display message
-        sleep(10000);
+       // sleep(10000);
+        
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
         Response uningestFileResponse = UtilIT.uningestFile(origFileId, apiToken);
         assertEquals(200, uningestFileResponse.getStatusCode());       
     }
     
+    @Test
+    public void testFileMetaDataGetUpdateRoundTrip() throws InterruptedException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        assertEquals(OK.getStatusCode(), createUser.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        Response makeSuperUser = UtilIT.makeSuperUser(username);   
+
+        assertEquals(OK.getStatusCode(), makeSuperUser.getStatusCode());
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+        
+        // Add initial file
+        String pathToFile = "scripts/search/data/dv-birds1.tsv";
+        String description = "A description.";
+        String category = "A category";
+        String provFreeForm = "provenance is great";
+        String label = "acoollabel.tab";
+        String jsonString = "{\"description\":\""+description+"\",\"label\":\""+label+"\",\"provFreeForm\":\""+provFreeForm+"\",\"categories\":[{\"name\":\""+category+"\"}],\"forceReplace\":false}";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, jsonString, apiToken);
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        
+        //sleep(2000); //ensure tsv is consumed
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        //msg(publishDatasetResp.body().asString());
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        //Confirm metadata
+        Response getMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String metadataResponseString = getMetadataResponse.body().asString();
+        msg(metadataResponseString);
+        assertEquals(OK.getStatusCode(), getMetadataResponse.getStatusCode());  
+        assertEquals(description, JsonPath.from(metadataResponseString).getString("description"));
+        assertEquals(label, JsonPath.from(metadataResponseString).getString("label"));
+        assertEquals(provFreeForm, JsonPath.from(metadataResponseString).getString("provFreeForm"));
+        assertEquals(category, JsonPath.from(metadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(metadataResponseString).getString("dataFileTags"));
+        
+        //Update fileMetadata and get to confirm again
+        msg("Update file metadata");
+        String updateDescription = "New description.";
+        String updateCategory = "New category";
+        String updateDataFileTag = "Survey";
+        String updateLabel = "newName.tab";
+        //"junk" passed below is to test that it is discarded
+        String updateJsonString = "{\"description\":\""+updateDescription+"\",\"label\":\""+updateLabel+"\",\"categories\":[\""+updateCategory+"\"],\"dataFileTags\":[\""+updateDataFileTag+"\"],\"forceReplace\":false ,\"junk\":\"junk\"}";
+        Response updateMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateJsonString, apiToken);
+        assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
+        //String updateMetadataResponseString = updateMetadataResponse.body().asString();
+        Response getUpdatedMetadataResponse = UtilIT.getDataFileMetadataDraft(origFileId, apiToken);
+        String getUpMetadataResponseString = getUpdatedMetadataResponse.body().asString();
+        msg("Draft (should be updated):");
+        msg(getUpMetadataResponseString);
+        assertEquals(updateDescription, JsonPath.from(getUpMetadataResponseString).getString("description"));
+        assertEquals(updateLabel, JsonPath.from(getUpMetadataResponseString).getString("label"));
+        assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
+        assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
+        assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
+        
+        //We haven't published so the non-draft call should still give the pre-edit metadata
+        Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
+        String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
+        msg("Old Published (shouldn't be updated):");
+        msg(getOldMetadataResponseString);
+        assertEquals(label, JsonPath.from(getOldMetadataResponseString).getString("label"));
+        assertEquals(description, JsonPath.from(getOldMetadataResponseString).getString("description"));
+        assertEquals(category, JsonPath.from(getOldMetadataResponseString).getString("categories[0]"));
+        assertEquals(updateDataFileTag, JsonPath.from(getOldMetadataResponseString).getString("dataFileTags[0]")); //tags are not versioned, so the old version will have the tags
+        
+        //extra test for invalid data for tags returning a pretty error
+        String updateInvalidJsonString = "{\"dataFileTags\":false}";
+        Response updateInvalidMetadataResponse = UtilIT.updateFileMetadata(origFileId.toString(), updateInvalidJsonString, apiToken);
+        assertEquals(BAD_REQUEST.getStatusCode(), updateInvalidMetadataResponse.getStatusCode());  
+
+    }
+    
+    // This method tests the "/api/dataverses/.../storagesize API - but 
+    // it's included in this class since it deals with files. 
+    @Test
+    public void testDataSizeInDataverse() throws InterruptedException {
+
+        // Create user
+        String apiToken = createUserGetToken();
+        System.out.println("api token: "+apiToken);
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        System.out.println("dataverseAlias: "+dataverseAlias);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        // Add first file:
+        System.out.println("Add initial file");
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .statusCode(OK.getStatusCode());
+        
+        
+        // Add another file (ingestable):
+        pathToFile = "scripts/search/data/tabular/50by1000.dta";
+        addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata"))
+                .body("data.files[0].label", equalTo("50by1000.dta"))
+                .statusCode(OK.getStatusCode());
+        
+        // wait for it to ingest... 
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+     //   sleep(10000);
+     
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiTokenRando = createUserGetToken();
+        
+        Response datasetStorageSizeResponseDraft = UtilIT.findDatasetDownloadSize(datasetId.toString(), ":draft", apiTokenRando);
+        datasetStorageSizeResponseDraft.prettyPrint();
+        assertEquals(UNAUTHORIZED.getStatusCode(), datasetStorageSizeResponseDraft.getStatusCode());  
+        Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
+        //msg(publishDatasetResp.body().asString());
+        publishDatasetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        // This is the magic number - the number of bytes in the 2 files uploaded
+        // above, plus the size of the tab-delimited file generated by the ingest
+        // of the stata file:
+        
+        int magicSizeNumber = 176134; 
+        String magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("dataverse.datasize"), magicSizeNumber);
+        
+        Response dvStorageSizeResponse = UtilIT.findDataverseStorageSize(dataverseAlias, apiToken);
+        dvStorageSizeResponse.prettyPrint();
+                
+        assertEquals(magicControlString, JsonPath.from(dvStorageSizeResponse.body().asString()).getString("data.message"));
+        
+        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.storage"), magicSizeNumber);
+        
+        //no perms
+
+        Response datasetStorageSizeResponse = UtilIT.findDatasetStorageSize(datasetId.toString(), apiTokenRando);
+        datasetStorageSizeResponse.prettyPrint();
+        assertEquals(UNAUTHORIZED.getStatusCode(), datasetStorageSizeResponse.getStatusCode());  
+                
+        //has perms
+        datasetStorageSizeResponse = UtilIT.findDatasetStorageSize(datasetId.toString(), apiToken);
+        datasetStorageSizeResponse.prettyPrint();
+
+        assertEquals(magicControlString, JsonPath.from(datasetStorageSizeResponse.body().asString()).getString("data.message"));
+        
+        magicControlString = MessageFormat.format(BundleUtil.getStringFromBundle("datasets.api.datasize.download"), magicSizeNumber);
+        
+        Response datasetDownloadSizeResponse = UtilIT.findDatasetDownloadSize(datasetId.toString());
+        datasetDownloadSizeResponse.prettyPrint();
+                
+        assertEquals(magicControlString, JsonPath.from(datasetDownloadSizeResponse.body().asString()).getString("data.message"));
+        
+    }
+    
+    @Test
+    public void testValidateDDI_issue6027() throws InterruptedException {
+        msgt("testValidateDDI_issue6027");
+        String apiToken = createUserGetToken();
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+
+        msg("Add tabular file");
+        String pathToFile = "scripts/search/data/tabular/stata13-auto-withstrls.dta";
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+
+        addResponse.prettyPrint();
+
+        addResponse.then().assertThat()
+                .body("data.files[0].dataFile.contentType", equalTo("application/x-stata-13"))
+                .body("data.files[0].label", equalTo("stata13-auto-withstrls.dta"))
+                .statusCode(OK.getStatusCode());
+
+        Long origFileId = JsonPath.from(addResponse.body().asString()).getLong("data.files[0].dataFile.id");
+        assertNotNull(origFileId);    // If checkOut fails, display message
+
+        // -------------------------
+        // Publish dataverse and dataset
+        // -------------------------
+        msg("Publish dataverse and dataset");
+        Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
+        publishDataversetResp.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // give file time to ingest
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+       // sleep(10000);
+
+        Response ddi = UtilIT.getFileMetadata(origFileId.toString(), "ddi", apiToken);
+        ddi.prettyPrint();
+        ddi.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("stata13-auto-withstrls.tab"))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("make"));
+
+    }
     
     private void msg(String m){
         System.out.println(m);
@@ -1159,6 +1422,5 @@ public class FilesIT {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-    
     
 }

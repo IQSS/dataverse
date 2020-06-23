@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -32,6 +33,8 @@ import javax.persistence.Query;
 @Named
 @Stateless
 public class DatasetMetricsServiceBean implements java.io.Serializable {
+
+    private static final Logger logger = Logger.getLogger(DatasetMetricsServiceBean.class.getCanonicalName());
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -58,6 +61,12 @@ public class DatasetMetricsServiceBean implements java.io.Serializable {
         return null;
     }
     
+    public DatasetMetrics getMetrics(Dataset dataset) {
+        String nullMonthYear = null;
+        String nullCountry = null;
+        return getDatasetMetricsByDatasetForDisplay(dataset, nullMonthYear, nullCountry);
+    }
+
     public DatasetMetrics getDatasetMetricsByDatasetForDisplay(Dataset dataset, String monthYear, String country) {
 
         Long dataset_id = dataset.getId();

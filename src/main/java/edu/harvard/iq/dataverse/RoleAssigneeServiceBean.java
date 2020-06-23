@@ -78,11 +78,33 @@ public class RoleAssigneeServiceBean {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalArgumentException("Identifier cannot be null or empty string.");
         }
+        return (getRoleAssignee(identifier, false));
+    }
+    
+    /**
+     * @param identifier An identifier beginning with ":" (builtin), "@"
+     * @param augmented boolean to decide whether to get provider information
+     * ({@link AuthenticatedUser}), "&" ({@link Group}), or "#"
+     * ({@link PrivateUrlUser}).
+     *
+     * @return A RoleAssignee (User or Group) or null.
+     *
+     * @throws IllegalArgumentException if you pass null, empty string, or an
+     * identifier that doesn't start with one of the supported characters.
+     */
+    public RoleAssignee getRoleAssignee(String identifier, Boolean augmented) {
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalArgumentException("Identifier cannot be null or empty string.");
+        }
         switch (identifier.charAt(0)) {
             case ':':
                 return predefinedRoleAssignees.get(identifier);
             case '@':
-                return authSvc.getAuthenticatedUser(identifier.substring(1));
+                if (!augmented){
+                    return authSvc.getAuthenticatedUser(identifier.substring(1));
+                } else {
+                    return authSvc.getAuthenticatedUserWithProvider(identifier.substring(1));
+                }                
             case '&':
                 return groupSvc.getGroup(identifier.substring(1));
             case '#':

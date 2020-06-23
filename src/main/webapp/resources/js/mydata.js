@@ -2,6 +2,19 @@ var MYDATA_DEBUG_ON = false; // activate to show json, form info, etc
 var SHOW_PAGINATION = false; // pagination is available
 var APPEND_CARDS_TO_BOTTOM = false;  // always starts as false
 
+// bundle text variables
+var mydataresult = '';
+var mydataresults = '';
+var mydataviewnext = '';
+var mydatamore = '';
+var draft = '';
+var inreview = '';
+var unpublished = '';
+var published = '';
+var deaccessioned = '';
+var mydatato = '';
+var mydataof = '';
+
 function bind_checkbox_labels(){
     // This should be generalized to one function....once css is set
  
@@ -305,7 +318,14 @@ function updatePagination(json_data){
             $("#div-pagination").html(result_msg_html);
             
         }
-   
+
+        $('#result').html(mydataresult);
+        $('#results').html(mydataresults);
+
+        $('#to').html(mydatato);
+        $('#of').html(mydataof);
+
+
         // --------------------------------
         //  If this isn't the last page, show
         //  a "more results" link after the last card
@@ -314,12 +334,14 @@ function updatePagination(json_data){
             $('#lnk_add_more_cards').attr("rel", pagination_json.nextPageNumber);
             //console.log("update link to: " + pagination_json.nextPageNumber);
             $('#div-more-cards-link').show();
-           
-            var result_label = 'Results';
+
+            var view_next = mydataviewnext;
+            var more = mydatamore;
+            var result_label = mydataresults;
             if (pagination_json.numberNextResults == 1){
-                result_label = 'Result';
+                result_label = mydataresult;
             }
-            $('#lnk_add_more_cards').html('View Next ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' More)');
+            $('#lnk_add_more_cards').html(view_next + ' ' + pagination_json.numberNextResults + ' ' + result_label + ' (' + pagination_json.remainingCards + ' ' + more +')');
         }
         bindPages();
     }
@@ -439,7 +461,40 @@ function submit_my_data_search(){
             check_card_images();
             // bind_filter_remove_tags();
             $('#ajaxStatusPanel_start').hide();
-            
+
+
+            if ($("span.label.draft")) {
+                var y = $("span.label.draft");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = draft;
+                }
+            }
+            if ($("span.label.inreview")) {
+                var y = $("span.label.inreview");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = inreview;
+                }
+            }
+            if ($("span.label.published")) {
+                var y = $("span.label.published");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = published;
+                }
+            }
+            if ($("span.label.unpublished")) {
+                var y = $("span.label.unpublished");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = unpublished;
+                }
+            }
+            if ($("span.label.deaccessioned")) {
+                var y = $("span.label.deaccessioned");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = deaccessioned;
+                }
+            }
+
+
             // --------------------------------
             // (6) Update address bar
             // --------------------------------

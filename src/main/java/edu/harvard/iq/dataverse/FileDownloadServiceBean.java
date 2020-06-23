@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -13,6 +14,8 @@ import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -32,7 +35,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.primefaces.PrimeFaces;
-import org.primefaces.context.RequestContext;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -63,7 +66,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     @EJB
     AuthenticationServiceBean authService;
-    
+    @EJB
+    PrivateUrlServiceBean privateUrlService;
+
     @Inject
     DataverseSession session;
     
@@ -109,7 +114,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 writeGuestbookResponseRecord(guestbookResponse);
             }
         
-            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true);
+            redirectToDownloadAPI(guestbookResponse.getFileFormat(), fileId, true, null);
             return;
         }
         
@@ -138,7 +143,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         
         // Make sure to set the "do not write Guestbook response" flag to TRUE when calling the Access API:
-        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true);
+        redirectToDownloadAPI(format, fileMetadata.getDataFile().getId(), true, fileMetadata.getId());
         logger.fine("issued file download redirect for filemetadata "+fileMetadata.getId()+", datafile "+fileMetadata.getDataFile().getId());
     }
     
@@ -177,6 +182,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             mdcLogService.logEntry(entry);
         } catch (CommandException e) {
             //if an error occurs here then download won't happen no need for response recs...
+            logger.warning("Exception writing GuestbookResponse for file: " + guestbookResponse.getDataFile().getId() + " : " + e.getLocalizedMessage());
         }
     }
     
@@ -198,7 +204,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     // to the API.
     private void redirectToBatchDownloadAPI(String multiFileString, Boolean guestbookRecordsAlreadyWritten, Boolean downloadOriginal){
 
-        String fileDownloadUrl = "/api/access/datafiles/" + multiFileString;
+        String fileDownloadUrl = "/api/access/datafiles";
         if (guestbookRecordsAlreadyWritten && !downloadOriginal){
             fileDownloadUrl += "?gbrecs=true";
         } else if (guestbookRecordsAlreadyWritten && downloadOriginal){
@@ -207,16 +213,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             fileDownloadUrl += "?format=original";
         }
         
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
+        PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
 
     }
 
-    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
+    private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
+        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten, fileMetadataId);
         logger.fine("Redirecting to file download url: " + fileDownloadUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
@@ -226,7 +228,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     private void redirectToDownloadAPI(String downloadType, Long fileId) {
-        redirectToDownloadAPI(downloadType, fileId, true);
+        redirectToDownloadAPI(downloadType, fileId, true, null);
     }
     
     private void redirectToBatchDownloadAPI(String multiFileString, Boolean downloadOriginal){
@@ -242,9 +244,21 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void explore(GuestbookResponse guestbookResponse, FileMetadata fmd, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
-        if (user instanceof AuthenticatedUser) {
-            AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-            apiToken = authService.findApiTokenByUser(authenticatedUser);
+        DatasetVersion version = fmd.getDatasetVersion();
+        if (version.isDraft() || (fmd.getDataFile().isRestricted())) {
+            if (user instanceof AuthenticatedUser) {
+                AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
+                apiToken = authService.findApiTokenByUser(authenticatedUser);
+                if (apiToken == null) {
+                    //No un-expired token
+                    apiToken = authService.generateApiTokenForUser(authenticatedUser);
+                }
+            } else if (user instanceof PrivateUrlUser) {
+                PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+                PrivateUrl privateUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+                apiToken = new ApiToken();
+                apiToken.setTokenString(privateUrl.getToken());
+            }
         }
         DataFile dataFile = null;
         if (fmd != null) {
@@ -254,11 +268,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 dataFile = guestbookResponse.getDataFile();
             }
         }
-        //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
-        if(dataFile.getFileMetadata()==null) {
-            dataFile=datafileService.find(dataFile.getId());
-        }
-        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken);
+        String localeCode = session.getLocaleCode();
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataFile, apiToken, fmd, localeCode);
         // Back when we only had TwoRavens, the downloadType was always "Explore". Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         guestbookResponse.setDownloadtype(externalTool.getDisplayName());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
@@ -430,9 +441,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         //SEK 12/3/2018 changing this to open the json in a new tab. 
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
-        response.setContentType("application/json");
-
+        
+        //Fix for 6029 FireFox was failing to parse it when content type was set to json 
+        response.setContentType("text/plain");
+        
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
             // Dataset-level citation:
@@ -464,19 +476,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 return true;
             } catch (CommandException ex) {
                 logger.info("Unable to request access for file id " + fileId + ". Exception: " + ex);
+                return false;
             }             
-        }
-        
+        }        
         return false;
     }    
     
     public void sendRequestFileAccessNotification(Dataset dataset, Long fileId, AuthenticatedUser requestor) {
         permissionService.getUsersWithPermissionOn(Permission.ManageDatasetPermissions, dataset).stream().forEach((au) -> {
-            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor);
+            userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
 
     }    
-
-
     
 }

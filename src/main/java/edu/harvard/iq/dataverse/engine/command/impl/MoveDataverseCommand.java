@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.Template;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -18,11 +19,15 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * A command to move a {@link Dataverse} between two {@link Dataverse}s.
@@ -62,23 +67,23 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         
         // first check if user is a superuser
         if ((!(getUser() instanceof AuthenticatedUser) || !getUser().isSuperuser())) {
-            throw new PermissionException("Move Dataset can only be called by superusers.",
+            throw new PermissionException(BundleUtil.getStringFromBundle("command.exception.only.superusers", Arrays.asList(this.toString())),
                     this, Collections.singleton(Permission.DeleteDataverse), moved);
         }
 
         // validate the move makes sense
         if (destination.getOwners().contains(moved)) {
-            throw new IllegalCommandException("Can't move a dataverse to its descendant", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.failure.descendent"), this);
         }
         if (moved.getOwner().equals(destination)) {
-            throw new IllegalCommandException("Dataverse already in this dataverse ", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.failure.already.member"), this);
         }
         if (moved.equals(destination)) {
-            throw new IllegalCommandException("Cannot move a dataverse into itself", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.failure.itself"), this);
         }
         // if dataverse is published make sure that its destination is published
         if (moved.isReleased() && !destination.isReleased()) {
-            throw new IllegalCommandException("Published dataverse may not be moved to unpublished dataverse. You may publish " + destination.getDisplayName() + " and re-try the move.", this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.failure.not.published", Arrays.asList(destination.getDisplayName())), this);
         }
         
         logger.info("Getting dataset children of dataverse...");
@@ -263,24 +268,24 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         if (removeGuestbook || removeTemplate || removeFeatDv || removeMetadataBlock || removeLinkDv || removeLinkDs) {
             StringBuilder errorString = new StringBuilder();
             if (removeGuestbook) {
-                errorString.append("Dataset guestbook is not in target dataverse. ");
+                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.guestbook")).append(" ");
             }
             if (removeTemplate) {
-                errorString.append("Dataverse template is not in target dataverse. ");
+                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.template")).append(" ");
             } 
-            if (removeFeatDv) {
-                errorString.append("Dataverse is featured in current dataverse. ");
+            if (removeFeatDv) {               
+               errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.featured")).append(" ");
             }
-            if (removeMetadataBlock) {
-               errorString.append("Dataverse metadata block is not in target dataverse. ");
+            if (removeMetadataBlock) {                
+               errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.metadataBlock")).append(" ");
             }
-            if (removeLinkDv) {
-                errorString.append("Dataverse is linked to target dataverse or one of its parents. ");
+            if (removeLinkDv) {                
+                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.dataverseLink")).append(" ");
             }
             if (removeLinkDs) {
-                errorString.append("Dataset is linked to target dataverse or one of its parents. ");
-            }
-            errorString.append("Please use the parameter ?forceMove=true to complete the move. This will remove anything from the dataverse that is not compatible with the target dataverse.");
+                errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.datasetLink")).append(" ");
+            }            
+            errorString.append(BundleUtil.getStringFromBundle("dataverses.api.move.dataverse.error.forceMove")).append(" ");
             throw new IllegalCommandException(errorString.toString(), this);
         }
         // OK, move
@@ -293,10 +298,18 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         ctxt.indexBatch().indexDataverseRecursively(moved);
         
         //REindex datasets linked to moved dv
-        if (moved.getDatasetLinkingDataverses() != null &&  !moved.getDatasetLinkingDataverses().isEmpty()) {
+        if (moved.getDatasetLinkingDataverses() != null && !moved.getDatasetLinkingDataverses().isEmpty()) {
             for (DatasetLinkingDataverse dld : moved.getDatasetLinkingDataverses()) {
                 Dataset linkedDS = ctxt.datasets().find(dld.getDataset().getId());
-                ctxt.index().indexDataset(linkedDS, true);
+                try {
+                    ctxt.index().indexDataset(linkedDS, true);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post move dataverse dataset indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + linkedDS.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, linkedDS);
+
+                }
+
             }
         }
     }

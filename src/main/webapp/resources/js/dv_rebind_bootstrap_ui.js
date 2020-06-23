@@ -2,10 +2,9 @@
  * Rebind bootstrap UI components after Primefaces ajax calls
  */
 function bind_bsui_components(){
-    // Breadcrumb Tree Keep Open
-    $(document).on('click', '.dropdown-menu', function (e) {
-        $(this).hasClass('keep-open'),
-        e.stopPropagation();
+    // Facet panel Filter Results btn toggle
+    $(document).on('click', '[data-toggle=offcanvas]', function() {
+        $('.row-offcanvas').toggleClass('active', 200);
     });
     
     // Collapse Header Icons
@@ -86,18 +85,14 @@ function disabledLinks(){
 /*
 * Custom Popover with HTML code snippet
 */
-function popoverHTML(popoverTitleHTML) {
+function popoverHTML(popoverTitleHTML, popoverTagsHTML) {
    var popoverTemplateHTML = ['<div class="popover">',
        '<div class="arrow"></div>',
        '<h3 class="popover-title"></h3>',
        '<div class="popover-content">',
        '</div>',
        '</div>'].join('');
-
-   var popoverContentHTML = ['<code>',
-       '&lt;a&gt;, &lt;b&gt;, &lt;blockquote&gt;, &lt;br&gt;, &lt;code&gt;, &lt;del&gt;, &lt;dd&gt;, &lt;dl&gt;, &lt;dt&gt;, &lt;em&gt;, &lt;hr&gt;, &lt;h1&gt;-&lt;h3&gt;, &lt;i&gt;, &lt;img&gt;, &lt;kbd&gt;, &lt;li&gt;, &lt;ol&gt;, &lt;p&gt;, &lt;pre&gt;, &lt;s&gt;, &lt;sup&gt;, &lt;sub&gt;, &lt;strong&gt;, &lt;strike&gt;, &lt;ul&gt;',
-       '</code>'].join('');
-
+   var popoverContentHTML = ['<code>', popoverTagsHTML, '</code>'].join('');
    $('body').popover({
        selector: 'a.popoverHTML',
        title: popoverTitleHTML,
@@ -128,13 +123,13 @@ function sharrre(){
         share: {
             facebook: true,
             twitter: true,
-            googlePlus: true
+            linkedin: true
         },
         template: '<div id="sharrre-block" class="clearfix">\n\
                     <input type="hidden" id="sharrre-total" name="sharrre-total" value="{total}"/> \n\
                     <a href="#" class="sharrre-facebook"><span class="socicon socicon-facebook"/></a> \n\
                     <a href="#" class="sharrre-twitter"><span class="socicon socicon-twitter"/></a> \n\
-                    <a href="#" class="sharrre-google"><span class="socicon socicon-google"/></a>\n\
+                    <a href="#" class="sharrre-linkedin"><span class="socicon socicon-linkedin"/></a>\n\
                     </div>',
         enableHover: false,
         enableTracking: true,
@@ -146,8 +141,8 @@ function sharrre(){
             $(api.element).on('click', '.sharrre-facebook', function() {
                 api.openPopup('facebook');
             });
-            $(api.element).on('click', '.sharrre-google', function() {
-                api.openPopup('googlePlus');
+            $(api.element).on('click', '.sharrre-linkedin', function() {
+                api.openPopup('linkedin');
             });
             
             // Count not working... Coming soon...

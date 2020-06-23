@@ -110,6 +110,10 @@ public class WorkflowComment implements Serializable {
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }
+    
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser){
+        this.authenticatedUser = authenticatedUser;
+    }
 
     public Timestamp getCreated() {
         return created;

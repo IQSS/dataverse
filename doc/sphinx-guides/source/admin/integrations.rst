@@ -19,9 +19,9 @@ If your researchers have data on Dropbox, you can make it easier for them to get
 Open Science Framework (OSF)
 ++++++++++++++++++++++++++++
 
-The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project. 
+The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit http://help.osf.io/m/addons/l/863978-connect-dataverse-to-a-project 
+For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit https://help.osf.io/hc/en-us/articles/360019737314-Connect-Dataverse-to-a-Project
 
 RSpace
 ++++++
@@ -41,22 +41,49 @@ As of this writing only OJS 2.x is supported and instructions for getting starte
 
 If you are interested in OJS 3.x supporting deposit from Dataverse, please leave a comment on https://github.com/pkp/pkp-lib/issues/1822
 
+Renku
++++++
+
+Renku is a platform that enables collaborative, reproducible and reusable
+(data)science. It allows researchers to automatically record the provenance of
+their research results and retain links to imported and exported data. Users
+can organize their data in "Datasets", which can be exported to Dataverse via
+the command-line interface (CLI).
+
+Renku dataset documentation: https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset
+
+Flagship deployment of the Renku platform: https://renkulab.io
+
+Renku discourse: https://renku.discourse.group/
+
+
+Embedding Data on Websites
+--------------------------
+
+OpenScholar
++++++++++++
+
+`OpenScholar <https://theopenscholar.com>`_ is oriented toward hosting websites for academic institutions and offers `Dataverse Widgets <https://help.theopenscholar.com/dataverse>`_ that can be added to web pages. See also:
+
+- :ref:`openscholar-dataverse-level` (dataverse level)
+- :ref:`openscholar-dataset-level` (dataset level)
+
 Analysis and Computation
 ------------------------
 
 Data Explorer
 +++++++++++++
 
-Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis. 
+Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
 
-For installation instructions, see the :doc:`/installation/external-tools` section of the Installation Guide.
+For installation instructions, see the :doc:`external-tools` section.
 
 TwoRavens/Zelig
 +++++++++++++++
 
 TwoRavens is a web application for tabular data exploration and statistical analysis with Zelig.
 
-For installation instructions, see the :doc:`/installation/external-tools` section of the Installation Guide.
+For installation instructions, see the :doc:`external-tools` section.
 
 WorldMap
 ++++++++
@@ -75,7 +102,28 @@ Whole Tale
 
 `Whole Tale <https://wholetale.org>`_  enables researchers to analyze data using popular tools including Jupyter and RStudio with the ultimate goal of supporting publishing of reproducible research packages. Users can
 `import data from Dataverse
-<https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`/installation/external-tools` section of this Installation Guide or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
+<https://wholetale.readthedocs.io/en/stable/users_guide/manage.html>`_ via identifier (e.g., DOI, URI, etc) or through the External Tools integration.  For installation instructions, see the :doc:`external-tools` section or the `Integration <https://wholetale.readthedocs.io/en/stable/users_guide/integration.html#dataverse-external-tools>`_ section of the Whole Tale User Guide.
+
+Binder
+++++++
+
+Researchers can launch Jupyter Notebooks, RStudio, and other computational environments by entering the DOI of a Dataverse dataset on https://mybinder.org
+
+Institutions can self host BinderHub. Dataverse is one of the supported `repository providers <https://binderhub.readthedocs.io/en/latest/developer/repoproviders.html#supported-repoproviders>`_.
+
+Renku
++++++
+
+Researchers can import Dataverse datasets into their Renku projects via the
+command-line interface (CLI) by using the Dataverse DOI. See the `renku Dataset
+documentation
+<https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
+for details. Currently Dataverse ``>=4.8.x`` is required for the import to work. If you need
+support for an earlier version of Dataverse, please get in touch with the Renku team at
+`Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
+The UI implementation of the import is in progress and will be
+completed in Q12020.
+
 
 Discoverability
 ---------------
@@ -90,7 +138,7 @@ Dataverse supports a protocol called OAI-PMH that facilitates harvesting dataset
 SHARE
 +++++
 
-`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add and installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
+`SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add an installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
 
 Research Data Preservation
 --------------------------
@@ -98,7 +146,7 @@ Research Data Preservation
 Archivematica
 +++++++++++++
 
-`Archivematica <https://www.archivematica.org>`_ is an integrated suite of open-source tools for processing digital objects for long-term preservation, developed and maintained by Artefactual Systems Inc. Its configurable workflow is designed to produce system-independent, standards-based Archival Information Packages (AIPs) suitable for long-term storage and management. 
+`Archivematica <https://www.archivematica.org>`_ is an integrated suite of open-source tools for processing digital objects for long-term preservation, developed and maintained by Artefactual Systems Inc. Its configurable workflow is designed to produce system-independent, standards-based Archival Information Packages (AIPs) suitable for long-term storage and management.
 
 Sponsored by the `Ontario Council of University Libraries (OCUL) <https://ocul.on.ca/>`_, this technical integration enables users of Archivematica to select datasets from connected Dataverse instances and process them for long-term access and digital preservation. For more information and list of known issues, please refer to Artefactual's `release notes <https://wiki.archivematica.org/Archivematica_1.8_and_Storage_Service_0.13_release_notes>`_, `integration documentation <https://www.archivematica.org/en/docs/archivematica-1.8/user-manual/transfer/dataverse/>`_, and the `project wiki <https://wiki.archivematica.org/Dataverse>`_.
 
@@ -112,8 +160,10 @@ For details on how to configure this integration, look for "DuraCloud/Chronopoli
 Future Integrations
 -------------------
 
-The `Dataverse roadmap <https://dataverse.org/goals-roadmap-and-releases>`_ is a good place to see integrations that the core Dataverse team is working on.
+The `Dataverse roadmap <https://www.iq.harvard.edu/roadmap-dataverse-project>`_ is a good place to see integrations that the core Dataverse team is working on.
 
-The `Dev Efforts by the Dataverse Community <https://docs.google.com/spreadsheets/d/1pl9U0_CtWQ3oz6ZllvSHeyB0EG1M_vZEC_aZ7hREnhE/edit?usp=sharing>`_ spreadsheet is the best way to track integrations that are being worked on by the Dataverse community.
+The `Community Dev <https://github.com/orgs/IQSS/projects/2#column-5298405>`_ column of our project board is a good way to track integrations that are being worked on by the Dataverse community but many are not listed and if you have an idea for an integration, please ask on the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ mailing list if someone is already working on it.
+
+Many integrations take the form of "external tools". See the :doc:`external-tools` section for details. External tool makers should check out the :doc:`/api/external-tools` section of the API Guide.
 
 Please help us keep this page up to date making a pull request! To get started, see the :doc:`/developers/documentation` section of the Developer Guide.

@@ -38,6 +38,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XitemRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XsetRepository;
 import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.ejb.EJB;
+import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -177,14 +179,14 @@ public class OAIServlet extends HttpServlet {
         
         String dataverseName = dataverseService.findRootDataverse().getName();
         String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
-        
+        InternetAddress internetAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 
         RepositoryConfiguration repositoryConfiguration = new RepositoryConfiguration()
                 .withRepositoryName(repositoryName)
                 .withBaseUrl(systemConfig.getDataverseSiteUrl()+"/oai")
                 .withCompression("gzip")        // ?
                 .withCompression("deflate")     // ?
-                .withAdminEmail(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail))
+                .withAdminEmail(internetAddress != null ? internetAddress.getAddress() : null)
                 .withDeleteMethod(DeletedRecord.TRANSIENT)
                 .withGranularity(Granularity.Second)
                 .withMaxListIdentifiers(100)
@@ -261,19 +263,19 @@ public class OAIServlet extends HttpServlet {
                        
         } catch (IOException ex) {
             logger.warning("IO exception in Get; "+ex.getMessage());
-            throw new ServletException ("IO Exception in Get");
+            throw new ServletException ("IO Exception in Get", ex);
         } catch (OAIException oex) {
             logger.warning("OAI exception in Get; "+oex.getMessage());
-            throw new ServletException ("OAI Exception in Get");
+            throw new ServletException ("OAI Exception in Get", oex);
         } catch (XMLStreamException xse) {
             logger.warning("XML Stream exception in Get; "+xse.getMessage());
-            throw new ServletException ("XML Stream Exception in Get");
+            throw new ServletException ("XML Stream Exception in Get", xse);
         } catch (XmlWriteException xwe) {
             logger.warning("XML Write exception in Get; "+xwe.getMessage());
-            throw new ServletException ("XML Write Exception in Get");  
+            throw new ServletException ("XML Write Exception in Get", xwe);  
         } catch (Exception e) {
             logger.warning("Unknown exception in Get; "+e.getMessage());
-            throw new ServletException ("Unknown servlet exception in Get.");
+            throw new ServletException ("Unknown servlet exception in Get.", e);
         }
         
     }

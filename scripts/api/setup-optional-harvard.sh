@@ -55,4 +55,5 @@ curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @da
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customCHIA.tsv -H "Content-type: text/tab-separated-values"
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/customDigaai.tsv -H "Content-type: text/tab-separated-values"
 curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @data/metadatablocks/custom_hbgdki.tsv -H "Content-type: text/tab-separated-values"
+echo "Because you have loaded custom metadata blocks, you need to update the include files pulled in by Solr's schema.xml. On the Solr server, you can try running the updateSchemaMDB.sh script mentioned in the Metadata Customization section of the Admin Guide or follow the manual steps listed there."
 echo

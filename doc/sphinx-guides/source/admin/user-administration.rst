@@ -34,6 +34,16 @@ With the ``list-users`` form you can include the following optional query parame
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
 * ``selectedPage`` The page of results to return.  The default is 1.
 
+Merge User Accounts
+---------------------
+
+See :ref:`merge-accounts-label`
+
+Change User Identifier
+-------------------------
+
+See :ref:`change-identifier-label`
+
 Confirm Email
 -------------
 
@@ -43,7 +53,7 @@ The app will send a standard welcome email with a URL the user can click, which,
 
 Should users' URL token expire, they will see a "Verify Email" button on the account information page to send another URL.
 
-Sysadmins can determine which users have verified their email addresses by looking for the presence of the value ``emailLastConfirmed`` in the JSON output from listing users (see the "Admin" section of the :doc:`/api/native-api`). As mentioned in the :doc:`/user/account` section of the User Guide, the email addresses for Shibboleth users are re-confirmed on every login.
+Sysadmins can determine which users have verified their email addresses by looking for the presence of the value ``emailLastConfirmed`` in the JSON output from listing users (see :ref:`admin` section of Native API in the API Guide). As mentioned in the :doc:`/user/account` section of the User Guide, the email addresses for Shibboleth users are re-confirmed on every login.
 
 Deleting an API Token
 ---------------------
@@ -55,4 +65,3 @@ Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
 ``delete from apitoken where tokenstring = '7ae33670-be21-491d-a244-008149856437';``
 
 You should expect the output ``DELETE 1`` after issuing the command above.
-

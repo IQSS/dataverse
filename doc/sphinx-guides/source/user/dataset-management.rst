@@ -16,17 +16,33 @@ A dataset contains three levels of metadata:
 
 #. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
 #. **Domain Specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
-#. **File-level Metadata**: varies depending on the type of data file - see *File Handling and Uploading* section below for more details). 
+#. **File-level Metadata**: varies depending on the type of data file - for more details see :ref:`File Handling <file-handling>` section below).
 
 For more details about what Citation and Domain Specific Metadata is supported please see our :ref:`user-appendix`.
 
-Note that once a dataset has been published its metadata may be exported. A button on the dataset page's metadata tab will allow a user to export the metadata of the most recently published version of the dataset. Currently supported export formats are DDI, Dublin Core, Datacite 4, OAI_ORE, Schema.org JSON-LD, and Dataverse's native JSON format.
+.. _metadata-export-formats:
+
+Supported Metadata Export Formats
+---------------------------------
+
+Once a dataset has been published, its metadata can be exported in a variety of other metadata standards and formats, which help make datasets more discoverable and usable in other systems, such as other data repositories. On each dataset page's metadata tab, the following exports are available:
+
+- Dublin Core
+- DDI (Data Documentation Initiative Codebook 2.5)
+- DDI HTML Codebook (A more human-readable, HTML version of the DDI Codebook 2.5 metadata export)
+- DataCite 4
+- JSON (native Dataverse format)
+- OAI_ORE
+- OpenAIRE
+- Schema.org JSON-LD
+
+Each of these metadata exports contains the metadata of the most recently published version of the dataset.
 
 Adding a New Dataset
 ====================
 
-#. Navigate to the dataverse in which you want to add a dataset. 
-#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu.
+#. Navigate to the dataverse in which you want to add a dataset.
+#. Click on the "Add Data" button and select "New Dataset" in the dropdown menu. **Note:** If you are on the root dataverse, your My Data page or click the "Add Data" link in the navbar, the dataset you create will be hosted in the root dataverse. You can change this by selecting another dataverse you have proper permissions to create datasets in, from the Host Dataverse dropdown in the create dataset form. This option to choose will not be available after you create the dataset.
 #. To quickly get started, enter at minimum all the required fields with an asterisk (e.g., the Dataset Title, Author, 
    Description, Contact Email and Subject) to get a Data Citation with a DOI.
 #. Scroll down to the "Files" section and click on "Select Files to Add" to add all the relevant files to your Dataset. 
@@ -35,14 +51,16 @@ Adding a New Dataset
    description and tags (via the "Edit Tag" button) for each file. Additionally, an MD5 checksum will be added for each file. If you upload a tabular file a :ref:`Universal Numerical Fingerprint (UNF) <unf>` will be added to this file.
 #. Click the "Save Dataset" button when you are done. Your unpublished dataset is now created. 
 
-Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
+Note: You can add additional metadata once you have completed the initial dataset creation by going to clicking the Edit button and selecting Metadata from the dropdown menu.
+
+.. _supported-html-fields:
 
 Supported HTML Fields
 ---------------------
 
 We currently only support the following HTML tags for any of our textbox metadata fields (i.e., Description) : <a>, <b>, <blockquote>, 
 <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, 
-<strong>, <strike>, <ul>.
+<strong>, <strike>, <u>, <ul>.
 
 File Upload
 ==============
@@ -53,7 +71,7 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the File Handling section of this page for more information.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
 
 
 HTTP Upload
@@ -118,20 +136,26 @@ Basic usage is to run the command: ::
 
     java -jar DVUploader-v1.0.0.jar -server=<Dataverse server URL> -did=<Dataset DOI> -key=<User's API Key> <file or directory list>
 
-Additional command line arguments are available to make the DVUploader list what it would do without uploading, limit the number of files it uploads, recurse through sub-directories, verify fixity, exclude files with specific extensions or name patterns, and/or wait longer than 60 seconds for any Dataverse ingest lock to clear (e.g. while the previously uploaded file is processed, as discussed in the File Handling section below). 
+Additional command line arguments are available to make the DVUploader list what it would do without uploading, limit the number of files it uploads, recurse through sub-directories, verify fixity, exclude files with specific extensions or name patterns, and/or wait longer than 60 seconds for any Dataverse ingest lock to clear (e.g. while the previously uploaded file is processed, as discussed in the :ref:`File Handling <file-handling>` section below). 
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/IQSS/dataverse-uploader>`_ . 
+
+.. _file-handling:
 
 File Handling
 =============
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, subsets, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
 
+File Previews
+-------------
+
+Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
 
 Tabular Data Files
 ------------------
 
-Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see "Tabular Data Ingest" section of the User Guide for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse, as well as other :doc:`/installation/external-tools` if they have been enabled in the installation of Dataverse you are using. TwoRavens allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). To download subsets of variables click on the "Download" button found next to a relevant tabular file and select "Data Subset" in the dropdown menu. You will then be able to create your subset using the interface opened in a new window (this functionality is also provided by the `TwoRavens <../user/data-exploration/tworavens.html>`_ project). See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
+Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see :doc:`/user/tabulardataingest/index` section of the User Guide for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse, as well as other :doc:`/admin/external-tools` if they have been enabled in the installation of Dataverse you are using. TwoRavens allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). Create and download your subset using `TwoRavens <../user/data-exploration/tworavens.html>`_. See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
 
 Additional download options available for tabular data (found in the same drop-down menu under the "Download" button): 
 
@@ -142,7 +166,7 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
-|image2|
+See also :ref:`restricted-tabular-files`.
 
 Geospatial
 ----------
@@ -180,11 +204,13 @@ Metadata found in the header section of `Flexible Image Transport System (FITS) 
 Compressed Files
 ----------------
 
-Compressed files in zip format are unpacked automatically. If it fails to unpack, for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the zip file will uploads as is.
+Compressed files in .zip format are unpacked automatically. If a .zip file fails to unpack for whatever reason, it will upload as is. If the number of files inside are more than a set limit (1,000 by default, configurable by the Administrator), you will get an error message and the .zip file will upload as is.
 
-.. note:: If the uploaded zip file contains sub-folders, the names of the folders will be preserved as the ``DirectoryLabel`` attributes in the ``FileMetadata`` objects of the corresponding individual datafiles. As of writing this - v.4.11 - these labels are only used to restore the folder structure in multi-file, zipped download bundles (see :doc:`/api/dataaccess` for more information). In the future folder structure will be supported for organizing files on the dataset page as well. 
+If the uploaded .zip file contains a folder structure, Dataverse will keep track of this structure. A file's location within this folder structure is displayed in the file metadata as the File Path. When you download the contents of the dataset, this folder structure will be preserved and files will appear in their original locations. 
 
-Support for unpacking tar files will be added when this ticket is closed: https://github.com/IQSS/dataverse/issues/2195.
+These folder names are subject to strict validation rules. Only the following characters are allowed: the alphanumerics, '_', '-', '.' and ' ' (white space). When a zip archive is uploaded, the folder names are automatically sanitized, with any invalid characters replaced by the '.' character. Any sequences of dots are further replaced with a single dot. For example, the folder name ``data&info/code=@137`` will be converted to ``data.info/code.137``. When uploading through the Web UI, the user can change the values further on the edit form presented, before clicking the 'Save' button. 
+
+.. note:: If you upload multiple .zip files to one dataset, any subdirectories that are identical across multiple .zips will be merged together when the user downloads the full dataset.
 
 Other File Types
 ----------------
@@ -193,6 +219,28 @@ There are several advanced options available for certain file types.
 
 - Image files: .jpg, .png, and .tif files are able to be selected as the default thumbnail for a dataset. The selected thumbnail will appear on the search result card for that dataset.
 - SPSS files: SPSS files can be tagged with the language they were originally coded in. This is found by clicking on Advanced Options and selecting the language from the list provided.
+
+.. _restricted-files:
+
+Restricted Files
+================
+
+When you restrict a file in Dataverse it cannot be downloaded unless permission has been granted.
+
+See also :ref:`terms-of-access` and :ref:`permissions`.
+
+.. _restricted-tabular-files:
+
+Restricted Tabular Files
+------------------------
+
+Restricted tabular files are treated differently than other file types in that the following information is exposed when the files are published:
+
+- The name of columns (variables).
+- The "label" (description) of columns.
+- Summary statistics (max, min, mean, etc.) of columns.
+
+This information can been seen from the file landing page if you click "Export Metada" and then "DDI". Depending on your installation, the information above may also be available from :doc:`/admin/external-tools`.
 
 Edit Files
 ==========
@@ -211,6 +259,22 @@ Go to the dataset you would like to edit, where you will see the listing of file
 You will not have to leave the dataset page to complete these action, except for editing file metadata, which will bring you to the Edit Files page. There you will have to click the "Save Changes" button to apply your edits and return to the dataset page.
 
 If you restrict files, you will also prompted with a popup asking you to fill out the Terms of Access for the files. If Terms of Access already exist, you will be asked to confirm them. Note that some Dataverse installations do not allow for file restrictions.
+
+Edit File Variable Metadata
+---------------------------
+
+Variable Metadata can be edited directly through an API call (:ref:`API Guide: Editing Variable Level Metadata <EditingVariableMetadata>`) or by using the  `Dataverse Data Curation Tool <https://github.com/scholarsportal/Dataverse-Data-Curation-Tool>`_.
+
+File Path
+---------
+
+The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path.
+
+A file's File Path can be manually added or edited on the Edit Files page. Changing a file's File Path will change its location in the folder structure that is created when a user downloads the full dataset or a selection of files from it.
+
+If there is more than one file in the dataset, and once at least one of them has a non-empty directory path, the Dataset Page will present an option for switching between the traditional table view, and the tree-like view of the files showing the folder structure, as in the example below: 
+
+|image-file-tree-view|
 
 File Tags
 ---------
@@ -235,6 +299,7 @@ Dataset terms can be viewed and edited from the Terms tab of the dataset page, o
 
 CC0 Public Domain Dedication
 ----------------------------
+
 By default, all new datasets created through Dataverse's web UI are given a `Creative Commons CC0 Public Domain Dedication <https://creativecommons.org/publicdomain/zero/1.0/>`_.
 
 The `Creative Commons <https://creativecommons.org>`_ organization defines a number of `licenses <https://creativecommons.org/licenses/>`_ that allow copyright holders to release their intellectual property more openly, with fewer legal restrictions than standard copyright enforces. Each Creative Commons license typically specifies simple terms for how the IP must be used, reused, shared, and attributed. In addition to these licenses, Creative Commons also provides public domain tools that make it easy to dedicate IP to the public domain. 
@@ -256,12 +321,16 @@ If you are unable to use the CC0 Public Domain Dedication for your datasets, you
 
 Here is an `example of a Data Usage Agreement <https://dataverse.org/best-practices/sample-dua>`_ for datasets that have de-identified human subject data.
 
+.. _terms-of-access:
+
 Restricted Files + Terms of Access 
 ----------------------------------
 
-If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc.
+If you restrict any files in your dataset, you will be prompted by a pop-up to enter Terms of Access for the data. This can also be edited in the Terms tab or selecting Terms in the "Edit" dropdown button in the dataset. You may also allow users to request access for your restricted files by enabling "Request Access". To add more information about the Terms of Access, we have provided fields like Data Access Place, Availability Status, Contact for Access, etc. If you restrict a file, it will not have a preview shown on the file page.
 
 **Note:** Some Dataverse installations do not allow for file restriction.
+
+See also :ref:`restricted-files`.
 
 Guestbook
 ---------
@@ -381,6 +450,8 @@ Dataset Citation Widget
 
 The Dataset Citation Widget will provide a citation for your dataset on your personal or project website. Users can download the citation in various formats by using the Cite Data button. The persistent URL in the citation will direct users to the dataset in your dataverse.
 
+.. _openscholar-dataset-level:
+
 Adding Widgets to an OpenScholar Website
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -393,6 +464,8 @@ Publish Dataset
 ===============
 
 When you publish a dataset (available to an Admin, Curator, or any custom role which has this level of permission assigned), you make it available to the public so that other users can browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the "Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataset is made public it can no longer be unpublished. 
+
+Before Dataverse finalizes the publication of the dataset, it will attempt to validate all the physical files in it, to make sure they are present and intact. In an unlikely event that any files fail the validation, you will see an error message informing you that the problem must be fixed by the local Dataverse Admin before the dataset can be published. 
 
 Whenever you edit your dataset, you are able to publish a new version of the dataset. The publish dataset button will reappear whenever you edit the metadata of the dataset or add a file.
 
@@ -443,12 +516,14 @@ Once you have more than one version (this can simply be version 1 and a draft), 
 
 .. _dataset-metrics-user:
 
-Dataset Metrics
-===============
+Dataset Metrics and Make Data Count
+===================================
 
-All installations of Dataverse track file downloads using the Guestbook feature described above and in the :ref:`Dataset Guestbooks <dataset-guestbooks>` section of the Dataverse Management page.
+All installations of Dataverse count file downloads. These file download counts are aggregated and reported at the Dataset level as well as at the file level.
 
-Some installations of Dataverse also have support for metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. For more details on this feature, see the :doc:`/admin/make-data-count` section of the Admin Guide. For the specific API calls, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
+Some installations of Dataverse also have support for expanded metrics at the dataset level for views, file downloads, and citations using Make Data Count standards. `Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. Citations for datasets are retrieved from `Crossref`_ via DataCite using Make Data Count standards.
+
+For the specific API calls for Make Data Count, see :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
 
 .. _cloud-storage:
 
@@ -486,11 +561,14 @@ If you deaccession the most recently published version of the dataset but not al
 
 .. |image1| image:: ./img/DatasetDiagram.png
    :class: img-responsive
-.. |image2| image:: ./img/data-download.png
-   :class: img-responsive
 .. |image3| image:: ./img/data_publishing_version_workflow.png
    :class: img-responsive
 .. |file-upload-prov-button| image:: ./img/prov0.png
    :class: img-responsive
 .. |file-upload-prov-window| image:: ./img/prov1.png
    :class: img-responsive
+.. |image-file-tree-view| image:: ./img/file-tree-view.png
+   :class: img-responsive
+   
+.. _Make Data Count: https://makedatacount.org
+.. _Crossref: https://crossref.org

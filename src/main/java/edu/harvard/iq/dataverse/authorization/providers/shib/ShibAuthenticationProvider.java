@@ -7,6 +7,11 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 public class ShibAuthenticationProvider implements AuthenticationProvider {
 
     public static final String PROVIDER_ID = "shib";
+    
+    @Override
+    public int getOrder() {
+        return 20;
+    }
 
     @Override
     public String getId() {

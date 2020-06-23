@@ -50,14 +50,17 @@ import javax.persistence.NamedQuery;
  */
 @Entity
 @Table(indexes = {@Index(columnList="user_id"), @Index(columnList="dataset_id")})
-@NamedQueries(
-        @NamedQuery(name="DatasetLock.getLocksByDatasetId",
-                    query="SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId")
+@NamedQueries({
+    @NamedQuery(name = "DatasetLock.getLocksByDatasetId",
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId"),
+            @NamedQuery(name = "DatasetLock.getLocksByAuthenticatedUserId",
+            query = "SELECT lock FROM DatasetLock lock WHERE lock.user.id=:authenticatedUserId")
+}
 )
 public class DatasetLock implements Serializable {
     
     public enum Reason {
-        /** Data being ingested */
+        /** Data being ingested *//** Data being ingested */
         Ingest,
         
         /** Waits for a {@link Workflow} to end */
@@ -69,8 +72,16 @@ public class DatasetLock implements Serializable {
         /** DCM (rsync) upload in progress */
         DcmUpload,
         
-        //** Registering PIDs for DS and DFs
-        pidRegister
+        /** Tasks handled by FinalizeDatasetPublicationCommand:
+         Registering PIDs for DS and DFs and/or file validation */
+        finalizePublication,
+        
+        /*Another edit is in progress*/
+        EditInProgress,
+        
+        /* Some files in the dataset failed validation */
+        FileValidationFailed
+        
     }
     
     private static final long serialVersionUID = 1L;

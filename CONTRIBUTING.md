@@ -8,7 +8,7 @@ We aren't just looking for developers. There are many ways to contribute to Data
 
 Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][] or bringing it up on a [Community Call][]. You're also welcome make some noise in the [#dataverse IRC channel][] (which is [logged][]) or cram your idea into 280 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to support@dataverse.org
 
-There's a chance your idea is already on our roadmap, which is available at http://dataverse.org/goals-roadmap-and-releases
+There's a chance your idea is already on our roadmap, which is available at https://www.iq.harvard.edu/roadmap-dataverse-project
 
 [#dataverse IRC channel]: http://chat.dataverse.org
 [logged]: http://irclog.iq.harvard.edu/dataverse/today
@@ -29,6 +29,8 @@ If there is no pre-existing issue or it has been closed, please click on the "Ne
 
 If you do not receive a reply to your new issue or comment in a timely manner, please email support@dataverse.org with a link to the issue.
 
+We are aware of the new issue templates described at https://help.github.com/articles/about-issue-and-pull-request-templates but haven't converted over yet.
+
 ### Writing an Issue
 
 For the subject of an issue, please start it by writing the feature or functionality it relates to, i.e. "Create Account:..." or "Dataset Page:...". In the body of the issue, please outline the issue you are reporting with as much detail as possible. In order for the Dataverse development team to best respond to the issue, we need as much information about the issue as you can provide. Include steps to reproduce bugs. Indicate which version you're using, which is shown at the bottom of the page. We love screenshots!
@@ -48,7 +50,7 @@ The source for the documentation at http://guides.dataverse.org/en/latest/ is in
 
 ## Code/Pull Requests
 
-We love code contributions. Developers are not limited to the main Dataverse code in this git repo. You can help with API client libraries in your favorite language that are mentioned in the [API Guide][] or create a new library. You can help work on configuration management code that's mentioned in the [Installation Guide][]. The Installation Guide also covers a new concept called "external tools" that allows developers to create their own tools that are available from within an installation of Dataverse.
+We love code contributions. Developers are not limited to the main Dataverse code in this git repo. You can help with API client libraries in your favorite language that are mentioned in the [API Guide][] or create a new library. You can help work on configuration management code that's mentioned in the [Installation Guide][]. The Installation Guide also covers a relatively new concept called "external tools" that allows developers to create their own tools that are available from within an installation of Dataverse.
 
 [API Guide]: http://guides.dataverse.org/en/latest/api
 [Installation Guide]: http://guides.dataverse.org/en/latest/installation
@@ -57,11 +59,13 @@ If you are interested in working on the main Dataverse code, great! Before you s
 
 Please read http://guides.dataverse.org/en/latest/developers/version-control.html to understand how we use the "git flow" model of development and how we will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request. That page also includes tips on making a pull request.
 
-After making your pull request, your goal should be to help it advance through our kanban board at https://waffle.io/IQSS/dataverse . If no one has moved your pull request to the code review column in a timely manner, please reach out. Thanks!
+After making your pull request, your goal should be to help it advance through our kanban board at https://github.com/orgs/IQSS/projects/2 . If no one has moved your pull request to the code review column in a timely manner, please reach out. Note that once a pull request is created for an issue, we'll remove the issue from the board so that we only track one card (the pull request).
+
+Thanks for your contribution!
 
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
 [Community Call]: https://dataverse.org/community-calls
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
 [IRC]: http://chat.dataverse.org
 [community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing
-[dev efforts]: https://groups.google.com/d/msg/dataverse-community/X2diSWYll0w/ikp1TGcfBgAJ
+[dev efforts]: https://github.com/orgs/IQSS/projects/2#column-5298405

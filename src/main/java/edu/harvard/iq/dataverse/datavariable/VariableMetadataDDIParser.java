@@ -113,13 +113,13 @@ public class VariableMetadataDDIParser {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("labl")) {
                     processLabel(xmlr, newVM);
+                } else if (xmlr.getLocalName().equals("qstn")) {
+                    processQstn(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("universe")) {
                     processUniverse(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("notes")) {
                     processNote(xmlr, newVM);
-                } else if (xmlr.getLocalName().equals("qstn")) {
-                    processQstn(xmlr, newVM);
-                } else if (xmlr.getLocalName().equals("catgry")) {
+                }  else if (xmlr.getLocalName().equals("catgry")) {
                     processCatgry(xmlr, newVM);
                 }
 
@@ -164,6 +164,9 @@ public class VariableMetadataDDIParser {
                 } else if (xmlr.getLocalName().equals("ivuInstr")) {
                     String text = parseText(xmlr, false);
                     newVM.setInterviewinstruction(text);
+                } else if (xmlr.getLocalName().equals("postQTxt")) {
+                    String text = parseText(xmlr, false);
+                    newVM.setPostquestion(text);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 if (xmlr.getLocalName().equals("qstn")) return;

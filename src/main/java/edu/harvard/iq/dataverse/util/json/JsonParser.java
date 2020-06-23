@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -41,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -102,6 +104,7 @@ public class JsonParser {
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
+      
         if (jobj.containsKey("dataverseContacts")) {
             JsonArray dvContacts = jobj.getJsonArray("dataverseContacts");
             int i = 0;
@@ -392,7 +395,6 @@ public class JsonParser {
     
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
-
         if (metadatasJson != null) {
             for (JsonObject filemetadataJson : metadatasJson.getValuesAs(JsonObject.class)) {
                 String label = filemetadataJson.getString("label");
@@ -410,13 +412,14 @@ public class JsonParser {
                     dataFile.getFileMetadatas().add(fileMetadata);
                     dataFile.setOwner(dsv.getDataset());
                     fileMetadata.setDataFile(dataFile);
-                    if (dsv.getDataset().getFiles() == null) {
-                        dsv.getDataset().setFiles(new ArrayList<>());
+                    if (dsv.getDataset() != null) {
+                        if (dsv.getDataset().getFiles() == null) {
+                            dsv.getDataset().setFiles(new ArrayList<>());
+                        }
+                        dsv.getDataset().getFiles().add(dataFile);
                     }
-                    dsv.getDataset().getFiles().add(dataFile);
                 }
                 
-
                 fileMetadatas.add(fileMetadata);
                 fileMetadata.setCategories(getCategories(filemetadataJson, dsv.getDataset()));
             }

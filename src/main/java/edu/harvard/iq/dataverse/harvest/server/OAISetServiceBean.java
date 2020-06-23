@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +55,9 @@ public class OAISetServiceBean implements java.io.Serializable {
     
     @EJB 
     DatasetServiceBean datasetService;
+    
+    @EJB
+    SolrClientService solrClientService;
     
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean");
     
@@ -133,18 +137,6 @@ public class OAISetServiceBean implements java.io.Serializable {
     public OAISet findById(Long id) {
        return em.find(OAISet.class,id);
     }   
-    
-    private SolrClient solrServer = null;
-    
-    private SolrClient getSolrServer () {
-        if (solrServer == null) {
-        }
-        String urlString = "http://" + systemConfig.getSolrHostColonPort() + "/solr/collection1";
-        solrServer = new HttpSolrClient.Builder(urlString).build();
-        
-        return solrServer;
-        
-    }
     
     @Asynchronous
     public void exportOaiSetAsync(OAISet oaiSet) {
@@ -278,7 +270,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         
         QueryResponse queryResponse = null;
         try {
-            queryResponse = getSolrServer().query(solrQuery);
+            queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();
             String error = "Search Syntax Error: ";

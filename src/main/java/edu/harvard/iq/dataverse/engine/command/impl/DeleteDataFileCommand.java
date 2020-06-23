@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -122,7 +125,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
                 logger.info("Successfully deleted the package file "+doomed.getStorageIdentifier());
                 
             } else {
-                logger.info("Skipping deleting the physical file on the storage volume (will be done outside the command)");
+                logger.fine("Skipping deleting the physical file on the storage volume (will be done outside the command)");
                 /* We no longer attempt to delete the physical file from inside the command, 
                  * since commands are executed as (potentially nested) transactions, 
                  * and it is prudent to assume that this database transaction may 
@@ -209,6 +212,31 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+        }
+        
+        // If there is a Map Layer associated with this file, we may need to 
+        // try and remove the layer data on the WorldMap side. 
+        if (ctxt.mapLayerMetadata().findMetadataByDatafile(doomed) != null) {
+            // (We need an AuthenticatedUser in order to produce a WorldMap token!)
+            String id = getUser().getIdentifier();
+            id = id.startsWith("@") ? id.substring(1) : id;
+            AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
+            try {
+                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(doomed, authenticatedUser);
+
+                // We have the dedicatd command DeleteMapLayerMetadataCommand, but 
+                // there's no need to use it explicitly, since the Dataverse-side
+                // MapLayerMetadata entity will be deleted by the database 
+                // cascade on the DataFile. -- L.A. Apr. 2020
+
+            } catch (Exception ex) {
+                // We are not going to treat it as a fatal condition and bail out, 
+                // but we will send a notification to the user, warning them 
+                // there may still be some data associated with the mapped layer, 
+                // on the WorldMap side, un-deleted:
+                ctxt.notifications().sendNotification(authenticatedUser, new Timestamp(new Date().getTime()), UserNotification.Type.MAPLAYERDELETEFAILED, doomed.getFileMetadata().getId());
+            }
+
         }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);

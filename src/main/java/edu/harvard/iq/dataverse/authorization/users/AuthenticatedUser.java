@@ -2,7 +2,9 @@ package edu.harvard.iq.dataverse.authorization.users;
 
 import edu.harvard.iq.dataverse.Cart;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.authorization.AccessRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
@@ -10,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2A
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -45,14 +48,14 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="AuthenticatedUser.findSuperUsers",
                 query="SELECT au FROM AuthenticatedUser au WHERE au.superuser = TRUE"),
     @NamedQuery( name="AuthenticatedUser.findByIdentifier",
-                query="select au from AuthenticatedUser au WHERE au.userIdentifier=:identifier"),
+                query="select au from AuthenticatedUser au WHERE LOWER(au.userIdentifier)=LOWER(:identifier)"),
     @NamedQuery( name="AuthenticatedUser.findByEmail",
                 query="select au from AuthenticatedUser au WHERE LOWER(au.email)=LOWER(:email)"),
     @NamedQuery( name="AuthenticatedUser.countOfIdentifier",
-                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE a.userIdentifier=:identifier"),
+                query="SELECT COUNT(a) FROM AuthenticatedUser a WHERE LOWER(a.userIdentifier)=LOWER(:identifier)"),
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
-                        + "au.userIdentifier like :query OR "
+                        + "LOWER(au.userIdentifier) like LOWER(:query) OR "
                         + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
@@ -123,6 +126,40 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
+    
+    @OneToMany(mappedBy = "dataverseUser", cascade={CascadeType.REMOVE})
+    private List<WorldMapToken> worldMapTokens;
+
+    public List<WorldMapToken> getWorldMapTokens() {
+        return worldMapTokens;
+    }
+
+    public void setWorldMapTokens(List<WorldMapToken> worldMapTokens) {
+        this.worldMapTokens = worldMapTokens;
+    }
+    
+    @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
+    private List<UserNotification> notifications;
+
+    public List<UserNotification> getUserNotifications() {
+        return notifications;
+    }
+
+    public void setUserNotifications(List<UserNotification> notifications) {
+        this.notifications = notifications;
+    }
+    
+    @OneToMany(mappedBy = "requestor", cascade={CascadeType.REMOVE})
+    private List<UserNotification> requests;
+
+    public List<UserNotification> getUserRequests() {
+        return requests;
+    }
+
+    public void setUserRequestss(List<UserNotification> requests) {
+        this.requests = requests;
+    }
+
     
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<DatasetLock> datasetLocks;

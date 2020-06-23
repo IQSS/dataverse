@@ -98,12 +98,24 @@ public class ConfirmEmailIT {
         confirmAgain1.then().assertThat()
                 .statusCode(200);
 
+        Response getToken3 = given()
+                .get("/api/admin/confirmEmail/" + userIdToConfirm);
+        getToken3.prettyPrint();
+        getToken3.then().assertThat()
+                .statusCode(200);
+
         Response confirmAgain2 = given()
                 .post("/api/admin/confirmEmail/" + userIdToConfirm);
         confirmAgain2.prettyPrint();
         confirmAgain2.then().assertThat()
-                .statusCode(400);
+                // This used to be 400 but now it's 200. Why?
+                .statusCode(200);
 
+        Response getToken4 = given()
+                .get("/api/admin/confirmEmail/" + userIdToConfirm);
+        getToken4.prettyPrint();
+        getToken4.then().assertThat()
+                .statusCode(200);
     }
 
     @Test

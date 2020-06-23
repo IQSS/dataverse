@@ -91,6 +91,14 @@ public class Search extends AbstractApiBean {
             try {
                 if (!types.isEmpty()) {
                     filterQueries.add(getFilterQueryFromTypes(types));
+                } else {
+                    /**
+                     * Added to prevent a NullPointerException for superusers
+                     * (who don't use our permission JOIN) when
+                     * SearchServiceBean tries to get SearchFields.TYPE. The GUI
+                     * always seems to add SearchFields.TYPE, even for superusers.
+                     */
+                    filterQueries.add(SearchFields.TYPE + ":(" + SearchConstants.DATAVERSES + " OR " + SearchConstants.DATASETS + " OR " + SearchConstants.FILES + ")");
                 }
                 sortBy = SearchUtil.getSortBy(sortField, sortOrder);
                 numResultsPerPage = getNumberOfResultsPerPage(numResultsPerPageRequested);
@@ -128,7 +136,7 @@ public class Search extends AbstractApiBean {
                         paginationStart,
                         dataRelatedToMe,
                         numResultsPerPage,
-                        queryEntities
+                        true //SEK get query entities always for search API additional Dataset Information 6300  12/6/2019
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -195,23 +203,13 @@ public class Search extends AbstractApiBean {
                  */
                 return error(Response.Status.BAD_REQUEST, solrQueryResponse.getError());
             }
-            response.setHeader("Access-Control-Allow-Origin", "*");
-            return allowCors(ok(value));
+            return ok(value);
         } else {
-            return allowCors(error(Response.Status.BAD_REQUEST, "q parameter is missing"));
+            return error(Response.Status.BAD_REQUEST, "q parameter is missing");
         }
     }
 
     private User getUser() throws WrappedResponse {
-        /**
-         * @todo support searching as non-guest:
-         * https://github.com/IQSS/dataverse/issues/1299
-         *
-         * Note that superusers can't currently use the Search API because they
-         * see permission documents (all Solr documents, really) and we get a
-         * NPE when trying to determine the DvObject type if their query matches
-         * a permission document.
-         */
         User userToExecuteSearchAs = GuestUser.get();
         try {
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
@@ -223,16 +221,7 @@ public class Search extends AbstractApiBean {
                 throw ex;
             }
         }
-        if (nonPublicSearchAllowed()) {
-            return userToExecuteSearchAs;
-        } else {
-            return GuestUser.get();
-        }
-    }
-
-    public boolean nonPublicSearchAllowed() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsSvc.isTrueForKey(SettingsServiceBean.Key.SearchApiNonPublicAllowed, safeDefaultIfKeyNotFound);
+        return userToExecuteSearchAs;
     }
 
     public boolean tokenLessSearchAllowed() {

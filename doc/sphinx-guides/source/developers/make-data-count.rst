@@ -3,6 +3,9 @@ Make Data Count
 
 Support for Make Data Count is a feature of Dataverse that is described in the :doc:`/admin/make-data-count` section of the Admin Guide. In order for developers to work on the feature, they must install Counter Processor, a Python 3 application, as described below. Counter Processor can be found at https://github.com/CDLUC3/counter-processor
 
+.. contents:: |toctitle|
+        :local:
+
 Architecture
 ------------
 
@@ -12,6 +15,18 @@ There are many components involved in Dataverse's architecture for Make Data Cou
 
 Dev Environment Setup for Make Data Count
 -----------------------------------------
+
+Generate Fake Metrics Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The quickest way to put populate tables with some data is to run the ``MakeDataCountApiIT`` integration test. For more on running integration tests see the :doc:`testing` section. This will populate views and downloads.
+
+To insert a citation you could insert a row like below, changing "72" in the example below with the dataset id for your dataset.
+
+``INSERT INTO datasetexternalcitations (id, citedbyurl, dataset_id) VALUES (1, 'https://doi.org/10.1007/s12520-017-0578-2', 72);``
+
+Full Setup
+~~~~~~~~~~
 
 The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both Dataverse and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
@@ -23,9 +38,9 @@ Next you need to have Dataverse add some entries to the log that Counter Process
 
 Next you should run Counter Processor to convert the log into a SUSHI report, which is in JSON format. Before running Counter Processor, you need to put a configuration file into place. As a starting point use :download:`counter-processor-config.yaml <../../../../scripts/vagrant/counter-processor-config.yaml>` and edit the file, paying particular attention to the following settings:
 
-- ``log_name_pattern`` You might want something like ``/usr/local/glassfish4/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
+- ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
-- ``output_file`` This needs to be a directory that the "glassfish" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
+- ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
 - ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but we're not 100% sure if this should be "Dataverse" or a branch for a Dataverse installation like "LibreScholar".
 - ``upload_to_hub`` This should be "False" unless you are testing sending SUSHI reports to the DataCite hub.
 - ``simulate_date`` You should probably set this to tomorrow.
@@ -56,7 +71,7 @@ If all this is working and you want to send data to the test instance of the Dat
 
 ``curl --header "Content-Type: application/json; Accept: application/json" -H "Authorization: Bearer $JSON_WEB_TOKEN" -X POST https://api.test.datacite.org/reports/ -d @sushi_report.json``
 
-For how to put citations into your dev database and how to get them out again, see "Configuring Dataverse for Make Data Count Citations" in the :doc:`/admin/make-data-count` section of the Admin Guide.
+For how to put citations into your dev database and how to get them out again, see :ref:`MDC-updateCitationsForDataset` section in Make Data Count of the Admin Guide.
 
 Testing Make Data Count and Dataverse
 -------------------------------------
@@ -72,6 +87,8 @@ Second, if you are also sending your SUSHI report to Make Data Count, you will n
 To get the ``REPORT_ID``, look at the logs generated in ``/usr/local/counter-processor-0.0.1/tmp/datacite_response_body.txt``
 
 To read more about the Make Data Count api, see https://github.com/datacite/sashimi
+
+You can compare the MDC metrics display with Dataverse's original by toggling the ``:DisplayMDCMetrics`` setting (true by default to display MDC metrics).
 
 Resources
 ---------

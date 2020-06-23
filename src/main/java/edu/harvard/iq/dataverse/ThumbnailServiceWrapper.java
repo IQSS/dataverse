@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.File;
@@ -23,6 +22,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.enterprise.context.RequestScoped;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,7 +32,8 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Leonid Andreev
  */
-@ViewScoped
+//@ViewScoped
+@RequestScoped
 @Named
 public class ThumbnailServiceWrapper implements java.io.Serializable  {
     @Inject
@@ -49,7 +50,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
     private Map<Long, String> dvobjectThumbnailsMap = new HashMap<>();
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
 
-    private String getAssignedDatasetImage(Dataset dataset) {
+    private String getAssignedDatasetImage(Dataset dataset, int size) {
         if (dataset == null) {
             return null;
         }
@@ -68,9 +69,9 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
                 return null;
             }
 
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(
-                    assignedThumbnailFile,
-                    ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(assignedThumbnailFile,
+                    size);
+                    //ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
             if (imageSourceBase64 != null) {
                 this.dvobjectThumbnailsMap.put(assignedThumbnailFileId, imageSourceBase64);
@@ -181,9 +182,10 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         
         Long versionId = result.getDatasetVersionId();
 
-        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState());
+        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState(), ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
     }
-    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect) {
+    
+    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect, int size) {
         Long datasetId = dataset.getId();
         if (datasetId != null) {
             if (this.dvobjectThumbnailsMap.containsKey(datasetId)) {
@@ -220,7 +222,8 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
         // an auxilary file on the dataset level: 
         // (don't bother checking if it exists; just try to open the input stream)
         try {
-                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                in = dataAccess.getAuxFileAsInputStream(datasetLogoThumbnail + ".thumb" + size);
+                        //thumb48addedByImageThumbConverter);
         } catch (Exception ioex) {
               //ignore
         }
@@ -246,7 +249,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
 
         // If not, see if the dataset has one of its image files already assigned
         // to be the designated thumbnail:
-        cardImageUrl = this.getAssignedDatasetImage(dataset);
+        cardImageUrl = this.getAssignedDatasetImage(dataset, size);
 
         if (cardImageUrl != null) {
             //logger.info("dataset id " + result.getEntity().getId() + " has a dedicated image assigned; returning " + cardImageUrl);
@@ -295,7 +298,8 @@ public class ThumbnailServiceWrapper implements java.io.Serializable  {
             if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
                 cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
                         thumbnailImageFile,
-                        ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        size);
+                        //ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             }
 
             if (cardImageUrl != null) {

@@ -19,6 +19,8 @@ import org.mockito.Mockito;
  * @author skraffmi
  */
 public class DatasetFieldValidatorTest {
+
+    final ConstraintValidatorContext constraintValidatorContext = Mockito.mock(ConstraintValidatorContext.class);
     
     public DatasetFieldValidatorTest() {
     }
@@ -45,47 +47,43 @@ public class DatasetFieldValidatorTest {
      */
     @Test
     public void testIsValid() {
-        System.out.println("isValid");
-        DatasetField value = new DatasetField();
+        DatasetField dataSetField = new DatasetField();
+        DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
 
-        final ConstraintValidatorContext ctx =
-            Mockito.mock(ConstraintValidatorContext.class);
-        DatasetFieldValidator instance = new DatasetFieldValidator();
-        //If its a template field it is always valid
-        value.setTemplate(new Template());
+        // if it is a template field it is always valid
+        dataSetField.setTemplate(new Template());
         boolean expResult = true;
-        boolean result = instance.isValid(value, ctx);
-        assertEquals(expResult, result);
-        
-        
-        //if not template and required
-        value.setTemplate(null);
+        boolean result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
+        assertEquals("test isValid() on template field", expResult, result);
+
+        // if not a template field and required
+        dataSetField.setTemplate(null);
         DatasetVersion datasetVersion = new DatasetVersion();
         Dataset dataset = new Dataset();
         Dataverse dataverse = new Dataverse();
         dataset.setOwner(dataverse);
         datasetVersion.setDataset(dataset);
-        value.setDatasetVersion(datasetVersion);
-        
-        DatasetFieldValue dfv = new DatasetFieldValue();
-        DatasetFieldType dft = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
-        dft.setRequired(true);
-        value.setDatasetFieldType(dft);
-        value.setSingleValue("");
-        dfv.setValue("");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        //Fill in a value - should be valid now....
-        value.setSingleValue("value");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        //if not required - can be blank
-        dft.setRequired(false);
-        value.setSingleValue("");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
+        dataSetField.setDatasetVersion(datasetVersion);
+
+        DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
+        DatasetFieldType datasetFieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
+        datasetFieldType.setRequired(true);
+        dataSetField.setDatasetFieldType(datasetFieldType);
+        dataSetField.setSingleValue("");
+        datasetFieldValue.setValue("");
+        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
+        assertEquals("test isValid() if not template field and required with empty DataSetField", false, result);
+
+        // fill in a value - the required constraint is satisfied now
+        dataSetField.setSingleValue("value");
+        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
+        assertEquals("test isValid() if not template field and required with non-empty DataSetField", true, result);
+
+        // if not required the field can be blank
+        datasetFieldType.setRequired(false);
+        dataSetField.setSingleValue("");
+        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
+        assertEquals("test isValid() if not template field and not required", true, result);
     }
     
 }

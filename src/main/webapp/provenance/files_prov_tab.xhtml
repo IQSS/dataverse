@@ -146,14 +146,16 @@
     <div id="cy" width="100%" height="70%"></div>
                 
     <script>
-            function showAncestor(){
-                    var show = document.getElementById("ancestors").checked;
-                    cy.prov_core().setShowAncestors(show);
-            }
-            function showSuccessor(){
-                    var show = document.getElementById("successors").checked;
-                    cy.prov_core().setShowSuccessors(show);
-            }
+        //<![CDATA[
+        function showAncestor(){
+                var show = document.getElementById("ancestors").checked;
+                cy.prov_core().setShowAncestors(show);
+        }
+        function showSuccessor(){
+                var show = document.getElementById("successors").checked;
+                cy.prov_core().setShowSuccessors(show);
+        }
+        //]]>
     </script>
     <div>
         <li><input type="checkbox" id="ancestors" name="ancestors" value="ancestors" onclick="showAncestor();" checked="checked" />Show Ancestors</li>

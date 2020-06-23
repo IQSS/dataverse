@@ -49,6 +49,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -147,7 +148,8 @@ public class DatasetVersion implements Serializable {
     
     @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
     @Column(length = ARCHIVE_NOTE_MAX_LENGTH)
-    @ValidateURL()
+    //@ValidateURL() - this validation rule was making a bunch of older legacy datasets invalid;
+    // removed pending further investigation (v4.13)
     private String archiveNote;
     
     @Column(nullable=true, columnDefinition = "TEXT")
@@ -204,6 +206,13 @@ public class DatasetVersion implements Serializable {
     public List<FileMetadata> getFileMetadatasSorted() {
         Collections.sort(fileMetadatas, FileMetadata.compareByLabel);
         return fileMetadatas;
+    }
+    
+    public List<FileMetadata> getFileMetadatasSortedByLabelAndFolder() {
+        ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
+        fileMetadatasCopy.addAll(fileMetadatas);
+        Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
+        return fileMetadatasCopy;
     }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
@@ -666,8 +675,13 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getProductionDate() {
-        //todo get "Production Date" from datasetfieldvalue table
-        return "Production Date";
+        String retVal = null;
+        for (DatasetField dsfv : this.getDatasetFields()) {
+            if (dsfv.getDatasetFieldType().getName().equals(DatasetFieldConstant.productionDate)) {
+                retVal = dsfv.getDisplayValue();
+            }
+        }
+        return retVal;
     }
 
     /**
@@ -740,7 +754,16 @@ public class DatasetVersion implements Serializable {
         return MarkupChecker.escapeHtml(getDescription());
     }
 
-    public List<String[]> getDatasetContacts(){
+    public List<String[]> getDatasetContacts() {
+        boolean getDisplayValues = true;
+        return getDatasetContacts(getDisplayValues);
+    }
+
+    /**
+     * @param getDisplayValues Instead of the retrieving pristine value in the
+     * database, run the value through special formatting.
+     */
+    public List<String[]> getDatasetContacts(boolean getDisplayValues) {
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
@@ -753,10 +776,11 @@ public class DatasetVersion implements Serializable {
                             if (subField.isEmptyForDisplay()) {
                                 addContributor = false;
                             }
+                            // There is no use case yet for getting the non-display value for contributorName.
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.datasetContactAffiliation)) {
-                            contributorAffiliation = subField.getDisplayValue();
+                            contributorAffiliation = getDisplayValues ? subField.getDisplayValue() : subField.getValue();
                         }
 
                     }
@@ -769,7 +793,7 @@ public class DatasetVersion implements Serializable {
         }       
         return retList;        
     }
-    
+
     public List<String[]> getDatasetProducers(){
         List <String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1121,6 +1145,62 @@ public class DatasetVersion implements Serializable {
         return getCompoundChildFieldValues(DatasetFieldConstant.keyword, DatasetFieldConstant.keywordValue);
     }
     
+    public List<String> getRelatedMaterial() {
+        List<String> relMaterial = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.relatedMaterial)) {
+                relMaterial.addAll(dsf.getValues());
+            }
+        }
+        return relMaterial;
+    } 
+    
+    public List<String> getDataSource() {
+        List<String> dataSources = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.dataSources)) {
+                dataSources.addAll(dsf.getValues());
+            }
+        }
+        return dataSources;
+    }
+    
+    public List<String[]> getGeographicCoverage() {
+        List<String[]> geoCoverages = new ArrayList<>();
+
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.geographicCoverage)) {
+                for (DatasetFieldCompoundValue geoCoverage : dsf.getDatasetFieldCompoundValues()) {
+                    String country = null;
+                    String state = null;
+                    String city = null;
+                    String other = null;
+                    String[] coverageItem = null;
+                    for (DatasetField subField : geoCoverage.getChildDatasetFields()) {
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.country)) {
+                            country = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.state)) {
+                            state = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.city)) {
+                            city = subField.getDisplayValue();
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherGeographicCoverage)) {
+                            other = subField.getDisplayValue();
+                        }
+
+                        coverageItem = new String[]{country, state, city, other};
+                    }
+                    geoCoverages.add(coverageItem);
+                }
+
+            }
+        }
+        return geoCoverages;
+    }
+
+    
     public List<DatasetRelPublication> getRelatedPublications() {
         List<DatasetRelPublication> relatedPublications = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1132,11 +1212,20 @@ public class DatasetVersion implements Serializable {
                             String citation = subField.getDisplayValue();
                             relatedPublication.setText(citation);
                         }
+
+                        
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationURL)) {
-                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
-                            subField.getDatasetFieldType().setDisplayFormat("#VALUE");
-                            String url = subField.getDisplayValue();
-                            relatedPublication.setUrl(url);
+                            // We have to avoid using subField.getDisplayValue() here - because the DisplayFormatType 
+                            // for this url metadata field is likely set up so that the display value is automatically 
+                            // turned into a clickable HTML HREF block, which we don't want to end in our Schema.org JSON-LD output.
+                            // So we want to use the raw value of the field instead, with 
+                            // minimal HTML sanitation, just in case (this would be done on all URLs in getDisplayValue()).
+                            String url = subField.getValue();
+                            if (StringUtils.isBlank(url) || DatasetField.NA_VALUE.equals(url)) {
+                                relatedPublication.setUrl("");
+                            } else {
+                                relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
+                            }
                         }
                     }
                     relatedPublications.add(relatedPublication);
@@ -1845,7 +1934,7 @@ public class DatasetVersion implements Serializable {
                 } else {
                     if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
                         String nullDownloadType = null;
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false));
+                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(nullDownloadType, fileMetadata.getDataFile().getId(), false, fileMetadata.getId()));
                     }
                 }
                 fileArray.add(fileObject);

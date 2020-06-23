@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.pidproviders.PidUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +19,11 @@ import javax.ejb.Stateless;
 public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     private static final Logger logger = Logger.getLogger(DOIDataCiteServiceBean.class.getCanonicalName());
+    
+    private static final String PUBLIC = "public";
+    private static final String FINDABLE = "findable";
+    private static final String RESERVED = "reserved";
+    private static final String DRAFT = "draft";
 
     @EJB
     DOIDataCiteRegisterService doiDataCiteRegisterService;
@@ -26,7 +33,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true;
+        return false;
     }
 
     @Override
@@ -42,7 +49,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     public boolean alreadyExists(GlobalId pid) {
         logger.log(Level.FINE,"alreadyExists");
         if(pid==null || pid.asString().isEmpty()) {
-            logger.severe("No identifier sent.");
+            logger.fine("No identifier sent.");
             return false;
         }
         boolean alreadyExists;
@@ -67,7 +74,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
-            String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
+            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
@@ -164,41 +171,18 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
     }
 
+    /**
+     * Deletes DOI from the DataCite side, if possible. Only "draft" DOIs can be
+     * deleted.
+     */
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception {
-        logger.log(Level.FINE,"deleteIdentifier");
-        String identifier = getIdentifier(dvObject);
-        HashMap<String, String> doiMetadata = new HashMap<>();
-        try {
-            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "deleteIdentifier: get matadata failed. " + e.getMessage(), e);
-        }
-
-        String idStatus = doiMetadata.get("_status");
-
-        if ( idStatus != null ) {
-            switch ( idStatus ) {
-                case "reserved":
-                    logger.log(Level.INFO, "Delete status is reserved..");
-                    try {
-                        doiDataCiteRegisterService.deleteIdentifier(identifier);
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "delete failed: " + e.getMessage(), e);
-                    }
-                    break;
-                       
-                case "public":
-                    //if public then it has been released set to unavailable and reset target to n2t url
-                    updateIdentifierStatus(dvObject, "unavailable");
-                    break;
-            }
-            return;
-        }
-        if (idStatus != null && idStatus.equals("public")) {
-            //if public then it has been released set to unavailable and reset target to n2t url
-            doiDataCiteRegisterService.deactivateIdentifier(identifier, doiMetadata, dvObject);
-        }
+    public void deleteIdentifier(DvObject dvObject) throws IOException {
+        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String username = System.getProperty("doi.username");
+        String password = System.getProperty("doi.password");
+        String pid = dvObject.getGlobalId().asString();
+        int result = PidUtil.deleteDoi(pid, baseUrl, username, password);
+        logger.fine("Result of deleteIdentifier for " + pid + ": " + result);
     }
 
     private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
@@ -224,7 +208,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         String identifier = getIdentifier(dvObject);
         Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", "public");
+        metadata.put("_status", PUBLIC);
         metadata.put("datacite.publicationyear", generateYear(dvObject));
         metadata.put("_target", getTargetUrl(dvObject));
         try {

@@ -53,7 +53,7 @@ Pull requests take all shapes and sizes, from a one-character typo fix to hundre
 
 If you are writing code (rather than documentation), please see :doc:`testing` for guidance on writing tests.
 
-The example of creating a pull request below has to do with fixing an important issue with the :doc:`documentation` but applies to fixing code as well.
+The example of creating a pull request below has to do with fixing an important issue with the documentation but applies to fixing code as well.
 
 Find or Create a GitHub Issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +62,7 @@ For guidance on which issue to work on, please ask! Also, see https://github.com
 
 Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of Dataverse's documentation.
 
-If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_ and the `Dev Efforts by the Dataverse Community spreadsheet <https://groups.google.com/d/msg/dataverse-community/X2diSWYll0w/ikp1TGcfBgAJ>`_.
+If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_.
 
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,16 +82,75 @@ Push your feature branch to your fork of Dataverse. Your git command may look so
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
 
-Make a pull request to get approval to merge your changes into the develop branch. Feedback on the pull request template we use is welcome! The "connects to #3728" syntax is important because it's used at https://waffle.io/IQSS/dataverse to associate pull requests with issues.
+Make a pull request to get approval to merge your changes into the develop branch. Note that once a pull request is created, we'll remove the corresponding issue from our kanban board so that we're only tracking one card.
 
-Here's an example of a pull request for issue #3728: https://github.com/IQSS/dataverse/pull/3827
+Feedback on the pull request template we use is welcome! Here's an example of a pull request for issue #3827: https://github.com/IQSS/dataverse/pull/3827
 
 Make Sure Your Pull Request Has Been Advanced to Code Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://waffle.io/IQSS/dataverse 
+Now that you've made your pull request, your goal is to make sure it appears in the "Code Review" column at https://github.com/orgs/IQSS/projects/2. 
 
 Look at https://github.com/IQSS/dataverse/blob/master/CONTRIBUTING.md for various ways to reach out to developers who have enough access to the GitHub repo to move your issue and pull request to the "Code Review" column.
+
+Summary of Git commands
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This section provides sequences of Git commands for two scenarios:
+
+* preparing the first request, when the IQSS Dataverse repository and the forked repository are identical
+* creating an additional request after some time, when the IQSS Dataverse repository is ahead of the forked repository
+
+In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
+
+**1st scenario: preparing the first pull request**
+
+.. code-block:: bash
+
+        # clone Dataverse at Github.com ... then
+
+        git clone https://github.com/YOUR_NAME/dataverse.git dataverse_fork
+        cd dataverse_fork
+
+        # create a new branch locally for the pull request
+        git checkout -b 123-COOL-FEATURE
+
+        # working on the branch ... then commit changes
+        git commit -am "#123 explanation of changes"
+
+        # upload the new branch to https://github.com/YOUR_NAME/dataverse
+        git push -u origin 123-COOL-FEATURE
+
+        # ... then create pull request at github.com/YOUR_NAME/dataverse
+
+
+**2nd scenario: preparing another pull request some month later**
+
+.. code-block:: bash
+
+        # register IQSS Dataverse repo
+        git remote add upstream https://github.com/IQSS/dataverse.git
+
+        git checkout develop
+
+        # update local develop banch from https://github.com/IQSS/dataverse
+        git fetch upstream develop
+        git rebase upstream/develop
+
+        # update remote develop branch at https://github.com/YOUR_NAME/dataverse
+        git push
+
+        # create a new branch locally for the pull request
+        git checkout -b 123-COOL-FEATURE
+
+        # work on the branch and commit changes
+        git commit -am "#123 explanation of changes"
+
+        # upload the new branch to https://github.com/YOUR_NAME/dataverse
+        git push -u origin 123-COOL-FEATURE
+
+        # ... then create pull request at github.com/YOUR_NAME/dataverse
+
 
 How to Resolve Conflicts in Your Pull Request
 ---------------------------------------------

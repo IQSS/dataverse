@@ -14,6 +14,8 @@ This guide is intended primarily for developers who want to work on the main Dat
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
+.. _getting-help-developers:
+
 Getting Help
 ------------
 
@@ -22,19 +24,19 @@ If you have any questions at all, please reach out to other developers via the c
 Core Technologies
 -----------------
 
-Dataverse is a `Java EE <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`_ application that is compiled into a war file and deployed to an application server (Glassfish) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
+Dataverse is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ application that is compiled into a WAR file and deployed to an application server (app server) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
 
-We make use of a variety of Java EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
+We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
 
 Roadmap
 -------
 
-For the Dataverse development roadmap, please see https://dataverse.org/goals-roadmap-and-releases
+For the Dataverse development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
 Kanban Board
 ------------
 
-You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://waffle.io/IQSS/dataverse
+You can get a sense of what's currently in flight (in dev, in QA, etc.) by looking at https://github.com/orgs/IQSS/projects/2
 
 Issue Tracker
 -------------
@@ -53,11 +55,12 @@ Related Projects
 
 As a developer, you also may be interested in these projects related to Dataverse:
 
-- External Tools - add additional features to Dataverse: See the :doc:`/installation/external-tools` section of the Installation Guide.
+- External Tools - add additional features to Dataverse without modifying the core: :doc:`/api/external-tools`
 - Dataverse API client libraries - use Dataverse APIs from various languages: :doc:`/api/client-libraries`
 - DVUploader - a stand-alone command-line Java application that uses the Dataverse API to support upload of files from local disk to a Dataset: https://github.com/IQSS/dataverse-uploader 
-- Miniverse - expose metrics from a Dataverse database: https://github.com/IQSS/miniverse
-- Configuration management scripts - Ansible, Puppet, etc.: See "Advanced Installation" in the :doc:`/installation/prep` section of the Installation Guide.
+- dataverse-sample-data - populate your Dataverse installation with sample data: https://github.com/IQSS/dataverse-sample-data
+- dataverse-metrics - aggregate and visualize metrics for installations of Dataverse around the world: https://github.com/IQSS/dataverse-metrics
+- Configuration management scripts - Ansible, Puppet, etc.: See :ref:`advanced` section in the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
 - GeoConnect (Python) - create a map by uploading files to Dataverse: https://github.com/IQSS/geoconnect
 - `DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag datasets with privacy levels: https://github.com/IQSS/DataTags

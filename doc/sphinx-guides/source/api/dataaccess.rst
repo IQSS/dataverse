@@ -58,14 +58,16 @@ the following parameter values are supported (for image and pdf files only):
 ==============  ===========
 Value           Description
 ==============  ===========
-true            Generates a thumbnail image, by rescaling to the default thumbnail size (64 pixels)
-``N``           Rescales the image to ``N`` pixels.
+true            Generates a thumbnail image by rescaling to the default thumbnail size (64 pixels wide).
+``N``           Rescales the image to ``N`` pixels wide. ``imageThumb=true`` and ``imageThumb=64`` are equivalent.
 ==============  ===========
 
 Multiple File ("bundle") download
 ---------------------------------
 
 ``/api/access/datafiles/$id1,$id2,...$idN``
+
+Alternate Form: POST to ``/api/access/datafiles`` with a ``fileIds`` input field containing the same comma separated list of file ids. This is most useful when your list of files surpasses the allowed URL length (varies but can be ~2000 characters).  
 
 Returns the files listed, zipped. 
 
@@ -100,9 +102,19 @@ It returns a zipped bundle that contains the data in the following formats:
 * Data (Variable) metadata record, in DDI XML;
 * File citation, in Endnote and RIS formats. 
 
+
 Parameters: 
 ~~~~~~~~~~~
-none.
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``.
+==============  ===========
+
+.. _data-variable-metadata-access:
 
 Data Variable Metadata Access
 -----------------------------
@@ -176,6 +188,19 @@ Example:
          </var>
       </dataDscr>
    </codeBook>
+
+
+Parameters: 
+~~~~~~~~~~~
+
+``fileMetadataId``
+
+==============  ===========
+Value           Description
+==============  ===========
+ID              Exports file with specific file metadata ``ID``. For example for data file with id 6 and file metadata id 2: ``curl 'http://localhost:8080/api/access/datafile/6/metadata/ddi?fileMetadataId=2'``
+==============  ===========
+
 
 More information on DDI is available in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide.
 

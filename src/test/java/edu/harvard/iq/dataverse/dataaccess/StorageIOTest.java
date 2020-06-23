@@ -34,7 +34,7 @@ public class StorageIOTest {
     @Test
     public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
+        Channel c = new RandomAccessFile("src/main/java/propertyFiles/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }
@@ -77,8 +77,9 @@ public class StorageIOTest {
         } catch (ClassCastException ex) {
             assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
         }
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile()).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());
+        // null driver defaults to 'file'
+        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null, null).getDataFile());
+        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null, null).getDataverse());
     }
 
     @Test

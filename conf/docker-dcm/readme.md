@@ -7,7 +7,7 @@ Setup:
 - download/prepare dependencies: `./0prep.sh`
 - build dcm/dv0dcm images with docker-compose: `docker-compose -f docker-compose.yml build`
 - start containers: `docker-compose -f docker-compose.yml up -d`
-- wait for container to show "healthy" (aka - `docker ps`), then run dataverse app installation: `docker exec -it dvsrv /opt/dv/install.bash` (until https://github.com/IQSS/dataverse/issues/5374 is sorted, it may be preferable to connect to the container and run configuration scripts inside - e.g. `docker exec -it dvsrv bash ; ./install.bash`)
+- wait for container to show "healthy" (aka - `docker ps`), then run dataverse app installation: `docker exec dvsrv /opt/dv/install.bash`
 - for development, you probably want to use the `FAKE` DOI provider: `docker exec -it dvsrv /opt/dv/configure_doi.bash`
 - configure dataverse application to use DCM: `docker exec -it dvsrv /opt/dv/configure_dcm.sh`
 - configure dataverse application to use RSAL (if desired): `docker exec -it dvsrv /opt/dv/configure_rsal.sh`

@@ -1,16 +1,23 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
+
+import java.io.StringReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -93,11 +100,6 @@ public class SettingsServiceBean {
          */
         MyDataDoesNotUseSolrPermissionDocs,
         /**
-         * Experimental: Allow non-public search with a key/token using the
-         * Search API. See also https://github.com/IQSS/dataverse/issues/1299
-         */
-        SearchApiNonPublicAllowed,
-        /**
          * In Dataverse 4.7 and earlier, an API token was required to use the
          * Search API. Tokens are no longer required but you can revert to the
          * old behavior by setting this to false.
@@ -166,7 +168,7 @@ public class SettingsServiceBean {
         /** Enable full-text indexing in solr up to max file size */
         SolrFullTextIndexing, //true or false (default)
         SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        /** Default Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
@@ -400,10 +402,40 @@ public class SettingsServiceBean {
          * inheritance. "*" means inherit assignments for all roles
          */
         InheritParentRoleAssignments,
-        /*
-        *
-        */
-        MDCLogPath
+        
+        /** Make Data Count Logging and Display */
+        MDCLogPath, 
+        DisplayMDCMetrics,
+
+        /**
+         * Allow CORS flag (true or false). It is true by default
+         *
+         */
+        AllowCors, 
+        
+        /**
+         * Lifespan, in minutes, of a login user session 
+         * (both DataverseSession and the underlying HttpSession)
+         */
+        LoginSessionTimeout,
+
+        /**
+         * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
+         */
+        ShibAffiliationAttribute,
+        /**
+         * Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8
+         */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
+         * Validate physical files for all the datafiles in the dataset when publishing
+         */
+        FileValidationOnPublishEnabled,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        ChronologicalDateFacets
+        
         ;
 
         @Override
@@ -424,8 +456,14 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        Setting s = em.find( Setting.class, name );
-        return (s!=null) ? s.getContent() : null;
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : null;
     }
     
     /**
@@ -464,6 +502,44 @@ public class SettingsServiceBean {
         
     }
     
+       /**
+        * Attempt to convert a value in a compound key to a long
+        *  - Applicable for keys such as MaxFileUploadSizeInBytes after multistore capabilities were added in ~v4.20
+        *  backward compatible with a single value. For multi values, the key's value must be an object with param:value pairs.
+        *  A "default":value pair is allowed and will be returned for any param that doesn't have a defined value.   
+        * 
+        * On failure (key not found or string not convertible to a long), returns null
+        * @param key
+        * @return 
+        */
+       public Long getValueForCompoundKeyAsLong(Key key, String param){
+
+    	   String val = this.getValueForKey(key);
+
+    	   if (val == null){
+    		   return null;
+    	   }
+
+    	   try {
+    		   return Long.parseLong(val);
+    	   } catch (NumberFormatException ex) {
+    		   try ( StringReader rdr = new StringReader(val) ) {
+    			   JsonObject settings = Json.createReader(rdr).readObject();
+    			   if(settings.containsKey(param)) {
+    				   return Long.parseLong(settings.getString(param));
+    			   } else if(settings.containsKey("default")) {
+    				   return Long.parseLong(settings.getString("default"));
+    			   } else {
+    				   return null;
+    			   }
+
+    		   } catch (Exception e) {
+    			   logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long: {2}", new Object[]{val, key.toString(), e.getMessage()});
+    			   return null;
+    		   }
+    	   }
+
+       }
     
     /**
      * Return the value stored, or the default value, in case no setting by that
@@ -478,16 +554,71 @@ public class SettingsServiceBean {
         String val = get(name);
         return (val!=null) ? val : defaultValue;
     }
+
+    public String get(String name, String lang, String defaultValue ) {
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : defaultValue;
+    }
     
     public String getValueForKey( Key key, String defaultValue ) {
         return get( key.toString(), defaultValue );
     }
+
+    public String getValueForKey( Key key, String lang, String defaultValue ) {
+        return get( key.toString(), lang, defaultValue );
+    }
      
     public Setting set( String name, String content ) {
-        Setting s = new Setting( name, content );
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, content );
+        } else {
+            s.setContent(content);
+        }
+        
         s = em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
+        return s;
+    }
+
+    public Setting set( String name, String lang, String content ) {
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, lang, content );
+        } else {
+            s.setContent(content);
+        }
+        
+        em.merge(s);
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                .setInfo(name + ": " +lang + ": " + content));
         return s;
     }
     
@@ -524,6 +655,15 @@ public class SettingsServiceBean {
                             .setInfo(name));
         em.createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
+                .executeUpdate();
+    }
+
+    public void delete( String name, String lang ) {
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+                .setInfo(name));
+        em.createNamedQuery("Setting.deleteByNameAndLang")
+                .setParameter("name", name)
+                .setParameter("lang", lang)
                 .executeUpdate();
     }
     

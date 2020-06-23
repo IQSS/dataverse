@@ -107,7 +107,8 @@ public class WorkflowServiceBean {
         if (au != null) {
             CommandContext ctxt = engine.getContext();
             ApiToken token = ctxt.authentication().findApiTokenByUser(au);
-            if ((token == null) || (token.getExpireTime().before(new Date()))) {
+            if (token == null) {
+                //No un-expired token
                 token = ctxt.authentication().generateApiTokenForUser(au);
             }
             return token;

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
     
 /**
  *
@@ -313,7 +315,15 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             }
         }
         return contNames;
-    }   
+    } 
+    
+    public List<DatasetVersionUser> getDatasetVersionUsersByAuthenticatedUser(AuthenticatedUser user){
+        
+        TypedQuery<DatasetVersionUser> typedQuery = em.createQuery("SELECT u from DatasetVersionUser u where u.authenticatedUser.id = :authenticatedUserId", DatasetVersionUser.class);
+                typedQuery.setParameter("authenticatedUserId", user.getId());
+                return typedQuery.getResultList();        
+
+    }
 
     /**
      * Query to return the last Released DatasetVersion by Persistent ID
@@ -1085,8 +1095,13 @@ w
 
         // reindexing the dataset, to make sure the new UNF is in SOLR:
         boolean doNormalSolrDocCleanUp = true;
-        Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
-        
+        try {
+            Future<String> indexingResult = indexService.indexDataset(datasetVersion.getDataset(), doNormalSolrDocCleanUp);
+        } catch (IOException | SolrServerException e) {    
+            String failureLogText = "Post UNF update indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + datasetVersion.getDataset().getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText,  datasetVersion.getDataset());
+        }
         return info;
     }
     

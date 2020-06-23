@@ -153,14 +153,6 @@
             "multiple": false,
             "typeClass": "primitive",
             "value": "2015-04-13T18:14:17Z"
-          },
-          {
-            "typeName": "relatedDatasets",
-            "multiple": true,
-            "typeClass": "primitive",
-            "value": [
-              "<a href=\"https://dv.sbgrid.org/dataset.xhtml?persistentId=doi:10.15785/SBGRID/3\" target=\"_blank\">doi:10.15785/SBGRID/3</a>"
-            ]
           }
         ]
       }

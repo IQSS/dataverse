@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
@@ -24,7 +25,8 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+//import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -224,13 +226,14 @@ public class FileDownloadHelper implements java.io.Serializable {
      // file downloads and multiple (batch) downloads - sice both use the same 
      // terms/etc. popup. 
      public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-         RequestContext requestContext = RequestContext.getCurrentInstance();
+         //RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
-             requestContext.execute("PF('downloadPopup').hide()");
+             //requestContext.execute("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
              guestbookResponse.setDownloadtype("Download");
 
              // Note that this method is only ever called from the file-download-popup - 
@@ -252,14 +255,16 @@ public class FileDownloadHelper implements java.io.Serializable {
      }
      
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
+
          if (!valid) {
-             
+
          } else {
-             requestContext.execute("PF('downloadPopup').hide()"); 
-             requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             //requestContext.execute("PF('downloadPopup').hide()");
+             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+             //requestContext.execute("PF('downloadDataSubsetPopup').show()");
+             PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
          }
@@ -287,28 +292,41 @@ public class FileDownloadHelper implements java.io.Serializable {
           */
          if (externalTool == null) {
              externalTool = guestbookResponse.getExternalTool();
+         } 
+         if(fmd== null) {
+             DatasetVersion dv = guestbookResponse.getDatasetVersion();
+             for(FileMetadata fm: dv.getFileMetadatas()) {
+                 if(fm.getDataFile()==guestbookResponse.getDataFile()) {
+                     fmd=fm;
+                     break;
+                 }
+             }
          }
 
-         RequestContext requestContext = RequestContext.getCurrentInstance();
+         //RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
              return;
          }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
-         requestContext.execute("PF('downloadPopup').hide()");
+         //requestContext.execute("PF('downloadPopup').hide()");
+         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
 
         if (!valid) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
         } else {
-            requestContext.execute("PF('downloadPopup').hide()");
-            requestContext.execute("PF('downloadPackagePopup').show()");
-            requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+            //requestContext.execute("PF('downloadPopup').hide()");
+            PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+            //requestContext.execute("PF('downloadPackagePopup').show()");
+            PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
+            //requestContext.execute("handleResizeDialog('downloadPackagePopup')");
+            PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
 
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
         }
@@ -316,7 +334,7 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
         
-        RequestContext requestContext = RequestContext.getCurrentInstance();
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
                   
          if (!valid) {
@@ -324,7 +342,8 @@ public class FileDownloadHelper implements java.io.Serializable {
          } 
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        requestContext.execute("PF('downloadPopup').hide()"); 
+        //requestContext.execute("PF('downloadPopup').hide()");
+        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
         return retVal;
     }
 
@@ -373,7 +392,7 @@ public class FileDownloadHelper implements java.io.Serializable {
      *  (1) Does the file have MapLayerMetadata?
      *  (2) Are the proper settings in place
      * 
-     * @param fm fileMetadata
+     * @param  fileMetadata
      * @return boolean
      */
    public boolean canDownloadFile(FileMetadata fileMetadata){
@@ -423,7 +442,20 @@ public class FileDownloadHelper implements java.io.Serializable {
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
     }
-   
+
+     /**
+      * In Dataverse 4.19 and below file preview was determined by
+      * canDownloadFile. Now we always allow a PrivateUrlUser to preview files.
+      */
+     public boolean isPreviewAllowed(FileMetadata fileMetadata) {
+         if (session.getUser() instanceof PrivateUrlUser) {
+             // Always allow preview for PrivateUrlUser
+             return true;
+         } else {
+             return canDownloadFile(fileMetadata);
+         }
+     }
+
     public boolean doesSessionUserHavePermission(Permission permissionToCheck, FileMetadata fileMetadata){
         if (permissionToCheck == null){
             return false;
@@ -453,20 +485,24 @@ public class FileDownloadHelper implements java.io.Serializable {
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
     }
-    
-    public void requestAccessMultiple(List<DataFile> files) {
 
+     public void requestAccessMultiple(List<DataFile> files) {
+         //need to verify that a valid request was made before 
+         //sending the notification - if at least one is valid send the notification
+         boolean succeeded = false;
+         boolean test = false;
          DataFile notificationFile = null;
          for (DataFile file : files) {
              //Not sending notification via request method so that
              // we can bundle them up into one nofication at dataset level
-             processRequestAccess(file, false);
-             if (notificationFile == null){
+             test = processRequestAccess(file, false);
+             succeeded |= test;
+             if (notificationFile == null) {
                  notificationFile = file;
              }
          }
-         if ( notificationFile != null){
-             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser()); 
+         if (notificationFile != null && succeeded) {
+             fileDownloadService.sendRequestFileAccessNotification(notificationFile.getOwner(), notificationFile.getId(), (AuthenticatedUser) session.getUser());
          }
      }
     
@@ -480,7 +516,8 @@ public class FileDownloadHelper implements java.io.Serializable {
      }    
     
     
-     private void processRequestAccess(DataFile file, Boolean sendNotification) {
+     private boolean processRequestAccess(DataFile file, Boolean sendNotification) {
+
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
@@ -488,7 +525,9 @@ public class FileDownloadHelper implements java.io.Serializable {
              if (sendNotification) {
                  fileDownloadService.sendRequestFileAccessNotification(file.getOwner(), file.getId(), (AuthenticatedUser) session.getUser());
              }
+             return true;
          }
+         return false;
      } 
      
     private GuestbookResponse guestbookResponse;

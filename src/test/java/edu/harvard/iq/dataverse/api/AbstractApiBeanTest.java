@@ -52,12 +52,6 @@ public class AbstractApiBeanTest {
     }
 
     @Test
-    public void testAllowCors() {
-        Response r = sut.allowCors(new MockResponse(200));
-        assertEquals("*", r.getHeaderString("Access-Control-Allow-Origin"));
-    }
-
-    @Test
     public void testMessagesNoJsonObject() {
         String message = "myMessage";
         Response response = sut.ok(message);

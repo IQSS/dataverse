@@ -1,7 +1,7 @@
 SWORD API
 =========
 
-SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Java, R, Ruby, and PHP.
+SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Javascript, Java, R, Ruby, and PHP.
 
 .. contents:: |toctitle|
     :local:

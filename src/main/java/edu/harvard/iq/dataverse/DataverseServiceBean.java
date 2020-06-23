@@ -12,12 +12,14 @@ import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +43,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.ws.rs.core.Response;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -90,8 +93,16 @@ public class DataverseServiceBean implements java.io.Serializable {
         Dataverse savedDataverse = em.merge(dataverse);
         /**
          * @todo check the result to see if indexing was successful or not
+         * added logging of exceptions 
          */
-        Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+        try {
+            Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post-save indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + savedDataverse.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, savedDataverse);
+        }
+
 //        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }
@@ -188,12 +199,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
-				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
-					.getSingleResult();
+              ? findRootDataverse()
+              : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+                  .setParameter("alias", anAlias.toLowerCase())
+                  .getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
+            logger.warning("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }
@@ -463,9 +474,11 @@ public class DataverseServiceBean implements java.io.Serializable {
 
         List<Dataverse> dataverseList = new ArrayList<>();
 
-        List<Dataverse> results = em.createNamedQuery("Dataverse.filterByName", Dataverse.class)
-                .setParameter("name", "%" + query.toLowerCase() + "%")
-                .getResultList();
+        List<Dataverse> results = filterDataversesByNamePattern(query);
+        
+        if (results == null || results.size() == 0) {
+            return null; 
+        }
 
         List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
         List<Dataverse> remove = new ArrayList<>();
@@ -485,6 +498,89 @@ public class DataverseServiceBean implements java.io.Serializable {
         }
 
         return dataverseList;
+    }
+    
+    public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
+
+        // Find the dataverses matching the search parameters: 
+        
+        List<Dataverse> searchResults = filterDataversesByNamePattern(pattern);
+        
+        if (searchResults == null || searchResults.size() == 0) {
+            return null; 
+        }
+        
+        logger.fine("search query found " + searchResults.size() + " results");
+        
+        // Filter the results and drop the dataverses where the user is not allowed to 
+        // add datasets:
+        
+        if (req.getAuthenticatedUser().isSuperuser()) {
+            logger.fine("will skip permission check...");
+            return searchResults;
+        }
+        
+        List<Dataverse> finalResults = new ArrayList<>();
+        
+        for (Dataverse res : searchResults) {
+            if (this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
+                finalResults.add(res);
+            }
+        }
+        
+        logger.fine("returning " + finalResults.size() + " final results");
+
+        return finalResults;
+    }
+    
+    
+    /* 
+        This method takes a search parameter and expands it into a list of 
+        Dataverses with matching names. 
+        The search is performed on the name with the trailing word "dataverse"
+        stripped (if present). This way the search on "data" (or on "da" pr 
+        "dat") does NOT return almost every dataverse in the database - since
+        most of them have names that end in "... Dataverse". 
+        The query isn't pretty, but it works, and it's still EJB QL (and NOT a 
+        native query). 
+    */
+    public List<Dataverse> filterDataversesByNamePattern(String pattern) {
+
+        pattern = pattern.toLowerCase();
+        
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1 and 2-character patterns:
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        } 
+        /*if (pattern.length() == 2) {
+            pattern2 = pattern + "%";
+        }*/
+        
+        
+        String qstr = "select dv from Dataverse dv "
+                + "where (LOWER(dv.name) LIKE :dataverse and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern1) "
+                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern2))) "
+                + "or (LOWER(dv.name) NOT LIKE :dataverse and ((LOWER(dv.name) LIKE :pattern1) "
+                + "     or (LOWER(dv.name) LIKE :pattern2))) "
+                + "order by dv.alias";
+                
+        List<Dataverse> searchResults = null;
+        
+        try {
+            searchResults = em.createQuery(qstr, Dataverse.class)
+                    .setParameter("dataverse", "%dataverse")
+                    .setParameter("pattern1", pattern1)
+                    .setParameter("pattern2", pattern2)
+                    .getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        return searchResults;
     }
     
     /**
@@ -778,4 +874,5 @@ public class DataverseServiceBean implements java.io.Serializable {
         logger.info(result);
         return (result);
     }
+    
 }

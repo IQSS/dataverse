@@ -20,13 +20,15 @@
 
 <ui:fragment rendered="#{!widgetWrapper.widgetView}">
 <!-- VERSIONS -->
-   <script type="text/javascript">
-       /* Version tab: Retrieve data after page load */
+   <script>
+       //<![CDATA[
+       // Version tab: Retrieve data after page load
         $(document).ready(function () {
-            preload_message = "(Loading versions...)";
+            preload_message = "#{bundle['file.dataFilesTab.versions.preloadmessage']}";
             $('#datasetForm\\:tabView\\:versionsTable_data tr.ui-datatable-empty-message td').text(preload_message);
             postLoadVersionTabList();
        });
+       //]]>
    </script>
    <!-- Retrieve version differences after the page load -->
    <p:remoteCommand  name="postLoadVersionTabList"
@@ -34,10 +36,11 @@
            update=":#{p:resolveClientId('datasetForm:tabView:versionsTable', view)}"
            actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">
-        <p:commandLink type="button" styleClass="btn btn-default" onclick="testCheckBoxes();"
-                         rendered="#{DatasetPage.compareVersionsCount > 2}">
-            <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
-        </p:commandLink>
+        <ui:fragment rendered="#{DatasetPage.compareVersionsCount > 2}">
+            <button type="button" class="btn btn-default" onclick="testCheckBoxes();">
+                <span class="glyphicon glyphicon-transfer"/> #{bundle['file.dataFilesTab.versions.viewDiffBtn']}
+            </button>
+        </ui:fragment>
         <p:commandButton value="#{bundle['file.dataFilesTab.button.direct']}" id="compareVersions"
                          style="display:none"
                          update=":datasetForm"

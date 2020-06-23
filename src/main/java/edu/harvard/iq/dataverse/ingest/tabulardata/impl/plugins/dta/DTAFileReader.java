@@ -542,9 +542,9 @@ public class DTAFileReader extends TabularDataFileReader{
                     + new String(Hex.encodeHex(magic_number)) + "<-");
         }
 
-        logger.info("magic_number[0]: " + magic_number[0]);
-        logger.info("magic_number[1]: " + magic_number[1]);
-        logger.info("magic_number[2]: " + magic_number[2]);
+        logger.fine("magic_number[0]: " + magic_number[0]);
+        logger.fine("magic_number[1]: " + magic_number[1]);
+        logger.fine("magic_number[2]: " + magic_number[2]);
         if (magic_number[2] != 1) {
             dbgLog.fine("3rd byte is not 1: given file is not stata-dta type");
             // FIXME: Figure out the magic number for Stata 14.

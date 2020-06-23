@@ -124,9 +124,22 @@ public class MarkupCheckerTest {
         unsafe = null;
         result = MarkupChecker.stripAllTags(unsafe);
         assertNull(result);
-        
-    }
 
+        unsafe = "Johnson & Johnson <>";
+        expResult = "Johnson & Johnson <>";
+        result = MarkupChecker.stripAllTags(unsafe);
+        assertEquals(expResult, result);
+
+        unsafe = "Johnson && Johnson <&>&";
+        expResult = "Johnson && Johnson <&>&";
+        result = MarkupChecker.stripAllTags(unsafe);
+        assertEquals(expResult, result);
+
+    }
+    
+    /**
+     * Test of stripAllTags method, of class MarkupChecker.
+     */
     @Test
     public void testEscapeHtml() {
         assertEquals("foo&lt;br&gt;bar", MarkupChecker.escapeHtml("foo<br>bar"));

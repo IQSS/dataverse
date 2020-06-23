@@ -186,8 +186,8 @@ public class DataFileServiceBeanTest {
      */
     @Test
     public void testGetFileClass() throws Exception {
-        assertEquals("other", dataFileServiceBean.getFileClass(fileWoContentType));
-        assertEquals("other", dataFileServiceBean.getFileClass(fileWithBogusContentType));
+        assertEquals("other", dataFileServiceBean.getFileThumbnailClass(fileWoContentType));
+        assertEquals("other", dataFileServiceBean.getFileThumbnailClass(fileWithBogusContentType));
     }
     
     /**

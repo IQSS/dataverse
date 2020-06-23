@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
@@ -62,6 +63,16 @@ public class SavedSearchServiceBean {
         typedQuery.setParameter("id", id);
         try {
             return typedQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException ex) {
+            return null;
+        }
+    }
+    
+    public  List<SavedSearch> findByAuthenticatedUser(AuthenticatedUser user) {
+        TypedQuery<SavedSearch> typedQuery = em.createQuery("SELECT OBJECT(o) FROM SavedSearch AS o WHERE o.creator.id = :id", SavedSearch.class);
+        typedQuery.setParameter("id", user.getId());
+        try {
+            return typedQuery.getResultList();
         } catch (NoResultException | NonUniqueResultException ex) {
             return null;
         }
@@ -178,7 +189,10 @@ public class SavedSearchServiceBean {
                     hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint().getAlias());
                 } else if (datasetAncestorAlreadyLinked(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     hitInfo.add(resultString, "FIXME: implement this?");
-                } else {
+                } else if (!datasetToLinkTo.isReleased()) {
+                    hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is not released " );
+                }
+                else {
                     DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(dvReq, savedSearch.getDefinitionPoint(), datasetToLinkTo));
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }

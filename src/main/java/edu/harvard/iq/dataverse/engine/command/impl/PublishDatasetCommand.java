@@ -2,19 +2,25 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -62,7 +68,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         //              When importing a released dataset, the latest version is marked as RELEASED.
 
         Dataset theDataset = getDataset();
-        
+
+        // If PID can be reserved, only allow publishing if it is.
+        String protocol = getDataset().getProtocol();
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
+        if (reservingPidsSupported) {
+            if (theDataset.getGlobalIdCreateTime() == null) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+            }
+        }
+
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {
@@ -111,15 +127,23 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             if ( registerGlobalIdsForFiles ){
                 registerGlobalIdsForFiles = currentGlobalAuthority.equals( theDataset.getAuthority() );
 	    }
+            
+            boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-            if (theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount() && registerGlobalIdsForFiles) {     
-                String info = "Adding File PIDs asynchronously";
+            if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
+                    && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
+                // TODO? The time it takes to validate the physical files in the dataset
+                // is a function of the total file size, NOT the number of files; 
+                // so that's what we should be checking. 
+                String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
+                info += "Validating Datafiles Asynchronously";
                 AuthenticatedUser user = request.getAuthenticatedUser();
                 
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.pidRegister, user);
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
                 lock.setDataset(theDataset);
                 lock.setInfo(info);
                 ctxt.datasets().addDatasetLock(theDataset, lock);
+                theDataset = ctxt.em().merge(theDataset);
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
                 return new PublishDatasetResult(theDataset, false);
                 
@@ -147,10 +171,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
         
         if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
-                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) ) {
+                || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
+        }
+        
+        if ( getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+            throw new IllegalCommandException("This dataset cannot be published because some files have been found missing or corrupted. " 
+                    + ". Please contact support to address this.", this);
         }
         
         if ( datasetExternallyReleased ) {

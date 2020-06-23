@@ -2,7 +2,7 @@
 Tips
 ====
 
-If you just followed the steps in :doc:`dev-environment` for the first time, you will need to get set up to deploy code to Glassfish. Below you'll find other tips as well.
+If you just followed the steps in :doc:`dev-environment` for the first time, you will need to get set up to deploy code to your app server. Below you'll find other tips as well.
 
 .. contents:: |toctitle|
 	:local:
@@ -10,40 +10,40 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Glassfish by the ``install`` script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Glassfish.
+When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
-It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Glassfish (that's what the ``install`` script uses and the steps are documented below), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
+It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse installation script uses and the steps are documented below), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
 
-Undeploy the war File from the ``install`` Script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Undeploy the war File from the Dataverse Installation Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Because the initial deployment of the war file was done outside of Netbeans by the ``install`` script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
+Because the initial deployment of the war file was done outside of Netbeans by the Dataverse installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Glassfish in ``/usr/local/glassfish4``, run the following ``asadmin`` command to see the version of Dataverse that the ``install`` script deployed:
+Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of Dataverse that the Dataverse installation script deployed:
 
-``/usr/local/glassfish4/bin/asadmin list-applications``
+``/usr/local/payara5/bin/asadmin list-applications``
 
-You will probably see something like ``dataverse-4.8.5  <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
+You will probably see something like ``dataverse-5.0 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
 
-``/usr/local/glassfish4/bin/asadmin undeploy dataverse-4.8.5``
+``/usr/local/payara5/bin/asadmin undeploy dataverse-5.0``
 
-Now that Glassfish doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
+Now that Payara doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
-Add Glassfish 4.1 as a Server in Netbeans
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Add Payara as a Server in Netbeans
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dataverse only works with a specific version of Glassfish (see https://github.com/IQSS/dataverse/issues/2628 ) so you need to make sure Netbeans is deploying to that version rather than a newer version of Glassfish that may have come bundled with Netbeans.
+Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Payara Server" and set the installation location to ``/usr/local/payara5``. The defaults are fine so you can click "Next" and "Finish".
 
-Launch Netbeans and click "Tools" and then "Servers". Click "Add Server" and select "Glassfish Server" and set the installation location to ``/usr/local/glassfish4``. The default are fine so you can click "Next" and "Finish". To avoid confusing, click "Remove Server" on the newer version of Glassfish that came bundled with Glassfish.
+Please note that if you are on a Mac, Netbeans may be unable to start Payara due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
 
-Please note that if you are on a Mac, Netbeans may be unable to start Glassfish due to proxy settings in Netbeans. Go to the "General" tab in Netbeans preferences and click "Test connection" to see if you are affected. If you get a green checkmark, you're all set. If you get a red exclamation mark, change "Proxy Settings" to "No Proxy" and retest. A more complicated answer having to do with changing network settings is available at https://discussions.apple.com/thread/7680039?answerId=30715103022#30715103022 and the bug is also described at https://netbeans.org/bugzilla/show_bug.cgi?id=268076
+At this point you can manage Payara using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Payara to stop and then start it so that it appears in the Output window. Note that you can expand "Payara" and "Applications" to see if any applications are deployed.
 
-At this point you can manage Glassfish using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Glassfish to stop and then start it so that it appears in the Output window. Note that you can expand "Glassfish" and "Applications" to see if any applications are deployed.
+Ensure that Dataverse Will Be Deployed to Payara
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ensure that Dataverse Will Be Deployed to Glassfish 4.1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Payara. Click OK.
 
-Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Glassfish 4.1. Click OK.
+.. _custom_build_num_script:
 
 Make a Small Change to the Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,7 +104,7 @@ Deploying With ``asadmin``
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4/glassfish/bin`` or wherever you have installed Glassfish.
+For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/payara5/glassfish/bin`` or wherever you have installed Payara.
 
 There are four steps to this process:
 
@@ -114,18 +114,21 @@ There are four steps to this process:
 4. Copy the war file to the server (if necessary)
 5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
-Running the Dataverse ``install`` Script in Non-Interactive Mode
-----------------------------------------------------------------
+Running the Dataverse Installation Script in Non-Interactive Mode
+-----------------------------------------------------------------
 
 Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
 
-Preventing Glassfish from Phoning Home
---------------------------------------
+Preventing Payara from Phoning Home
+-----------------------------------
 
-By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``./asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes.
+By default, Glassfish reports analytics information. The administration guide suggests this can be disabled with ``./asadmin create-jvm-options -Dcom.sun.enterprise.tools.admingui.NO_NETWORK=true``, should this be found to be undesirable for development purposes. It is unknown if Payara phones home or not.
 
 Solr
 ----
+
+.. TODO: This section should be moved into a dedicated guide about Solr for developers. It should be extended with
+         information about the way Solr is used within Dataverse, ideally explaining concepts and links to upstream docs.
 
 Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
@@ -149,6 +152,31 @@ Git on Mac
 ~~~~~~~~~~
 
 On a Mac, you won't have git installed unless you have "Command Line Developer Tools" installed but running ``git clone`` for the first time will prompt you to install them.
+
+Automation of Custom Build Number on Webpage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create symbolic links from ``.git/hooks/post-checkout`` and ``.git/hooks/post-commit`` to ``scripts/installer/custom-build-number-hook``
+to let Git automatically update ``src/main/java/BuildNumber.properties`` for you. This will result in showing branch name and
+commit id in your test deployment webpages on the bottom right corner next to the version.
+
+When you prefer manual updates, there is another script, see above: :ref:`custom_build_num_script`.
+
+Sample Data
+-----------
+
+You may want to populate your **non-production** installation(s) of Dataverse with sample data. You have a couple options:
+
+- Code in https://github.com/IQSS/dataverse-sample-data (recommended). This set of sample data includes several common data types, data subsetted from production datasets in dataverse.harvard.edu, datasets with file hierarchy, and more.
+- Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
+
+Switching from Glassfish to Payara
+----------------------------------
+
+If you already have a working dev environment with Glassfish and want to switch to Payara, you must do the following:
+
+- Copy the "domain1" directory from Glassfish to Payara.
+- Copy the PostgreSQL driver into place like this: ``cp scripts/installer/pgdriver/postgresql-42.*.jar /usr/local/payara5/glassfish/lib``
 
 ----
 
