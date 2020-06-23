@@ -1,8 +1,9 @@
-package edu.harvard.iq.dataverse.workflow;
+package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
+import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -11,7 +12,7 @@ import java.time.Instant;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;

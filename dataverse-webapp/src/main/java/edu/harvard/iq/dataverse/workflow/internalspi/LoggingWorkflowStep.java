@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 public class LoggingWorkflowStep implements WorkflowStep {
 
     private static final Logger logger = Logger.getLogger(LoggingWorkflowStep.class.getName());
+
+    public static final String STEP_ID = "log";
 
     private final Map<String, String> params;
 

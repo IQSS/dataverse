@@ -15,7 +15,7 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
     @Override
     public WorkflowStep getStep(String stepType, Map<String, String> stepParameters) {
         switch (stepType) {
-            case "log":
+            case LoggingWorkflowStep.STEP_ID:
                 return new LoggingWorkflowStep(stepParameters);
             case "pause":
                 return new PauseStep(stepParameters);

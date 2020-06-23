@@ -25,7 +25,11 @@ public final class WorkflowMother {
     }
 
     public static WorkflowStepData givenWorkflowStep(String stepType) {
-        return givenWorkflowStep("internal", stepType, singletonMap("param", "value"), emptyMap());
+        return givenWorkflowStep("internal", stepType);
+    }
+
+    public static WorkflowStepData givenWorkflowStep(String providerId, String stepType) {
+        return givenWorkflowStep(providerId, stepType, singletonMap("param", "value"), emptyMap());
     }
 
     public static WorkflowStepData givenWorkflowStep(String providerId, String stepType,
@@ -43,7 +47,9 @@ public final class WorkflowMother {
     }
 
     public static WorkflowExecution givenWorkflowExecution(long workflowId, long datasetId, long majorVersionNumber, long minorVersionNumber) {
-        return new WorkflowExecution(workflowId, "PostPublishDataset", datasetId, majorVersionNumber,
+        WorkflowExecution execution = new WorkflowExecution(workflowId, "PostPublishDataset", datasetId, majorVersionNumber,
                 minorVersionNumber, false, "test workflow execution");
+        execution.setId(1L);
+        return execution;
     }
 }

@@ -1,8 +1,9 @@
-package edu.harvard.iq.dataverse.workflow;
+package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
+import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.WorkflowContextMother.givenWorkflowExecutionContext;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
@@ -137,37 +138,13 @@ class WorkflowExecutionStepContextTest {
     }
 
     private void givenImmediateWorkflowStep() {
-        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2), false))
+        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2)))
                 .when(steps).getStep(anyString(), anyString(), anyMap());
     }
 
     private void givenPausingWorkflowStep() {
-        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2), true))
+        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2))
+                        .pausingAndResumingSuccessfully())
                 .when(steps).getStep(anyString(), anyString(), anyMap());
-    }
-
-    private static class TestWorkflowStep implements WorkflowStep {
-
-        private final Map<String, String> params;
-        private final boolean pause;
-
-        public TestWorkflowStep(Map<String, String> params, boolean pause) {
-            this.params = params;
-            this.pause = pause;
-        }
-
-        @Override
-        public WorkflowStepResult run(WorkflowExecutionContext context) {
-            return pause ? new Pending(params) : new Success(params);
-        }
-
-        @Override
-        public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
-            return new Success(internalData);
-        }
-
-        @Override
-        public void rollback(WorkflowExecutionContext context, Failure reason) {
-        }
     }
 }

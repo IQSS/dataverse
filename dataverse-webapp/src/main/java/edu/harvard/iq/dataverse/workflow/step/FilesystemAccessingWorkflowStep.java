@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

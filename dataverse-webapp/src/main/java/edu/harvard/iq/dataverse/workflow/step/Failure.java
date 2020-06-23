@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.workflow.step;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Result returned when step execution fails.
@@ -55,6 +56,24 @@ public class Failure implements WorkflowStepResult {
         data.put(REASON_PARAM_NAME, reason);
         data.put(MESSAGE_PARAM_NAME, message);
         return data;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Failure failure = (Failure) o;
+
+        if (!Objects.equals(reason, failure.reason)) return false;
+        return Objects.equals(message, failure.message);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reason != null ? reason.hashCode() : 0;
+        result = 31 * result + (message != null ? message.hashCode() : 0);
+        return result;
     }
 
     @Override

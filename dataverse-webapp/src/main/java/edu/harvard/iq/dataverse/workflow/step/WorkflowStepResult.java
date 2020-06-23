@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -8,7 +9,7 @@ import java.util.function.Function;
  *
  * @author michael
  */
-public interface WorkflowStepResult {
+public interface WorkflowStepResult extends Serializable {
 
     /**
      * Arbitrary accompanying this result.

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
-import edu.harvard.iq.dataverse.workflow.WorkflowExecutionContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -20,7 +20,7 @@ import static org.apache.commons.collections4.ListUtils.union;
 
 public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
 
-    static final String STEP_ID = "system-process";
+    public static final String STEP_ID = "system-process";
 
     /**
      * The binary to run. Used as is, so consider absolute path if necessary.

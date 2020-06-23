@@ -2,8 +2,8 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
 
 /**
  * Base class for commands involved in Dataset publication. Mostly needed for code reuse.

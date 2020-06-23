@@ -15,7 +15,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PrePublishDataset;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType.PrePublishDataset;
 import static java.util.stream.Collectors.joining;
 
 /**

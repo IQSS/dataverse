@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Singleton;

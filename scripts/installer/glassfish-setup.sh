@@ -177,6 +177,11 @@ function preliminary_setup()
     --property PhysicalName="dataverseWorkflow" \
     "jms/queue/dataverseWorkflow"
 
+  # allow ActiveMQ to serialize and deserialize data
+  # http://activemq.apache.org/objectmessage.html
+  ./asadmin $ASADMIN_OPTS create-jvm-options \
+    -Dorg.apache.activemq.SERIALIZABLE_PACKAGES="*"
+
   # configure ActiveMQ web console
   # make ActiveMQ web console configurable by system properties
   ./asadmin $ASADMIN_OPTS create-jvm-options \

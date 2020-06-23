@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse.workflow;
+package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
@@ -7,10 +7,12 @@ import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
-import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PostPublishDataset;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType.PostPublishDataset;
 import static java.util.Collections.emptyMap;
 
 public class WorkflowContextMother {

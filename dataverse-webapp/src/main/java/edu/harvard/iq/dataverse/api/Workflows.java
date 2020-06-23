@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
-import edu.harvard.iq.dataverse.workflow.WorkflowExecutionServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
 
 import javax.ejb.EJB;
 import javax.ws.rs.POST;
@@ -39,8 +39,7 @@ public class Workflows extends AbstractApiBean {
         }
         Logger.getLogger(Workflows.class.getName()).log(Level.INFO, "Resume request from: {0}", httpRequest.getRemoteAddr());
 
-        return workflowExecutions.getPendingWorkflow(invocationId).map(execution -> {
-            workflowExecutions.resume(execution, body);
+        return workflowExecutions.resume(invocationId, body).map(execution -> {
             return Response.accepted("/api/datasets/" + execution.getDatasetId()).build();
         }).orElseGet(() ->
                 notFound("Cannot find workflow invocation with id " + invocationId)

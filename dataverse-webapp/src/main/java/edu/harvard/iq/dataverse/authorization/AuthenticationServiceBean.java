@@ -47,10 +47,11 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -109,6 +110,16 @@ public class AuthenticationServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    protected final Clock clock;
+
+    public AuthenticationServiceBean() {
+        this(Clock.systemUTC());
+    }
+
+    public AuthenticationServiceBean(Clock clock) {
+        this.clock = clock;
+    }
 
     @PostConstruct
     public void startup() {
@@ -435,18 +446,21 @@ public class AuthenticationServiceBean {
     // to expand this system, to be able to generate tokens with different
     // lifecycles/valid for specific actions only, etc. 
     // -- L.A. 4.0 beta12
+    public ApiToken generateApiToken(AuthenticatedUser au) {
+        ApiToken apiToken = new ApiToken();
+        apiToken.setTokenString(java.util.UUID.randomUUID().toString());
+        apiToken.setAuthenticatedUser(au);
+        apiToken.setCreateTime(Timestamp.valueOf(LocalDateTime.now(clock)));
+        apiToken.setExpireTime(Timestamp.valueOf(LocalDateTime.now(clock).plus(Period.ofYears(1))));
+        return apiToken;
+    }
+
     public ApiToken generateApiTokenForUser(AuthenticatedUser au) {
         if (au == null) {
             return null;
         }
 
-        ApiToken apiToken = new ApiToken();
-        apiToken.setTokenString(java.util.UUID.randomUUID().toString());
-        apiToken.setAuthenticatedUser(au);
-        Calendar c = Calendar.getInstance();
-        apiToken.setCreateTime(new Timestamp(c.getTimeInMillis()));
-        c.roll(Calendar.YEAR, 1);
-        apiToken.setExpireTime(new Timestamp(c.getTimeInMillis()));
+        ApiToken apiToken = generateApiToken(au);
         save(apiToken);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "generateApiToken")
                                  .setInfo("user:" + au.getIdentifier() + " token:" + apiToken.getTokenString()));
@@ -464,7 +478,7 @@ public class AuthenticationServiceBean {
             return null;
         }
         if (tkn.getExpireTime() != null) {
-            if (tkn.getExpireTime().before(new Timestamp(new Date().getTime()))) {
+            if (tkn.getExpireTime().before(Timestamp.valueOf(LocalDateTime.now(clock)))) {
                 em.remove(tkn);
                 return null;
             }
@@ -538,7 +552,7 @@ public class AuthenticationServiceBean {
                                                      boolean generateUniqueIdentifier) {
         AuthenticatedUser authenticatedUser = new AuthenticatedUser();
         // set account creation time & initial login time (same timestamp)
-        authenticatedUser.setCreatedTime(new Timestamp(new Date().getTime()));
+        authenticatedUser.setCreatedTime(Timestamp.valueOf(LocalDateTime.now(clock)));
         authenticatedUser.setLastLoginTime(authenticatedUser.getCreatedTime());
 
         authenticatedUser.applyDisplayInfo(userDisplayInfo);
@@ -570,7 +584,7 @@ public class AuthenticationServiceBean {
         authenticatedUser.setAuthenticatedUserLookup(auusLookup);
 
         if (ShibAuthenticationProvider.PROVIDER_ID.equals(auusLookup.getAuthenticationProviderId())) {
-            Timestamp emailConfirmedNow = new Timestamp(new Date().getTime());
+            Timestamp emailConfirmedNow = Timestamp.valueOf(LocalDateTime.now(clock));
             // Email addresses for Shib users are confirmed by the Identity Provider.
             authenticatedUser.setEmailConfirmed(emailConfirmedNow);
             authenticatedUser = save(authenticatedUser);
@@ -636,7 +650,7 @@ public class AuthenticationServiceBean {
     }
 
     public Timestamp getCurrentTimestamp() {
-        return new Timestamp(new Date().getTime());
+        return Timestamp.valueOf(LocalDateTime.now(clock));
     }
 
     // TODO should probably be moved to the Shib provider - this is a classic Shib-specific

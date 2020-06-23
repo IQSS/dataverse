@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.workflow;
 
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
-import org.apache.commons.collections.CollectionUtils;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -27,7 +26,7 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @Entity
 @Table(name = "workflow_execution")
-public class WorkflowExecution implements JpaEntity<Long> {
+public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,6 +94,10 @@ public class WorkflowExecution implements JpaEntity<Long> {
 
     public Long getId() {
         return id;
+    }
+
+    void setId(Long id) {
+        this.id = id;
     }
 
     public long getWorkflowId() {
