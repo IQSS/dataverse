@@ -132,6 +132,12 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
             } else {
+                if(draftFmd == null) {
+                    logger.severe("Unable to find draftFMD for file id: " + dataFile.getId());
+                }
+                if(publishedFmd == null) {
+                    logger.severe("Unable to find publishedFMD for file id: " + dataFile.getId());
+                }
                 throw new IllegalCommandException("Cannot change files in the dataset", this);
             }
             if (metadataUpdated) {
