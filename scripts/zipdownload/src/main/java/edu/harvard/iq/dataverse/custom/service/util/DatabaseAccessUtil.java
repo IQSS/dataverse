@@ -88,14 +88,14 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         // job of the Dataverse application to, say, automatically delete all the 
         // entries older than 5 min. every time it accesses the table on its side.
         
-        /*try {
+        try {
             stmt = c.createStatement();
             stmt.executeUpdate("DELETE FROM CustomZipServiceRequest WHERE key='" + jobKey +"';");
             c.commit();
         } catch (Exception e) {
             // Not much we can or want to do, but complain in the Apache logs:
             System.err.println("Failed to delete the job from the db");
-        }*/
+        }
         
         try {
             c.close();
