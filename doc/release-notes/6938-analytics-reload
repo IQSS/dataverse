@@ -1,0 +1,3 @@
+### Custom Analytics Code Changes
+
+You should update your custom analytics code to implement necessary changes for tracking updated dataset and file buttons. We have updated the documentation and sample analytics code snippet provided in [Installation Guide > Configuration > Web Analytics Code](http://guides.dataverse.org/en/latest/installation/config.html#web-analytics-code) to reflect the changes implemented in this version (#6938/#6684).
