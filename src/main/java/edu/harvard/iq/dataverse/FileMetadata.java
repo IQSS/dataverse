@@ -249,7 +249,7 @@ public class FileMetadata implements Serializable {
             return ret;
         }
         
-        for (DataFileCategory fileCategory : fileCategories) {
+        for (DataFileCategory fileCategory : getCategories()) {
             ret.add(fileCategory.getName());
         }
         // fileCategories.stream()
