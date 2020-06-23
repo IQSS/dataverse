@@ -47,17 +47,17 @@ To direct new files (uploaded when datasets are created or edited) for all datas
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
-The current driver can be seen using:
+The current driver can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-and can be reset to the default store with:
+and can be reset to the default store with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
-The available drivers can be listed with:
+The available drivers can be listed with::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/storageDrivers
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
     
 
 Datasets
@@ -114,6 +114,11 @@ Send Dataset metadata to PID provider
 Forces update to metadata provided to the PID provider of a published dataset. Only accessible to superusers. ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
+
+Check for Unreserved PIDs and Reserve Them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :ref:`pids-api` in the API Guide for details.
 
 Make Metadata Updates Without Changing Dataset Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
