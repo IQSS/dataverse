@@ -71,10 +71,7 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Beginning with Dataverse version 5.0 files with duplicate content may be included in a single dataset version. On upload of a file whose content matches the content on an already existing file in the dataset the user will be warned and will have the option to delete the duplicate file before saving it to the dataset draft version. In any case, duplicate file path and name combinations are not allowed. Dataverse will adjust duplicate file path and names by adding a "-1", or "-2", etc. on upload as applicable.
-
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
-
 
 HTTP Upload
 -----------
@@ -148,6 +145,18 @@ File Handling
 =============
 
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
+
+Duplicate Files
+===============
+
+Beginning with Dataverse 5.0, the way Dataverse handles duplicate files is changing. Specifically:
+
+- Files with the same checksum can be included in a dataset, even if the files are in the same directory.
+- Files with the same filename can be included in a dataset as long as the files are in different directory.
+- If a user attempts to add a file to a directory where a file already exists with that directory/filename combination, Dataverse will adjust the file path and names by adding "-1" or "-2" as applicable. This chance will be visible in the file table. 
+- If the directory of a file is edited in such a way that would create a directory/filename combination that already exists, Dataverse will display an error.
+- If a user attempts to replace a file with another file that has the same checksum, a warning message will be displayed
+
 
 File Previews
 -------------
