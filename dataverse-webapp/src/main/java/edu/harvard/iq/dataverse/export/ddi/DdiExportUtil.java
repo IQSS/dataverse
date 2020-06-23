@@ -108,9 +108,11 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
         createStdyDscr(xmlw, datasetDto);
-        createFileDscr(xmlw, version, dataverseUrl);
-        createDataDscr(xmlw, version);
-        createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas(), dataverseUrl);
+        if(!version.getDataset().hasActiveEmbargo()) {
+            createFileDscr(xmlw, version, dataverseUrl);
+            createDataDscr(xmlw, version);
+            createOtherMatsFromFileMetadatas(xmlw, version.getFileMetadatas(), dataverseUrl);
+        }
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
     }
