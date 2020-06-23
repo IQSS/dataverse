@@ -283,7 +283,7 @@ public class SolrIndexServiceBean {
         Map<Long, List<Long>> filesPerDataset = new HashMap<>();
         List<DvObject> allExceptFiles = dvObjectService.findAll();
         for (DvObject dvObject : allExceptFiles) {
-            logger.info("determining definition points for dvobject id " + dvObject.getId());
+            logger.fine("determining definition points for dvobject id " + dvObject.getId());
             if (dvObject.isInstanceofDataFile()) {
                 Long dataset = dvObject.getOwner().getId();
                 Long datafile = dvObject.getId();
@@ -311,9 +311,9 @@ public class SolrIndexServiceBean {
         }
 
         for (DvObjectSolrDoc dvObjectSolrDoc : definitionPoints) {
-            logger.info("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
+            logger.fine("creating solr doc in memory for " + dvObjectSolrDoc.getSolrId());
             SolrInputDocument solrInputDocument = SearchUtil.createSolrDoc(dvObjectSolrDoc);
-            logger.info("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
+            logger.fine("adding to list of docs to index " + dvObjectSolrDoc.getSolrId());
             docs.add(solrInputDocument);
         }
         try {
@@ -538,7 +538,7 @@ public class SolrIndexServiceBean {
 
     public JsonObjectBuilder deleteAllFromSolrAndResetIndexTimes() throws SolrServerException, IOException {
         JsonObjectBuilder response = Json.createObjectBuilder();
-        logger.info("attempting to delete all Solr documents before a complete re-index");
+        logger.fine("attempting to delete all Solr documents before a complete re-index");
         solrClientService.getSolrClient().deleteByQuery("*:*");
         solrClientService.getSolrClient().commit();
         int numRowsAffected = dvObjectService.clearAllIndexTimes();

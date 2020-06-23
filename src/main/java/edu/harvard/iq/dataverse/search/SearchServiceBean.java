@@ -138,10 +138,10 @@ public class SearchServiceBean {
         String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, onlyDatatRelatedToMe);
         if(settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
             query = SearchUtil.expandQuery(query, permissionFilterGroups!=null);
-            logger.info("Sanitized, Expanded Query: " + query);
+            logger.fine("Sanitized, Expanded Query: " + query);
             if(permissionFilterGroups!=null) {
               solrQuery.add("q1",  SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
-              logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+              logger.fine("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
             }
         }
 
@@ -813,10 +813,10 @@ public class SearchServiceBean {
         String permissionFilterGroups = getPermissionFilterGroups(dataverseRequest, solrQuery, false);
         if (settingsService.isTrueForKey(SettingsServiceBean.Key.SolrFullTextIndexing, false)) {
             query = SearchUtil.expandQuery(query, permissionFilterGroups != null);
-            logger.info("Sanitized, Expanded Query: " + query);
+            logger.fine("Sanitized, Expanded Query: " + query);
             if (permissionFilterGroups != null) {
                 solrQuery.add("q1", SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
-                logger.info("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
+                logger.fine("q1: " + SearchFields.FULL_TEXT_SEARCHABLE_BY + ":" + permissionFilterGroups);
             }
         }
 
@@ -857,7 +857,7 @@ public class SearchServiceBean {
         // -----------------------------------
         QueryResponse queryResponse = null;
         try {
-logger.info("Solr query: " + solrQuery);
+        //logger.fine("Solr query: " + solrQuery);
             queryResponse = solrClientService.getSolrClient().query(solrQuery);
         } catch (RemoteSolrException ex) {
             String messageFromSolr = ex.getLocalizedMessage();

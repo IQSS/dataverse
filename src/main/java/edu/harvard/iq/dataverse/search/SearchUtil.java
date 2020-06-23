@@ -241,7 +241,7 @@ public class SearchUtil {
             while (regexMatcher.find()) {
 
                 String part = regexMatcher.group();
-                logger.info("Parsing found \"" + part + "\"");
+                logger.fine("Parsing found \"" + part + "\"");
                 if (needSpace) {
                     ftQuery.append(" ");
                 } else {
