@@ -178,77 +178,80 @@ public class OREMap {
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
 
-        for (FileMetadata fmd : version.getFileMetadatas()) {
-            DataFile df = fmd.getDataFile();
-            JsonObjectBuilder aggRes = Json.createObjectBuilder();
+        if(!version.getDataset().hasActiveEmbargo()) {
+            for (FileMetadata fmd : version.getFileMetadatas()) {
+                DataFile df = fmd.getDataFile();
+                JsonObjectBuilder aggRes = Json.createObjectBuilder();
 
-            if (fmd.getDescription() != null) {
-                aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
-            } else {
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
-            }
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
-            addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED);
-            addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
-            addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
-            JsonArray catArray = null;
-            if (fmd != null) {
-                List<String> categories = fmd.getCategoriesByName();
-                if (categories.size() > 0) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
-                    for (String s : categories) {
-                        jab.add(s);
-                    }
-                    catArray = jab.build();
+                if (fmd.getDescription() != null) {
+                    aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
+                } else {
+                    addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
                 }
-            }
-            addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
-            // File DOI if it exists
-            String fileId = null;
-            String fileSameAs = null;
-            if (df.getGlobalId().asString().length() != 0) {
-                fileId = df.getGlobalId().asString();
-                fileSameAs = dataverseSiteUrl
-                        + "/api/access/datafile/:persistentId?persistentId=" + fileId;
-            } else {
-                fileId = dataverseSiteUrl + "/file.xhtml?fileId=" + df.getId();
-                fileSameAs = dataverseSiteUrl + "/api/access/datafile/" + df.getId();
-            }
-            aggRes.add("@id", fileId);
-            aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
-            fileArray.add(fileId);
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
+                addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED);
+                addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
+                addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
+                JsonArray catArray = null;
+                if (fmd != null) {
+                    List<String> categories = fmd.getCategoriesByName();
+                    if (categories.size() > 0) {
+                        JsonArrayBuilder jab = Json.createArrayBuilder();
+                        for (String s : categories) {
+                            jab.add(s);
+                        }
+                        catArray = jab.build();
+                    }
+                }
+                addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
+                // File DOI if it exists
+                String fileId = null;
+                String fileSameAs = null;
+                if (df.getGlobalId().asString().length() != 0) {
+                    fileId = df.getGlobalId().asString();
+                    fileSameAs = dataverseSiteUrl
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId;
+                } else {
+                    fileId = dataverseSiteUrl + "/file.xhtml?fileId=" + df.getId();
+                    fileSameAs = dataverseSiteUrl + "/api/access/datafile/" + df.getId();
+                }
+                aggRes.add("@id", fileId);
+                aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
+                fileArray.add(fileId);
 
-            aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-            addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
-            addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-            addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-            addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
-            addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-            addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-            JsonObject checksum = null;
-            // Add checksum. RDA recommends SHA-512
-            if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
-                        .add("@value", df.getChecksumValue()).build();
-                aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
+                addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+                addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+                addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
+                addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+                addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+                addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+                addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+                JsonObject checksum = null;
+                // Add checksum. RDA recommends SHA-512
+                if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                            .add("@value", df.getChecksumValue()).build();
+                    aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                }
+                JsonArray tabTags = null;
+                JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
+                if (jab != null) {
+                    tabTags = jab.build();
+                }
+                addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
+                //Add latest resource to the array
+                aggResArrayBuilder.add(aggRes.build());
             }
-            JsonArray tabTags = null;
-            JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
-            if (jab != null) {
-                tabTags = jab.build();
-            }
-            addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-            //Add latest resource to the array
-            aggResArrayBuilder.add(aggRes.build());
         }
         // Build the '@context' object for json-ld based on the localContext entries
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
         for (Entry<String, String> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
+
         // Now create the overall map object with it's metadata
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), modifiedDate.toString())
@@ -262,10 +265,11 @@ public class OREMap {
                              + ExporterType.OAIORE.toString() + "&persistentId=" + id)
                 // Add the aggregation (Dataset) itself to the map.
                 .add(JsonLDTerm.ore("describes").getLabel(),
-                     aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
-                             .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
+                        aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
+                                .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                 // and finally add the context
                 .add("@context", contextBuilder.build()).build();
+
         return oremap;
     }
 

@@ -472,7 +472,7 @@ class DataCiteMetadataTemplate {
         StringBuilder sb = new StringBuilder();
         if (dvObject.isInstanceofDataset()) {
             Dataset dataset = (Dataset) dvObject;
-            if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null)) {
+            if (!dataset.getFiles().isEmpty() && !(dataset.getFiles().get(0).getIdentifier() == null) && !dataset.hasActiveEmbargo()) {
 
                 datafileIdentifiers = new ArrayList<>();
                 for (DataFile dataFile : dataset.getFiles()) {

@@ -38,7 +38,6 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
@@ -47,7 +46,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -350,7 +348,9 @@ public class JsonPrinter {
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields(), excludeEmailFields));
 
-        bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
+        if(!dsv.getDataset().hasActiveEmbargo()) {
+            bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
+        }
 
         return bld;
     }

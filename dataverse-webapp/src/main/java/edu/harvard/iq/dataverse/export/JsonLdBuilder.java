@@ -258,33 +258,35 @@ public class JsonLdBuilder {
             job.add("spatialCoverage", spatialArray);
         }
 
-        List<FileMetadata> fileMetadatasSorted = datasetVersion.getAllFilesMetadataSorted();
-        if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
-            JsonArrayBuilder fileArray = Json.createArrayBuilder();
-            for (FileMetadata fileMetadata : fileMetadatasSorted) {
-                JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
-                String filePidUrlAsString = null;
-                URL filePidUrl = fileMetadata.getDataFile().getGlobalId().toURL();
-                if (filePidUrl != null) {
-                    filePidUrlAsString = filePidUrl.toString();
-                }
-                fileObject.add("@type", "DataDownload");
-                fileObject.add("name", fileMetadata.getLabel());
-                fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
-                fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
-                fileObject.add("description", fileMetadata.getDescription());
-                fileObject.add("@id", filePidUrlAsString);
-                fileObject.add("identifier", filePidUrlAsString);
-                if (hideSchemaDotOrgDownloadUrls != null && hideSchemaDotOrgDownloadUrls.equals("true")) {
-                    // no-op
-                } else {
-                    if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
-                        fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileMetadata.getDataFile().getId(), false));
+        if(!datasetVersion.getDataset().hasActiveEmbargo()) {
+            List<FileMetadata> fileMetadatasSorted = datasetVersion.getAllFilesMetadataSorted();
+            if (fileMetadatasSorted != null && !fileMetadatasSorted.isEmpty()) {
+                JsonArrayBuilder fileArray = Json.createArrayBuilder();
+                for (FileMetadata fileMetadata : fileMetadatasSorted) {
+                    JsonObjectBuilder fileObject = NullSafeJsonBuilder.jsonObjectBuilder();
+                    String filePidUrlAsString = null;
+                    URL filePidUrl = fileMetadata.getDataFile().getGlobalId().toURL();
+                    if (filePidUrl != null) {
+                        filePidUrlAsString = filePidUrl.toString();
                     }
+                    fileObject.add("@type", "DataDownload");
+                    fileObject.add("name", fileMetadata.getLabel());
+                    fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
+                    fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
+                    fileObject.add("description", fileMetadata.getDescription());
+                    fileObject.add("@id", filePidUrlAsString);
+                    fileObject.add("identifier", filePidUrlAsString);
+                    if (hideSchemaDotOrgDownloadUrls != null && hideSchemaDotOrgDownloadUrls.equals("true")) {
+                        // no-op
+                    } else {
+                        if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
+                            fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileMetadata.getDataFile().getId(), false));
+                        }
+                    }
+                    fileArray.add(fileObject);
                 }
-                fileArray.add(fileObject);
+                job.add("distribution", fileArray);
             }
-            job.add("distribution", fileArray);
         }
         
         return job.build().toString();
