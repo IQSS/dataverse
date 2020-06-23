@@ -156,7 +156,34 @@ public class UtilIT {
                 .post("/api/admin/" + datasetIdentifier + "/reregisterHDLToPID?key=" + apiToken);
         return response;
     }
-    
+
+    public static Response getPid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/pids?persistentId=" + persistentId);
+        return response;
+    }
+
+    public static Response getUnreservedPids(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/pids/unreserved");
+        return response;
+    }
+
+    public static Response reservePid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/pids/:persistentId/reserve?persistentId=" + persistentId);
+        return response;
+    }
+
+    public static Response deletePid(String persistentId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/pids/:persistentId/delete?persistentId=" + persistentId);
+        return response;
+    }
 
     public static Response computeDataFileHashValue(String fileId, String alg, String apiToken) {
         Response response = given()
@@ -482,6 +509,14 @@ public class UtilIT {
                 .contentType("application/json")
                 .post("/api/datasets/:persistentId/modifyRegistrationMetadata/?persistentId=" + persistentId);
         return response;
+    }
+    
+    static Response loadMetadataBlock(String apiToken, byte[] body) {
+        return given()
+          .header(API_TOKEN_HTTP_HEADER, apiToken)
+          .contentType("text/tab-separated-values; charset=utf-8")
+          .body(body)
+          .post("/api/admin/datasetfield/load");
     }
 
     static private String getDatasetXml(String title, String author, String description) {
@@ -1366,6 +1401,15 @@ public class UtilIT {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/admin/datasets/thumbnailMetadata/" + datasetId);
+    }
+
+    /**
+     * @param trueOrWidthInPixels Passing "true" will result in the default width in pixels (64).
+     */
+    static Response getFileThumbnail(String fileDatabaseId, String trueOrWidthInPixels, String apiToken) {
+        return given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileDatabaseId + "?imageThumb=" + trueOrWidthInPixels);
     }
 
     static Response useThumbnailFromDataFile(String datasetPersistentId, long dataFileId1, String apiToken) {

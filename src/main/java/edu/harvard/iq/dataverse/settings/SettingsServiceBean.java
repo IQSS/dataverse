@@ -424,9 +424,18 @@ public class SettingsServiceBean {
          */
         ShibAffiliationAttribute,
         /**
+         * Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8
+         */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
-        FileValidationOnPublishEnabled
+        FileValidationOnPublishEnabled,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        ChronologicalDateFacets
+        
         ;
 
         @Override

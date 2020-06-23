@@ -82,6 +82,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
@@ -1218,7 +1219,7 @@ public class Datasets extends AbstractApiBean {
             }
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
-            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
@@ -1243,7 +1244,7 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
+            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             if(is == null) {
                 return notFound("Thumbnail not available");
             }
