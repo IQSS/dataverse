@@ -35,3 +35,42 @@ If you have successfully installed multiple app servers behind a load balancer y
 You would repeat the steps above for all of your app servers. If users seem to be having a problem with a particular server, you can ask them to visit https://dataverse.example.edu/host.txt and let you know what they see there (e.g. "server1.example.edu") to help you know which server to troubleshoot.
 
 Please note that :ref:`network-ports` under the Configuration section has more information on fronting your app server with Apache. The :doc:`shibboleth` section talks about the use of ``ProxyPassMatch``.
+
+Optional Components
+-------------------
+
+Standalone "Zipper" Service Tool
+++++++++++++++++++++++++++++++++
+
+As of Dataverse v5.0 we offer an experimental optimization for the
+multi-file, download-as-zip functionality. If this option is enabled,
+instead of enforcing size limits, we attempt to serve all the files
+that the user requested (that they are authorized to download), but
+the request is redirected to a standalone zipper service running as a
+cgi-bin executable under Apache. Thus moving these potentially
+long-running jobs completely outside the Application Server (Payara);
+and preventing worker threads from becoming locked serving them. Since
+zipping is also a CPU-intensive task, it is possible to have this
+service running on a different host system, thus freeing the cycles on
+the main Application Server. (The system running the service needs to
+have access to the database as well as to the storage filesystem,
+and/or S3 bucket).
+
+Please consult the scripts/zipdownload/README.md in the Dataverse 5
+source tree for more information. 
+
+To install: follow the instructions in the file above to build
+``ZipDownloadService-v1.0.0.jar``. Copy it, together with the shell
+script scripts/zipdownload/cgi-bin/zipdownload to the cgi-bin
+directory of the chosen Apache server (/var/www/cgi-bin standard).
+Edit the config lines in the shell script (zipdownload) to configure
+database access credentials. Do note that the executable does not need
+access to the entire Dataverse database. A secuirity-conscious admin
+can create a dedicated database user with access to just one table:
+``CUSTOMZIPSERVICEREQUEST``.
+
+to activate in Dataverse::
+
+   curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
+
+
