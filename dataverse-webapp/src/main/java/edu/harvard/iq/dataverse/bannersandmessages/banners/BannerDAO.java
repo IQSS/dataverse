@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.ImageWithLinkDto;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
 import org.primefaces.model.DefaultStreamedContent;
@@ -39,6 +40,9 @@ public class BannerDAO {
     }
 
     public List<ImageWithLinkDto> getBannersForDataverse(Long dataverseId, String localeCode) {
+        if (dataverseId == null) {
+            return Lists.newArrayList();
+        }
         List<Object[]> banners = em.createNativeQuery("select r.image, r.imagelink from (select distinct dvtml.image, dvtml.imagelink, dvtm.totime  from\n" +
                                                               "  dataversebanner dvtm\n" +
                                                               "  join dataverselocalizedbanner dvtml on dvtml.dataversebanner_id = dvtm.id\n" +
