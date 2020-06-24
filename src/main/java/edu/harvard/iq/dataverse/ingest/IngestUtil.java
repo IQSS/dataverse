@@ -248,9 +248,10 @@ public class IngestUtil {
         // create list of existing path names from all FileMetadata in the DatasetVersion
         // (skipping the one specified fileMetadata, if supplied. That's in order to 
         // be able to call this method 
+        // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if (fm.getId() != null && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
+            if ((fm.isInPriorVersion() || fm.getId() != null) && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 
