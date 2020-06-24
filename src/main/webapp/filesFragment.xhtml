@@ -577,6 +577,16 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
+                
+                <script type="text/javascript">
+                    function downloadFiles(url, filelist) {
+                      filelist=filelist + ','; //Prevents last file from being dropped on server
+                      var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
+                      form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
+                      //Submit and then remove form
+                      form.appendTo('body').submit().remove();
+                    }
+                </script>
             </f:facet>
             
             <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
@@ -604,7 +614,7 @@
             <!-- END: FILE LEVEL INLINE INDICATORS, MSG, ICON, ET AL -->
             
             
-            <div class="btn-group" role="group" aria-label="TODO: ACCESSIBILITY LABEL FILE LEVEL ACTIONS">
+            <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
             
                 <!---Modular configure-->
                 <ui:fragment rendered="#{!widgetWrapper.widgetView 

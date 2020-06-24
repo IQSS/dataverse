@@ -86,7 +86,6 @@
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
                                    actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'original')}">
                         <h:outputFormat value="#{bundle['file.downloadBtn.format.original']}">
-                            <!-- TODO: FIX VALUE LENGTH OVERLAPS SUBMENU PULL-FLOAT -->
                             <f:param value="#{fileMetadata.dataFile.originalFormatLabel}"/>
                         </h:outputFormat>
                     </p:commandLink>
@@ -375,9 +374,6 @@
             <p:commandLink styleClass="btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated }"
                         process="@this"
                         onclick="PF('accessSignUpLogIn_popup').show()">
-                
-                <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-                
                 #{bundle['file.requestAccess']}
             </p:commandLink>
         </li>
@@ -411,7 +407,6 @@
                        title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        onclick="PF('accessSignUpLogIn_popup').show()">
-            <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
         <!-- END: DATASET PG -->
@@ -550,14 +545,4 @@
         <span class="glyphicon glyphicon-flash"/><span class="sr-only">#{bundle['file.compute']}</span>
     </h:outputLink>
     <!-- END: Compute Button *DATASET PG only*: -->
-    
-    <script type="text/javascript">
-        function downloadFiles(url, filelist) {
-          filelist=filelist + ','; //Prevents last file from being dropped on server
-          var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype','text/plain');
-          form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
-          //Submit and then remove form
-          form.appendTo('body').submit().remove();
-        }
-    </script>
 </ui:composition>
