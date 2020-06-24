@@ -92,6 +92,7 @@ public class DataverseRequest {
                     if (index >= 0) {
                         ip = ip.substring(index + 1);
                     }
+                    ip = ip.trim();
                     /*
                      * We should have a valid, single IP address string here. The IpAddress.valueOf
                      * call will throw an exception if it can't be parsed into a valid address (e.g.
