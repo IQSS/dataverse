@@ -247,10 +247,14 @@
 
                 </nav>
                     <div id="accessibility-controls">
-                        <h:outputText value="#{bundle['header.accessibility.eightyLimit']}" />: 
+                        <h:outputText value="#{bundle['header.accessibility.wcagText']}" />: 
                         <ul id="eighty-limit-mode-selector">
                             <li>
                                 <button class="toggle" title="#{bundle['header.accessibility.eightyLimit.toggle']}"></button>
+                            </li>
+                        </ul><ul id="wcag-text-mode-selector">
+                            <li>
+                                <button class="toggle" title="#{bundle['header.accessibility.wcagText.toggle']}"></button>
                             </li>
                         </ul>
                         <h:outputText value="#{bundle['header.accessibility.font']}" />: 

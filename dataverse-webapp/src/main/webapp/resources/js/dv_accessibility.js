@@ -39,6 +39,7 @@ function accessibilityDebugErr(msg) {
  */
 var accessibilityUserPreferencesData = {
     eightyCharactersLimit: "eighty-limit",
+    wcagTextMode: "wcag-text",
     fontSize: "font-size",
     highContrastMode: "high-contrast"
 }

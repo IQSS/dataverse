@@ -1942,10 +1942,6 @@ $navbar-height: 102px;
 		display: inline-block;
 		list-style-type: none;
 
-		&:not(:last-child) {
-			padding-right: 0.8em;
-		}
-
 		li {
 			display: block;
 			float: left;
@@ -1959,9 +1955,14 @@ $navbar-height: 102px;
 			}
 		}
 	}
+
+	span:not(:last-child) ul[id$="-mode-selector"] {
+		padding-right: 0.8em;
+	}
 }
 
-#eighty-limit-mode-selector button {
+#eighty-limit-mode-selector button,
+#wcag-text-mode-selector button {
 	position: relative;
 	border: 1px solid $main-text-color;
 	background: #fff;
@@ -1970,17 +1971,23 @@ $navbar-height: 102px;
 	text-decoration: none;
 	overflow: hidden;
 
-	&::before {
-		position: absolute;
-		content: "80";
-	}
 	&::after {
 		opacity: 0;
 		content: "Aa";
 	}
 }
-body.eighty-limit-toggle #eighty-limit-mode-selector button {
+body.eighty-limit-toggle #eighty-limit-mode-selector button,
+body.wcag-text-toggle #wcag-text-mode-selector button {
 	color: $focus-color;
+}
+
+#eighty-limit-mode-selector button::before {
+	position: absolute;
+	content: "80";
+}
+#wcag-text-mode-selector button::before {
+	position: absolute;
+	content: "==";
 }
 
 #font-size-mode-selector button {
@@ -3121,6 +3128,20 @@ p.text-block {
 
 body.eighty-limit-toggle p.text-block {
 	max-width: 36.4em;
+}
+body.eighty-limit-toggle.wcag-text-toggle p.text-block {
+	max-width: 48em;
+}
+
+
+/**
+ * WCAG TEXT MODE SWITCH BELOW
+ */
+
+body.wcag-text-toggle p.text-block {
+	word-spacing: 0.16em;
+	letter-spacing: 0.12em;
+	line-height: 1.5em;
 }
 
 
@@ -4469,7 +4490,8 @@ body.font-size-percent-200 {
 		background: $contrast-background-color;
 	}
 
-	#eighty-limit-mode-selector button {
+	#eighty-limit-mode-selector button,
+	#wcag-text-mode-selector button {
 		border-color: $contrast-foreground-color;
 		background: $contrast-background-color;
 		color: $contrast-foreground-color;
@@ -4479,7 +4501,8 @@ body.font-size-percent-200 {
 		}
 	}
 
-	&.eighty-limit-toggle #eighty-limit-mode-selector button {
+	&.eighty-limit-toggle #eighty-limit-mode-selector button,
+	&.wcag-text-toggle #wcag-text-mode-selector button {
 		color: $contrast-alt-focus-color;
 	}
 
