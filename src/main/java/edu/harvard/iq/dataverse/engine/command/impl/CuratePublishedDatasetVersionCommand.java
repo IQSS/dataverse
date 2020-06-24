@@ -85,18 +85,26 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         Dataset tempDataset = ctxt.em().merge(getDataset());
 
         // Look for file metadata changes and update published metadata if needed
-        for (DataFile dataFile : tempDataset.getFiles()) {
-            List<FileMetadata> fmdList = dataFile.getFileMetadatas();
+        List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
+        int pubFileCount = pubFmds.size();
+        int newFileCount = tempDataset.getEditVersion().getFileMetadatas().size();
+        if(pubFileCount!=newFileCount) {
+            logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
+            throw new IllegalCommandException("Different number of files in draft version", this); 
+        }
+        for(FileMetadata publishedFmd: pubFmds) {
+            DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
-            FileMetadata publishedFmd = null;
-            for (FileMetadata fmd : fmdList) {
-                if (fmd.getDatasetVersion().equals(updateVersion)) {
-                    publishedFmd = fmd;
-                    break;
-                }
-            }
             boolean metadataUpdated = false;
-            if (draftFmd != null && publishedFmd != null) {
+            if (draftFmd == null || draftFmd.getDatasetVersion().equals(updateVersion)) {
+                if (draftFmd == null) {
+                    logger.severe("Unable to find latest FMD for file id: " + dataFile.getId());
+                } else {
+                    logger.severe("No filemetadata for file id: " + dataFile.getId() + " in draft version");
+                }
+                throw new IllegalCommandException("Cannot change files in the dataset", this);
+            } else {
+                
                 if (!draftFmd.getLabel().equals(publishedFmd.getLabel())) {
                     publishedFmd.setLabel(draftFmd.getLabel());
                     metadataUpdated = true;
@@ -131,15 +139,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
-            } else {
-                if(draftFmd == null) {
-                    logger.severe("Unable to find draftFMD for file id: " + dataFile.getId());
-                }
-                if(publishedFmd == null) {
-                    logger.severe("Unable to find publishedFMD for file id: " + dataFile.getId());
-                }
-                throw new IllegalCommandException("Cannot change files in the dataset", this);
-            }
+            } 
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
             }
