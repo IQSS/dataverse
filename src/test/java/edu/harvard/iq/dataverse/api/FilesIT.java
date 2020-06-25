@@ -335,6 +335,8 @@ public class FilesIT {
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
         
+        sleep(1000); // 2 times
+
         Response publishDatasetResp = UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken);
         publishDatasetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -853,7 +855,7 @@ public class FilesIT {
     }
 
     @Test
-    public void testReplaceFileBadJson() {
+    public void testReplaceFileBadJson() throws InterruptedException {
         msgt("test_008_ReplaceFileAlreadyDeleted");
 
         // Create user
@@ -889,6 +891,8 @@ public class FilesIT {
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
+
+        sleep(1000); // 2 times
 
         // -------------------------
         // Publish dataset
