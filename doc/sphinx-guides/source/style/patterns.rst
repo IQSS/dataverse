@@ -379,6 +379,8 @@ Action Buttons Block
 
 For the main actions on a page, we use a container block to group them together. They use the Bootstrap justified button groups style class ``.btn-group.btn-group-justified`` in order to create a group of buttons that stretch at equal sizes to span the entire width of its parent.
 
+The Bootstrap theme provides a ``.btn-primary`` style class to highlight the primary action for the user. This stronger color provides extra visual weight and identifies the primary action in a set of buttons on the page. In this example button group from the file page, you can see the Download and Explore options are listed together, providing a more scalable solution to configurable options.
+
 .. raw:: html
 
 	<div class="panel panel-default code-example">
@@ -388,53 +390,73 @@ For the main actions on a page, we use a container block to group them together.
                 <div id="actionButtonBlock">
                     <div class="btn-group btn-group-justified">
                         <div class="btn-group">
-                            <button type="button" id="publishDataSet" class="btn btn-default btn-access btn-publish dropdown-toggle" onclick="$(this).parent().find('li > a').trigger('click');">
-                                Publish Dataset
+                            <button type="button" id="accessFile" class="btn btn-primary btn-access-file dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Access File <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu pull-right text-left">
+                                <li class="dropdown-header">
+                                    Download Options <span class="glyphicon glyphicon-download-alt"></span>
+                                </li>
                                 <li>
                                     <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
-                                        Publish
+                                        Original File Format (R Data)
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        Tab-Delimited
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        RData Format
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        Variable Metadata
+                                    </a>
+                                </li>
+                                <li class="dropdown-submenu pull-left">
+                                    <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" onclick="return false;">RIS</a>
+                                        </li>
+                                        <li><a href="#" onclick="return false;">EndNote XML</a>
+                                        </li>
+                                        <li><a href="#" onclick="return false;">BibTeX</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li role="presentation" class="clearfix"></li>
+                                <li class="dropdown-header">
+                                    Explore Options <span class="glyphicon glyphicon-equalizer"></span>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-explore">
+                                        Data Explorer
+                                    </a>
+                                </li>                    
                             </ul>
                         </div>
                     </div>
                     <div class="btn-group btn-group-justified">
                         <div class="btn-group">
-                            <button type="button" id="editDataSet" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Edit Dataset <span class="caret"></span>
+                            <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Edit File <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu pull-right text-left">
                                 <li>
-                                    <a href="#" onclick="return false;">Files (Upload)</a>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Metadata" title="Metadata">Metadata</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Metadata</a>
-                                </li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Restrict" title="Restrict">Restrict</a>
+                                </li>                                        
                                 <li>
-                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Terms</a>
-                                </li>
-                                <li class="dropdown-submenu pull-left">
-                                    <a tabindex="-1" href="#">Permissions</a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Dataset</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" onclick="return false;" class="ui-commandlink ui-widget">File</a>
-                                        </li>
-                                    </ul>
-                                </li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Replace" title="Replace">Replace</a>
+                                </li> 
                                 <li>
-                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Private URL</a>
-                                </li>
-                                <li>
-                                    <a href="#" onclick="return false;">Thumbnails + Widgets</a>
-                                </li>
-                                <li role="separator" class="divider"></li>
-                                <li>
-                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Delete Dataset</a>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Delete" title="Delete">Delete</a>
                                 </li>
                             </ul>
                         </div>
@@ -459,22 +481,21 @@ For the main actions on a page, we use a container block to group them together.
           <div id="actionButtonBlock">
             <div class="btn-group btn-group-justified">
               <div class="btn-group">
-                <button type="button" id="publishDataSet" class="btn btn-default btn-access btn-publish dropdown-toggle" onclick="$(this).parent().find('li > a').trigger('click');">
-                    Publish Dataset
+                <button type="button" id="accessFile" class="btn btn-primary btn-access-file dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Access File
                 </button>
                 <ul class="dropdown-menu pull-right text-left">
-                  <li>
-                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
-                      Publish
-                    </a>
+                  <li class="dropdown-header">
+                    Download Options <span class="glyphicon glyphicon-download-alt"></span>
                   </li>
+                  ...
                 </ul>
               </div>
             </div>
             <div class="btn-group btn-group-justified">
               <div class="btn-group">
-                <button type="button" id="editDataSet" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Edit Dataset <span class="caret"></span>
+                <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Edit File <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu pull-right text-left">
                   <li>
@@ -552,13 +573,13 @@ We use the style class ``.no-text`` with the ``.glyphicon`` class to fix spacing
       <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
     </p:commandLink>
 
-Another variation of icon-only buttons uses the ``.btn-link`` style class from Bootstrap, making it look like a link while maintaining button behavior.
+Another variation of icon-only buttons uses the ``.btn-link`` style class from Bootstrap, styling it more like a link while maintaining button behavior. The button group provides space for up to three buttons for a file in the table, and if there are more than three action button, they utilize the "kebab" More Options button dropdown with the ``.glyphicon-option-vertical`` icon.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-            <div class="btn-group" role="group" aria-label="Download">
+            <div class="btn-group" role="group" aria-label="File Actions">
                 <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-download btn btn-link bootstrap-button-tooltip" aria-label="Download" data-original-title="Download">
                     <span class="glyphicon glyphicon-download-alt"></span><span class="sr-only">Download</span>
                 </a>
@@ -579,37 +600,74 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
                         </li>
                     </ul>
                 </div>
+                <div class="btn-group">
+                    <a class="btn-options btn btn-link bootstrap-button-tooltip dropdown-toggle" id="optionsBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="More Options">
+                        <span class="glyphicon glyphicon-option-vertical"></span><span class="sr-only">More Options</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="optionsBtn">
+                        <li>
+                            <a href="#" class="ui-commandlink ui-widget" onclick="return false;">
+                                Misc. Option
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="ui-commandlink ui-widget" onclick="return false;">
+                                Misc. Option
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 	  </div>
 	</div>
 
 .. code-block:: html
 
-    <p:commandLink rendered="#{true}" styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
-                   title="#{bundle.download}"
-                   disabled="#{locked ? 'disabled' : ''}" 
-                   process="@this" update="@widgetVar(popup)" oncomplete="PF('popup').show();">
-      <f:actionListener binding="#{pageBean.function()}" />
-      <f:actionListener binding="#{pageBean.function()}" />
-      <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
-    </p:commandLink>
+    <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
+        <p:commandLink rendered="#{true}" styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
+                       title="#{bundle.download}"
+                       disabled="#{locked ? 'disabled' : ''}" 
+                       process="@this" update="@widgetVar(popup)" oncomplete="PF('popup').show();">
+          <f:actionListener binding="#{pageBean.function()}" />
+          <f:actionListener binding="#{pageBean.function()}" />
+          <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
+        </p:commandLink>
 
-    <div class="btn-group" jsf:rendered="#{true}">
-      <a class="btn-explore btn btn-link bootstrap-button-tooltip" 
-         title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find('li > a').trigger('click');">
-        <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span>
-      </a>
-      <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
-        <ui:repeat var="tool" value="#{exploreTools}">
-          <li>
-            <p:commandLink styleClass="#{locked ? 'disabled' : ''}"
-                           disabled="#{locked ? 'disabled' : ''}"
-                           action="#{pageBean.function()}">
-              #{tool.getDisplayNameLang()}
-            </p:commandLink>
-          </li>
-        </ui:repeat>
-      </ul>
+        <div class="btn-group" jsf:rendered="#{true}">
+          <a class="btn-explore btn btn-link bootstrap-button-tooltip" 
+             title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="#{bundle.explore}">
+            <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span><span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
+            <ui:repeat var="tool" value="#{exploreTools}">
+              <li>
+                <p:commandLink styleClass="#{locked ? 'disabled' : ''}"
+                               disabled="#{locked ? 'disabled' : ''}"
+                               action="#{pageBean.function()}">
+                  #{tool.getDisplayNameLang()}
+                </p:commandLink>
+              </li>
+            </ui:repeat>
+          </ul>
+        </div>
+
+        <div class="btn-group" jsf:rendered="#{true}">
+          <a class="btn-options btn btn-link bootstrap-button-tooltip" 
+             id="optionsBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="#{bundle.moreOptions}" data-original-title="#{bundle.moreOptions}">
+            <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle.moreOptions}</span><span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="optionsBtn">
+            <ui:repeat var="options" value="#{fileOptions}">
+              <li>
+                <p:commandLink styleClass="#{locked ? 'disabled' : ''}"
+                               disabled="#{locked ? 'disabled' : ''}"
+                               action="#{pageBean.function()}">
+                  ...
+                </p:commandLink>
+              </li>
+            </ui:repeat>
+          </ul>
+        </div>
     </div>
 
 Pagination
