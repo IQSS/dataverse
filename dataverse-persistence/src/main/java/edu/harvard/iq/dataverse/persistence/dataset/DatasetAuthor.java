@@ -18,6 +18,13 @@ import java.util.regex.Pattern;
 
 public class DatasetAuthor {
 
+    public DatasetAuthor() {
+    }
+
+    public DatasetAuthor(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
     public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>() {
         @Override
         public int compare(DatasetAuthor o1, DatasetAuthor o2) {

@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -69,6 +70,13 @@ public class OREMap {
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
+
+        // This sorting is a workaround for exporter exporting only one author,
+        // until fixed, we want this one author to be the first one rather than the last one.
+        // Adding new author replaces the old one, so we want the first one to be parsed as last (hence reversed sorting).
+        fields.sort(Comparator.comparing(DatasetField::getDisplayOrder).reversed());
+
+
         // That has it's own metadata
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {

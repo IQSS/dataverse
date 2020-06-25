@@ -17,9 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.typeClassString;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Parser mainly used for {@link ExportService}.
@@ -43,6 +43,12 @@ public class DatasetFieldParser {
      * they cannot be modified anymore so this is a workaround.
      */
     public JsonArrayBuilder parseDatasetFields(List<DatasetField> dsfFields, boolean excludeEmailFields) {
+          for(DatasetField dsf : dsfFields) {
+              if (dsf.getDatasetFieldsChildren().size() > 1) {
+                  dsf.getDatasetFieldsChildren().sort(Comparator.comparing(DatasetField::getDatasetFieldTypeDisplayOrder));
+              }
+          }
+
         for (DatasetField dsf : dsfFields) {
 
             DatasetFieldType dsfType = dsf.getDatasetFieldType();
@@ -124,7 +130,7 @@ public class DatasetFieldParser {
                 List<String> vocabValues = controlledVocab.stream()
                         .sorted(Comparator.comparing(ControlledVocabularyValue::getDisplayOrder))
                         .map(ControlledVocabularyValue::getStrValue)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
                 parseVocabularyValues(childType, vocabValues, childObject);
 
@@ -173,7 +179,7 @@ public class DatasetFieldParser {
 
                     return parentDsf;
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private void parsePrimitiveField(ParserDataHolder parserData, JsonObjectBuilder parentDsf) {

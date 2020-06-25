@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor.DisplayOrder;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -127,6 +128,7 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true,
             cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     @CustomizeSelectionQuery(EntityCustomizer.Customizations.DATASET_FIELDS_WITH_PRIMARY_SOURCE)
+    @OrderBy("displayOrder ASC")
     private List<DatasetField> datasetFields = new ArrayList<>();
 
     @Temporal(value = TemporalType.TIMESTAMP)
@@ -753,7 +755,7 @@ public class DatasetVersion implements Serializable {
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addAuthor = true;
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.author)) {
-                DatasetAuthor datasetAuthor = new DatasetAuthor();
+                DatasetAuthor datasetAuthor = new DatasetAuthor(dsf.getDisplayOrder());
                 for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
                         if (subField.isEmptyForDisplay()) {
@@ -776,6 +778,8 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
+
+        Collections.sort(retList, DisplayOrder);
         return retList;
     }
 
