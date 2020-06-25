@@ -48,8 +48,17 @@ public class NavigationWrapper implements java.io.Serializable {
     public String getShibLoginPath() {
         String QDRDataverseBaseURL = settingsWrapper.get(":QDRDataverseBaseURL");   
         String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
-        //https://dev-aws.qdr.org/user/login?current_page=https://dv.dev-aws.qdr.org/dataverse.xhtml
-        String shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL + getPageFromContext();
+        //Example:
+        //https://dev-aws.qdr.org/user/login?current_page=https%3A%2F%2Fdv.dev-aws.qdr.org%2Fshib.xhtml%3FredirectPage%3D%2Fdataset.xhtml%253FpersistentId%253Ddoi%253A10.33564%252FFK2LSJCQI%2526version%253DDRAFT
+        String shibLoginPath;
+        try {
+            shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            //Shouldn't happen since we're just re-encoding something already successfully encoded once
+            shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL;
+            logger.severe("Unexpected Failure in getting shibLoginPath, baseURL = " + QDRDataverseBaseURL + ", redirectPage = " + getPageFromContext());
+            e.printStackTrace();
+        }
         
         /*String shibLoginPath = "/Shibboleth.sso/Login?target=".concat(QDRDataverseBaseURL).concat("/shib.xhtml");                
                 
