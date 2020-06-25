@@ -56,5 +56,5 @@ if(document.cookie && document.cookie.search(/_check_is_passive_dv=/) >= 0){
 
     // Redirect to Shibboleth handler
     //QDR-901 - include query in redirect to avoid changing result after passive check
-    window.location = "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://" + window.location.hostname + "/shib.xhtml?redirectPage=" + encodeUriComponent(window.location.pathname + window.location.search));
+    window.location = "/Shibboleth.sso/Login?isPassive=true&target=" + encodeURIComponent("https://" + window.location.hostname + "/shib.xhtml?redirectPage=" + encodeURIComponent(window.location.pathname + window.location.search));
 }
