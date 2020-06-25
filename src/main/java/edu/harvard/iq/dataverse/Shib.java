@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,6 +134,17 @@ public class Shib implements java.io.Serializable {
         request = (HttpServletRequest) context.getRequest();
         //QDR Custom - manage SSO cookies
         response = (HttpServletResponse)context.getResponse();
+        String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        String cookieVal = getPrettyFacesHomePageString(false);
+        try {
+            cookieVal = URLEncoder.encode(cookieVal, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.warning("Unable to escape redirect URL for cookie: " + cookieVal);
+        }
+        Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", cookieVal);
+        //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
+        passiveSSOCookie.setDomain("." + QDRDrupalSiteURL);
+        
         ShibUtil.printAttributes(request);
         
         /* 
@@ -151,7 +164,7 @@ public class Shib implements java.io.Serializable {
         
         int latestTermsDocVer = systemConfig.getShibAuthTermsVer();        
         if (acceptedTermsDocVer < latestTermsDocVer) {            
-            String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+            
             Map<String, String> params = context.getRequestParameterMap();
             String paramRedirectPage = params.get("redirectPage");            
             String termsConditionsPageURL = QDRDrupalSiteURL + "/qdr-sso/dv-terms-conditions-redirect?redirectPage=" + paramRedirectPage;
@@ -284,7 +297,6 @@ public class Shib implements java.io.Serializable {
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
                 //QDR - add SSO cookie
-                Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv",prettyFacesHomePageString);
                 response.addCookie(passiveSSOCookie);
                 FacesContext.getCurrentInstance().getExternalContext().redirect(prettyFacesHomePageString);
             } catch (IOException ex) {
@@ -344,7 +356,6 @@ public class Shib implements java.io.Serializable {
                 if (destinationAfterAccountCreation != null) {
                     try {
                         //QDR - add SSO cookie
-                        Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", getPrettyFacesHomePageString(false));
                         response.addCookie(passiveSSOCookie);
                         context.redirect(destinationAfterAccountCreation);
                         return;
