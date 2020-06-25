@@ -78,6 +78,8 @@ public class DatasetFieldUtil {
         dsf.setDatasetFieldType(originalDsf.getDatasetFieldType());
         dsf.setControlledVocabularyValues(originalDsf.getControlledVocabularyValues());
         dsf.setFieldValue(originalDsf.getFieldValue().getOrNull());
+        dsf.setDisplayOrder(originalDsf.getDisplayOrder());
+        dsf.setDatasetFieldParent(originalDsf.getDatasetFieldParent().getOrNull());
 
         for (DatasetField dsfChildren : originalDsf.getDatasetFieldsChildren()) {
             dsf.getDatasetFieldsChildren().add(copyDatasetField(dsfChildren, dsf));

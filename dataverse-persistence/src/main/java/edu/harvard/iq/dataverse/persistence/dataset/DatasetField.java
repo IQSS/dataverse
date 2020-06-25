@@ -71,6 +71,7 @@ public class DatasetField implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String fieldValue;
 
+    @Column(name = "displayorder", nullable = false, columnDefinition = "integer default 0")
     private int displayOrder;
 
     @Column(name = "source")

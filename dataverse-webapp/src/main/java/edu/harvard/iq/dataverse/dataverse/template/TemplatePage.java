@@ -182,6 +182,8 @@ public class TemplatePage implements java.io.Serializable {
 
     public String save() {
 
+        mdbForEdit.values()
+                .forEach(v -> v.forEach(datasetFieldType -> saveDatasetFieldsGUIOrder(datasetFieldType.getDatasetFields())));
         template.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(mdbForEdit));
 
         Try<Template> templateOperation;
@@ -204,6 +206,12 @@ public class TemplatePage implements java.io.Serializable {
         }
 
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
+    }
+
+    private void saveDatasetFieldsGUIOrder(List<DatasetField> datasetFields) {
+        for(int i=0; i<datasetFields.size(); ++i) {
+            datasetFields.get(i).setDisplayOrder(i);
+        }
     }
 
     private TermsOfUseAndAccess prepareTermsOfUseAndAccess(Template template) {
