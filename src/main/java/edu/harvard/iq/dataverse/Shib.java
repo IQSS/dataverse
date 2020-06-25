@@ -33,7 +33,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @ViewScoped
 @Named("Shib")
@@ -64,6 +66,7 @@ public class Shib implements java.io.Serializable {
     SettingsServiceBean settingsService;
 
     HttpServletRequest request;
+    HttpServletResponse response;
 
     private String userPersistentId;
     private String internalUserIdentifer;
@@ -127,6 +130,8 @@ public class Shib implements java.io.Serializable {
         state = State.INIT;
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
+        //QDR Custom - manage SSO cookies
+        response = (HttpServletResponse)context.getResponse();
         ShibUtil.printAttributes(request);
         
         /* 
@@ -278,6 +283,9 @@ public class Shib implements java.io.Serializable {
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
+                //QDR - add SSO cookie
+                Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv",prettyFacesHomePageString);
+                response.addCookie(passiveSSOCookie);
                 FacesContext.getCurrentInstance().getExternalContext().redirect(prettyFacesHomePageString);
             } catch (IOException ex) {
                 logger.info("Unable to redirect user to homepage at " + prettyFacesHomePageString);
@@ -335,6 +343,9 @@ public class Shib implements java.io.Serializable {
                 String destinationAfterAccountCreation = confirmAndCreateAccount();
                 if (destinationAfterAccountCreation != null) {
                     try {
+                        //QDR - add SSO cookie
+                        Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", getPrettyFacesHomePageString(false));
+                        response.addCookie(passiveSSOCookie);
                         context.redirect(destinationAfterAccountCreation);
                         return;
                     } catch (IOException ex) {
