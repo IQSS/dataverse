@@ -684,7 +684,7 @@ public class FilesIT {
     }
     
     @Test
-    public void test_007_ReplaceFileUnpublishedAndBadIds() {
+    public void test_007_ReplaceFileUnpublishedAndBadIds() throws InterruptedException {
         msgt("test_007_ReplaceFileBadIds");
 
         // Create user
@@ -741,7 +741,9 @@ public class FilesIT {
                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
                .body("message", Matchers.startsWith(errMsgUnpublished))
                ;
-       
+
+        sleep(1000); // 2 times
+
         // -------------------------
         // Publish dataset
         // -------------------------
