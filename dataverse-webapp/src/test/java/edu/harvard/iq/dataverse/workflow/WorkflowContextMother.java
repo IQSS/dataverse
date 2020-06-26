@@ -8,32 +8,37 @@ import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 
+import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType.PostPublishDataset;
 import static java.util.Collections.emptyMap;
 
 public class WorkflowContextMother {
 
-    public static Dataset givenDataset() {
-        Dataset dataset = new Dataset();
-        dataset.setId(1L);
-        return dataset;
-    }
-
     public static DataverseRequest givenDataverseRequest() {
         return new DataverseRequest(new MockAuthenticatedUser(), IpAddress.valueOf("127.0.0.1"));
     }
 
-    public static WorkflowContext givenWorkflowContext() {
-        return new WorkflowContext(PostPublishDataset, givenDataset(), 1L, 0L, givenDataverseRequest(), false);
+    public static WorkflowContext givenWorkflowContext(long datasetId) {
+        return givenWorkflowContext(givenDataset(datasetId));
+    }
+
+    public static WorkflowContext givenWorkflowContext(Dataset dataset) {
+        return new WorkflowContext(PostPublishDataset, dataset, 1L, 0L, givenDataverseRequest(), false);
     }
 
     public static WorkflowExecutionContext givenWorkflowExecutionContext(long datasetId, Workflow workflow) {
         return givenWorkflowExecutionContext(workflow, givenWorkflowExecution(datasetId, workflow.getId()));
     }
 
+    public static WorkflowExecutionContext givenWorkflowExecutionContext(Dataset dataset, Workflow workflow) {
+        WorkflowContext context = givenWorkflowContext(dataset);
+        WorkflowExecution execution = givenWorkflowExecution(dataset.getId(), workflow.getId());
+        return new WorkflowExecutionContext(workflow, context, execution, new ApiToken(), emptyMap());
+    }
+
     public static WorkflowExecutionContext givenWorkflowExecutionContext(Workflow workflow, WorkflowExecution execution) {
-        WorkflowContext workflowContext = givenWorkflowContext();
-        return new WorkflowExecutionContext(workflow, workflowContext, execution, new ApiToken(), emptyMap());
+        WorkflowContext context = givenWorkflowContext(execution.getDatasetId());
+        return new WorkflowExecutionContext(workflow, context, execution, new ApiToken(), emptyMap());
     }
 }

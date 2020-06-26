@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -77,6 +78,14 @@ public class ResultField {
                 StringUtils.isBlank(other.value) ? this.value : other.value,
                 other.children == null || other.children.isEmpty() ? this.children : other.children
          );
+    }
+
+    public Stream<ResultField> stream() {
+        if (StringUtils.EMPTY.equals(value)) {
+            return children.stream();
+        } else {
+            return Stream.of(this);
+        }
     }
 
     @Override
