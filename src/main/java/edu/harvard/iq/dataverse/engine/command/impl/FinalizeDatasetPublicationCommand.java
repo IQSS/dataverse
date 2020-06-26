@@ -187,6 +187,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        // This sleep is an attempt to avoid database deadlocks.
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }
         boolean retVal = true;
         Dataset dataset = null;
         try{
