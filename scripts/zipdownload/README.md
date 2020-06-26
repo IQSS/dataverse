@@ -2,12 +2,16 @@ Work in progress!
 
 to build: 
 
+cd scripts/zipdownload
 mvn clean compile assembly:single
 
 to install: 
 
 install cgi-bin/zipdownload and ZipDownloadService-v1.0.0.jar in your cgi-bin directory (/var/www/cgi-bin standard). 
 Edit the config lines in the shell script (zipdownload) as needed. 
+You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside. 
+For example, if this is the same Apache that's in front of your Dataverse Payara instance, you'll need to add another pass through statement to your configuration: 
+``ProxyPassMatch ^/cgi-bin/zipdownload !``
 
 to activate in Dataverse: 
 
