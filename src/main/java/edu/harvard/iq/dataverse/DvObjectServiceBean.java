@@ -116,12 +116,8 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
 
     public DvObject updateContentIndexTime(DvObject dvObject) {
-        /**
-         * @todo to avoid a possible OptimisticLockException, should we merge
-         * dvObject before we try to setIndexTime? See
-         * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
-         */
-        DvObject dvObjectToModify = findDvObject(dvObject.getId());
+        // We merge first because we've been seeing database deadlocks.
+        DvObject dvObjectToModify = em.merge(dvObject);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
         return savedDvObject;
