@@ -121,6 +121,11 @@ public class DvObjectServiceBean implements java.io.Serializable {
          * dvObject before we try to setIndexTime? See
          * https://github.com/IQSS/dataverse/commit/6ad0ebb272c8cb46368cb76784b55dbf33eea947
          */
+        // This sleep is an attempt to avoid database deadlocks.
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+        }
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
