@@ -97,10 +97,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
-        boolean original = true; 
+         
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
+        
+        boolean original = "original".equals(guestbookResponse.getFileFormat());
 
         // Let's intercept the case where a multiple download method was called, 
         // with only 1 file on the list. We'll treat it like a single file download 
@@ -165,7 +167,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
         } else {
             // Use the "normal" /api/access/datafiles/ API:
-            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original);
         }
     }
     
