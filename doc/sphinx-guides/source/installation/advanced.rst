@@ -59,10 +59,15 @@ and/or S3 bucket).
 Please consult the scripts/zipdownload/README.md in the Dataverse 5
 source tree for more information. 
 
-To install: follow the instructions in the file above to build
-``ZipDownloadService-v1.0.0.jar``. Copy it, together with the shell
+To install: You can follow the instructions in the file above to build
+``ZipDownloadService-v1.0.0.jar``. It will also be available, pre-built as part of the Dataverse release on GitHub. Copy it, together with the shell
 script scripts/zipdownload/cgi-bin/zipdownload to the cgi-bin
 directory of the chosen Apache server (/var/www/cgi-bin standard).
+You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside.
+For example, if this is the same Apache that's in front of your Dataverse Payara instance, you will need to add another pass through statement to your configuration:
+
+``ProxyPassMatch ^/cgi-bin/zipdownload !``
+
 Edit the config lines in the shell script (zipdownload) to configure
 database access credentials. Do note that the executable does not need
 access to the entire Dataverse database. A secuirity-conscious admin
