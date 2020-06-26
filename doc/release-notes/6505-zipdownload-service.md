@@ -22,3 +22,9 @@ here:
 (my plan is to build the executable and to add it to the v5
 release files on github: - L.A.)
 https://github.com/IQSS/dataverse/releases/download/v5.0/zipper.zip.
+
+## New JVM Options and DB Options
+
+### New DB Option CustomZipDownloadServiceUrl
+
+If defined, this is the URL of the zipping service outside the main Application Service where zip downloads should be directed (instead of /api/access/datafiles/)
