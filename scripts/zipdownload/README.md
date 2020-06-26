@@ -80,7 +80,7 @@ implementation would rely on including all the file information WITH
 the redirect itself, with some pre-signed URL mechanism to make it
 secure. Mechanisms for pre-signing requests are readily available and
 simple to implement. We could go with something similar to how S3
-presigns their access URLs. Jim Meyers has already speced out how this
+presigns their access URLs. Jim Myers has already speced out how this
 could be done for Dataverse access urls in a design document
 (https://docs.google.com/document/d/1J8GW6zi-vSRKZdtFjLpmYJ2SUIcIkAEwHkP4q1fxL-s/edit#). (Basically,
 you hash the product of your request parameters, the issue timestamp
