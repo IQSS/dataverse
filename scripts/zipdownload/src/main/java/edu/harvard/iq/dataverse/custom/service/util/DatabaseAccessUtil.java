@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.custom.service.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -37,8 +38,26 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
 
     // The zipper needs to make one database call to initiate each job.
     // So the database connection can be closed immediately.
+    
+    private static final int JOB_TOKEN_LENGTH = 16;
+    // A legitimate token is 16 characters long, and is made up of 
+    // hex digits and one dash. THERE ARE prettier ways to spell out 
+    // this regular expression - I just wanted it to be clear what it does:
+    private static final String JOB_TOKEN_REGEX = "^[0-9a-f][0-9a-f]*\\-[0-9a-f][0-9a-f]*$";
+    private static final String JOB_LOOKUP_QUERY = "SELECT * FROM CustomZipServiceRequest WHERE key=?";
+    private static final String JOB_DELETE_QUERY = "DELETE FROM CustomZipServiceRequest WHERE key=?";
 
     public static List<String []> lookupZipJob(String jobKey) {
+        // Before we do anything, it is super important to sanitize the 
+        // supplied token - we don't want to insert anything sketchy into 
+        // the db query below (an "injection attack"). 
+        // java.sql PreparedStatement.setString() that we are using below 
+        // should also be checking against an attemp to insert a sub-query. 
+        // But better safe than sorry. 
+        if (!validateTokenFormat(jobKey)) {
+            return null; // This will result in a "no such job" response.
+        }
+        
         Connection c = connectToDatabase();
         
         if (c == null) {
@@ -46,7 +65,7 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
             return null; 
         }
         
-        Statement stmt; 
+        PreparedStatement stmt; 
         ResultSet rs; 
         
         List<String[]> ret = new ArrayList<>();
@@ -54,8 +73,9 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         try {
             c.setAutoCommit(false);
 
-            stmt = c.createStatement();
-            rs = stmt.executeQuery( "SELECT * FROM CustomZipServiceRequest WHERE key='" + jobKey +"';" );
+            stmt = c.prepareStatement(JOB_LOOKUP_QUERY);
+            stmt.setString(1, jobKey);
+            rs = stmt.executeQuery();
             
             while ( rs.next() ) {
                 String storageLocation = rs.getString("storageLocation");
@@ -83,18 +103,21 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
         
         // Delete all the entries associated with the job, now that we are done
         // with it. 
-        // Alternatively, the db user whose credentials the zipper is using
-        // may be given only read-only access to the table; and it could be the 
-        // job of the Dataverse application to, say, automatically delete all the 
-        // entries older than 5 min. every time it accesses the table on its side.
         
         try {
-            stmt = c.createStatement();
-            stmt.executeUpdate("DELETE FROM CustomZipServiceRequest WHERE key='" + jobKey +"';");
+            stmt = c.prepareStatement(JOB_DELETE_QUERY);
+            stmt.setString(1, jobKey);
+            stmt.executeUpdate();
             c.commit();
         } catch (Exception e) {
             // Not much we can or want to do, but complain in the Apache logs:
-            System.err.println("Failed to delete the job from the db");
+            // (not even sure about printing any log messages either; the reason
+            // this delete failed may be because the admin chose to only give 
+            // the zipper read-only access to the db - in which case this will 
+            // be happening every time a job is processed. which in turn is 
+            // ok - there is a backup cleanup mechanism for deleting older jobs
+            // on the application side as well).
+            //System.err.println("Failed to delete the job from the db");
         }
         
         try {
@@ -122,11 +145,20 @@ public class DatabaseAccessUtil implements java.io.Serializable  {
                             pguser,
                             pgpasswd);
         } catch (Exception e) {
-            //e.printStackTrace();
-            //System.err.println(e.getClass().getName()+": "+e.getMessage());
             return null;
         }
-        //System.out.println("Opened database successfully");
         return c;
+    }
+    
+    private static boolean validateTokenFormat(String jobKey) {
+        // A legitimate token is 16 characters long, and is made up of 
+        // hex digits and one dash. 
+        if (jobKey == null 
+                || jobKey.length() != JOB_TOKEN_LENGTH 
+                || !jobKey.matches(JOB_TOKEN_REGEX)) {
+            return false;
+        }
+        
+        return true;
     }
 }

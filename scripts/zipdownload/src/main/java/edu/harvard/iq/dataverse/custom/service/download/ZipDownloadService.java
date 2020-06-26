@@ -144,8 +144,10 @@ public class ZipDownloadService {
             
             InputStream inputStream = this.directAccessUtil.openDirectAccess(storageLocation);
                 
-            // TODO: folders
-            // TODO: String zipEntryName = checkZipEntryName(fileName);
+            // (potential?) TODO: String zipEntryName = checkZipEntryName(fileName);
+            // this may not be needed anymore - some extra sanitizing of the file 
+            // name we used to have to do - since all the values in a current Dataverse 
+            // database may already be santized enough.
             if (inputStream != null && this.zipOutputStream != null) {
                 
                 ZipEntry entry = new ZipEntry(fileName);
