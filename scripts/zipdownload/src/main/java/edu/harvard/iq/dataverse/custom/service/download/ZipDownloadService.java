@@ -175,7 +175,7 @@ public class ZipDownloadService {
                         throw new IOException("Byte size mismatch: expected " + fileSize + ", read: " + readSize);
                     }*/
                 } catch (IOException ioex) {
-                    System.err.println("Faile to compress "+storageLocation);
+                    System.err.println("Failed to compress "+storageLocation);
                 }
             } else {
                 System.err.println("Failed to access "+storageLocation);
