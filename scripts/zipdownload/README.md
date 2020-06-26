@@ -53,7 +53,7 @@ generating a zipped stream from a certain offset.
 
 The implementation is a hack. It relies on direct access to everything - storage locations (filesystem or S3) and the database.
 
-There are no network calls between the Application and the zipper (an
+There are no network calls between the application (Dataverse) and the zipper (an
 implementation relying on such a call was discussed early
 on). Dataverse issues a "job key" and sends the user's browser to the
 zipper (to, for ex., /cgi-bin/zipdownload?<job key>) instead of
