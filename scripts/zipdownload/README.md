@@ -60,7 +60,7 @@ zipper (to, for ex., /cgi-bin/zipdownload?<job key>) instead of
 /api/access/datafiles/<file ids>). To authorize the zipdownload for
 the "job key", and inform the zipper on which files to zip and where
 to find them, the application relies on a database table, that the
-zipper also has access too. In other words, there is a saved state
+zipper also has access to. In other words, there is a saved state
 information associated with each zipped download request. Zipper may
 be given a limited database access - for example, via a user
 authorized to access that one table only. After serving the files, the
