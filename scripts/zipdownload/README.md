@@ -87,7 +87,7 @@ could be done for Dataverse access urls in a design document
 (https://docs.google.com/document/d/1J8GW6zi-vSRKZdtFjLpmYJ2SUIcIkAEwHkP4q1fxL-s/edit#). (Basically,
 you hash the product of your request parameters, the issue timestamp
 AND some "secret" - like the user's API key - and send the resulting
-hash along with the request. Tempering with any of the parameters, or
+hash along with the request. Tampering with any of the parameters, or
 trying to extend the life span of the request, becomes impossible,
 because it would invalidate the hash). What stopped me from trying
 something like that was the sheer size of information that would need
