@@ -2,7 +2,7 @@ Work in progress!
 
 to build: 
 
-clean compile assembly:single
+mvn clean compile assembly:single
 
 to install: 
 
