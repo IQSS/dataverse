@@ -773,7 +773,7 @@ public class FilesIT {
     
     
     @Test
-    public void test_008_ReplaceFileAlreadyDeleted() {
+    public void test_008_ReplaceFileAlreadyDeleted() throws InterruptedException {
         msgt("test_008_ReplaceFileAlreadyDeleted");
 
         // Create user
@@ -816,7 +816,8 @@ public class FilesIT {
         publishDataversetResp.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-                
+        sleep(1000); // 2 times
+
         // -------------------------
         // Publish dataset
         // -------------------------
