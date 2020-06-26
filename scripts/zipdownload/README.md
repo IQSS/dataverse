@@ -23,6 +23,8 @@ curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:
 How it works:
 =============
 
+(This is an ongoing design discussion - other developers are welcome to contribute)
+
 The goal: to move this potentially long-running task out of the
 Application Server. This is the sole focus of this implementation. It
 does not attempt to make it faster.
@@ -36,7 +38,7 @@ the application accesses the raw bytes. The exact location of the
 bottleneck is in a sense irrelevant. On a very fast system, with the
 files stored on a very fast local RAID, the bottleneck for most users
 will likely shift to the speed of their internet connection to the
-Dataverse. Bottom line is, downloading this multi-file compressed
+server. The bottom line is, downloading this multi-file compressed
 stream will take a long time no matter how you slice it. So this hack
 addresses it by moving the task outside Payara, where it's not going
 to hog any threads. 
