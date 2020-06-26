@@ -72,12 +72,11 @@ For example, if this is the same Apache that's in front of your Dataverse Payara
 
 Edit the config lines in the shell script (zipdownload) to configure
 database access credentials. Do note that the executable does not need
-access to the entire Dataverse database. A secuirity-conscious admin
+access to the entire Dataverse database. A security-conscious admin
 can create a dedicated database user with access to just one table:
 ``CUSTOMZIPSERVICEREQUEST``.
 
 to activate in Dataverse::
 
    curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
-
 
