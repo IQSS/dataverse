@@ -37,6 +37,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedU
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -1123,7 +1124,7 @@ public class DatasetsIT {
     }
     
     @Test
-    public void testAddRoles(){
+    public void testAddRoles() throws InterruptedException {
         
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -1191,6 +1192,8 @@ public class DatasetsIT {
         deleteGrantedAccess = UtilIT.revokeRoleOnDataset(datasetPersistentId, new Long(idToDelete), apiToken);
         deleteGrantedAccess.prettyPrint();
         assertEquals(200, deleteGrantedAccess.getStatusCode());
+
+        sleep(1000); // 2 times
         
        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
