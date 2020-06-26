@@ -163,17 +163,19 @@ function accessibilityApplySetting(setting, value) {
 function accessibilityToggleNavbar(visible) {
     var navbar = document.getElementById("topNavBar");
 
-    if (visible) {
-        navbar.classList.add("in");
-        navbar.setAttribute("aria-expanded", "true");
-        navbar.style = "";
-        accessibilityDebugLog("Toggled navbar to its visible state");
-    }
-    else {
-        navbar.classList.remove("in");
-        navbar.setAttribute("aria-expanded", "false");
-        navbar.style = "height: 1px";
-        accessibilityDebugLog("Toggled navbar to its hidden state");
+    if (window.innerWidth > 768) {
+        if (visible) {
+            navbar.classList.add("in");
+            navbar.setAttribute("aria-expanded", "true");
+            navbar.style = "";
+            accessibilityDebugLog("Toggled navbar to its visible state");
+        }
+        else {
+            navbar.classList.remove("in");
+            navbar.setAttribute("aria-expanded", "false");
+            navbar.style = "height: 1px";
+            accessibilityDebugLog("Toggled navbar to its hidden state");
+        }
     }
 }
 

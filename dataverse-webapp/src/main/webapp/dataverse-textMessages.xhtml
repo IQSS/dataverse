@@ -39,7 +39,7 @@
                                     itemType="none"
                                     styleClass="paginated ui-datalist-nobullets">
 
-                            <p:panel id="basic" style="margin-bottom:20px; width: 600px;">
+                            <p:panel id="basic" class="textsBannersContainer">
                                 <div class="p-grid">
                                     <ui:repeat value="#{history.dataverseLocalizedMessage}" var="localmessage">
                                         <div class="p-col">
@@ -73,7 +73,7 @@
                                                  oncomplete="reloadIfMessageCountTooLow
                                                  (#{TextMessagePage.lazydataverseTextMessages.rowCount},
                                                  #{TextMessagePage.lazydataverseTextMessages.pageSize})"/>
-                                <div style="float: right">
+                                <div class="pull-right">
                                     <p:commandButton value="#{bundle['dataversemessages.textmessages.deactivate']}"
                                                      rendered="#{history.active}"
                                                      style="margin-right:10px;"
@@ -102,7 +102,7 @@
                                     itemType="none"
                                     styleClass="paginated ui-datalist-nobullets">
 
-                            <p:panel style="margin-bottom:20px; width: 600px;">
+                            <p:panel class="textsBannersContainer">
                                 <div class="p-grid">
                                     <ui:repeat value="#{banner.dataverseLocalizedBanner}" var="localbanner">
                                         <div class="p-col">
@@ -135,7 +135,7 @@
                                 <p:commandButton value="#{bundle['dataversemessages.textmessages.delete']}"
                                                  action="#{BannerTab.bannerDAO.delete(banner.id)}"
                                                  update=":text-messages-form"/>
-                                <div style="float: right">
+                                <div class="pull-right">
                                     <p:commandButton value="#{bundle['dataversemessages.textmessages.deactivate']}"
                                                      style="margin-right:10px;"
                                                      rendered="#{banner.active}"

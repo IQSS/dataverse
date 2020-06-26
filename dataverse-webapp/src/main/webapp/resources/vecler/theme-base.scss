@@ -408,6 +408,17 @@ body .ui-widget {
     display: block; /* allows for dropdown-menu to be directly in form tag */
 }
 
+/*
+This fixes pull-right offscreen menus - might be neeeded in the future
+
+@media screen and (max-width: $screen-xs-max) {
+	.dropdown-menu.pull-right {
+		left: 0;
+		right: auto;
+	}
+}
+*/
+
 #navbarFixed .dropdown-menu > li > form.navbar-form-link {
 	display: list-item;
 	width: 100%;
@@ -470,6 +481,9 @@ div.form-group .glyphicon.glyphicon-asterisk {
 
 .ui-widget-content .ui-selectonemenu.ui-state-default {
 	background: $gray-border-color;
+}
+.facet-category-default {
+	width: 100%;
 }
 
 *, .ui-widget-content  {
@@ -602,6 +616,7 @@ input:disabled {
 .ui-selectonemenu {
 	border: 1px solid #e8e8e8;
 	min-height: calc(1.667em + 10px);
+	min-width: auto !important;
 
 	.ui-selectonemenu-label {
 		margin-right: 1.533em;
@@ -643,6 +658,14 @@ input:disabled {
 			}
 		}
 	}
+}
+
+.ui-selectonemenu-panel .ui-selectonemenu-list-item {
+	white-space: break-spaces;
+}
+
+.ui-selectonemenu-items-wrapper {
+	max-width: 100vw;
 }
 
 
@@ -840,6 +863,40 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 
 #terms-agreement-block {
 	max-height: 13.333em;
+}
+
+.textsBannersContainer {
+	width: 100%;
+	max-width: 40em;
+
+	&:not(:last-child) {
+		margin-bottom: 20px; 
+	}
+}
+
+.ui-datalist .ui-datalist-nobullets {
+	padding: 5px;
+	margin-bottom: 0;
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	.ui-datalist .ui-datalist-nobullets {
+		.pull-right {
+			float: none !important;
+			padding-top: 5px;
+		}
+	}
+}
+
+.edit-text-messages-form-image {
+	width: 100%;
+	max-width: calc(100vw - 45px);
+	max-height: 75vh;
+	overflow: auto;
+}
+
+.col-no-padding {
+	padding: 0;
 }
 
 /* Graphical text editor */
@@ -1191,6 +1248,12 @@ input.fancy-checkbox[type=checkbox] {
 	}
 }
 
+@media screen and (max-width: $screen-xs-max) {
+	.label-container.pull-right {
+		float: none !important;
+	}
+}
+
 /* Autocomplete */
 
 @mixin rounded-table-top {
@@ -1215,8 +1278,13 @@ input.fancy-checkbox[type=checkbox] {
 	}
 }
 
-.ui-autocomplete-multiple-container {
-	border-color: $gray-border-color;
+.ui-autocomplete.ui-autocomplete-multiple {
+	width: 100%;
+
+	.ui-autocomplete-multiple-container {
+		width: 100%;
+		border-color: $gray-border-color;
+	}
 }
 
 .ui-autocomplete-panel {
@@ -1671,10 +1739,17 @@ div.filesTable {
 	@include table-metrics-mobile;
 }
 
+.ui-sortable-handle {
+	word-break: break-word;
+}
 
 /* Change cursor from pointer to default to avoid confusion */
 .ui-datatable-selectable td {
 	cursor: default;
+}
+
+.gridcell .form-control-static.pull-left {
+	float: none !important;
 }
 
 /* Charts */
@@ -1703,6 +1778,11 @@ div.filesTable {
 /* Top navbar */
 
 $navbar-height: 102px;
+
+.navbar-fixed-top .navbar-collapse {
+	max-height: 22.667em;
+	margin-bottom: 1px;
+}
 
 #navbarFixed {
 	position: sticky;
@@ -1846,6 +1926,10 @@ $navbar-height: 102px;
 	}
 }
 
+.navbar-fixed-top #topNavBar.navbar-collapse {
+	max-height: calc(100vh - 100px);
+}
+
 .dropdown-menu > form > li > a {
 	&:hover, &:active, &:focus {
 		background-color: $gray-border-color !important;
@@ -1895,6 +1979,7 @@ $navbar-height: 102px;
 
 		#topNavBar .pull-right {
 			width: 100%;
+			float: none !important;
 		}
 
 		#topNavBar .navbar-nav {
@@ -1906,6 +1991,7 @@ $navbar-height: 102px;
 	}
 	.navbar-default .navbar-nav .open .dropdown-menu > li > a,
 	.navbar-default .navbar-nav .open .dropdown-menu > li > form > a,
+	#navbarFixed .dropdown-menu > li > form.navbar-form-link a.ui-commandlink,
 	#navbarFixed .dropdown.accountName .logout a {
 		padding: 5px 15px 5px 25px;
 		color: $main-text-color;
@@ -1956,9 +2042,28 @@ $navbar-height: 102px;
 		}
 	}
 
-	span:not(:last-child) ul[id$="-mode-selector"] {
+	span:not(:last-child) ul[id$="-mode-selector"]:last-child {
 		padding-right: 0.8em;
 	}
+}
+
+@mixin accessibility-controls-mobile {
+	#accessibility-controls {
+		position: static;
+		margin-left: -15px;
+		margin-right: -15px;
+		padding: 0;
+
+		span {
+			display: block;
+			width: 100%;
+			padding: 0 1.333em 0.667em;
+		}
+	}
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	@include accessibility-controls-mobile;
 }
 
 #eighty-limit-mode-selector button,
@@ -2105,6 +2210,18 @@ html, body {
 
 /* Main page */
 
+#editDataverseMenu {
+	min-width: 300px;
+}
+
+#dataverse-info-dropdown {
+	width: auto;
+	
+	.dataverse-info-general {
+		width: auto;
+	}
+}
+
 #dataverseForm {
 	margin-left: -10px;
 	margin-right: 20px;
@@ -2119,6 +2236,20 @@ html, body {
 #searchResults {
 	margin-left: 15px;
 	margin-right: 15px;
+}
+
+@mixin searchResults-mobile {
+	#searchResults {
+		overflow-x: hidden;
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 15px;
+		padding-right: 15px;
+	}
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	@include searchResults-mobile;
 }
 
 #search-row-panel {
@@ -2149,6 +2280,11 @@ html, body {
 div.panelSearchForm input.search-input {
 	max-width: calc(100% + 1em);
 	line-height: 23px;
+}
+@media screen and (max-width: $screen-xs-max) {
+	div.panelSearchForm input.search-input {
+		max-width: 100%;
+	}
 }
 
 .pagination > .active > a {
@@ -2451,6 +2587,10 @@ div.alert-info.bg-citation {
 	color: $main-text-color;
 }
 
+.alert.alert-info.p-grid .p-col img {
+	max-width: calc(100vw - 50px);
+}
+
 table[id$="resultsTable"] {
 	div[class*="Result"] {
 		font-size: inherit;
@@ -2628,6 +2768,12 @@ div.filesTable .ui-paginator {
 
 /* File preview */
 
+.citation,
+.text-muted,
+.metadata-panel-body {
+	word-break: break-word;
+}
+
 #fileImageTitle .citation-block {
 	padding-right: 15px;
 }
@@ -2637,6 +2783,10 @@ div.filesTable .ui-paginator {
 }
 
 @media screen and (max-width: $screen-xs-max) {
+	#dataverseHeader .dataverseHeaderCell {
+		display: table-row;
+	}
+
 	#file-title-block {
 		margin-top: 2em;
 	}
@@ -2782,6 +2932,13 @@ div.filesTable {
 	}
 }
 
+/* Fix offscreen submenu on mobile */
+@media screen and (max-width: $screen-xs-max) {
+	.dropdown-submenu.pull-left > .dropdown-menu {
+		left: 0;
+	}
+}
+
 /* Modal */
 
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
@@ -2874,6 +3031,18 @@ div.filesTable {
 		-o-transform: none;
 		-webkit-transform: none;
 		transform: none;
+
+		.ui-panel .ui-panel-content {
+			padding: 0;
+
+			label {
+				display: inline;
+			}
+
+			.label.label-default {
+				display: inline-block;
+			}
+		}
 	}
 	
 	.button-block {
@@ -3174,6 +3343,7 @@ body.font-size-percent-200 {
 
 			.pull-right {
 				width: 100%;
+				float: none !important;
 			}
 
 			.navbar-nav {
@@ -3209,6 +3379,8 @@ body.font-size-percent-200 {
 				}
 			}
 		}
+
+		@include accessibility-controls-mobile;
 	}
 		
 	.navbar-default #topNavBar .navbar-nav .open .dropdown-menu {
@@ -3280,11 +3452,13 @@ body.font-size-percent-200 {
 body.font-size-percent-150 {
 	@media (max-width: $screen-sm-max) {
 		@include mobile-sidebar;
+		@include searchResults-mobile;
 	}
 }
 body.font-size-percent-200 {
 	@media (max-width: $screen-md-max) {
 		@include mobile-sidebar;
+		@include searchResults-mobile;
 	}
 }
 
@@ -3314,6 +3488,10 @@ body.font-size-percent-200 {
 				text-align: left;
 			}
 		}
+
+		#dataverseHeader .dataverseHeaderCell {
+			display: table-row;
+		}
 	}
 }
 
@@ -3338,7 +3516,8 @@ body.font-size-percent-150 {
 	.ql-formats button,
 	.ui-fileupload-buttonbar .ui-icon-plusthick,
 	.ui-fileupload-cancel .ui-icon-close,
-	#ajaxStatusPanel_start {
+	#ajaxStatusPanel_start,
+	#rolesPermissionsForm\:editRolePermissionPanel_content input {
 		transform: scale(1.5);
 		image-rendering: pixelated;
 		image-rendering: -moz-crisp-edges;
@@ -3375,7 +3554,8 @@ body.font-size-percent-200 {
 	.ql-formats button,
 	.ui-fileupload-buttonbar .ui-icon-plusthick,
 	.ui-fileupload-cancel .ui-icon-close,
-	#ajaxStatusPanel_start { 
+	#ajaxStatusPanel_start,
+	#rolesPermissionsForm\:editRolePermissionPanel_content input { 
 		transform: scale(2);
 		image-rendering: pixelated;
 		image-rendering: -moz-crisp-edges;
@@ -3444,6 +3624,23 @@ body.font-size-percent-200 {
 			width: 100% !important;
 		}
 	}
+
+	div.panelSearchForm input.search-input {
+		max-width: 100%;
+	}
+
+	.label-container.pull-right {
+		float: none !important;
+	}
+	
+	/*
+	This fixes pull-right offscreen menus - might be neeeded in the future
+
+	.dropdown-menu.pull-right {
+		left: 0;
+		right: auto;
+	}
+	*/
 
 	@include table-metrics-mobile;
 	@include modal-grid-mobile;
