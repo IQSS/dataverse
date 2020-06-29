@@ -19,6 +19,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
@@ -51,8 +52,16 @@ public class NavigationWrapper implements java.io.Serializable {
         //Example:
         //https://dev-aws.qdr.org/user/login?current_page=https%3A%2F%2Fdv.dev-aws.qdr.org%2Fshib.xhtml%3FredirectPage%3D%2Fdataset.xhtml%253FpersistentId%253Ddoi%253A10.33564%252FFK2LSJCQI%2526version%253DDRAFT
         String shibLoginPath;
+        //Check cookies - if Drupal is logged in/cookies are set to trigger Dataverse passive login, don't try to login at Drupal
+        ExternalContext context = FacesContext.getCurrentInstance().getExternalContext(); 
+        Map<String, Object> cookies =  context.getRequestCookieMap();
+        Cookie passive = (Cookie) cookies.get("_check_is_passive_dv");
         try {
-            shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
+            if (passive==null) {
+              shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
+            } else {
+              shibLoginPath = QDRDataverseBaseURL + "/shib.xhtml?redirectPage=" + URLEncoder.encode(getPageFromContext(), "UTF-8");  
+            }
         } catch (UnsupportedEncodingException e) {
             //Shouldn't happen since we're just re-encoding something already successfully encoded once
             shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + QDRDataverseBaseURL;
