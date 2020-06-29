@@ -57,7 +57,7 @@ public class NavigationWrapper implements java.io.Serializable {
         Map<String, Object> cookies =  context.getRequestCookieMap();
         Cookie passive = (Cookie) cookies.get("_check_is_passive_dv");
         try {
-            if (passive==null) {
+            if (passive==null || passive.getValue().equals("0")) {
               shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
             } else {
               shibLoginPath = QDRDataverseBaseURL + "/shib.xhtml?redirectPage=" + URLEncoder.encode(getPageFromContext(), "UTF-8");  
