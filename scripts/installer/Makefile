@@ -2,7 +2,6 @@ INSTALLER_ZIP_DIR=dvinstall
 DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/as-setup.sh
 POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
-JSF_PATCH_DIR=${INSTALLER_ZIP_DIR}/jsfpatch
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
 DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
@@ -51,11 +50,6 @@ ${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.12.jar
 	mkdir -p ${POSTGRES_DRIVERS}
 	@echo copying postgres driver
 	/bin/cp pgdriver/postgresql-42.2.12.jar ${POSTGRES_DRIVERS}
-
-${JSF_PATCH_DIR}: jsfpatch/jakarta.faces_dv.jar
-	mkdir -p ${JSF_PATCH_DIR}
-	@echo copying jsf patch
-	/bin/cp jsfpatch/jakarta.faces_dv.jar ${JSF_PATCH_DIR}
 
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
 	@echo copying api scripts

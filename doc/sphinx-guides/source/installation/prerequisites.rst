@@ -47,7 +47,7 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.201 is recommended. Newer versions might work fine.
+Payara 5.2020.0 is recommended. Newer versions might work fine.
 
 Installing Payara
 =================
@@ -56,8 +56,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
-	# unzip payara-5.201.zip
+	# wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip
+	# unzip payara-5.2020.2.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:

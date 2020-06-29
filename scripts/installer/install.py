@@ -461,17 +461,6 @@ try:
 except:
    print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
-# 4b2. JSF patch for Payara:
-
-jsf_patch_path = "jsfpatch/jakarta.faces_dv.jar"
-
-try:
-   # overwrite the jar file supplied with Payara:
-   copy2(jsf_patch_path, gfModulePath+"/jakarta.faces.jar")
-   print("Copied "+jsf_patch_path+" into "+gfModulePath)
-except:
-   print("Couldn't copy "+jsf_patch_path+" into "+gfModulePath+". Check its permissions?")
-
 # 4c. create payara admin credentials file
 
 userHomeDir = pwd.getpwuid(os.getuid())[5]
