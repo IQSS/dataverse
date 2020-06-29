@@ -47,7 +47,7 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.2020.0 is recommended. Newer versions might work fine.
+Payara 5.2020.2 is recommended. Newer versions might work fine.
 
 Installing Payara
 =================
