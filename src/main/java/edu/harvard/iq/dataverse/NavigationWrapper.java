@@ -55,7 +55,7 @@ public class NavigationWrapper implements java.io.Serializable {
         //Check cookies - if Drupal is logged in/cookies are set to trigger Dataverse passive login, don't try to login at Drupal
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext(); 
         Map<String, Object> cookies =  context.getRequestCookieMap();
-        Cookie passive = (Cookie) cookies.get("_check_is_passive_dv");
+        Cookie passive = (Cookie) cookies.get("_check_is_passive");
         try {
             if (passive==null || passive.getValue().equals("0")) {
               shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
