@@ -26,7 +26,7 @@ Identity Provider Side
 Obtain Client ID and Client Secret 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID and Microsoft, on the other hand, do not have an automated system for requesting these credentials, and it is not free to use these authentication services.
+Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In the case of GitHub and Google, this is as simple as clicking a few buttons and there is no cost associated with using their authentication service. ORCID has a free public API that can also be used for authentication and accessing public data. ORCID member API and Microsoft, on the other hand, do not have an automated system for requesting these credentials, and it is not free to use them.
 
 URLs to help you request a Client ID and Client Secret from the providers supported by Dataverse are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for Dataverse, rather than your own personal Microsoft Azure AD, ORCID, GitHub, or Google account:
 
@@ -51,7 +51,8 @@ As explained under "Auth Modes" in the :doc:`config` section, available authenti
 
 We will ``POST`` a JSON file containing the Client ID and Client Secret to this ``authenticationProviders`` API endpoint to add another authentication provider. As a starting point, you'll want to download the JSON template file matching the provider you're setting up:
 
-- :download:`orcid.json <../_static/installation/files/root/auth-providers/orcid.json>`
+- :download:`orcid-public.json <../_static/installation/files/root/auth-providers/orcid-public.json>`
+- :download:`orcid-member.json <../_static/installation/files/root/auth-providers/orcid-member.json>`
 - :download:`github.json <../_static/installation/files/root/auth-providers/github.json>`
 - :download:`google.json <../_static/installation/files/root/auth-providers/google.json>`
 - :download:`microsoft.json <../_static/installation/files/root/auth-providers/microsoft.json>`
