@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.persistence.JpaRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class DatasetRepository extends JpaRepository<Long, Dataset> {
      * but this copy would not have any changes made in a calling command (e.g. for a PostPublication workflow),
      * the fact that the latest version is 'released' is not yet in the database.
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void lockDataset(Dataset dataset, AuthenticatedUser user, DatasetLock.Reason reason)  {
         final DatasetLock datasetLock = new DatasetLock(reason, user);
         datasetLock.setDataset(dataset);
@@ -39,6 +42,7 @@ public class DatasetRepository extends JpaRepository<Long, Dataset> {
      * Using the named query below will find the workflow lock and remove it
      * (actually all workflow locks for this Dataset but only one workflow should be active).
      */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void unlockDataset(Dataset dataset, DatasetLock.Reason reason)  {
         TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
         lockCounter.setParameter("datasetId", dataset.getId());

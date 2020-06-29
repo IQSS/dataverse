@@ -71,11 +71,13 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     WorkflowExecutionScheduler scheduler = new WorkflowExecutionScheduler() {{
         setQueue(queue); setFactory(factory); }};
 
+    WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps, clock);
+
     WorkflowExecutionServiceBean service = new WorkflowExecutionServiceBean(
             datasets, executions, contextFactory, scheduler, clock);
 
     WorkflowExecutionWorker worker = new WorkflowExecutionWorker(
-        datasets, steps, executions, contextFactory, scheduler, executionListeners, clock);
+        datasets, executions, contextFactory, scheduler, runner, executionListeners, clock);
 
     WorkflowExecutionWorkerTest() throws NamingException { }
 

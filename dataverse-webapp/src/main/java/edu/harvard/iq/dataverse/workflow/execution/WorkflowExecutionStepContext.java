@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Step execution context is an extension of {@link WorkflowExecutionContext} adding extra information
@@ -41,12 +40,12 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
     // -------------------- LOGIC --------------------
 
-    Supplier<WorkflowStepResult> start(Map<String, String> defaultParameters, WorkflowStepRegistry steps, Clock clock) {
+    WorkflowStepResult start(Map<String, String> defaultParameters, WorkflowStepRegistry steps, Clock clock) {
         stepExecution.start(getStepInputParams(defaultParameters), clock);
         executions.save(execution);
 
         WorkflowStep step = getWorkflowStep(steps);
-        return () -> step.run(this);
+        return step.run(this);
     }
 
     boolean isPaused() {
@@ -58,12 +57,12 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
         executions.save(execution);
     }
 
-    Supplier<WorkflowStepResult> resume(String externalData, WorkflowStepRegistry steps, Clock clock) {
+    WorkflowStepResult resume(String externalData, WorkflowStepRegistry steps, Clock clock) {
         stepExecution.resume(externalData, clock);
         executions.save(execution);
 
         WorkflowStep step = getWorkflowStep(steps);
-        return () -> step.resume(this, stepExecution.getPausedData(), externalData);
+        return step.resume(this, stepExecution.getPausedData(), externalData);
     }
 
     void success(Map<String, String> outputParams, Clock clock) {
@@ -76,12 +75,12 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
         executions.save(execution);
     }
 
-    Runnable rollback(Failure reason, WorkflowStepRegistry steps, Clock clock) {
+    void rollback(Failure reason, WorkflowStepRegistry steps, Clock clock) {
         stepExecution.rollBack(clock);
         executions.save(execution);
 
         WorkflowStep step = getWorkflowStep(steps);
-        return () -> step.rollback(this, reason);
+        step.rollback(this, reason);
     }
 
     // -------------------- PRIVATE --------------------

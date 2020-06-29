@@ -46,6 +46,14 @@ public class WorkflowExecutionContextFactory {
 
     // -------------------- CONSTRUCTORS --------------------
 
+    /**
+     * Required because we have dependencies that use <code>@EJB</code> field injection.
+     * @deprecated for use by EJB proxy only.
+     */
+    public WorkflowExecutionContextFactory() {
+        this(null, null, null, null, null, null);
+    }
+
     @Inject
     public WorkflowExecutionContextFactory(SettingsServiceBean settings, DatasetRepository datasets,
                                            WorkflowRepository workflows, WorkflowExecutionRepository executions,

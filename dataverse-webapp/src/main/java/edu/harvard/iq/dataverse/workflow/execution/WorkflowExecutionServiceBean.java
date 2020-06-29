@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Optional;
@@ -96,13 +94,6 @@ public class WorkflowExecutionServiceBean {
 
     private void lockDatasetForWorkflow(WorkflowContext ctx) {
         log.trace("Creating workflow lock");
-        runInNewTransaction(() ->
-                datasets.lockDataset(ctx.getDataset(), ctx.getRequest().getAuthenticatedUser(), DatasetLock.Reason.Workflow)
-        );
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void runInNewTransaction(Runnable logic) {
-        logic.run();
+        datasets.lockDataset(ctx.getDataset(), ctx.getRequest().getAuthenticatedUser(), DatasetLock.Reason.Workflow);
     }
 }

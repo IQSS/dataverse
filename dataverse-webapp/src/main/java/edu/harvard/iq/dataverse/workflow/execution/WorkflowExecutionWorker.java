@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
-import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
@@ -24,7 +23,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import java.time.Clock;
-import java.util.function.Supplier;
 
 /**
  * A JMS {@link MessageListener} handling {@link WorkflowExecutionMessage}'s. Takes care of actual workflow steps
@@ -48,13 +46,13 @@ public class WorkflowExecutionWorker implements MessageListener {
 
     private final DatasetRepository datasets;
 
-    private final WorkflowStepRegistry steps;
-
     private final WorkflowExecutionRepository executions;
 
     private final WorkflowExecutionContextFactory contextFactory;
 
     private final WorkflowExecutionScheduler scheduler;
+
+    private final WorkflowExecutionStepRunner runner;
 
     private final Instance<WorkflowExecutionListener> executionListeners;
 
@@ -63,21 +61,17 @@ public class WorkflowExecutionWorker implements MessageListener {
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowStepRegistry steps,
-                                   WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory,
-                                   WorkflowExecutionScheduler scheduler, Instance<WorkflowExecutionListener> executionListeners) {
-        this(datasets, steps, executions, contextFactory, scheduler, executionListeners, Clock.systemUTC());
+    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler, WorkflowExecutionStepRunner runner, Instance<WorkflowExecutionListener> executionListeners) {
+        this(datasets, executions, contextFactory, scheduler, runner, executionListeners, Clock.systemUTC());
     }
 
-    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowStepRegistry steps,
-                                   WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory,
-                                   WorkflowExecutionScheduler scheduler, Instance<WorkflowExecutionListener> executionListeners,
+    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler, WorkflowExecutionStepRunner runner, Instance<WorkflowExecutionListener> executionListeners,
                                    Clock clock) {
         this.datasets = datasets;
-        this.steps = steps;
         this.executions = executions;
         this.contextFactory = contextFactory;
         this.scheduler = scheduler;
+        this.runner = runner;
         this.executionListeners = executionListeners;
         this.clock = clock;
     }
@@ -85,7 +79,7 @@ public class WorkflowExecutionWorker implements MessageListener {
     // -------------------- LOGIC --------------------
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void onMessage(Message message) {
         try {
             WorkflowExecutionMessage messageBody = (WorkflowExecutionMessage) ((ObjectMessage) message).getObject();
@@ -106,7 +100,7 @@ public class WorkflowExecutionWorker implements MessageListener {
         if (ctx.hasMoreStepsToExecute()) {
             WorkflowExecutionStepContext step = ctx.nextStepToExecute(executions);
             try {
-                WorkflowStepResult stepResult = executeStep(step, lastStepResult, externalData);
+                WorkflowStepResult stepResult = runner.executeStep(step, lastStepResult, externalData);
 
                 if (stepResult instanceof Success) {
                     stepCompleted(ctx, step, (Success) stepResult);
@@ -120,20 +114,6 @@ public class WorkflowExecutionWorker implements MessageListener {
             }
         } else {
             workflowCompleted(ctx);
-        }
-    }
-
-    private WorkflowStepResult executeStep(WorkflowExecutionStepContext step, Success lastStepResult, String externalData) {
-        if (step.isPaused()) {
-            log.info("{} - resuming", step);
-            return getInNewTransaction(
-                    step.resume(externalData, steps, clock)
-            );
-        } else {
-            log.info("{} - starting", step);
-            return getInNewTransaction(
-                    step.start(lastStepResult.getData(), steps, clock)
-            );
         }
     }
 
@@ -188,15 +168,7 @@ public class WorkflowExecutionWorker implements MessageListener {
     private void rollbackStep(WorkflowExecutionContext ctx, Failure failure) {
         if (ctx.hasMoreStepsToRollback()) {
             WorkflowExecutionStepContext step = ctx.nextStepToRollback(executions);
-            try {
-                log.info("{} - rollback", step);
-                runInNewTransaction(
-                        step.rollback(failure, steps, clock)
-                );
-            } catch (Exception e) {
-                log.warn(String.format("%s - rollback error", step), e);
-            }
-
+            runner.rollbackStep(step, failure);
             scheduler.rollbackNextWorkflowStep(ctx, failure);
         } else {
             try {
@@ -211,18 +183,6 @@ public class WorkflowExecutionWorker implements MessageListener {
 
     private void unlockDatasetForWorkflow(WorkflowContext ctx) {
         log.trace("Removing workflow lock");
-        runInNewTransaction(() ->
-                datasets.unlockDataset(ctx.getDataset(), DatasetLock.Reason.Workflow)
-        );
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    <T> T getInNewTransaction(Supplier<T> logic) {
-        return logic.get();
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void runInNewTransaction(Runnable logic) {
-        logic.run();
+        datasets.unlockDataset(ctx.getDataset(), DatasetLock.Reason.Workflow);
     }
 }

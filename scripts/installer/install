@@ -1210,6 +1210,7 @@ sub setup_postgres {
     }
     }
 
+    my $psql_exec = "psql";
     my $psql_admin_exec = "";
 
     if ( $psql_exec_path eq "" ) 
@@ -1234,7 +1235,7 @@ sub setup_postgres {
 
     print "(Using psql version " . $pg_major_version . "." . $pg_minor_version . ": " . $psql_exec_path . "/psql)\n";
 
-
+    $psql_exec = "$psql_exec_path/psql";
     $psql_admin_exec = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec_path; 
     $psql_exec_path = "PGPASSWORD=" . $CONFIG_DEFAULTS{'POSTGRES_PASSWORD'} . "; export PGPASSWORD; " . $psql_exec_path; 
 
@@ -1387,7 +1388,7 @@ sub setup_postgres {
     
     # 3g. CREATE DVN DB:
     
-    print "\nCreating Postgres database:\n";
+    print "\nCreating application database:\n";
     
     my $psql_command =
         $psql_exec_path
@@ -1396,23 +1397,49 @@ sub setup_postgres {
         . $CONFIG_DEFAULTS{'POSTGRES_USER'};
 
     my $out = qx($psql_command 2>&1);
-        $exitcode = $?;
-    unless ( $exitcode == 0 ) 
-    {
+    $exitcode = $?;
+    unless ( $exitcode == 0 ) {
         print STDERR "Could not create Postgres database for the Dataverse app!\n";
         print STDERR "(command: " . $psql_command . ")\n";
         print STDERR "(psql exit code: " . $exitcode . ")\n";
         print STDERR "(STDOUT and STDERR: " . $out . ")\n";
-        if ($force) 
-        {
-        print STDERR "\ncalled with --force, continuing\n";
-        }
-        else 
-        {
-        print STDERR "\naborting the installation (sorry!)\n\n";
-        exit 1;
+        if ($force) {
+            print STDERR "\ncalled with --force, continuing\n";
+        } else {
+            print STDERR "\naborting the installation (sorry!)\n\n";
+            exit 1;
         }
     }
+
+        # 3h. CREATE DVN ACTIVEMQ DB (if not already exists):
+        # https://stackoverflow.com/questions/18389124/simulate-create-database-if-not-exists-for-postgresql
+
+        print "\nCreating ActiveMQ database:\n";
+
+        my $amqdb_name = "$CONFIG_DEFAULTS{'POSTGRES_DATABASE'}_amq ";
+        my $amqdb_owner = "$CONFIG_DEFAULTS{'POSTGRES_USER'}";
+
+        my $psql_command_amqdb = "export PGPASSWORD='$CONFIG_DEFAULTS{'POSTGRES_ADMIN_PASSWORD'}'; " .
+            "echo \"select 'create database $amqdb_name owner $amqdb_owner' " .
+            "where not exists (select from pg_database where datname='$amqdb_name')\\gexec\" | " .
+            $psql_exec . " -h $CONFIG_DEFAULTS{'POSTGRES_SERVER'} " .
+                "-p $CONFIG_DEFAULTS{'POSTGRES_PORT'} " .
+                "-U $POSTGRES_ADMIN_USER";
+
+        $out = qx($psql_command_amqdb 2>&1);
+        $exitcode = $?;
+        unless (($exitcode == 0)) {
+            print STDERR "Could not create Postgres database for ActiveMQ!\n";
+            print STDERR "(command: " . $psql_command_amqdb . ")\n";
+            print STDERR "(psql exit code: " . $exitcode . ")\n";
+            print STDERR "(STDOUT and STDERR: " . $out . ")\n";
+            if ($force) {
+                print STDERR "\ncalled with --force, continuing\n";
+            } else {
+                print STDERR "\naborting the installation (sorry!)\n\n";
+                exit 1;
+            }
+        }
     }
 
 # Whether the user and the database were created locally or remotely, we'll now 

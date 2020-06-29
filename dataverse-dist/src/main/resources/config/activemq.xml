@@ -5,9 +5,9 @@
 
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="org.postgresql.Driver"/>
-        <property name="url" value="jdbc:postgresql://localhost/activemq"/>
-        <property name="username" value="postgres"/>
-        <property name="password" value="dataverse"/>
+        <property name="url" value="jdbc:postgresql://localhost/dvndb_amq"/>
+        <property name="username" value="dvnapp"/>
+        <property name="password" value="secret"/>
         <property name="poolPreparedStatements" value="true"/>
     </bean>
 

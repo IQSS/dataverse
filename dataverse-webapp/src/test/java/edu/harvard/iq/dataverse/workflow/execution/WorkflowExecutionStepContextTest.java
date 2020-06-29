@@ -72,11 +72,11 @@ class WorkflowExecutionStepContextTest {
                 Tuple.of("param", "value")
         ).collect(toMap(Tuple2::_1, Tuple2::_2));
         // when
-        Supplier<WorkflowStepResult> stepRunner = stepContext.start(singletonMap("test", "value"), steps, clock);
+        WorkflowStepResult result = stepContext.start(singletonMap("test", "value"), steps, clock);
         // then
         assertThat(stepContext.getStepExecution().isStarted()).isTrue();
         assertThat(stepContext.getStepExecution().getInputParams()).containsExactlyEntriesOf(params);
-        assertThat(stepRunner.get()).isEqualTo(new Success(params));
+        assertThat(result).isEqualTo(new Success(params));
     }
 
     @Test
@@ -101,11 +101,11 @@ class WorkflowExecutionStepContextTest {
         stepContext.start(emptyMap(), steps, clock);
         stepContext.pause(singletonMap("test", "value"), clock);
         // when
-        Supplier<WorkflowStepResult> stepRunner = stepContext.resume("test", steps, clock);
+        WorkflowStepResult result = stepContext.resume("test", steps, clock);
         // then
         assertThat(stepContext.getStepExecution().isResumed()).isTrue();
         assertThat(stepContext.getStepExecution().getResumedData()).isEqualTo("test");
-        assertThat(stepRunner.get()).isEqualTo(new Success(singletonMap("test", "value")));
+        assertThat(result).isEqualTo(new Success(singletonMap("test", "value")));
     }
 
     @Test
