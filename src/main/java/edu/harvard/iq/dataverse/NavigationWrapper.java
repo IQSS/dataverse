@@ -60,7 +60,7 @@ public class NavigationWrapper implements java.io.Serializable {
             if (passive==null || passive.getValue().equals("0")) {
               shibLoginPath = QDRDrupalSiteURL + "/user/login?current_page=" + URLEncoder.encode(QDRDataverseBaseURL, "UTF-8") + "%2Fshib.xhtml%3FredirectPage%3D" + URLEncoder.encode(getPageFromContext(), "UTF-8");
             } else {
-              shibLoginPath = QDRDataverseBaseURL + "/shib.xhtml?redirectPage=" + URLEncoder.encode(getPageFromContext(), "UTF-8");  
+              shibLoginPath = QDRDataverseBaseURL + "/shib.xhtml?redirectPage=" + getPageFromContext();  
             }
         } catch (UnsupportedEncodingException e) {
             //Shouldn't happen since we're just re-encoding something already successfully encoded once
