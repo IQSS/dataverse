@@ -105,7 +105,28 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
+    //TODO: detailed description 
+    /**
+     * Created this for #6915...
+     *
+     * @param user
+     * @param password
+     * @param key
+     * @param sendEmailNotification
+     * @return
+     */
+    @POST
+    @Path("{password}/{key}/{sendEmailNotification}")
+    public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key, @PathParam("sendEmailNotification") Boolean sendEmailNotification) {
+        return internalSave(user, password, key, sendEmailNotification);
+    }
+    
+    // internalSave without providing an explicit "sendEmailNotification"
     private Response internalSave(BuiltinUser user, String password, String key) {
+        return internalSave(user, password, key, true);
+    }
+    
+    private Response internalSave(BuiltinUser user, String password, String key, Boolean sendEmailNotification) {
         String expectedKey = settingsSvc.get(API_KEY_IN_SETTINGS);
         
         if (expectedKey == null) {
@@ -149,7 +170,7 @@ public class BuiltinUsers extends AbstractApiBean {
             } catch (Exception e) {
                 logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
             }
-            if (rootDataversePresent) {
+            if (rootDataversePresent && sendEmailNotification) {
                 userNotificationSvc.sendNotification(au,
                         new Timestamp(new Date().getTime()),
                         UserNotification.Type.CREATEACC, null);
@@ -188,3 +209,12 @@ public class BuiltinUsers extends AbstractApiBean {
     }
 
 }
+
+
+
+
+
+
+
+
+
