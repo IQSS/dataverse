@@ -2886,8 +2886,25 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedNonDownloadableFiles(List<FileMetadata> selectedNonDownloadableFiles) {
         this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
     }
-    
-            
+
+    public void validateAllFilesForDownloadArchival() {
+        selectAllFiles();
+        boolean guestbookRequired = isDownloadPopupRequired();
+        boolean downloadOriginal = false;
+        validateFilesForDownload(guestbookRequired, downloadOriginal);
+    }
+
+    /**
+     * Can result in "requested optional service" error. For non-tabular files
+     * it's safer to use validateAllFilesForDownloadArchival.
+     */
+    public void validateAllFilesForDownloadOriginal() {
+        selectAllFiles();
+        boolean guestbookRequired = isDownloadPopupRequired();
+        boolean downloadOriginal = true;
+        validateFilesForDownload(guestbookRequired, downloadOriginal);
+    }
+
     public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal){
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());

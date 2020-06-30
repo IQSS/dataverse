@@ -31,11 +31,7 @@
                                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-        <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
-            <!-- ADDED TOOLS SPECIFIC LOGIC TO DatasetPage.canDownloadFiles() RENDER LOGIC, CAN BE REMOVED WHEN DOWNLOAD ALL FILES IS WIRED UP -->
-            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() 
-                                                                        and (DatasetPage.datasetExploreTools.size() >= 1 
-                                                                        or (DatasetPage.sessionUserAuthenticated and DatasetPage.showComputeButton())))
+            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
@@ -143,17 +139,29 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
                                                     
-                                                    <ui:remove>
                                                     <!-- DOWNLOAD -->
-                                                    <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
                                                     <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                        <li class="disabled">
-                                                            <span class="ui-commandlink ui-widget ui-state-disabled btn-download">Download (Placeholder)</span>
+                                                        <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
+                                                        <li jsf:rendered="#{!DatasetPage.isHasTabular()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}">
+                                                                #{bundle.download}
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.isHasTabular()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}">
+                                                                #{bundle.downloadOriginal}
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.isHasTabular()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}">
+                                                                #{bundle.downloadArchival}
+                                                            </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
                                                     <!-- END: DOWNLOAD -->
-                                                    </ui:remove>
 
                                                     <!-- EXPLORE -->
                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
