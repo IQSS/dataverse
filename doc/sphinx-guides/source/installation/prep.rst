@@ -26,7 +26,7 @@ Advanced Installation
 
 There are some community-lead projects to use configuration management tools such as Ansible and Puppet to automate Dataverse installation and configuration, but support for these solutions is limited to what the Dataverse community can offer as described in each project's webpage:
 
-- https://github.com/IQSS/dataverse-ansible
+- https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible
 - https://github.com/IQSS/dataverse-puppet
 
 (Please note that the "dataverse-ansible" repo is used in a script that allows Dataverse to be installed on Amazon Web Services (AWS) from arbitrary GitHub branches as described in the :doc:`/developers/deployment` section of the Developer Guide.)
