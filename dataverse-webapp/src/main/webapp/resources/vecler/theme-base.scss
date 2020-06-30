@@ -22,10 +22,11 @@ $screen-xs-max: ($screen-sm-min - 1);
 
 $main-text-color: #4a4a4a;
 $gray-border-color: #e8e8e8;
+$gray-text-color: #595959;
 
 /* RepOD color scheme */
 
-$main-color: #0086bc !default;
+$main-color: #007cad !default;
 $icon-color: #2ba7df !default;
 $link-color: #043e58 !default;
 $border-color: #39b0e2 !default;
@@ -174,6 +175,10 @@ pre {
 
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
 	text-shadow: none;
+}
+
+.text-muted {
+	color: $gray-text-color;
 }
 
 /* Bootstrap tooltips and popovers */
@@ -1212,8 +1217,8 @@ input.fancy-checkbox[type=checkbox] {
 	text-transform: uppercase;
 	
 	&.label-primary {
-		background: #0086bc;
-		border: 1px solid #0086bc;
+		background: #007cad;
+		border: 1px solid #007cad;
 	}
 	&.label-warning {
 		background: #fff;
@@ -1228,14 +1233,14 @@ input.fancy-checkbox[type=checkbox] {
 		color: #fff;
 	}
 	&.label-success {
-		background: #00a500;
-		border: 1px solid #00a500;
+		background: #008a00;
+		border: 1px solid #008a00;
 	
 		color: #fff;
 	}
 	&.label-info {
-		background: $icon-color;
-		border: 1px solid $icon-color;
+		background: $main-color;
+		border: 1px solid $main-color;
 	
 		color: #fff;
 	}
@@ -1863,7 +1868,7 @@ $navbar-height: 102px;
 		#site-title {
 			font-size: 1.2em;
 			font-weight: bold;
-			color: $icon-color;
+			color: $main-color;
 		}
 
 		#site-subtitle {
@@ -2148,6 +2153,7 @@ body.wcag-text-toggle #wcag-text-mode-selector button {
 	position: static;
 	height: auto;
 	padding-bottom: 0;
+	color: $gray-text-color;
 
 	.footer-links .row {
 		border-top: 1px solid $gray-border-color;
@@ -2284,6 +2290,14 @@ div.panelSearchForm input.search-input {
 @media screen and (max-width: $screen-xs-max) {
 	div.panelSearchForm input.search-input {
 		max-width: 100%;
+	}
+}
+
+.pagination > .disabled {
+	> a, > span {
+		&, *:focus, &:hover {
+			color: $gray-text-color;
+		}
 	}
 }
 
@@ -2782,6 +2796,10 @@ div.filesTable .ui-paginator {
 	font-size: 15px;
 }
 
+.dataverseHeaderCell span[style="color:#888888;"] {
+	color: $gray-text-color !important;
+}
+
 @media screen and (max-width: $screen-xs-max) {
 	#dataverseHeader .dataverseHeaderCell {
 		display: table-row;
@@ -2825,6 +2843,7 @@ div.filesTable .ui-paginator {
 
 	.breadcrumbCarrot {
 		margin: 0 12px;
+		color: $gray-text-color;
 	}
 
 	.breadcrumbActive {
@@ -3776,6 +3795,7 @@ body.font-size-percent-200 {
 	#metrics-content, #metrics-label,
 	.form-horizontal .control-label,
 	#breadcrumbNavBlock .breadcrumbActive,
+	#breadcrumbNavBlock .breadcrumbCarrot,
 	.ui-widget-header,
 	.bg-warning,
 	.ui-widget-content .ui-state-default:not(.ui-button),
