@@ -135,6 +135,10 @@ public class Shib implements java.io.Serializable {
         //QDR Custom - manage SSO cookies
         response = (HttpServletResponse)context.getResponse();
         String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        int index = QDRDrupalSiteURL.indexOf("://");
+        if (index >=0) {
+            QDRDrupalSiteURL = QDRDrupalSiteURL.substring(index);
+        }
         String cookieVal = getPrettyFacesHomePageString(false);
         try {
             cookieVal = URLEncoder.encode(cookieVal, "UTF-8");
