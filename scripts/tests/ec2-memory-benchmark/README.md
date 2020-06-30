@@ -9,7 +9,7 @@ In order to run the benchmark test you will need the following:
 * Have your AWS credentials configured, so that you can spin up EC2 instances. 
 
 All the other pieces will be downloaded automatically (from the
-`IQSS/dataverse-ansible` and `IQSS/dataverse-sample-data` GitHub repos),
+`GlobalDataverseCommunityConsortium/dataverse-ansible` and `IQSS/dataverse-sample-data` GitHub repos),
 either locally, where you're running the script, or on the newly
 created instance.
 
