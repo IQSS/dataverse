@@ -1208,6 +1208,20 @@ This setting is useful in cases such as running Dataverse behind load balancers 
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 
+.. _:ApplicationServerSettings:
+
+Application Server Settings
+---------------------------
+
+http.request-timeout-seconds
+++++++++++++++++++++++++++++
+
+To facilitate large file upload and download, the Dataverse installer bumps the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds** setting from its default 900 seconds (15 minutes) to 1800 (30 minutes). Should you wish to shorten or lengthen this window, issue for example:
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
+
+and restart Payara to apply your change.
+
 .. _database-settings:
 
 Database Settings
