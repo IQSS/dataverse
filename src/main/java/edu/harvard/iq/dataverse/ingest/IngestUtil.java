@@ -102,37 +102,34 @@ public class IngestUtil {
     }
 
     /**
+     * Given an existing file that may or may not have a directoryLabel, take
+     * the incoming label and/or directory label and combine it with what's in
+     * the existing file, overwriting and filling in as necessary.
+     */
+    public static String getPathAndFileNameToCheck(String incomingLabel, String incomingDirectoryLabel, String existingLabel, String existingDirectoryLabel) {
+        String labelToReturn = existingLabel;
+        String directoryLabelToReturn = existingDirectoryLabel;
+        if (incomingLabel != null) {
+            labelToReturn = incomingLabel;
+        }
+        if (incomingDirectoryLabel != null) {
+            directoryLabelToReturn = incomingDirectoryLabel;
+        }
+        if (directoryLabelToReturn != null) {
+            return directoryLabelToReturn + "/" + labelToReturn;
+        } else {
+            return labelToReturn;
+        }
+    }
+
+    /**
      * Given a new proposed label or directoryLabel for a file, check against
      * existing files if a duplicate directoryLabel/label combination would be
      * created.
-     *
-     * @param label The new label (filename) that is being proposed. Can be
-     * null.
-     * @param directoryLabel The new directoryLabel (file path) that is being
-     * proposed. Can be null.
-     * @param fileMetadatas The list fileMetadatas to be compared against,
-     * probably from a draft.
-     * @param dataFile The file that is being updated with a new name or path.
-     * @return true if there is a conflict, false otherwise.
      */
-    public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
+    public static boolean conflictsWithExistingFilenames(String pathPlusFilename, List<FileMetadata> fileMetadatas) {
         List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
-        if (label != null || directoryLabel != null) {
-            String path = "";
-            if (directoryLabel != null) {
-                path = directoryLabel + "/";
-            }
-            if (label == null) {
-                label = dataFile.getFileMetadata().getLabel();
-            }
-            String incomingPathPlusFileName = path + label;
-            logger.fine(filePathsAndNames.toString());
-            logger.fine("incomingPathName: " + incomingPathPlusFileName);
-            if (filePathsAndNames.contains(incomingPathPlusFileName)) {
-                return true;
-            }
-        }
-        return false;
+        return filePathsAndNames.contains(pathPlusFilename);
     }
 
     /**
