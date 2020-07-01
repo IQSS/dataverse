@@ -546,6 +546,7 @@ public class DataverseUserPage implements java.io.Serializable {
     
     /**
      * Determines whether the button to send a verification email appears on user page
+     * TODO: cant this be refactored to use confirmEmailService.hasVerifiedEmail(currentUser) ?
      * @return 
      */ 
     public boolean showVerifyEmailButton() {
@@ -557,12 +558,11 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public boolean isEmailIsVerified() {
-
-        return currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null;
+        return confirmEmailService.hasVerifiedEmail(currentUser);
     }
 
     public boolean isEmailNotVerified() {
-        return currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null;
+        return !confirmEmailService.hasVerifiedEmail(currentUser);
     }
 
     public boolean isEmailGrandfathered() {

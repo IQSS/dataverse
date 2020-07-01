@@ -163,7 +163,7 @@ If you've thought to yourself that there ought to be an app store for Dataverse 
 Demoing Your External Tool
 ++++++++++++++++++++++++++
 
-https://demo.dataverse.org is the place to play around with Dataverse and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/IQSS/dataverse-ansible which already includes a number of the tools listed above.
+https://demo.dataverse.org is the place to play around with Dataverse and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
 
 Announcing Your External Tool
 +++++++++++++++++++++++++++++
