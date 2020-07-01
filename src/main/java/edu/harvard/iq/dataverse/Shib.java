@@ -137,7 +137,7 @@ public class Shib implements java.io.Serializable {
         String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
         int index = QDRDrupalSiteURL.indexOf("://");
         if (index >=0) {
-            QDRDrupalSiteURL = QDRDrupalSiteURL.substring(index);
+            QDRDrupalSiteURL = QDRDrupalSiteURL.substring(index + 3);
         }
         String cookieVal = getPrettyFacesHomePageString(false);
         try {
