@@ -106,11 +106,9 @@ followed by an Exception stack trace with these lines in it:
 
 :fixedwidthplain:`Exception Description: Could not deserialize object from byte array` ...
 
-
-... it most likely means that it is the JDBC driver incompatibility that's preventing the timer from working correctly. 
-Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<PAYARA FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
-to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Payara. (You may need to remove the entire contents of :fixedwidthplain:`<PAYARA FOLDER>/glassfish/domains/domain1/generated` before you start Payara). 
-
+... you should reach out by opening an issue. In the good old days of running Dataverse 4 running on Glassfish 4,
+this was a hint for an unsupported JDBC driver. In Dataverse 5 this would be a new regression and it's cause
+would need to be investigated.
 
 Constraint Violations Issues
 ----------------------------

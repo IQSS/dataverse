@@ -176,7 +176,6 @@ Switching from Glassfish to Payara
 If you already have a working dev environment with Glassfish and want to switch to Payara, you must do the following:
 
 - Copy the "domain1" directory from Glassfish to Payara.
-- Copy the PostgreSQL driver into place like this: ``cp scripts/installer/pgdriver/postgresql-42.*.jar /usr/local/payara5/glassfish/lib``
 
 ----
 
