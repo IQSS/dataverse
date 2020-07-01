@@ -1209,6 +1209,20 @@ This setting is useful in cases such as running Dataverse behind load balancers 
 	"HTTP_VIA",
 	"REMOTE_ADDR"
 
+.. _:ApplicationServerSettings:
+
+Application Server Settings
+---------------------------
+
+http.request-timeout-seconds
+++++++++++++++++++++++++++++
+
+To facilitate large file upload and download, the Dataverse installer bumps the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds** setting from its default 900 seconds (15 minutes) to 1800 (30 minutes). Should you wish to shorten or lengthen this window, issue for example:
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
+
+and restart Payara to apply your change.
+
 .. _database-settings:
 
 Database Settings
@@ -2111,3 +2125,12 @@ Allows Cross-Origin Resource sharing(CORS). By default this setting is absent an
 If you don’t want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
+
+:ChronologicalDateFacets
+++++++++++++++++++++++++
+
+Unlike other facets, those indexed by Date/Year are sorted chronologically by default, with the most recent value first. To have them sorted by number of hits, e.g. with the year with the most results first, set this to false 
+
+If you don’t want date facets to be sorted chronologically, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``

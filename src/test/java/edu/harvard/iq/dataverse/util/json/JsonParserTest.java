@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -530,6 +532,38 @@ public class JsonParserTest {
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
         
+    }
+    
+    @Test
+    public void testValidMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupMissingName() throws JsonParseException {
+        // given
+        String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupMissingDomains() throws JsonParseException {
+        // given
+        String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
     }
 
     @Test

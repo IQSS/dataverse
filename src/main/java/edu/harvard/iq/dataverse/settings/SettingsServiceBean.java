@@ -430,7 +430,12 @@ public class SettingsServiceBean {
         /**
          * Validate physical files for all the datafiles in the dataset when publishing
          */
-        FileValidationOnPublishEnabled
+        FileValidationOnPublishEnabled,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        ChronologicalDateFacets
+        
         ;
 
         @Override
