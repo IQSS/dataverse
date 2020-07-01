@@ -155,6 +155,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         
         //ConfirmEmailData  
         
+        // todo: the deletion should be handed down to the service!
         ConfirmEmailData confirmEmailData = ctxt.confirmEmail().findSingleConfirmEmailDataByUser(consumedAU); 
         if (confirmEmailData != null){
             ctxt.em().remove(confirmEmailData);

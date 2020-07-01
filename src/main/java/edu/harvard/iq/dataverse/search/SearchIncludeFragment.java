@@ -5,9 +5,12 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
@@ -33,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -449,6 +453,30 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
             
             setDisplayCardValues();
+            
+            if (settingsWrapper.displayChronologicalDateFacets()) {
+                Set<String> facetsToSort = new HashSet<String>();
+                facetsToSort.add(SearchFields.PUBLICATION_YEAR);
+                List<DataverseFacet> facets = dataversePage.getDataverse().getDataverseFacets();
+                for (DataverseFacet facet : facets) {
+                    DatasetFieldType dft = facet.getDatasetFieldType();
+                    if (dft.getFieldType() == FieldType.DATE) {
+                        // Currently all date fields are stored in solr as strings and so get an "_s" appended. 
+                        // If these someday are indexed as dates, this should change
+                        facetsToSort.add(dft.getName()+"_s");
+                    }
+                }
+
+                // Sort Pub Year Chronologically (alphabetically descending - works until 10000
+                // AD)
+                for (FacetCategory fc : facetCategoryList) {
+                    if (facetsToSort.contains(fc.getName())) {
+                        Collections.sort(fc.getFacetLabel(), Collections.reverseOrder());
+                    }
+                }
+            }
+            
+
             
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
