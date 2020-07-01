@@ -26,6 +26,7 @@
         <skipUnitTests>false</skipUnitTests>
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
+        <postgresql.version>42.2.12</postgresql.version>
         <!-- Make this correspond to the version used in Payara: 5.201 uses (patched) 2.3.14 -->
         <mojarra.version>2.3.14</mojarra.version>
         <aws.version>1.11.762</aws.version>
@@ -247,6 +248,11 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
