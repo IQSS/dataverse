@@ -154,17 +154,17 @@
                     <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
                     <ul class="dropdown-menu">
                         <li>
-                            <h:commandLink id="risLinkFilePgNew" styleClass="btn-download" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
+                            <h:commandLink styleClass="btn-download" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
                             </h:commandLink>
                         </li>
                         <li>
-                            <h:commandLink id="endNoteLinkFilePgNew" styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
+                            <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
                             </h:commandLink>
                         </li>
                         <li>
-                            <h:commandLink id="bibLinkFilePgNew" styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
+                            <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
                             </h:commandLink>
                         </li>
@@ -228,10 +228,10 @@
         <div class="btn-group" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
             <!-- Download Dropdown -->
             <a type="button" class="btn-download btn btn-link bootstrap-button-tooltip dropdown-toggle" 
-                          title="#{bundle.download}" id="downloadBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          title="#{bundle.download}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span><span class="caret"></span>
             </a>
-            <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="downloadBtn">
+            <ul class="dropdown-menu multi-level pull-right text-left">
                 <ui:remove>
                     <li>
                         <p:commandLink styleClass="highlightBold" rendered="#{!(downloadPopupRequired)}"
@@ -322,17 +322,17 @@
                     <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
                     <ul class="dropdown-menu">
                         <li>
-                            <h:commandLink id="risLinkFile" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
+                            <h:commandLink actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
                             </h:commandLink>
                         </li>
                         <li>
-                            <h:commandLink id="endNoteLinkFile" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
+                            <h:commandLink action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
                             </h:commandLink>
                         </li>
                         <li>
-                            <h:commandLink id="bibLinkFile" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
+                            <h:commandLink action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
                                 <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
                             </h:commandLink>
                         </li>
@@ -375,9 +375,6 @@
             <p:commandLink styleClass="btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated }"
                         process="@this"
                         onclick="PF('accessSignUpLogIn_popup').show()">
-                
-                <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
-                
                 #{bundle['file.requestAccess']}
             </p:commandLink>
         </li>
@@ -411,7 +408,6 @@
                        title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
                        process="@this"
                        onclick="PF('accessSignUpLogIn_popup').show()">
-            <!-- 4.2.1 - TODO: retest this on a dataset with fileRequest enabled and with some files restricted to the user -->
             <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
         </p:commandLink>
         <!-- END: DATASET PG -->
@@ -476,17 +472,17 @@
         <div class="btn-group" jsf:rendered="#{!isFilePg}">
             <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)) or (exploreTools.size()==0 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
                 <a class="btn-explore btn btn-link bootstrap-button-tooltip" 
-                               title="#{bundle.explore}" id="exploreBtn" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                               title="#{bundle.explore}" onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
                     <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span>
                 </a>
             </ui:fragment>
             <ui:fragment rendered="#{exploreTools.size()>1 or (exploreTools.size()>=1 and worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
                 <a class="btn-explore btn btn-link bootstrap-button-tooltip dropdown-toggle" 
-                               title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                               title="#{bundle.explore}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span><span class="caret"></span>
                 </a>
             </ui:fragment>
-            <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
+            <ul class="dropdown-menu multi-level pull-right text-left">
                 <!--external tools-->
                 <ui:repeat var="tool" value="#{exploreTools}">
                     <li>
