@@ -8,7 +8,7 @@ then
 fi
 
 # download the ec2-create-instance script:
-curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh
+curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh
 chmod 755 ec2-create-instance.sh
 
 # download the sample data ec2 config: 
