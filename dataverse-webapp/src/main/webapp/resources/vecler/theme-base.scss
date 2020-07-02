@@ -1931,6 +1931,20 @@ $navbar-height: 102px;
 	}
 }
 
+.language-select.dropdown-menu a {
+	padding: 3px 20px;
+	clear: both;
+	font-weight: 400;
+	line-height: 1.42857143;
+	white-space: nowrap;
+	text-decoration: none;
+	display: block;
+
+	&:focus, &:hover {
+		background-color: $gray-border-color !important;
+	}
+}
+
 .navbar-fixed-top #topNavBar.navbar-collapse {
 	max-height: calc(100vh - 100px);
 }
@@ -2349,6 +2363,10 @@ div.panelSearchForm input.search-input {
 
 	a {
 		padding: 0;
+
+		&:hover, &:focus {
+			text-decoration: underline;
+		}
 	}
 }
 
@@ -2561,6 +2579,10 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 }
 
 /* Search results */
+
+.ui-datalist-item a.facetLink {
+	text-decoration: underline;
+}
 
 #resultsFacetsTopBlock a.facetLink.facetSelected {
 	padding: 0.3em 0.6em;

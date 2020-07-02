@@ -147,20 +147,13 @@
                                 #{dataverseSession.localeTitle} <b class="caret"></b>
                             </a>
                             <h:form class="form-inline">
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu language-select">
                                     <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
                                         <li jsf:rendered="#{language.value ne dataverseSession.localeTitle}">
                                             <h:commandLink value="#{language.value}"
                                                             actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}"
                                                             lang="#{language.key}"
-                                                            style="padding: 3px 20px;
-                                                                    clear: both;
-                                                                    font-weight: 400;
-                                                                    line-height: 1.42857143;
-                                                                    white-space: nowrap;
-                                                                    text-decoration: none;
-                                                                    display: block;
-                                                                    #{'background: url(/resources/images/flags/'.concat(language.key).concat('.svg) no-repeat 90% center; background-size: 35px 35px')}">
+                                                            style="#{'background: url(/resources/images/flags/'.concat(language.key).concat('.svg) no-repeat 90% center; background-size: 35px 35px')}">
                                             </h:commandLink>
                                         </li>
                                     </ui:repeat>
