@@ -91,7 +91,7 @@ public class MailMessageCreatorTest {
         Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
         Mockito.when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
         Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
-        Mockito.when(systemConfig.getGuidesBaseUrl()).thenReturn(GUIDESBASEURL);
+        Mockito.when(systemConfig.getGuidesBaseUrl(dataverseSession.getLocale())).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
         Mockito.when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
 

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
@@ -23,6 +24,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     @Inject
     SettingsServiceBean settingService;
+
+    @Inject
+    DataverseSession session;
 
     @EJB
     SystemConfig systemConfig;
@@ -69,7 +73,7 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public String getGuidesBaseUrl() {
-        return systemConfig.getGuidesBaseUrl();
+        return systemConfig.getGuidesBaseUrl(session.getLocale());
     }
 
     public String getGuidesVersion() {

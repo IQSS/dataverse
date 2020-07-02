@@ -476,7 +476,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String getMultiUploadDetailsMessage() {
-        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion()));
+        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(session.getLocale()), systemConfig.getGuidesVersion()));
     }
 
     public boolean isInstallationPublic() {

@@ -261,7 +261,7 @@ public class MailMessageCreator {
                                                                                         parentDataverse != null ? parentDataverse.getDisplayName() : "",
                                                                                         parentDataverse != null ? getDataverseLink(
                                                                                                 parentDataverse) : "",
-                                                                                        systemConfig.getGuidesBaseUrl(),
+                                                                                        systemConfig.getGuidesBaseUrl(session.getLocale()),
                                                                                         systemConfig.getGuidesVersion()));
 
                 logger.fine(dataverseCreatedMessage);
@@ -370,7 +370,7 @@ public class MailMessageCreator {
                                                                                       getDatasetLink(version.getDataset()),
                                                                                       version.getDataset().getOwner().getDisplayName(),
                                                                                       getDataverseLink(version.getDataset().getOwner()),
-                                                                                      systemConfig.getGuidesBaseUrl(),
+                                                                                      systemConfig.getGuidesBaseUrl(session.getLocale()),
                                                                                       systemConfig.getGuidesVersion()
                                                                               ));
 
