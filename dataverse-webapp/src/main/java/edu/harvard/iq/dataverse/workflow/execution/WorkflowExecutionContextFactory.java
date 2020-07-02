@@ -47,7 +47,6 @@ public class WorkflowExecutionContextFactory {
     // -------------------- CONSTRUCTORS --------------------
 
     /**
-     * Required because we have dependencies that use <code>@EJB</code> field injection.
      * @deprecated for use by EJB proxy only.
      */
     public WorkflowExecutionContextFactory() {

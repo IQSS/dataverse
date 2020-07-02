@@ -27,6 +27,15 @@ public class WorkflowExecutionStepRunner {
 
     private final Clock clock;
 
+    // -------------------- CONSTRUCTORS --------------------
+
+    /**
+     * @deprecated for use by EJB proxy only.
+     */
+    public WorkflowExecutionStepRunner() {
+        this(null);
+    }
+
     @Inject
     public WorkflowExecutionStepRunner(WorkflowStepRegistry steps) {
         this(steps, Clock.systemUTC());
@@ -37,13 +46,15 @@ public class WorkflowExecutionStepRunner {
         this.clock = clock;
     }
 
+    // -------------------- LOGIC --------------------
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public WorkflowStepResult executeStep(WorkflowExecutionStepContext step, Success lastStepResult, String externalData) {
         if (step.isPaused()) {
-            log.info("{} - resuming", step);
+            log.trace("{} - resuming", step);
             return step.resume(externalData, steps, clock);
         } else {
-            log.info("{} - starting", step);
+            log.trace("{} - starting", step);
             return step.start(lastStepResult.getData(), steps, clock);
         }
     }
@@ -51,7 +62,7 @@ public class WorkflowExecutionStepRunner {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void rollbackStep(WorkflowExecutionStepContext step, Failure failure) {
         try {
-            log.info("{} - rollback", step);
+            log.trace("{} - rollback", step);
             step.rollback(failure, steps, clock);
         } catch (Exception e) {
             log.warn(String.format("%s - rollback error", step), e);

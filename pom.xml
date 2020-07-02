@@ -234,7 +234,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>27.0.1-jre</version>
+                <version>13.0.1</version>
             </dependency>
             <dependency>
                 <groupId>io.vavr</groupId>

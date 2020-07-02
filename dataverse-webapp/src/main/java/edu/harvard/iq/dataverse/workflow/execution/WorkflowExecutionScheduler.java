@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
+import com.google.common.base.Stopwatch;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -11,14 +12,12 @@ import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
-
-import java.util.Objects;
+import java.time.Duration;
 
 import static java.util.Objects.requireNonNull;
 import static javax.jms.Message.DEFAULT_TIME_TO_LIVE;
@@ -113,6 +112,7 @@ public class WorkflowExecutionScheduler {
     // -------------------- PRIVATE --------------------
 
     private void sendWorkflowExecutionMessage(WorkflowExecutionMessage messageBody, int priority) {
+        Stopwatch watch = new Stopwatch().start();
         try (
                 Connection connection = factory.createConnection();
                 Session session = connection.createSession(false, AUTO_ACKNOWLEDGE);
@@ -120,9 +120,13 @@ public class WorkflowExecutionScheduler {
         ) {
             ObjectMessage message = session.createObjectMessage(messageBody);
             producer.send(message, DeliveryMode.PERSISTENT, priority, DEFAULT_TIME_TO_LIVE);
-        } catch (JMSException e) {
+            log.trace("Spent {} to send priority {} message {}",
+                    Duration.ofMillis(watch.elapsedMillis()), priority, messageBody);
+        } catch (Exception e) {
             log.error("Failed sending message: {}", messageBody);
             throw new RuntimeException("Unexpected error sending a workflow execution message", e);
+        } finally {
+            watch.stop();
         }
     }
 

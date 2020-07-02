@@ -174,7 +174,7 @@ function preliminary_setup()
     --raname "activemq-rar" \
     --restype "javax.jms.Queue" \
     --enabled true \
-    --property Name="dataverseWorkflow":PhysicalName="dataverseWorkflow" \
+    --property PhysicalName="dataverseWorkflow" \
     "jms/queue/dataverseWorkflow"
 
   # allow ActiveMQ to serialize and deserialize data

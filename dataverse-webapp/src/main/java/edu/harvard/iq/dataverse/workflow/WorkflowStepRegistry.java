@@ -25,10 +25,14 @@ public class WorkflowStepRegistry {
 
     private final Map<String, WorkflowStepSPI> providers = new ConcurrentHashMap<>();
 
+    // -------------------- CONSTRUCTORS --------------------
+
     @PostConstruct
     public void init() {
         register("internal", new InternalWorkflowStepSP());
     }
+
+    // -------------------- LOGIC --------------------
 
     public void register(String providerId, WorkflowStepSPI provider) {
         Objects.requireNonNull(providerId, "Provider ID is required");

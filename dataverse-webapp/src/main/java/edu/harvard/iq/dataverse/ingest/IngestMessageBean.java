@@ -46,7 +46,10 @@ import java.util.logging.Logger;
  *
  * @author Leonid Andreev
  */
-@MessageDriven(mappedName = "jms/DataverseIngest", activationConfig = {@ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"), @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")})
+@MessageDriven(name = "IngestMessageBean", mappedName = "jms/DataverseIngest", activationConfig = {
+        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue")
+})
 public class IngestMessageBean implements MessageListener {
     private static final Logger logger = Logger.getLogger(IngestMessageBean.class.getCanonicalName());
     @EJB
