@@ -144,19 +144,19 @@
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                         <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                         <li jsf:rendered="#{!DatasetPage.isHasTabular()}">
-                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                 #{bundle.download} (ZIP, #{DatasetPage.sizeOfDataset})
                                                             </p:commandLink>
                                                         </li>
                                                         <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                         <li jsf:rendered="#{DatasetPage.isHasTabular()}">
-                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
                                                                 #{bundle.downloadOriginal} (ZIP, #{DatasetPage.sizeOfDataset})
                                                             </p:commandLink>
                                                         </li>
                                                         <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
                                                         <li jsf:rendered="#{DatasetPage.isHasTabular()}">
-                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                 #{bundle.downloadArchival} (ZIP, #{DatasetPage.sizeOfDataset})
                                                             </p:commandLink>
                                                         </li>
