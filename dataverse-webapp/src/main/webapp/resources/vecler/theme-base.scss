@@ -448,8 +448,11 @@ This fixes pull-right offscreen menus - might be neeeded in the future
 
 .checkbox, .radio, #resultsCountPaginatorBlock {
 	label {
+		position: relative;
+		top: 0.133em;
 		padding-left: 30px;
 		line-height: 27px;
+		display: inline;
 
 		input {
 			&[type=checkbox], &[type=radio] {
@@ -3336,11 +3339,16 @@ p.text-block {
 	word-break: break-word;
 }
 
-body.eighty-limit-toggle p.text-block {
-	max-width: 36.4em;
+body.eighty-limit-toggle {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+		max-width: 36.4em;
+	}
 }
-body.eighty-limit-toggle.wcag-text-toggle p.text-block {
-	max-width: 48em;
+
+body.eighty-limit-toggle.wcag-text-toggle {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+		max-width: 48em;
+	}
 }
 
 
@@ -3348,10 +3356,12 @@ body.eighty-limit-toggle.wcag-text-toggle p.text-block {
  * WCAG TEXT MODE SWITCH BELOW
  */
 
-body.wcag-text-toggle p.text-block {
-	word-spacing: 0.16em;
-	letter-spacing: 0.12em;
-	line-height: 1.5em;
+body.wcag-text-toggle {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+		word-spacing: 0.16em;
+		letter-spacing: 0.12em;
+		line-height: 1.5em;
+	}
 }
 
 
