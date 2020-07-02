@@ -99,8 +99,7 @@ public class MailMessageCreatorTest {
                                                     permissionService,
                                                     dataverseDao,
                                                     confirmEmailService,
-                                                    genericDao,
-                                                    dataverseSession
+                                                    genericDao
         );
     }
 
