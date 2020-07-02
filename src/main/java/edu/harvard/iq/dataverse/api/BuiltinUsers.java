@@ -107,7 +107,7 @@ public class BuiltinUsers extends AbstractApiBean {
     
     //TODO: detailed description 
     /**
-     * Created this for #6915...
+     * Created this for #6915....
      *
      * @param user
      * @param password
