@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class MailMessageCreatorTest {
@@ -79,19 +81,18 @@ public class MailMessageCreatorTest {
 
     @BeforeEach
     void prepare() {
-
         Dataverse rootDataverse = createRootDataverse(ROOTDVNAME);
 
         RoleAssignment roleAssignment = createRoleAssignment();
 
-        Mockito.when(permissionService.getRolesOfUser(Mockito.any(),
-                                                      Mockito.any(Dataverse.class))).thenReturn(Sets.newHashSet(
+        Mockito.when(permissionService.getRolesOfUser(any(),
+                                                      any(Dataverse.class))).thenReturn(Sets.newHashSet(
                 roleAssignment));
         Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
         Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
         Mockito.when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
         Mockito.when(systemConfig.getDataverseSiteUrl()).thenReturn(SITEURL);
-        Mockito.when(systemConfig.getGuidesBaseUrl(dataverseSession.getLocale())).thenReturn(GUIDESBASEURL);
+        Mockito.when(systemConfig.getGuidesBaseUrl(any(Locale.class))).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
         Mockito.when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
 
