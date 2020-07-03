@@ -1167,6 +1167,16 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
+    /**
+     * Returns a list of all {@link DatasetField}s with {@link DatasetFieldType}'s name
+     * equal to the provided {@code datasetFieldTypeName}.
+     */
+    public List<DatasetField> getDatasetFieldsByTypeName(String datasetFieldTypeName) {
+        return getFlatDatasetFields().stream()
+                .filter(f -> datasetFieldTypeName.equals(f.getDatasetFieldType().getName()))
+                .collect(Collectors.toList());
+    }
+
     public String getDistributionDate() {
         //todo get dist date from datasetfieldvalue table
         for (DatasetField dsf : this.getDatasetFields()) {
@@ -1328,6 +1338,7 @@ public class DatasetVersion implements Serializable {
         }
         return serverName + "/file.xhtml?fileId=" + dataFile.getId() + "&version=" + this.getSemanticVersion();
     }
+
     public List<DatasetField> getFlatDatasetFields() {
         return DatasetFieldUtil.getFlatDatasetFields(getDatasetFields());
     }
