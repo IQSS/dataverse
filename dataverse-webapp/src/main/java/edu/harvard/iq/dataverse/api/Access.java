@@ -1274,9 +1274,6 @@ public class Access extends AbstractApiBean {
 
 
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
-        // First, check if the file belongs to a released Dataset version:
-
-        boolean published = false;
 
         Optional<User> apiTokenUser = getApiTokenUser(apiToken);
         boolean isRestrictedByEmbargo = apiTokenUser
@@ -1287,23 +1284,17 @@ public class Access extends AbstractApiBean {
             return false;
         }
 
-        /*
-        SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
-            to which this file is attached check to see if at least one is  RELEASED
-        */
+        // First, check if the file belongs to a released Dataset version:
+        boolean published = false;
+
+        // We don't need to check permissions on files that are
+        // from released Dataset versions and not restricted:
         for (FileMetadata fm : df.getFileMetadatas()) {
             if (fm.getDatasetVersion().isPublished()) {
                 published = true;
-                break;
-            }
-        }
-
-        boolean allFileMetadataRestricted = true;
-        
-        for (FileMetadata fm : df.getFileMetadatas()) {
-            if (fm.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED) {
-                allFileMetadataRestricted = false;
-                break;
+                if (fm.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED) {
+                    return true;
+                }
             }
         }
 
@@ -1324,17 +1315,6 @@ public class Access extends AbstractApiBean {
         // I will open a 4.[34] ticket. 
         //
         // -- L.A. 4.2.1
-
-
-        // We don't need to check permissions on files that are 
-        // from released Dataset versions and not restricted: 
-
-        if (!allFileMetadataRestricted && published) {
-            // And if they are not published, they can still be downloaded, if the user
-            // has the permission to view unpublished versions! (this case will 
-            // be handled below)
-            return true;
-        }
 
         User user = null;
 
