@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.test.WithTestClock;
 
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.util.Arrays;
 
 public final class DatasetMother implements WithTestClock {
 
@@ -26,5 +27,26 @@ public final class DatasetMother implements WithTestClock {
         dataset.getVersions().get(0).setCreateTime(new Timestamp(clock.millis()));
         dataset.getVersions().get(0).setLastUpdateTime(new Timestamp(clock.millis()));
         return dataset;
+    }
+
+    public static DatasetVersion givenDatasetVersion(DatasetField... metadataFields) {
+        DatasetVersion version = new DatasetVersion();
+        version.setDatasetFields(Arrays.asList(metadataFields));
+        return version;
+    }
+
+    public static DatasetField createField(String typeName, String value) {
+        DatasetField field = new DatasetField();
+        DatasetFieldType fieldType = new DatasetFieldType();
+        fieldType.setName(typeName);
+        field.setDatasetFieldType(fieldType);
+        field.setValue(value);
+        return field;
+    }
+
+    public static DatasetField createField(String typeName, DatasetField... children) {
+        DatasetField field = createField(typeName, (String) null);
+        field.setDatasetFieldsChildren(Arrays.asList(children));
+        return field;
     }
 }
