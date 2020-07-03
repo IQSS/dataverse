@@ -460,6 +460,7 @@ div.panelSearchForm input.search-input {
 }
 div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
 div.panelSearchForm .button-block {
+	float: right;
 	margin-top: -35px;
 }
 
