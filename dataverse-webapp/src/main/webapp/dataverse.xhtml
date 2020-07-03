@@ -280,12 +280,10 @@
                             rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and empty SearchIncludeFragment.query}">
                         <ui:fragment
                                 rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">
-                            <div id="dataverseDesc" style="margin-bottom:1em;">
-                                <p class="text-block">
+                            <div id="dataverseDesc">
                                     <h:outputText
                                             value="#{MarkupChecker:sanitizeBasicHTML(DataversePage.dataverse.description)}"
                                             escape="false"/>
-                                </p>
                             </div>
                             <div class="clearfix"/>
                         </ui:fragment>

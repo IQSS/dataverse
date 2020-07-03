@@ -2252,6 +2252,7 @@ html, body {
 
 #dataverseDesc {
 	margin-left: 15px;
+	margin-bottom:1em;
 	width: 100%;
 	padding-top: 15px;
 }
@@ -2884,6 +2885,7 @@ div.filesTable .ui-paginator {
 #title-block {
 	margin-top: 20px;
 	margin-bottom: 32px;
+	max-width: calc(100vw - 50px);
 
 	.title-preview-icon-block {
 		.icon-dataset {
@@ -3340,13 +3342,13 @@ p.text-block {
 }
 
 body.eighty-limit-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
 		max-width: 36.4em;
 	}
 }
 
 body.eighty-limit-toggle.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
 		max-width: 48em;
 	}
 }
@@ -3357,7 +3359,7 @@ body.eighty-limit-toggle.wcag-text-toggle {
  */
 
 body.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block {
+	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
 		word-spacing: 0.16em;
 		letter-spacing: 0.12em;
 		line-height: 1.5em;

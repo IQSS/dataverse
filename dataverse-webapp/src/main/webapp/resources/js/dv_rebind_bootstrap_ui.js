@@ -579,7 +579,15 @@ function reinitializePrimefacesComponentsJS() {
             });
         }
     }
-}
+
+    /* disable swipe events for tabView and paginator, to allow scrolling contents without unexpected behavior */
+    if (PrimeFaces.widget.Paginator) {
+        PrimeFaces.widget.Paginator.prototype.bindSwipeEvents = function() {} 
+    }
+    if (PrimeFaces.widget.TabView) {
+        PrimeFaces.widget.TabView.prototype.bindSwipeEvents = function() {
+    }
+}}
 reinitializePrimefacesComponentsJS();
 
 /*
