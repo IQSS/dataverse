@@ -1,29 +1,20 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteHarvestingClientCommand;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+
+import javax.ejb.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -87,9 +78,9 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         
         // And if there is an unfinished RunResult object, we'll
         // just mark it as a failure:
-        if (harvestingClient.getLastRun() != null 
-                && harvestingClient.getLastRun().isInProgress()) {
-            harvestingClient.getLastRun().setFailed();
+        ClientHarvestRun lastRun = harvestingClient.getLastRun();
+        if (lastRun != null && lastRun.isRunInProgress()) {
+            lastRun.setRunFailed();
         }
        
     }
@@ -108,8 +99,21 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         ClientHarvestRun currentRun = new ClientHarvestRun();
         currentRun.setHarvestingClient(harvestingClient);
         currentRun.setStartTime(startTime);
-        currentRun.setInProgress();
+        currentRun.setRunInProgress();
         harvestingClient.getRunHistory().add(currentRun);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void resetDeleteInProgress(Long hcId) {
+        HarvestingClient harvestingClient = em.find(HarvestingClient.class, hcId);
+        if (harvestingClient == null) {
+            return;
+        }
+        em.refresh(harvestingClient);
+        if (harvestingClient.isDeleteInProgress()) {
+            harvestingClient.setDeleteInProgress(false);
+            harvestingClient.getLastRun().setDeleteFailed();
+        }
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -175,7 +179,7 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
-        if (currentRun != null && currentRun.isInProgress()) {
+        if (currentRun != null && currentRun.isRunInProgress()) {
             // TODO: what if there's no current run in progress? should we just
             // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
             
@@ -197,11 +201,11 @@ public class HarvestingClientServiceBean implements java.io.Serializable {
         
         ClientHarvestRun currentRun = harvestingClient.getLastRun();
         
-        if (currentRun != null && currentRun.isInProgress()) {
+        if (currentRun != null && currentRun.isRunInProgress()) {
             // TODO: what if there's no current run in progress? should we just
             // give up quietly, or should we make a noise of some kind? -- L.A. 4.4      
             
-            currentRun.setFailed();
+            currentRun.setRunFailed();
             currentRun.setFinishTime(currentTime);
         }
     }  

@@ -5,16 +5,9 @@
  */
 package edu.harvard.iq.dataverse.harvest.client;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 /**
  *
@@ -40,12 +33,13 @@ public class ClientHarvestRun implements Serializable {
         this.id = id;
     }
 
-    public enum RunResultType { SUCCESS, FAILURE, INPROGRESS };
+    public enum RunResultType { SUCCESS, RUN_FAILED, RUN_IN_PROGRESS, DELETE_FAILED };
     
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
-    private static String RESULT_LABEL_FAILURE = "FAILED";
-    private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
-    private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
+    private static String RESULT_LABEL_RUN_FAILED = "RUN FAILED";
+    private static String RESULT_LABEL_RUN_IN_PROGRESS = "RUN IN PROGRESS";
+    private static String RESULT_LABEL_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
+    private static String RESULT_LABEL_DELETE_FAILED = "DELETE FAILED";
     
     @ManyToOne
     @JoinColumn(nullable = false)
@@ -67,34 +61,34 @@ public class ClientHarvestRun implements Serializable {
     
     public String getResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
-            return RESULT_DELETE_IN_PROGRESS;
-        }
-        
-        if (isSuccess()) {
+            return RESULT_LABEL_DELETE_IN_PROGRESS;
+        } else if (isDeleteFailed()) {
+            return RESULT_LABEL_DELETE_FAILED;
+        } else if (isSuccess()) {
             return RESULT_LABEL_SUCCESS;
-        } else if (isFailed()) {
-            return RESULT_LABEL_FAILURE;
-        } else if (isInProgress()) {
-            return RESULT_LABEL_INPROGRESS;
+        } else if (isRunFailed()) {
+            return RESULT_LABEL_RUN_FAILED;
+        } else if (isRunInProgress()) {
+            return RESULT_LABEL_RUN_IN_PROGRESS;
         }
         return null;
     }
     
     public String getDetailedResultLabel() {
         if (harvestingClient != null && harvestingClient.isDeleteInProgress()) {
-            return RESULT_DELETE_IN_PROGRESS;
-        }
-        if (isSuccess()) {
+            return RESULT_LABEL_DELETE_IN_PROGRESS;
+        } else if (isDeleteFailed()) {
+            return RESULT_LABEL_DELETE_FAILED;
+        } else if (isSuccess()) {
             String resultLabel = RESULT_LABEL_SUCCESS;
-            
             resultLabel = resultLabel.concat("; "+harvestedDatasetCount+" harvested, ");
             resultLabel = resultLabel.concat(deletedDatasetCount+" deleted, ");
             resultLabel = resultLabel.concat(failedDatasetCount+" failed.");
             return resultLabel;
-        } else if (isFailed()) {
-            return RESULT_LABEL_FAILURE;
-        } else if (isInProgress()) {
-            return RESULT_LABEL_INPROGRESS;
+        } else if (isRunFailed()) {
+            return RESULT_LABEL_RUN_FAILED;
+        } else if (isRunInProgress()) {
+            return RESULT_LABEL_RUN_IN_PROGRESS;
         }
         return null;
     }
@@ -111,21 +105,29 @@ public class ClientHarvestRun implements Serializable {
         harvestResult = RunResultType.SUCCESS;
     }
 
-    public boolean isFailed() {
-        return RunResultType.FAILURE == harvestResult;
+    public boolean isRunFailed() {
+        return RunResultType.RUN_FAILED == harvestResult;
     }
 
-    public void setFailed() {
-        harvestResult = RunResultType.FAILURE;
+    public void setRunFailed() {
+        harvestResult = RunResultType.RUN_FAILED;
     }
     
-    public boolean isInProgress() {
-        return RunResultType.INPROGRESS == harvestResult ||
+    public boolean isRunInProgress() {
+        return RunResultType.RUN_IN_PROGRESS == harvestResult ||
                 (harvestResult == null && startTime != null && finishTime == null);
     }
     
-    public void setInProgress() {
-        harvestResult = RunResultType.INPROGRESS;
+    public void setRunInProgress() {
+        harvestResult = RunResultType.RUN_IN_PROGRESS;
+    }
+
+    public boolean isDeleteFailed() {
+        return RunResultType.DELETE_FAILED == harvestResult;
+    }
+
+    public void setDeleteFailed() {
+        harvestResult = RunResultType.DELETE_FAILED;
     }
 
     // Time of this harvest attempt:
