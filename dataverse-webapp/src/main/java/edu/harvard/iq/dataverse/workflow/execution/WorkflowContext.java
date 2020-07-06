@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow.execution;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -59,6 +60,10 @@ public class WorkflowContext {
 
     public Dataset getDataset() {
         return dataset;
+    }
+
+    public DatasetVersion getDatasetVersion() {
+        return dataset.getLatestVersion();
     }
 
     public long getNextVersionNumber() {

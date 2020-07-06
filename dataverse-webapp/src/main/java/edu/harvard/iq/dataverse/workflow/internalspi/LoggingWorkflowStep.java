@@ -4,9 +4,9 @@ import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,10 +22,10 @@ public class LoggingWorkflowStep implements WorkflowStep {
 
     public static final String STEP_ID = "log";
 
-    private final Map<String, String> params;
+    private final WorkflowStepParams params;
 
-    public LoggingWorkflowStep(Map<String, String> paramSet) {
-        params = new HashMap<>(paramSet);
+    public LoggingWorkflowStep(WorkflowStepParams params) {
+        this.params = params;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class LoggingWorkflowStep implements WorkflowStep {
         logger.log(Level.INFO, "Trigger Type {0}", context.getType());
         logger.log(Level.INFO, "Next version:{0}.{1} isMinor:{2}",
                    new Object[]{context.getNextVersionNumber(), context.getNextMinorVersionNumber(), context.isMinorRelease()});
-        params.entrySet().forEach(kv -> logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}));
+        params.asMap().entrySet().forEach(kv -> logger.log(Level.INFO, "{0} -> {1}", new Object[]{kv.getKey(), kv.getValue()}));
         logger.info("/Logging Step");
 
         return new Success();

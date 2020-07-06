@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import java.util.Map;
@@ -17,7 +18,7 @@ import java.util.function.BiFunction;
  */
 public class TestWorkflowStep implements WorkflowStep {
 
-    private final Map<String, String> params;
+    private final WorkflowStepParams params;
 
     private BiFunction<WorkflowExecutionContext, Map<String, String>, WorkflowStepResult> runningLogic =
             (ctx, params) -> new Success(params);
@@ -30,7 +31,7 @@ public class TestWorkflowStep implements WorkflowStep {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public TestWorkflowStep(Map<String, String> params) {
+    public TestWorkflowStep(WorkflowStepParams params) {
         this.params = params;
     }
 
@@ -60,7 +61,7 @@ public class TestWorkflowStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
-        return runningLogic.apply(context, params);
+        return runningLogic.apply(context, params.asMap());
     }
 
     @Override

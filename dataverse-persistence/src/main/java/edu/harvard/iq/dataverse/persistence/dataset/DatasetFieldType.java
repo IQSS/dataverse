@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ import java.util.TreeMap;
 })
 @Entity
 @Table(indexes = {@Index(columnList = "metadatablock_id"), @Index(columnList = "parentdatasetfieldtype_id")})
-public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
+public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType>, JpaEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

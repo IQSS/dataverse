@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 import edu.harvard.iq.dataverse.test.WithTestClock;
 
 import java.sql.Timestamp;
-import java.time.Clock;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public final class DatasetMother implements WithTestClock {
 
@@ -17,10 +17,6 @@ public final class DatasetMother implements WithTestClock {
     }
 
     public static Dataset givenDataset() {
-        return givenDataset(clock);
-    }
-
-    public static Dataset givenDataset(Clock clock) {
         Dataset dataset = new Dataset();
         dataset.setCreateDate(new Timestamp(clock.millis()));
         dataset.setModificationTime(new Timestamp(clock.millis()));
@@ -29,13 +25,13 @@ public final class DatasetMother implements WithTestClock {
         return dataset;
     }
 
-    public static DatasetVersion givenDatasetVersion(DatasetField... metadataFields) {
-        DatasetVersion version = new DatasetVersion();
-        version.setDatasetFields(Arrays.asList(metadataFields));
-        return version;
+    public static Dataset givenDataset(Consumer<Dataset> settings) {
+        Dataset dataset = givenDataset();
+        settings.accept(dataset);
+        return dataset;
     }
 
-    public static DatasetField createField(String typeName, String value) {
+    public static DatasetField givenDatasetFiled(String typeName, String value) {
         DatasetField field = new DatasetField();
         DatasetFieldType fieldType = new DatasetFieldType();
         fieldType.setName(typeName);
@@ -44,8 +40,8 @@ public final class DatasetMother implements WithTestClock {
         return field;
     }
 
-    public static DatasetField createField(String typeName, DatasetField... children) {
-        DatasetField field = createField(typeName, (String) null);
+    public static DatasetField givenDatasetFiled(String typeName, DatasetField... children) {
+        DatasetField field = givenDatasetFiled(typeName, (String) null);
         field.setDatasetFieldsChildren(Arrays.asList(children));
         return field;
     }

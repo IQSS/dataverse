@@ -107,4 +107,13 @@ public class ResultField {
         result = 31 * result + (children != null ? children.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "ResultField{" +
+                "name='" + name + '\'' +
+                ", value='" + value + '\'' +
+                ", children=" + children +
+                '}';
+    }
 }

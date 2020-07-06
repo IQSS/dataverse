@@ -5,9 +5,9 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,22 +26,20 @@ public class PauseStep implements WorkflowStep {
      */
     public static final String FAILURE_RESPONSE = "fail";
 
-    private final Map<String, String> params = new HashMap<>();
+    private final WorkflowStepParams params;
 
-    public PauseStep(Map<String, String> paramSet) {
-        params.putAll(paramSet);
+    public PauseStep(WorkflowStepParams params) {
+        this.params = params;
     }
 
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
-        final Pending result = new Pending();
-        result.getData().putAll(params);
-        return result;
+        return new Pending(params.asMap());
     }
 
     @Override
     public WorkflowStepResult resume(WorkflowExecutionContext context, Map<String, String> internalData, String externalData) {
-        logger.log(Level.INFO, "local parameters match: {0}", internalData.equals(params));
+        logger.log(Level.INFO, "local parameters match: {0}", internalData.equals(params.asMap()));
         logger.log(Level.INFO, "externalData: \"{0}\"", externalData);
         return externalData.trim().equals(FAILURE_RESPONSE) ? new Failure("Simulated fail") : new Success();
     }

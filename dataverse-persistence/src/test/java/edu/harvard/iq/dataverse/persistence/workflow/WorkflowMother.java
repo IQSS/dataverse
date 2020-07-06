@@ -32,6 +32,10 @@ public final class WorkflowMother {
         return givenWorkflowStep(providerId, stepType, singletonMap("param", "value"), emptyMap());
     }
 
+    public static WorkflowStepData givenWorkflowStep(String providerId, String stepType, Map<String, String> parameters) {
+        return givenWorkflowStep(providerId, stepType, parameters, emptyMap());
+    }
+
     public static WorkflowStepData givenWorkflowStep(String providerId, String stepType,
                                                      Map<String, String> parameters, Map<String, String> settings) {
         WorkflowStepData step = new WorkflowStepData();

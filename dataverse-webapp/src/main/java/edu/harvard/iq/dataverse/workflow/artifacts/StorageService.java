@@ -12,6 +12,7 @@ import java.util.function.Supplier;
  * {@link DatabaseStorageService}) and should be used via that service bean.
  */
 public interface StorageService {
+
     /**
      * Should return {@link StorageType} on which this implementations operates.
      */

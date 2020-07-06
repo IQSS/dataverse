@@ -21,17 +21,29 @@ import java.util.function.Supplier;
 @Startup
 @Singleton
 public class WorkflowArtifactServiceBean {
-    private Map<StorageType, StorageService> services = new HashMap<>();
 
-    private WorkflowArtifactRepository repository;
+    private final Map<StorageType, StorageService> services = new HashMap<>();
+
+    private final WorkflowArtifactRepository repository;
+    private final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public WorkflowArtifactServiceBean() { }
+    /**
+     * @deprecated for use by EJB proxy only.
+     */
+    public WorkflowArtifactServiceBean() {
+        this(null);
+    }
 
     @Inject
     public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository) {
+        this(repository, Clock.systemUTC());
+    }
+
+    public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository, Clock clock) {
         this.repository = repository;
+        this.clock = clock;
     }
 
     // -------------------- LOGIC --------------------
@@ -47,12 +59,12 @@ public class WorkflowArtifactServiceBean {
     }
 
     /**
-     * Same as {@link WorkflowArtifactServiceBean#saveArtifact(Long, ArtifactData, Clock, StorageType)}
-     * but with the last parameter set to {@link StorageType#DATABASE} and clock to {@link Clock#systemDefaultZone()}
+     * Same as {@link WorkflowArtifactServiceBean#saveArtifact(Long, ArtifactData, StorageType)}
+     * but with the last parameter set to {@link StorageType#DATABASE}.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public WorkflowArtifact saveArtifact(Long workflowExecutionId, ArtifactData data) {
-        return saveArtifact(workflowExecutionId, data, Clock.systemDefaultZone(), StorageType.DATABASE);
+        return saveArtifact(workflowExecutionId, data, StorageType.DATABASE);
     }
 
     /**
@@ -60,12 +72,12 @@ public class WorkflowArtifactServiceBean {
      * Please note that in case of text streams proper encoding is up to caller.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public WorkflowArtifact saveArtifact(Long workflowExecutionId, ArtifactData data, Clock clock, StorageType storageType) {
+    public WorkflowArtifact saveArtifact(Long workflowExecutionId, ArtifactData data, StorageType storageType) {
         StorageService service = services.get(storageType);
         String location = service.save(data.inputStreamSupplier);
 
-        WorkflowArtifact workflowArtifact = new WorkflowArtifact(null, workflowExecutionId,
-                clock.instant(), data.getName(), data.getEncoding(), storageType.name(), location);
+        WorkflowArtifact workflowArtifact = new WorkflowArtifact(workflowExecutionId,
+                data.getName(), data.getEncoding(), storageType.name(), location, clock);
         return repository.save(workflowArtifact);
     }
 
@@ -84,8 +96,8 @@ public class WorkflowArtifactServiceBean {
      * the appropriate storage.
      */
     public void deleteArtifacts(Long workflowExecutionId) {
-        List<WorkflowArtifact> oldArtifacts = repository.findAllByWorkflowExecutionId(workflowExecutionId);
-        repository.deleteAllByWorkflowExecutionId(workflowExecutionId);
+        List<WorkflowArtifact> oldArtifacts = repository.findByWorkflowExecutionId(workflowExecutionId);
+        repository.deleteByWorkflowExecutionId(workflowExecutionId);
         oldArtifacts.forEach(this::deleteFromStorage);
     }
 

@@ -8,11 +8,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.Clock;
 import java.time.Instant;
 
 @Entity
 @Table(name = "workflowartifact")
 public class WorkflowArtifact implements JpaEntity<Long> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,11 +51,10 @@ public class WorkflowArtifact implements JpaEntity<Long> {
 
     public WorkflowArtifact() { }
 
-    public WorkflowArtifact(Long id, Long workflowExecutionId, Instant createdAt,
-                            String name, String encoding, String storageType, String storageLocation) {
-        this.id = id;
+    public WorkflowArtifact(Long workflowExecutionId, String name, String encoding,
+                            String storageType, String storageLocation, Clock clock) {
         this.workflowExecutionId = workflowExecutionId;
-        this.createdAt = createdAt;
+        this.createdAt = clock.instant();
         this.name = name;
         this.encoding = encoding;
         this.storageType = storageType;

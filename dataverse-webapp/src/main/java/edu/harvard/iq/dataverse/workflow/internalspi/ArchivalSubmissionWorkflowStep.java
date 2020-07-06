@@ -26,9 +26,6 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
 
     private static final Logger logger = Logger.getLogger(ArchivalSubmissionWorkflowStep.class.getName());
 
-    public ArchivalSubmissionWorkflowStep(Map<String, String> paramSet) {
-    }
-
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
         Map<String, String> requestedSettings = new HashMap<String, String>();

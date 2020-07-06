@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
@@ -34,7 +33,7 @@ class SystemProcessStepTest {
             givenWorkflowStep(SystemProcessStep.STEP_ID)
     );
 
-    Map<String, String> inputParams = new HashMap<>();
+    WorkflowStepParams inputParams;
 
     Path tmpDir;
 
@@ -42,7 +41,7 @@ class SystemProcessStepTest {
     void setUp() throws IOException {
         tmpDir = Files.createTempDirectory("test");
         tmpDir.toFile().deleteOnExit();
-        inputParams.put(WORK_DIR_PARAM_NAME, tmpDir.toAbsolutePath().toString());
+        inputParams = new WorkflowStepParams(WORK_DIR_PARAM_NAME, tmpDir.toAbsolutePath().toString());
     }
 
     @Test
@@ -55,8 +54,8 @@ class SystemProcessStepTest {
     @Test
     void shouldRunSimpleProcessSuccessfully() throws IOException {
         // given
-        inputParams.put(COMMAND_PARAM_NAME, "echo");
-        inputParams.put(ARGUMENTS_PARAM_NAME, "test");
+        inputParams = inputParams.with(COMMAND_PARAM_NAME, "echo")
+                .with(ARGUMENTS_PARAM_NAME, "test");
         SystemProcessStep step = new SystemProcessStep(inputParams);
         // when
         WorkflowStepResult result = step.run(givenWorkflowExecutionContext(datasetId, workflow));
@@ -71,7 +70,7 @@ class SystemProcessStepTest {
     @Test
     void shouldFailOnUnknownCommand() {
         // given
-        inputParams.put(COMMAND_PARAM_NAME, UUID.randomUUID().toString());
+        inputParams = inputParams.with(COMMAND_PARAM_NAME, UUID.randomUUID().toString());
         SystemProcessStep step = new SystemProcessStep(inputParams);
         // when
         WorkflowStepResult result = step.run(givenWorkflowExecutionContext(datasetId, workflow));

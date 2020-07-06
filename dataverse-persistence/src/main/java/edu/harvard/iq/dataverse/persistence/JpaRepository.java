@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
@@ -95,5 +97,13 @@ public abstract class JpaRepository<ID, T extends JpaEntity<ID>> implements JpaO
     @Override
     public void delete(T entity) {
         em.remove(entity);
+    }
+
+    protected static <T> Optional<T> getSingleResult(TypedQuery<T> query) {
+        try {
+            return Optional.of(query.getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 }

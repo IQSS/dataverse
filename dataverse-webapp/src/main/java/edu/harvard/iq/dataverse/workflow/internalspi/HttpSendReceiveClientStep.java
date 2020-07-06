@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -32,10 +33,10 @@ import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.Trigge
  */
 public class HttpSendReceiveClientStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(HttpSendReceiveClientStep.class.getName());
-    private final Map<String, String> params;
+    private final WorkflowStepParams params;
 
-    public HttpSendReceiveClientStep(Map<String, String> paramSet) {
-        params = new HashMap<>(paramSet);
+    public HttpSendReceiveClientStep(WorkflowStepParams params) {
+        this.params = params;
     }
 
     @Override

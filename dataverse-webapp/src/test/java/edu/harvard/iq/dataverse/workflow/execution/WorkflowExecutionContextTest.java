@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -176,7 +177,7 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     }
 
     @Override
-    public WorkflowStep getStep(String stepType, Map<String, String> stepParameters) {
+    public WorkflowStep getStep(String stepType, WorkflowStepParams stepParameters) {
         return new TestWorkflowStep(stepParameters);
     }
 }

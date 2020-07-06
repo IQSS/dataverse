@@ -53,10 +53,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor.DisplayOrder;
@@ -1072,7 +1073,7 @@ public class DatasetVersion implements Serializable {
         // Since only grant agency names are returned, use distinct() to avoid repeats
         // (e.g. if there are two grants from the same agency)
         return getCompoundChildFieldValues(DatasetFieldConstant.grantNumber, DatasetFieldConstant.grantNumberAgency)
-                .stream().distinct().collect(Collectors.toList());
+                .stream().distinct().collect(toList());
     }
 
     /**
@@ -1167,14 +1168,23 @@ public class DatasetVersion implements Serializable {
         return null;
     }
 
+    public Optional<DatasetField> getDatasetFieldByTypeName(String datasetFieldTypeName) {
+        return streamDatasetFieldsByTypeName(datasetFieldTypeName)
+                .findFirst();
+    }
+
     /**
      * Returns a list of all {@link DatasetField}s with {@link DatasetFieldType}'s name
      * equal to the provided {@code datasetFieldTypeName}.
      */
     public List<DatasetField> getDatasetFieldsByTypeName(String datasetFieldTypeName) {
+        return streamDatasetFieldsByTypeName(datasetFieldTypeName)
+                .collect(toList());
+    }
+
+    public Stream<DatasetField> streamDatasetFieldsByTypeName(String datasetFieldTypeName) {
         return getFlatDatasetFields().stream()
-                .filter(f -> datasetFieldTypeName.equals(f.getDatasetFieldType().getName()))
-                .collect(Collectors.toList());
+                .filter(f -> datasetFieldTypeName.equals(f.getDatasetFieldType().getName()));
     }
 
     public String getDistributionDate() {

@@ -3,36 +3,32 @@ package edu.harvard.iq.dataverse.persistence.workflow;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
+import edu.harvard.iq.dataverse.test.WithTestClock;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.inject.Inject;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.Optional;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployment {
+public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployment implements WithTestClock {
 
     @Inject DatasetRepository datasets;
     @Inject WorkflowRepository workflows;
     @Inject WorkflowExecutionRepository executions;
-
-    Clock clock = Clock.fixed(Instant.parse("2020-06-01T09:10:20.00Z"), UTC);
 
     Dataset dataset;
     Workflow workflow;
 
     @Before
     public void setUp() {
-        dataset = datasets.save(givenDataset(clock));
+        dataset = datasets.save(givenDataset());
         workflow = workflows.saveFlushAndClear(givenWorkflow(
                 givenWorkflowStep("step1"),
                 givenWorkflowStep("step2")

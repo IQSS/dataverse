@@ -13,6 +13,7 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,7 +27,7 @@ import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static org.awaitility.Awaitility.await;
 
-abstract class WorkflowJMSTestBase {
+public abstract class WorkflowJMSTestBase {
 
     static final MessageListener NO_OP_MESSAGE_LISTENER = m -> {};
 
@@ -45,20 +46,20 @@ abstract class WorkflowJMSTestBase {
         setProperty("queue." + JMS_QUEUE_RESOURCE_NAME, "dataverseWorkflow");
     }});
 
-    QueueConnectionFactory factory = (QueueConnectionFactory) jndi.lookup(JMS_CONNECTION_FACTORY_RESOURCE_NAME);
-    Queue queue = (Queue) jndi.lookup(JMS_QUEUE_RESOURCE_NAME);
+    protected QueueConnectionFactory factory = (QueueConnectionFactory) jndi.lookup(JMS_CONNECTION_FACTORY_RESOURCE_NAME);
+    protected Queue queue = (Queue) jndi.lookup(JMS_QUEUE_RESOURCE_NAME);
 
-    WorkflowJMSTestBase() throws NamingException { }
+    protected WorkflowJMSTestBase() throws NamingException { }
 
-    ListeningMessageConsumer givenMessageConsumer(MessageListener listener) {
+    protected ListeningMessageConsumer givenMessageConsumer(MessageListener listener) {
         return new ListeningMessageConsumer(listener);
     }
 
-    ListeningMessageConsumer callProducer(Runnable producer) {
+    protected ListeningMessageConsumer callProducer(Runnable producer) {
         return givenMessageConsumer(NO_OP_MESSAGE_LISTENER).callProducer(producer);
     }
 
-    class ListeningMessageConsumer {
+    protected class ListeningMessageConsumer {
 
         private final CollectingListener collector = new CollectingListener();
         private final MessageListener listener;
@@ -68,24 +69,28 @@ abstract class WorkflowJMSTestBase {
             this.listener = listener;
         }
 
-        ListeningMessageConsumer callProducer(Runnable producer) {
+        public ListeningMessageConsumer callProducer(Runnable producer) {
             this.producer = producer;
             return this;
         }
 
-        <T> T andAwaitOneMessageWithBody() throws JMSException  {
+        public <T> T andAwaitOneMessageWithBody() throws JMSException  {
             andAwaitMessages(1);
             return collector.getFirstMessageBody();
         }
 
-        void andAwaitMessages(int expectedCount) throws JMSException {
+        public void andAwaitMessages(int expectedCount) throws JMSException {
+            andAwaitMessages(expectedCount, ofSeconds(1));
+        }
+
+        public void andAwaitMessages(int expectedCount, Duration timeout) throws JMSException {
             try (
                     Connection connection = createAndStartConnection();
                     Session session = connection.createSession(false, AUTO_ACKNOWLEDGE);
                     MessageConsumer consumer = createAndSubscribeConsumer(session)
             ) {
                 producer.run();
-                collector.awaitMessageCount(expectedCount);
+                collector.awaitMessageCount(expectedCount, timeout);
             }
         }
 
@@ -112,8 +117,8 @@ abstract class WorkflowJMSTestBase {
             received.add(message);
         }
 
-        void awaitMessageCount(int expectedCount) {
-            await().pollInterval(ofMillis(100)).atMost(ofSeconds(1))
+        void awaitMessageCount(int expectedCount, Duration timeout) {
+            await().pollInterval(ofMillis(100)).atMost(timeout)
                     .until(() -> received.size() >= expectedCount);
         }
 

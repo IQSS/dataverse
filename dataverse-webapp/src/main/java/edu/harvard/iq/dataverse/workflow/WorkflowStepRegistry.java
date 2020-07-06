@@ -1,7 +1,8 @@
 package edu.harvard.iq.dataverse.workflow;
 
-import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
+import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,8 @@ import javax.ejb.Startup;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSPI.INTERNAL_PROVIDER_ID;
 
 /**
  * Registry of all available {@link WorkflowStepSPI}'s.
@@ -29,7 +32,7 @@ public class WorkflowStepRegistry {
 
     @PostConstruct
     public void init() {
-        register("internal", new InternalWorkflowStepSP());
+        register(INTERNAL_PROVIDER_ID, new InternalWorkflowStepSPI());
     }
 
     // -------------------- LOGIC --------------------
@@ -54,8 +57,8 @@ public class WorkflowStepRegistry {
         return providers.get(providerId);
     }
 
-    public WorkflowStep getStep(String providerId, String stepType, Map<String, String> stepParameters) {
+    public WorkflowStep getStep(String providerId, String stepType, Map<String, String> parameters) {
         return getProvider(providerId)
-                .getStep(stepType, stepParameters);
+                .getStep(stepType, new WorkflowStepParams(parameters));
     }
 }

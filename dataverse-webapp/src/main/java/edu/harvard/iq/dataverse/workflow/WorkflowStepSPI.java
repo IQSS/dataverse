@@ -1,8 +1,7 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
-
-import java.util.Map;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 
 /**
  * Interface for step factories. Implement this interface and register an instance
@@ -13,6 +12,6 @@ import java.util.Map;
  */
 public interface WorkflowStepSPI {
 
-    WorkflowStep getStep(String stepType, Map<String, String> stepParameters);
+    WorkflowStep getStep(String stepType, WorkflowStepParams stepParameters);
 
 }

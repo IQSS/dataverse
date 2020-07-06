@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 import static java.util.UUID.randomUUID;
 
@@ -24,7 +23,7 @@ import static java.util.UUID.randomUUID;
  */
 public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
 
-    protected static final Logger log = LoggerFactory.getLogger(FilesystemAccessingWorkflowStep.class);
+    private static final Logger log = LoggerFactory.getLogger(FilesystemAccessingWorkflowStep.class);
 
     /**
      * Directory to run execute the step in.
@@ -36,7 +35,7 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public FilesystemAccessingWorkflowStep(Map<String, String> inputParams) {
+    public FilesystemAccessingWorkflowStep(WorkflowStepParams inputParams) {
         this.workDirParam = inputParams.get(WORK_DIR_PARAM_NAME);
     }
 

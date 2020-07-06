@@ -31,7 +31,8 @@ import java.util.function.Supplier;
 @Singleton
 @DependsOn("WorkflowArtifactServiceBean")
 public class DatabaseStorageService implements StorageService {
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseStorageService.class);
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseStorageService.class);
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -76,7 +77,7 @@ public class DatabaseStorageService implements StorageService {
             insert.setBinaryStream(2, input);
             insert.execute();
         } catch (IOException | SQLException ex) {
-            logger.error("Exception while storing artifact in database: {}", ex.getMessage());
+            log.error("Exception while storing artifact in database: {}", ex.getMessage());
             throw new RuntimeException(ex);
         }
         return id.toString();
@@ -93,7 +94,7 @@ public class DatabaseStorageService implements StorageService {
                     ? Optional.of(supplyDataStream(result))
                     : Optional.empty();
         } catch (SQLException se) {
-            logger.error("Exception while retrieving stored artifact with id={}. Message is: {}.", location, se.getMessage());
+            log.error("Exception while retrieving stored artifact with id={}. Message is: {}.", location, se.getMessage());
             throw new RuntimeException(se);
         }
     }
@@ -105,7 +106,7 @@ public class DatabaseStorageService implements StorageService {
             try {
                 return result.getBinaryStream(1);
             } catch (SQLException se) {
-                logger.error("Exception while accessing data stream: {}", se.getMessage());
+                log.error("Exception while accessing data stream: {}", se.getMessage());
                 throw new RuntimeException(se);
             }
         };

@@ -17,11 +17,13 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +32,6 @@ import javax.naming.NamingException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
@@ -46,14 +47,12 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements WorkflowStepSPI {
+class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements WorkflowStepSPI, WithTestClock {
 
     static final String TEST_PROVIDER_ID = "test";
     static final String SUCCESS_STEP_ID = "successful";
     static final String PAUSING_STEP_ID = "pausing";
     static final String FAILING_STEP_ID = "failing";
-
-    Clock clock = Clock.fixed(Instant.parse("2020-06-01T09:10:20.00Z"), UTC);
 
     SettingsServiceBean settings = new TestSettingsServiceBean();
     StubJpaPersistence persistence = new StubJpaPersistence();
@@ -94,7 +93,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     @Test
     void shouldExecuteSimpleWorkflowSuccessfully() throws Exception {
         // given
-        Dataset dataset = datasets.save(givenDataset(clock));
+        Dataset dataset = datasets.save(givenDataset());
         Workflow workflow = workflows.save(givenWorkflow(1L,
                 givenWorkflowStep(TEST_PROVIDER_ID, SUCCESS_STEP_ID))
         );
@@ -139,7 +138,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     @Test
     void shouldExecutePausingWorkflow() throws Exception {
         // given
-        Dataset dataset = datasets.save(givenDataset(clock));
+        Dataset dataset = datasets.save(givenDataset());
         Workflow workflow = workflows.save(givenWorkflow(1L,
                 givenWorkflowStep(TEST_PROVIDER_ID, PAUSING_STEP_ID))
         );
@@ -184,7 +183,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     @Test
     void shouldExecutePausingAndResumingWorkflow() throws Exception {
         // given
-        Dataset dataset = datasets.save(givenDataset(clock));
+        Dataset dataset = datasets.save(givenDataset());
         Workflow workflow = workflows.save(givenWorkflow(1L,
                 givenWorkflowStep(TEST_PROVIDER_ID, PAUSING_STEP_ID))
         );
@@ -235,7 +234,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     @Test
     void shouldExecuteAbdRollbackFailingWorkflow() throws Exception {
         // given
-        Dataset dataset = datasets.save(givenDataset(clock));
+        Dataset dataset = datasets.save(givenDataset());
         Workflow workflow = workflows.save(givenWorkflow(1L,
                 givenWorkflowStep(TEST_PROVIDER_ID, FAILING_STEP_ID))
         );
@@ -278,7 +277,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     }
 
     @Override
-    public WorkflowStep getStep(String stepType, Map<String, String> stepParameters) {
+    public WorkflowStep getStep(String stepType, WorkflowStepParams stepParameters) {
         TestWorkflowStep step = new TestWorkflowStep(stepParameters);
         if (PAUSING_STEP_ID.equals(stepType)) {
             step.pausingAndResumingSuccessfully();

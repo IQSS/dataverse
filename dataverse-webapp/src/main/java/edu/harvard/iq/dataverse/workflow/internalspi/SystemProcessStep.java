@@ -3,22 +3,24 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.FilesystemAccessingWorkflowStep;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static edu.harvard.iq.dataverse.workflow.step.Success.successWith;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static org.apache.commons.collections4.ListUtils.union;
 
 public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
+
+    private static final Logger log = LoggerFactory.getLogger(SystemProcessStep.class);
 
     public static final String STEP_ID = "system-process";
 
@@ -40,13 +42,10 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public SystemProcessStep(Map<String, String> inputParams) {
+    public SystemProcessStep(WorkflowStepParams inputParams) {
         super(inputParams);
-        command = ofNullable(inputParams.get(COMMAND_PARAM_NAME))
-                .orElseThrow(() -> new IllegalArgumentException("Command parameter is required"));
-        arguments = ofNullable(inputParams.get(ARGUMENTS_PARAM_NAME))
-                .map(args -> asList(args.split("\\|")))
-                .orElseGet(Collections::emptyList);
+        command = inputParams.getRequired(COMMAND_PARAM_NAME);
+        arguments = inputParams.getList(ARGUMENTS_PARAM_NAME, "\\|");
     }
 
     // -------------------- LOGIC --------------------
@@ -54,9 +53,9 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
     @Override
     protected WorkflowStepResult.Source runInternal(WorkflowExecutionContext context, Path workDir) throws Exception {
         String processId = UUID.randomUUID().toString();
-
+        log.trace("About to run process {}", processId);
         int exitCode = executeCommand(processId, workDir);
-
+        log.trace("Process {} exited with code {}", processId, exitCode);
         return handleExitCode(processId, exitCode);
     }
 

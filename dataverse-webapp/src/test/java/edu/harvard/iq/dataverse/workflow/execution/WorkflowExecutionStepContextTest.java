@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Success;
+import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -134,12 +135,12 @@ class WorkflowExecutionStepContextTest {
     }
 
     private void givenImmediateWorkflowStep() {
-        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2)))
+        doAnswer(invocation -> new TestWorkflowStep(new WorkflowStepParams(invocation.getArgument(2))))
                 .when(steps).getStep(anyString(), anyString(), anyMap());
     }
 
     private void givenPausingWorkflowStep() {
-        doAnswer(invocation -> new TestWorkflowStep(invocation.getArgument(2))
+        doAnswer(invocation -> new TestWorkflowStep(new WorkflowStepParams(invocation.getArgument(2)))
                         .pausingAndResumingSuccessfully())
                 .when(steps).getStep(anyString(), anyString(), anyMap());
     }

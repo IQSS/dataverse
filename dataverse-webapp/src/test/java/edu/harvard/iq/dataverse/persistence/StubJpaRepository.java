@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeField;
 
 /**
@@ -28,9 +30,21 @@ public class StubJpaRepository<T extends JpaEntity<Long>> implements JpaOperatio
         return new ArrayList<>(storage.values());
     }
 
+    public List<T> findAll(Predicate<T> condition) {
+        return storage.values().stream()
+                .filter(condition)
+                .collect(toList());
+    }
+
     @Override
     public Optional<T> findById(Long id) {
         return ofNullable(storage.get(id));
+    }
+
+    public Optional<T> findOne(Predicate<T> condition) {
+        return storage.values().stream()
+                .filter(condition)
+                .findFirst();
     }
 
     @Override
