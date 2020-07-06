@@ -31,7 +31,7 @@
         </div>
     </ui:fragment>
 
-    <ui:fragment rendered="#{!empty datasetFilesTab.workingVersion.fileMetadatas or !empty datasetFilesTab.fileMetadatasSearch or not datasetFilesTab.dataset.hasEverBeenPublished()}">
+    <ui:fragment rendered="#{datasetFilesTab.isFilesTabDisplayable()}">
         <o:importFunctions type="java.lang.Math" />
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>

@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.api.EmbargoAccessService;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
@@ -42,13 +43,12 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.faces.view.ViewScoped;
 import org.primefaces.event.data.PageEvent;
 
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
@@ -94,6 +94,7 @@ public class DatasetFilesTab implements Serializable {
     private FileDownloadHelper fileDownloadHelper;
     private FileDownloadRequestHelper fileDownloadRequestHelper;
     private TermsOfUseFormMapper termsOfUseFormMapper;
+    private EmbargoAccessService embargoAccess;
 
     private PermissionServiceBean permissionService;
     private PermissionsWrapper permissionsWrapper;
@@ -171,7 +172,7 @@ public class DatasetFilesTab implements Serializable {
     public DatasetFilesTab(FileDownloadHelper fileDownloadHelper, DataFileServiceBean datafileService,
                            PermissionServiceBean permissionService, PermissionsWrapper permissionsWrapper,
                            DataverseRequestServiceBean dvRequestService, DatasetDao datasetDao, DataverseSession session,
-                           GuestbookResponseServiceBean guestbookResponseService,
+                           GuestbookResponseServiceBean guestbookResponseService, EmbargoAccessService embargoAccess,
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
                            ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper,
                            FileDownloadRequestHelper fileDownloadRequestHelper, GuestbookResponseDialog guestbookResponseDialog) {
@@ -184,6 +185,7 @@ public class DatasetFilesTab implements Serializable {
         this.session = session;
         this.fileDownloadRequestHelper = fileDownloadRequestHelper;
         this.guestbookResponseService = guestbookResponseService;
+        this.embargoAccess = embargoAccess;
         this.settingsService = settingsService;
         this.commandEngine = commandEngine;
         this.externalToolService = externalToolService;
@@ -230,6 +232,10 @@ public class DatasetFilesTab implements Serializable {
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         
         guestbookResponseDialog.initForDatasetVersion(workingVersion);
+    }
+
+    public boolean isFilesTabDisplayable() {
+        return !embargoAccess.isRestrictedByEmbargo(dataset) && (!workingVersion.getFileMetadatas().isEmpty() || !fileMetadatasSearch.isEmpty() || !dataset.hasEverBeenPublished());
     }
 
     private List<FileMetadata> getAccessibleFilesMetadata() {
