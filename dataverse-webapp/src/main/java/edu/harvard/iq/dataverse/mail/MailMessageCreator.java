@@ -330,7 +330,7 @@ public class MailMessageCreator {
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
                 notificationsEmailLanguage);
 
-        if (notificationDto.getNotificationType() == NotificationType.SUBMITTEDDS) {
+        if (notificationDto.getNotificationType().equals(SUBMITTEDDS)) {
 
             String requestorName = requestor.getFirstName() + " " + requestor.getLastName();
 
@@ -463,7 +463,7 @@ public class MailMessageCreator {
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
                 notificationsEmailLanguage);
 
-        if (notificationDto.getNotificationType() == NotificationType.REQUESTFILEACCESS) {
+        if (notificationDto.getNotificationType().equals(REQUESTFILEACCESS)) {
 
             String pattern = BundleUtil.getStringFromBundle("notification.email.requestFileAccess",
                     notificationsEmailLanguage);
@@ -485,7 +485,7 @@ public class MailMessageCreator {
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
                 notificationsEmailLanguage);
 
-        if (notificationDto.getNotificationType() == NotificationType.MAPLAYERDELETEFAILED) {
+        if (notificationDto.getNotificationType().equals(MAPLAYERDELETEFAILED)) {
 
             DatasetVersion version = fileMetadata.getDatasetVersion();
             String pattern = BundleUtil.getStringFromBundle("notification.email.maplayer.deletefailed.text",
@@ -503,7 +503,7 @@ public class MailMessageCreator {
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
                 notificationsEmailLanguage);
 
-        if (notificationDto.getNotificationType() == NotificationType.CREATEACC) {
+        if (notificationDto.getNotificationType().equals(CREATEACC)) {
 
             String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", notificationsEmailLanguage,
                                                                           Arrays.asList(
@@ -600,8 +600,7 @@ public class MailMessageCreator {
     }
 
     private String getSubjectTextForDatasetVersion(EmailNotificationDto notificationDto, String rootDataverseName, DatasetVersion datasetVersion) {
-
-        if (notificationDto.getNotificationType() == FILESYSTEMIMPORT) {
+        if (notificationDto.getNotificationType().equals(FILESYSTEMIMPORT)) {
             Locale notificationsEmailLanguage = notificationDto.getNotificationReceiver().getNotificationsLanguage();
             try {
                 List<String> dsNameAsList = Collections.singletonList(datasetVersion.getDataset().getDisplayName());
