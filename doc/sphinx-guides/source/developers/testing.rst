@@ -125,7 +125,7 @@ different people. For our purposes, an integration test can have to flavors:
    - Operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
    - Written using REST Assured.
 
-2. Be a `Testcontainers <https://testcontainers.org>`_ Test:
+2. Be a `Testcontainers <https://testcontainers.org>`__ Test:
 
    - Operates any dependencies via the Testcontainers API, using containers.
    - Written as a JUnit test, using all things necessary to test.
@@ -258,7 +258,7 @@ Writing and Using a Testcontainers Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most scenarios of integration testing involve having dependent services running.
-This is where `Testcontainers <https://www.testcontainers.org>`_ kicks in by
+This is where `Testcontainers <https://www.testcontainers.org>`__ kicks in by
 providing a JUnit interface to drive them before and after executing your tests.
 
 Test scenarios are endless. Some examples are migration scripts, persistance,
