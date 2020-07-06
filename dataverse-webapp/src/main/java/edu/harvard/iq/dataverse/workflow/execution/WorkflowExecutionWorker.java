@@ -26,7 +26,6 @@ import java.time.Clock;
 import java.time.Duration;
 
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler.JMS_QUEUE_RESOURCE_NAME;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker.JMS_QUEUE_PHYSICAL_NAME;
 
 /**
  * A JMS {@link MessageListener} handling {@link WorkflowExecutionMessage}'s. Takes care of actual workflow steps
@@ -40,16 +39,13 @@ import static edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorke
  *
  * @author kaczynskid
  */
-@MessageDriven(name = "WorkflowExecutionWorker", mappedName = JMS_QUEUE_RESOURCE_NAME, activationConfig = {
-        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = JMS_QUEUE_PHYSICAL_NAME)
+@MessageDriven(name = "WorkflowExecutionWorker", activationConfig = {
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = JMS_QUEUE_RESOURCE_NAME),
+        @ActivationConfigProperty(propertyName = "useJndi", propertyValue = "true")
 })
 public class WorkflowExecutionWorker implements MessageListener {
 
     private static final Logger log = LoggerFactory.getLogger(WorkflowExecutionWorker.class);
-
-    static final String JMS_QUEUE_PHYSICAL_NAME = "dataverseWorkflow";
 
     private final DatasetRepository datasets;
 
@@ -108,12 +104,14 @@ public class WorkflowExecutionWorker implements MessageListener {
     // -------------------- PRIVATE --------------------
 
     private void executeStep(WorkflowExecutionContext ctx, Success lastStepResult, String externalData) {
+        log.trace("{} to be executed", ctx);
         if (ctx.hasMoreStepsToExecute()) {
             WorkflowExecutionStepContext step = ctx.nextStepToExecute(executions);
             log.trace("{} next to execute", step);
             Stopwatch watch = new Stopwatch().start();
             try {
                 WorkflowStepResult stepResult = runner.executeStep(step, lastStepResult, externalData);
+                log.trace("Spent {} executing {}", Duration.ofMillis(watch.elapsedMillis()), step);
 
                 if (stepResult instanceof Success) {
                     stepCompleted(ctx, step, (Success) stepResult);
@@ -122,7 +120,6 @@ public class WorkflowExecutionWorker implements MessageListener {
                 } else if (stepResult instanceof Failure) {
                     stepFailed(ctx, step, (Failure) stepResult);
                 }
-                log.trace("Spent {} executing {}", Duration.ofMillis(watch.elapsedMillis()), step);
             } catch (Exception e) {
                 stepFailed(ctx, step, e, "exception while executing step: " + e.getMessage());
             } finally {
@@ -158,7 +155,7 @@ public class WorkflowExecutionWorker implements MessageListener {
     }
 
     private void workflowCompleted(WorkflowExecutionContext ctx) {
-        log.trace("Workflow {} completed", ctx.getInvocationId());
+        log.trace("{} completed", ctx);
 
         try {
             ctx.finish(executions, clock);
@@ -172,7 +169,7 @@ public class WorkflowExecutionWorker implements MessageListener {
     }
 
     private void workflowFailed(WorkflowExecutionContext ctx, Exception ex, String msg) {
-        log.error(String.format("Workflow %s failed - %s", ctx.getInvocationId(), msg), ex);
+        log.error(String.format("%s failed - %s", ctx, msg), ex);
         workflowFailed(ctx, new Failure(msg));
     }
 
@@ -182,8 +179,10 @@ public class WorkflowExecutionWorker implements MessageListener {
     }
 
     private void rollbackStep(WorkflowExecutionContext ctx, Failure failure) {
+        log.trace("{} to be rolled back", ctx);
         if (ctx.hasMoreStepsToRollback()) {
             WorkflowExecutionStepContext step = ctx.nextStepToRollback(executions);
+            log.trace("{} next to roll back", step);
             runner.rollbackStep(step, failure);
             scheduler.rollbackNextWorkflowStep(ctx, failure);
         } else {

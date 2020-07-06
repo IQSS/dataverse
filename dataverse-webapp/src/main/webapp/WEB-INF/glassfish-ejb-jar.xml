@@ -3,8 +3,15 @@
 <glassfish-ejb-jar>
     <enterprise-beans>
         <ejb>
+            <ejb-name>WorkflowExecutionScheduler</ejb-name>
+            <!-- https://github.com/payara/Payara/issues/197#issuecomment-76189682 -->
+            <cmt-timeout-in-seconds>3</cmt-timeout-in-seconds>
+        </ejb>
+        <ejb>
             <ejb-name>WorkflowExecutionWorker</ejb-name>
             <jndi-name>jms/queue/dataverseWorkflow</jndi-name>
+            <!-- https://github.com/payara/Payara/issues/197#issuecomment-76189682 -->
+            <cmt-timeout-in-seconds>3</cmt-timeout-in-seconds>
             <mdb-resource-adapter>
                 <resource-adapter-mid>activemq-rar</resource-adapter-mid>
             </mdb-resource-adapter>

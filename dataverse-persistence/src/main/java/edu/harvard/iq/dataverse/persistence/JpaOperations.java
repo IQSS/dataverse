@@ -17,6 +17,10 @@ public interface JpaOperations<ID, T extends JpaEntity<ID>> {
 
     T save(T entity);
 
+    default T saveAndFlush(T entity) {
+        return save(entity);
+    }
+
     default T saveFlushAndClear(T entity) {
         return save(entity);
     }

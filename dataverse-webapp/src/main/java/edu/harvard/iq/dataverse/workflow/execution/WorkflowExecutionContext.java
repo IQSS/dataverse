@@ -76,10 +76,13 @@ public class WorkflowExecutionContext extends WorkflowContext {
         if (!hasMoreStepsToExecute()) {
             throw new IllegalStateException("No more steps to run");
         }
-        WorkflowExecutionStep stepExecution = execution.nextStepToExecute(workflow.getSteps());
-        executions.save(execution);
-
-        return new WorkflowExecutionStepContext(this, stepExecution, executions);
+        WorkflowExecutionStep nextStep = execution.nextStepToExecute(workflow.getSteps());
+        if (nextStep.isNew()) {
+            executions.saveAndFlush(execution);
+        }
+        // we need to call getLastStep() again here from execution, because when persisting new steps above
+        // JPA will copy the object and nextStep will not be attached to session and will have no id assigned
+        return new WorkflowExecutionStepContext(this, execution.getLastStep(), executions);
     }
 
     void finish(WorkflowExecutionRepository executions, Clock clock) {
@@ -95,8 +98,12 @@ public class WorkflowExecutionContext extends WorkflowContext {
         if (!hasMoreStepsToRollback()) {
             throw new IllegalStateException("No more steps to rollback");
         }
-        WorkflowExecutionStep stepExecution = execution.nextStepToRollback();
+        WorkflowExecutionStep nextStep = execution.nextStepToRollback();
+        return new WorkflowExecutionStepContext(this, nextStep, executions);
+    }
 
-        return new WorkflowExecutionStepContext(this, stepExecution, executions);
+    @Override
+    public String toString() {
+        return "Workflow execution " + execution.getInvocationId() + " (id=" + execution.getId() + ")";
     }
 }

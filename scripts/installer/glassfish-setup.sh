@@ -161,6 +161,7 @@ function preliminary_setup()
     --idletimeout 300 \
     --maxwait 60000 \
     --isconnectvalidatereq true \
+    --transactionsupport "NoTransaction" \
     "jms/activemqConnectionPool"
 
   # create ActiveMQ connection resource

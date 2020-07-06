@@ -97,6 +97,7 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
     @Override
     public String toString() {
-        return "Workflow execution " + execution.getInvocationId() + " of step #" + stepExecution.getIndex();
+        return "Workflow execution " + execution.getInvocationId() + " (id=" + execution.getId() + ") " +
+                " of step #" + stepExecution.getIndex() + " (id=" + stepExecution.getId() + ")";
     }
 }

@@ -57,20 +57,33 @@ public abstract class JpaRepository<ID, T extends JpaEntity<ID>> implements JpaO
 
     @Override
     public T save(T entity) {
-        if (entity.isNew()) {
-            em.persist(entity);
-            em.flush();
-            return entity;
-        } else {
-            return em.merge(entity);
-        }
+        return save(entity, false, false);
+    }
+
+    public T saveAndFlush(T entity) {
+        return save(entity, true, false);
     }
 
     @Override
     public T saveFlushAndClear(T entity) {
-        T saved = save(entity);
-        em.flush();
-        em.clear();
+        return save(entity, true, true);
+    }
+
+    private T save(T entity, boolean flush, boolean clear) {
+        T saved;
+        if (entity.isNew()) {
+            em.persist(entity);
+            em.flush();
+            saved = entity;
+        } else {
+            saved  = em.merge(entity);
+            if (flush) {
+                em.flush();
+            }
+        }
+        if (clear) {
+            em.clear();
+        }
         return saved;
     }
 

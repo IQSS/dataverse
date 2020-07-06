@@ -4,10 +4,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
-import edu.harvard.iq.dataverse.workflow.step.Failure;
-import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
-import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -17,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;

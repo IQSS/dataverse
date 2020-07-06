@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import java.time.Clock;
 import java.time.Instant;
@@ -69,7 +69,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
     private Instant finishedAt;
 
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @OrderBy("index ASC")
+    @OrderColumn(name = "index")
     private List<WorkflowExecutionStep> steps = new ArrayList<>();
 
     // -------------------- CONSTRUCTORS --------------------
@@ -152,6 +152,10 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         return steps;
     }
 
+    public WorkflowExecutionStep getLastStep() {
+        return steps.get(steps.size() - 1);
+    }
+
     // -------------------- LOGIC --------------------
 
     public boolean isStarted() {
@@ -200,7 +204,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
             return newStepExecution(definedSteps, 0);
         }
 
-        WorkflowExecutionStep lastStep = steps.get(steps.size() - 1);
+        WorkflowExecutionStep lastStep = getLastStep();
         if (lastStep.isFinished()) {
             return newStepExecution(definedSteps, lastStep.getIndex() + 1);
         } else {

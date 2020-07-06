@@ -108,6 +108,10 @@ public class WorkflowExecutionStep implements JpaEntity<Long> {
         return id;
     }
 
+    void setId(Long id) {
+        this.id = id;
+    }
+
     public WorkflowExecution getExecution() {
         return execution;
     }
@@ -248,11 +252,23 @@ public class WorkflowExecutionStep implements JpaEntity<Long> {
         if (!isStarted() || (isPaused() && !isResumed())) {
             throw new IllegalStateException("Cannot finish step - not running");
         }
-        if (isFinished()) {
+        if (successfully && isFinished()) {
             throw new IllegalStateException("Cannot finish step - already finished");
         }
         this.finishedAt = requireNonNull(clock, "A clock is required").instant();
         this.finishedSuccessfully = successfully;
         this.outputParams.putAll(ofNullable(outputParams).orElseGet(HashMap::new));
+    }
+
+    @Override
+    public String toString() {
+        return "WorkflowExecutionStep{" +
+                "id=" + id +
+                ", index=" + index +
+                ", providerId='" + providerId + '\'' +
+                ", stepType='" + stepType + '\'' +
+                ", startedAt=" + startedAt +
+                ", finishedAt=" + finishedAt +
+                '}';
     }
 }
