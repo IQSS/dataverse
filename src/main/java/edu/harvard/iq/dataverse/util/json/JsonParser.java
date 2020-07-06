@@ -1,23 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import com.google.gson.Gson;
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
-import edu.harvard.iq.dataverse.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetFieldValue;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseTheme;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -32,14 +16,14 @@ import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import org.apache.commons.validator.routines.DomainValidator;
 
+import javax.json.*;
+import javax.json.JsonValue.ValueType;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.json.*;
-import javax.json.JsonValue.ValueType;
 
 /**
  * Parses JSON objects into domain objects.
@@ -394,7 +378,10 @@ public class JsonParser {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    fields.add(parseField(fieldJson, testType));
+                    DatasetField field = parseField(fieldJson, testType);
+                    if (field != null) {
+                        fields.add(field);
+                    }
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
@@ -566,7 +553,8 @@ public class JsonParser {
     
 
         if (type == null) {
-            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+            logger.info("Can't find type '" + json.getString("typeName", "") + "'");
+            return null;
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
