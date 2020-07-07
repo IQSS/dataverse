@@ -81,7 +81,7 @@ public class BrandingUtilTest {
                         "LibraScholar Support Team"
                 ));
         System.out.println("message: " + message);
-        assertEquals("\n\nPlease be in touch with any questions or concerns support@librascholar.edu.\n\nThank you,\nLibraScholar Support Team",
+        assertEquals("\n\nPlease be in touch with any questions or concerns support@librascholar.edu.\n\nThank you,\nThe LibraScholar Support Team",
                 message);
     }
 
