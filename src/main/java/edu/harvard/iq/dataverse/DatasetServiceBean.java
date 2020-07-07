@@ -880,11 +880,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         return findStorageSize(dataset, countCachedExtras, GetDatasetStorageSizeCommand.Mode.STORAGE, null);
     }
   
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
+        boolean useOrigFileSize = false;
+        return findStorageSize(dataset, countCachedExtras, useOrigFileSize, mode, version);
+    }
     /**
      * Returns the total byte size of the files in this dataset 
      * 
      * @param dataset
      * @param countCachedExtras boolean indicating if the cached disposable extras should also be counted
+     * @param useOrigFileSize allows original tabular file size to be used instead of derived archival file
      * @param mode String indicating whether we are getting the result for storage (entire dataset) or download version based
      * @param version optional param for dataset version
      * @return total size 
@@ -893,7 +898,7 @@ public class DatasetServiceBean implements java.io.Serializable {
      * default mode, the method doesn't need to access the storage system, as the 
      * sizes of the main files are recorded in the database)
      */
-    public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras, boolean useOrigFileSize, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
         long total = 0L; 
         
         if (dataset.isHarvested()) {
@@ -913,27 +918,39 @@ public class DatasetServiceBean implements java.io.Serializable {
     
         
         //CACHED EXTRAS FOR DOWNLOAD?
-        
-        
-        for (DataFile datafile : filesToTally) {
-                total += datafile.getFilesize();
 
-                if (!countCachedExtras) {
-                    if (datafile.isTabularData()) {
-                        // count the size of the stored original, in addition to the main tab-delimited file:
-                        Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
-                        if (originalFileSize != null) {
-                            total += originalFileSize;
-                        }
+
+        for (DataFile datafile : filesToTally) {
+            if (datafile.isTabularData()) {
+                if (useOrigFileSize) {
+                    // count the size of the stored original, rather than the main tab-delimited file
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) {
+                        total += originalFileSize;
                     }
                 } else {
-                    StorageIO<DataFile> storageIO = datafile.getStorageIO();
-                    for (String cachedFileTag : storageIO.listAuxObjects()) {
-                        total += storageIO.getAuxObjectSize(cachedFileTag);
+                    total += datafile.getFilesize();
+                }
+            } else {
+                total += datafile.getFilesize();
+            }
+
+            if (!countCachedExtras) {
+                if (!useOrigFileSize && datafile.isTabularData()) {
+                    // count the size of the stored original, in addition to the main tab-delimited file:
+                    Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
+                    if (originalFileSize != null) {
+                        total += originalFileSize;
                     }
                 }
+            } else {
+                StorageIO<DataFile> storageIO = datafile.getStorageIO();
+                for (String cachedFileTag : storageIO.listAuxObjects()) {
+                    total += storageIO.getAuxObjectSize(cachedFileTag);
+                }
             }
-        
+        }
+
         // and finally,
         if (countCachedExtras) {
             // count the sizes of the files cached for the dataset itself

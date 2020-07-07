@@ -2901,7 +2901,21 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getSizeOfDataset() {
-        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
+        boolean countCachedFiles = false;
+        boolean useOrigFileSize = false;
+        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, useOrigFileSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
+        try {
+            long bytes = commandEngine.submit(cmd);
+            return FileSizeChecker.bytesToHumanReadable(bytes);
+        } catch (CommandException ex) {
+            return "";
+        }
+    }
+
+    public String getSizeOfDatasetOrig() {
+        boolean countCachedFiles = false;
+        boolean useOrigFileSize = true;
+        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, useOrigFileSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
         try {
             long bytes = commandEngine.submit(cmd);
             return FileSizeChecker.bytesToHumanReadable(bytes);

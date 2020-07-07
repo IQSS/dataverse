@@ -32,6 +32,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
 
     private final Dataset dataset;
     private final Boolean countCachedFiles;
+    private final boolean useOrigFileSize;
     private final Mode mode;
     private final DatasetVersion version;
     
@@ -44,6 +45,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         super(aRequest, target);
         dataset = target;
         countCachedFiles = false;
+        this.useOrigFileSize = false;
         mode = Mode.DOWNLOAD;
         version = null;
     }
@@ -52,6 +54,16 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         super(aRequest, target);
         dataset = target;
         this.countCachedFiles = countCachedFiles;
+        this.useOrigFileSize = false;
+        this.mode = mode;
+        this.version = version;
+    }
+
+    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, boolean useOrigFileSize, Mode mode, DatasetVersion version) {
+        super(aRequest, target);
+        dataset = target;
+        this.countCachedFiles = countCachedFiles;
+        this.useOrigFileSize = useOrigFileSize;
         this.mode = mode;
         this.version = version;
     }
@@ -66,7 +78,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         }
 
         try {
-            return ctxt.datasets().findStorageSize(dataset, countCachedFiles, mode, version);
+            return ctxt.datasets().findStorageSize(dataset, countCachedFiles, useOrigFileSize, mode, version);
         } catch (IOException ex) {
             throw new CommandException(BundleUtil.getStringFromBundle("datasets.api.datasize.ioerror"), this);
         }

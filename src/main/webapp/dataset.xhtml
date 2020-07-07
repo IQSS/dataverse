@@ -156,7 +156,7 @@
                                                             <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
                                                                 #{bundle.downloadOriginal}
                                                                 <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                    <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                    <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
                                                                 </h:outputFormat>
                                                             </p:commandLink>
                                                         </li>
