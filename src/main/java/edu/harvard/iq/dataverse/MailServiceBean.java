@@ -245,7 +245,7 @@ public class MailServiceBean implements java.io.Serializable {
         if (emailAddress != null){
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
-               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
+               String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor, isHtmlContent);
                 // QDR - uses the institution name rather than a dataverse/collection name in
                 // email subject
                 String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
@@ -341,7 +341,7 @@ public class MailServiceBean implements java.io.Serializable {
         return "";
     }
     
-    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor) {      
+    public String getMessageTextBasedOnNotification(UserNotification userNotification, Object targetObject, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {      
         
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting");
         DatasetVersion version;
@@ -474,7 +474,7 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasPublished");
                 String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
-                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), version.getDataset().getGlobalId().toURL().toString(), version.getCitation(isHtmlContent)};
                 messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);
                 return messageText;
             case RETURNEDDS:
