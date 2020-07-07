@@ -4,14 +4,18 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf">
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:jsf="http://xmlns.jcp.org/jsf"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 <h:head>
 </h:head>
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
         <ui:param name="pageTitle"
-                  value="#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name} - #{GuestbookPage.guestbook.dataverse.name} Dataverse"/>
+                  value="#{GuestbookPage.editMode == 'CREATE' ? 
+                            bundle['dataset.manageGuestbooks.createBtn'] : 
+                            GuestbookPage.guestbook.name.concat(': ').concat(bundle['dataset.manageGuestbooks.guestbook.edit'])} - #{GuestbookPage.guestbook.dataverse.name}"/>
         <ui:param name="dataverse" value="#{GuestbookPage.guestbook.dataverse}"/>
         <ui:param name="showMessagePanel" value="#{true}"/>
         <ui:define name="body">
@@ -21,34 +25,55 @@
                 <f:viewParam name="sourceId" value="#{GuestbookPage.sourceId}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{GuestbookPage.init}"/>
-                <f:viewAction
-                        action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
+                
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse)}" />
+                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('manage-guestbooks.xhtml?dataverseId='.concat(GuestbookPage.dataverse.id), bundle['dataset.manageGuestbooks.pageTitle'])}" />
+                <o:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(GuestbookPage.guestbook.name)}" if="#{not (GuestbookPage.editMode == 'CREATE')}" />
+                <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle['dataset.manageGuestbooks.guestbook.edit'])}" />
+
             </f:metadata>
 
+            <h2 class="no-margin-top">#{GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : bundle['dataset.manageGuestbooks.guestbook.edit']}</h2>
+            
             <h:form id="guestbookForm">
+                <p:focus context="guestbookForm" rendered="#{facesContext.validationFailed}" />
 
                 <!-- Tabs -->
                 <div class="form-horizontal">
+                
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="guestbookName">
-                            #{bundle['dataset.manageGuestbooks.guestbook.name']} 
-                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                        <div class="col-sm-12">
+                            <p class="form-control-static text-block">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                            </p>
+                        </div>
+                    </div>
+                
+                    <div class="form-group">
+                        <div class="col-sm-3 control-label-with-tooltip">
+                            <h:outputLabel styleClass="control-label" for="guestbookName">
+                                #{bundle['dataset.manageGuestbooks.guestbook.name']} 
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
+                            </h:outputLabel>
                             <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                  aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['dataset.manageGuestbooks.guestbook.name']}"
                                   data-toggle="tooltip" data-placement="auto right"
                                   data-original-title="#{bundle['dataset.manageGuestbooks.guestbook.name.tip']}">
                             </span>
-                        </label>
+                        </div>
                         <div class="col-sm-6">
                             <p:inputText id="guestbookName" styleClass="form-control"
                                          value="#{GuestbookPage.guestbook.name}"
-                                         binding="#{GuestbookPage.guestbookName}" />
+                                         binding="#{GuestbookPage.guestbookName}"
+                                         pt:aria-required="true" />
                             <p:message for="guestbookName" display="text" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="dataCollected">
+                        <fieldset>
+                        <legend class="col-sm-3 control-label">
                             #{bundle['dataset.manageGuestbooks.guestbook.dataCollected']}
-                        </label>
+                        </legend>
                         <div class="col-sm-9">
                             <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.dataCollected.description']}</p>
                             <div class="row">
@@ -76,12 +101,14 @@
                                 </div>
                             </div>
                         </div>
+                        </fieldset>
                     </div>
 
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="alias" style="white-space:nowrap;">
+                        <fieldset>
+                        <legend class="col-sm-3 control-label" style="white-space:nowrap;">
                             #{bundle['dataset.manageGuestbooks.guestbook.customQuestions']}
-                        </label>
+                        </legend>
                         <!-- Compound fields -->
                         <div class="col-sm-9">
                             <p class="help-block">#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.description']}</p>
@@ -102,9 +129,9 @@
                                         <div class="col-9">
                                             <div class="row">
                                                 <div class="col-xs-6">
-                                                    <label class="control-label" jsf:for="questionOptions">
+                                                    <p:outputLabel styleClass="control-label" for="questionOptions" indicateRequired="false">
                                                         #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.questionType']}
-                                                    </label>
+                                                    </p:outputLabel>
                                                     </div>
                                             </div>
                                             <div class="row">
@@ -122,14 +149,16 @@
                                                 <div class="col-xs-3 field-add-delete">
                                                     <p:commandLink
                                                             styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
-                                                            title="#{bundle.add}" update=":guestbookForm:customQuestions"
+                                                            title="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.add']}"
+                                                            update=":guestbookForm:customQuestions"
                                                             actionListener="#{GuestbookPage.addCustomQuestion(valCount.index + 1)}">
                                                         <span class="glyphicon glyphicon-plus no-text"/>
                                                     </p:commandLink>
                                                     <p:commandLink
                                                             styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip compound-field-btn"
                                                             rendered="#{GuestbookPage.guestbook.customQuestions.size() > 1}"
-                                                            title="#{bundle.delete}" update=":guestbookForm:customQuestions"
+                                                            title="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.delete']}"
+                                                            update=":guestbookForm:customQuestions"
                                                             actionListener="#{GuestbookPage.removeCustomQuestion(valCount.index)}">
                                                         <span class="glyphicon glyphicon-minus no-text"/>
                                                     </p:commandLink>
@@ -143,7 +172,8 @@
                                                     <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"></span>
                                                     <div>
                                                             <p:inputText id="questionText" styleClass="form-control"
-                                                                         value="#{cq.questionString}">
+                                                                         value="#{cq.questionString}"
+                                                                         pt:aria-required="true">
                                                                 <p:ajax event="blur" update="questionText"/>
                                                             </p:inputText>
                                                             <p:message for="questionText" display="text"/>
@@ -152,6 +182,7 @@
                                             </div>
                                             <p:fragment id="responseOptions">
                                                 <h:panelGroup rendered="#{cq.questionType eq 'options'}">
+                                                    <div role="group" aria-label="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}" >
                                                     <div class="col-xs-offset-1 col-xs-8">
                                                         <label class="control-label">
                                                             #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions']}
@@ -162,15 +193,22 @@
                                                                var="value">
                                                         <div class="form-group">
                                                             <div class="col-xs-offset-1 col-xs-8">
+                                                                <h:outputLabel for="responseText" styleClass="sr-only">
+                                                                    #{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOption']}
+                                                                    <h:outputFormat value=" #{bundle['common.forms.fieldGroup.number.label']}">
+                                                                        <f:param value="#{resCount.index + 1}" />
+                                                                    </h:outputFormat>
+                                                                </h:outputLabel>
                                                                 <p:inputText id="responseText" styleClass="form-control"
-                                                                             value="#{value.valueString}" >
+                                                                             value="#{value.valueString}"
+                                                                             pt:aria-required="true" >
                                                                 </p:inputText>
                                                                 <p:message for="responseText" display="text"/>
                                                             </div>
                                                             <div class="col-xs-3 field-add-delete">
                                                                 <p:commandLink
                                                                         styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
-                                                                        title="#{bundle.add}"
+                                                                        title="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions.add']}"
                                                                         update=":guestbookForm:customQuestions"
 
                                                                         actionListener="#{GuestbookPage.addCustomQuestionValue(cq, resCount.index + 1)}">
@@ -178,7 +216,7 @@
                                                                 </p:commandLink>
                                                                 <p:commandLink
                                                                         styleClass="btn btn-default btn-access btn-sm bootstrap-button-tooltip nolabel-field-btn"
-                                                                        title="#{bundle.delete}"
+                                                                        title="#{bundle['dataset.manageGuestbooks.guestbook.customQuestions.responseOptions.delete']}"
                                                                         rendered="#{cq.customQuestionValues.size() > 2}"
                                                                         update=":guestbookForm:customQuestions"
 
@@ -188,6 +226,7 @@
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
+                                                    </div>
                                                 </h:panelGroup>
                                             </p:fragment>
                                             <div class="row">
@@ -201,6 +240,7 @@
                                 </ui:repeat>
                             </p:fragment>
                         </div>
+                        </fieldset>
                     </div>
                 </div>
 

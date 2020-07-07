@@ -16,16 +16,19 @@
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGuestbooksPage.dataverse, bundle['dataset.manageGuestbooks.pageTitle'])}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dataset.manageGuestbooks.pageTitle']}"/>
+            <ui:param name="pageTitle" value="#{bundle['dataset.manageGuestbooks.pageTitle']} - #{manageGuestbooksPage.dataverse.name}"/>
             <ui:param name="dataverse" value="#{manageGuestbooksPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
+                
+                <h2 class="no-margin-top">#{bundle['dataset.manageGuestbooks.pageTitle']}</h2>
+                
                 <h:form id="manageGuestbooksForm">
 
                     <!-- static Messages -->
                     <p:outputPanel>
-                        <div jsf:rendered="#{manageGuestbooksPage.displayDownloadAll}" class="alert alert-info" role="alert" aria-atomic="true">
+                        <div jsf:rendered="#{manageGuestbooksPage.displayDownloadAll}" class="alert alert-info">
                             <p class="text-block">
                                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.manageGuestbooks.tip.title']}</strong> –
                                 <h:outputText escape="false" value="#{bundle['dataset.manageGuestbooks.tip.downloadascsv']} "/>
@@ -64,12 +67,12 @@
                         <div class="col-xs-12">
                         <div id="no-guestbooks-message" class="panel panel-default" jsf:rendered="#{empty manageGuestbooksPage.guestbooks}">
                             <div class="panel-body">
-                                <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.why.header']}</span>
+                                <h3><span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.why.header']}</span></h3>
                                 <ul>
                                     <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason1']}" escape="false"/></li>
                                     <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.why.reason2']}" escape="false"/></li>
                                 </ul>
-                                <span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.how.header']}</span>
+                                <h3><span class="help-block h3">#{bundle['dataset.manageGuestbooks.noGuestbooks.how.header']}</span></h3>
                                 <ul>
                                     <li><h:outputText value="#{bundle['dataset.manageGuestbooks.noGuestbooks.how.tip1']}" escape="false"/></li>
                                     <li>

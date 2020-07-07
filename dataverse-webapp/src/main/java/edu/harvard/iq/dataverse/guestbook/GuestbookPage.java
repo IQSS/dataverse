@@ -278,6 +278,7 @@ public class GuestbookPage implements java.io.Serializable {
         }
         JsfHelper.addComponentErrorMessage(guestbookName.getClientId(), StringUtils.EMPTY,
                 BundleUtil.getStringFromBundle("guestbook.name.empty"));
+        guestbookName.setValid(false);
         FacesContext facesContext = FacesContext.getCurrentInstance();
         facesContext.validationFailed();
     }
@@ -299,6 +300,7 @@ public class GuestbookPage implements java.io.Serializable {
             if (StringUtils.isBlank((String) input.getValue())) {
                 JsfHelper.addComponentErrorMessage(input.getClientId(), StringUtils.EMPTY,
                         BundleUtil.getStringFromBundle("guestbook.field.empty"));
+                input.setValid(false);
                 FacesContext facesContext = context.getFacesContext();
                 facesContext.validationFailed();
             }
