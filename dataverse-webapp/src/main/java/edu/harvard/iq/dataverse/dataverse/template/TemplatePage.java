@@ -27,6 +27,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,7 +182,6 @@ public class TemplatePage implements java.io.Serializable {
     }
 
     public String save() {
-
         mdbForEdit.values()
                 .forEach(v -> v.forEach(datasetFieldType -> saveDatasetFieldsGUIOrder(datasetFieldType.getDatasetFields())));
         template.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(mdbForEdit));
@@ -191,16 +191,16 @@ public class TemplatePage implements java.io.Serializable {
         if (editMode == EditMode.CREATE) {
 
             templateOperation = templateService.createTemplate(dataverse, this.template)
-                    .onSuccess(op -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.create")));
+                    .onSuccess(op -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.create")));
         } else {
 
             templateOperation = templateService.updateTemplate(dataverse, template)
-                    .onSuccess(op -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.save")));
+                    .onSuccess(op -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.save")));
         }
 
         if (templateOperation.isFailure()) {
             logger.fine("There was a problem with creating template: " + templateOperation.getCause().getMessage());
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.save.fail"), "");
 
             return StringUtils.EMPTY;
         }

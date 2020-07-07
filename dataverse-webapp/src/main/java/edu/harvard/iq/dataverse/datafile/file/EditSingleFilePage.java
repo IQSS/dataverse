@@ -207,7 +207,7 @@ public class EditSingleFilePage implements java.io.Serializable {
             } catch (NumberFormatException nfe) {
                 // do nothing...
                 logger.warning("Couldn't parse editedFileIdString =" + editedFileIdString + " to Long");
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, "File id is not a number!");
+                JsfHelper.addErrorMessage("File id is not a number!", "");
                 return "";
             }
         }
@@ -296,7 +296,7 @@ public class EditSingleFilePage implements java.io.Serializable {
             String successMessage = getBundleString("file.assignedDataverseImage.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadata.getLabel());
-            JsfHelper.addFlashMessage(successMessage);
+            JsfHelper.addFlashSuccessMessage(successMessage);
         }
 
         datasetUpdateRequired = true;
@@ -339,7 +339,7 @@ public class EditSingleFilePage implements java.io.Serializable {
 
     private void populateDatasetUpdateFailureMessage() {
 
-        JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.message.filesFailure"));
+        JsfHelper.addErrorMessage(getBundleString("dataset.message.filesFailure"), "");
     }
 
     private void updateEntityWithUpdatedFile() {

@@ -296,51 +296,45 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isControlledVocabulary() {
         return controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty();
     }
+    
+    public Collection<SelectItem> getControlledVocabSelectItems(boolean withLocaleSorting) {
 
-    public boolean hasGroupedValue() {
-        for (ControlledVocabularyValue value:controlledVocabularyValues) {
+        ArrayList<SelectItem> groupedList = new ArrayList<>();
+
+        Map<String, List<SelectItem>> groupsMap = new LinkedHashMap<>();
+        List<SelectItem> itemsWithoutGroup = new ArrayList<>();
+
+        for (ControlledVocabularyValue value : controlledVocabularyValues) {
             if (StringUtils.isNotEmpty(value.getDisplayGroup())) {
-                return true;
+                if (!groupsMap.containsKey(value.getDisplayGroup())) {
+                    groupsMap.put(value.getDisplayGroup(), new ArrayList<>());
+                }
+                groupsMap.get(value.getDisplayGroup()).add(new SelectItem(value, value.getLocaleStrValue()));
+            } else {
+                itemsWithoutGroup.add(new SelectItem(value, value.getLocaleStrValue()));
             }
         }
-        return false;
-    }
 
-    public Collection<SelectItem> getGroupedValues() {
-
-    	ArrayList<SelectItem> groupedList = new ArrayList<>();
-
-    	Map<String, List<SelectItem>> groupsMap = new LinkedHashMap<>();
-
-    	for (ControlledVocabularyValue value : controlledVocabularyValues) {
-    		if (StringUtils.isNotEmpty(value.getDisplayGroup())) {
-    			if (!groupsMap.containsKey(value.getDisplayGroup())) {
-    				groupsMap.put(value.getDisplayGroup(), new ArrayList<>());
-    			}
-				groupsMap.get(value.getDisplayGroup()).add(new SelectItem(value, value.getLocaleStrValue()));
-    		}
-    	}
-
-    	for (String groupName : groupsMap.keySet()) {
-        	String groupLabel = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + getName() + "." + groupName,
+        for (String groupName : groupsMap.keySet()) {
+            String groupLabel = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + getName() + "." + groupName,
                     getMetadataBlock().getName());
 
-    		SelectItemGroup selectItemGroup = new SelectItemGroup(groupLabel);
-        	selectItemGroup.setSelectItems(groupsMap.get(groupName).toArray(new SelectItem[0]));
-        	groupedList.add(selectItemGroup);
-    	}
-    	return groupedList;
-    }
-
-    public Collection<SelectItem> getSortedByLocaleValues() {
-
-    	ArrayList<SelectItem> sortedList = new ArrayList<SelectItem>();
-
-    	for (ControlledVocabularyValue value : controlledVocabularyValues) {
-			sortedList.add(new SelectItem(value, value.getLocaleStrValue()));
-    	}
-    	sortedList.sort((i1, i2) -> i1.getLabel().compareToIgnoreCase(i2.getLabel()));
-    	return sortedList;
+            SelectItemGroup selectItemGroup = new SelectItemGroup(groupLabel);
+            List<SelectItem> selectItems = groupsMap.get(groupName);
+            
+            if (withLocaleSorting) {
+                selectItems.sort((i1, i2) -> i1.getLabel().compareToIgnoreCase(i2.getLabel()));
+            }
+            
+            selectItemGroup.setSelectItems(groupsMap.get(groupName).toArray(new SelectItem[0]));
+            groupedList.add(selectItemGroup);
+        }
+        if (withLocaleSorting) {
+            itemsWithoutGroup.sort((i1, i2) -> i1.getLabel().compareToIgnoreCase(i2.getLabel()));
+        }
+        groupedList.addAll(itemsWithoutGroup);
+        
+        return groupedList;
     }
 
     public ControlledVocabularyValue getControlledVocabularyValue(String strValue) {

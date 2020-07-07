@@ -143,8 +143,8 @@ public class ImporterForm {
             step = ImportStep.SECOND;
         } catch (RuntimeException re) {
             logger.warn("Exception during importer invocation", re);
-            JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR,
-                    BundleUtil.getStringFromBundle(METADATA_IMPORT_RESULT_ERROR));
+            JsfHelper.addErrorMessage(
+                    BundleUtil.getStringFromBundle(METADATA_IMPORT_RESULT_ERROR), "");
         }
     }
 

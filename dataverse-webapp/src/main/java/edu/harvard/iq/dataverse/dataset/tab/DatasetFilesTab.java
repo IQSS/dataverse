@@ -693,7 +693,7 @@ public class DatasetFilesTab implements Serializable {
         String successMessage = BundleUtil.getStringFromBundle("file.assignedTabFileTags.success");
         logger.fine(successMessage);
         successMessage = successMessage.replace("{0}", "Selected Files");
-        JsfHelper.addFlashMessage(successMessage);
+        JsfHelper.addFlashSuccessMessage(successMessage);
     }
 
     private void setTagsForTabularData(Collection<String> selectedDataFileTags, FileMetadata fmd) {
@@ -892,9 +892,7 @@ public class DatasetFilesTab implements Serializable {
         // Validate
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
-            //JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-            //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"), "");
             return "";
         }
 

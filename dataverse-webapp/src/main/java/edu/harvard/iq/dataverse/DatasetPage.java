@@ -594,11 +594,11 @@ public class DatasetPage implements java.io.Serializable {
             PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataset.getOwner());
             try {
                 commandEngine.submit(cmd);
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.publish.success"));
 
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
 
             }
         } else {
@@ -623,7 +623,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (result.isCompleted()) {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                 } else {
-                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
+                    JsfHelper.addFlashWarningMessage(BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
                 }
 
             } catch (CommandException ex) {
@@ -781,7 +781,7 @@ public class DatasetPage implements java.io.Serializable {
              userNotificationService.delete(und);
              } */
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.deleteFailure"), "");
             logger.severe(ex.getMessage());
         }
 
@@ -800,7 +800,7 @@ public class DatasetPage implements java.io.Serializable {
             commandEngine.submit(cmd);
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deleteSuccess"));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
+            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.deleteFailure"), "");
             logger.severe(ex.getMessage());
         }
 
@@ -1076,7 +1076,7 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
             logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
-            JsfHelper.addFlashErrorMessage(msg);
+            JsfHelper.addErrorMessage(msg);
         }
     }
 
@@ -1258,15 +1258,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public void updateEmbargoDate() {
         Try.of(() -> datasetService.setDatasetEmbargoDate(dataset, currentEmbargoDate))
-                .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.embargo.save.successMessage")))
-                .onFailure(ds -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.embargo.save.failureMessage")));
+                .onSuccess(ds -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.embargo.save.successMessage")))
+                .onFailure(ds -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.embargo.save.failureMessage")));
     }
 
     public void liftEmbargo() {
         Try.of(() -> datasetService.liftDatasetEmbargoDate(dataset))
                 .onSuccess(ds -> currentEmbargoDate = null)
-                .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.embargo.lift.successMessage")))
-                .onFailure(ds -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.embargo.lift.failureMessage")));
+                .onSuccess(ds -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.embargo.lift.successMessage")))
+                .onFailure(ds -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.embargo.lift.failureMessage")));
     }
 
     public String getCurrentEmbargoDateForDisplay() {
@@ -1341,7 +1341,7 @@ public class DatasetPage implements java.io.Serializable {
      */
     public void showDatasetUnlockedInfo() {
     	if (dataset.getLatestVersion().isDraft() && !permissionsWrapper.canIssuePublishDatasetCommand(dataset)) {
-    		JsfHelper.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
+    		JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
     	}
     }
 }

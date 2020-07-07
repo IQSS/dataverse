@@ -297,7 +297,7 @@ public class CreateEditDataversePage implements Serializable {
         Either<DataverseError, Dataverse> editResult = metadataBlockSaveManager.saveEditedDataverse(dftilForSave, dataverse, facets);
 
         if (editResult.isLeft()) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, editResult.getLeft().getErrorMsg());
+            JsfHelper.addErrorMessage(editResult.getLeft().getErrorMsg(), "");
             return StringUtils.EMPTY;
         }
 
@@ -309,7 +309,7 @@ public class CreateEditDataversePage implements Serializable {
         Either<DataverseError, Dataverse> saveResult = metadataBlockSaveManager.saveNewDataverse(dftilForSave, dataverse, facets);
 
         if (saveResult.isLeft()) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, saveResult.getLeft().getErrorMsg());
+            JsfHelper.addErrorMessage(saveResult.getLeft().getErrorMsg(), "");
             return StringUtils.EMPTY;
         }
 

@@ -82,7 +82,7 @@
     
                         <li jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() == 1}">
                             <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
-                                <h:outputLink value="#{about.key}" target="_blank">
+                                <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewWindow']}">
                                     <h:outputText value="#{about.value}"/>
                                 </h:outputLink>
                             </ui:repeat>
@@ -96,7 +96,7 @@
                             <ul class="dropdown-menu">
                                 <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
                                     <li>
-                                        <h:outputLink value="#{about.key}" target="_blank">
+                                        <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewWindow']}">
                                             <h:outputText value="#{about.value}"/>
                                         </h:outputLink>
                                     </li>
@@ -106,13 +106,13 @@
 
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                               aria-haspopup="true" aria-controls="navbarsearch-modal" aria-expanded="false">
+                               aria-haspopup="true" aria-expanded="false">
                                 #{bundle['header.help']} <b class="caret"></b>
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html"
-                                                  target="_blank">
+                                                  target="_blank" title="#{bundle['opensInNewWindow']}">
                                         <h:outputText value="#{bundle['header.guides.user']}"/>
                                     </h:outputLink>
                                 </li>
@@ -240,45 +240,53 @@
 
                 </nav>
                     <div id="accessibility-controls">
-                        <span>
-                            <h:outputText value="#{bundle['header.accessibility.eightyLimit']}" />: 
+                        <div>
+                            <h:outputText value="#{bundle['header.accessibility.wcagText']}" />: 
                             <ul id="eighty-limit-mode-selector">
                                 <li>
-                                    <button class="toggle" title="#{bundle['header.accessibility.eightyLimit.toggle']}"></button>
-                                </li>
-                            </ul><ul id="wcag-text-mode-selector">
-                                <li>
-                                    <button class="toggle" title="#{bundle['header.accessibility.wcagText.toggle']}"></button>
+                                    <button class="toggle" title="#{bundle['header.accessibility.eightyLimit.toggle']}"
+                                        aria-label="#{bundle['header.accessibility.eightyLimit.toggle']}" />
                                 </li>
                             </ul>
-                        </span>
+                            <ul id="wcag-text-mode-selector">
+                                <li>
+                                    <button class="toggle" title="#{bundle['header.accessibility.wcagText.toggle']}"
+                                        aria-label="#{bundle['header.accessibility.wcagText.toggle']}" />
+                                </li>
+                            </ul>
+                        </div>
                         
-                        <span>
+                        <div>
                             <h:outputText value="#{bundle['header.accessibility.font']}" />: 
                             <ul id="font-size-mode-selector">
                                 <li>
-                                    <button class="default" title="100%"></button>
+                                    <button class="default" title="100%"
+                                        aria-label="#{bundle['header.accessibility.font.change']}: 100%" />
                                 </li>
                                 <li>
-                                    <button class="percent-150" title="150%"></button>
+                                    <button class="percent-150" title="150%"
+                                        aria-label="#{bundle['header.accessibility.font.change']}: 150%" />
                                 </li>
                                 <li>
-                                    <button class="percent-200" title="200%"></button>
+                                    <button class="percent-200" title="200%"
+                                        aria-label="#{bundle['header.accessibility.font.change']}: 200%" />
                                 </li>
                             </ul>
-                        </span>
+                        </div>
                         
-                        <span>
+                        <div>
                             <h:outputText value="#{bundle['header.accessibility.contrast']}" />: 
                             <ul id="high-contrast-mode-selector">
                                 <li>
-                                    <button class="default" title="#{bundle['header.accessibility.contrast.default']}"></button>
+                                    <button class="default" title="#{bundle['header.accessibility.contrast.default']}"
+                                        aria-label="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.default']}" />
                                 </li>
                                 <li>
-                                    <button class="yellow-on-black" title="#{bundle['header.accessibility.contrast.yellowOnBlack']}"></button>
+                                    <button class="yellow-on-black" title="#{bundle['header.accessibility.contrast.yellowOnBlack']}"
+                                        aria-label="#{bundle['header.accessibility.contrast.change']}: #{bundle['header.accessibility.contrast.yellowOnBlack']}" />
                                 </li>
                             </ul>
-                        </span>
+                        </div>
                         
                     </div>
 
@@ -322,7 +330,7 @@
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "inherit", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container"
-                style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'inherit'};"
+                style="background:#{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'inherit'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse)}">
              <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
             <!-- FIXME: Rather than hard-coding "inherit", get it from the backend (ThemeWidgetFragment.DEFAULT_LOGO_BACKGROUND_COLOR). -->

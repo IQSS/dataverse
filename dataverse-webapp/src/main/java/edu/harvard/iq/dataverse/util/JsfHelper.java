@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import org.primefaces.PrimeFaces;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -21,53 +22,57 @@ public class JsfHelper {
     private static final Logger logger = Logger.getLogger(JsfHelper.class.getName());
 
     public static final JsfHelper JH = new JsfHelper();
-
+    
+    
     public static void addFlashSuccessMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-
-        FacesContext.getCurrentInstance().addMessage("successMessage", new FacesMessage(BundleUtil.getStringFromBundle("messages.success"),
-                                                                                        message));
+        addMessage("successMessage", new FacesMessage(BundleUtil.getStringFromBundle("messages.success"), message), true);
+    }
+    public static void addSuccessMessage(String message) {
+        addMessage("successMessage", new FacesMessage(BundleUtil.getStringFromBundle("messages.success"), message), false);
     }
 
-    public static void addFlashMessage(String message) {
-        addFlashSuccessMessage(message);
-    }
 
     public static void addFlashErrorMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                                                                       BundleUtil.getStringFromBundle("messages.error"),
-                                                                                       message));
+        addFlashErrorMessage(BundleUtil.getStringFromBundle("messages.error"), message);
+    }
+    public static void addFlashErrorMessage(String message, String detail) {
+        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, detail), true);
+    }
+    
+    public static void addErrorMessage(String message) {
+        addErrorMessage(BundleUtil.getStringFromBundle("messages.error"), message);
+    }
+    public static void addErrorMessage(String message, String detail) {
+        PrimeFaces.current().ajax().addCallbackParam("hasErrorMessage", true);
+        
+        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, message, detail), false);
     }
 
-    public static void addFlashInfoMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                                                                       BundleUtil.getStringFromBundle("messages.info"),
-                                                                                       message));
+    public static void addFlashWarningMessage(String detail) {
+        addFlashWarningMessage(BundleUtil.getStringFromBundle("messages.info"), detail);
+    }
+    public static void addFlashWarningMessage(String message, String detail) {
+        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, detail), true);
+    }
+    
+    
+    public static void addWarningMessage(String message, String detail) {
+        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, detail), false);
     }
 
-    public static void addFlashWarningMessage(String message) {
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
 
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN,
-                                                                                       BundleUtil.getStringFromBundle("messages.info"),
-                                                                                       message));
+    public static void addInfoMessage(String detail) {
+        addInfoMessage(BundleUtil.getStringFromBundle("messages.info"), detail);
+    }
+    public static void addInfoMessage(String message, String detail) {
+        addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, message, detail), false);
     }
 
-    public static void addErrorMessage(String componentId, String summary, String detail) {
+
+    public static void addComponentErrorMessage(String componentId, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(componentId,
                                                      new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, detail));
-    }
-
-    public static void addMessage(FacesMessage.Severity s, String summary, String details) {
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(s, summary, details));
-    }
-
-    public static void addMessage(FacesMessage.Severity s, String summary) {
-        addMessage(s, summary, "");
     }
 
     public <T extends Enum<T>> T enumValue(String param, Class<T> enmClass, T defaultValue) {
@@ -103,5 +108,14 @@ public class JsfHelper {
             }
         }
         return Optional.empty();
+    }
+    
+    // -------------------- PRIVATE --------------------
+
+    private static void addMessage(String componentId, FacesMessage facesMessage, boolean isFlash) {
+        if (isFlash) {
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+        }
+        FacesContext.getCurrentInstance().addMessage(componentId, facesMessage);
     }
 }

@@ -61,7 +61,7 @@ public class ConfirmEmailPage implements java.io.Serializable {
                 return "/dataverse.xhtml?faces-redirect=true";
             }
         }
-        JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
+        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("confirmEmail.details.failure"));
         /**
          * @todo It would be nice to send a 404 response but if we enable this
          * then the user sees the contents of 404.xhtml rather than the contents

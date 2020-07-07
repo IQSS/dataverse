@@ -640,48 +640,48 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     private void handleRemoveRoleAssignmentFailure(Throwable throwable) {
         if(throwable instanceof PermissionException) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"),
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
                             Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), "");
             logger.log(Level.SEVERE, "Error removing role assignment: " + throwable.getMessage(), throwable);
         }
     }
 
     private void handleUpdateRoleFailure(Throwable throwable) {
         if (throwable instanceof PermissionException) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+            JsfHelper.addErrorMessage(
                     BundleUtil.getStringFromBundle("permission.roleNotSaved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
                             Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotSaved"), "");
             logger.log(Level.SEVERE, "Error saving role: " + throwable.getMessage(), throwable);
         }
     }
 
     private void handleAssignRoleFailure(Throwable throwable, List<String> messageDetails) {
         if (throwable instanceof PermissionException) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+            JsfHelper.addErrorMessage(
                     BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
                             Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
 
         } else if (throwable instanceof CommandException) {
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", messageDetails);
-            JsfHelper.addFlashErrorMessage(message);
+            JsfHelper.addErrorMessage(message);
             logger.log(Level.SEVERE, "Error assiging role: " + throwable.getMessage(), throwable);
         }
     }
 
     private void handleSetDataverseDefaultContributorRoleFailure(Throwable throwable) {
         if(throwable instanceof PermissionException) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
                             Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
         } else if (throwable instanceof CommandException) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
             logger.log(Level.SEVERE, "Error assigning default permissions: " + throwable.getMessage(), throwable);
         }
     }

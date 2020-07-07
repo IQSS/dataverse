@@ -11,39 +11,33 @@
 
     <!--@elvariable id="fieldsByType" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType"-->
 
-    <div class="col-sm-9">
+    <div class="col-sm-9 form-control-static">
         <ui:fragment rendered="#{fieldsByType.datasetFieldType.name == 'datasetContact'}">
-            <p class="help-block">
+            <p class="help-block no-margin-top">
                 <h:outputText value="#{bundle['dataset.contact.tip']}"/>
             </p>
         </ui:fragment>
         
         <ui:repeat var="datasetField" value="#{fieldsByType.datasetFields}" varStatus="fieldsLoop">
-            <div style="#{fieldsLoop.last ? '': 'padding-bottom: 10px;'}">
+            <div style="#{fieldsLoop.last ? '': 'padding-bottom: 10px;'}" class="datasetfield-value">
             
                 <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
-                    <p class="text-block">
                         <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
                                 escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
-                    </p>
                 </ui:repeat>
                 
                 <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">
                     <div jsf:rendered="#{childField.parentDisplayFormatIsNewLine}">
-                        <p class="text-block">
                             <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
                                 <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
                                         escape="false"/>
                             </ui:repeat>
-                        </p>
                     </div>
-                    <p class="text-block">
                         <h:outputText value="#{childField.parentDisplayFormat} " rendered="#{!childLoop.first and !childField.parentDisplayFormatIsNewLine}" escape="false" />
                         <ui:repeat value="#{childField.values}" var="value" varStatus="valuesLoop">
                             <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }" rendered="#{!childField.parentDisplayFormatIsNewLine}"
                                         escape="false"/>
                         </ui:repeat>
-                    </p>
                 </ui:repeat>
             
             </div>

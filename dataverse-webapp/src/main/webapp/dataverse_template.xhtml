@@ -125,7 +125,10 @@
 
                     $(document).on('pfAjaxComplete', function () {
                         bind_bsui_components();
-                    })
+                    });
+                    $(document).on('pfAjaxStart', function() {
+                        hideTooltipsAndPopovers();
+                    });
                 });
 
                 //]]>

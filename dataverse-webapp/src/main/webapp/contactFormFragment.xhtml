@@ -3,8 +3,23 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
+    xmlns:o="http://omnifaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    
+    <!-- Command that will fill and display contact dialog with initial values for contacting with main support team  -->
+    <o:form useRequestURI="true">
+        <p:remoteCommand name="showRepositorySupportContactDialog"
+                actionListener="#{sendFeedbackDialog.initUserInput}"
+                oncomplete="PF('contactForm').show()"
+                update=":contactDialog">
+            <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
+            <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
+            <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
+            <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
+        </p:remoteCommand>
+    </o:form>
+    
     <!-- Dialog Contact Form -->
     <p:dialog id="contactDialog" header="#{sendFeedbackDialog.getFormHeader()}" widgetVar="contactForm" modal="true" >
         <p:fragment>
@@ -28,7 +43,7 @@
                 <ui:fragment rendered="#{sendFeedbackDialog.isLoggedIn()}">
                 <!-- from email (logged in + auto-filled) -->
                     <div class="form-group">
-                        <div class="col-sm-3 control-label section-title">#{bundle['contact.from']}</div>
+                        <div class="col-sm-3 control-label section-title">#{bundle['contact.sender']}</div>
                         <div class="col-sm-9">
                             <p id="userEmailStatic" class="form-control-static">#{sendFeedbackDialog.loggedInUserEmail()}</p>
                         </div>

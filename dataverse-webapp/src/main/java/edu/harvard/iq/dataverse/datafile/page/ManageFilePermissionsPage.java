@@ -298,7 +298,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         }
         
         String message = BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned") + usersString + " - " + filesString + ".";
-        JsfHelper.addFlashErrorMessage(message);
+        JsfHelper.addErrorMessage(message);
         logger.log(Level.SEVERE, "Error assiging role: " + ex.getMessage(), ex);
     }
     
@@ -307,13 +307,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
             handlePermissionException((PermissionException) ex, "permission.roleNotAbleToBeRemoved");
             return;
         }
-        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"));
+        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), "");
         logger.log(Level.SEVERE, "Error removing role assignment: " + ex.getMessage(), ex);
     }
     
     private void handlePermissionException(PermissionException ex, String operationErrorSummaryKey) {
         Set<Permission> requiredPermissions = ex.getMissingPermissions();
-        JH.addMessage(FacesMessage.SEVERITY_ERROR,
+        JsfHelper.addErrorMessage(
                 BundleUtil.getStringFromBundle(operationErrorSummaryKey),
                 BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(requiredPermissions.toString())));
     }

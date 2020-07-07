@@ -82,8 +82,8 @@ public class DashboardMaximumEmbargoPage implements Serializable {
     // -------------------- PRIVATE ---------------------
     private void setMaxEmbargoSetting(int maxLength) {
         Try.of(() -> settingsService.setValueForKey(SettingsServiceBean.Key.MaximumEmbargoLength, Integer.toString(maxLength)))
-                .onSuccess(setting -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.maximumembargo.save.success")))
-                .onFailure(setting -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dashboard.card.maximumembargo.save.failure")));
+                .onSuccess(setting -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.card.maximumembargo.save.success")))
+                .onFailure(setting -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dashboard.card.maximumembargo.save.failure")));
     }
 
     // -------------------- SETTERS --------------------

@@ -191,7 +191,7 @@ public class GuestbookPage implements java.io.Serializable {
 
         if (editMode == EditMode.CREATE || editMode == EditMode.CLONE) {
             Try<Dataverse> guestbookTry = Try.of(() -> guestbookService.saveGuestbook(guestbook))
-                    .onSuccess(dv -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("guestbook.create")))
+                    .onSuccess(dv -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("guestbook.create")))
                     .onFailure(this::handleErrorMessages);
 
             if(guestbookTry.isFailure() && guestbookTry.getCause() instanceof EJBException) {
@@ -199,7 +199,7 @@ public class GuestbookPage implements java.io.Serializable {
             }
         } else {
             Try.of(() -> guestbookService.editGuestbook(guestbook))
-                    .onSuccess(dv -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("guestbook.save")))
+                    .onSuccess(dv -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("guestbook.save")))
                     .onFailure(this::handleErrorMessages);
         }
 
@@ -276,7 +276,7 @@ public class GuestbookPage implements java.io.Serializable {
         if (StringUtils.isNotBlank(guestbook.getName())) {
             return;
         }
-        JsfHelper.addErrorMessage(guestbookName.getClientId(), StringUtils.EMPTY,
+        JsfHelper.addComponentErrorMessage(guestbookName.getClientId(), StringUtils.EMPTY,
                 BundleUtil.getStringFromBundle("guestbook.name.empty"));
         FacesContext facesContext = FacesContext.getCurrentInstance();
         facesContext.validationFailed();
@@ -297,7 +297,7 @@ public class GuestbookPage implements java.io.Serializable {
         if (isInputForCustomQuestion(uiComponent)) {
             UIInput input = (UIInput) uiComponent;
             if (StringUtils.isBlank((String) input.getValue())) {
-                JsfHelper.addErrorMessage(input.getClientId(), StringUtils.EMPTY,
+                JsfHelper.addComponentErrorMessage(input.getClientId(), StringUtils.EMPTY,
                         BundleUtil.getStringFromBundle("guestbook.field.empty"));
                 FacesContext facesContext = context.getFacesContext();
                 facesContext.validationFailed();

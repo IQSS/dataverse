@@ -108,7 +108,7 @@ public class SelectGuestbookPage implements java.io.Serializable {
         if (selectGuestbookOperation.isFailure()) {
             Throwable ex = selectGuestbookOperation.getCause();
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
-            JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.message.guestbookFailure"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.guestbookFailure"));
             return StringUtils.EMPTY;
         }
 

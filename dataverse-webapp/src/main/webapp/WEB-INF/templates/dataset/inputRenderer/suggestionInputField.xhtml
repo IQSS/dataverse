@@ -7,15 +7,20 @@
     <!--@elvariable id="datasetField" type="edu.harvard.iq.dataverse.persistence.dataset.DatasetField"-->
     <!--@elvariable id="inputRenderer" type="edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.SuggestionInputFieldRenderer"-->
 
-    <p:outputLabel styleClass="control-label" for="suggestionText" rendered="#{!hiddenLabel}" escape="false"
-                   value="#{datasetField.datasetFieldType.localeTitle}">
-        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value=""
-                      rendered="#{datasetField.datasetFieldType.requiredInDataverse}"/>
+    <div class="control-label-with-tooltip">
+        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}" for="suggestionText" escape="false"
+                       value="#{datasetField.datasetFieldType.localeTitle}">
+            <h:outputText value=" #{labelFieldNumber}" rendered="#{not (labelFieldNumber eq 0)}" />
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value=""
+                          rendered="#{datasetField.datasetFieldType.requiredInDataverse}"/>
+        </p:outputLabel>
         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-              jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}" tabindex="0"
+              jsf:rendered="#{(not empty datasetField.datasetFieldType.localeDescription) and !hiddenLabel}"
+              tabindex="0" role="button"
+              aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{datasetField.datasetFieldType.localeTitle}"
               data-toggle="tooltip" data-placement="auto right"
-              data-original-title="#{datasetField.datasetFieldType.localeDescription}"/>
-    </p:outputLabel>
+              data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
+    </div>
 
     <!-- input text start -->
     <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
@@ -24,12 +29,13 @@
             value="#{datasetField.value}"
             completeMethod="#{inputRenderer.processSuggestionQuery(datasetField, 'suggestionText')}"
             styleClass="autocomplete-form-control"
+            resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+            emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+            autoSelection="false"
+            autoHighlight="false"
     >
-
-        <p:ajax process="@this" event="itemSelect"/>
-        <p:ajax process="@this" event="itemUnselect"/>
+        <p:ajax process="@form:@id(fieldsByTypeFragment)" event="focus" />
     </p:autoComplete>
-
 
     <p:watermark for="suggestionText" value="#{datasetField.datasetFieldType.localeWatermark}"/>
 

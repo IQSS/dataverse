@@ -362,8 +362,8 @@ public class DataverseUserPage implements java.io.Serializable {
                 logger.log(Level.WARNING,
                            "Attempt to change a password on {0}, whose provider ({1}) does not support password change",
                            new Object[]{currentUser.getIdentifier(), prv});
-                JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                              BundleUtil.getStringFromBundle("user.error.cannotChangePassword"));
+                JsfHelper.addErrorMessage(
+                              BundleUtil.getStringFromBundle("user.error.cannotChangePassword"), "");
                 return null;
             }
         }
@@ -458,7 +458,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 session.setUser(currentUser);
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
-                JsfHelper.addFlashMessage(msg.toString());
+                JsfHelper.addFlashSuccessMessage(msg.toString());
             }
             return null;
         }

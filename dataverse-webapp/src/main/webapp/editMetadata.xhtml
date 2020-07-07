@@ -5,7 +5,8 @@
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
-                xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
     <!--@elvariable id="metadataBlocks" type="java.util.Set< java.util.Map.Entry<edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock, java.util.List<edu.harvard.iq.dataverse.persistence.dataset.DatasetField>>"-->
     <!-- Edit Mode -->
@@ -14,8 +15,11 @@
         <ui:repeat id="metadataBlocks" value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
             <div class="panel panel-default" jsf:rendered="#{(showAllBlocks or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
                                                              or metadataBlockVal.key.isHasRequired())}">
-                <a data-toggle="collapse" href="#panelCollapse#{block.index}" class="panel-heading text-info" tabindex="0">
-                    #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || expandAllBlocks  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                <a data-toggle="collapse" href="#panelCollapse#{block.index}" class="panel-heading text-info" tabindex="0"
+                        aria-expanded="#{block.first || expandAllBlocks}">
+                    <h3>
+                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || expandAllBlocks  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                    </h3>
                 </a>
                 <div id="panelCollapse#{block.index}" class="collapse #{block.first || expandAllBlocks ? 'in' : ''}">
                     <div class="panel-body">
@@ -27,17 +31,24 @@
                                                             or fieldsByType.datasetFieldType.requiredInDataverse)
                                                      and fieldsByType.include)}"
                                         styleClass="form-group #{inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden() ? 'hidden-form-group' : ''}">
-
-                                <label for="metadata_#{fieldsByType.datasetFieldType.name}" class="col-sm-3 control-label"
+                            
+                            <div role="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary) 
+                                                ? 'group' : 'presentation'}"
+                                aria-label="#{((fieldsByType.datasetFieldType.compound or fieldsByType.datasetFieldType.allowMultiples) and !fieldsByType.datasetFieldType.controlledVocabulary) 
+                                                ? fieldsByType.datasetFieldType.localeTitle : ''}">
+                            
+                                <div class="col-sm-3 control-label section-title"
                                         jsf:rendered="#{not inputRenderersByFieldType.get(fieldsByType.datasetFieldType).isHidden()}">
                                     <h:outputText value="#{fieldsByType.datasetFieldType.localeTitle}" escape="false" />
                                     <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{fieldsByType.datasetFieldType.requiredInDataverse }" />
+                                    
                                     <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                           jsf:rendered="#{not empty fieldsByType.datasetFieldType.localeDescription}"
                                           tabindex="0" role="button"
+                                          aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{fieldsByType.datasetFieldType.localeTitle}"
                                           data-toggle="tooltip" data-placement="auto right"
                                           data-original-title="#{fieldsByType.datasetFieldType.localeDescription}"></span>
-                                </label>
+                                </div>
 
 
 
@@ -54,13 +65,16 @@
                                                     <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(datasetField.datasetFieldType)}" />
                                                     <ui:param name="datasetField" value="#{datasetField}" />
                                                     <ui:param name="hiddenLabel" value="true" />
+                                                    <ui:param name="labelFieldNumber" value="#{datasetField.datasetFieldType.allowMultiples ? valCount.index + 1 : 0}" />
                                                     <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />
                                                     <ui:param name="operation" value="#{operation}" />
                                                 </ui:include>
                                             </div>
 
                                             <!-- Sub Fields -->
-                                            <div class="col-xs-9 form-col-container field-add-delete-input" jsf:rendered="#{fieldsByType.datasetFieldType.compound}">
+                                            <div class="col-xs-9 form-col-container field-add-delete-input" jsf:rendered="#{fieldsByType.datasetFieldType.compound}"
+                                                        role="#{fieldsByType.datasetFieldType.allowMultiples ? 'group' : 'presentation'}"
+                                                        aria-label="#{fieldsByType.datasetFieldType.allowMultiples ? datasetField.datasetFieldType.localeTitle.concat(' ').concat(valCount.index + 1) : ''}">
                                                 <ui:repeat id="subfields" value="#{datasetField.datasetFieldsChildren}" var="subdsf">
                                                     <div class="form-col-container
                                                             #{(inputRenderersByFieldType.get(subdsf.datasetFieldType).renderInTwoColumns()) ? 'col-sm-6' : 'col-sm-12'}
@@ -70,6 +84,7 @@
                                                             <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(subdsf.datasetFieldType)}" />
                                                             <ui:param name="datasetField" value="#{subdsf}" />
                                                             <ui:param name="hiddenLabel" value="false" />
+                                                            <ui:param name="labelFieldNumber" value="0" />
                                                             <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />
                                                             <ui:param name="operation" value="#{operation}" />
                                                         </ui:include>
@@ -86,6 +101,7 @@
                                                                update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}"
                                                                >
                                                     <span class="glyphicon glyphicon-plus no-text"/>
+                                                    <o:skipValidators />
                                                 </p:commandLink>
                                                 <p:commandLink title="#{bundle.delete}"
                                                                styleClass="btn btn-default btn-sm bootstrap-button-tooltip #{fieldsByType.datasetFieldType.compound ? 'compound-field-btn' : ''}"
@@ -94,6 +110,7 @@
                                                                update=":#{p:resolveClientIds('@id(fieldsByTypeFragment)', view)}"
                                                                >
                                                     <span class="glyphicon glyphicon-minus no-text"/>
+                                                    <o:skipValidators />
                                                 </p:commandLink>
                                             </div>
                                         </div>
@@ -107,12 +124,14 @@
                                             <ui:param name="inputRenderer" value="#{inputRenderersByFieldType.get(fieldsByType.datasetFieldType)}" />
                                             <ui:param name="datasetField" value="#{fieldsByType.datasetFields.get(0)}" />
                                             <ui:param name="hiddenLabel" value="true" />
+                                            <ui:param name="labelFieldNumber" value="0" />
                                             <ui:param name="allBlockfields" value="#{metadataBlockVal.value}" />
                                             <ui:param name="operation" value="#{operation}" />
                                         </ui:include>
                                     </ui:fragment>
 
                                 </div>
+                            </div>
                             </p:outputPanel>
                         </ui:repeat>
                     </div>

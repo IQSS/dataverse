@@ -11,7 +11,9 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name} - #{TemplatePage.template.dataverse.name}"/>
+            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? 
+                    bundle['dataset.template.create'] : 
+                    TemplatePage.template.name.concat(': ').concat(bundle['dataset.template.edit'])} - #{TemplatePage.template.dataverse.name}"/>
             <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
             <ui:param name="template" value="#{TemplatePage.template}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
@@ -22,29 +24,41 @@
                     <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{TemplatePage.init}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse)}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('manage-templates.xhtml?dataverseId='.concat(TemplatePage.template.dataverse.id), bundle['dataset.manageTemplates.pageTitle'])}" />
+                    <o:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(TemplatePage.template.name)}" if="#{not (TemplatePage.editMode == 'CREATE')}" />
+                    <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.create'] : bundle['dataset.template.edit'])}" />
                 </f:metadata>
+                
+                <h2 class="no-margin-top">#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.create'] : bundle['dataset.template.edit']}</h2>
+                
                 <h:form id="templateForm">
-                    <!-- Tabs -->
+                    <p:focus context="templateForm" rendered="#{facesContext.validationFailed}" />
+                    
                     <ui:fragment>
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label class="col-sm-2 control-label" for="templateName">
-                                    #{bundle['dataset.manageTemplates.tab.header.templte']} 
-                                    <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button" 
+                                <div class="col-sm-2 control-label-with-tooltip">
+                                    <h:outputLabel styleClass="control-label" for="templateName">
+                                        #{bundle['dataset.manageTemplates.tab.header.templte']}
+                                        #{bundle['dataset.template.name.required']}
+                                    </h:outputLabel>
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
+                                          aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['dataset.manageTemplates.tab.header.templte']}"
                                           data-toggle="tooltip" data-placement="auto right" data-container="body" data-original-title="#{bundle['dataset.template.name.title']}"></span>
-                                </label>
+                                </div>
                                 <div class="col-sm-5">
-                                    <p:inputText id="templateName" styleClass="form-control" value="#{TemplatePage.template.name}"/>
-                                    <p:message for="templateName"/>
+                                    <p:inputText id="templateName" styleClass="form-control" value="#{TemplatePage.template.name}"
+                                        required="true"
+                                        requiredMessage="#{validationMessages['dataset.templatename']}"/>
+                                    <p:message for="templateName" display="text"/>
                                 </div>
                                 
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
-                                    <p class="form-control-static">
-                                        <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value="#{bundle['template.asterisk.tip']}"/>
+                                    <p class="form-control-static text-block">
+                                        <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value=" #{bundle['template.asterisk.tip']}"/>
                                     </p>
                                 </div>
                             </div>
@@ -67,9 +81,9 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <ui:fragment rendered="#{TemplatePage.editMode == 'CREATE'}" >
                     <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@all"
-                                         value="#{bundle.save}">
-                             <f:ajax onerror="window.scrollTo(0, 0)" />
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@form"
+                                         value="#{bundle.save}"
+                                         oncomplete="if (args.hasErrorMessage) { window.scrollTo(0, 0); }">
                         </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
@@ -77,9 +91,9 @@
                     </ui:fragment>
                     <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA'}">
                     <div class="button-block">
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@all"
-                                         value="#{bundle.saveChanges}">
-                            <f:ajax onerror="window.scrollTo(0, 0)" />
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@form"
+                                         value="#{bundle.saveChanges}"
+                                         oncomplete="if (args.hasErrorMessage) { window.scrollTo(0, 0); }">
                         </p:commandButton>
                         <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>

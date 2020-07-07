@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.error;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
+import org.primefaces.PrimeFaces;
 
 import javax.faces.FacesException;
 import javax.faces.context.ExceptionHandler;
@@ -43,9 +44,10 @@ public class FallbackExceptionHandler extends ExceptionHandlerWrapper {
             Throwable exception = queue.next().getContext().getException();
 
             logger.log(Level.SEVERE, exception.getMessage(), exception);
+            queue.remove();
 
             if (facesContext.getPartialViewContext().isAjaxRequest()) {
-                JsfHelper.addErrorMessage(null, BundleUtil.getStringFromBundle("error.general.message"), "");
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("error.general.message"), "");
             } else {
                 Try.run(() -> facesContext.getExternalContext()
                         .responseSendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null))

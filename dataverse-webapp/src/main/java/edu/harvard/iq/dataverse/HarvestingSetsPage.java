@@ -254,7 +254,8 @@ public class HarvestingSetsPage implements java.io.Serializable {
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.fail"));
+            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.oaicreate.fail"), "");
             logger.log(Level.SEVERE, "Failed to create OAI set" + ex.getMessage(), ex);
         }
 
@@ -295,7 +296,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             success = true;
 
         } catch (Exception ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaiupdate.fail"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.fail"), "");
             logger.log(Level.SEVERE, "Failed to update OAI set." + ex.getMessage(), ex);
         }
 
@@ -321,10 +322,9 @@ public class HarvestingSetsPage implements java.io.Serializable {
                 selectedSet = null;
 
                 configuredHarvestingSets = oaiSetService.findAll();
-                JsfHelper.addFlashInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
-                String failMessage = BundleUtil.getStringFromBundle("harvest.delete.fail") + ex.getMessage();
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.delete.fail"), ex.getMessage());
             }
         } else {
             logger.warning("Delete called, with a null selected harvesting set!");
@@ -353,7 +353,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
 
         } catch (Exception ex) {
             // should be a warning perhaps??
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("harvest.oaicreate.defaultset.fail"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.oaicreate.defaultset.fail"), "");
             logger.log(Level.SEVERE, "Failed to create the Default OAI set" + ex.getMessage(), ex);
         }
 
@@ -571,7 +571,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
             runSetExport(oaiSet);
         } catch (Exception ex) {
             String failMessage = BundleUtil.getStringFromBundle("harvest.reexport.fail");
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+            JsfHelper.addErrorMessage(failMessage, "");
             return;
         }
 

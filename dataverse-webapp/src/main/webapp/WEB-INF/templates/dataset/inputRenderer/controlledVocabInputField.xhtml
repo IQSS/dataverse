@@ -5,64 +5,44 @@
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
-                xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
     
-    <p:outputLabel styleClass="control-label" for="#{datasetField.datasetFieldType.allowMultiples ? 'multiVocabularySelect' : 'singleVocabularySelect'}"
-                rendered="#{!hiddenLabel}">
-        <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
-        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+    <div class="control-label-with-tooltip">
+        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}" for="#{datasetField.datasetFieldType.allowMultiples ? 'multiVocabularySelect' : 'singleVocabularySelect'}">
+            <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
+            <h:outputText value=" #{labelFieldNumber}" rendered="#{not (labelFieldNumber eq 0)}" />
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+        </p:outputLabel>
         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-              jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}"
+              jsf:rendered="#{(not empty datasetField.datasetFieldType.localeDescription) and !hiddenLabel}"
               tabindex="0" role="button"
+              aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{datasetField.datasetFieldType.localeTitle}"
               data-toggle="tooltip" data-placement="auto right"
               data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
-    </p:outputLabel>
+    </div>
     
     <p:selectOneMenu id="singleVocabularySelect"
                      value="#{datasetField.singleControlledVocabularyValue}"
                      converter="controlledVocabularyValueConverter"
                      style="width: auto !important; max-width:100%; min-width:200px;"
                      styleClass="form-control primitive"
-                     rendered="#{!datasetField.datasetFieldType.allowMultiples and !inputRenderer.isSortByLocalisedStringsOrder()}"
+                     rendered="#{!datasetField.datasetFieldType.allowMultiples}"
                      filter="true"
                      filterMatchMode="contains"
     >
         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-        <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-    </p:selectOneMenu>
-    
-    <p:selectOneMenu id="singleVocabularyLocaleStringSortSelect"
-                     value="#{datasetField.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
-                     rendered="#{!datasetField.datasetFieldType.allowMultiples and inputRenderer.isSortByLocalisedStringsOrder()}">
-        <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-        <f:selectItems value="#{datasetField.datasetFieldType.sortedByLocaleValues}" />
+        <f:selectItems value="#{datasetField.datasetFieldType.getControlledVocabSelectItems(inputRenderer.isSortByLocalisedStringsOrder())}" />
     </p:selectOneMenu>
 
-    <p:selectCheckboxMenu id="multiVocabularySelect" 
-    			rendered="#{datasetField.datasetFieldType.allowMultiples and !datasetField.datasetFieldType.hasGroupedValue() and !inputRenderer.isSortByLocalisedStringsOrder()}"
+    <p:selectCheckboxMenu id="multiVocabularySelect" rendered="#{datasetField.datasetFieldType.allowMultiples}"
                 value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                 style="width: 100%" panelStyleClass="without-select-all"
-                multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="contains">
-        <f:selectItems value="#{datasetField.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
-    </p:selectCheckboxMenu>
-    
-    <p:selectCheckboxMenu id="multiVocabularyLocaleStringSelect" 
-    			rendered="#{datasetField.datasetFieldType.allowMultiples and !datasetField.datasetFieldType.hasGroupedValue() and inputRenderer.isSortByLocalisedStringsOrder()}"
-                value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                style="width: 100%" panelStyleClass="without-select-all"
-                multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="contains">
-        <f:selectItems value="#{datasetField.datasetFieldType.sortedByLocaleValues}" />
-    </p:selectCheckboxMenu>
-
-    <p:selectCheckboxMenu id="multiVocabularyGroupedSelect" rendered="#{datasetField.datasetFieldType.allowMultiples and datasetField.datasetFieldType.hasGroupedValue()}"
-                value="#{datasetField.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
-                style="width: 100%" panelStyleClass="without-select-all"
-                multiple="true" label="#{bundle.select}"
-                filter="true" filterMatchMode="contains">
+                multiple="true" label="#{bundle.select}" updateLabel="true"
+                filter="true" filterMatchMode="contains"
+                pt:aria-label="#{datasetField.datasetFieldType.localeTitle.concat(datasetField.datasetFieldType.requiredInDataverse ? ' *': '')}">
         
-        <f:selectItems value="#{datasetField.datasetFieldType.groupedValues}" />
+        <f:selectItems value="#{datasetField.datasetFieldType.getControlledVocabSelectItems(inputRenderer.isSortByLocalisedStringsOrder())}" />
     </p:selectCheckboxMenu>
     
     <div class="ui-message ui-message-error ui-widget ui-corner-all ui-message-form" jsf:rendered="#{!empty datasetField.validationMessage}">

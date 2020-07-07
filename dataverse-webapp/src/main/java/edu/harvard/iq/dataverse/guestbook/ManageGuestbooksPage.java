@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
+import org.apache.commons.lang.StringUtils;
+
 import javax.faces.view.ViewScoped;
 
 import javax.faces.application.FacesMessage;
@@ -139,22 +141,22 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void deleteGuestbook() {
         Try.of(() -> manageGuestbooksService.deleteGuestbook(selectedGuestbook.getId()))
                 .onSuccess(dv -> refreshGuestbooks())
-                .onSuccess(dv -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteSuccess")))
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteFailure")));
+                .onSuccess(dv -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteSuccess")))
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteFailure"), StringUtils.EMPTY));
     }
 
     public void enableGuestbook(Guestbook selectedGuestbook) {
         Try.of(() -> manageGuestbooksService.enableGuestbook(selectedGuestbook.getId()))
                 .onSuccess(guestbook -> refreshGuestbooks())
-                .onSuccess(guestbook -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableSuccess")))
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableFailure")));
+                .onSuccess(guestbook -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableSuccess")))
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableFailure"), StringUtils.EMPTY));
     }
 
     public void disableGuestbook(Guestbook selectedGuestbook) {
         Try.of(() -> manageGuestbooksService.disableGuestbook(selectedGuestbook.getId()))
                 .onSuccess(guestbook -> refreshGuestbooks())
-                .onSuccess(guestbook -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableSuccess")))
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableFailure")));
+                .onSuccess(guestbook -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableSuccess")))
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableFailure"), StringUtils.EMPTY));
     }
 
     public void updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {

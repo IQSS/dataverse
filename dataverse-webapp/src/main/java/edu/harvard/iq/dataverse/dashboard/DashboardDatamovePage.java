@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dashboard;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -122,7 +123,7 @@ public class DashboardDatamovePage implements Serializable {
     public void moveDataset() {
         if (sourceDataset == null || targetDataverse == null) {
             // We should never get here, but in case of some unexpected failure we should be prepared nevertheless
-            JsfHelper.addFlashErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
+            JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
             return;
         }
 
@@ -144,14 +145,13 @@ public class DashboardDatamovePage implements Serializable {
                     .showFailureMessage();
         } catch (CommandException ce) {
             logger.log(Level.WARNING, createMessageWithDatasetMoveInfo("Unable to move"), ce);
-            JsfHelper.addErrorMessage(null,
-                    getStringFromBundle("dashboard.datamove.dataset.message.failure.summary"), StringUtils.EMPTY);
+            JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.dataset.message.failure.summary"), StringUtils.EMPTY);
         }
     }
 
     public void moveDataverse() {
         if (source == null || target == null) {
-            JsfHelper.addFlashErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
+            JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.empty.fields"));
             return;
         }
 
@@ -172,13 +172,12 @@ public class DashboardDatamovePage implements Serializable {
                     .showFailureMessage();
         } catch (CommandException ce) {
             logger.log(Level.WARNING, createMessageWithDataverseMoveInfo("Unable to move"), ce);
-            JsfHelper.addErrorMessage(null,
-                    getStringFromBundle("dashboard.datamove.dataverse.message.failure.summary"), StringUtils.EMPTY);
+            JsfHelper.addErrorMessage(getStringFromBundle("dashboard.datamove.dataverse.message.failure.summary"), StringUtils.EMPTY);
         }
     }
 
     public String getMessageDetails() {
-        return getStringFromBundle("dashboard.datamove.message.details", settings.getGuidesBaseUrl(), settings.getGuidesVersion());
+        return getStringFromBundle("dashboard.datamove.message.details", Lists.newArrayList(settings.getGuidesBaseUrl(), settings.getGuidesVersion()));
     }
 
     // -------------------- PRIVATE --------------------
@@ -308,7 +307,8 @@ public class DashboardDatamovePage implements Serializable {
         }
 
         public void showFailureMessage() {
-            JsfHelper.addErrorMessage(null, getStringFromBundle(buildKey("message.failure.summary")),
+            JsfHelper.addErrorMessage(
+                    getStringFromBundle(buildKey("message.failure.summary")), 
                     getStringFromBundle(buildKey("message.failure.details"), summaryParameters));
         }
 

@@ -164,9 +164,9 @@
                     <div class="row">
                         <div class="col-md-6 form-group form-col-container">
                             <div class="col-sm-3">
-                                <p:outputLabel styleClass="control-label" for="textEditor" indicateRequired="false">
+                                <div class="control-label section-title">
                                     #{bundle.description}
-                                </p:outputLabel>
+                                </div>
                                 <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" role="button"
                                         aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{bundle['description']}"
                                         data-toggle="tooltip" data-placement="auto right"
@@ -175,6 +175,7 @@
                             <div class="col-sm-9 form-col-container">
                                 <ui:include src="/WEB-INF/templates/textEditor.xhtml">
                                     <ui:param name="editorValue" value="#{CreateEditDataversePage.dataverse.description}" />
+                                    <ui:param name="editorAriaLabel" value="#{bundle['description']}" />
                                     <ui:param name="editorWatermark" value="" />
                                 </ui:include>
                                 <p:message for="textEditor" display="text"/>

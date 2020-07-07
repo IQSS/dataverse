@@ -758,6 +758,10 @@ textarea {
 	   color: $main-text-color;
     }
 }
+.metadata-summary-panel-body .control-label {
+   padding-top: 4px;
+   padding-bottom: 5px;
+}
 
 @media screen and (min-width: $screen-sm-min) {
     .form-horizontal {
@@ -768,8 +772,12 @@ textarea {
             padding-top: 7px;
         }
     }
+
+    .metadata-summary-panel-body .control-label.section-title {
+        padding-top: 7px;
+    }
 }
-.form-horizontal .control-label-with-tooltip .control-label {
+.control-label-with-tooltip .control-label {
     display: inline;
 }
 
@@ -2070,7 +2078,10 @@ $navbar-height: 102px;
 		}
 	}
 
-	span:not(:last-child) ul[id$="-mode-selector"]:last-child {
+    div {
+        display: inline;
+    }
+	div:not(:last-child) ul[id$="-mode-selector"]:last-child {
 		padding-right: 0.8em;
 	}
 }
@@ -2082,7 +2093,7 @@ $navbar-height: 102px;
 		margin-right: -15px;
 		padding: 0;
 
-		span {
+		div {
 			display: block;
 			width: 100%;
 			padding: 0 1.333em 0.667em;
@@ -3348,13 +3359,13 @@ p.text-block {
 }
 
 body.eighty-limit-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
+	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		max-width: 36.4em;
 	}
 }
 
 body.eighty-limit-toggle.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
+	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		max-width: 48em;
 	}
 }
@@ -3365,7 +3376,7 @@ body.eighty-limit-toggle.wcag-text-toggle {
  */
 
 body.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, #terms-agreement-block, #dataverseDesc {
+	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		word-spacing: 0.16em;
 		letter-spacing: 0.12em;
 		line-height: 1.5em;

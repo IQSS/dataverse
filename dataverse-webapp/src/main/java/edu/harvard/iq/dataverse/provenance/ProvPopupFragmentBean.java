@@ -102,7 +102,7 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
             Logger.getLogger(ProvPopupFragmentBean.class.getName())
                     .log(Level.INFO, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
             removeJsonAndRelatedData();
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.invalidSchemaError"), "");
         } else {
             try {
                 generateProvJsonParsedEntities();
@@ -111,11 +111,11 @@ public class ProvPopupFragmentBean extends AbstractApiBean implements java.io.Se
                 Logger.getLogger(ProvPopupFragmentBean.class.getName())
                         .log(Level.SEVERE, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), e);
                 removeJsonAndRelatedData();
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.uploadError"), "");
             }
             if (provJsonParsedEntities.isEmpty()) {
                 removeJsonAndRelatedData();
-                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.editProvenanceDialog.noEntitiesError"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.editProvenanceDialog.noEntitiesError"), "");
             }
         }
 

@@ -136,9 +136,9 @@ public class DashboardUsersPage implements java.io.Serializable {
         Try.of(() -> dashboardUsersService.revokeAllRolesForUser(selectedUser))
                 .onSuccess(user -> selectedUser=user)
                 .onSuccess(user -> selectedUser.setRoles(null))
-                .onSuccess(user -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success",
+                .onSuccess(user -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.success",
                         selectedUser.getUserIdentifier())))
-                .onFailure(throwable ->  JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure",
+                .onFailure(throwable ->  JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dashboard.list_users.removeAll.message.failure",
                         selectedUser.getUserIdentifier())))
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Revoking all roles failed for user: " + selectedUser.getIdentifier(), throwable));
     }

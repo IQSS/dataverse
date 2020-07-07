@@ -4,7 +4,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
     <h:body>
@@ -19,11 +20,13 @@
             <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
+            
+                <h2 class="no-margin-top">#{bundle['dataset.manageTemplates.pageTitle']}</h2>
                 <h:form id="manageTemplatesForm">
 
                     <!-- static Messages -->
                     <p:outputPanel>
-                        <div jsf:rendered="#{manageTemplatesPage.templatesForView.size() ne 0}" class="alert alert-info" role="alert" aria-atomic="true">
+                        <div jsf:rendered="#{manageTemplatesPage.templatesForView.size() ne 0}" class="alert alert-info">
                             <p class="text-block">
                                 <span class="glyphicon glyphicon-info-sign"></span>&#160;<strong>#{bundle['dataset.message.manageTemplates.label']}</strong> –
                                 <h:outputText escape="false" value="#{bundle['dataset.message.manageTemplates.message']} "/>
@@ -34,7 +37,7 @@
 
                     <div class="form-group clearfix">
                         <ui:fragment rendered="#{manageTemplatesPage.dataverse.owner ne null and manageTemplatesPage.inheritTemplatesAllowed}">
-                            <label for="templateRoot" class="normal-text" style="width: 25%">
+                            <p:outputLabel for="templateRoot" class="normal-text" style="width: 25%">
                                 <p:selectBooleanCheckbox id="templateRoot"
                                                          value="#{manageTemplatesPage.inheritTemplatesValue}">
                                     <p:ajax update="@form" listener="#{manageTemplatesPage.updateTemplatesRoot}" />
@@ -43,13 +46,13 @@
                                                 style="padding-left: 2%">
                                     <f:param value="#{manageTemplatesPage.dataverse.templateRootDataverseName}"/>
                                 </h:outputFormat>
-                            </label>
+                            </p:outputLabel>
                         </ui:fragment>
 
                         <div class="pull-right">
-                            <h:outputLink type="button" styleClass="btn btn-default"
+                            <h:outputLink styleClass="btn btn-default"
                                           value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverse.id}">
-                                <span class="glyphicon glyphicon-plus"/> <h:outputText value="#{bundle['dataset.manageTemplates.createBtn']}"/>
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"/> <h:outputText value="#{bundle['dataset.manageTemplates.createBtn']}"/>
                             </h:outputLink>
                         </div>
                     </div>
@@ -57,12 +60,12 @@
                         <div id="no-templates-message" class="panel panel-default"
                              jsf:rendered="#{empty manageTemplatesPage.templatesForView}">
                             <div class="panel-body">
-                                <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span>
+                                <h3><span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.why.header']}</span></h3>
                                 <ul>
                                     <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason1']}" escape="false"/></li>
                                     <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.why.reason2']}" escape="false"/></li>
                                 </ul>
-                                <span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.how.header']}</span>
+                                <h3><span class="help-block h3">#{bundle['dataset.manageTemplates.noTemplates.how.header']}</span></h3>
                                 <ul>
                                     <li><h:outputText value="#{bundle['dataset.manageTemplates.noTemplates.how.tip1']}" escape="false"/></li>
                                     <li>
@@ -85,13 +88,13 @@
                             <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
-                            <p:column width="17%" class="text-center" sortBy="#{template.createDate}" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
-                                <h:outputText value="#{template.createDate}" />
+                            <p:column width="18%" class="text-center" sortBy="#{template.createDate}" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
+                                <h:outputText value="#{of:formatDate(template.createTime, settingsWrapper.getSettingValue(':DefaultDateFormat'))}" />
                             </p:column>
-                            <p:column width="13%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
+                            <p:column width="17%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">
                                 <h:outputText value="#{template.usageCount}" />
                             </p:column>
-                            <p:column width="40%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
+                            <p:column width="35%" class="col-manage-action text-center" headerText="#{bundle['dataset.manageTemplates.tab.header.action']}">
                                 <div jsf:rendered="#{manageTemplatesPage.dataverse.id != template.dataverse.id}">
                                     <em class="text-muted">
                                         <h:outputFormat value="#{bundle['dataset.manageTemplates.tab.action.noedit.createdin']}" escape="false">
@@ -99,57 +102,53 @@
                                         </h:outputFormat>
                                     </em>
                                 </div>
-                                <p:commandLink type="button" styleClass="btn btn-default"
-                                               value="#{bundle['dataset.manageTemplates.tab.action.btn.makeDefault']}"
-                                               rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
-                                               actionListener="#{manageTemplatesPage.makeDefault(template)}"
-                                               update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();"/>
-                                <p:commandLink type="button" styleClass="btn btn-default"
-                                               value="#{bundle['dataset.manageTemplates.tab.action.btn.default']}"
-                                               rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
-                                               actionListener="#{manageTemplatesPage.unselectDefault()}"
-                                               update="@form,:messagePanel"
-                                               oncomplete="bind_tooltip_popover();">
-                                    <span class="glyphicon glyphicon-eye-open"/>
-                                </p:commandLink>
                                 <div class="btn-group" role="group">
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   rendered="#{manageTemplatesPage.dataverse.defaultTemplate != template}"
+                                                   actionListener="#{manageTemplatesPage.makeDefault(template)}"
+                                                   title="#{bundle['dataset.manageTemplates.tab.action.btn.default.makeDefault.title']}"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.default.makeDefault.title']} - #{template.name}"
+                                                   update="@widgetVar(allTemplates)">
+                                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> #{bundle['dataset.manageTemplates.tab.action.btn.default']}
+                                    </p:commandLink>
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
+                                                   rendered="#{manageTemplatesPage.dataverse.defaultTemplate == template}"
+                                                   actionListener="#{manageTemplatesPage.unselectDefault()}"
+                                                   title="#{bundle['dataset.manageTemplates.tab.action.btn.default.unsetDefault.title']}"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.default.unsetDefault.title']} - #{template.name}"
+                                                   update="@widgetVar(allTemplates)">
+                                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> #{bundle['dataset.manageTemplates.tab.action.btn.default']}
+                                    </p:commandLink>
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.view']}"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.view']} #{template.name}"
                                                    action="#{manageTemplatesPage.viewSelectedTemplate(template)}"
-                                                   oncomplete="PF('viewTemplate').show();bind_tooltip_popover();"
-                                                   update=":manageTemplatesForm">
-                                        <span class="glyphicon glyphicon-eye-open"/>
+                                                   oncomplete="PF('viewTemplate').show();"
+                                                   update="@form">
+                                        <span class="glyphicon glyphicon-eye-open" aria-hidden="true"/>
                                     </p:commandLink>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.copy']}"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.copy']} #{template.name}"
                                                    action="#{manageTemplatesPage.cloneTemplate(template)}"
-                                                   update="@form"
-                                                   oncomplete="bind_tooltip_popover();">
-                                        <span class="glyphicon glyphicon-duplicate"/>
+                                                   update="@form">
+                                        <span class="glyphicon glyphicon-duplicate" aria-hidden="true"/>
                                     </p:commandLink>
-                                    <div class="btn-group" jsf:rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
-                                        <button type="button" class="btn btn-default dropdown-toggle"
-                                                data-toggle="dropdown"
-                                                aria-expanded="false">
-                                            <span class="glyphicon glyphicon-pencil"/> #{bundle['dataset.editBtn']}
-                                            <span class="caret"/>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <h:outputLink value="/template.xhtml?id=#{template.id}">
-                                                    <h:outputText value="#{bundle['dataset.manageTemplates.tab.action.btn.edit.metadata']}" />
-                                                </h:outputLink>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <p:commandLink type="button" styleClass="btn btn-default bootstrap-button-tooltip"
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                                   title="#{bundle['dataset.manageTemplates.tab.action.btn.edit']}"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.edit']} #{template.name}"
+                                                   action="#{manageTemplatesPage.editTemplateRedirect(template)}"
+                                                   rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}">
+                                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"/>
+                                    </p:commandLink>
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.delete']}"
-                                                   update="@form,:messagePanel"
+                                                   ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.delete']} #{template.name}"
+                                                   update="@form"
                                                    action="#{manageTemplatesPage.setSelectedTemplate(template)}"
                                                    rendered="#{manageTemplatesPage.dataverse.id eq template.dataverse.id}"
-                                                   oncomplete="PF('deleteConfirmation').show();bind_tooltip_popover();">
-                                        <span class="glyphicon glyphicon-trash"/>
+                                                   oncomplete="PF('deleteConfirmation').show();">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true"/>
                                     </p:commandLink>
                                 </div>
                             </p:column>
@@ -174,16 +173,16 @@
                             </ul>
                         </ui:fragment>
                         <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@all" />
+                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageTemplatesPage.deleteTemplate()}" update="@form" />
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" type="button" />
                         </div>
                     </p:dialog>
                     <p:dialog id="viewTemplate" styleClass="largePopUp" header="#{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.header']}" widgetVar="viewTemplate" modal="true">
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">
+                                <div class="col-sm-3 control-label section-title">
                                     #{bundle['dataset.manageTemplates.tab.action.btn.view.dialog.datasetTemplate']}
-                                </label>
+                                </div>
                                 <div class="col-sm-7">
                                     <p class="form-control-static">
                                         #{manageTemplatesPage.selectedTemplate.name}

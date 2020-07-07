@@ -6,28 +6,30 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
 >
     <p:textEditor id="textEditor"
                   value="#{editorValue}"
                   secure="true"
                   height="200"
                   style="margin-bottom:10px"
+                  pt:data-editor-aria-label="#{editorAriaLabel}"
                   placeholder="#{editorWatermark}"
     >
         <f:facet name="toolbar">
              <span class="ql-formats">
-                <button class="ql-bold"></button>
-                <button class="ql-italic"></button>
-                <button class="ql-underline"></button>
-                <button class="ql-strike"></button>
-                <button class="ql-script" value="sub"></button>
-                <button class="ql-script" value="super"></button>
-                <button class="ql-header" value="1"></button>
-                <button class="ql-header" value="2"></button>
-                <button class="ql-code"></button>
-                <button class="ql-blockquote"></button>
-                <button class="ql-list" value="bullet"></button>
-                <button class="ql-list" value="ordered"></button>
+                <button class="ql-bold" aria-label="#{bundle['common.forms.textEditor.toolbar.bold']}" title="#{bundle['common.forms.textEditor.toolbar.bold']}" aria-pressed="false"></button>
+                <button class="ql-italic" aria-label="#{bundle['common.forms.textEditor.toolbar.italic']}" title="#{bundle['common.forms.textEditor.toolbar.italic']}" aria-pressed="false"></button>
+                <button class="ql-underline" aria-label="#{bundle['common.forms.textEditor.toolbar.underline']}" title="#{bundle['common.forms.textEditor.toolbar.underline']}" aria-pressed="false"></button>
+                <button class="ql-strike" aria-label="#{bundle['common.forms.textEditor.toolbar.strike']}" title="#{bundle['common.forms.textEditor.toolbar.strike']}" aria-pressed="false"></button>
+                <button class="ql-script" value="sub" aria-label="#{bundle['common.forms.textEditor.toolbar.sub']}" title="#{bundle['common.forms.textEditor.toolbar.sub']}" aria-pressed="false"></button>
+                <button class="ql-script" value="super" aria-label="#{bundle['common.forms.textEditor.toolbar.sup']}" title="#{bundle['common.forms.textEditor.toolbar.sup']}" aria-pressed="false"></button>
+                <button class="ql-header" value="1" aria-label="#{bundle['common.forms.textEditor.toolbar.header1']}" title="#{bundle['common.forms.textEditor.toolbar.header1']}" aria-pressed="false"></button>
+                <button class="ql-header" value="2" aria-label="#{bundle['common.forms.textEditor.toolbar.header2']}" title="#{bundle['common.forms.textEditor.toolbar.header2']}" aria-pressed="false"></button>
+                <button class="ql-code" aria-label="#{bundle['common.forms.textEditor.toolbar.codeBlock']}" title="#{bundle['common.forms.textEditor.toolbar.codeBlock']}" aria-pressed="false"></button>
+                <button class="ql-blockquote" aria-label="#{bundle['common.forms.textEditor.toolbar.quoteBlock']}" title="#{bundle['common.forms.textEditor.toolbar.quoteBlock']}" aria-pressed="false"></button>
+                <button class="ql-list" value="bullet" aria-label="#{bundle['common.forms.textEditor.toolbar.unorderedList']}" title="#{bundle['common.forms.textEditor.toolbar.unorderedList']}" aria-pressed="false"></button>
+                <button class="ql-list" value="ordered" aria-label="#{bundle['common.forms.textEditor.toolbar.orderedList']}" title="#{bundle['common.forms.textEditor.toolbar.orderedList']}" aria-pressed="false"></button>
             </span>
         </f:facet>
     </p:textEditor>

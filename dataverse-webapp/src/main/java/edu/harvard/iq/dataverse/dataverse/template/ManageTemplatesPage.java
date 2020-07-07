@@ -124,15 +124,15 @@ public class ManageTemplatesPage implements java.io.Serializable {
     public void makeDefault(Template templateIn) {
 
         templateService.makeTemplateDefaultForDataverse(dataverse, templateIn)
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.makeDefault.error")))
-                .onSuccess(dataverse -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.makeDefault")));
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.makeDefault.error"), ""))
+                .onSuccess(dataverse -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("template.makeDefault")));
     }
 
     public void unselectDefault() {
 
         templateService.removeDataverseDefaultTemplate(dataverse)
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.update.error")))
-                .onSuccess(dataverse -> JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.unselectDefault")));
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.update.error"), ""))
+                .onSuccess(dataverse -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("template.unselectDefault")));
     }
 
     public String cloneTemplate(Template templateIn) {
@@ -140,19 +140,19 @@ public class ManageTemplatesPage implements java.io.Serializable {
         Try<Template> cloneTemplate = templateService.cloneTemplate(templateIn, dataverse);
 
         if (cloneTemplate.isFailure()) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.clone.error"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.clone.error"), "");
             return StringUtils.EMPTY;
         }
 
-        JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.clone"));
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.clone"));
         return "/template.xhtml?id=" + cloneTemplate.get().getId() + "&faces-redirect=true";
     }
 
     public void deleteTemplate() {
         templateService.deleteTemplate(dataverse, selectedTemplate)
-                .onFailure(throwable -> JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.delete.error")))
+                .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.delete.error"), ""))
                 .onSuccess(dataverse -> {
-                    JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("template.delete"));
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("template.delete"));
                     templatesForView.remove(selectedTemplate);
                 });
 
@@ -189,6 +189,10 @@ public class ManageTemplatesPage implements java.io.Serializable {
         return templateService.retrieveDataverseNamesWithDefaultTemplate(selectedTemplate.getId());
     }
 
+    public String editTemplateRedirect(Template template) {
+        return "/template.xhtml?id=" + template.getId() + "&faces-redirect=true";
+    }
+    
     // -------------------- SETTERS --------------------
 
     public void setDataverseId(Long dataverseId) {

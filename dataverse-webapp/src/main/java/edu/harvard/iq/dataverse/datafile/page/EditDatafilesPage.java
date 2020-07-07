@@ -590,7 +590,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             String successMessage = getBundleString("file.deleted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);
+            JsfHelper.addFlashSuccessMessage(successMessage);
         }
     }
 
@@ -941,8 +941,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private void populateDatasetUpdateFailureMessage() {
-
-        JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.message.filesFailure"));
+        JsfHelper.addErrorMessage(getBundleString("dataset.message.filesFailure"), "");
     }
 
 
@@ -1722,7 +1721,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             String successMessage = getBundleString("file.assignedDataverseImage.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileMetadataSelectedForThumbnailPopup.getLabel());
-            JsfHelper.addFlashMessage(successMessage);
+            JsfHelper.addFlashSuccessMessage(successMessage);
 
             datasetUpdateRequired = true;
         }

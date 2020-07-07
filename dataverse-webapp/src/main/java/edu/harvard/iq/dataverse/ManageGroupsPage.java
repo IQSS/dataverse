@@ -150,11 +150,11 @@ public class ManageGroupsPage implements java.io.Serializable {
                     .run(() -> mgCrudService.delete(selectedGroup))
                     .andThen(() -> {
                         explicitGroups.remove(selectedGroup);
-                        JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.delete"));
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.delete"));
                     })
                     .onFailure(throwable -> {
                         String failMessage = BundleUtil.getStringFromBundle("dataverse.manageGroups.nodelete");
-                        JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
+                        JsfHelper.addErrorMessage(failMessage);
                     })
             ;
         } else {
@@ -266,12 +266,11 @@ public class ManageGroupsPage implements java.io.Serializable {
             .onSuccess((eg) -> {
                 explicitGroups.add(eg.get());
                 List<String> args = Arrays.asList(eg.get().getDisplayName());
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", args));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", args));
             })
             .onFailure(throwable -> {
                 logger.log(Level.WARNING, "Group creation failed", throwable);
-                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR,
-                        BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"), "");
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.fail"), "");
             })
         ;
     }
@@ -284,7 +283,7 @@ public class ManageGroupsPage implements java.io.Serializable {
                 JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.save.success", args));
                 explicitGroups.set(explicitGroups.indexOf(eg.get()), eg.get());
             })
-            .onFailure(throwable -> JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
+            .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),
                     ""))
         ;
     }

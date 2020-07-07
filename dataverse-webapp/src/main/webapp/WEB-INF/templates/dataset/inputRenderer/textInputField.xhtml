@@ -4,23 +4,29 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:p="http://primefaces.org/ui"
-    xmlns:jsf="http://xmlns.jcp.org/jsf">
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
     
-    <p:outputLabel styleClass="control-label" for="inputText" rendered="#{!hiddenLabel}" escape="false" value="#{datasetField.datasetFieldType.localeTitle}">
-        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+    <div class="control-label-with-tooltip">
+        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}" for="inputText">
+            <h:outputText value="#{datasetField.datasetFieldType.localeTitle}" escape="false" />
+            <h:outputText value=" #{labelFieldNumber}" rendered="#{not (labelFieldNumber eq 0)}" />
+            <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" rendered="#{datasetField.datasetFieldType.requiredInDataverse}" />
+        </p:outputLabel>
         <span class="glyphicon glyphicon-question-sign tooltip-icon"
-              jsf:rendered="#{not empty datasetField.datasetFieldType.localeDescription}"
+              jsf:rendered="#{(not empty datasetField.datasetFieldType.localeDescription) and !hiddenLabel}"
               tabindex="0" role="button"
+              aria-label="#{bundle['common.forms.field.tooltip.ariaLabel']} #{datasetField.datasetFieldType.localeTitle}"
               data-toggle="tooltip" data-placement="auto right"
               data-original-title="#{datasetField.datasetFieldType.localeDescription}"></span>
-    </p:outputLabel>
+    </div>
 
     <!-- input text start -->
     <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
 
     <p:inputText value="#{datasetField.value}" id="inputText"
-                 styleClass="form-control"  />
+                 styleClass="form-control" />
     
 
     <p:watermark for="inputText" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>

@@ -325,16 +325,16 @@ public class FilePage implements java.io.Serializable {
         }
 
         if (throwable instanceof ValidationException){
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                          BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            JsfHelper.addErrorMessage(
+                          BundleUtil.getStringFromBundle("dataset.message.validationError"), "");
 
         } else if (throwable instanceof UpdateDatasetException){
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+            JsfHelper.addErrorMessage(
                           BundleUtil.getStringFromBundle("dataset.save.fail"),
-                          " - " + throwable.toString());
+                          throwable.toString());
         } else {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                          BundleUtil.getStringFromBundle("dataset.save.fail"));
+            JsfHelper.addErrorMessage(
+                          BundleUtil.getStringFromBundle("dataset.save.fail"), "");
         }
     }
 
@@ -344,16 +344,15 @@ public class FilePage implements java.io.Serializable {
         }
 
         if (throwable instanceof ValidationException){
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                          BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            JsfHelper.addErrorMessage(
+                          BundleUtil.getStringFromBundle("dataset.message.validationError"), "");
 
         } else if (throwable instanceof UpdateDatasetException){
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
+            JsfHelper.addErrorMessage(
                           BundleUtil.getStringFromBundle("dataset.delete.fail"),
-                          " - " + throwable.toString());
+                          throwable.toString());
         } else {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR,
-                          BundleUtil.getStringFromBundle("dataset.delete.fail"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.delete.fail"), "");
         }
     }
 
@@ -653,7 +652,7 @@ public class FilePage implements java.io.Serializable {
     //Provenance fragment bean calls this to show error dialogs after popup failure
     //This can probably be replaced by calling JsfHelper from the provpopup bean
     public void showProvError() {
-        JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"));
+        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.metadataTab.provenance.error"), "");
     }
 
 }

@@ -173,15 +173,15 @@ public class ReplaceDatafilesPage implements Serializable {
         if (uploadedFile.isFailure()) {
 
             if (uploadedFile.getCause() instanceof FileReplaceException) {
-                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"), "");
             } else {
-                JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.generic"));
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.generic"), "");
             }
             return true;
         }
 
         if (uploadedFile.get().getChecksumValue().equals(fileToBeReplaced.getChecksumValue())) {
-            JsfHelper.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_same_as_replacement"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_same_as_replacement"), "");
             return true;
         }
 
@@ -199,7 +199,7 @@ public class ReplaceDatafilesPage implements Serializable {
 
         String successMessage = BundleUtil.getStringFromBundle("file.deleted.replacement.success");
         logger.info(successMessage);
-        JsfHelper.addFlashMessage(successMessage);
+        JsfHelper.addFlashSuccessMessage(successMessage);
 
     }
 

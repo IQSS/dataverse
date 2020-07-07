@@ -184,7 +184,7 @@ public class LoginPage implements java.io.Serializable {
             AuthenticationResponse response = ex.getResponse();
             switch (response.getStatus()) {
                 case FAIL:
-                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.builtin.invalidUsernameEmailOrPassword"));
                     return null;
                 case ERROR:
                     /**
@@ -192,13 +192,13 @@ public class LoginPage implements java.io.Serializable {
                      * with password upgrade? See
                      * https://github.com/IQSS/dataverse/pull/2922
                      */
-                    JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("login.error"));
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("login.error"));
                     logger.log(Level.WARNING, "Error logging in: " + response.getMessage(), response.getError());
                     return null;
                 case BREAKOUT:
                     return response.getMessage();
                 default:
-                    JsfHelper.addFlashErrorMessage("INTERNAL ERROR");
+                    JsfHelper.addErrorMessage("INTERNAL ERROR");
                     return null;
             }
         }

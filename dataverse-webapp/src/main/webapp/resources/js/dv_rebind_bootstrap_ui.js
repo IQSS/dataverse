@@ -121,6 +121,88 @@ function reinitializePrimefacesComponentsJS() {
             originalSelectCheckboxMenuHide.apply(this, [animate]);
             this.keyboardTarget.focus();
         };
+        
+        PrimeFaces.widget.SelectCheckboxMenu.prototype.updateLabel = function() {
+            var checkedItems = this.jq.find(':checked'),
+            labelText = '';
+
+            if(checkedItems && checkedItems.length) {
+                for(var i = 0; i < checkedItems.length; i++) {
+                    if(i != 0) {
+                        labelText = labelText + this.cfg.labelSeparator;
+                    }
+                    labelText = labelText + $(checkedItems[i]).next().text();
+                }
+            }
+            else {
+                if (this.cfg.emptyLabel) {
+                    labelText = this.cfg.emptyLabel;
+                } else {
+                    labelText = this.defaultLabel;
+                }
+            }
+    
+            this.label.text(labelText);
+            this.labelContainer.attr('title', labelText);
+            this.keyboardTarget.val(labelText);
+        }
+    }
+    
+    if (PrimeFaces.widget.SelectOneMenu) {
+        var originalSelectOneMenuInitContents = PrimeFaces.widget.SelectOneMenu.prototype.initContents;
+        var originalSelectOneMenuChangeAriaValue = PrimeFaces.widget.SelectOneMenu.prototype.changeAriaValue;
+        var originalSelectOneMenuHighlightItem = PrimeFaces.widget.SelectOneMenu.prototype.highlightItem;
+        var originalSelectOneMenuShow = PrimeFaces.widget.SelectOneMenu.prototype.show;
+        
+        PrimeFaces.widget.SelectOneMenu.prototype.initContents = function() {
+            originalSelectOneMenuInitContents.apply(this);
+            if(this.cfg.filter) {
+                var filterElement = this.panel.find('> div.ui-selectonemenu-filter-container > input.ui-selectonemenu-filter');
+                
+                //this.panel.attr('role', 'combobox');
+                //this.panel.attr('aria-owns', this.itemsContainer.attr('id'))
+                
+                filterElement.attr('role', 'combobox');
+                filterElement.attr('aria-owns', this.itemsContainer.attr('id'));
+                filterElement.attr('aria-controls', this.itemsContainer.attr('id'));
+                filterElement.attr('aria-label', 'Filtruj opcje');
+            }
+        };
+        
+        PrimeFaces.widget.SelectOneMenu.prototype.changeAriaValue = function(item) {
+            var filterElement = this.panel.find('> div.ui-selectonemenu-filter-container > input.ui-selectonemenu-filter');
+            var itemId = item.attr('id');
+
+            this.focusInput.attr('aria-activedescendant', itemId)
+                    .attr('aria-describedby', itemId);
+            this.itemsContainer.attr('aria-activedescendant', itemId);
+            //this.itemsContainer.removeAttr('aria-activedescendant');
+            
+            if(this.cfg.filter) {
+                filterElement.attr('aria-activedescendant', itemId);
+            }
+        };
+        
+        PrimeFaces.widget.SelectOneMenu.prototype.highlightItem = function(item) {
+            this.items.attr('aria-selected', false);
+            this.items.filter('.ui-state-highlight').removeClass('ui-state-highlight');
+
+            if(item.length > 0) {
+                item.addClass('ui-state-highlight');
+                item.attr('aria-selected', true);
+                this.setLabel(item.data('label'));
+                this.changeAriaValue(item);
+            }
+        };
+        
+        PrimeFaces.widget.SelectOneMenu.prototype.show = function() {
+            if (this.cfg.filter) {
+                this.filterInput.val('');
+                this.filter(this.filterInput.val());
+            }
+            //this.highlightItem(this.items.eq(0));
+            originalSelectOneMenuShow.apply(this);
+        }
     }
     
     if (PrimeFaces.widget.FileUpload) {
@@ -461,6 +543,22 @@ function reinitializePrimefacesComponentsJS() {
                     $this.callBehavior('select');
                 }
             });
+            
+            var toolbarObserver = new MutationObserver(function(mutations, observer) {
+                for (var i=0; i<mutations.length; ++i) {
+                    var mutation = mutations[i];
+                    var mutationTarget = $(mutation.target);
+                    
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        mutationTarget.attr('aria-pressed', mutationTarget.hasClass('ql-active'));
+                    }
+                }
+            });
+            toolbarObserver.observe(this.toolbar[0].children[0], { attributes: true, attributeFilter: [ "class" ], childList: true, subtree: true });
+            
+            $(this.jq).find('.ql-tooltip.ql-hidden').remove();
+            
+            $(this.jq).find('.ql-editor').attr('aria-label', this.jq.data('editor-aria-label'))
         }
     }
     
@@ -513,7 +611,7 @@ function reinitializePrimefacesComponentsJS() {
             this.sourceCaption = this.sourceList.prev('.ui-picklist-caption'),
             this.targetCaption = this.targetList.prev('.ui-picklist-caption');
              
-            if (this.sourceCaption.find('.ui-selectonemenu').length > 0) {
+            if (this.sourceCaption.find('.ui- nu').length > 0) {
                 this.sourceCaption = this.sourceCaption.find('.ui-selectonemenu').find('label');
                 
                 this.sourceList.attr('aria-label', this.sourceCaption.text());
@@ -579,15 +677,43 @@ function reinitializePrimefacesComponentsJS() {
             });
         }
     }
+    
+    if (PrimeFaces.widget.DefaultCommand) {
+        var originalDefaultCommandInit = PrimeFaces.widget.DefaultCommand.prototype.init;
+        
+        PrimeFaces.widget.DefaultCommand.prototype.init = function(cfg) {
+            originalDefaultCommandInit.apply(this, [cfg]);
+            
+            var closestForm = this.jqTarget.closest('form');
+            closestForm.off('keydown.' + this.id).on('keydown.' + this.id, {scopeEnter: false}, function (e, data) {
+                var keyCode = $.ui.keyCode;
+
+                data = data || e.data;
+                if (($this.scope && data.scopeEnter && data.scopeDefaultCommandId === $this.id)
+                        || (!$this.scope && !data.scopeEnter && (e.which == keyCode.ENTER))) {
+                    //do not proceed if target is a textarea,button or link - change: added contenteditable
+                    if ($(e.target).is('textarea,button,input[type="submit"],a,[contenteditable="true"]')) {
+                        return true;
+                    }
+
+                    if (!$this.jqTarget.is(':disabled, .ui-state-disabled')) {
+                        $this.jqTarget.click();
+                    }
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            });
+        }
+    }
 
     /* disable swipe events for tabView and paginator, to allow scrolling contents without unexpected behavior */
     if (PrimeFaces.widget.Paginator) {
         PrimeFaces.widget.Paginator.prototype.bindSwipeEvents = function() {} 
     }
     if (PrimeFaces.widget.TabView) {
-        PrimeFaces.widget.TabView.prototype.bindSwipeEvents = function() {
+        PrimeFaces.widget.TabView.prototype.bindSwipeEvents = function() {}
     }
-}}
+}
 reinitializePrimefacesComponentsJS();
 
 /*
@@ -613,8 +739,7 @@ function bind_bsui_components(){
     $('.dropdown-toggle').dropdown();
     
     // Hide open tooltips + popovers
-    $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
-    $("[data-toggle='popover']").popover("hide");
+    hideTooltipsAndPopovers();
 
     // Tooltips + popovers
     bind_tooltip_popover();
@@ -640,10 +765,21 @@ function bind_tooltip_popover(){
     bindEscapeKey();
 }
 
+function hideTooltipsAndPopovers() {
+    $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
+    $("[data-toggle='popover']").popover("hide");
+}
+
 function bindTooltips() {
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]')
         .tooltip({container: 'body', trigger: 'manual'})
         .on("mouseover", event => {
+            var closestTooltipToggle = $(event.target).closest('.bootstrap-button-tooltip, [data-toggle="tooltip"]');
+            
+            if (closestTooltipToggle.data()['bs.tooltip'].tip().hasClass('in')) { // check if tooltip is visible
+                return;
+            }
+            
             $(event.target).tooltip("show");
             $(".tooltip").on("mouseleave", function () {
                 $(event.target).tooltip("hide");
@@ -651,7 +787,14 @@ function bindTooltips() {
         })
         .on("mouseout", event => {
             setTimeout(() => {
-                if (!$(".tooltip:hover").length) $(event.target).tooltip("hide");
+                var closestTooltipToggle = $(event.target).closest('.bootstrap-button-tooltip, [data-toggle="tooltip"]');
+                
+                if (closestTooltipToggle.is(":hover")) {
+                    return;
+                }
+                if (!$(".tooltip:hover").length) {
+                    closestTooltipToggle.tooltip("hide");
+                }
             }, 200);
         })
         .on("focus", event => {

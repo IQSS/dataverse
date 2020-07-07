@@ -10,12 +10,6 @@
 
 <cc:interface>
     <cc:attribute name="collapsible" default="false"/>
-    <f:viewAction action="#{sendFeedbackDialog.initUserInput}">
-        <f:setPropertyActionListener target="#{sendFeedbackDialog.messageSubject}" value=""/>
-        <f:setPropertyActionListener target="#{sendFeedbackDialog.recipient}" value="#{null}"/>
-        <f:setPropertyActionListener target="#{sendFeedbackDialog.userMessage}" value=""/>
-        <f:setPropertyActionListener target="#{sendFeedbackDialog.userEmail}" value=""/>
-    </f:viewAction>
 </cc:interface>
 
 <cc:implementation>
@@ -23,25 +17,25 @@
     <!--@elvariable id="globalMessage" type="javax.faces.application.FacesMessage"-->
     <o:importConstants type="javax.faces.application.FacesMessage"/>
 
-
     <div aria-live="polite">
     
     <p:outputPanel>
         <p:autoUpdate/>
             <o:messages globalOnly="true" var="globalMessage" >
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_ERROR}">
+                    <o:form useRequestURI="true">
                     <div class="alert alert-danger" role="alert" aria-atomic="true">
                         <p class="text-block">
                             <span class="glyphicon glyphicon-warning-sign"></span>&#160;<strong>#{globalMessage.summary}</strong> –
                             <h:outputText value="#{globalMessage.detail}" escape="false"/>
                             <h:outputFormat value="#{bundle['error.support.message']}" escape="false">
                                 <o:param>
-                                    <p:commandLink value="#{installationConfig.supportTeamName}"
-                                                oncomplete="PF('contactForm').show()" update=":contactDialog" />
+                                    <p:commandLink value="#{installationConfig.supportTeamName}" onclick="showRepositorySupportContactDialog()" />
                                 </o:param>
                             </h:outputFormat>
                         </p>
                     </div>
+                    </o:form>
                 </ui:fragment>
                 <ui:fragment rendered="#{globalMessage.severity eq FacesMessage.SEVERITY_INFO}">
                     <div class="alert alert-info" role="alert" aria-atomic="true">

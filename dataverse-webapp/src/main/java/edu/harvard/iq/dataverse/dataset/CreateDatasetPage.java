@@ -185,7 +185,8 @@ public class CreateDatasetPage implements Serializable {
 
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
         if (!constraintViolations.isEmpty()) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"),
+                    BundleUtil.getStringFromBundle("dataset.message.validationErrorDetails"));
             return StringUtils.EMPTY;
         }
 

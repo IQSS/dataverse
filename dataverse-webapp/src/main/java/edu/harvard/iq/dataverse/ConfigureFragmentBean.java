@@ -8,6 +8,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.util.JsfHelper;
+
 import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
@@ -45,7 +47,7 @@ public class ConfigureFragmentBean implements java.io.Serializable {
     private ExternalToolHandler externalToolHandler;
 
     public String configureExternalAlert() {
-        JH.addMessage(FacesMessage.SEVERITY_WARN, tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
+        JsfHelper.addWarningMessage(tool.getDisplayName(), BundleUtil.getStringFromBundle("file.configure.launchMessage.details") + " " + tool.getDisplayName() + ".");
         return "";
     }
 
