@@ -935,6 +935,80 @@ function handle_keydown_submenus(element, key){
         $(element.parentNode.parentNode.parentNode.nextElementSibling).find('a').focus();
     }
 }
+
+/* Fix dropdown submenus not overflowing in scrollable tables */
+/* Source: https://codepen.io/andykono/pen/WvPgvz */
+
+function fix_submenus_overflow($element) {
+    var selector = ".ui-datatable:not(.headerless-table):not(.no-min-width)";
+
+    if (!$element) {
+        $element = $("body");
+    }
+
+    //check if not already bound
+    if ($element.find(selector).length > 0 && $element.find(selector).attr("data-fix-overflow") === "true") {
+        return;
+    }
+    else {
+        $element.find(selector).attr("data-fix-overflow", "true");
+    }
+
+    //add BT DD show event
+    $element.find(selector + " .btn-group").on("show.bs.dropdown", function() {
+        var $btnDropDown = $(this).find(".dropdown-toggle");
+        var $listHolder = $(this).find("> .dropdown-menu");
+        //reset position property for DD container
+        $(this).css("position", "static");
+
+        if ($listHolder.hasClass("pull-right")) {
+            $listHolder.css({
+                "width": $listHolder.outerWidth(true),
+                "top": ($btnDropDown.offset().top + $btnDropDown.outerHeight(true)) + "px",
+                "left": ($btnDropDown.offset().left - $listHolder.outerWidth(true) + $btnDropDown.outerWidth(true)) + "px"
+            });
+        }
+        else {
+            $listHolder.css({
+                "top": ($btnDropDown.offset().top + $btnDropDown.outerHeight(true)) + "px",
+                "left": $btnDropDown.offset().left + "px"
+            });
+        }
+
+        $listHolder.data("open", true);
+    });
+
+    //add BT DD hide event
+    $element.find(selector + " .btn-group").on("hidden.bs.dropdown", function() {
+        var $listHolder = $(this).find("> .dropdown-menu");
+        $listHolder.data("open", false);
+    });
+
+    //add on scroll for table holder
+    $element.find(selector).scroll(function() {
+        var $ddHolder = $(this).find(".btn-group")
+        var $btnDropDown = $(this).find(".dropdown-toggle");
+        var $listHolder = $(this).find("> .dropdown-menu");
+
+        if ($listHolder.data("open")) {
+            if ($listHolder.hasClass("pull-right")) {
+                $listHolder.css({
+                    "width": $listHolder.outerWidth(true),
+                    "top": ($btnDropDown.offset().top + $btnDropDown.outerHeight(true)) + "px",
+                    "left": ($btnDropDown.offset().left - $listHolder.outerWidth(true) + $btnDropDown.outerWidth(true)) + "px"
+                });
+            }
+            else {
+                $listHolder.css({
+                    "top": ($btnDropDown.offset().top + $btnDropDown.outerHeight(true)) + "px",
+                    "left": $btnDropDown.offset().left + "px"
+                });
+            }
+            $ddHolder.toggleClass("open", ($btnDropDown.offset().left > $(this).offset().left))
+        }
+    })
+}
+
 $(document).ready(function() {
     $(".dropdown-menu .dropdown-menu").keydown(function(event) {
         handle_keydown_submenus(event.target, event.keyCode)
@@ -945,5 +1019,12 @@ $(document).ready(function() {
         setTimeout(function(){ 
             $(event.target).next().find("li a").first().focus(); 
         }, 1);
+    });
+
+    fix_submenus_overflow();
+
+    var $tables = $(".ui-datatable:not(.headerless-table):not(.no-min-width)");
+    $tables.parent().on("DOMSubtreeModified", function () {
+        fix_submenus_overflow($(this));
     });
 });

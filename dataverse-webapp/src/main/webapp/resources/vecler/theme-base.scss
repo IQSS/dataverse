@@ -1585,6 +1585,7 @@ tr.ui-state-highlight a:not(.btn), .ui-widget-content tr.ui-state-highlight a:no
 
 /* Scrollable tables */
 
+/* This selector is also present in dv_rebind_bootstrap.js */
 .ui-datatable:not(.headerless-table):not(.no-min-width) {
 	table {
 		min-width: 65em;
@@ -1599,6 +1600,11 @@ div.filesTable {
 	&.ui-datatable.ui-widget div.ui-datatable-tablewrapper {
 		overflow-x: auto;
 	}
+}
+
+/* Fix submenus in scrollable tables not overflowing outside */
+.ui-tabs {
+	position: static;
 }
 
 .panel-default > .panel-heading {
