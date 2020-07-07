@@ -2890,6 +2890,16 @@ public class DatasetPage implements java.io.Serializable {
         this.selectedNonDownloadableFiles = selectedNonDownloadableFiles;
     }
 
+    private List<FileMetadata> selectedNonDownloadallableFiles;
+
+    public List<FileMetadata> getSelectedNonDownloadallableFiles() {
+        return selectedNonDownloadallableFiles;
+    }
+
+    public void setSelectedNonDownloadallableFiles(List<FileMetadata> selectedNonDownloadallableFiles) {
+        this.selectedNonDownloadallableFiles = selectedNonDownloadallableFiles;
+    }
+
     public String getSizeOfDataset() {
         GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, false, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
         try {
@@ -2901,10 +2911,9 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void validateAllFilesForDownloadArchival() {
-        selectAllFiles();
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean downloadOriginal = false;
-        validateFilesForDownload(guestbookRequired, downloadOriginal);
+        validateFilesForDownloadAll(guestbookRequired, downloadOriginal);
     }
 
     /**
@@ -2912,10 +2921,9 @@ public class DatasetPage implements java.io.Serializable {
      * it's safer to use validateAllFilesForDownloadArchival.
      */
     public void validateAllFilesForDownloadOriginal() {
-        selectAllFiles();
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean downloadOriginal = true;
-        validateFilesForDownload(guestbookRequired, downloadOriginal);
+        validateFilesForDownloadAll(guestbookRequired, downloadOriginal);
     }
 
     public void validateFilesForDownload(boolean guestbookRequired, boolean downloadOriginal){
@@ -2981,7 +2989,77 @@ public class DatasetPage implements java.io.Serializable {
         }       
 
     }
-    
+
+    /**
+     * This method borrows heavily from validateFilesForDownload but does not
+     * use the selectedFiles field.
+     */
+    public void validateFilesForDownloadAll(boolean guestbookRequired, boolean downloadOriginal) {
+        setSelectedNonDownloadallableFiles(new ArrayList<>());
+        List<FileMetadata> downloadableFiles = new ArrayList<>();
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
+                downloadableFiles.add(fmd);
+            } else {
+                getSelectedNonDownloadallableFiles().add(fmd);
+            }
+        }
+
+        // If some of the files were restricted and we had to drop them off the
+        // list, and NONE of the files are left on the downloadable list
+        // - we show them a "you're out of luck" popup:
+        if (downloadableFiles.isEmpty() && !getSelectedNonDownloadallableFiles().isEmpty()) {
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            PrimeFaces.current().executeScript("PF('downloadInvalid').show()");
+            return;
+        }
+
+        // Note that the GuestbookResponse object may still have information from
+        // the last download action performed by the user. For example, it may
+        // still have the non-null Datafile in it, if the user has just downloaded
+        // a single file; or it may still have the format set to "original" -
+        // even if that's not what they are trying to do now.
+        // So make sure to reset these values:
+        guestbookResponse.setDataFile(null);
+        // Inline getSelectedDownloadableFilesIdsString() that doesn't use selectedDownloadableFiles
+        String downloadIdString = "";
+        for (FileMetadata fmd : downloadableFiles) {
+            if (!StringUtil.isEmpty(downloadIdString)) {
+                downloadIdString += ",";
+            }
+            downloadIdString += fmd.getDataFile().getId();
+        }
+        guestbookResponse.setSelectedFileIds(downloadIdString);
+        if (downloadOriginal) {
+            guestbookResponse.setFileFormat("original");
+        } else {
+            guestbookResponse.setFileFormat("");
+        }
+        guestbookResponse.setDownloadtype("Download");
+
+        // If we have a bunch of files that we can download, AND there were no files
+        // that we had to take off the list, because of permissions - we can
+        // either send the user directly to the download API (if no guestbook/terms
+        // popup is required), or send them to the download popup:
+        if (!downloadableFiles.isEmpty() && getSelectedNonDownloadallableFiles().isEmpty()) {
+            if (guestbookRequired) {
+                openDownloadPopupForDownloadAll();
+            } else {
+                startMultipleFileDownload();
+            }
+            return;
+        }
+
+        // ... and if some files were restricted, but some are downloadable,
+        // we are showing them this "you are somewhat in luck" popup; that will
+        // then direct them to the download, or popup, as needed:
+        if (!downloadableFiles.isEmpty() && !getSelectedNonDownloadallableFiles().isEmpty()) {
+            //RequestContext requestContext = RequestContext.getCurrentInstance();
+            PrimeFaces.current().executeScript("PF('downloadAllMixed').show()");
+        }
+
+    }
+
     private boolean selectAllFiles;
 
     public boolean isSelectAllFiles() {
@@ -4099,6 +4177,28 @@ public class DatasetPage implements java.io.Serializable {
         // method below will check for that, and will redirect to the single download, if
         // that's the case. -- L.A.
         
+        this.guestbookResponse.setDownloadtype("Download");
+        //RequestContext requestContext = RequestContext.getCurrentInstance();
+        PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
+    }
+
+    /**
+     * This method borrows heavily from
+     * openDownloadPopupForMultipleFileDownload. It does not use the
+     * selectedFiles field.
+     */
+    public void openDownloadPopupForDownloadAll() {
+        // This is commented out because "download all" doesn't use selectedFiles.
+//        if (this.selectedFiles.isEmpty()) {
+//            //RequestContext requestContext = RequestContext.getCurrentInstance();
+//            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
+//            return;
+//        }
+
+        // There's a chance that this is not really a batch download - i.e.,
+        // there may only be one file on the downloadable list. But the fileDownloadService
+        // method below will check for that, and will redirect to the single download, if
+        // that's the case. -- L.A.
         this.guestbookResponse.setDownloadtype("Download");
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
