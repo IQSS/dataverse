@@ -1,5 +1,6 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.dataset;
 
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 
