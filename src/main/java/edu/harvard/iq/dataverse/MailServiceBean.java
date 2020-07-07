@@ -128,7 +128,7 @@ public class MailServiceBean implements java.io.Serializable {
         String institutionName = BundleUtil.getStringFromBundle("institution.name");
         String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
                 Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
-                        BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
+                        institutionName));
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
