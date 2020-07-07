@@ -10,7 +10,7 @@ body {
 }
 body.widget-view {margin-bottom:54px;}
 body .ui-widget {font-size: inherit;}
-body .ui-widget .ui-widget-content {background: none;}
+body .ui-widget .ui-widget-content :not(.ui-dialog-titlebar, .ui-dialog-content){background: none;}
 .ui-widget-content a {color: #4b75ff;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
