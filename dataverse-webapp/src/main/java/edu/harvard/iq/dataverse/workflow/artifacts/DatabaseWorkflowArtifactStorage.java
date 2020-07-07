@@ -1,14 +1,11 @@
 package edu.harvard.iq.dataverse.workflow.artifacts;
 
-import org.omnifaces.cdi.Startup;
+import com.google.common.io.InputSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.DependsOn;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -20,44 +17,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 /**
- * Implementation of {@link StorageService} for {@link StorageType#DATABASE}.
+ * Implementation of {@link WorkflowArtifactStorage} for {@link Type#DATABASE}.
  * The data is stored inside db_storage table.
  */
-
-@Startup
 @Singleton
-@DependsOn("WorkflowArtifactServiceBean")
-public class DatabaseStorageService implements StorageService {
+public class DatabaseWorkflowArtifactStorage implements WorkflowArtifactStorage {
 
-    private static final Logger log = LoggerFactory.getLogger(DatabaseStorageService.class);
+    private static final Logger log = LoggerFactory.getLogger(DatabaseWorkflowArtifactStorage.class);
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
 
-    private WorkflowArtifactServiceBean serviceBean;
-
-    // -------------------- CONSTRUCTORS --------------------
-
-    public DatabaseStorageService() { }
-
-    @Inject
-    public DatabaseStorageService(WorkflowArtifactServiceBean serviceBean) {
-        this.serviceBean = serviceBean;
-    }
-
     // -------------------- LOGIC --------------------
 
-    @PostConstruct
-    public void register() {
-        serviceBean.register(this);
-    }
-
     @Override
-    public StorageType getStorageType() {
-        return StorageType.DATABASE;
+    public Type getType() {
+        return Type.DATABASE;
     }
 
     @Override
@@ -69,22 +46,22 @@ public class DatabaseStorageService implements StorageService {
     }
 
     @Override
-    public String save(Supplier<InputStream> inputStreamSupplier) {
+    public String write(InputSupplier<InputStream> data) throws IOException {
         UUID id = UUID.randomUUID();
-        try (InputStream input = inputStreamSupplier.get()) {
+        try (InputStream input = data.getInput()) {
             PreparedStatement insert = prepareStatement("INSERT INTO db_storage VALUES (?, ?)");
             insert.setObject(1, id);
             insert.setBinaryStream(2, input);
             insert.execute();
-        } catch (IOException | SQLException ex) {
+        } catch (SQLException ex) {
             log.error("Exception while storing artifact in database: {}", ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new IOException(ex);
         }
         return id.toString();
     }
 
     @Override
-    public Optional<Supplier<InputStream>> readAsStream(String location) {
+    public Optional<InputSupplier<InputStream>> read(String location) {
         UUID id = UUID.fromString(location);
         try {
             PreparedStatement query = prepareStatement("SELECT stored_data FROM db_storage WHERE id = ?");
@@ -101,13 +78,13 @@ public class DatabaseStorageService implements StorageService {
 
     // -------------------- PRIVATE --------------------
 
-    private Supplier<InputStream> supplyDataStream(ResultSet result) {
+    private InputSupplier<InputStream> supplyDataStream(ResultSet result) {
         return () -> {
             try {
                 return result.getBinaryStream(1);
             } catch (SQLException se) {
                 log.error("Exception while accessing data stream: {}", se.getMessage());
-                throw new RuntimeException(se);
+                throw new IOException(se);
             }
         };
     }

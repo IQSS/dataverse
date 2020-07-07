@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
+import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
@@ -57,6 +58,8 @@ public class WorkflowExecutionWorker implements MessageListener {
 
     private final WorkflowExecutionStepRunner runner;
 
+    private final WorkflowArtifactServiceBean artifacts;
+
     private final Instance<WorkflowExecutionListener> executionListeners;
 
     private final Clock clock;
@@ -64,17 +67,23 @@ public class WorkflowExecutionWorker implements MessageListener {
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler, WorkflowExecutionStepRunner runner, Instance<WorkflowExecutionListener> executionListeners) {
-        this(datasets, executions, contextFactory, scheduler, runner, executionListeners, Clock.systemUTC());
+    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions,
+                                   WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler,
+                                   WorkflowExecutionStepRunner runner, WorkflowArtifactServiceBean artifacts,
+                                   Instance<WorkflowExecutionListener> executionListeners) {
+        this(datasets, executions, contextFactory, scheduler, runner, artifacts, executionListeners, Clock.systemUTC());
     }
 
-    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions, WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler, WorkflowExecutionStepRunner runner, Instance<WorkflowExecutionListener> executionListeners,
-                                   Clock clock) {
+    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionRepository executions,
+                                   WorkflowExecutionContextFactory contextFactory, WorkflowExecutionScheduler scheduler,
+                                   WorkflowExecutionStepRunner runner, WorkflowArtifactServiceBean artifacts,
+                                   Instance<WorkflowExecutionListener> executionListeners, Clock clock) {
         this.datasets = datasets;
         this.executions = executions;
         this.contextFactory = contextFactory;
         this.scheduler = scheduler;
         this.runner = runner;
+        this.artifacts = artifacts;
         this.executionListeners = executionListeners;
         this.clock = clock;
     }
@@ -134,6 +143,7 @@ public class WorkflowExecutionWorker implements MessageListener {
         log.trace("{} finished successfully", step);
         step.success(stepResult.getData(), clock);
         ctx.save(datasets);
+        artifacts.saveAll(ctx.getExecution().getId(), stepResult);
         scheduler.executeNextWorkflowStep(ctx, stepResult);
     }
 
@@ -142,16 +152,17 @@ public class WorkflowExecutionWorker implements MessageListener {
         step.pause(stepResult.getData(), clock);
     }
 
+    private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Failure stepResult) {
+        log.warn("{} failed - {} - rolling back", step, stepResult.getReason());
+        step.failure(stepResult.getData(), clock);
+        artifacts.saveAll(ctx.getExecution().getId(), stepResult);
+        workflowFailed(ctx, stepResult);
+    }
+
     private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Exception ex, String msg) {
         log.error(String.format("%s failed - %s", step, msg), ex);
         step.failure(new Failure(msg).getData(), clock);
         workflowFailed(ctx, ex, msg);
-    }
-
-    private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Failure stepResult) {
-        log.warn("{} failed - {} - rolling back", step, stepResult.getReason());
-        step.failure(stepResult.getData(), clock);
-        workflowFailed(ctx, stepResult);
     }
 
     private void workflowCompleted(WorkflowExecutionContext ctx) {

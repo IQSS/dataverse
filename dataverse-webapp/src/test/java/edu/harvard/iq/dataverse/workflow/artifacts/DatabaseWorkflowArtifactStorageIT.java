@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.artifacts;
 
+import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
 import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.junit.Arquillian;
@@ -15,13 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
-public class DatabaseStorageServiceIT extends WebappArquillianDeployment {
+public class DatabaseWorkflowArtifactStorageIT extends WebappArquillianDeployment {
 
     private static final byte[] TEST_DATA = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
 
@@ -29,26 +29,26 @@ public class DatabaseStorageServiceIT extends WebappArquillianDeployment {
     private EntityManager em;
 
     @Inject
-    private DatabaseStorageService storageService;
+    private DatabaseWorkflowArtifactStorage storageService;
 
     @Test
     public void shouldStoreAndRetrieveArtifactData() throws IOException {
         // given & when
-        String location = storageService.save(() -> new ByteArrayInputStream(TEST_DATA));
-        byte[] read = IOUtils.toByteArray(storageService.readAsStream(location)
+        String location = storageService.write(() -> new ByteArrayInputStream(TEST_DATA));
+        byte[] read = IOUtils.toByteArray(storageService.read(location)
                 .orElseThrow(IllegalStateException::new)
-                .get());
+                .getInput());
 
         // then
         assertThat(read).isEqualTo(read);
     }
 
     @Test
-    public void shouldBeAbleToDeleteStoredData() {
+    public void shouldBeAbleToDeleteStoredData() throws IOException {
         // given & when
-        String location = storageService.save(() -> new ByteArrayInputStream(TEST_DATA));
+        String location = storageService.write(() -> new ByteArrayInputStream(TEST_DATA));
         storageService.delete(location);
-        Optional<Supplier<InputStream>> read = storageService.readAsStream(location);
+        Optional<InputSupplier<InputStream>> read = storageService.read(location);
 
         // then
         assertThat(read.isPresent()).isFalse();

@@ -64,7 +64,7 @@ class SystemProcessStepTest {
         // and
         String processId = result.getData().get(PROCESS_ID_PARAM_NAME);
         assertThat(processId).isNotBlank();
-        assertThat(readFileToString(step.outLogPath(tmpDir, processId).toFile(), UTF_8)).isEqualTo("test\n");
+        assertThat(readFileToString(step.outLogPath(processId, tmpDir).toFile(), UTF_8)).isEqualTo("test\n");
     }
 
     @Test

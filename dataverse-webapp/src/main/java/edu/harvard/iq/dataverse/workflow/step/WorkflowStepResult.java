@@ -1,21 +1,32 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactSource;
+import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactsSupplier;
+
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static java.util.Collections.emptyList;
 
 /**
  * The result of performing a {@link WorkflowStep}.
  *
  * @author michael
  */
-public interface WorkflowStepResult extends Serializable {
+public interface WorkflowStepResult extends WorkflowArtifactsSupplier, Serializable {
 
     /**
      * Arbitrary accompanying this result.
      * @return result data.
      */
     Map<String, String> getData();
+
+    @Override
+    default List<WorkflowArtifactSource> getArtifacts() {
+        return emptyList();
+    }
 
     /**
      * The source of {@link WorkflowStepResult}.

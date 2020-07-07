@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
@@ -20,6 +21,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
+import edu.harvard.iq.dataverse.workflow.artifacts.MemoryWorkflowArtifactStorage;
+import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
 import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -29,8 +32,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.enterprise.inject.Instance;
 import javax.naming.NamingException;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +39,6 @@ import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDa
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
 import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
-import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +59,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
     DatasetRepository datasets = persistence.stub(DatasetRepository.class);
     WorkflowRepository workflows = persistence.stub(WorkflowRepository.class);
     WorkflowExecutionRepository executions = persistence.stub(WorkflowExecutionRepository.class);
+    WorkflowArtifactRepository artifacts = persistence.stub(WorkflowArtifactRepository.class);
     WorkflowStepRegistry steps = new WorkflowStepRegistry() {{ init(); }};
     RoleAssigneeServiceBean roleAssignees = new MockRoleAssigneeServiceBean() {{ add(new MockAuthenticatedUser()); }};
     AuthenticationServiceBean authentication = new MockAuthenticationServiceBean(clock);
@@ -66,17 +67,17 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
 
     WorkflowExecutionContextFactory contextFactory = new WorkflowExecutionContextFactory(
         settings, datasets, workflows, executions, roleAssignees, authentication);
-
     WorkflowExecutionScheduler scheduler = new WorkflowExecutionScheduler() {{
         setQueue(queue); setFactory(factory); }};
-
     WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps, clock);
 
-    WorkflowExecutionServiceBean service = new WorkflowExecutionServiceBean(
+    WorkflowArtifactServiceBean artifactsService = new WorkflowArtifactServiceBean(
+            artifacts, new MemoryWorkflowArtifactStorage(), clock);
+    WorkflowExecutionServiceBean executionService = new WorkflowExecutionServiceBean(
             datasets, executions, contextFactory, scheduler, clock);
 
     WorkflowExecutionWorker worker = new WorkflowExecutionWorker(
-        datasets, executions, contextFactory, scheduler, runner, executionListeners, clock);
+        datasets, executions, contextFactory, scheduler, runner, artifactsService, executionListeners, clock);
 
     WorkflowExecutionWorkerTest() throws NamingException { }
 
@@ -100,7 +101,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
         WorkflowContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
         // when
         givenMessageConsumer(worker)
-                .callProducer(() -> service.start(workflow, context))
+                .callProducer(() -> executionService.start(workflow, context))
                 .andAwaitMessages(2);
         // then
         List<WorkflowExecution> persistedExecutions = persistence.of(WorkflowExecution.class).findAll();
@@ -145,7 +146,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
         WorkflowContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
         // when
         givenMessageConsumer(worker)
-                .callProducer(() -> service.start(workflow, context))
+                .callProducer(() -> executionService.start(workflow, context))
                 .andAwaitMessages(1);
         // then
         List<WorkflowExecution> persistedExecutions = persistence.of(WorkflowExecution.class).findAll();
@@ -192,11 +193,11 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
                 .when(executions).findByInvocationId("invocationId");
         // when
         givenMessageConsumer(worker)
-                .callProducer(() -> service.start(workflow, context))
+                .callProducer(() -> executionService.start(workflow, context))
                 .andAwaitMessages(1);
         // and
         givenMessageConsumer(worker)
-                .callProducer(() -> service.resume("invocationId", "test"))
+                .callProducer(() -> executionService.resume("invocationId", "test"))
                 .andAwaitMessages(2);
         // then
         List<WorkflowExecution> executions = persistence.of(WorkflowExecution.class).findAll();
@@ -241,7 +242,7 @@ class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements Workflo
         WorkflowContext context = givenWorkflowExecutionContext(dataset.getId(), workflow);
         // when
         givenMessageConsumer(worker)
-                .callProducer(() -> service.start(workflow, context))
+                .callProducer(() -> executionService.start(workflow, context))
                 .andAwaitMessages(3);
         // then
         List<WorkflowExecution> executions = persistence.of(WorkflowExecution.class).findAll();

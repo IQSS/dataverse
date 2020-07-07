@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse.workflow.step;
 
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactSource;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,9 +20,18 @@ public class Failure implements WorkflowStepResult {
 
     private final String reason;
     private final String message;
+    private transient final List<WorkflowArtifactSource> artifacts;
 
-    public Failure(String reason) {
-        this(reason, reason);
+    public Failure(String reason, WorkflowArtifactSource...artifacts) {
+        this(reason, reason, artifacts);
+    }
+
+    public Failure(String reason, List<WorkflowArtifactSource> artifacts) {
+        this(reason, reason, artifacts);
+    }
+
+    public Failure(String reason, String message, WorkflowArtifactSource...artifacts) {
+        this(reason, message, Arrays.asList(artifacts));
     }
 
     /**
@@ -26,10 +39,12 @@ public class Failure implements WorkflowStepResult {
      *
      * @param reason  Technical reason (for logs etc.).
      * @param message Human readable reason.
+     * @param artifacts artifacts to persist.
      */
-    public Failure(String reason, String message) {
+    public Failure(String reason, String message, List<WorkflowArtifactSource> artifacts) {
         this.reason = reason;
         this.message = message;
+        this.artifacts = artifacts;
     }
 
     /**
@@ -56,6 +71,11 @@ public class Failure implements WorkflowStepResult {
         data.put(REASON_PARAM_NAME, reason);
         data.put(MESSAGE_PARAM_NAME, message);
         return data;
+    }
+
+    @Override
+    public List<WorkflowArtifactSource> getArtifacts() {
+        return artifacts;
     }
 
     @Override

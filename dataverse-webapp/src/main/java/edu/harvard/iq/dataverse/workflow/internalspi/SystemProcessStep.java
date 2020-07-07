@@ -71,8 +71,12 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
     // -------------------- PRIVATE --------------------
 
     private int executeCommand(String processId, Path workDir) throws IOException, InterruptedException {
-        Path outLog = outLogPath(workDir, processId);
-        Path errLog = errLogPath(workDir, processId);
+        Path outLog = outLogPath(processId, workDir);
+        Path errLog = errLogPath(processId, workDir);
+
+        addFailureArtifacts(
+                outLog.getFileName().toString(),
+                errLog.getFileName().toString());
 
         ProcessBuilder process = new ProcessBuilder(union(singletonList(command), arguments))
                 .directory(workDir.toFile())
@@ -83,11 +87,11 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
                 .waitFor();
     }
 
-    Path outLogPath(Path workDir, String processId) {
+    Path outLogPath(String processId, Path workDir) {
         return workDir.resolve("out-" + processId + ".log");
     }
 
-    Path errLogPath(Path workDir, String processId) {
+    Path errLogPath(String processId, Path workDir) {
         return workDir.resolve("err-" + processId + ".log");
     }
 
@@ -99,7 +103,7 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
         } else {
             return outputParams ->
                     new Failure("Process " + processId + "returned " + exitCode + " exit code",
-                            "External program exited with errors");
+                            "External program exited with errors", failureArtifacts());
         }
     }
 }

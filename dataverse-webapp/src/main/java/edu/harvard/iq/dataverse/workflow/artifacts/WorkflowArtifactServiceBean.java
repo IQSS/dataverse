@@ -1,30 +1,28 @@
 package edu.harvard.iq.dataverse.workflow.artifacts;
 
+import com.google.common.io.InputSupplier;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifact;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactSource;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Clock;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
-@Startup
+import static java.util.stream.Collectors.toList;
+
 @Singleton
 public class WorkflowArtifactServiceBean {
 
-    private final Map<StorageType, StorageService> services = new HashMap<>();
-
     private final WorkflowArtifactRepository repository;
+    private final WorkflowArtifactStorage storage;
     private final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -33,51 +31,43 @@ public class WorkflowArtifactServiceBean {
      * @deprecated for use by EJB proxy only.
      */
     public WorkflowArtifactServiceBean() {
-        this(null);
+        this(null, null);
     }
 
     @Inject
-    public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository) {
-        this(repository, Clock.systemUTC());
+    public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository, WorkflowArtifactStorage storage) {
+        this(repository, storage, Clock.systemUTC());
     }
 
-    public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository, Clock clock) {
+    public WorkflowArtifactServiceBean(WorkflowArtifactRepository repository, WorkflowArtifactStorage storage, Clock clock) {
         this.repository = repository;
+        this.storage = storage;
         this.clock = clock;
     }
 
     // -------------------- LOGIC --------------------
 
-    /**
-     * Registers service based on service's {@link StorageType}. If there is already a registered service supporting
-     * this type of storage, it would be unregistered.
-     * @param service service to be registered
-     */
-    public void register(StorageService service) {
-        StorageType storageType = Objects.requireNonNull(service.getStorageType());
-        services.put(storageType, service);
-    }
-
-    /**
-     * Same as {@link WorkflowArtifactServiceBean#saveArtifact(Long, ArtifactData, StorageType)}
-     * but with the last parameter set to {@link StorageType#DATABASE}.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public WorkflowArtifact saveArtifact(Long workflowExecutionId, ArtifactData data) {
-        return saveArtifact(workflowExecutionId, data, StorageType.DATABASE);
+    public List<WorkflowArtifact> saveAll(Long executionId, WorkflowArtifactsSupplier supplier) {
+        return supplier.getArtifacts().stream()
+                .map(source -> saveArtifact(executionId, source))
+                .collect(toList());
     }
-
     /**
      * Saves artifact into storage of selected type.
      * Please note that in case of text streams proper encoding is up to caller.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public WorkflowArtifact saveArtifact(Long workflowExecutionId, ArtifactData data, StorageType storageType) {
-        StorageService service = services.get(storageType);
-        String location = service.save(data.inputStreamSupplier);
+    public WorkflowArtifact saveArtifact(Long executionId, WorkflowArtifactSource source) {
+        String location;
+        try {
+            location = storage.write(source.getDataSupplier());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        WorkflowArtifact workflowArtifact = new WorkflowArtifact(workflowExecutionId,
-                data.getName(), data.getEncoding(), storageType.name(), location, clock);
+        WorkflowArtifact workflowArtifact = new WorkflowArtifact(executionId,
+                source.getName(), source.getEncoding(), storage.getType().name(), location, clock);
         return repository.save(workflowArtifact);
     }
 
@@ -85,9 +75,8 @@ public class WorkflowArtifactServiceBean {
      * Returns {@link Optional} containing {@link InputStream} of stored data for the given
      * {@link WorkflowArtifact} or empty {@link Optional} if value was not found.
      */
-    public Optional<Supplier<InputStream>> readAsStream(WorkflowArtifact artifact) {
-        return selectProperService(artifact)
-                .readAsStream(artifact.getStorageLocation());
+    public Optional<InputSupplier<InputStream>> readAsStream(WorkflowArtifact artifact) {
+        return storage.read(artifact.getStorageLocation());
     }
 
     /**
@@ -113,39 +102,10 @@ public class WorkflowArtifactServiceBean {
     // -------------------- PRIVATE --------------------
 
     private void deleteFromStorage(WorkflowArtifact artifact) {
-        selectProperService(artifact)
-                .delete(artifact.getStorageLocation());
-    }
-
-    private StorageService selectProperService(WorkflowArtifact artifact) {
-        StorageType storageType = StorageType.valueOf(artifact.getStorageType());
-        return services.get(storageType);
-    }
-
-    // -------------------- INNER CLASSES --------------------
-
-    public static class ArtifactData {
-        private final String name;
-        private final String encoding;
-
-        private final Supplier<InputStream> inputStreamSupplier;
-
-        public ArtifactData(String name, String encoding, Supplier<InputStream> inputStreamSupplier) {
-            this.name = name;
-            this.encoding = encoding;
-            this.inputStreamSupplier = inputStreamSupplier;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getEncoding() {
-            return encoding;
-        }
-
-        public Supplier<InputStream> getInputStreamSupplier() {
-            return inputStreamSupplier;
+        try {
+            storage.delete(artifact.getStorageLocation());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
