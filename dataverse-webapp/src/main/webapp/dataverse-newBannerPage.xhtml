@@ -15,124 +15,135 @@
         <f:viewAction action="#{EditBannerPage.init()}"/>
         <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditBannerPage.dataverse)}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb
-        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditBannerPage.dataverseId),bundle['dataversemessages'])}"/>
+        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditBannerPage.dataverseId),bundle['dataverse.option.textMessages'])}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataversemessages.banners.new'])}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="showMessagePanel" value="#{false}"/>
+        <ui:param name="pageTitle" value="#{bundle['dataversemessages.banners.new']} - #{EditBannerPage.dataverse.name}"/>
 
         <ui:define name="body">
+            <h2 class="no-margin-top">#{bundle['dataversemessages.banners.new']}</h2>
+            
             <h:form id="edit-text-messages-form" enctype="multipart/form-data">
+            <div class="form-horizontal">
+
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <p class="form-control-static text-block">
+                            <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                        </p>
+                    </div>
+                </div>
 
                 <ui:repeat id="repeater" value="#{EditBannerPage.dto.dataverseLocalizedBanner}" var="lm">
-                    <div class="row" style="padding-top: 10px">
-                        <div class="col-xs-12 form-group form-col-container">
-                            <label class="col-sm-2 control-label" for="message-locale">
-                                    <span data-toggle="tooltip" data-placement="auto right"
-                                          class="tooltiplabel text-info">
-                                        #{settingsWrapper.getConfiguredLocaleName(lm.locale)} <span
-                                            class="glyphicon glyphicon-asterisk text-danger"
-                                            title="#{bundle.requiredField}"/>
-                                    </span>
-                            </label>
-
-                            <div class="col-sm-9 form-col-container">
-                                <div class="col-sm-11 form-col-container">
-                                    <p:message style="margin: auto" for="first-file-warning"
-                                               display="text"/>
-                                    <p:message id="first-file-warning"
-                                               style="margin: auto" for="second-file-warning" display="text"/>
-                                    <p:message style="margin: auto" id="second-file-warning" for="upload"
-                                               display="text"/>
-                                </div>
-                                <div class="col-sm-4 col-no-padding">
+                
+                    <div style="padding-top: 10px">
+                        <div class="form-group form-col-container" role="group" aria-labelledby="language-group-#{lm.locale}">
+                            <div id="language-group-#{lm.locale}" class="col-sm-3 control-label section-title" lang="#{lm.locale}">
+                                #{settingsWrapper.getConfiguredLocaleName(lm.locale)}
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            </div>
+                            <div class="col-sm-9">
+                                <p class="help-block">#{bundle['dataversemessages.banners.file.tip']}</p>
+                                
+                                <div>
                                     <p:fileUpload id="upload" listener="#{EditBannerPage.uploadFileEvent}"
-                                                  update="image" auto="true"
-                                                  mode="advanced" required="true">
+                                                  update="image-preview-container, file-upload-errors" auto="true"
+                                                  mode="advanced" required="true"
+                                                  label="#{bundle['dataversemessages.banners.file.upload.label']}"
+                                                  allowTypes="/(\.|\/)(jpg|jpeg|png)$/"
+                                                  invalidFileMessage="#{bundle['dataversemessages.banners.extensionError']}"
+                                                  sizeLimit="#{EditBannerPage.bannerFileSizeLimit}"
+                                                  invalidSizeMessage="#{bundle['dataversemessages.banners.sizeError']}"
+                                                   >
                                         <f:attribute name="imageLocale" value="#{lm.locale}"/>
                                     </p:fileUpload>
                                 </div>
-                                <div class="edit-text-messages-form-image">
-                                    <p:graphicImage id="image" value="#{lm.displayedImage}" stream="false"/>
+                                <div class="col-sm-11 form-col-container">
+                                    <p:messages style="margin: auto" id="file-upload-errors" for="upload"
+                                               showIcon="false" showSummary="false" showDetail="true"/>
                                 </div>
+                                
+                                <p:fragment id="image-preview-container">
+                                <div class="edit-text-messages-form-image">
+                                    <p:graphicImage value="#{EditBannerPage.getDisplayLocalizedBanner(lm)}" stream="false"
+                                        alt="#{bundle['dataversemessages.banners.file.upload.previewAlt']}"
+                                        rendered="#{EditBannerPage.hasDisplayLocalizedBanner(lm)}"/>
+                                </div>
+                                </p:fragment>
+                                
                                 <div class="col-sm-4 col-no-padding">
-                                    <h:outputLabel for="message-locale" value="Link: "/>
+                                    <h:outputLabel for="message-locale" value="Link: ">
+                                        <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                    </h:outputLabel>
+                                    <p:inputText id="message-locale" styleClass="form-control"
+                                                 value="#{lm.imageLink}"
+                                                 required="true"
+                                                 requiredMessage="#{bundle['dataversemessages.banners.linkError']}"
+                                                 validator="#{EditBannerPage.validateLink}"/>
                                     <p:message style="margin: auto" for="message-locale"
                                                display="text"/>
-                                    <h:inputText id="message-locale" tabindex="1" styleClass="form-control"
-                                                 value="#{lm.imageLink}"/>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </ui:repeat>
 
-                <div class="row">
-                    <div class="col-xs-12 form-group form-col-container">
-                        <label class="col-sm-2 control-label" for="message-fromtime">
-                                    <span data-toggle="tooltip" data-placement="auto right"
-                                          class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.startDate']} <span
-                                            class="glyphicon glyphicon-asterisk text-danger"
-                                            title="#{bundle.requiredField}"/>
-                                    </span>
-                        </label>
-                        <div class="col-sm-2 form-col-container">
+                    <div class="form-group form-col-container">
+                        <p:outputLabel class="col-sm-3 control-label" for="message-fromtime" indicateRequired="false">
+                            #{bundle['edittextmessages.startDateTime']}
+                            <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        </p:outputLabel>
+                        <div class="col-sm-6">
                             <p:calendar id="message-fromtime"
-                                        tabindex="#{EditBannerPage.dto.dataverseLocalizedBanner.size() + 1}"
                                         value="#{EditBannerPage.dto.fromTime}"
+                                        binding="#{EditBannerPage.fromTimeInput}"
                                         locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
+                                        maskAutoClear="false"
+                                        autocomplete="off"
+                                        converterMessage="#{bundle['common.forms.calendar.dateAndTime.conversionMessage']}"
+                                        required="true"
+                                        requiredMessage="#{validationMessages['field.required']}"
                             />
-                        </div>
-                        <div class="col-sm-5 form-col-container">
                             <p:message id="error-message-fromtime" for="message-fromtime" display="text"/>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-xs-12 form-group form-col-container">
-                        <label class="col-sm-2 control-label" for="message-totime">
-                                    <span data-toggle="tooltip" data-placement="auto right"
-                                          class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.endDate']} <span
-                                            class="glyphicon glyphicon-asterisk text-danger"
-                                            title="#{bundle.requiredField}"/>
-                                    </span>
-                        </label>
-                        <div class="col-sm-2 form-col-container">
+                    <div class="form-group form-col-container">
+                        <p:outputLabel class="col-sm-3 control-label" for="message-totime" indicateRequired="false">
+                            #{bundle['edittextmessages.endDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        </p:outputLabel>
+                        <div class="col-sm-6">
                             <p:calendar id="message-totime"
-                                        tabindex="#{EditBannerPage.dto.dataverseLocalizedBanner.size() + 2}"
                                         value="#{EditBannerPage.dto.toTime}"
                                         locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
+                                        maskAutoClear="false"
+                                        autocomplete="off"
+                                        converterMessage="#{bundle['common.forms.calendar.dateAndTime.conversionMessage']}"
+                                        required="true"
+                                        requiredMessage="#{validationMessages['field.required']}"
+                                        validator="#{EditBannerPage.validateEndDateTime}"
                             />
-                        </div>
-                        <div class="col-sm-5 form-col-container">
-                            <p:message id="error-message-totime" for="message-totime" display="text"/>
+                            <p:message id="error-message-totime" for="message-totime" display="text" />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-xs-12 form-group form-col-container">
-                        <label class="col-sm-2 control-label" for="message-active">
-                                    <span data-toggle="tooltip" data-placement="auto right"
-                                          class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.active']}
-                                    </span>
+                    <div class="form-group form-col-container">
+                        <label class="col-sm-3 control-label" for="message-active">
+                            #{bundle['edittextmessages.active']}
                         </label>
-                        <div class="col-sm-10 form-col-container">
+                        <div class="col-sm-9">
                             <p:selectBooleanCheckbox id="message-active"
-                                                     tabindex="#{EditBannerPage.dto.dataverseLocalizedBanner.size() + 3}"
-                                                     value="#{EditBannerPage.dto.active}"/>
+                                                     value="#{EditBannerPage.dto.active}"
+                                                     itemLabel="#{bundle['edittextmessages.active']}"
+                                                     style="padding-top: 4px;"/>
                         </div>
                     </div>
-                </div>
 
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['saveChanges']}"
@@ -140,6 +151,8 @@
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}"
                                      action="#{EditBannerPage.cancel()}" immediate="true"/>
                 </div>
+            
+            </div>
             </h:form>
         </ui:define>
     </ui:composition>

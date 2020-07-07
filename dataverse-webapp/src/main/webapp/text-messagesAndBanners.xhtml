@@ -1,12 +1,19 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:o="http://omnifaces.org/ui"
                 xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:p="http://primefaces.org/ui">
 
     <!--@elvariable id="dataverse" type="edu.harvard.iq.dataverse.persistence.dataverse.Dataverse"-->
     <c:set var="messages" value="#{MessagesAndBannersFragment.textMessages(dataverse.id)}"/>
     <c:set var="banners" value="#{MessagesAndBannersFragment.banners(dataverse.id)}"/>
+    
+    <o:outputFormat value="#{bundle['header.banner.alt']}" var="bannerAlt">
+        <f:param value="#{dataverse.name}" />
+    </o:outputFormat>
+    
     <h:form class="top-messages">
         <div class="alert alert-info p-grid" jsf:rendered="#{messages.size() > 0 or banners.size() > 0}">
             <ui:repeat value="#{messages}" var="message">
@@ -21,7 +28,8 @@
                     <h:commandLink action="#{MessagesAndBannersFragment.redirect(banner.link)}">
                         <p:graphicImage style="display: block ;margin-left: auto; margin-right: auto; padding: 2px;"
                                         stream="false"
-                                        value="#{banner.image}"/>
+                                        value="#{banner.image}"
+                                        alt="#{bannerAlt}"/>
                     </h:commandLink>
                 </div>
             </ui:repeat>

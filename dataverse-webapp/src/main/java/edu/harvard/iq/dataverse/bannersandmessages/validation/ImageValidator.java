@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
-class ImageValidator {
+public class ImageValidator {
 
     private static final Logger logger = Logger.getLogger(ImageValidator.class.getCanonicalName());
 
-    static boolean isImageResolutionTooBig(byte[] imageBytes, int maxWidth, int maxHeight) {
+    public static boolean isImageResolutionTooBig(byte[] imageBytes, int maxWidth, int maxHeight) {
 
         InputStream in = new ByteArrayInputStream(imageBytes);
 

@@ -5,16 +5,28 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.bannersandmessages.UnsupportedLanguageCleaner;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.BannerMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseBannerDto;
+import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalizedBannerDto;
 import edu.harvard.iq.dataverse.bannersandmessages.validation.BannerErrorHandler;
+import edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator;
+import edu.harvard.iq.dataverse.bannersandmessages.validation.EndDateMustBeAFutureDate;
+import edu.harvard.iq.dataverse.bannersandmessages.validation.EndDateMustNotBeEarlierThanStartingDate;
+import edu.harvard.iq.dataverse.bannersandmessages.validation.ImageValidator;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.persistence.config.URLValidator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseBanner;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,6 +34,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.util.Date;
 
 @ViewScoped
 @Named("EditBannerPage")
@@ -48,13 +61,16 @@ public class NewBannerPage implements Serializable {
     @Inject
     private UnsupportedLanguageCleaner languageCleaner;
 
+    @Inject
+    private BannerLimits bannerLimits;
+    
+    
     private Long dataverseId;
     private Dataverse dataverse;
     private Long bannerId;
     private String link;
 
     private UIInput fromTimeInput;
-    private UIInput toTimeInput;
 
     private DataverseBannerDto dto;
 
@@ -80,20 +96,42 @@ public class NewBannerPage implements Serializable {
         return StringUtils.EMPTY;
     }
 
+    public boolean hasDisplayLocalizedBanner(DataverseLocalizedBannerDto localizedBanner) {
+        return localizedBanner.getContent() != null;
+    }
+    
+    public StreamedContent getDisplayLocalizedBanner(DataverseLocalizedBannerDto localizedBanner) {
+        if (localizedBanner.getContent() == null) {
+            return null;
+        }
+        return DefaultStreamedContent.builder()
+                            .contentType(localizedBanner.getContentType())
+                            .name(localizedBanner.getFilename())
+                            .stream(() -> new ByteArrayInputStream(localizedBanner.getContent()))
+                            .build();
+    }
+    
     public void uploadFileEvent(FileUploadEvent event) {
+        
+        if (ImageValidator.isImageResolutionTooBig(event.getFile().getContent(),
+                bannerLimits.getMaxWidth(), bannerLimits.getMaxHeight())) {
+            
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.validationFailed();
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dataversemessages.banners.resolutionError"));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(context), message);
+            return;
+        }
+        
         String locale = (String) event.getComponent().getAttributes()
                 .get("imageLocale");
 
         dto.getDataverseLocalizedBanner().stream()
                 .filter(dlb -> dlb.getLocale().equals(locale))
                 .forEach(dlb -> {
-                    dlb.setFile(event.getFile());
-                    dlb.setDisplayedImage(
-                            DefaultStreamedContent.builder()
-                            .contentType(event.getFile().getContentType())
-                            .name(event.getFile().getFileName())
-                            .stream(() -> new ByteArrayInputStream(event.getFile().getContent()))
-                            .build());
+                    dlb.setContentType(event.getFile().getContentType());
+                    dlb.setFilename(event.getFile().getFileName());
+                    dlb.setContent(event.getFile().getContent());
                 });
     }
 
@@ -109,9 +147,36 @@ public class NewBannerPage implements Serializable {
         }
 
         dao.save(banner);
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataversemessages.banners.new.success"));
         return redirectToTextMessages();
     }
 
+    public void validateLink(FacesContext context, UIComponent toValidate, Object rawValue) throws ValidatorException {
+        String valueStr = (String)rawValue;
+        
+        if (!URLValidator.isURLValid(valueStr)) {
+            String message = "'" + valueStr + "'  " + BundleUtil.getStringFromBundle("url.invalid");
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "", message));
+        }
+    }
+    
+    public void validateEndDateTime(FacesContext context, UIComponent toValidate, Object rawValue) throws ValidatorException {
+        Date toDate = (Date) rawValue;
+        Date fromDate = (Date)fromTimeInput.getValue();
+
+        try {
+            DataverseTextMessageValidator.validateEndDate(fromDate, toDate);
+        } catch (EndDateMustNotBeEarlierThanStartingDate e) {
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("textmessages.endDateTime.valid")));
+        } catch (EndDateMustBeAFutureDate e) {
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("textmessages.endDateTime.future")));
+        }
+    }
+
+    public int getBannerFileSizeLimit() {
+        return bannerLimits.getMaxSizeInBytes();
+    }
+    
     private boolean errorsOccurred() {
         return FacesContext.getCurrentInstance().getMessageList().size() > 0;
     }
@@ -178,14 +243,6 @@ public class NewBannerPage implements Serializable {
 
     public void setFromTimeInput(UIInput fromTimeInput) {
         this.fromTimeInput = fromTimeInput;
-    }
-
-    public UIInput getToTimeInput() {
-        return toTimeInput;
-    }
-
-    public void setToTimeInput(UIInput toTimeInput) {
-        this.toTimeInput = toTimeInput;
     }
 
     public String getLink() {

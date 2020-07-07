@@ -33,9 +33,6 @@ public class BannerMapperTest {
     private static final Date TO_TIME = convertToDate(LocalDateTime.of(2018, 11, 2, 10, 25, 55));
 
     @Mock
-    private UploadedFile uploadedFile;
-
-    @Mock
     private SettingsWrapper settingsWrapper;
 
     private BannerMapper bannerMapper;
@@ -43,12 +40,10 @@ public class BannerMapperTest {
 
     @Before
     public void setup() throws IOException {
-        bannerMapper = new BannerMapper(new BannerLimits(), settingsWrapper);
+        bannerMapper = new BannerMapper(settingsWrapper);
         bannerFile = UnitTestUtils.readFileToByteArray("images/banner.png");
 
         Mockito.when(settingsWrapper.getConfiguredLocales()).thenReturn(ImmutableMap.of("pl", "pl", "en", "en"));
-        Mockito.when(uploadedFile.getContent()).thenReturn(bannerFile);
-        Mockito.when(uploadedFile.getContentType()).thenReturn("image/jpeg");
     }
 
     @Test
@@ -65,11 +60,8 @@ public class BannerMapperTest {
         Assert.assertEquals(bannerDto.getDataverseId(), dataverseBanner.getDataverse().getId());
         Assert.assertEquals(bannerDto.getFromTime(), dataverseBanner.getFromTime());
         Assert.assertEquals(bannerDto.getToTime(), dataverseBanner.getToTime());
-        Assert.assertArrayEquals(localizedBanner.getImage(), StreamUtils.copyToByteArray(localizedBannerDto.getDisplayedImage().getStream()));
         Assert.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
-        Assert.assertEquals(localizedBanner.getContentType(), localizedBannerDto.getDisplayedImage().getContentType());
         Assert.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
-        Assert.assertEquals(localizedBanner.getImageName(), localizedBannerDto.getDisplayedImage().getName());
     }
 
     @Test
@@ -78,27 +70,22 @@ public class BannerMapperTest {
         DataverseBannerDto bannerDto = createBannerDto();
         Dataverse dataverse = new Dataverse();
         dataverse.setId(1L);
+        DataverseLocalizedBannerDto localizedBannerDto = bannerDto.getDataverseLocalizedBanner().get(0);
+        localizedBannerDto.setContent(bannerFile);
+        localizedBannerDto.setContentType("image/jpeg");
 
         //when
-        DataverseLocalizedBannerDto localizedBannerDto = bannerDto.getDataverseLocalizedBanner().get(0);
-        localizedBannerDto.setFile(uploadedFile);
-        localizedBannerDto.setDisplayedImage(DefaultStreamedContent.builder()
-                                                     .contentType(uploadedFile.getContentType())
-                                                     .name(uploadedFile.getFileName())
-                                                     .stream(() -> new ByteArrayInputStream(uploadedFile.getContent()))
-                                                     .build());
-
         DataverseBanner banner = bannerMapper.mapToEntity(bannerDto, dataverse);
-        DataverseLocalizedBanner localizedBanner = banner.getDataverseLocalizedBanner().get(0);
 
         //then
+        DataverseLocalizedBanner localizedBanner = banner.getDataverseLocalizedBanner().get(0);
         Assert.assertEquals(banner.getDataverse().getId(), bannerDto.getDataverseId());
         Assert.assertEquals(banner.getFromTime(), bannerDto.getFromTime());
         Assert.assertEquals(banner.getToTime(), bannerDto.getToTime());
         Assert.assertTrue(localizedBanner.getImage().length > 0);
         Assert.assertEquals(localizedBanner.getLocale(), localizedBannerDto.getLocale());
-        Assert.assertEquals(localizedBanner.getContentType(), localizedBannerDto.getFile().getContentType());
-        Assert.assertEquals(localizedBanner.getImageName(), localizedBannerDto.getFile().getFileName());
+        Assert.assertEquals(localizedBanner.getContentType(), localizedBannerDto.getContentType());
+        Assert.assertEquals(localizedBanner.getImageName(), localizedBannerDto.getFilename());
         Assert.assertEquals(localizedBanner.getImageLink().get(), localizedBannerDto.getImageLink());
     }
 

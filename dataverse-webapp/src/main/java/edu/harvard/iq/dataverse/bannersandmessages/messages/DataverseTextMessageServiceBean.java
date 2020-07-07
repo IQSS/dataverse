@@ -60,8 +60,6 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
 
     public void save(DataverseTextMessageDto messageDto) {
 
-        DataverseTextMessageValidator.validateEndDate(messageDto.getFromTime(), messageDto.getToTime());
-
         DataverseTextMessage textMessage = new DataverseTextMessage();
 
         textMessage.setActive(messageDto.isActive());

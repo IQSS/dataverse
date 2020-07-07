@@ -1,11 +1,23 @@
 package edu.harvard.iq.dataverse.bannersandmessages.banners;
 
+import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseBannerDto;
+import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalizedBannerDto;
+import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.util.Components;
+import org.primefaces.component.datalist.DataList;
+import org.primefaces.component.tabview.Tab;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
 import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Named;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
 @ViewScoped
@@ -13,6 +25,7 @@ import java.io.Serializable;
 public class BannerTab implements Serializable {
 
     private long dataverseId;
+    private DataverseBannerDto bannerToDelete;
 
     @EJB
     private LazyBannerHistory lazyBannerHistory;
@@ -34,7 +47,36 @@ public class BannerTab implements Serializable {
         return "/dataverse-newBannerPage.xhtml?dataverseId=" + dataverseId +
                 "&bannerTemplateId=" + bannerId + "&faces-redirect=true";
     }
+    
+    public void deleteBanner() {
+        bannerDAO.delete(bannerToDelete.getId());
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataversemessages.banners.delete.success"));
+        
+        Long allBannersCount = bannerDAO.countBannersForDataverse(dataverseId);
+        
+        TabView tabView = Components.findComponentsInChildren(Components.getCurrentForm(), TabView.class).get(0);
+        Tab bannersTab = Components.findComponentsInChildren(tabView, Tab.class).get(1);
+        
+        DataList dataListComponent = Components.findComponentsInChildren(bannersTab, DataList.class).get(0);
+        if (dataListComponent.getFirst() >= allBannersCount) {
+            dataListComponent.setFirst(dataListComponent.getFirst() - dataListComponent.getRows());
+        }
+        lazyBannerHistory.setRowCount(allBannersCount.intValue());
+        
+    }
+    
+    public void deactivateTextMessage(long textMessageId) {
+        bannerDAO.deactivate(textMessageId);
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataversemessages.banners.deactivate.success"));
+    }
 
+    public StreamedContent getDisplayImage(DataverseLocalizedBannerDto localizedBanner) {
+        return DefaultStreamedContent.builder()
+                .contentType(localizedBanner.getContentType())
+                .stream(() -> new ByteArrayInputStream(localizedBanner.getContent()))
+                .build();
+    }
+    
     public long getDataverseId() {
         return dataverseId;
     }
@@ -53,5 +95,13 @@ public class BannerTab implements Serializable {
 
     public BannerDAO getBannerDAO() {
         return bannerDAO;
+    }
+
+    public DataverseBannerDto getBannerToDelete() {
+        return bannerToDelete;
+    }
+
+    public void setBannerToDelete(DataverseBannerDto bannerToDelete) {
+        this.bannerToDelete = bannerToDelete;
     }
 }

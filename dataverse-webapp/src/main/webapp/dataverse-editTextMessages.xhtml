@@ -15,27 +15,39 @@
         <f:viewAction action="#{EditTextMessagePage.init()}"/>
         <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditTextMessagePage.dataverse)}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb
-        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditTextMessagePage.dataverseId),bundle['dataversemessages'])}"/>
+        ('/dataverse-textMessages.xhtml?dataverseId='.concat(EditTextMessagePage.dataverseId),bundle['dataverse.option.textMessages'])}"/>
         <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dataversemessages.textmessages.new'])}"/>
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="showMessagePanel" value="#{false}"/>
+        <ui:param name="pageTitle" value="#{bundle['dataversemessages.textmessages.new']} - #{EditTextMessagePage.dataverse.name}"/>
 
         <ui:define name="body">
+            <h2 class="no-margin-top">#{bundle['dataversemessages.textmessages.new']}</h2>
+            
             <h:form id="edit-text-messages-form">
+            <p:focus context="edit-text-messages-form" rendered="#{facesContext.validationFailed}" />
+            
+            <div class="form-horizontal">
+                
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <p class="form-control-static text-block">
+                                <span class="glyphicon glyphicon-asterisk text-danger"/> <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                            </p>
+                        </div>
+                    </div>
+                    
                     <ui:repeat value="#{EditTextMessagePage.dto.dataverseLocalizedMessage}" var="lm">
                         <div class="row">
-                            <div class="col-xs-12 form-group form-col-container">
-                                <label class="col-sm-2 control-label" for="message-locale">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
-                                        #{lm.language} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </span>
-                                </label>
-                                <div class="col-sm-5 form-col-container">
-                                    <p:inputTextarea id="message-locale" tabindex="1" styleClass="form-control" value="#{lm.message}"/>
-                                </div>
-                                <div class="col-sm-5 form-col-container">
+                            <div class="form-group form-col-container">
+                                <h:outputLabel styleClass="col-sm-3 control-label" for="message-locale">
+                                    #{lm.language} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                </h:outputLabel>
+                                <div class="col-sm-6 form-col-container">
+                                    <p:inputTextarea id="message-locale" styleClass="form-control" value="#{lm.message}"
+                                            required="true"
+                                            requiredMessage="#{validationMessages['field.required']}"/>
                                     <p:message for="message-locale" display="text"/>
                                 </div>
                             </div>
@@ -43,62 +55,61 @@
                     </ui:repeat>
 
                     <div class="row">
-                        <div class="col-xs-12 form-group form-col-container">
-                            <label class="col-sm-2 control-label" for="message-fromtime">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.startDate']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </span>
-                            </label>
-                            <div class="col-sm-2 form-col-container">
+                        <div class="form-group form-col-container">
+                            <p:outputLabel styleClass="col-sm-3 control-label" for="message-fromtime" indicateRequired="false">
+                                #{bundle['edittextmessages.startDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                            </p:outputLabel>
+                            <div class="col-sm-6 form-col-container">
                                 <p:calendar id="message-fromtime"
-                                            tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 1}"
                                             value="#{EditTextMessagePage.dto.fromTime}"
                                             locale="#{dataverseSession.localeCode}"
                                             pattern="yyyy-MM-dd HH:mm"
                                             mask="true"
                                             binding="#{EditTextMessagePage.fromTimeInput}"
+                                            maskAutoClear="false"
+                                            autocomplete="off"
+                                            converterMessage="#{bundle['common.forms.calendar.dateAndTime.conversionMessage']}"
+                                            required="true"
+                                            requiredMessage="#{validationMessages['field.required']}"
                                 />
-                            </div>
-                            <div class="col-sm-5 form-col-container">
                                 <p:message for="message-fromtime" display="text"/>
                             </div>
                         </div>
                     </div>
 
                 <div class="row">
-                    <div class="col-xs-12 form-group form-col-container">
-                        <label class="col-sm-2 control-label" for="message-totime">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
-                                        #{bundle['edittextmessages.endDate']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
-                                    </span>
-                        </label>
-                        <div class="col-sm-2 form-col-container">
+                    <div class="form-group form-col-container">
+                        <p:outputLabel styleClass="col-sm-3 control-label" for="message-totime" indicateRequired="false">
+                            #{bundle['edittextmessages.endDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                        </p:outputLabel>
+                        <div class="col-sm-6 form-col-container">
                             <p:calendar id="message-totime"
-                                        tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 2}"
                                         value="#{EditTextMessagePage.dto.toTime}"
                                         locale="#{dataverseSession.localeCode}"
                                         pattern="yyyy-MM-dd HH:mm"
                                         mask="true"
-                                        binding="#{EditTextMessagePage.toTimeInput}"
+                                        maskAutoClear="false"
+                                        autocomplete="off"
+                                        converterMessage="#{bundle['common.forms.calendar.dateAndTime.conversionMessage']}"
+                                        required="true"
+                                        requiredMessage="#{validationMessages['field.required']}"
+                                        validator="#{EditTextMessagePage.validateEndDateTime}"
                             />
-                        </div>
-                        <div class="col-sm-5 form-col-container">
                             <p:message for="message-totime" display="text"/>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-xs-12 form-group form-col-container">
-                        <label class="col-sm-2 control-label" for="message-active">
-                                    <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info">
+                    <div class="form-group form-col-container">
+                        <label class="col-sm-3 control-label" for="message-active">
                                         #{bundle['edittextmessages.active']}
-                                    </span>
                         </label>
-                        <div class="col-sm-10 form-col-container">
+                        <div class="col-sm-6 form-col-container">
                             <p:selectBooleanCheckbox id="message-active"
-                                                     tabindex="#{EditTextMessagePage.dto.dataverseLocalizedMessage.size() + 3}"
-                                                     value="#{EditTextMessagePage.dto.active}"/>
+                                                     value="#{EditTextMessagePage.dto.active}"
+                                                     itemLabel="#{bundle['edittextmessages.active']}"
+                                                     style="padding-top: 4px;"/>
                         </div>
                     </div>
                 </div>
@@ -109,6 +120,8 @@
                     <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}"
                                      action="#{EditTextMessagePage.cancel()}" immediate="true"/>
                 </div>
+                
+            </div>
             </h:form>
         </ui:define>
     </ui:composition>

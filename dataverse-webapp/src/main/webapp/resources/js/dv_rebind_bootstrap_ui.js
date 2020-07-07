@@ -713,6 +713,27 @@ function reinitializePrimefacesComponentsJS() {
     if (PrimeFaces.widget.TabView) {
         PrimeFaces.widget.TabView.prototype.bindSwipeEvents = function() {}
     }
+    
+    if (PrimeFaces.widget.Paginator) {
+        var originalPaginatorInit = PrimeFaces.widget.Paginator.prototype.init;
+        var originalPaginatorUpdatePageLinks = PrimeFaces.widget.Paginator.prototype.updatePageLinks;
+        
+        PrimeFaces.widget.Paginator.prototype.init = function(cfg) {
+            originalPaginatorInit.apply(this, [cfg]);
+            
+            var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
+            console.log(currentPage);
+            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
+        }
+        
+        PrimeFaces.widget.Paginator.prototype.updatePageLinks = function() {
+            originalPaginatorUpdatePageLinks.apply(this);
+            
+            var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
+            console.log(currentPage);
+            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
+        }
+    }
 }
 reinitializePrimefacesComponentsJS();
 

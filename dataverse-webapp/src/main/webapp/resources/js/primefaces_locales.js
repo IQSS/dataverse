@@ -12,6 +12,8 @@ PrimeFaces.locales['en_US'].ariaSelectAutoComplete = 'Selected: '
 PrimeFaces.locales['en'].ariaSelectAutoComplete = 'Selected: '
 PrimeFaces.locales['en_US'].ariaUnselectAutoComplete = 'Unselected: '
 PrimeFaces.locales['en'].ariaUnselectAutoComplete = 'Unselected: '
+PrimeFaces.locales['en_US'].ariaCurrentPagePaginator = '(current)'
+PrimeFaces.locales['en'].ariaCurrentPagePaginator = '(current)'
 
 PrimeFaces.locales['pl'] = {
     closeText: 'Zamknij',
@@ -42,6 +44,7 @@ PrimeFaces.locales['pl'] = {
     aria: {
         'datatable.sort.ASC': 'aktywuj by posortować wartości w kolumnie rosnąco',
         'datatable.sort.DESC': 'aktywuj by posortować wartości w kolumnie malejąco',
+        'paginator.PAGE': 'Strona {0}'
     },
 
     
@@ -50,5 +53,6 @@ PrimeFaces.locales['pl'] = {
     filterInputSelectCheckboxMenu: 'Filtruj opcje',
     filterPickList: 'Filtruj',
     ariaSelectAutoComplete: 'Zaznaczono: ',
-    ariaUnselectAutoComplete: 'Odznaczono: '
+    ariaUnselectAutoComplete: 'Odznaczono: ',
+    ariaCurrentPagePaginator: '(aktualna)'
 };
