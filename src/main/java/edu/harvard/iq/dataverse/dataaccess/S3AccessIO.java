@@ -84,6 +84,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         
         try {
         	bucketName=getBucketName(driverId);
+        	maxPartSize = getMaxPartSize(driverId);
             s3=getClient(driverId);
             tm=getTransferManager(driverId);
 
@@ -98,6 +99,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		this(null, null, driverId);
         // TODO: validate the storage location supplied
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
+        maxPartSize = getMaxPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
     }
     
@@ -113,6 +115,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private TransferManager tm = null;
     private String bucketName = null;
     private String key = null;
+    private long maxPartSize;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
@@ -912,7 +915,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
 	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) {
 		
-		long chunkSize=5*1024*1024l; //5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
 		JsonObjectBuilder response = Json.createObjectBuilder();
 		try {
 			key = getMainFileKey();
@@ -924,7 +926,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 			initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
 			InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
 			String uploadId = initiationResponse.getUploadId();
-			for(int i=1;i<=(fileSize/chunkSize) + (fileSize%chunkSize > 0 ? 1: 0);i++) {
+			for(int i=1;i<=(fileSize/maxPartSize) + (fileSize%maxPartSize > 0 ? 1: 0);i++) {
 				GeneratePresignedUrlRequest uploadPartUrlRequest = 
 						new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
 				uploadPartUrlRequest.addRequestParameter("uploadId", uploadId);
@@ -948,6 +950,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 				}
 				response.add(Integer.toString(i), urlString);
 			}
+			  response.add("partSize", maxPartSize);
 			  response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
 			  response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
 			} catch (IOException e) {
@@ -977,6 +980,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private static String getBucketName(String driverId) {
     	return System.getProperty("dataverse.files." + driverId + ".bucket-name");
     }
+    
+	private static long getMaxPartSize(String driverId) {
+		long max = 5 * 1024 * 1024l; // as a default, pick the 5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
+
+		String partLength = System.getProperty("dataverse.files." + driverId + ".max-part-size");
+		try {
+			if (partLength != null) {
+				max = Long.parseLong(partLength);
+			}
+		} catch (NumberFormatException nfe) {
+			logger.warning("Unable to parse dataverse.files." + driverId + ".max-part-size as long: " + partLength);
+		}
+		return max;
+	}
 
 
     private static TransferManager getTransferManager(String driverId) {
