@@ -125,7 +125,7 @@ public class MailServiceBean implements java.io.Serializable {
         // QDR - uses the institution name rather than a dataverse/collection name in
         // email subject
         InternetAddress systemAddress = getSystemAddress();
-        String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
+        String institutionName = BundleUtil.getStringFromBundle("institution.name");
         String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
                 Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
                         BrandingUtil.getSupportTeamName(systemAddress, institutionName)));
