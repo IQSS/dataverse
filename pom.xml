@@ -61,6 +61,17 @@
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
         <repository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
             <url>https://repo1.maven.org/maven2</url>
@@ -86,17 +97,6 @@
             <id>dvn.private</id>
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
-        </repository>
-        <repository>
-            <id>payara-patched-externals</id>
-            <name>Payara Patched Externals</name>
-            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </repository>
     </repositories>
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
