@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -532,7 +534,14 @@ public class UserServiceBean {
         return save(user);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public AuthenticatedUser updateLastApiUseTime(AuthenticatedUser user) {
+        //assumes that AuthenticatedUser user already exists
+        user.setLastApiUseTime(new Timestamp(new Date().getTime()));
+        return save(user);
+    }
+    
+    public AuthenticatedUser badUpdateLastApiUseTime(AuthenticatedUser user) {
         //assumes that AuthenticatedUser user already exists
         user.setLastApiUseTime(new Timestamp(new Date().getTime()));
         return save(user);

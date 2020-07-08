@@ -1604,7 +1604,7 @@ public class Admin extends AbstractApiBean {
     @Path("/wait/{fileId}")
     public Response wait(@PathParam("fileId") String fileId) {
     	try {
-            User u = findAuthenticatedUserOrDie();
+            User u = badFindAuthenticatedUserOrDie(getRequestApiKey());
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
             }
