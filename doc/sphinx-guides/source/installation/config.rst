@@ -2138,7 +2138,7 @@ If you don’t want date facets to be sorted chronologically, set:
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
-The location of the "Standalone Zipper" service. If this option is specified, Dataverse will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to installe the external zipper. (This is still an experimental feature, as of v5.0). 
+The location of the "Standalone Zipper" service. If this option is specified, Dataverse will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of v5.0).
 
 To enable redirects to the zipper installed on the same server as the main Dataverse application: 
 

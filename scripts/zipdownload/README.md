@@ -53,14 +53,14 @@ generating a zipped stream from a certain offset.
 
 The implementation is a hack. It relies on direct access to everything - storage locations (filesystem or S3) and the database.
 
-There are no network calls between the Application and the zipper (an
+There are no network calls between the application (Dataverse) and the zipper (an
 implementation relying on such a call was discussed early
 on). Dataverse issues a "job key" and sends the user's browser to the
 zipper (to, for ex., /cgi-bin/zipdownload?<job key>) instead of
 /api/access/datafiles/<file ids>). To authorize the zipdownload for
 the "job key", and inform the zipper on which files to zip and where
 to find them, the application relies on a database table, that the
-zipper also has access too. In other words, there is a saved state
+zipper also has access to. In other words, there is a saved state
 information associated with each zipped download request. Zipper may
 be given a limited database access - for example, via a user
 authorized to access that one table only. After serving the files, the
@@ -87,7 +87,7 @@ could be done for Dataverse access urls in a design document
 (https://docs.google.com/document/d/1J8GW6zi-vSRKZdtFjLpmYJ2SUIcIkAEwHkP4q1fxL-s/edit#). (Basically,
 you hash the product of your request parameters, the issue timestamp
 AND some "secret" - like the user's API key - and send the resulting
-hash along with the request. Tempering with any of the parameters, or
+hash along with the request. Tampering with any of the parameters, or
 trying to extend the life span of the request, becomes impossible,
 because it would invalidate the hash). What stopped me from trying
 something like that was the sheer size of information that would need
