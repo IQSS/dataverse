@@ -34,7 +34,7 @@ public class ConfirmEmailServiceBean {
     private static final Logger logger = Logger.getLogger(ConfirmEmailServiceBean.class.getCanonicalName());
 
     @EJB
-    AuthenticationServiceBean dataverseUserService;
+    AuthenticationServiceBean authenticationService;
 
     @EJB
     MailServiceBean mailService;
@@ -46,6 +46,19 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    /**
+     * A simple interface to check if a user email has been verified or not.
+     * @param user
+     * @return true if verified, false otherwise
+     */
+    public boolean hasVerifiedEmail(AuthenticatedUser user) {
+        boolean hasTimestamp = user.getEmailConfirmed() != null;
+        boolean hasNoStaleVerificationTokens = this.findSingleConfirmEmailDataByUser(user) == null;
+        boolean isVerifiedByAuthProvider = authenticationService.lookupProvider(user).isEmailVerified();
+        
+        return (hasTimestamp && hasNoStaleVerificationTokens) || isVerifiedByAuthProvider;
+    }
 
     /**
      * Initiate the email confirmation process.
