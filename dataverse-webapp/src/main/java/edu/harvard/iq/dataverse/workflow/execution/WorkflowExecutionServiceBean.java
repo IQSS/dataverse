@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
@@ -54,21 +53,21 @@ public class WorkflowExecutionServiceBean {
         this.clock = clock;
     }
 
-
     // -------------------- LOGIC --------------------
 
     /**
-     * Starts executing workflow {@code wf} under the passed context.
+     * Starts executing {@link Workflow} under the passed context.
      *
-     * @param workflow   the workflow to execute.
-     * @param ctx the context in which the workflow is executed.
-     * @throws CommandException If the dataset could not be locked.
+     * @param workflow workflow to execute.
+     * @param ctx context in which the workflow is executed.
+     * @return WorkflowExecution that was started.
      */
-    public void start(Workflow workflow, WorkflowContext ctx)  {
+    public WorkflowExecution start(Workflow workflow, WorkflowContext ctx)  {
         lockDatasetForWorkflow(ctx);
         WorkflowExecutionContext context = contextFactory.workflowExecutionContextOf(ctx, workflow);
         context.start(executions, clock);
         scheduler.executeFirstWorkflowStep(context);
+        return context.getExecution();
     }
 
     /**
@@ -88,6 +87,22 @@ public class WorkflowExecutionServiceBean {
                     scheduler.resumePausedWorkflowStep(executionContext, externalData);
                     return executionContext.execution;
                 });
+    }
+
+    /**
+     * Finds most recent workflow execution of given trigger type for given dataset version.
+     *
+     * @param triggerType trigger type to match.
+     * @param datasetId dataset ID.
+     * @param majorVersionNumber dataset major version number.
+     * @param minorVersionNumber dataset minor version number.
+     * @return WorkflowExecution matching given criteria.
+     */
+    public Optional<WorkflowExecution> findLatestByTriggerTypeAndDatasetVersion(
+            WorkflowContext.TriggerType triggerType, long datasetId, long majorVersionNumber, long minorVersionNumber) {
+
+        return executions.findLatestByTriggerTypeAndDatasetVersion(
+                triggerType.name(), datasetId, majorVersionNumber, minorVersionNumber);
     }
 
     // -------------------- PRIVATE --------------------

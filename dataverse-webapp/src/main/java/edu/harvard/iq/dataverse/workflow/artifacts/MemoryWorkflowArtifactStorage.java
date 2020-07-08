@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow.artifacts;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.IOUtils;
 
+import javax.enterprise.inject.Vetoed;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,14 +18,10 @@ import static java.util.Optional.ofNullable;
  * Simple in-memory implementation of {@link WorkflowArtifactStorage}.
  * Meant mainly for usage in tests.
  */
+@Vetoed
 public class MemoryWorkflowArtifactStorage implements WorkflowArtifactStorage {
 
     private static final Map<String, byte[]> storage = new HashMap<>();
-
-    @Override
-    public Type getType() {
-        return Type.MEMORY;
-    }
 
     @Override
     public Optional<InputSupplier<InputStream>> read(String location) {

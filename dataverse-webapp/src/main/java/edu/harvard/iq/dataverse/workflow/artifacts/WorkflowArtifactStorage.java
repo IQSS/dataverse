@@ -12,22 +12,6 @@ import java.util.Optional;
 public interface WorkflowArtifactStorage {
 
     /**
-     * Storage type for workflow artifacts. Constant identifiers should not exceed 64 characters.
-     * <p><b>IMPORTANT:</b> do not change any of existing identifiers as this will cause data inconsistencies
-     * and break the functionality of downloading artifacts.
-     */
-    enum Type {
-        MEMORY,
-        DISK,
-        DATABASE
-    }
-
-    /**
-     * {@link Type} for storage on which this implementations operates.
-     */
-    Type getType();
-
-    /**
      * Reads specified location for stored data.
      * @param location location within storage to read from.
      * @return {@link Optional} containing {@link InputStream} of stored data, or empty one if location was not found.

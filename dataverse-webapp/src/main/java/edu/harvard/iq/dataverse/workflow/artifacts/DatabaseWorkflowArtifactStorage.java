@@ -19,8 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of {@link WorkflowArtifactStorage} for {@link Type#DATABASE}.
- * The data is stored inside db_storage table.
+ * Allows storing binary data in form of records in <code>db_storage</code> table.
  */
 @Singleton
 public class DatabaseWorkflowArtifactStorage implements WorkflowArtifactStorage {
@@ -31,11 +30,6 @@ public class DatabaseWorkflowArtifactStorage implements WorkflowArtifactStorage 
     protected EntityManager em;
 
     // -------------------- LOGIC --------------------
-
-    @Override
-    public Type getType() {
-        return Type.DATABASE;
-    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

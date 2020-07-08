@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.workflow.artifacts;
 
 import com.google.common.io.InputSupplier;
 
+import javax.enterprise.inject.Vetoed;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -11,6 +12,10 @@ import java.util.UUID;
 
 import static java.nio.file.Files.newInputStream;
 
+/**
+ * Allows storing binary data in form of files on local disk directory.
+ */
+@Vetoed
 public class DiskWorkflowArtifactStorage implements WorkflowArtifactStorage {
 
     private final Path storage;
@@ -26,11 +31,6 @@ public class DiskWorkflowArtifactStorage implements WorkflowArtifactStorage {
             throw new IllegalArgumentException("Path " + storage + " is not writable.");
         }
         this.storage = storage;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.DISK;
     }
 
     @Override

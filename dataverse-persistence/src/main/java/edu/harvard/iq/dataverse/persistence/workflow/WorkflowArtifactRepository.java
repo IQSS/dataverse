@@ -18,14 +18,19 @@ public class WorkflowArtifactRepository extends JpaRepository<Long, WorkflowArti
 
     public List<WorkflowArtifact> findByWorkflowExecutionId(Long workflowExecutionId) {
         return em.createQuery(
-                "select a from WorkflowArtifacts a where a.workflowExecutionId = :workflowExecutionId",
-                WorkflowArtifact.class)
+                        "select a " +
+                                "from WorkflowArtifacts a " +
+                                "where a.workflowExecutionId = :workflowExecutionId",
+                        WorkflowArtifact.class)
                 .setParameter("workflowExecutionId", workflowExecutionId)
                 .getResultList();
     }
 
     public int deleteByWorkflowExecutionId(Long workflowExecutionId) {
-        return em.createQuery("select a from WorkflowArtifacts a where a.workflowExecutionId = :workflowExecutionId")
+        return em.createQuery(
+                        "select a " +
+                                "from WorkflowArtifacts a " +
+                                "where a.workflowExecutionId = :workflowExecutionId")
                 .setParameter("workflowExecutionId", workflowExecutionId)
                 .executeUpdate();
     }

@@ -143,7 +143,7 @@ public class WorkflowExecutionWorker implements MessageListener {
         log.trace("{} finished successfully", step);
         step.success(stepResult.getData(), clock);
         ctx.save(datasets);
-        artifacts.saveAll(ctx.getExecution().getId(), stepResult);
+        artifacts.createAll(ctx.getExecution().getId(), stepResult.getArtifacts());
         scheduler.executeNextWorkflowStep(ctx, stepResult);
     }
 
@@ -155,7 +155,7 @@ public class WorkflowExecutionWorker implements MessageListener {
     private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Failure stepResult) {
         log.warn("{} failed - {} - rolling back", step, stepResult.getReason());
         step.failure(stepResult.getData(), clock);
-        artifacts.saveAll(ctx.getExecution().getId(), stepResult);
+        artifacts.createAll(ctx.getExecution().getId(), stepResult.getArtifacts());
         workflowFailed(ctx, stepResult);
     }
 

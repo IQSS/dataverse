@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifact;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactSource;
 import edu.harvard.iq.dataverse.test.WithTestClock;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -33,12 +32,6 @@ public class WorkflowArtifactServiceBeanTest implements WithTestClock {
 
     WorkflowArtifactSource data = new WorkflowArtifactSource(NAME, ENCODING, DATA_SUPPLIER);
 
-    @BeforeEach
-    public void setUp() {
-        doReturn(WorkflowArtifactStorage.Type.DATABASE)
-                .when(storage).getType();
-    }
-
     @Test
     @DisplayName("Should save artifact data and metadata")
     public void shouldSaveDataAndMetadata() throws IOException {
@@ -48,13 +41,12 @@ public class WorkflowArtifactServiceBeanTest implements WithTestClock {
 
         // when
         WorkflowArtifact artifact =
-                serviceBean.saveArtifact(1L,  data);
+                serviceBean.create(1L,  data);
 
         // then
         assertThat(artifact.getId()).isNotNull();
         assertThat(artifact.getCreatedAt()).isEqualTo(clock.instant());
         assertThat(artifact.getStorageLocation()).isEqualTo("testLocation");
-        assertThat(artifact.getStorageType()).isEqualTo(WorkflowArtifactStorage.Type.DATABASE.name());
         assertThat(artifact.getName()).isEqualTo(NAME);
         assertThat(artifact.getEncoding()).isEqualTo(ENCODING);
     }
@@ -64,12 +56,12 @@ public class WorkflowArtifactServiceBeanTest implements WithTestClock {
     public void shouldRetrieveStoredData() {
         // given
         WorkflowArtifact artifact = new WorkflowArtifact(1L, NAME, ENCODING,
-                WorkflowArtifactStorage.Type.DATABASE.name(), "testLocation", clock);
+                "testLocation", clock);
         doReturn(Optional.of(DATA_SUPPLIER))
                 .when(storage).read("testLocation");
 
         // when
-        Optional<InputSupplier<InputStream>> streamSupplier = serviceBean.readAsStream(artifact);
+        Optional<InputSupplier<InputStream>> streamSupplier = serviceBean.readAsStream(artifact.getStorageLocation());
 
         // then
         assertThat(streamSupplier.isPresent()).isTrue();

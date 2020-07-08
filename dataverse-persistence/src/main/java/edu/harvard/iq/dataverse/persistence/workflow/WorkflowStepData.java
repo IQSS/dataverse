@@ -24,7 +24,7 @@ public class WorkflowStepData implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne
     private Workflow parent;
@@ -41,59 +41,62 @@ public class WorkflowStepData implements Serializable {
     @Column(length = 2048)
     private Map<String, String> stepSettings;
 
+    public Long getId() {
+        return id;
+    }
 
     public Workflow getParent() {
         return parent;
-    }
-
-    public void setParent(Workflow parent) {
-        this.parent = parent;
     }
 
     public String getProviderId() {
         return providerId;
     }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
     public String getStepType() {
         return stepType;
-    }
-
-    public void setStepType(String stepType) {
-        this.stepType = stepType;
     }
 
     public Map<String, String> getStepParameters() {
         return stepParameters;
     }
 
-    public void setStepParameters(Map<String, String> stepParameters) {
-        this.stepParameters = stepParameters;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "WorkflowStepData{" + "parent=" + parent + ", providerId=" + providerId + ", stepType=" + stepType + ", parameters=" + stepParameters + ", settings=" + stepSettings + '}';
-    }
-
-    public void setStepSettings(Map<String, String> settingsMap) {
-        this.stepSettings = settingsMap;
-    }
-
     public Map<String, String> getStepSettings() {
         return stepSettings;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 
+    public void setParent(Workflow parent) {
+        this.parent = parent;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public void setStepType(String stepType) {
+        this.stepType = stepType;
+    }
+
+    public void setStepParameters(Map<String, String> stepParameters) {
+        this.stepParameters = stepParameters;
+    }
+
+    public void setStepSettings(Map<String, String> stepSettings) {
+        this.stepSettings = stepSettings;
+    }
+
+    @Override
+    public String toString() {
+        return "WorkflowStepData{" +
+                "parent=" + parent +
+                ", providerId=" + providerId +
+                ", stepType=" + stepType +
+                ", parameters=" + stepParameters +
+                ", settings=" + stepSettings +
+                '}';
+    }
 }

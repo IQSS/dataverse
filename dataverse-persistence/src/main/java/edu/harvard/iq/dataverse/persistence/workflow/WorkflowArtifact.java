@@ -33,13 +33,8 @@ public class WorkflowArtifact implements JpaEntity<Long> {
      * The string should contain encoding's name that could be recognized by
      * {@link java.nio.charset.Charset}#forName method.
      */
+    @Column(name = "encoding")
     private String encoding;
-
-    /**
-     * The type of storage for the given artifact.
-     */
-    @Column(name = "storage_type")
-    private String storageType;
 
     /**
      * Location of artifact within the storage.
@@ -51,13 +46,16 @@ public class WorkflowArtifact implements JpaEntity<Long> {
 
     public WorkflowArtifact() { }
 
+    public WorkflowArtifact(Long workflowExecutionId, WorkflowArtifactSource source, String storageLocation, Clock clock) {
+        this(workflowExecutionId, source.getName(), source.getEncoding(), storageLocation, clock);
+    }
+
     public WorkflowArtifact(Long workflowExecutionId, String name, String encoding,
-                            String storageType, String storageLocation, Clock clock) {
+                            String storageLocation, Clock clock) {
         this.workflowExecutionId = workflowExecutionId;
         this.createdAt = clock.instant();
         this.name = name;
         this.encoding = encoding;
-        this.storageType = storageType;
         this.storageLocation = storageLocation;
     }
 
@@ -82,10 +80,6 @@ public class WorkflowArtifact implements JpaEntity<Long> {
 
     public String getEncoding() {
         return encoding;
-    }
-
-    public String getStorageType() {
-        return storageType;
     }
 
     public String getStorageLocation() {
