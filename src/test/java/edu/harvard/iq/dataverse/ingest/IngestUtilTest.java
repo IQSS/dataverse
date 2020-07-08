@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -609,6 +610,27 @@ public class IngestUtilTest {
             Logger.getLogger(IngestUtilTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         assertEquals("UNF:6:FWBO/a1GcxDnM3fNLdzrHw==", datasetUnfValue);
+    }
+
+    @Test
+    public void testPathPlusFilename() {
+        String incomingLabel = "incomingLabel";
+        String incomingDirectoryLabel = "incomingDirectoryLabel";
+        String existingLabel = "existingLabel";
+        String existingDirectoryLabel = "existingDirectoryLabel";
+        String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+        assertEquals("incomingDirectoryLabel/incomingLabel", pathPlusFilename);
+    }
+
+    @Test
+    public void renameFileToSameName() {
+        String pathPlusFilename = "README.md";
+        FileMetadata file1 = new FileMetadata();
+        file1.setLabel("README.md");
+        FileMetadata file2 = new FileMetadata();
+        file2.setLabel("README2.md");
+        List<FileMetadata> fileMetadatas = Arrays.asList(file1, file2);
+        assertTrue(IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fileMetadatas));
     }
 
 }

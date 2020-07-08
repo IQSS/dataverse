@@ -54,6 +54,7 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -73,7 +74,7 @@ import javax.validation.ValidatorFactory;
  * Register the providers in the {@link #startup()} method.
  */
 @Named
-@Singleton
+@Stateless
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
@@ -293,6 +294,7 @@ public class AuthenticationServiceBean {
             if (apiToken != null) {
                 em.remove(apiToken);
             }
+            // @todo: this should be handed down to the service instead of doing it here.
             ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
                 /**
