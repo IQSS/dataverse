@@ -293,6 +293,7 @@ public class AuthenticationServiceBean {
             if (apiToken != null) {
                 em.remove(apiToken);
             }
+            // @todo: this should be handed down to the service instead of doing it here.
             ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
                 /**
