@@ -6,6 +6,10 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2Exception;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -40,6 +44,15 @@ public class OrcidOAuth2APTest extends OrcidOAuth2AP {
 		    // no-op; assert that the needed strings are not null in tests
 	    }
 	    return txt;
+    }
+    
+    @ParameterizedTest
+    @CsvSource({"https://pub.orcid.org/v2.1/{ORCID}/person,/authenticate", "https://api.orcid.org/v2.0/{ORCID}/person,/read-limited"})
+    public void testPublicApiScope(String endpoint, String scope) {
+        // when
+        OrcidOAuth2AP provider = new OrcidOAuth2AP("clientId", "clientSecret", endpoint);
+        // then
+        assertEquals(scope, provider.getSpacedScope());
     }
 
     @Test
