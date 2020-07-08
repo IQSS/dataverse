@@ -397,18 +397,21 @@ public class Files extends AbstractApiBean {
 
                 JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
                 javax.json.JsonObject jsonObject = jsonReader.readObject();
-                String label = jsonObject.getString("label", null);
-                String directoryLabel = jsonObject.getString("directoryLabel", null);
-                String path = "";
-                if (directoryLabel != null) {
-                    path = directoryLabel + "/";
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
+                    }
                 }
-                if (label == null) {
-                    label = df.getFileMetadata().getLabel();
-                }
-                if (IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
-                    String incomingPathPlusFileName = path + label;
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);

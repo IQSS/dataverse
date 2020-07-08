@@ -102,52 +102,34 @@ public class IngestUtil {
     }
 
     /**
+     * Given an existing file that may or may not have a directoryLabel, take
+     * the incoming label and/or directory label and combine it with what's in
+     * the existing file, overwriting and filling in as necessary.
+     */
+    public static String getPathAndFileNameToCheck(String incomingLabel, String incomingDirectoryLabel, String existingLabel, String existingDirectoryLabel) {
+        String labelToReturn = existingLabel;
+        String directoryLabelToReturn = existingDirectoryLabel;
+        if (incomingLabel != null) {
+            labelToReturn = incomingLabel;
+        }
+        if (incomingDirectoryLabel != null) {
+            directoryLabelToReturn = incomingDirectoryLabel;
+        }
+        if (directoryLabelToReturn != null) {
+            return directoryLabelToReturn + "/" + labelToReturn;
+        } else {
+            return labelToReturn;
+        }
+    }
+
+    /**
      * Given a new proposed label or directoryLabel for a file, check against
      * existing files if a duplicate directoryLabel/label combination would be
      * created.
-     *
-     * @param label The new label (filename) that is being proposed. Can be
-     * null.
-     * @param directoryLabel The new directoryLabel (file path) that is being
-     * proposed. Can be null.
-     * @param fileMetadatas The list fileMetadatas to be compared against,
-     * probably from a draft.
-     * @param dataFile The file that is being updated with a new name or path.
-     * @return true if there is a conflict, false otherwise.
      */
-    public static boolean conflictsWithExistingFilenames(String label, String directoryLabel, List<FileMetadata> fileMetadatas, DataFile dataFile) {
-
-        //Remove from the metadatas list the name of the datafile in question
-        List <FileMetadata> copy = new ArrayList<>();
-        for (FileMetadata fm: fileMetadatas){
-            copy.add(fm);
-        }
-        Iterator<FileMetadata> fmIt = copy.iterator();
-
-        while (fmIt.hasNext()) {
-            FileMetadata fm = fmIt.next();
-            if (fm.getDataFile().equals(dataFile)) {
-                fmIt.remove();
-            }
-        }
-
-        List<String> filePathsAndNames = getPathsAndFileNames(copy);
-        if (label != null || directoryLabel != null) {
-            String path = "";
-            if (directoryLabel != null) {
-                path = directoryLabel + "/";
-            }
-            if (label == null) {
-                label = dataFile.getFileMetadata().getLabel();
-            }
-            String incomingPathPlusFileName = path + label;
-            logger.fine(filePathsAndNames.toString());
-            logger.fine("incomingPathName: " + incomingPathPlusFileName);
-            if (filePathsAndNames.contains(incomingPathPlusFileName)) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean conflictsWithExistingFilenames(String pathPlusFilename, List<FileMetadata> fileMetadatas) {
+        List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
+        return filePathsAndNames.contains(pathPlusFilename);
     }
 
     /**
@@ -263,9 +245,10 @@ public class IngestUtil {
         // create list of existing path names from all FileMetadata in the DatasetVersion
         // (skipping the one specified fileMetadata, if supplied. That's in order to 
         // be able to call this method 
+        // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if (fm.getId() != null && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
+            if ((fm.isInPriorVersion() || fm.getId() != null) && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 
