@@ -547,7 +547,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         
         try {
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile);
-            location = storageIO.getStorageLocation();
+            location = getDirectStorageLocatrion(storageIO.getStorageLocation());
+
             if (orig && dataFile.isTabularData()) {
                 location = location.concat(".orig");
             }
@@ -577,6 +578,21 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         Timestamp deleteTime = new Timestamp(new Date().getTime() - 300000L);
         em.createNativeQuery("DELETE FROM CUSTOMZIPSERVICEREQUEST WHERE ISSUETIME < " 
                 + "'" + deleteTime + "';").executeUpdate();
+    }
+    
+    public String getDirectStorageLocatrion(String storageLocation) {
+        String storageDriverId;
+        int separatorIndex = storageLocation.indexOf("://");
+        if ( separatorIndex > 0 ) {
+            storageDriverId = storageLocation.substring(0,separatorIndex);
+        
+            String storageType = DataAccess.getDriverType(storageDriverId);
+            if ("file".equals(storageType) || "s3".equals(storageType)) {
+                return storageType.concat(storageLocation.substring(separatorIndex));
+            }
+        }
+            
+        return null; 
     }
     
 }
