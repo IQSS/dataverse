@@ -156,7 +156,7 @@ Beginning with Dataverse 5.0, the way Dataverse handles duplicate files (filenam
 - If a user attempts to add a file to a directory where a file already exists with that directory/filename combination, Dataverse will adjust the file path and names by adding "-1" or "-2" as applicable. This change will be visible in the list of files being uploaded. 
 - If the directory of a file is edited in such a way that would create a directory/filename combination that already exists, Dataverse will display an error.
 - If a user attempts to replace a file with another file that has the same checksum, an error message will be displayed and the file will not be able to be replaced.
-- If a user attempts to replace a file with a file that has the same checksum as different file in the dataset a warning will be displayed.
+- If a user attempts to replace a file with a file that has the same checksum as a different file in the dataset, a warning will be displayed.
 
 File Previews
 -------------
