@@ -54,7 +54,6 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Singleton;
-import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -74,7 +73,7 @@ import javax.validation.ValidatorFactory;
  * Register the providers in the {@link #startup()} method.
  */
 @Named
-@Stateless
+@Singleton
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
