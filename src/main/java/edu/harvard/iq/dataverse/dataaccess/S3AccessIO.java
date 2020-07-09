@@ -959,12 +959,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 					}
 				}
 				urls.add(Integer.toString(i), urlString);
-				response.add("urls", urls);
-				response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
-						+ "&storageidentifier=" + storageIdentifier);
-				response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
-						+ "&storageidentifier=" + storageIdentifier);
 			}
+			response.add("urls", urls);
+			response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+					+ "&storageidentifier=" + storageIdentifier);
+			response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+					+ "&storageidentifier=" + storageIdentifier);
+
 		}
 		response.add("partSize", maxPartSize);
 
