@@ -16,7 +16,9 @@ For example, if this is the same Apache that's in front of your Dataverse Payara
 
 ``ProxyPassMatch ^/cgi-bin/zipdownload !``
 
-to activate in Dataverse: 
+(see the "Advanced" section of the Installation Guide for some extra troubleshooting tips)
+
+To activate in Dataverse: 
 
 curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
 

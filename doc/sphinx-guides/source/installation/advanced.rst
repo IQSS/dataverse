@@ -64,19 +64,22 @@ source tree for more information.
 To install: You can follow the instructions in the file above to build
 ``ZipDownloadService-v1.0.0.jar``. It will also be available, pre-built as part of the Dataverse release on GitHub. Copy it, together with the shell
 script scripts/zipdownload/cgi-bin/zipdownload to the cgi-bin
-directory of the chosen Apache server (/var/www/cgi-bin standard).
-You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside.
-For example, if this is the same Apache that's in front of your Dataverse Payara instance, you will need to add another pass through statement to your configuration:
+directory of the chosen Apache server (/var/www/cgi-bin standard). 
 
-``ProxyPassMatch ^/cgi-bin/zipdownload !``
-
-Edit the config lines in the shell script (zipdownload) to configure
+Make sure the shell script (zipdownload) is executable, and edit it to configure the
 database access credentials. Do note that the executable does not need
 access to the entire Dataverse database. A security-conscious admin
 can create a dedicated database user with access to just one table:
 ``CUSTOMZIPSERVICEREQUEST``.
 
-to activate in Dataverse::
+You may need to make extra Apache configuration changes to make sure /cgi-bin/zipdownload is accessible from the outside.
+For example, if this is the same Apache that's in front of your Dataverse Payara instance, you will need to add another pass through statement to your configuration:
+
+``ProxyPassMatch ^/cgi-bin/zipdownload !``
+
+Test this by accessing it directly at ``<SERVER URL>/cgi-bin/download``. You should get a ``404 No such download job!``. If instead you are getting an "internal server error", this may be an SELinux issue; try ``setenforce Permissive``. If you are getting a generic Dataverse "not found" page, review the ``ProxyPassMatch`` rule you have added. 
+
+To activate in Dataverse::
 
    curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl
 
