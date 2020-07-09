@@ -50,6 +50,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -879,14 +880,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
+    @Deprecated
     public String generateTemporaryS3UploadUrl() throws IOException {
-
+    	
         key = getMainFileKey();
-        java.util.Date expiration = new java.util.Date();
+        Date expiration = new Date();
         long msec = expiration.getTime();
         msec += 60 * 1000 * getUrlExpirationMinutes();
         expiration.setTime(msec);
 
+        return generateTemporaryS3UploadUrl(key, expiration);
+    }
+    
+	private String generateTemporaryS3UploadUrl(String key, Date expiration) throws IOException {
         GeneratePresignedUrlRequest generatePresignedUrlRequest = 
         		new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
         //Require user to add this header to indicate a temporary file
@@ -913,53 +919,57 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return urlString;
     }
     
-	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) {
-		
+	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) throws IOException {
+
 		JsonObjectBuilder response = Json.createObjectBuilder();
-		try {
-			key = getMainFileKey();
-			java.util.Date expiration = new java.util.Date();
-			long msec = expiration.getTime();
-			msec += 60 * 1000 * getUrlExpirationMinutes();
-			expiration.setTime(msec);
+		key = getMainFileKey();
+		java.util.Date expiration = new java.util.Date();
+		long msec = expiration.getTime();
+		msec += 60 * 1000 * getUrlExpirationMinutes();
+		expiration.setTime(msec);
+		if (fileSize <= maxPartSize) {
+			response.add("url", generateTemporaryS3UploadUrl(key, expiration));
+		} else {
+			JsonObjectBuilder urls = Json.createObjectBuilder();
 			InitiateMultipartUploadRequest initiationRequest = new InitiateMultipartUploadRequest(bucketName, key);
 			initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
 			InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
 			String uploadId = initiationResponse.getUploadId();
-			for(int i=1;i<=(fileSize/maxPartSize) + (fileSize%maxPartSize > 0 ? 1: 0);i++) {
-				GeneratePresignedUrlRequest uploadPartUrlRequest = 
-						new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
+			for (int i = 1; i <= (fileSize / maxPartSize) + (fileSize % maxPartSize > 0 ? 1 : 0); i++) {
+				GeneratePresignedUrlRequest uploadPartUrlRequest = new GeneratePresignedUrlRequest(bucketName, key)
+						.withMethod(HttpMethod.PUT).withExpiration(expiration);
 				uploadPartUrlRequest.addRequestParameter("uploadId", uploadId);
 				uploadPartUrlRequest.addRequestParameter("partNumber", Integer.toString(i));
-				URL presignedUrl; 
+				URL presignedUrl;
 				try {
 					presignedUrl = s3.generatePresignedUrl(uploadPartUrlRequest);
 				} catch (SdkClientException sce) {
-					logger.warning("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
-					presignedUrl = null; 
+					logger.warning("SdkClientException generating temporary S3 url for " + key + " (" + sce.getMessage()
+							+ ")");
+					presignedUrl = null;
 				}
 				String urlString = null;
 				if (presignedUrl != null) {
 					String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
 					String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
-					if(proxy!=null) {
+					if (proxy != null) {
 						urlString = presignedUrl.toString().replace(endpoint, proxy);
 					} else {
 						urlString = presignedUrl.toString();
 					}
 				}
-				response.add(Integer.toString(i), urlString);
+				urls.add(Integer.toString(i), urlString);
+				response.add("urls", urls);
+				response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+						+ "&storageidentifier=" + storageIdentifier);
+				response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+						+ "&storageidentifier=" + storageIdentifier);
 			}
-			  response.add("partSize", maxPartSize);
-			  response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
-			  response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId + "&storageidentifier=" + storageIdentifier );
-			} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		response.add("partSize", maxPartSize);
+
 		return response;
 	}
-
     
     int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files." + this.driverId + ".url-expiration-minutes"); 

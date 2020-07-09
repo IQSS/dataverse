@@ -1487,6 +1487,7 @@ public class Datasets extends AbstractApiBean {
 
 @GET
 @Path("{id}/uploadsid")
+@Deprecated
 public Response getUploadUrl(@PathParam("id") String idSupplied) {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
@@ -1524,38 +1525,41 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 }
 
 @GET
-@Path("{id}/mpupload")
+@Path("{id}/uploadurls")
 public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam("size") long fileSize) {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
 
 		boolean canUpdateDataset = false;
 		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
+			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset)
+					.canIssue(UpdateDatasetVersionCommand.class);
 		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting upload URLs for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+			logger.info(
+					"Exception thrown while trying to figure out permissions while getting upload URLs for dataset id "
+							+ dataset.getId() + ": " + ex.getLocalizedMessage());
 		}
 		if (!canUpdateDataset) {
-            return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-        }
-        S3AccessIO<DataFile> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-        if(s3io == null) {
-        	return error(Response.Status.NOT_FOUND,"Direct upload not supported for files in this dataset: " + dataset.getId());
+			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
 		}
-		JsonObjectBuilder urlsBuilder = null;
-        String storageIdentifier = null;
+		S3AccessIO<DataFile> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+		if (s3io == null) {
+			return error(Response.Status.NOT_FOUND,
+					"Direct upload not supported for files in this dataset: " + dataset.getId());
+		}
+		JsonObjectBuilder response = null;
+		String storageIdentifier = null;
 		try {
 			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-			urlsBuilder = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
-        	
-        } catch (IOException io) {
-        	logger.warning(io.getMessage());
-        	throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
+			response = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
+
+		} catch (IOException io) {
+			logger.warning(io.getMessage());
+			throw new WrappedResponse(io,
+					error(Response.Status.INTERNAL_SERVER_ERROR, "Could not create process direct upload request"));
 		}
-		
-		JsonObjectBuilder response = Json.createObjectBuilder()
-	            .add("urls", urlsBuilder)
-	            .add("storageIdentifier", storageIdentifier );
+
+		response.add("storageIdentifier", storageIdentifier);
 		return ok(response);
 	} catch (WrappedResponse wr) {
 		return wr.getResponse();
@@ -1596,13 +1600,16 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
 		List<PartETag> eTagList = new ArrayList<PartETag>();
-
+        logger.info("Etags: " + partETagBody);
 		try {
 			JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
 			JsonObject object = jsonReader.readObject();
 			jsonReader.close();
 			for(String partNo : object.keySet()) {
 				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
+			}
+			for(PartETag et: eTagList) {
+				logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
 			}
 		} catch (JsonException je) {
 			logger.info("Unable to parse eTags from: " + partETagBody);
