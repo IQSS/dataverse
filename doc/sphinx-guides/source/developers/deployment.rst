@@ -84,7 +84,7 @@ Once you have done the configuration above, you are ready to try running the "ec
 
 Download :download:`ec2-create-instance.sh<https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
-To run it with default values you just need the script, but you may also want a current copy of the ansible :download:`group vars<https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_ file.
+To run it with default values you just need the script, but you may also want a current copy of the ansible `group vars <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_ file.
 
 ec2-create-instance accepts a number of command-line switches, including:
 
@@ -109,18 +109,18 @@ Migrating Datafiles from Local Storage to S3
 
 A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
 
-The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a file:// prefix, so you'll want to catch both cases.
+The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
 
-To Update Dataset Location to S3, Assuming a file:// Prefix:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To Update Dataset Location to S3, Assuming a ``file://`` Prefix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
   UPDATE dvobject SET storageidentifier=REPLACE(storageidentifier,'file://','s3://')
     WHERE dtype='Dataset';
 
-To Update Datafile Location to your-s3-bucket, Assuming a file:// Prefix:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To Update Datafile Location to your-s3-bucket, Assuming a ``file://`` Prefix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -130,8 +130,8 @@ To Update Datafile Location to your-s3-bucket, Assuming a file:// Prefix:
     AND s.id = o.owner_id AND s.harvestingclient_id IS null
     AND o.storageidentifier NOT LIKE 's3://%');
 
-To Update Datafile Location to your-s3-bucket, Assuming no file:// Prefix:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To Update Datafile Location to your-s3-bucket, Assuming no ``file://`` Prefix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
