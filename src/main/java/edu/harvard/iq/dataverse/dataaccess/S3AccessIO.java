@@ -1001,6 +1001,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 				long val = Long.parseLong(partLength);
 				if(val>min) {
 					min=val;
+				} else {
+					logger.warning(min + " is the minimum part size allowed for jvm option dataverse.files." + driverId + ".min-part-size" );
 				}
 			}
 		} catch (NumberFormatException nfe) {

@@ -1629,6 +1629,13 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 		} catch (IOException io) {
 			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
+			try {
+				S3AccessIO.abortMultipartUpload(dataset, storageidentifier, uploadId);
+			} catch (IOException e) {
+				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
+				logger.severe(io.getMessage());
+			}
+
 			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload")); 
 		}
 		return ok("Multipart Upload completed");
