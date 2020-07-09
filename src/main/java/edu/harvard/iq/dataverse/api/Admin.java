@@ -1600,96 +1600,11 @@ public class Admin extends AbstractApiBean {
         return ok("Datafile rehashing complete. " + fileId + "  successfully rehashed. New hash value is: " + newChecksum);
     }
     
-    @GET
-    @Path("/wait/{fileId}")
-    public Response wait(@PathParam("fileId") String fileId) {
-    	try {
-            User u = badFindAuthenticatedUserOrDie(getRequestApiKey());
-            if (!u.isSuperuser()) {
-                return error(Status.UNAUTHORIZED, "must be superuser");
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-     try {
-		Thread.sleep(100000);
-	} catch (InterruptedException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-     return ok("It's been 100 seconds!");
-    }
-    
-    @GET
-    @Path("/validateDataFileHashValue/{fileId}")
-    public Response getValidateDataFileHashValue(@PathParam("fileId") String fileId) {
-    	try {
-            User u = findAuthenticatedUserOrDie();
-            if (!u.isSuperuser()) {
-                return error(Status.UNAUTHORIZED, "must be superuser");
-            }
-        } catch (WrappedResponse e1) {
-            return error(Status.UNAUTHORIZED, "api key required");
-        }
-
-        DataFile fileToValidate = null;
-        try {
-            fileToValidate = findDataFileOrDie(fileId);
-        } catch (WrappedResponse r) {
-            logger.info("Could not find file with the id: " + fileId);
-            return error(Status.BAD_REQUEST, "Could not find file with the id: " + fileId);
-        }
-
-        if (fileToValidate.isHarvested()) {
-            return error(Status.BAD_REQUEST, "File with the id: " + fileId + " is harvested.");
-        }
-
-        DataFile.ChecksumType cType = null;
-        try {
-            String checkSumTypeFromDataFile = fileToValidate.getChecksumType().toString();
-            cType = DataFile.ChecksumType.fromString(checkSumTypeFromDataFile);
-        } catch (IllegalArgumentException iae) {
-            return error(Status.BAD_REQUEST, "Unknown algorithm");
-        }
-
-        String currentChecksum = fileToValidate.getChecksumValue();
-        String calculatedChecksum = "";
-        InputStream in = null;
-        try {
-
-            StorageIO<DataFile> storage = fileToValidate.getStorageIO();
-            storage.open(DataAccessOption.READ_ACCESS);
-            if (!fileToValidate.isTabularData()) {
-                in = storage.getInputStream();
-            } else {
-                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-            }
-            if (in == null) {
-                return error(Status.NOT_FOUND, "Could not retrieve file with the id: " + fileId);
-            }
-            calculatedChecksum = FileUtil.calculateChecksum(in, cType);
-
-        } catch (Exception e) {
-            logger.warning("Unexpected Exception: " + e.getMessage());
-            return error(Status.BAD_REQUEST, "Checksum Validation Unexpected Exception: " + e.getMessage());
-        } finally {
-            IOUtils.closeQuietly(in);
-
-        }
-
-        if (currentChecksum.equals(calculatedChecksum)) {
-            return ok("Datafile validation complete for " + fileId + ". The hash value is: " + calculatedChecksum);
-        } else {
-            return error(Status.EXPECTATION_FAILED, "Datafile validation failed for " + fileId + ". The saved hash value is: " + currentChecksum + " while the recalculated hash value for the stored file is: " + calculatedChecksum);
-        }
-
-    }
-    
     @POST
     @Path("/validateDataFileHashValue/{fileId}")
     public Response validateDataFileHashValue(@PathParam("fileId") String fileId) {
 
-/*        try {
+        try {
             User u = findAuthenticatedUserOrDie();
             if (!u.isSuperuser()) {
                 return error(Status.UNAUTHORIZED, "must be superuser");
@@ -1697,7 +1612,7 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse e1) {
             return error(Status.UNAUTHORIZED, "api key required");
         }
-*/
+
         DataFile fileToValidate = null;
         try {
             fileToValidate = findDataFileOrDie(fileId);

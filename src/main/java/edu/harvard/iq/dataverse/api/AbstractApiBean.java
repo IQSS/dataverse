@@ -385,16 +385,6 @@ public abstract class AbstractApiBean {
         throw new WrappedResponse( badApiKey(key) );
     }
 
-    protected AuthenticatedUser badFindAuthenticatedUserOrDie( String key ) throws WrappedResponse {
-        AuthenticatedUser authUser = authSvc.lookupUser(key);
-        if ( authUser != null ) {
-             authUser = userSvc.badUpdateLastApiUseTime(authUser);
-
-            return authUser;
-        }
-        throw new WrappedResponse( badApiKey(key) );
-    }
-    
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
         Dataverse dv = findDataverse(dvIdtf);
         if ( dv == null ) {

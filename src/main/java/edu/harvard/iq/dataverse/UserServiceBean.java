@@ -540,11 +540,5 @@ public class UserServiceBean {
         user.setLastApiUseTime(new Timestamp(new Date().getTime()));
         return save(user);
     }
-    
-    public AuthenticatedUser badUpdateLastApiUseTime(AuthenticatedUser user) {
-        //assumes that AuthenticatedUser user already exists
-        user.setLastApiUseTime(new Timestamp(new Date().getTime()));
-        return save(user);
-    }
 
 }
