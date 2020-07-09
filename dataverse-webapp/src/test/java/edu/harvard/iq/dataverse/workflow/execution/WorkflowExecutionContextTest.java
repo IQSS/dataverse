@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -12,21 +11,17 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Map;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
-class WorkflowExecutionContextTest implements WorkflowStepSPI {
+class WorkflowExecutionContextTest extends WorkflowExecutionTestBase implements WorkflowStepSPI {
 
-    WorkflowExecutionRepository executions = mock(WorkflowExecutionRepository.class);
     WorkflowStepRegistry steps = new WorkflowStepRegistry();
 
     long datasetId = 1L;
@@ -53,7 +48,7 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldStartExecution() {
         // when
-        context.start(executions, clock);
+        context.start();
         // then
         assertThat(execution.isStarted()).isTrue();
         assertThat(execution.getStartedAt()).isEqualTo(clock.instant());
@@ -64,16 +59,16 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldNotGetFirstStepWhenNotStarted() {
         // expect
-        assertThatThrownBy(() -> context.nextStepToExecute(executions))
+        assertThatThrownBy(() -> context.nextStepToExecute())
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldGetFirstStepToExecute() {
         // given
-        context.start(executions, clock);
+        context.start();
         // when
-        WorkflowExecutionStepContext stepContext = context.nextStepToExecute(executions);
+        WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         // then
         assertThat(execution.getSteps()).containsExactly(stepContext.getStepExecution());
         assertThat(stepContext.getStepExecution().isStarted()).isFalse();
@@ -82,10 +77,10 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldGetSameStepToExecuteWhenNotFinished() {
         // given
-        context.start(executions, clock);
-        WorkflowExecutionStepContext stepContext = context.nextStepToExecute(executions);
+        context.start();
+        WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         // when
-        WorkflowExecutionStepContext otherContext = context.nextStepToExecute(executions);
+        WorkflowExecutionStepContext otherContext = context.nextStepToExecute();
         // then
         assertThat(stepContext.getStepExecution()).isSameAs(otherContext.getStepExecution());
     }
@@ -93,27 +88,27 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldNotGetMoreStepsToExecuteWhenAllFinished() {
         // given
-        context.start(executions, clock);
-        WorkflowExecutionStepContext stepContext = context.nextStepToExecute(executions);
-        stepContext.start(emptyMap(), steps, clock);
-        stepContext.success(emptyMap(), clock);
+        context.start();
+        WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
+        stepContext.start(emptyMap(), steps);
+        stepContext.success(emptyMap());
         // expect
-        assertThatThrownBy(() -> context.nextStepToExecute(executions))
+        assertThatThrownBy(() -> context.nextStepToExecute())
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldNotFinishWhenNotStarted() {
-        assertThatThrownBy(() -> context.finish(executions, clock))
+        assertThatThrownBy(() -> context.finish())
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldFinishExecution() {
         // given
-        context.start(executions, clock);
+        context.start();
         // when
-        context.finish(executions, clock);
+        context.finish();
         // then
         assertThat(execution.isFinished()).isTrue();
         assertThat(execution.getFinishedAt()).isEqualTo(clock.instant());
@@ -128,8 +123,8 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldHaveNothingToRollbackWhenNothingStarted() {
         // given
-        context.start(executions, clock);
-        context.nextStepToExecute(executions);
+        context.start();
+        context.nextStepToExecute();
         // expect
         assertThat(context.hasMoreStepsToRollback()).isFalse();
     }
@@ -137,9 +132,9 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldHaveLastStartedStepToRollBack() {
         // given
-        context.start(executions, clock);
-        context.nextStepToExecute(executions)
-                .start(emptyMap(), steps, clock);
+        context.start();
+        context.nextStepToExecute()
+                .start(emptyMap(), steps);
         // expect
         assertThat(context.hasMoreStepsToRollback()).isTrue();
     }
@@ -147,30 +142,30 @@ class WorkflowExecutionContextTest implements WorkflowStepSPI {
     @Test
     void shouldNotGetStepToRollbackWhenNothingExecuted() {
         // expect
-        assertThatThrownBy(() -> context.nextStepToRollback(executions))
+        assertThatThrownBy(() -> context.nextStepToRollback())
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldNotGetStepToRollbackWhenNotFinished() {
         // given
-        context.start(executions, clock);
-        WorkflowExecutionStepContext stepContext = context.nextStepToExecute(executions);
-        stepContext.start(emptyMap(), steps, clock);
+        context.start();
+        WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
+        stepContext.start(emptyMap(), steps);
         // expect
-        assertThatThrownBy(() -> context.nextStepToRollback(executions))
+        assertThatThrownBy(() -> context.nextStepToRollback())
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldGetLastStartedStepToRollBack() {
         // given
-        context.start(executions, clock);
-        WorkflowExecutionStepContext stepContext = context.nextStepToExecute(executions);
-        stepContext.start(emptyMap(), steps, clock);
-        context.finish(executions, clock);
+        context.start();
+        WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
+        stepContext.start(emptyMap(), steps);
+        context.finish();
         // when
-        WorkflowExecutionStepContext otherContext = context.nextStepToRollback(executions);
+        WorkflowExecutionStepContext otherContext = context.nextStepToRollback();
         // then
         assertThat(stepContext.getStepExecution()).isSameAs(otherContext.getStepExecution());
         assertThat(otherContext.getStepExecution().isRollBackNeeded()).isTrue();

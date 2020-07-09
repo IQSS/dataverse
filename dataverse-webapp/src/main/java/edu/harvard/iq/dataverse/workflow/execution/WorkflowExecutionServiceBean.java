@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ejb.Singleton;
 import javax.inject.Inject;
-import java.time.Clock;
 import java.util.Optional;
 
 /**
@@ -31,26 +30,16 @@ public class WorkflowExecutionServiceBean {
 
     private final WorkflowExecutionScheduler scheduler;
 
-    private final Clock clock;
-
     // -------------------- CONSTRUCTORS --------------------
-
 
     @Inject
     public WorkflowExecutionServiceBean(DatasetRepository datasets, WorkflowExecutionRepository executions,
                                         WorkflowExecutionContextFactory contextFactory,
                                         WorkflowExecutionScheduler scheduler) {
-        this(datasets, executions, contextFactory, scheduler, Clock.systemUTC());
-    }
-
-    public WorkflowExecutionServiceBean(DatasetRepository datasets, WorkflowExecutionRepository executions,
-                                        WorkflowExecutionContextFactory contextFactory,
-                                        WorkflowExecutionScheduler scheduler, Clock clock) {
         this.datasets = datasets;
         this.executions = executions;
         this.contextFactory = contextFactory;
         this.scheduler = scheduler;
-        this.clock = clock;
     }
 
     // -------------------- LOGIC --------------------
@@ -65,7 +54,7 @@ public class WorkflowExecutionServiceBean {
     public WorkflowExecution start(Workflow workflow, WorkflowContext ctx)  {
         lockDatasetForWorkflow(ctx);
         WorkflowExecutionContext context = contextFactory.workflowExecutionContextOf(ctx, workflow);
-        context.start(executions, clock);
+        context.start();
         scheduler.executeFirstWorkflowStep(context);
         return context.getExecution();
     }

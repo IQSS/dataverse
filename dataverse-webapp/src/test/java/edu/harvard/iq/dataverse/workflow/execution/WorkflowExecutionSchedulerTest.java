@@ -9,11 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class WorkflowExecutionSchedulerTest extends WorkflowJMSTestBase {
+class WorkflowExecutionSchedulerTest extends WorkflowExecutionJMSTestBase {
 
     long datasetId = 1L;
     Workflow workflow = givenWorkflow(1L,

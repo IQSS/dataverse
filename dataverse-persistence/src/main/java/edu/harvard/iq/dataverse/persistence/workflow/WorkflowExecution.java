@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.persistence.workflow;
 
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -68,7 +67,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
     @Column(name = "finished_at", columnDefinition = "TIMESTAMP")
     private Instant finishedAt;
 
-    @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "execution", fetch = FetchType.EAGER)
     @OrderColumn(name = "index")
     private List<WorkflowExecutionStep> steps = new ArrayList<>();
 
@@ -175,7 +174,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         if (isEmpty(steps)) {
             return false;
         }
-        WorkflowExecutionStep lastStep = steps.get(steps.size() - 1);
+        WorkflowExecutionStep lastStep = getLastStep();
         return lastStep.isPaused() && !lastStep.isResumed();
     }
 
@@ -183,7 +182,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         if (isEmpty(steps)) {
             return hasElementAt(definedSteps, 0);
         } else {
-            WorkflowExecutionStep lastStep = steps.get(steps.size() - 1);
+            WorkflowExecutionStep lastStep = getLastStep();
             if (lastStep.isFinished()) {
                 return hasElementAt(definedSteps, lastStep.getIndex() + 1);
             } else {
@@ -266,5 +265,19 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
 
     private static boolean hasElementAt(Collection<?> collection, int index) {
         return collection != null && collection.size() > index;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stepsString = new StringBuilder();
+        for (WorkflowExecutionStep step : steps) {
+            stepsString.append(step).append("\n");
+        }
+        return super.toString().replace(getClass().getPackage().getName() + ".", "") + "{" +
+                "id=" + id +
+                ", invocationId='" + invocationId + '\'' +
+                ", startedAt=" + startedAt +
+                ", finishedAt=" + finishedAt +
+                ", steps=[\n" + stepsString + "]}";
     }
 }

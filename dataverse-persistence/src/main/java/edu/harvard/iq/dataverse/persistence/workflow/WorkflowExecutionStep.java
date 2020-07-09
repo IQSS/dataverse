@@ -262,7 +262,7 @@ public class WorkflowExecutionStep implements JpaEntity<Long> {
 
     @Override
     public String toString() {
-        return "WorkflowExecutionStep{" +
+        return super.toString().replace(getClass().getPackage().getName() + ".", "") + "{" +
                 "id=" + id +
                 ", index=" + index +
                 ", providerId='" + providerId + '\'' +

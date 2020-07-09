@@ -5,6 +5,9 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStepRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.util.Map;
@@ -17,24 +20,35 @@ import java.util.Map;
  */
 public class WorkflowExecutionContext extends WorkflowContext {
 
+    private static final Logger log = LoggerFactory.getLogger(WorkflowExecutionContext.class);
+
     protected final Workflow workflow;
     protected final WorkflowExecution execution;
-    private final ApiToken apiToken;
-    private final Map<String, Object> settings;
+    protected final ApiToken apiToken;
+    protected final Map<String, Object> settings;
+
+    protected final WorkflowExecutionRepository executions;
+    protected final WorkflowExecutionStepRepository stepExecutions;
+    protected final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
 
     WorkflowExecutionContext(WorkflowExecutionContext other) {
-        this(other.getWorkflow(), other, other.getExecution(), other.apiToken, other.settings);
+        this(other.getWorkflow(), other, other.getExecution(), other.apiToken, other.settings,
+                other.executions, other.stepExecutions, other.clock);
     }
 
-    public WorkflowExecutionContext(Workflow workflow, WorkflowContext context, WorkflowExecution execution,
-                                    ApiToken apiToken, Map<String, Object> settings) {
+    WorkflowExecutionContext(Workflow workflow, WorkflowContext context, WorkflowExecution execution,
+                                    ApiToken apiToken, Map<String, Object> settings, WorkflowExecutionRepository executions,
+                                    WorkflowExecutionStepRepository stepExecutions, Clock clock) {
         super(context);
         this.workflow = workflow;
         this.execution = execution;
         this.apiToken = apiToken;
         this.settings = settings;
+        this.executions = executions;
+        this.stepExecutions = stepExecutions;
+        this.clock = clock;
     }
 
     // -------------------- GETTERS --------------------
@@ -61,45 +75,47 @@ public class WorkflowExecutionContext extends WorkflowContext {
 
     // -------------------- LOGIC --------------------
 
-    void start(WorkflowExecutionRepository executions, Clock clock) {
+    void start() {
         execution.start(request.getUser().getIdentifier(),
                 request.getSourceAddress().toString(),
                 clock);
         executions.save(execution);
+        log.trace("### Start {}", execution);
     }
 
     boolean hasMoreStepsToExecute() {
         return execution.hasMoreStepsToExecute(workflow.getSteps());
     }
 
-    WorkflowExecutionStepContext nextStepToExecute(WorkflowExecutionRepository executions) {
+    WorkflowExecutionStepContext nextStepToExecute() {
         if (!hasMoreStepsToExecute()) {
             throw new IllegalStateException("No more steps to run");
         }
         WorkflowExecutionStep nextStep = execution.nextStepToExecute(workflow.getSteps());
         if (nextStep.isNew()) {
-            executions.saveAndFlush(execution);
+            log.trace("### Run {}\nNew {}", execution, nextStep);
+            nextStep = stepExecutions.save(nextStep);
         }
-        // we need to call getLastStep() again here from execution, because when persisting new steps above
-        // JPA will copy the object and nextStep will not be attached to session and will have no id assigned
-        return new WorkflowExecutionStepContext(this, execution.getLastStep(), executions);
+        log.trace("### Run {}\nNext {}", execution, nextStep);
+        return new WorkflowExecutionStepContext(this, nextStep);
     }
 
-    void finish(WorkflowExecutionRepository executions, Clock clock) {
+    void finish() {
         execution.finish(clock);
-        executions.save(execution);
+        log.trace("### Finish {}", execution);
     }
 
     boolean hasMoreStepsToRollback() {
         return execution.hasMoreStepsToRollback();
     }
 
-    WorkflowExecutionStepContext nextStepToRollback(WorkflowExecutionRepository executions) {
+    WorkflowExecutionStepContext nextStepToRollback() {
         if (!hasMoreStepsToRollback()) {
             throw new IllegalStateException("No more steps to rollback");
         }
         WorkflowExecutionStep nextStep = execution.nextStepToRollback();
-        return new WorkflowExecutionStepContext(this, nextStep, executions);
+        log.trace("### Run {}\nRollback {}", execution, nextStep);
+        return new WorkflowExecutionStepContext(this, nextStep);
     }
 
     @Override

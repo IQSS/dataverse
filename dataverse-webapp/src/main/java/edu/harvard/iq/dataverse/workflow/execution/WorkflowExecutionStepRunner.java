@@ -11,7 +11,6 @@ import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-import java.time.Clock;
 
 /**
  * Workflow step runner ensuring separate transaction for each step.
@@ -25,8 +24,6 @@ public class WorkflowExecutionStepRunner {
 
     private final WorkflowStepRegistry steps;
 
-    private final Clock clock;
-
     // -------------------- CONSTRUCTORS --------------------
 
     /**
@@ -38,12 +35,7 @@ public class WorkflowExecutionStepRunner {
 
     @Inject
     public WorkflowExecutionStepRunner(WorkflowStepRegistry steps) {
-        this(steps, Clock.systemUTC());
-    }
-
-    public WorkflowExecutionStepRunner(WorkflowStepRegistry steps, Clock clock) {
         this.steps = steps;
-        this.clock = clock;
     }
 
     // -------------------- LOGIC --------------------
@@ -52,10 +44,10 @@ public class WorkflowExecutionStepRunner {
     public WorkflowStepResult executeStep(WorkflowExecutionStepContext step, Success lastStepResult, String externalData) {
         if (step.isPaused()) {
             log.trace("{} - resuming", step);
-            return step.resume(externalData, steps, clock);
+            return step.resume(externalData, steps);
         } else {
             log.trace("{} - starting", step);
-            return step.start(lastStepResult.getData(), steps, clock);
+            return step.start(lastStepResult.getData(), steps);
         }
     }
 
@@ -63,7 +55,7 @@ public class WorkflowExecutionStepRunner {
     public void rollbackStep(WorkflowExecutionStepContext step, Failure failure) {
         try {
             log.trace("{} - rollback", step);
-            step.rollback(failure, steps, clock);
+            step.rollback(failure, steps);
         } catch (Exception e) {
             log.warn(String.format("%s - rollback error", step), e);
         }

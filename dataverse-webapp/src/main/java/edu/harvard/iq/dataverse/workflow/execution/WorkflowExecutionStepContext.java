@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,17 +19,15 @@ import java.util.Map;
  */
 class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
+    private static final Logger log = LoggerFactory.getLogger(WorkflowExecutionStepContext.class);
+
     private final WorkflowExecutionStep stepExecution;
-    private final WorkflowExecutionRepository executions;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    WorkflowExecutionStepContext(WorkflowExecutionContext workflowContext,
-                                 WorkflowExecutionStep stepExecution,
-                                 WorkflowExecutionRepository executions) {
+    WorkflowExecutionStepContext(WorkflowExecutionContext workflowContext, WorkflowExecutionStep stepExecution) {
         super(workflowContext);
         this.stepExecution = stepExecution;
-        this.executions = executions;
     }
 
     // -------------------- GETTERS --------------------
@@ -40,10 +38,9 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
 
     // -------------------- LOGIC --------------------
 
-    WorkflowStepResult start(Map<String, String> defaultParameters, WorkflowStepRegistry steps, Clock clock) {
+    WorkflowStepResult start(Map<String, String> defaultParameters, WorkflowStepRegistry steps) {
         stepExecution.start(getStepInputParams(defaultParameters), clock);
-        executions.save(execution);
-
+        log.trace("### Run {}\nStart {}", execution, stepExecution);
         WorkflowStep step = getWorkflowStep(steps);
         return step.run(this);
     }
@@ -52,33 +49,31 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
         return stepExecution.isPaused();
     }
 
-    void pause(Map<String, String> pausedData, Clock clock) {
+    void pause(Map<String, String> pausedData) {
         stepExecution.pause(pausedData, clock);
-        executions.save(execution);
+        log.trace("### Run {}\nPause {}", execution, stepExecution);
     }
 
-    WorkflowStepResult resume(String externalData, WorkflowStepRegistry steps, Clock clock) {
+    WorkflowStepResult resume(String externalData, WorkflowStepRegistry steps) {
         stepExecution.resume(externalData, clock);
-        executions.save(execution);
-
+        log.trace("### Run {}\nResume {}", execution, stepExecution);
         WorkflowStep step = getWorkflowStep(steps);
         return step.resume(this, stepExecution.getPausedData(), externalData);
     }
 
-    void success(Map<String, String> outputParams, Clock clock) {
+    void success(Map<String, String> outputParams) {
         stepExecution.success(outputParams, clock);
-        executions.save(execution);
+        log.trace("### Run {}\nSuccess {}", execution, stepExecution);
     }
 
-    void failure(Map<String, String> outputParams, Clock clock) {
+    void failure(Map<String, String> outputParams) {
         stepExecution.failure(outputParams, clock);
-        executions.save(execution);
+        log.trace("### Run {}\nFailed {}", execution, stepExecution);
     }
 
-    void rollback(Failure reason, WorkflowStepRegistry steps, Clock clock) {
+    void rollback(Failure reason, WorkflowStepRegistry steps) {
         stepExecution.rollBack(clock);
-        executions.save(execution);
-
+        log.trace("### Run {}\nRollback {}", execution, stepExecution);
         WorkflowStep step = getWorkflowStep(steps);
         step.rollback(this, reason);
     }

@@ -27,7 +27,7 @@ import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static org.awaitility.Awaitility.await;
 
-public abstract class WorkflowJMSTestBase {
+public abstract class WorkflowExecutionJMSTestBase extends WorkflowExecutionTestBase {
 
     static final MessageListener NO_OP_MESSAGE_LISTENER = m -> {};
 
@@ -49,7 +49,7 @@ public abstract class WorkflowJMSTestBase {
     protected QueueConnectionFactory factory = (QueueConnectionFactory) jndi.lookup(JMS_CONNECTION_FACTORY_RESOURCE_NAME);
     protected Queue queue = (Queue) jndi.lookup(JMS_QUEUE_RESOURCE_NAME);
 
-    protected WorkflowJMSTestBase() throws NamingException { }
+    protected WorkflowExecutionJMSTestBase() throws NamingException { }
 
     protected ListeningMessageConsumer givenMessageConsumer(MessageListener listener) {
         return new ListeningMessageConsumer(listener);

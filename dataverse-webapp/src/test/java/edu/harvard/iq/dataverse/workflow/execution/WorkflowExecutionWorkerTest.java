@@ -1,24 +1,12 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.engine.TestSettingsServiceBean;
-import edu.harvard.iq.dataverse.mocks.MockAuthenticatedUser;
-import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
-import edu.harvard.iq.dataverse.mocks.MockRoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.persistence.StubJpaPersistence;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowArtifactRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.test.WithTestClock;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
 import edu.harvard.iq.dataverse.workflow.artifacts.MemoryWorkflowArtifactStorage;
@@ -38,7 +26,6 @@ import java.util.Optional;
 import static edu.harvard.iq.dataverse.persistence.dataset.DatasetMother.givenDataset;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,37 +34,28 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-class WorkflowExecutionWorkerTest extends WorkflowJMSTestBase implements WorkflowStepSPI, WithTestClock {
+class WorkflowExecutionWorkerTest extends WorkflowExecutionJMSTestBase implements WorkflowStepSPI {
 
     static final String TEST_PROVIDER_ID = "test";
     static final String SUCCESS_STEP_ID = "successful";
     static final String PAUSING_STEP_ID = "pausing";
     static final String FAILING_STEP_ID = "failing";
 
-    SettingsServiceBean settings = new TestSettingsServiceBean();
-    StubJpaPersistence persistence = new StubJpaPersistence();
-    DatasetRepository datasets = persistence.stub(DatasetRepository.class);
-    WorkflowRepository workflows = persistence.stub(WorkflowRepository.class);
-    WorkflowExecutionRepository executions = persistence.stub(WorkflowExecutionRepository.class);
     WorkflowArtifactRepository artifacts = persistence.stub(WorkflowArtifactRepository.class);
     WorkflowStepRegistry steps = new WorkflowStepRegistry() {{ init(); }};
-    RoleAssigneeServiceBean roleAssignees = new MockRoleAssigneeServiceBean() {{ add(new MockAuthenticatedUser()); }};
-    AuthenticationServiceBean authentication = new MockAuthenticationServiceBean(clock);
     Instance<WorkflowExecutionListener> executionListeners = mock(Instance.class);
 
-    WorkflowExecutionContextFactory contextFactory = new WorkflowExecutionContextFactory(
-        settings, datasets, workflows, executions, roleAssignees, authentication);
     WorkflowExecutionScheduler scheduler = new WorkflowExecutionScheduler() {{
         setQueue(queue); setFactory(factory); }};
-    WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps, clock);
+    WorkflowExecutionStepRunner runner = new WorkflowExecutionStepRunner(steps);
 
     WorkflowArtifactServiceBean artifactsService = new WorkflowArtifactServiceBean(
             artifacts, new MemoryWorkflowArtifactStorage(), clock);
     WorkflowExecutionServiceBean executionService = new WorkflowExecutionServiceBean(
-            datasets, executions, contextFactory, scheduler, clock);
+            datasets, executions, contextFactory, scheduler);
 
     WorkflowExecutionWorker worker = new WorkflowExecutionWorker(
-        datasets, executions, contextFactory, scheduler, runner, artifactsService, executionListeners, clock);
+        datasets, contextFactory, scheduler, runner, artifactsService, executionListeners);
 
     WorkflowExecutionWorkerTest() throws NamingException { }
 
