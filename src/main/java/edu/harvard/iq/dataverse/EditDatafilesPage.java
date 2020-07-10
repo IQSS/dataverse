@@ -1688,6 +1688,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return rsyncScriptFilename;
     }
 
+    @Deprecated
     public void requestDirectUploadUrl() {
         
 
@@ -1709,7 +1710,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
     
-public void requestMultipartDirectUploadUrls(long fileSize) {
+public void requestDirectUploadUrls(long fileSize) {
         
 
         
@@ -1728,7 +1729,7 @@ public void requestMultipartDirectUploadUrls(long fileSize) {
        	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
        }
         
-    	PrimeFaces.current().executeScript("uploadFileDirectlyInParts('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
+    	PrimeFaces.current().executeScript("uploadFileDirectly('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
     }
 
     
