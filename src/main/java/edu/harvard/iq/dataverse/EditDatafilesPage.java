@@ -84,7 +84,6 @@ import org.primefaces.PrimeFaces;
 public class EditDatafilesPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
-    private boolean uploadWarningMessageIsNotAnError;
 
     public enum FileEditMode {
 
@@ -1804,11 +1803,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 }
                 
-                if (uploadWarningMessageIsNotAnError) {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
-                } else {
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
-                }
+
+                //taking this out for now based on design feedback 7/8/2020
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
+
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
             }
@@ -2175,6 +2173,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String dupeFileNamesNew = null;
     private boolean multipleDupesExisting = false;
     private boolean multipleDupesNew = false;
+    private boolean dupeContentAndNames = false;
+
+    public boolean isDupeContentAndNames() {
+        return dupeContentAndNames;
+    }
+
+    public void setDupeContentAndNames(boolean dupeContentAndNames) {
+        this.dupeContentAndNames = dupeContentAndNames;
+    }
     
     private String processUploadedFileList(List<DataFile> dFileList) {
         if (dFileList == null) {
@@ -2218,7 +2225,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 
                // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
                  String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " +   existingFile.getDisplayName();
-                 
+                 if (dataFile.getFileMetadata().getLabel().equals(existingFile.getDisplayName())){
+                     dupeContentAndNames = true;
+                 }
                  String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
     
                 if (dupeFileNamesExisting == null) {
