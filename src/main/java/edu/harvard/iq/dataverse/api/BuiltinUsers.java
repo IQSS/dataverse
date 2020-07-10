@@ -84,7 +84,10 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @DefaultValue("true") @QueryParam("sendEmailNotification") String sendEmailNotification) {
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @QueryParam("sendEmailNotification") Boolean sendEmailNotification) {   
+        if( sendEmailNotification == null )
+            sendEmailNotification = true;
+        
         return internalSave(user, password, key, sendEmailNotification);
     }
 
@@ -210,6 +213,10 @@ public class BuiltinUsers extends AbstractApiBean {
     }
 
 }
+
+
+
+
 
 
 
