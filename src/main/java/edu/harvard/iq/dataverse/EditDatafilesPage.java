@@ -1710,9 +1710,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
     
-public void requestDirectUploadUrls(long fileSize) {
+public void requestDirectUploadUrls() {
         
-
+	Map<String,String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+	
+	String sizeString = paramMap.get("fileSize");
+	long fileSize=Long.parseLong(sizeString);
+    
         
         S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
         if(s3io == null) {
