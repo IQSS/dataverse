@@ -2311,6 +2311,8 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
+Optionally, you may use a third query parameter "sendEmailNotification=false" to explicitly disable sending an email notification to the new user.
+
 Roles
 -----
 

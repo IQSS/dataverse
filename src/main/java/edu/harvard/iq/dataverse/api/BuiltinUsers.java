@@ -84,8 +84,8 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
-    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
-        return internalSave(user, password, key);
+    public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key, @DefaultValue("true") @QueryParam("sendEmailNotification") String sendEmailNotification) {
+        return internalSave(user, password, key, sendEmailNotification);
     }
 
     /**
@@ -105,9 +105,10 @@ public class BuiltinUsers extends AbstractApiBean {
         return internalSave(user, password, key);
     }
     
-    //TODO: detailed description 
     /**
-     * Created this for #6915....
+     * Created this new endpoint to resolve issue #6915, optionally preventing 
+     * the email notification to the new user on account creation by adding 
+     * "false" as the third path parameter.
      *
      * @param user
      * @param password
