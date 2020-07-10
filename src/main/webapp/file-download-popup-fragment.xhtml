@@ -8,7 +8,6 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p:focus context="downloadPopup"/>
         <p class="help-block">
@@ -22,7 +21,7 @@
         
         <div class="form-horizontal">
             <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
-                <label class="col-sm-3 control-label" for="guestbook_tou">
+                <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
                 <div class="col-sm-6">
@@ -34,9 +33,9 @@
                 </div>
             </div>
             <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess}">
-                <label class="col-sm-3 control-label" for="guestbook_toa">
+                <div class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
-                </label>
+                </div>
                 <div class="col-sm-6">
                     <div class="panel panel-default">
                         <div class="panel-body read-terms">
@@ -110,7 +109,7 @@
                     </div>
                 </div>
                 <div class="form-group" jsf:rendered="#{!empty workingVersion.dataset.guestbook.customQuestions}">
-                    <label class="col-sm-3 control-label" for="guestbookuser_questions">
+                    <label class="col-sm-3 control-label">
                         #{bundle['dataset.guestbookResponse.guestbook.additionalQuestions']}
                     </label>
                     <div class="col-sm-6">

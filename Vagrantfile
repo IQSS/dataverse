@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   puts "https://github.com/IQSS/dataverse/issues/6849"
   puts
   puts "You can also try the Vagrant environment at"
-  puts "https://github.com/IQSS/dataverse-ansible"
+  puts "https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible"
   exit 1
 
   config.vm.provider "virtualbox" do |vbox|
