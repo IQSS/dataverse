@@ -406,7 +406,7 @@ public class SolrIndexServiceBean {
             }
         } else if (definitionPoint.isInstanceofDataset()) {
             // index the dataset itself
-            indexPermissionsForOneDvObject(definitionPoint);
+            //indexPermissionsForOneDvObject(definitionPoint);
             dvObjectsToReindexPermissionsFor.add(definitionPoint);
             // index files
             Dataset dataset = (Dataset) definitionPoint;
@@ -425,6 +425,8 @@ public class SolrIndexServiceBean {
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
 
+        indexPermissionsForOneDvObject(definitionPoint);
+
         List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
@@ -440,6 +442,7 @@ public class SolrIndexServiceBean {
             */
             updatePermissionTimeSuccessStatus.add(dvObject.toString());
         }
+
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
                 + "): " + dvObjectsToReindexPermissionsFor.size()
