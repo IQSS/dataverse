@@ -123,7 +123,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
          */
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
-        logger.log(Level.INFO, "Updated index time for DvObject id {0}", dvObjectId);
+        logger.log(Level.INFO, "Updated index time for DvObject id {0}", dvObject.getId());
         //DvObject savedDvObject = em.merge(dvObjectToModify);
         return dvObjectToModify;
     }
