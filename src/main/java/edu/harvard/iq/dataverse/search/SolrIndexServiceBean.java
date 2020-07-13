@@ -438,7 +438,7 @@ public class SolrIndexServiceBean {
                 updatePermissionTimeSuccessful = true;
             }
             */
-            updatePermissionTimeSuccessStatus.add(dvObject);
+            updatePermissionTimeSuccessStatus.add(dvObject.toString());
         }
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
