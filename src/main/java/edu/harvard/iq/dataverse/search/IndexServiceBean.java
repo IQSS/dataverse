@@ -347,7 +347,7 @@ public class IndexServiceBean {
     }
     
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
-        logger.fine("indexing dataset " + dataset.getId());
+        logger.info("indexing dataset " + dataset.getId());
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?
