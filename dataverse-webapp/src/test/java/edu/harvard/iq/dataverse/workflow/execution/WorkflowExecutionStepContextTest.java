@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStepRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
@@ -19,6 +21,7 @@ import java.util.stream.Stream;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflow;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowExecution;
 import static edu.harvard.iq.dataverse.persistence.workflow.WorkflowMother.givenWorkflowStep;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContextMother.givenWorkflowExecutionContext;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
@@ -29,9 +32,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
+class WorkflowExecutionStepContextTest {
 
     WorkflowStepRegistry steps = mock(WorkflowStepRegistry.class);
+    WorkflowExecutionRepository executions = mock(WorkflowExecutionRepository.class);
+    WorkflowExecutionStepRepository stepExecutions = mock(WorkflowExecutionStepRepository.class);
 
     long datasetId = 1L;
     Workflow workflow = givenWorkflow(1L,
@@ -45,7 +50,7 @@ class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
 
     @BeforeEach
     void setUp() {
-        context.start();
+        context.start(executions);
     }
 
     @Test
@@ -80,7 +85,7 @@ class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
         WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         stepContext.start(emptyMap(), steps);
         // when
-        stepContext.pause(singletonMap("test", "value"));
+        stepContext.paused(singletonMap("test", "value"), stepExecutions);
         // then
         assertThat(stepContext.getStepExecution().isPaused()).isTrue();
         assertThat(stepContext.getStepExecution().getPausedData())
@@ -93,7 +98,7 @@ class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
         givenPausingWorkflowStep();
         WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         stepContext.start(emptyMap(), steps);
-        stepContext.pause(singletonMap("test", "value"));
+        stepContext.paused(singletonMap("test", "value"), stepExecutions);
         // when
         WorkflowStepResult result = stepContext.resume("test", steps);
         // then
@@ -109,7 +114,7 @@ class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
         WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         stepContext.start(emptyMap(), steps);
         // when
-        stepContext.success(singletonMap("test", "value"));
+        stepContext.succeeded(singletonMap("test", "value"), stepExecutions);
         // then
         assertThat(stepContext.getStepExecution().isFinished()).isTrue();
         assertThat(stepContext.getStepExecution().getFinishedSuccessfully()).isTrue();
@@ -124,7 +129,7 @@ class WorkflowExecutionStepContextTest extends WorkflowExecutionTestBase {
         WorkflowExecutionStepContext stepContext = context.nextStepToExecute();
         stepContext.start(emptyMap(), steps);
         // when
-        stepContext.failure(singletonMap("test", "value"));
+        stepContext.failed(singletonMap("test", "value"), stepExecutions);
         assertThat(stepContext.getStepExecution().isFinished()).isTrue();
         assertThat(stepContext.getStepExecution().getFinishedSuccessfully()).isFalse();
         assertThat(stepContext.getStepExecution().getOutputParams())

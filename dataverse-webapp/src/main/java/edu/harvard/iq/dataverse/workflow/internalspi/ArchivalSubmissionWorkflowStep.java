@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static edu.harvard.iq.dataverse.util.ArchiverUtil.createSubmitToArchiveCommand;
+
 /**
  * A step that submits a BagIT bag of the newly published dataset version via a
  * configured archiver.
@@ -25,6 +27,12 @@ import java.util.logging.Logger;
 public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
 
     private static final Logger logger = Logger.getLogger(ArchivalSubmissionWorkflowStep.class.getName());
+
+    private final DatasetVersionServiceBean versionsService;
+
+    public ArchivalSubmissionWorkflowStep(DatasetVersionServiceBean versionsService) {
+        this.versionsService = versionsService;
+    }
 
     @Override
     public WorkflowStepResult run(WorkflowExecutionContext context) {
@@ -41,16 +49,18 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
             }
         }
 
-        DataverseRequest dvr = new DataverseRequest(context.getRequest().getAuthenticatedUser(), (HttpServletRequest) null);
-        String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
-        AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className, dvr, context.getDataset().getReleasedVersion());
-        if (archiveCommand != null) {
-            return (archiveCommand.performArchiveSubmission(context.getDataset().getReleasedVersion(), context.getApiToken(), requestedSettings));
-        } else {
-            logger.severe("No Archiver instance could be created for name: " + className);
-            return new Failure("No Archiver", "Could not create instance of class: " + className);
-        }
-
+        return versionsService.withDatasetVersion(context,
+                datasetVersion -> {
+                    DataverseRequest dvr = new DataverseRequest(context.getRequest().getAuthenticatedUser(), (HttpServletRequest) null);
+                    String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+                    AbstractSubmitToArchiveCommand archiveCommand = createSubmitToArchiveCommand(className, dvr, datasetVersion);
+                    if (archiveCommand != null) {
+                        return (archiveCommand.performArchiveSubmission(datasetVersion, context.getApiToken(), requestedSettings));
+                    } else {
+                        logger.severe("No Archiver instance could be created for name: " + className);
+                        return new Failure("No Archiver", "Could not create instance of class: " + className);
+                    }
+                }).orElseGet(() -> new Failure("Dataset version not found"));
     }
 
     @Override
@@ -61,6 +71,12 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
     @Override
     public void rollback(WorkflowExecutionContext context, Failure reason) {
         logger.log(Level.INFO, "rolling back workflow invocation {0}", context.getInvocationId());
-        logger.warning("Manual cleanup of Archive for: " + context.getDataset().getGlobalId().asString() + ", version: " + context.getDataset().getReleasedVersion() + " may be required");
+        versionsService.withDatasetVersion(context,
+                datasetVersion -> {
+                    logger.warning("Manual cleanup of Archive for: " +
+                            datasetVersion.getDataset().getGlobalId().asString() +
+                            ", version: " + datasetVersion + " may be required");
+                    return datasetVersion;
+                });
     }
 }

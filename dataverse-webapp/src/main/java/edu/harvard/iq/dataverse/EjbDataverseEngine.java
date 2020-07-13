@@ -32,8 +32,8 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 
@@ -180,11 +180,11 @@ public class EjbDataverseEngine {
     @EJB
     ActionLogServiceBean logSvc;
 
-    @EJB
+    @Inject
     WorkflowServiceBean workflowService;
 
-    @EJB
-    WorkflowExecutionServiceBean workflowExecutionService;
+    @Inject
+    WorkflowExecutionFacade workflowExecutionFacade;
 
     @EJB
     FileDownloadServiceBean fileDownloadService;
@@ -488,8 +488,8 @@ public class EjbDataverseEngine {
                 }
 
                 @Override
-                public WorkflowExecutionServiceBean workflowExecutions() {
-                    return workflowExecutionService;
+                public WorkflowExecutionFacade workflowExecutions() {
+                    return workflowExecutionFacade;
                 }
 
                 @Override

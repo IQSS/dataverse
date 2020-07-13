@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.persistence.workflow;
 
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -30,7 +31,7 @@ public class WorkflowExecutionStep implements JpaEntity<Long> {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.REFRESH)
     @JoinColumn(name = "workflow_execution_id")
     private WorkflowExecution execution;
 

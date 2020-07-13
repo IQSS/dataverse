@@ -117,9 +117,9 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
         if (workDirParam == null) {
             return Paths.get(System.getProperty("java.io.tmpdir"),
                     "dataverse",
-                    Long.toString(context.getDataset().getId()),
-                    Long.toString(context.getNextVersionNumber()),
-                    Long.toString(context.getNextMinorVersionNumber()),
+                    Long.toString(context.getDatasetId()),
+                    Long.toString(context.getVersionNumber()),
+                    Long.toString(context.getMinorVersionNumber()),
                     randomUUID().toString());
         } else {
             return Paths.get(workDirParam);

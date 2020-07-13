@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.persistence.workflow;
 
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -67,7 +68,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
     @Column(name = "finished_at", columnDefinition = "TIMESTAMP")
     private Instant finishedAt;
 
-    @OneToMany(mappedBy = "execution", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "execution", cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @OrderColumn(name = "index")
     private List<WorkflowExecutionStep> steps = new ArrayList<>();
 
@@ -91,6 +92,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
 
     // -------------------- GETTERS --------------------
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -103,6 +105,7 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         return workflowId;
     }
 
+    @Override
     public String getTriggerType() {
         return triggerType;
     }
@@ -111,18 +114,22 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         return invocationId;
     }
 
-    public long getDatasetId() {
+    @Override
+    public Long getDatasetId() {
         return datasetId;
     }
 
-    public long getMajorVersionNumber() {
+    @Override
+    public Long getVersionNumber() {
         return majorVersionNumber;
     }
 
-    public long getMinorVersionNumber() {
+    @Override
+    public Long getMinorVersionNumber() {
         return minorVersionNumber;
     }
 
+    @Override
     public boolean isDatasetExternallyReleased() {
         return datasetExternallyReleased;
     }
@@ -135,10 +142,12 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
         return startedAt;
     }
 
+    @Override
     public String getUserId() {
         return userId;
     }
 
+    @Override
     public String getIpAddress() {
         return ipAddress;
     }
@@ -235,9 +244,6 @@ public class WorkflowExecution implements JpaEntity<Long>, WorkflowContextSource
     }
 
     public WorkflowExecutionStep nextStepToRollback() {
-        if (!isFinished()) {
-            throw new IllegalStateException("Cannot rollback workflow - not finished");
-        }
         return reverseStepsStream()
                 .filter(WorkflowExecutionStep::isRollBackNeeded)
                 .findFirst()

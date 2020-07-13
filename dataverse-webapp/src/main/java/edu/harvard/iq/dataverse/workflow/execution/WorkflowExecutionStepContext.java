@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStepRepository;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -49,8 +50,9 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
         return stepExecution.isPaused();
     }
 
-    void pause(Map<String, String> pausedData) {
+    void paused(Map<String, String> pausedData, WorkflowExecutionStepRepository stepExecutions) {
         stepExecution.pause(pausedData, clock);
+        stepExecutions.saveAndFlush(stepExecution);
         log.trace("### Run {}\nPause {}", execution, stepExecution);
     }
 
@@ -61,21 +63,28 @@ class WorkflowExecutionStepContext extends WorkflowExecutionContext {
         return step.resume(this, stepExecution.getPausedData(), externalData);
     }
 
-    void success(Map<String, String> outputParams) {
+    void succeeded(Map<String, String> outputParams, WorkflowExecutionStepRepository stepExecutions) {
         stepExecution.success(outputParams, clock);
-        log.trace("### Run {}\nSuccess {}", execution, stepExecution);
+        stepExecutions.saveAndFlush(stepExecution);
+        log.trace("### Run {}\nSucceeded {}", execution, stepExecution);
     }
 
-    void failure(Map<String, String> outputParams) {
+    void failed(Map<String, String> outputParams, WorkflowExecutionStepRepository stepExecutions) {
         stepExecution.failure(outputParams, clock);
+        stepExecutions.saveAndFlush(stepExecution);
         log.trace("### Run {}\nFailed {}", execution, stepExecution);
     }
 
     void rollback(Failure reason, WorkflowStepRegistry steps) {
-        stepExecution.rollBack(clock);
         log.trace("### Run {}\nRollback {}", execution, stepExecution);
         WorkflowStep step = getWorkflowStep(steps);
         step.rollback(this, reason);
+    }
+
+    void rolledBack(WorkflowExecutionStepRepository stepExecutions) {
+        stepExecution.rollBack(clock);
+        stepExecutions.saveAndFlush(stepExecution);
+        log.trace("### Run {}\nRolled back {}", execution, stepExecution);
     }
 
     // -------------------- PRIVATE --------------------

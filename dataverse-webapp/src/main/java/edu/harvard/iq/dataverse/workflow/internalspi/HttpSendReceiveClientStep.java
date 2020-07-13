@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
@@ -18,6 +19,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -32,11 +34,15 @@ import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.Trigge
  * @author michael
  */
 public class HttpSendReceiveClientStep implements WorkflowStep {
-    private static final Logger logger = Logger.getLogger(HttpSendReceiveClientStep.class.getName());
-    private final WorkflowStepParams params;
 
-    public HttpSendReceiveClientStep(WorkflowStepParams params) {
+    private static final Logger logger = Logger.getLogger(HttpSendReceiveClientStep.class.getName());
+
+    private final WorkflowStepParams params;
+    private final DatasetVersionServiceBean versionsService;
+
+    public HttpSendReceiveClientStep(WorkflowStepParams params, DatasetVersionServiceBean versionsService) {
         this.params = params;
+        this.versionsService = versionsService;
     }
 
     @Override
@@ -121,13 +127,19 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
 
         Map<String, String> templateParams = new HashMap<>();
         templateParams.put("invocationId", ctxt.getInvocationId());
-        templateParams.put("dataset.id", Long.toString(ctxt.getDataset().getId()));
-        templateParams.put("dataset.identifier", ctxt.getDataset().getIdentifier());
-        templateParams.put("dataset.globalId", ctxt.getDataset().getGlobalIdString());
-        templateParams.put("dataset.displayName", ctxt.getDataset().getDisplayName());
-        templateParams.put("dataset.citation", ctxt.getDataset().getCitation());
-        templateParams.put("minorVersion", Long.toString(ctxt.getNextMinorVersionNumber()));
-        templateParams.put("majorVersion", Long.toString(ctxt.getNextVersionNumber()));
+        templateParams.putAll(versionsService.withDatasetVersion(ctxt,
+                datasetVersion -> {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("dataset.id", Long.toString(datasetVersion.getDataset().getId()));
+                    params.put("dataset.identifier", datasetVersion.getDataset().getIdentifier());
+                    params.put("dataset.globalId", datasetVersion.getDataset().getGlobalIdString());
+                    params.put("dataset.displayName", datasetVersion.getDataset().getDisplayName());
+                    params.put("dataset.citation", datasetVersion.getDataset().getCitation());
+                    return params;
+                }
+        ).orElseGet(Collections::emptyMap));
+        templateParams.put("minorVersion", Long.toString(ctxt.getMinorVersionNumber()));
+        templateParams.put("majorVersion", Long.toString(ctxt.getVersionNumber()));
         templateParams.put("releaseStatus", (ctxt.getType() == PostPublishDataset) ? "done" : "in-progress");
 
         m.addRequestHeader("Content-Type", params.getOrDefault("contentType", "text/plain"));

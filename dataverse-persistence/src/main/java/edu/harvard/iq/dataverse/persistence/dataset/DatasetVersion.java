@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.config.EntityCustomizer;
 import edu.harvard.iq.dataverse.persistence.config.ValidateURL;
 import edu.harvard.iq.dataverse.persistence.config.annotations.CustomizeSelectionQuery;
@@ -71,7 +72,7 @@ import static java.util.stream.Collectors.toList;
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id","versionnumber","minorversionnumber"}))
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
 @Customizer(EntityCustomizer.class)
-public class DatasetVersion implements Serializable {
+public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVersionIdentifier {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
 
@@ -231,10 +232,12 @@ public class DatasetVersion implements Serializable {
         return versionNote;
     }
 
+    @Override
     public Long getVersionNumber() {
         return versionNumber;
     }
 
+    @Override
     public Long getMinorVersionNumber() {
         return minorVersionNumber;
     }
@@ -245,6 +248,11 @@ public class DatasetVersion implements Serializable {
 
     public Dataset getDataset() {
         return dataset;
+    }
+
+    @Override
+    public Long getDatasetId() {
+        return dataset.getId();
     }
 
     public List<WorkflowComment> getWorkflowComments() {

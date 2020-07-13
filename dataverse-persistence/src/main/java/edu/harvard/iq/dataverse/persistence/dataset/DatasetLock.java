@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import javax.persistence.Column;
@@ -52,7 +53,7 @@ import java.util.Date;
         @NamedQuery(name = "DatasetLock.getLocksByDatasetId",
                 query = "SELECT lock FROM DatasetLock lock WHERE lock.dataset.id=:datasetId")
 )
-public class DatasetLock implements Serializable {
+public class DatasetLock implements Serializable, JpaEntity<Long> {
 
     public enum Reason {
         /**
@@ -61,7 +62,7 @@ public class DatasetLock implements Serializable {
         Ingest,
 
         /**
-         * Waits for a {@link Workflow} to end
+         * Waits for a {@link edu.harvard.iq.dataverse.persistence.workflow.Workflow Workflow} to end
          */
         Workflow,
 

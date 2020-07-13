@@ -22,8 +22,10 @@ public class FinalizeDatasetPublicationListener implements WorkflowExecutionList
     @Override
     public void onSuccess(WorkflowExecutionContext ctx) {
         if (PrePublishDataset == ctx.getType()) {
-            engine.submit(new FinalizeDatasetPublicationCommand(
-                    ctx.getDataset(), ctx.getRequest(), ctx.isDatasetExternallyReleased()));
+            engine.getContext().datasetVersion().withDatasetVersion(ctx,
+                    datasetVersion -> engine.submit(new FinalizeDatasetPublicationCommand(
+                            datasetVersion.getDataset(), ctx.getRequest(), ctx.isDatasetExternallyReleased()))
+            );
         }
     }
 }

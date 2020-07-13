@@ -20,8 +20,8 @@ public final class DatasetMother implements WithTestClock {
         Dataset dataset = new Dataset();
         dataset.setCreateDate(new Timestamp(clock.millis()));
         dataset.setModificationTime(new Timestamp(clock.millis()));
-        dataset.getVersions().get(0).setCreateTime(new Timestamp(clock.millis()));
-        dataset.getVersions().get(0).setLastUpdateTime(new Timestamp(clock.millis()));
+        dataset.getLatestVersion().setCreateTime(new Timestamp(clock.millis()));
+        dataset.getLatestVersion().setLastUpdateTime(new Timestamp(clock.millis()));
         return dataset;
     }
 

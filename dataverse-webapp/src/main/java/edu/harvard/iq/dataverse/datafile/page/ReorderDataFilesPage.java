@@ -110,7 +110,7 @@ public class ReorderDataFilesPage implements java.io.Serializable {
      */
     private Optional<DatasetVersion> fetchDatasetVersion(Long id) {
         return Optional.ofNullable(id)
-                .map(datasetId -> this.datasetVersion = datasetVersionService.find(datasetId));
+                .map(datasetId -> this.datasetVersion = datasetVersionService.getById(datasetId));
     }
 
     /**

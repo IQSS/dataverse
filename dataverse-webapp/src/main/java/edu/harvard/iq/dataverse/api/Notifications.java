@@ -62,7 +62,7 @@ public class Notifications extends AbstractApiBean {
 
     private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
         Long objectId = notification.getObjectId();
-        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.find(objectId));
+        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.getById(objectId));
     }
 
 }

@@ -86,7 +86,6 @@ import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REQUEST
 import static edu.harvard.iq.dataverse.persistence.user.NotificationType.RETURNEDDS;
 import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REVOKEROLE;
 import static edu.harvard.iq.dataverse.persistence.user.NotificationType.SUBMITTEDDS;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  *
@@ -554,7 +553,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case SUBMITTEDDS:
                 case PUBLISHEDDS:
                 case RETURNEDDS:
-                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
                     break;
 
                 case MAPLAYERDELETEFAILED:
@@ -570,11 +569,11 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
 
                 case FILESYSTEMIMPORT:
-                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
                     break;
 
                 case CHECKSUMIMPORT:
-                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
                     break;
 
                 default:

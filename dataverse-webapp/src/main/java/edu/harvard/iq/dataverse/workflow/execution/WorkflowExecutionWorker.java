@@ -1,11 +1,7 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
 import com.google.common.base.Stopwatch;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
-import edu.harvard.iq.dataverse.workflow.artifacts.WorkflowArtifactServiceBean;
-import edu.harvard.iq.dataverse.workflow.listener.WorkflowExecutionListener;
+import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
@@ -17,7 +13,6 @@ import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -46,41 +41,32 @@ public class WorkflowExecutionWorker implements MessageListener {
 
     private static final Logger log = LoggerFactory.getLogger(WorkflowExecutionWorker.class);
 
-    private final DatasetRepository datasets;
-
-    private final WorkflowExecutionContextFactory contextFactory;
+    private final WorkflowExecutionService executions;
 
     private final WorkflowExecutionScheduler scheduler;
 
-    private final WorkflowExecutionStepRunner runner;
-
-    private final WorkflowArtifactServiceBean artifacts;
-
-    private final Instance<WorkflowExecutionListener> executionListeners;
+    private final WorkflowStepRegistry steps;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public WorkflowExecutionWorker(DatasetRepository datasets, WorkflowExecutionContextFactory contextFactory,
-                                   WorkflowExecutionScheduler scheduler, WorkflowExecutionStepRunner runner,
-                                   WorkflowArtifactServiceBean artifacts, Instance<WorkflowExecutionListener> executionListeners) {
-        this.datasets = datasets;
-        this.contextFactory = contextFactory;
+    public WorkflowExecutionWorker(WorkflowExecutionService executions,
+                                   WorkflowExecutionScheduler scheduler,
+                                   WorkflowStepRegistry steps) {
+        this.executions = executions;
         this.scheduler = scheduler;
-        this.runner = runner;
-        this.artifacts = artifacts;
-        this.executionListeners = executionListeners;
+        this.steps = steps;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void onMessage(Message message) {
         Stopwatch watch = new Stopwatch().start();
         try {
             WorkflowExecutionMessage messageBody = (WorkflowExecutionMessage) ((ObjectMessage) message).getObject();
-            WorkflowExecutionContext executionContext = contextFactory.workflowExecutionContextOf(messageBody);
+            WorkflowExecutionContext executionContext = executions.loadExecutionContext(messageBody);
             if (messageBody.isRollback()) {
                 rollbackStep(executionContext, messageBody.getLastStepFailure());
             } else {
@@ -103,74 +89,45 @@ public class WorkflowExecutionWorker implements MessageListener {
             log.trace("{} next to execute", step);
             Stopwatch watch = new Stopwatch().start();
             try {
-                WorkflowStepResult stepResult = runner.executeStep(step, lastStepResult, externalData);
+                WorkflowStepResult stepResult = executeStep(step, lastStepResult, externalData);
                 log.trace("Spent {} executing {}", Duration.ofMillis(watch.elapsedMillis()), step);
 
                 if (stepResult instanceof Success) {
-                    stepCompleted(ctx, step, (Success) stepResult);
+                    stepCompleted(step, (Success) stepResult);
                 } else if (stepResult instanceof Pending) {
-                    stepPaused(ctx, step, (Pending) stepResult);
+                    executions.stepPaused(step, (Pending) stepResult);
                 } else if (stepResult instanceof Failure) {
-                    stepFailed(ctx, step, (Failure) stepResult);
+                    stepFailed(step, (Failure) stepResult);
                 }
             } catch (Exception e) {
-                stepFailed(ctx, step, e, "exception while executing step: " + e.getMessage());
+                log.warn(String.format("%s - execution error", step), e);
+                stepFailed(step, new Failure("exception while executing step: " + e.getMessage()));
             } finally {
                 watch.stop();
             }
         } else {
-            workflowCompleted(ctx);
+            executions.workflowCompleted(ctx);
         }
     }
 
-    private void stepCompleted(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Success stepResult) {
-        log.trace("{} finished successfully", step);
-        step.success(stepResult.getData());
-        ctx.save(datasets);
-        artifacts.createAll(ctx.getExecution().getId(), stepResult.getArtifacts());
-        scheduler.executeNextWorkflowStep(ctx, stepResult);
-    }
-
-    private void stepPaused(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Pending stepResult) {
-        log.trace("{} paused", step);
-        step.pause(stepResult.getData());
-    }
-
-    private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Failure stepResult) {
-        log.warn("{} failed - {} - rolling back", step, stepResult.getReason());
-        step.failure(stepResult.getData());
-        artifacts.createAll(ctx.getExecution().getId(), stepResult.getArtifacts());
-        workflowFailed(ctx, stepResult);
-    }
-
-    private void stepFailed(WorkflowExecutionContext ctx, WorkflowExecutionStepContext step, Exception ex, String msg) {
-        log.error(String.format("%s failed - %s", step, msg), ex);
-        step.failure(new Failure(msg).getData());
-        workflowFailed(ctx, ex, msg);
-    }
-
-    private void workflowCompleted(WorkflowExecutionContext ctx) {
-        log.trace("{} completed", ctx);
-
-        try {
-            ctx.finish();
-
-            unlockDatasetForWorkflow(ctx);
-
-            executionListeners.forEach(handler -> handler.onSuccess(ctx));
-        } catch (CommandException ex) {
-            workflowFailed(ctx, ex, "exception while finalizing the publication: " + ex.getMessage());
+    private WorkflowStepResult executeStep(WorkflowExecutionStepContext step, Success lastStepResult, String externalData) {
+        if (step.isPaused()) {
+            log.trace("{} - resuming", step);
+            return step.resume(externalData, steps);
+        } else {
+            log.trace("{} - starting", step);
+            return step.start(lastStepResult.getData(), steps);
         }
     }
 
-    private void workflowFailed(WorkflowExecutionContext ctx, Exception ex, String msg) {
-        log.error(String.format("%s failed - %s", ctx, msg), ex);
-        workflowFailed(ctx, new Failure(msg));
+    private void stepCompleted(WorkflowExecutionStepContext step, Success stepResult) {
+        executions.stepCompleted(step, stepResult);
+        scheduler.executeNextWorkflowStep(step, stepResult);
     }
 
-    private void workflowFailed(WorkflowExecutionContext ctx, Failure stepResult) {
-        ctx.finish();
-        scheduler.rollbackNextWorkflowStep(ctx, stepResult);
+    private void stepFailed(WorkflowExecutionStepContext step, Failure stepResult) {
+        executions.stepFailed(step, stepResult);
+        scheduler.rollbackNextWorkflowStep(step, stepResult);
     }
 
     private void rollbackStep(WorkflowExecutionContext ctx, Failure failure) {
@@ -178,21 +135,29 @@ public class WorkflowExecutionWorker implements MessageListener {
         if (ctx.hasMoreStepsToRollback()) {
             WorkflowExecutionStepContext step = ctx.nextStepToRollback();
             log.trace("{} next to roll back", step);
-            runner.rollbackStep(step, failure);
-            scheduler.rollbackNextWorkflowStep(ctx, failure);
-        } else {
+            Stopwatch watch = new Stopwatch().start();
             try {
-                unlockDatasetForWorkflow(ctx);
-            } catch (CommandException ex) {
-                log.error("Error restoring dataset locks state after rollback: " + ex.getMessage(), ex);
+                rollbackStep(step, failure);
+                log.trace("Spent {} rolling back {}", Duration.ofMillis(watch.elapsedMillis()), step);
+                stepRolledBack(step, failure);
+            } catch (Exception e) {
+                log.warn(String.format("%s - rollback error", step), e);
+                stepRolledBack(step, new Failure("exception while rolling back step: " + e.getMessage()));
+            } finally {
+                watch.stop();
             }
-
-            executionListeners.forEach(handler -> handler.onFailure(ctx, failure));
+        } else {
+            executions.workflowRolledBack(ctx, failure);
         }
     }
 
-    private void unlockDatasetForWorkflow(WorkflowContext ctx) {
-        log.trace("Removing workflow lock");
-        datasets.unlockDataset(ctx.getDataset(), DatasetLock.Reason.Workflow);
+    private void rollbackStep(WorkflowExecutionStepContext step, Failure failure) {
+        log.trace("{} - rollback", step);
+        step.rollback(failure, steps);
+    }
+
+    private void stepRolledBack(WorkflowExecutionStepContext step, Failure failure) {
+        executions.stepRolledBack(step, failure);
+        scheduler.rollbackNextWorkflowStep(step, failure);
     }
 }

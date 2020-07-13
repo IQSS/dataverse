@@ -704,7 +704,7 @@ public class Access extends AbstractApiBean {
     public InputStream dsCardImage(@PathParam("versionId") Long versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
 
 
-        DatasetVersion datasetVersion = versionService.find(versionId);
+        DatasetVersion datasetVersion = versionService.getById(versionId);
 
         if (datasetVersion == null) {
             logger.warning("Preview: Version service could not locate a DatasetVersion object for id " + versionId + "!");

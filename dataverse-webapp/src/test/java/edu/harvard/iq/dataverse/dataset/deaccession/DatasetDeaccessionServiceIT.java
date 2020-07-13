@@ -60,7 +60,7 @@ public class DatasetDeaccessionServiceIT extends WebappArquillianDeployment {
         // then
         Dataset dbDataset = datasetDao.find(56L);
 
-        assertEquals(DatasetVersion.VersionState.DEACCESSIONED, versionsService.find(versionToBeDeaccessed.getId()).getVersionState());
+        assertEquals(DatasetVersion.VersionState.DEACCESSIONED, versionsService.getById(versionToBeDeaccessed.getId()).getVersionState());
         assertEquals(versionsCount, dbDataset.getVersions().size());
         assertTrue(dbDataset.getVersions()
                 .stream()

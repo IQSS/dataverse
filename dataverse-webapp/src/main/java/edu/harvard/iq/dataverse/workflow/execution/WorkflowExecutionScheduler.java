@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
@@ -80,7 +78,6 @@ public class WorkflowExecutionScheduler {
      * Schedules execution of the first step of the workflow.
      * @param context workflow execution context to compose the message from.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void executeFirstWorkflowStep(WorkflowExecutionContext context) {
         sendWorkflowExecutionMessage(executeWorkflowMessageOf(context, new Success()), FIRST_STEP_PRIORITY);
     }
@@ -90,7 +87,6 @@ public class WorkflowExecutionScheduler {
      * @param context workflow execution context to compose the message from.
      * @param lastStepResult previous step result to be passed on to the next step.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void executeNextWorkflowStep(WorkflowExecutionContext context, Success lastStepResult) {
         sendWorkflowExecutionMessage(executeWorkflowMessageOf(context, lastStepResult), NEXT_STEP_PRIORITY);
     }
@@ -100,7 +96,6 @@ public class WorkflowExecutionScheduler {
      * @param context workflow execution context to compose the message from.
      * @param externalData external data to be passed on for resuming.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void resumePausedWorkflowStep(WorkflowExecutionContext context, String externalData) {
         sendWorkflowExecutionMessage(resumeWorkflowMessageOf(context, externalData), NEXT_STEP_PRIORITY);
     }
@@ -110,7 +105,6 @@ public class WorkflowExecutionScheduler {
      * @param context workflow execution context to compose the message from.
      * @param failure failure that caused the roll back.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void rollbackNextWorkflowStep(WorkflowExecutionContext context, Failure failure) {
         sendWorkflowExecutionMessage(rollbackWorkflowMessageOf(context, failure), ROLLBACK_STEP_PRIORITY);
     }
@@ -155,15 +149,15 @@ public class WorkflowExecutionScheduler {
                                                                        WorkflowStepResult lastStepResult,
                                                                        String externalData) {
         return new WorkflowExecutionMessage(
+                executionContext.getExecution().getId(),
+                executionContext.getWorkflow().getId(),
                 executionContext.getType().name(),
-                executionContext.getDataset().getId(),
-                executionContext.getNextVersionNumber(),
-                executionContext.getNextMinorVersionNumber(),
+                executionContext.getDatasetId(),
+                executionContext.getVersionNumber(),
+                executionContext.getMinorVersionNumber(),
                 executionContext.getRequest().getUser().getIdentifier(),
                 executionContext.getRequest().getSourceAddress().toString(),
                 executionContext.isDatasetExternallyReleased(),
-                executionContext.getWorkflow().getId(),
-                executionContext.getExecution().getId(),
                 lastStepResult,
                 externalData
         );

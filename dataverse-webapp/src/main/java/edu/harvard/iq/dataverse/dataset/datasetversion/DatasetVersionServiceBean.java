@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionIdentifier;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
@@ -27,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
@@ -34,7 +38,6 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import java.text.SimpleDateFormat;
@@ -45,16 +48,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import static edu.harvard.iq.dataverse.batch.jobs.importer.filesystem.FileRecordJobListener.SEP;
 
 /**
  * @author skraffmiller
  */
-@Stateless
 @Named
+@Stateless
 public class DatasetVersionServiceBean implements java.io.Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(DatasetVersionServiceBean.class);
@@ -79,8 +84,26 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     @Inject
     private DataverseRequestServiceBean dvRequestService;
 
+    private final DatasetVersionRepository versionRepository;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    /**
+     * @deprecated for use by EJB proxy only.
+     */
+    public DatasetVersionServiceBean() {
+        this(null);
+    }
+
+    @Inject
+    public DatasetVersionServiceBean(DatasetVersionRepository versionRepository) {
+        this.versionRepository = versionRepository;
+    }
+
+    // -------------------- LOGIC --------------------
 
     /**
      * Response to a successful request from the DatasetPage
@@ -162,8 +185,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
     } // end RetrieveDatasetVersionResponse
 
-    public DatasetVersion find(Object pk) {
-        return em.find(DatasetVersion.class, pk);
+    public DatasetVersion getById(Long id) {
+        return versionRepository.getById(id);
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
@@ -192,39 +215,20 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
 
         if (minorVersionNumber == null) {
-            try {
-                TypedQuery<DatasetVersion> typedQuery = em.createQuery("SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber", DatasetVersion.class);
-                typedQuery.setParameter("datasetId", datasetId);
-                typedQuery.setParameter("majorVersionNumber", majorVersionNumber);
-                DatasetVersion retVal = null;
-                List<DatasetVersion> versionsList = typedQuery.getResultList();
-                for (DatasetVersion dsvTest : versionsList) {
-                    if (retVal == null) {
-                        retVal = dsvTest;
-                    } else {
-                        if (retVal.getMinorVersionNumber().intValue() < dsvTest.getMinorVersionNumber().intValue()) {
-                            retVal = dsvTest;
-                        }
-                    }
-                }
-                return retVal;
-            } catch (javax.persistence.NoResultException e) {
-                log.warn("no ds version found: {} {}", datasetId, majorVersionNumber);
-                return null;
-            }
+            return versionRepository.findByDatasetIdAndVersionNumber(datasetId, majorVersionNumber)
+                    .orElse(null);
         }
 
-        String queryStr = "SELECT v from DatasetVersion v where v.dataset.id = :datasetId  and v.versionNumber= :majorVersionNumber and v.minorVersionNumber= :minorVersionNumber";
-        try {
-            Query query = em.createQuery(queryStr);
-            query.setParameter("datasetId", datasetId);
-            query.setParameter("majorVersionNumber", majorVersionNumber);
-            query.setParameter("minorVersionNumber", minorVersionNumber);
-            return (DatasetVersion) query.getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
-            log.warn("no ds version found: {} {}.{}", datasetId, majorVersionNumber, minorVersionNumber);
-            return null;
-        }
+        return versionRepository.findByDatasetIdAndVersionNumber(datasetId, minorVersionNumber)
+                .orElse(null);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public <T> Optional<T> withDatasetVersion(DatasetVersionIdentifier versionIdentifier,
+                                              Function<DatasetVersion, T> function) {
+        return versionRepository
+                .findByDatasetIdAndVersionNumber(versionIdentifier)
+                .map(function);
     }
 
 
@@ -1053,7 +1057,7 @@ w
             return info;
         }
         long dsvId = Long.parseLong(datasetVersionId);
-        DatasetVersion datasetVersion = find(dsvId);
+        DatasetVersion datasetVersion = getById(dsvId);
         if (datasetVersion == null) {
             info.add("message", "Could not find a dataset version based on datasetVersionId " + datasetVersionId + ".");
             return info;

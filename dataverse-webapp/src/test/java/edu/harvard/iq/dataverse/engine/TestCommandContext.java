@@ -39,7 +39,8 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 
 import javax.persistence.EntityManager;
@@ -240,7 +241,7 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public WorkflowExecutionServiceBean workflowExecutions() {
+    public WorkflowExecutionFacade workflowExecutions() {
         return null;
     }
 

@@ -3,16 +3,16 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * API Endpoint for external systems to report the results of workflow step
@@ -23,25 +23,27 @@ import java.util.logging.Logger;
 @Path("workflows")
 public class Workflows extends AbstractApiBean {
 
-    @EJB
-    WorkflowExecutionServiceBean workflowExecutions;
+    private static final Logger log = LoggerFactory.getLogger(Workflows.class);
+
+    @Inject
+    private WorkflowExecutionFacade workflowExecutions;
 
     private IpGroup whitelist = new IpGroup();
     private long lastWhitelistUpdate = 0;
 
-    @Path("{invocationId}")
     @POST
+    @Path("{invocationId}")
     public Response resumeWorkflow(@PathParam("invocationId") String invocationId, String body) {
         String remoteAddrStr = httpRequest.getRemoteAddr();
         IpAddress remoteAddr = IpAddress.valueOf((remoteAddrStr != null) ? remoteAddrStr : "0.0.0.0");
         if (!isAllowed(remoteAddr)) {
             return unauthorized("Sorry, your IP address is not authorized to send resume requests. Please contact an admin.");
         }
-        Logger.getLogger(Workflows.class.getName()).log(Level.INFO, "Resume request from: {0}", httpRequest.getRemoteAddr());
+        log.info("Resume request from: {}", httpRequest.getRemoteAddr());
 
-        return workflowExecutions.resume(invocationId, body).map(execution -> {
-            return Response.accepted("/api/datasets/" + execution.getDatasetId()).build();
-        }).orElseGet(() ->
+        return workflowExecutions.resume(invocationId, body).map(execution ->
+                Response.accepted("/api/datasets/" + execution.getDatasetId()).build()
+        ).orElseGet(() ->
                 notFound("Cannot find workflow invocation with id " + invocationId)
         );
     }

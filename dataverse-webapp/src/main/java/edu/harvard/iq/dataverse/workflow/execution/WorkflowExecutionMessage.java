@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowContextSource;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionContextSource;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
@@ -16,8 +16,10 @@ import java.io.Serializable;
  *
  * @author kaczynskid
  */
-public class WorkflowExecutionMessage implements Serializable, WorkflowContextSource {
+public class WorkflowExecutionMessage implements Serializable, WorkflowExecutionContextSource {
 
+    private final long id;
+    private final long workflowId;
     private final String triggerType;
     private final long datasetId;
     private final long majorVersionNumber;
@@ -25,16 +27,15 @@ public class WorkflowExecutionMessage implements Serializable, WorkflowContextSo
     private final String userId;
     private final String ipAddress;
     private final boolean datasetExternallyReleased;
-    private final long workflowId;
-    private final long workflowExecutionId;
     private final WorkflowStepResult lastStepResult;
     private final String externalData;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    WorkflowExecutionMessage(String triggerType, long datasetId, long majorVersionNumber, long minorVersionNumber,
-                             String userId, String ipAddress, boolean datasetExternallyReleased, long workflowId,
-                             long workflowExecutionId, WorkflowStepResult lastStepResult, String externalData) {
+    WorkflowExecutionMessage(long id, long workflowId, String triggerType,
+                             long datasetId, long majorVersionNumber,long minorVersionNumber,
+                             String userId, String ipAddress, boolean datasetExternallyReleased,
+                             WorkflowStepResult lastStepResult, String externalData) {
         this.triggerType = triggerType;
         this.datasetId = datasetId;
         this.majorVersionNumber = majorVersionNumber;
@@ -43,7 +44,7 @@ public class WorkflowExecutionMessage implements Serializable, WorkflowContextSo
         this.ipAddress = ipAddress;
         this.datasetExternallyReleased = datasetExternallyReleased;
         this.workflowId = workflowId;
-        this.workflowExecutionId = workflowExecutionId;
+        this.id = id;
         this.lastStepResult = lastStepResult;
         this.externalData = externalData;
     }
@@ -51,22 +52,32 @@ public class WorkflowExecutionMessage implements Serializable, WorkflowContextSo
     // -------------------- GETTERS --------------------
 
     @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public long getWorkflowId() {
+        return workflowId;
+    }
+
+    @Override
     public String getTriggerType() {
         return triggerType;
     }
 
     @Override
-    public long getDatasetId() {
+    public Long getDatasetId() {
         return datasetId;
     }
 
     @Override
-    public long getMajorVersionNumber() {
+    public Long getVersionNumber() {
         return majorVersionNumber;
     }
 
     @Override
-    public long getMinorVersionNumber() {
+    public Long getMinorVersionNumber() {
         return minorVersionNumber;
     }
 
@@ -83,14 +94,6 @@ public class WorkflowExecutionMessage implements Serializable, WorkflowContextSo
     @Override
     public boolean isDatasetExternallyReleased() {
         return datasetExternallyReleased;
-    }
-
-    public long getWorkflowId() {
-        return workflowId;
-    }
-
-    public long getWorkflowExecutionId() {
-        return workflowExecutionId;
     }
 
     public boolean isRollback() {
@@ -118,15 +121,15 @@ public class WorkflowExecutionMessage implements Serializable, WorkflowContextSo
     @Override
     public String toString() {
         return "WorkflowExecutionMessage{" +
-                "triggerType='" + triggerType + '\'' +
+                "id=" + id +
+                ", workflowId=" + workflowId +
+                ", triggerType='" + triggerType + '\'' +
                 ", datasetId=" + datasetId +
                 ", majorVersionNumber=" + majorVersionNumber +
                 ", minorVersionNumber=" + minorVersionNumber +
                 ", userId='" + userId + '\'' +
                 ", ipAddress='" + ipAddress + '\'' +
                 ", datasetExternallyReleased=" + datasetExternallyReleased +
-                ", workflowId=" + workflowId +
-                ", workflowExecutionId=" + workflowExecutionId +
                 ", lastStepResult=" + lastStepResult +
                 ", externalData='" + externalData + '\'' +
                 '}';

@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse.workflow.execution;
 
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionIdentifier;
 import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -17,37 +16,37 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
  *
  * @author michael
  */
-public class WorkflowContext {
+public class WorkflowContext implements DatasetVersionIdentifier {
 
     public enum TriggerType {
         PrePublishDataset, PostPublishDataset
     }
 
     protected final TriggerType type;
-    protected final Dataset dataset;
-    protected final long nextVersionNumber;
-    protected final long nextMinorVersionNumber;
+    protected final Long datasetId;
+    protected final Long versionNumber;
+    protected final Long minorVersionNumber;
     protected final DataverseRequest request;
     protected final boolean datasetExternallyReleased;
 
     // -------------------- CONSTRUCTORS --------------------
 
     WorkflowContext(WorkflowContext other) {
-        this(other.type, other.dataset, other.nextVersionNumber, other.nextMinorVersionNumber,
+        this(other.type, other.datasetId, other.versionNumber, other.minorVersionNumber,
                 other.request, other.datasetExternallyReleased);
     }
 
     public WorkflowContext(TriggerType type, Dataset dataset, DataverseRequest request, boolean datasetExternallyReleased) {
-        this(type, dataset, dataset.getLatestVersion().getVersionNumber(),
+        this(type, dataset.getId(), dataset.getLatestVersion().getVersionNumber(),
                 dataset.getLatestVersion().getMinorVersionNumber(), request, datasetExternallyReleased);
     }
 
-    public WorkflowContext(TriggerType type, Dataset dataset, long nextVersionNumber, long nextMinorVersionNumber,
+    public WorkflowContext(TriggerType type, long datasetId, long versionNumber, long minorVersionNumber,
                            DataverseRequest request, boolean datasetExternallyReleased) {
         this.type = type;
-        this.dataset = dataset;
-        this.nextVersionNumber = nextVersionNumber;
-        this.nextMinorVersionNumber = nextMinorVersionNumber;
+        this.datasetId = datasetId;
+        this.versionNumber = versionNumber;
+        this.minorVersionNumber = minorVersionNumber;
         this.request = request;
         this.datasetExternallyReleased = datasetExternallyReleased;
     }
@@ -58,24 +57,23 @@ public class WorkflowContext {
         return type;
     }
 
-    public Dataset getDataset() {
-        return dataset;
+    @Override
+    public Long getDatasetId() {
+        return datasetId;
     }
 
-    public DatasetVersion getDatasetVersion() {
-        return dataset.getLatestVersion();
+    @Override
+    public Long getVersionNumber() {
+        return versionNumber;
     }
 
-    public long getNextVersionNumber() {
-        return nextVersionNumber;
-    }
-
-    public long getNextMinorVersionNumber() {
-        return nextMinorVersionNumber;
+    @Override
+    public Long getMinorVersionNumber() {
+        return minorVersionNumber;
     }
 
     public boolean isMinorRelease() {
-        return nextMinorVersionNumber != 0;
+        return minorVersionNumber != 0;
     }
 
     public DataverseRequest getRequest() {
@@ -90,11 +88,7 @@ public class WorkflowContext {
 
     WorkflowExecution asExecutionOf(Workflow workflow) {
         return new WorkflowExecution(workflow.getId(), type.name(),
-                dataset.getId(), nextVersionNumber, nextMinorVersionNumber,
+                datasetId, versionNumber, minorVersionNumber,
                 datasetExternallyReleased, workflow.getName());
-    }
-
-    void save(DatasetRepository datasets) {
-        datasets.save(getDataset());
     }
 }

@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,30 +20,33 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.validation.ValidationException;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DatasetVersionServiceBeanTest {
 
+    @Mock
+    EjbDataverseEngine commandEngine;
+
+    @Mock
+    DataverseRequestServiceBean dvRequestService;
+
+    @Mock
+    EntityManager entityManager;
+
+    DatasetVersionRepository versionRepository = mock(DatasetVersionRepository.class);
+
     @InjectMocks
-    private DatasetVersionServiceBean datasetVersionService;
+    DatasetVersionServiceBean datasetVersionService = new DatasetVersionServiceBean(versionRepository);
 
-    @Mock
-    private EjbDataverseEngine commandEngine;
-
-    @Mock
-    private DataverseRequestServiceBean dvRequestService;
-
-    @Mock
-    private EntityManager entityManager;
-
-    private Dataset testDataset =  new Dataset();
+    Dataset testDataset =  new Dataset();
 
     @BeforeEach
     void setUp() {

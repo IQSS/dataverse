@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStep;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,28 +25,21 @@ public class WorkflowExecutionContext extends WorkflowContext {
     protected final WorkflowExecution execution;
     protected final ApiToken apiToken;
     protected final Map<String, Object> settings;
-
-    protected final WorkflowExecutionRepository executions;
-    protected final WorkflowExecutionStepRepository stepExecutions;
     protected final Clock clock;
 
     // -------------------- CONSTRUCTORS --------------------
 
     WorkflowExecutionContext(WorkflowExecutionContext other) {
-        this(other.getWorkflow(), other, other.getExecution(), other.apiToken, other.settings,
-                other.executions, other.stepExecutions, other.clock);
+        this(other.workflow, other, other.execution, other.apiToken, other.settings, other.clock);
     }
 
     WorkflowExecutionContext(Workflow workflow, WorkflowContext context, WorkflowExecution execution,
-                                    ApiToken apiToken, Map<String, Object> settings, WorkflowExecutionRepository executions,
-                                    WorkflowExecutionStepRepository stepExecutions, Clock clock) {
+                             ApiToken apiToken, Map<String, Object> settings, Clock clock) {
         super(context);
         this.workflow = workflow;
         this.execution = execution;
         this.apiToken = apiToken;
         this.settings = settings;
-        this.executions = executions;
-        this.stepExecutions = stepExecutions;
         this.clock = clock;
     }
 
@@ -75,11 +67,11 @@ public class WorkflowExecutionContext extends WorkflowContext {
 
     // -------------------- LOGIC --------------------
 
-    void start() {
+    void start(WorkflowExecutionRepository executions) {
         execution.start(request.getUser().getIdentifier(),
                 request.getSourceAddress().toString(),
                 clock);
-        executions.save(execution);
+        executions.saveAndFlush(execution);
         log.trace("### Start {}", execution);
     }
 
@@ -92,16 +84,13 @@ public class WorkflowExecutionContext extends WorkflowContext {
             throw new IllegalStateException("No more steps to run");
         }
         WorkflowExecutionStep nextStep = execution.nextStepToExecute(workflow.getSteps());
-        if (nextStep.isNew()) {
-            log.trace("### Run {}\nNew {}", execution, nextStep);
-            nextStep = stepExecutions.save(nextStep);
-        }
         log.trace("### Run {}\nNext {}", execution, nextStep);
         return new WorkflowExecutionStepContext(this, nextStep);
     }
 
-    void finish() {
+    void finish(WorkflowExecutionRepository executions) {
         execution.finish(clock);
+        executions.saveAndFlush(execution);
         log.trace("### Finish {}", execution);
     }
 

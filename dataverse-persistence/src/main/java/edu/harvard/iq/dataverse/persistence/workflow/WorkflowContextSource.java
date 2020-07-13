@@ -1,18 +1,20 @@
 package edu.harvard.iq.dataverse.persistence.workflow;
 
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionIdentifier;
+
 /**
  * Marks the source of information about a workflow execution context.
  * @author kaczynskid
  */
-public interface WorkflowContextSource {
+public interface WorkflowContextSource extends DatasetVersionIdentifier {
 
     String getTriggerType();
 
-    long getDatasetId();
+    Long getDatasetId();
 
-    long getMajorVersionNumber();
+    Long getVersionNumber();
 
-    long getMinorVersionNumber();
+    Long getMinorVersionNumber();
 
     String getUserId();
 

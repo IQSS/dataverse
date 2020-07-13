@@ -39,8 +39,8 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 
 import javax.persistence.EntityManager;
 
@@ -133,7 +133,7 @@ public interface CommandContext {
 
     WorkflowServiceBean workflows();
 
-    WorkflowExecutionServiceBean workflowExecutions();
+    WorkflowExecutionFacade workflowExecutions();
 
     MapLayerMetadataServiceBean mapLayerMetadata();
 
