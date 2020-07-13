@@ -123,8 +123,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
          */
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
-        return savedDvObject;
+        logger.log(Level.INFO, "Updated index time for DvObject id {0}", dvObjectId);
+        //DvObject savedDvObject = em.merge(dvObjectToModify);
+        return dvObjectToModify;
     }
 
     /**
@@ -146,9 +147,9 @@ public class DvObjectServiceBean implements java.io.Serializable {
             return dvObject;
         }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
-        DvObject savedDvObject = em.merge(dvObjectToModify);
+        //DvObject savedDvObject = em.merge(dvObjectToModify);
         logger.log(Level.INFO, "Updated permission index time for DvObject id {0}", dvObjectId);
-        return savedDvObject;
+        return dvObjectToModify;
     }
 
     @TransactionAttribute(REQUIRES_NEW)
