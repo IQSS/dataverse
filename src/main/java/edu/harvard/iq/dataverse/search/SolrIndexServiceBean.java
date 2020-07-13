@@ -425,21 +425,12 @@ public class SolrIndexServiceBean {
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
 
-        indexPermissionsForOneDvObject(definitionPoint);
-
         List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
              */
-            //IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
-            /*
-            DvObject managedDefinitionPoint = dvObjectService.updatePermissionIndexTime(definitionPoint);
-            boolean updatePermissionTimeSuccessful = false;
-            if (managedDefinitionPoint != null) {
-                updatePermissionTimeSuccessful = true;
-            }
-            */
+            IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
             updatePermissionTimeSuccessStatus.add(dvObject.toString());
         }
 
