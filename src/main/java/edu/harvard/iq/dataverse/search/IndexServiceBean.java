@@ -682,6 +682,7 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
+        System.out.println("IN INDEX DATASET PERMISIONS for dataset:" + dataset.getId() );
         boolean disabledForDebugging = false;
         if (disabledForDebugging) {
             /**
