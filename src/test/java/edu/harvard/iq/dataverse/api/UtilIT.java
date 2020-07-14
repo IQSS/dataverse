@@ -750,6 +750,30 @@ public class UtilIT {
         return given().get(getString + "?format=original&key=" + apiToken);
     }
 
+    static Response downloadFiles(String datasetIdOrPersistentId, String apiToken) {
+        String datasetVersion = null;
+        return downloadFiles(datasetIdOrPersistentId, datasetVersion, apiToken);
+    }
+
+    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, String apiToken) {
+        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
+        }
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        String optionalVersion = "";
+        if (datasetVersion != null) {
+            optionalVersion = "/versions/" + datasetVersion;
+        }
+        return requestSpecification.get("/api/access/downloadAll/" + idInPath + optionalVersion + optionalQueryParam);
+    }
+
     static Response subset(String fileId, String variables, String apiToken) {
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
