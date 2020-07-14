@@ -788,6 +788,7 @@ public class Dataverses extends AbstractApiBean {
     @POST
     @Path("{identifier}/actions/:publish")
     public Response publishDataverse(@PathParam("identifier") String dvIdtf) {
+        System.out.println("IN publishDataverse API" + dvIdtf);
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             return ok(json(execCommand(new PublishDataverseCommand(createDataverseRequest(findAuthenticatedUserOrDie()), dv))));
