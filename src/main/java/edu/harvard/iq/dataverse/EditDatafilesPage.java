@@ -1788,8 +1788,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         // refresh the warning message below the upload component, if exists:
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
-                if (dupeFileNamesExisting != null || dupeFileNamesNew != null) {
-                   
+                if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
+                   /*
                     String popupExplainer = "";
                     if (multipleDupesExisting || multipleDupesNew) {
                         popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.multiple.one");
@@ -1798,14 +1798,15 @@ public class EditDatafilesPage implements java.io.Serializable {
                         popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.one");
                         popupExplainer =  popupExplainer.concat(" " +BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.two"));
                     }
-                    setWarningMessageForAlreadyExistsPopUp(popupExplainer);
+                    */
+                    setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 }
                 
 
                 //taking this out for now based on design feedback 7/8/2020
-                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
+               // FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
 
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
@@ -1836,8 +1837,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         // only inform the user of the duplicates dropped in the current upload 
         // attempt - for ex., one batch of drag-and-dropped files, or a single 
         // file uploaded through the file chooser. 
-        dupeFileNamesExisting = null; 
-        dupeFileNamesNew = null;
+        newlyUploadedFilesWithDupeContent = null; 
+        existingFilesWithDupeContent = null;
         multipleDupesExisting = false;
         multipleDupesNew = false; 
         uploadWarningMessage = null;
@@ -2169,20 +2170,48 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param dFileList 
      */
     
-    private String dupeFileNamesExisting = null; 
-    private String dupeFileNamesNew = null;
+    private String existingFilesWithDupeContent = null; 
+    private String uploadedFilesWithDupeContentToExisting = null;
+    private String uploadedFilesWithDupeContentToNewlyUploaded = null;
+    private String newlyUploadedFilesWithDupeContent = null;
+    
     private boolean multipleDupesExisting = false;
     private boolean multipleDupesNew = false;
-    private boolean dupeContentAndNames = false;
-
-    public boolean isDupeContentAndNames() {
-        return dupeContentAndNames;
-    }
-
-    public void setDupeContentAndNames(boolean dupeContentAndNames) {
-        this.dupeContentAndNames = dupeContentAndNames;
-    }
     
+    public String getExistingFilesWithDupeContent() {
+        return existingFilesWithDupeContent;
+    }
+
+    public void setExistingFilesWithDupeContent(String existingFilesWithDupeContent) {
+        this.existingFilesWithDupeContent = existingFilesWithDupeContent;
+    }
+
+    public String getUploadedFilesWithDupeContentToExisting() {
+        return uploadedFilesWithDupeContentToExisting;
+    }
+
+    public void setUploadedFilesWithDupeContentToExisting(String uploadedFilesWithDupeContentToExisting) {
+        this.uploadedFilesWithDupeContentToExisting = uploadedFilesWithDupeContentToExisting;
+    }
+
+    public String getUploadedFilesWithDupeContentToNewlyUploaded() {
+        return uploadedFilesWithDupeContentToNewlyUploaded;
+    }
+
+    public void setUploadedFilesWithDupeContentToNewlyUploaded(String uploadedFilesWithDupeContentToNewlyUploaded) {
+        this.uploadedFilesWithDupeContentToNewlyUploaded = uploadedFilesWithDupeContentToNewlyUploaded;
+    }
+
+    public String getNewlyUploadedFilesWithDupeContent() {
+        return newlyUploadedFilesWithDupeContent;
+    }
+
+    public void setNewlyUploadedFilesWithDupeContent(String newlyUploadedFilesWithDupeContent) {
+        this.newlyUploadedFilesWithDupeContent = newlyUploadedFilesWithDupeContent;
+    }
+
+
+
     private String processUploadedFileList(List<DataFile> dFileList) {
         if (dFileList == null) {
             return null;
@@ -2220,20 +2249,21 @@ public class EditDatafilesPage implements java.io.Serializable {
             // or if another file with the same checksum has already been 
             // uploaded.
             // -----------------------------------------------------------
+
             if (isFileAlreadyInDataset(dataFile)) {
                 DataFile existingFile = fileAlreadyExists.get(dataFile);
                 
                // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
-                 String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " +   existingFile.getDisplayName();
-                 if (dataFile.getFileMetadata().getLabel().equals(existingFile.getDisplayName())){
-                     dupeContentAndNames = true;
-                 }
+                 String uploadedDuplicateFileName = dataFile.getFileMetadata().getLabel();
+                 String existingFileName  = existingFile.getDisplayName();
                  String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
     
-                if (dupeFileNamesExisting == null) {
-                    dupeFileNamesExisting = alreadyExists;
+                if (existingFilesWithDupeContent == null) {
+                    existingFilesWithDupeContent = existingFileName;
+                    uploadedFilesWithDupeContentToExisting = uploadedDuplicateFileName;
                 } else {
-                    dupeFileNamesExisting = dupeFileNamesExisting.concat(", " + alreadyExists);
+                    existingFilesWithDupeContent = existingFilesWithDupeContent.concat(", " + existingFileName);
+                    uploadedFilesWithDupeContentToExisting = uploadedFilesWithDupeContentToExisting.concat(", " + uploadedDuplicateFileName);
                     multipleDupesExisting = true;
                 }
                 //now we are marking as duplicate and
@@ -2245,12 +2275,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             } else if (isFileAlreadyUploaded(dataFile)) {
                 DataFile existingFile = checksumMapNew.get(dataFile.getChecksumValue());
-                String alreadyUploaded = dataFile.getFileMetadata().getLabel() + " uploaded as " + existingFile.getDisplayName();
-
-                if (dupeFileNamesNew == null) {
-                    dupeFileNamesNew = alreadyUploaded;
+                String alreadyUploadedWithSame =  existingFile.getDisplayName();
+                String newlyUploadedDupe = dataFile.getFileMetadata().getLabel();
+                if (newlyUploadedFilesWithDupeContent == null) {
+                    newlyUploadedFilesWithDupeContent = newlyUploadedDupe;
+                    uploadedFilesWithDupeContentToNewlyUploaded = alreadyUploadedWithSame;
                 } else {
-                    dupeFileNamesNew = dupeFileNamesNew.concat(", " + alreadyUploaded);
+                    newlyUploadedFilesWithDupeContent = newlyUploadedFilesWithDupeContent.concat(", " + newlyUploadedDupe);
+                    uploadedFilesWithDupeContentToNewlyUploaded = uploadedFilesWithDupeContentToNewlyUploaded.concat(", " + alreadyUploadedWithSame);
                     multipleDupesNew = true;
                 }
                 //now we are marking as duplicate and
@@ -2323,12 +2355,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         // (note the separate messages for the files already in the dataset, 
         // and the newly uploaded ones)
         // -----------------------------------------------------------
-        if (dupeFileNamesExisting != null) {
+        if (existingFilesWithDupeContent != null) {
             String duplicateFilesErrorMessage = null;
-            if (multipleDupesExisting) {
-                duplicateFilesErrorMessage =  getBundleString("dataset.files.exist") + dupeFileNamesExisting;
+            List<String> args = Arrays.asList(uploadedFilesWithDupeContentToExisting, existingFilesWithDupeContent);
+
+            if (multipleDupesExisting) {                              
+                duplicateFilesErrorMessage = BundleUtil.getStringFromBundle("dataset.files.exis", args);
             } else {
-            	duplicateFilesErrorMessage = getBundleString("dataset.file.exist") + dupeFileNamesExisting;
+            	duplicateFilesErrorMessage =  BundleUtil.getStringFromBundle("dataset.file.exist", args);
             }
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
@@ -2336,7 +2370,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-
+/*
         if (dupeFileNamesNew != null) {
             String duplicateFilesErrorMessage = null;
             if (multipleDupesNew) {
@@ -2351,7 +2385,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-
+*/
         if (warningMessage != null) {
             logger.severe(warningMessage);
             return warningMessage;
