@@ -316,6 +316,8 @@ public class SolrIndexServiceBean {
              * Probably. Update it here.
              */
             for (DvObject dvObject : all) {
+                System.out.println("IN indexAllPermissions, right before dvObjectService.updatePermissionIndexTime for dvobject: " + dvObject.getId());
+
                 dvObjectService.updatePermissionIndexTime(dvObject);
             }
             return new IndexResponse("indexed all permissions");
@@ -342,6 +344,8 @@ public class SolrIndexServiceBean {
             persistToSolr(docs);
             boolean updatePermissionTimeSuccessful = false;
             if (dvObject != null) {
+                System.out.println("IN indexPermissionsForOneDvObject, right before dvObjectService.updatePermissionIndexTime for dvobject: " + dvObject.getId());
+
                 DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObject);
                 if (savedDvObject != null) {
                     updatePermissionTimeSuccessful = true;
@@ -383,6 +387,8 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+        System.out.println("START indexPermissionsOnSelfAndChildren on: " + definitionPoint.getId());
+
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
@@ -430,10 +436,12 @@ public class SolrIndexServiceBean {
             /**
              * @todo do something with this response
              */
+            logger.log(Level.INFO, "In for loop with dvobject id of {0}", dvObject.getId());
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
             updatePermissionTimeSuccessStatus.add(dvObject.toString());
         }
-
+        
+        System.out.println("END indexPermissionsOnSelfAndChildren on: " + definitionPoint.getId());
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
                 + "): " + dvObjectsToReindexPermissionsFor.size()
