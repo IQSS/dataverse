@@ -194,7 +194,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-	/*
+	
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
@@ -203,7 +203,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
         }
-	*/
+	
         //ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
         exportMetadata(dataset, ctxt.settings());
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
