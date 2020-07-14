@@ -1237,17 +1237,17 @@ public class IndexServiceBean {
         }
 
         Long dsId = dataset.getId();
-         Dataset updatedDataset =
-         (Dataset)dvObjectService.updateContentIndexTime(dataset);
-         updatedDataset = null;
+        /// Dataset updatedDataset =
+        /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
+        /// updatedDataset = null;
         // instead of making a call to dvObjectService, let's try and
         // modify the index time stamp using the local EntityManager:
-        /*
+        
         DvObject dvObjectToModify = em.find(DvObject.class, dsId);
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         dvObjectToModify = em.merge(dvObjectToModify);
         dvObjectToModify = null;
-        */
+        
         return "indexed dataset " + dsId + " as " + datasetSolrDocId + ". filesIndexed: " + filesIndexed;
     }
 
