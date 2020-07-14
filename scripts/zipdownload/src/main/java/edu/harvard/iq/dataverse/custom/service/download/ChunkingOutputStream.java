@@ -102,5 +102,7 @@ public class ChunkingOutputStream extends FilterOutputStream {
         String chunkSizeLine = String.format(CHUNK_SIZE_FORMAT, length);
         super.out.write(chunkSizeLine.getBytes());
         super.out.write(data, offset, length);
+        // don't forget to close the chunk(!):
+        super.out.write(CHUNK_CLOSE);
     }
 }
