@@ -153,6 +153,7 @@ class fileUpload {
                 var progBar = fileNode.find('.ui-fileupload-progress');
                 progBar.html('');
                 progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
+                if(this.urls.hasOwnProperty("url") {
                 $.ajax({
                         url: this.urls.url,
                         headers: { "x-amz-tagging": "dv-state=temp" },
@@ -185,6 +186,81 @@ class fileUpload {
                                 return myXhr;
                         }
                 });
+                } else {
+                  for (const [key, value] of Object.entries(this.urls.urls)) {
+                  if(this.etags[key] == 'undefined' || this.etags[key]==-1) {
+                     var size = Math.min(this.partSize, this.file.size-key*partSize);
+                     var blob=this.file.slice(key*this.partSize, size);
+                     $.ajax({
+                        url: value,
+                        headers: { "x-amz-tagging": "dv-state=temp" },
+                        type: 'PUT',
+                        data: blob,
+                        context:this,
+                        cache: false,
+                        processData: false,
+                        success: function(data) {
+                                console.log('upload of part ' + key + ' returned' + data);
+                                this.etags[key]=data.data.values[0];
+                                if(this.etags.size == this.urls.size) {
+                                  console.log('reporting file ' + this.file.name);
+                                  var allGood=true;
+                                  for(val in this.etags.values()) {
+                                    if (val==-1) {
+                                      allGood=false;
+                                      break;
+                                    }  
+                                  }
+                                  if(!allGood) {
+                                    if(this.alreadyRetried) {
+                                      console.log('Error after retrying ' + this.file.name);
+                                      uploadFailure(jqXHR, thisFile);
+                                      this.cancelMPUpload();
+                                    } else {
+                                      this.alreadyRetried=true;
+                                      this.doUpload();
+                                    }  
+                                  } else {  
+                                    this.finishMPUpload();
+                                  }
+                                }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                                console.log('Failure: ' + jqXHR.status);
+                                console.log('Failure: ' + errorThrown);
+                                console.log(thisFile + ' : part' + key);
+                                this.etags[key]=-1;
+                                //uploadFailure(jqXHR, thisFile);
+                        },
+                        xhr: function() {
+                                var myXhr = $.ajaxSettings.xhr();
+                                if (myXhr.upload) {
+                                        myXhr.upload.addEventListener('progress', function(e) {
+                                                if (e.lengthComputable) {
+                                                console.log(e.loaded + ':'+ e.total +':' + key);
+                                                        var doublelength = 2 * e.total;
+                                                        this.loaded[key]=e.loaded;
+                                                        var total=0;
+                                                        for(val in this.loaded.values()) {
+                                                          total = total+val;
+                                                        }
+                                                        progBar.children('progress').attr({
+                                                                value: total + ,
+                                                                max: doublelength
+                                                        });
+                                                }
+                                        });
+                                }
+                                return myXhr;
+                        }
+                });
+                }
+                  }
+                
+                
+                
+                
+                }
         }
 
         reportUpload() {
@@ -205,6 +281,42 @@ class fileUpload {
                         console.log("Abandoned: " + this.storageId);
                 }
         }
+        async cancelMPUpload() {
+               $.ajax({
+                        url: this.urls.abort,
+                        type: 'PUT',
+                        context:this,
+                        cache: false,
+                        processData: false,
+                        success: function() {
+                          console.log("Successfully cancelled upload of ' + this.file.name);
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                                console.log('Failure: ' + jqXHR.status);
+                                console.log('Failure: ' + errorThrown);
+
+                        }
+            });
+         }
+        async finishMPUpload(md5) {
+               $.ajax({
+                        url: this.urls.complete,
+                        type: 'PUT',
+                        context:this,
+                        cache: false,
+                        processData: false,
+                        success: function() {
+                        
+                          console.log("Successfully completed upload of ' + this.file.name);
+                          this.reportUpload();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                                console.log('Failure: ' + jqXHR.status);
+                                console.log('Failure: ' + errorThrown);
+
+                        }
+            });        }
+        
         async handleDirectUpload(md5) {
                 this.state = UploadState.HASHED;
                 //Wait for each call to finish and update the DOM
