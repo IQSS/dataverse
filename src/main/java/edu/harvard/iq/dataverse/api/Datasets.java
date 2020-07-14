@@ -933,7 +933,8 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
-        try {
+        System.out.println("IN publishDataset API" + id);
+	    try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
