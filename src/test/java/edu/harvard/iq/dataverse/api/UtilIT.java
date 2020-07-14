@@ -348,9 +348,12 @@ public class UtilIT {
         return createDataverseResponse;
     }
 
+    public static int count=0;
+    
     static Response createRandomDataverse(String apiToken) {
-        // Add any string (i.e. "dv") to avoid possibility of "Alias should not be a number" https://github.com/IQSS/dataverse/issues/211
-        String alias = "dv" + getRandomIdentifier();
+        System.out.println("IN createRandomDataverse");
+        // Add any string (i.e. "dv")System.out.println("IN createRandomDataverse"); to avoid possibility of "Alias should not be a number" https://github.com/IQSS/dataverse/issues/211
+        String alias = "dv" + count++;
         String category = null;
         return createDataverse(alias, category, apiToken);
     }
@@ -977,6 +980,7 @@ public class UtilIT {
     }
 
     static Response publishDatasetViaNativeApi(String idOrPersistentId, String majorOrMinor, String apiToken) {
+        System.out.println("IN publishDatasetViaNativeApi: " + idOrPersistentId);
         String idInPath = idOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(idOrPersistentId)) {
@@ -1019,6 +1023,7 @@ public class UtilIT {
          * @todo This should be a POST rather than a GET:
          * https://github.com/IQSS/dataverse/issues/2431
          */
+        System.out.println("IN publishDatasetViaNativeApi: " + datasetId.toString());
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .urlEncodingEnabled(false)
@@ -1033,6 +1038,7 @@ public class UtilIT {
     }
 
     static Response publishDataverseViaNativeApi(String dataverseAlias, String apiToken) {
+        System.out.println("IN publishDataverseViaNativeApi: " + dataverseAlias);
         return given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .urlEncodingEnabled(false)
