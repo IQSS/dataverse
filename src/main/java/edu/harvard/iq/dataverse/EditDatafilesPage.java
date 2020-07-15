@@ -1822,9 +1822,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileErrorFound() ) {
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString(), fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString()));
+                /*
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString());
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                */
         }
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
