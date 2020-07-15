@@ -47,7 +47,7 @@ output_file: /tmp/make-data-count-report
 output_format: json
 
 # the name of the platform that goes into your reports
-# FIXME: Change "platform" to the brand of your Dataverse installation.
+# FIXME: Change "platform" to match the name of your Dataverse. Examples are "Harvard Dataverse" for Harvard University or "LibraData" for the University of Virginia.
 platform: LibreScholar
 
 # Don't put your api token in here if you're going to commit it, but put in separate secrets.yaml in same
