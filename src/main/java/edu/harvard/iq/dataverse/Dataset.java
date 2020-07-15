@@ -74,7 +74,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
         name = "Dataset.generateIdentifierAsSequentialNumber",
         procedureName = "generateIdentifierAsSequentialNumber",
         parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "identifier")
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class)
         }
 )
 @Entity
