@@ -2290,6 +2290,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
                 dataFile.getFileMetadata().setMarkedAsDuplicate(true);
+                String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
+                dataFile.setDuplicateFilename(inLineMessage);
             } else {
                 // OK, this one is not a duplicate, we want it. 
                 // But let's check if its filename is a duplicate of another 
@@ -2360,7 +2362,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             List<String> args = Arrays.asList(uploadedFilesWithDupeContentToExisting, existingFilesWithDupeContent);
 
             if (multipleDupesExisting) {                              
-                duplicateFilesErrorMessage = BundleUtil.getStringFromBundle("dataset.files.exis", args);
+                duplicateFilesErrorMessage = BundleUtil.getStringFromBundle("dataset.files.exist", args);
             } else {
             	duplicateFilesErrorMessage =  BundleUtil.getStringFromBundle("dataset.file.exist", args);
             }
@@ -2370,22 +2372,23 @@ public class EditDatafilesPage implements java.io.Serializable {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-/*
-        if (dupeFileNamesNew != null) {
-            String duplicateFilesErrorMessage = null;
-            if (multipleDupesNew) {
-            	duplicateFilesErrorMessage = getBundleString("dataset.files.duplicate") + dupeFileNamesNew ;
-            } else {
-            	duplicateFilesErrorMessage = getBundleString("dataset.file.duplicate") + dupeFileNamesNew ;
-            }
 
+        if (newlyUploadedFilesWithDupeContent != null) {
+            String duplicateFilesErrorMessage = null;
+            List<String> args = Arrays.asList(newlyUploadedFilesWithDupeContent, uploadedFilesWithDupeContentToNewlyUploaded);
+
+            if (multipleDupesNew) {                              
+                duplicateFilesErrorMessage = BundleUtil.getStringFromBundle("dataset.files.duplicate", args);
+            } else {
+            	duplicateFilesErrorMessage =  BundleUtil.getStringFromBundle("dataset.file.duplicate", args);
+            }
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
             } else {
                 warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
             }
         }
-*/
+
         if (warningMessage != null) {
             logger.severe(warningMessage);
             return warningMessage;
