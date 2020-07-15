@@ -448,6 +448,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     private String parseControlledVocabulary(String[] values) {
         
         DatasetFieldType dsv = datasetFieldService.findByName(values[1]);
+
         //See if it already exists
         /*
          Matching relies on assumption that only one cv value will exist for a given identifier or display value
@@ -484,13 +485,13 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));
 
-        if (values.length >= 7 && values[5] != null && !values[5].isEmpty() && values[6] != null && !values[6].isEmpty()) {
-            ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndStrValue(cvv, values[6]);
+        if (values.length >= 6 && values[5] != null && !values[5].isEmpty()) {
+            ControlledVocabularyValueDetail cvvd = datasetFieldService.findControlledVocabularyValueDetailByControlledVocabularyValueAndDisplayFormat(cvv, values[5]);
             if (cvvd == null) {
                 cvvd = new ControlledVocabularyValueDetail();
                 cvvd.setControlledVocabularyValue(cvv);
                 cvvd.setDisplayFormat(values[5]);
-                cvvd.setStrValue(values[6]);
+                //cvvd.setStrValue(values[6]);
                 cvv.setControlledVocabularyValueDetail(cvvd);
             }
         }

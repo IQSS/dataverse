@@ -154,9 +154,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
 
-    public ControlledVocabularyValueDetail findControlledVocabularyValueDetailByControlledVocabularyValueAndStrValue(ControlledVocabularyValue cvv, String strValue){
-        TypedQuery<ControlledVocabularyValueDetail> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValueDetail AS o WHERE o.strValue = :strvalue AND o.controlledVocabularyValue = :cvv", ControlledVocabularyValueDetail.class);
-        typedQuery.setParameter("strvalue", strValue);
+    public ControlledVocabularyValueDetail findControlledVocabularyValueDetailByControlledVocabularyValueAndDisplayFormat(ControlledVocabularyValue cvv, String displayFormat){
+        TypedQuery<ControlledVocabularyValueDetail> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ControlledVocabularyValueDetail AS o WHERE o.displayFormat = :displayformat AND o.controlledVocabularyValue = :cvv", ControlledVocabularyValueDetail.class);
+        typedQuery.setParameter("displayformat", displayFormat);
         typedQuery.setParameter("cvv", cvv);
         try {
             ControlledVocabularyValueDetail cvvd = typedQuery.getSingleResult();

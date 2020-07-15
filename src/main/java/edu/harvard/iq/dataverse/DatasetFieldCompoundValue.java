@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.Access;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
@@ -14,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.persistence.CascadeType;
@@ -159,12 +161,12 @@ public class DatasetFieldCompoundValue implements Serializable {
             if (referencesMap.containsKey("##"+childDatasetField.getDatasetFieldType().getName())){
                 if (childDatasetField.getSingleControlledVocabularyValue() != null){
                     if (childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail() != null && !childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getDisplayFormat().isEmpty()){
-                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getStrValue());
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getControlledVocabularyValueDetail().getDisplayFormat());
                     } else {
-                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getSingleControlledVocabularyValue().getStrValue());
+                        referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), "#VALUE");
                     }
                 } else {
-                    referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), childDatasetField.getValue());
+                    referencesMap.put("##"+childDatasetField.getDatasetFieldType().getName(), "#VALUE");
                 }
             }
         }
@@ -194,6 +196,7 @@ public class DatasetFieldCompoundValue implements Serializable {
 
                 // replace the special values in the format (note: we replace #VALUE last since we don't
                 // want any issues if the value itself has #NAME in it)
+
                 String displayValue = format
                         .replaceAll(fieldName+"\\b", fieldValue)
                         .replace("#NAME", childDatasetField.getDatasetFieldType().getTitle())

@@ -33,7 +33,7 @@ public class ControlledVocabularyValueDetail implements Serializable {
 
     public void setDisplayFormat(String displayFormat) { this.displayFormat = displayFormat; }
 
-    @Column(columnDefinition = "TEXT")
+    /*@Column(columnDefinition = "TEXT")
     private String strValue;
 
     public String getStrValue() {
@@ -42,7 +42,7 @@ public class ControlledVocabularyValueDetail implements Serializable {
 
     public void setStrValue(String strValue) {
         this.strValue = strValue;
-    }
+    }*/
 
     @OneToOne
     @JoinColumn(name = "controlledvocabularyvalue_id", unique = true)
