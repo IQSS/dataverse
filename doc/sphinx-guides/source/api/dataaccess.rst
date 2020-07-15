@@ -14,6 +14,8 @@ Downloading All Files in a Dataset
 
 The "download all" API downloads as many files as possible from a dataset as a zipped bundle.
 
+By default, tabular files are downloaded in their "archival" form (tab-separated values). To download the original files (Stata, for example), add ``format=original`` as a query parameter.
+
 There are a number of reasons why not all of the files can be downloaded:
 
 - Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).

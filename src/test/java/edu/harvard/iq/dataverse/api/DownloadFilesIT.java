@@ -18,6 +18,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -275,6 +276,61 @@ public class DownloadFilesIT {
         // The guest can only get the unrestricted file (and the manifest).
         Assert.assertEquals(new HashSet<>(Arrays.asList("README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles3.getBody().asInputStream()));
 
+    }
+
+    /**
+     * This test is focused on downloading all files when tabular files are
+     * present (original vs archival).
+     */
+    @Test
+    public void downloadAllFilesTabular() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        String pathToFile = "scripts/search/data/tabular/50by1000.dta";
+
+        Response uploadTabular = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
+        uploadTabular.prettyPrint();
+        uploadTabular.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("50by1000.dta"));
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response downloadFiles1 = UtilIT.downloadFiles(datasetPid, apiToken);
+        downloadFiles1.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // By default we get the archival version (.tab).
+        Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.tab", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
+
+        String format = "original";
+        Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, format, apiToken);
+        downloadFiles2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // By passing format=original we get the original version, Stata (.dta) in this case.
+        Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.dta", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
     }
 
     private HashSet<String> gatherFilenames(InputStream inputStream) throws IOException {

@@ -752,10 +752,22 @@ public class UtilIT {
 
     static Response downloadFiles(String datasetIdOrPersistentId, String apiToken) {
         String datasetVersion = null;
-        return downloadFiles(datasetIdOrPersistentId, datasetVersion, apiToken);
+        String format = null;
+        return downloadFiles(datasetIdOrPersistentId, datasetVersion, format, apiToken);
     }
 
-    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, String apiToken) {
+    /**
+     * @param format can be "original" for tabular files.
+     */
+    static Response downloadFiles(String datasetIdOrPersistentId, String format, String apiToken) {
+        String datasetVersion = null;
+        return downloadFiles(datasetIdOrPersistentId, datasetVersion, format, apiToken);
+    }
+
+    /**
+     * @param format can be "original" for tabular files.
+     */
+    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, String format, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
@@ -771,7 +783,15 @@ public class UtilIT {
         if (datasetVersion != null) {
             optionalVersion = "/versions/" + datasetVersion;
         }
-        return requestSpecification.get("/api/access/downloadAll/" + idInPath + optionalVersion + optionalQueryParam);
+        String optionalFormat = "";
+        if (format != null) {
+            if (!"".equals(optionalQueryParam)) {
+                optionalFormat = "&format=" + format;
+            } else {
+                optionalFormat = "?format=" + format;
+            }
+        }
+        return requestSpecification.get("/api/access/downloadAll/" + idInPath + optionalVersion + optionalQueryParam + optionalFormat);
     }
 
     static Response subset(String fileId, String variables, String apiToken) {
