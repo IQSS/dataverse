@@ -33,17 +33,6 @@ public class ControlledVocabularyValueDetail implements Serializable {
 
     public void setDisplayFormat(String displayFormat) { this.displayFormat = displayFormat; }
 
-    /*@Column(columnDefinition = "TEXT")
-    private String strValue;
-
-    public String getStrValue() {
-        return strValue;
-    }
-
-    public void setStrValue(String strValue) {
-        this.strValue = strValue;
-    }*/
-
     @OneToOne
     @JoinColumn(name = "controlledvocabularyvalue_id", unique = true)
     private ControlledVocabularyValue controlledVocabularyValue;
