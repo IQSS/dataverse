@@ -328,7 +328,7 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        writeAttribute(xmlw,"source","DVN"); 
+        writeAttribute(xmlw,"source","producer"); 
         xmlw.writeStartElement("version");
         writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
@@ -436,24 +436,27 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
 
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            xmlw.writeStartElement("geoBndBox");
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext();) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "westBL", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "eastBL", next.getSinglePrimitive());
-                                }
-                                if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "northBL", next.getSinglePrimitive());
-                                }  
-                                if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
-                                    writeFullElement(xmlw, "southBL", next.getSinglePrimitive());
-                                }                               
+                            if(foo.size() == 4) {
+                                xmlw.writeStartElement("geoBndBox");
+                                for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
+                                    FieldDTO next = iterator.next();
+                                    if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
+                                        writeFullElement(xmlw, "westBL", next.getSinglePrimitive());
+                                    }
+                                    if (DatasetFieldConstant.eastLongitude.equals(next.getTypeName())) {
+                                        writeFullElement(xmlw, "eastBL", next.getSinglePrimitive());
+                                    }
+                                    if (DatasetFieldConstant.northLatitude.equals(next.getTypeName())) {
+                                        writeFullElement(xmlw, "northBL", next.getSinglePrimitive());
+                                    }
+                                    if (DatasetFieldConstant.southLatitude.equals(next.getTypeName())) {
+                                        writeFullElement(xmlw, "southBL", next.getSinglePrimitive());
+                                    }
 
+                                }
+                                xmlw.writeEndElement();
+                                break;
                             }
-                            xmlw.writeEndElement();
                         }
 
                     }
