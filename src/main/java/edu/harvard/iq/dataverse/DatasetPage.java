@@ -312,6 +312,14 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
     
     private Boolean hasTabular = false;
+
+    /**
+     * If the dataset version has at least one tabular file. The "hasTabular"
+     * boolean is for the dataset level ("has ever had a tabular file") but
+     * sometimes you want to know about the current version ("no tabular files
+     * currently"). Like all files, tabular files can be deleted.
+     */
+    private boolean versionHasTabular = false;
     
     private boolean showIngestSuccess;
 
@@ -2040,7 +2048,18 @@ public class DatasetPage implements java.io.Serializable {
                 
         displayLockInfo(dataset);
             
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (fmd.getDataFile().isTabularData()) {
+                versionHasTabular = true;
+                break;
+            }
+        }
         for(DataFile f : dataset.getFiles()) {
+            // TODO: Consider uncommenting this optimization.
+//            if (versionHasTabular) {
+//                hasTabular = true;
+//                break;
+//            }
             if(f.isTabularData()) {
                 hasTabular = true;
                 break;
@@ -2260,8 +2279,11 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isHasTabular() {
         return hasTabular;
     }
-    
-    
+
+    public boolean isVersionHasTabular() {
+        return versionHasTabular;
+    }
+
     public boolean isReadOnly() {
         return readOnly; 
     }
