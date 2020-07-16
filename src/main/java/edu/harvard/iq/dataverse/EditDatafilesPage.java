@@ -1789,16 +1789,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uploadComponentId != null) {
             if (uploadWarningMessage != null) {
                 if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
-                   /*
-                    String popupExplainer = "";
-                    if (multipleDupesExisting || multipleDupesNew) {
-                        popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.multiple.one");
-                        popupExplainer =  popupExplainer.concat(" " + BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.multiple.two"));
-                    } else {
-                        popupExplainer = BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.one");
-                        popupExplainer =  popupExplainer.concat(" " +BundleUtil.getStringFromBundle("dataset.file.upload.popup.explanation.single.two"));
-                    }
-                    */
                     setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
