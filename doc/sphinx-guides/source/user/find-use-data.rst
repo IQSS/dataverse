@@ -119,9 +119,6 @@ Ingested files can be downloaded in several different ways.
 
 - The variable metadata for the file in DDI format
 
-- A subset of the columns of the data
-
-
 .. _url_download:
 
 Downloading via URL
