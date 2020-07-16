@@ -62,6 +62,7 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         Dataverse ret = (Dataverse) r;
+        System.out.println("*** COMMAND On Success for Publish Dataverse for id / alias: " + ret.getId() + " / " + ret.getAlias());
         ctxt.solrIndex().indexPermissionsOnSelfAndChildren(ret.getId());
         return true;
     }
