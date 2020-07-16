@@ -370,7 +370,7 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (dvAlias != null) {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
-                        System.out.println("*** SWORD before Publish Dataverse for id: " + dataset.getId());
+                        System.out.println("*** SWORD before Publish Dataverse for id / alias: " + dvToRelease.getId() + " / " + dvToRelease.getAlias());
                         PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
                         if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
