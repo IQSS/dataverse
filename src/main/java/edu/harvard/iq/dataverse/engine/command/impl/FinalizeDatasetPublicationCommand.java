@@ -196,7 +196,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 	
         try {
-	    System.out.println("*** SWORD before Publish Dataset for id: " + r.getId());
+	    System.out.println("*** SWORD before Publish Dataset for id: " + dataset.getId());
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
