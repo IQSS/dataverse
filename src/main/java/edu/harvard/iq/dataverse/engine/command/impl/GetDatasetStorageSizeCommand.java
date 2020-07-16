@@ -33,6 +33,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
     private final Dataset dataset;
     private final Boolean countCachedFiles;
     private final boolean useOrigFileSize;
+    private final boolean dbOnly;
     private final Mode mode;
     private final DatasetVersion version;
     
@@ -46,6 +47,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         dataset = target;
         countCachedFiles = false;
         this.useOrigFileSize = false;
+        this.dbOnly = false;
         mode = Mode.DOWNLOAD;
         version = null;
     }
@@ -55,15 +57,17 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         dataset = target;
         this.countCachedFiles = countCachedFiles;
         this.useOrigFileSize = false;
+        this.dbOnly = false;
         this.mode = mode;
         this.version = version;
     }
 
-    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, boolean useOrigFileSize, Mode mode, DatasetVersion version) {
+    public GetDatasetStorageSizeCommand(DataverseRequest aRequest, Dataset target, boolean countCachedFiles, boolean useOrigFileSize, boolean dbOnly, Mode mode, DatasetVersion version) {
         super(aRequest, target);
         dataset = target;
         this.countCachedFiles = countCachedFiles;
         this.useOrigFileSize = useOrigFileSize;
+        this.dbOnly = dbOnly;
         this.mode = mode;
         this.version = version;
     }
@@ -78,7 +82,7 @@ public class GetDatasetStorageSizeCommand extends AbstractCommand<Long> {
         }
 
         try {
-            return ctxt.datasets().findStorageSize(dataset, countCachedFiles, useOrigFileSize, mode, version);
+            return ctxt.datasets().findStorageSize(dataset, countCachedFiles, useOrigFileSize, dbOnly, mode, version);
         } catch (IOException ex) {
             throw new CommandException(BundleUtil.getStringFromBundle("datasets.api.datasize.ioerror"), this);
         }

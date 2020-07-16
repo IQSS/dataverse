@@ -882,7 +882,8 @@ public class DatasetServiceBean implements java.io.Serializable {
   
     public long findStorageSize(Dataset dataset, boolean countCachedExtras, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
         boolean useOrigFileSize = false;
-        return findStorageSize(dataset, countCachedExtras, useOrigFileSize, mode, version);
+        boolean dbOnly = false;
+        return findStorageSize(dataset, countCachedExtras, useOrigFileSize, dbOnly, mode, version);
     }
     /**
      * Returns the total byte size of the files in this dataset 
@@ -892,13 +893,14 @@ public class DatasetServiceBean implements java.io.Serializable {
      * @param useOrigFileSize allows original tabular file size to be used instead of derived archival file
      * @param mode String indicating whether we are getting the result for storage (entire dataset) or download version based
      * @param version optional param for dataset version
+     * @param dbOnly only get bytes from database, no countCachedExtras processing
      * @return total size 
      * @throws IOException if it can't access the objects via StorageIO 
      * (in practice, this can only happen when called with countCachedExtras=true; when run in the 
      * default mode, the method doesn't need to access the storage system, as the 
      * sizes of the main files are recorded in the database)
      */
-    public long findStorageSize(Dataset dataset, boolean countCachedExtras, boolean useOrigFileSize, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
+    public long findStorageSize(Dataset dataset, boolean countCachedExtras, boolean useOrigFileSize, boolean dbOnly, GetDatasetStorageSizeCommand.Mode mode, DatasetVersion version) throws IOException {
         long total = 0L; 
         
         if (dataset.isHarvested()) {
@@ -935,8 +937,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                 total += datafile.getFilesize();
             }
 
+            if (dbOnly) {
+                // Skip the rest. Don't add any more to the total. No cached extras.
+                continue;
+            }
+
             if (!countCachedExtras) {
-                if (!useOrigFileSize && datafile.isTabularData()) {
+                if (datafile.isTabularData()) {
                     // count the size of the stored original, in addition to the main tab-delimited file:
                     Long originalFileSize = datafile.getDataTable().getOriginalFileSize();
                     if (originalFileSize != null) {

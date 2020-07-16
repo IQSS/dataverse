@@ -2903,7 +2903,8 @@ public class DatasetPage implements java.io.Serializable {
     public String getSizeOfDataset() {
         boolean countCachedFiles = false;
         boolean useOrigFileSize = false;
-        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, useOrigFileSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
+        boolean dbOnly = true;
+        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, dbOnly, useOrigFileSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
         try {
             long bytes = commandEngine.submit(cmd);
             return FileSizeChecker.bytesToHumanReadable(bytes);
@@ -2915,7 +2916,8 @@ public class DatasetPage implements java.io.Serializable {
     public String getSizeOfDatasetOrig() {
         boolean countCachedFiles = false;
         boolean useOrigFileSize = true;
-        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, useOrigFileSize, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
+        boolean dbOnly = true;
+        GetDatasetStorageSizeCommand cmd = new GetDatasetStorageSizeCommand(dvRequestService.getDataverseRequest(), dataset, countCachedFiles, useOrigFileSize, dbOnly, GetDatasetStorageSizeCommand.Mode.DOWNLOAD, workingVersion);
         try {
             long bytes = commandEngine.submit(cmd);
             return FileSizeChecker.bytesToHumanReadable(bytes);
