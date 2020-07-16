@@ -141,8 +141,11 @@ public class FilesIT {
 
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.warning.duplicate_file");
-        String errMsgFromResponse = JsonPath.from(addTwiceResponse.body().asString()).getString("message");        
+        String dupeName = "dataverseproject.png";
+
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file",
+                Arrays.asList(dupeName));
+        String errMsgFromResponse = JsonPath.from(addTwiceResponse.body().asString()).getString("message");
         addTwiceResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
         assertTrue(errMsgFromResponse.contains(errMsg));

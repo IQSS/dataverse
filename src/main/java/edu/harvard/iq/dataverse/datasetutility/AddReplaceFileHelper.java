@@ -1255,7 +1255,7 @@ public class AddReplaceFileHelper{
                 this.duplicateFileWarningFound = true;
                 this.duplicateFileWarningString = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file", 
                                 Arrays.asList(dupeName));
-                this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
+                this.addErrorWarning(this.duplicateFileWarningString); 
 
             }             
             finalFileList.add(df);
