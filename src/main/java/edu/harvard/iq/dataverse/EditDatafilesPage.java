@@ -1823,18 +1823,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileErrorFound() ) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString(), fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString()));
-                /*
-                setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileErrorString());
-                    PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
-                    PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
-                */
         }
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
-                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileComponentMessage(), fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileComponentMessage()));
+                 
         }
         // We clear the following duplicate warning labels, because we want to 
         // only inform the user of the duplicates dropped in the current upload 

@@ -1194,6 +1194,8 @@ public class AddReplaceFileHelper{
      * @return 
      */
     private boolean step_040_auto_checkForDuplicates(){
+        this.duplicateFileErrorString = "";
+        this.duplicateFileErrorFound = false;
         
         msgt("step_040_auto_checkForDuplicates");
         if (this.hasError()){
@@ -1251,8 +1253,8 @@ public class AddReplaceFileHelper{
             if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
                 this.duplicateFileWarningFound = true;
-                this.duplicateFileWarningString = getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue");
-                this.duplicateFileComponentMessage= BundleUtil.getStringFromBundle("dataset.file.exist") + " " + dupeName;
+                this.duplicateFileWarningString = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file", 
+                                Arrays.asList(dupeName));
                 this.addErrorWarning(getBundleErr("warning.duplicate_file") + " " + dupeName + " " + getBundleErr("duplicate_file.continue")); 
 
             }             

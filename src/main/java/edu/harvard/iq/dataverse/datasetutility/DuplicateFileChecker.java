@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -154,7 +155,12 @@ public class DuplicateFileChecker {
             FileMetadata fm = fmIt.next();
             String currentCheckSum = fm.getDataFile().getChecksumValue();            
             if (currentCheckSum != null) {
-                if (currentCheckSum.equals(selectedCheckSum)) return true;
+                if (currentCheckSum.equals(selectedCheckSum)) {
+                    DataFile existingFile = fm.getDataFile();
+                    String inLineMessage = BundleUtil.getStringFromBundle("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
+                    fileMetadata.getDataFile().setDuplicateFilename(inLineMessage);
+                    return true;
+                }
                 /*
                 if (checkSumMap.get(currentCheckSum) != null) {
                     checkSumMap.put(currentCheckSum, checkSumMap.get(currentCheckSum).intValue() + 1);
