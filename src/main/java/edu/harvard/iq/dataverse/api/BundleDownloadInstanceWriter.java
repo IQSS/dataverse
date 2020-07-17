@@ -12,12 +12,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
@@ -196,10 +196,10 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
                 }
             }
         } catch (IOException ioex) {
-            throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+            throw new InternalServerErrorException();
         }
 
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
+        throw new NotFoundException();
 
     }
 
