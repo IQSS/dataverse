@@ -241,7 +241,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
-			System.out.println("*** DVOBJECT: " + dataset.getId() + " - Finalize Publish Dataset command Update Dataverse (execute)");    
+			System.out.println("*** DVOBJECT: " + dv.getId() + " - Finalize Publish Dataset command Update Dataverse (execute)");    
                         ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
                     }
                     dv = dv.getOwner();
