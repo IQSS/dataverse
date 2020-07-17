@@ -794,7 +794,7 @@ public class UtilIT {
                 optionalFormat = "?format=" + format;
             }
         }
-        return requestSpecification.get("/api/access/downloadAll/" + idInPath + optionalVersion + optionalQueryParam + optionalFormat);
+        return requestSpecification.get("/api/access/dataset/" + idInPath + optionalVersion + optionalQueryParam + optionalFormat);
     }
 
     static Response subset(String fileId, String variables, String apiToken) {

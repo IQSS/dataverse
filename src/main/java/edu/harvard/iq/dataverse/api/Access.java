@@ -549,7 +549,7 @@ public class Access extends AbstractApiBean {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
 
-    @Path("downloadAll/{id}")
+    @Path("dataset/{id}")
     @GET
     @Produces({"application/zip"})
     public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
@@ -564,7 +564,7 @@ public class Access extends AbstractApiBean {
         }
     }
 
-    @Path("downloadAll/{id}/versions/{versionId}")
+    @Path("dataset/{id}/versions/{versionId}")
     @GET
     @Produces({"application/zip"})
     public Response downloadAllFromVersion(@PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
