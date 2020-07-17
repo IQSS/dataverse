@@ -172,6 +172,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataverse(Dataverse dataverse, boolean processPaths) throws SolrServerException, IOException {
+        System.out.println("*** DVOBJECT: " + dataverse.getId() + " - IndexServiceBean - indexDataverse start");
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             // TODO: Investigate the root cause of this "unable to index dataverse"
