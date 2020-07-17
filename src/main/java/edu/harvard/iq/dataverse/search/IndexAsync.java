@@ -24,8 +24,8 @@ public class IndexAsync {
         } catch (InterruptedException ex) {
             Logger.getLogger(IndexAsync.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " - IndexAsync - indexRole - pre SaC call");
-        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
+        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " (commented out) - IndexAsync - indexRole - pre SaC call");
+        //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
         logger.fine("output from indexing operations: " + indexResponse);
     }
     
@@ -37,8 +37,8 @@ public class IndexAsync {
             Logger.getLogger(IndexAsync.class.getName()).log(Level.SEVERE, null, ex);
         }
         for (DvObject dvObject : dvObjects) {
-            System.out.println("*** DVOBJECT: " + dvObject.getId() + " - IndexAsync - indexRoles - loop - pre SaC call");
-            IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
+            System.out.println("*** DVOBJECT: " + dvObject.getId() + " (commented out) - IndexAsync - indexRoles - loop - pre SaC call");
+            //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
             logger.fine("output from permission indexing operations (dvobject " + dvObject.getId() + ": " + indexResponse);
         }
     }
