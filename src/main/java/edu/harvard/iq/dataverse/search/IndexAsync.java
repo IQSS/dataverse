@@ -17,19 +17,19 @@ public class IndexAsync {
     @EJB
     SolrIndexServiceBean solrIndexService;
 
-    @Asynchronous
+    //@Asynchronous
     public void indexRole(RoleAssignment roleAssignment) {
         try {
             Thread.sleep(1000); //we wait to ensure a nested native query are up to date
         } catch (InterruptedException ex) {
             Logger.getLogger(IndexAsync.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " (commented out) - IndexAsync - indexRole - pre SaC call");
-        //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
-        //logger.fine("output from indexing operations: " + indexResponse);
+        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " - IndexAsync - indexRole - pre SaC call");
+        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
+        logger.fine("output from indexing operations: " + indexResponse);
     }
     
-    @Asynchronous 
+    //@Asynchronous 
     public void indexRoles(Collection<DvObject> dvObjects) {
         try {
             Thread.sleep(1000); //we wait to ensure a nested native query are up to date
@@ -37,9 +37,9 @@ public class IndexAsync {
             Logger.getLogger(IndexAsync.class.getName()).log(Level.SEVERE, null, ex);
         }
         for (DvObject dvObject : dvObjects) {
-            System.out.println("*** DVOBJECT: " + dvObject.getId() + " (commented out) - IndexAsync - indexRoles - loop - pre SaC call");
-            //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
-            //logger.fine("output from permission indexing operations (dvobject " + dvObject.getId() + ": " + indexResponse);
+            System.out.println("*** DVOBJECT: " + dvObject.getId() + " - IndexAsync - indexRoles - loop - pre SaC call");
+            IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
+            logger.fine("output from permission indexing operations (dvobject " + dvObject.getId() + ": " + indexResponse);
         }
     }
 
