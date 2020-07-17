@@ -165,7 +165,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String relatedMaterial = "relatedMaterial";
     //public final static String replicationFor="replicationFor";
     //public final static String relatedPublications="relatedPublications";
-    public final static String relatedDatasets = "relatedDatasets";
+    public final static String relatedDatasets = "relatedDataset";
     public final static String otherReferences = "otherReferences";
     public final static String notesText = "notesText";
     public final static String language = "language";
