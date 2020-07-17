@@ -26,7 +26,7 @@ public class IndexAsync {
         }
         System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " (commented out) - IndexAsync - indexRole - pre SaC call");
         //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
-        logger.fine("output from indexing operations: " + indexResponse);
+        //logger.fine("output from indexing operations: " + indexResponse);
     }
     
     @Asynchronous 
@@ -39,7 +39,7 @@ public class IndexAsync {
         for (DvObject dvObject : dvObjects) {
             System.out.println("*** DVOBJECT: " + dvObject.getId() + " (commented out) - IndexAsync - indexRoles - loop - pre SaC call");
             //IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(dvObject);
-            logger.fine("output from permission indexing operations (dvobject " + dvObject.getId() + ": " + indexResponse);
+            //logger.fine("output from permission indexing operations (dvobject " + dvObject.getId() + ": " + indexResponse);
         }
     }
 
