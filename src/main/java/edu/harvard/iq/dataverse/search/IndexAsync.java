@@ -24,7 +24,7 @@ public class IndexAsync {
         } catch (InterruptedException ex) {
             Logger.getLogger(IndexAsync.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint.getId() + " - IndexAsync - indexRole - pre SaC call");
+        System.out.println("*** DVOBJECT: " + roleAssignment.getDefinitionPoint().getId() + " - IndexAsync - indexRole - pre SaC call");
         IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(roleAssignment.getDefinitionPoint());
         logger.fine("output from indexing operations: " + indexResponse);
     }
