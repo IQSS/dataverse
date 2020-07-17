@@ -490,8 +490,7 @@ public class SwordIT {
      * This test requires the root dataverse to have been published already.
      */
     @Test
-    public void testCreateDatasetPublishDestroy() {
-        
+    public void testCreateDatasetPublishDestroy() {        
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -586,7 +585,7 @@ public class SwordIT {
 
         Integer datasetId = JsonPath.from(reindexDatasetToFindDatabaseId.asString()).getInt("data.id");
 
-        // get contents again after publication - should see id
+        /* get contents again after publication - should see id*/
         thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiToken);
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
