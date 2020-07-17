@@ -178,7 +178,8 @@
                                                                 <div aria-label="#{bundle['metadata.import.form.wcag.subfield.parent.text']} #{item.localizedName} #{itemStatus.index + 1}">
                                                                     <div class="col-xs-6" jsf:rendered="#{childItem.processingType ne Processing.UNPROCESSABLE}">
                                                                             <p:selectBooleanCheckbox value="#{childItem.shouldProcess}"
-                                                                                                    itemLabel="#{childItem.localizedName}: #{childItem.value}"/>
+                                                                                                    itemLabel="#{childItem.localizedName}: " escape="false"/>
+                                                                            <h:outputText value="#{childItem.value}" escape="true" />
                                                                         <ui:repeat value="#{childItem.children}" var="cvItem" varStatus="cvStatus"
                                                                                    rendered="#{childItem.itemType eq ItemType.VOCABULARY}">
                                                                             <span class="glyphicon glyphicon-warning-sign"
@@ -193,7 +194,7 @@
                                                                               data-toggle="tooltip" data-placement="auto right"
                                                                               data-original-title="#{bundle['metadata.import.result.not.matched']}"></span>
                                                                         <span class="ui-chkbox" jsf:rendered="#{childItem.processingType eq Processing.UNPROCESSABLE}">
-                                                                            <h:outputText value="#{childItem.localizedName}" styleClass="ui-chkbox-label"/>
+                                                                            <h:outputText value="#{childItem.localizedName}" styleClass="ui-chkbox-label" escape="false" />
                                                                         </span>
                                                                     </div>
                                                                 </div>

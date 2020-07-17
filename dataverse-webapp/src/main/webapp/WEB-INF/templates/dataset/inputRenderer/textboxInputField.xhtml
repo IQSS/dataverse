@@ -28,7 +28,9 @@
     <p:watermark for="textbox" value="#{datasetField.datasetFieldType.localeWatermark}"></p:watermark>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty datasetField.validationMessage}">
-        <span class="ui-message-error-detail">#{datasetField.validationMessage}</span>
+        <span class="ui-message-error-detail">
+            <h:outputText value="#{datasetField.validationMessage}" escape="false"/>
+        </span>
     </div>
 
 </ui:composition>
