@@ -2241,11 +2241,12 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (isFileAlreadyInDataset(dataFile)) {
                 DataFile existingFile = fileAlreadyExists.get(dataFile);
                 
-               // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
-                 String uploadedDuplicateFileName = dataFile.getFileMetadata().getLabel();
-                 String existingFileName  = existingFile.getDisplayName();
-                 String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
-    
+                // String alreadyExists = dataFile.getFileMetadata().getLabel() + " at " + existingFile.getDirectoryLabel() != null ? existingFile.getDirectoryLabel() + "/" + existingFile.getDisplayName() : existingFile.getDisplayName();
+                String uploadedDuplicateFileName = dataFile.getFileMetadata().getLabel();
+                String existingFileName = existingFile.getDisplayName();
+                List<String> args = Arrays.asList(existingFileName);
+                String inLineMessage = BundleUtil.getStringFromBundle("dataset.file.inline.message", args);
+
                 if (existingFilesWithDupeContent == null) {
                     existingFilesWithDupeContent = existingFileName;
                     uploadedFilesWithDupeContentToExisting = uploadedDuplicateFileName;
@@ -2278,7 +2279,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
                 dataFile.getFileMetadata().setMarkedAsDuplicate(true);
-                String inLineMessage = getBundleString("dataset.file.inline.message.prefix") + " " + existingFile.getDisplayName();
+                List<String> args = Arrays.asList(existingFile.getDisplayName());
+                String inLineMessage = BundleUtil.getStringFromBundle("dataset.file.inline.message", args);
                 dataFile.setDuplicateFilename(inLineMessage);
             } else {
                 // OK, this one is not a duplicate, we want it. 
@@ -2357,7 +2359,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
             } else {
-                warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
+                warningMessage = warningMessage.concat(" " + duplicateFilesErrorMessage);
             }
         }
 
@@ -2373,7 +2375,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (warningMessage == null) {
                 warningMessage = duplicateFilesErrorMessage;
             } else {
-                warningMessage = warningMessage.concat("; " + duplicateFilesErrorMessage);
+                warningMessage = warningMessage.concat(" " + duplicateFilesErrorMessage);
             }
         }
 
