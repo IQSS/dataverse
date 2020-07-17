@@ -429,8 +429,8 @@ public class SolrIndexServiceBean {
              * @todo do something with this response
              */
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
-            updatePermissionTimeSuccessStatus.add(dvObject + ":" + updatePermissionTimeSuccessful);
         }
+        
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + dvObjectsToReindexPermissionsFor.size()
         );
