@@ -423,7 +423,6 @@ public class SolrIndexServiceBean {
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
 
-        List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
