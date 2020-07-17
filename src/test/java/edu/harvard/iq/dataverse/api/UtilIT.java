@@ -750,24 +750,27 @@ public class UtilIT {
         return given().get(getString + "?format=original&key=" + apiToken);
     }
 
+    public enum DownloadFormat {
+        original
+    }
+
     static Response downloadFiles(String datasetIdOrPersistentId, String apiToken) {
         String datasetVersion = null;
-        String format = null;
+        DownloadFormat format = null;
         return downloadFiles(datasetIdOrPersistentId, datasetVersion, format, apiToken);
     }
 
-    /**
-     * @param format can be "original" for tabular files.
-     */
-    static Response downloadFiles(String datasetIdOrPersistentId, String format, String apiToken) {
+    static Response downloadFiles(String datasetIdOrPersistentId, DownloadFormat format, String apiToken) {
         String datasetVersion = null;
         return downloadFiles(datasetIdOrPersistentId, datasetVersion, format, apiToken);
     }
 
-    /**
-     * @param format can be "original" for tabular files.
-     */
-    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, String format, String apiToken) {
+    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, String apiToken) {
+        DownloadFormat format = null;
+        return downloadFiles(datasetIdOrPersistentId, datasetVersion, format, apiToken);
+    }
+
+    static Response downloadFiles(String datasetIdOrPersistentId, String datasetVersion, DownloadFormat format, String apiToken) {
         String idInPath = datasetIdOrPersistentId; // Assume it's a number.
         String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
         if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {

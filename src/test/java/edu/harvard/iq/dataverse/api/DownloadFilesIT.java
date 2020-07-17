@@ -324,8 +324,7 @@ public class DownloadFilesIT {
         // By default we get the archival version (.tab).
         Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.tab", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
 
-        String format = "original";
-        Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, format, apiToken);
+        Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, UtilIT.DownloadFormat.original, apiToken);
         downloadFiles2.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
