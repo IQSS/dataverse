@@ -491,7 +491,7 @@ public class SwordIT {
      */
     @Test
     public void testCreateDatasetPublishDestroy() {
-        /*
+        
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -524,7 +524,7 @@ public class SwordIT {
                 /**
                  * @todo It would be nice if this could be UNAUTHORIZED or
                  * FORBIDDEN rather than BAD_REQUEST.
-                 *
+                 */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
 
@@ -541,7 +541,7 @@ public class SwordIT {
                 /**
                  * @todo It would be nice if this could be UNAUTHORIZED or
                  * FORBIDDEN rather than BAD_REQUEST.
-                 *
+                 */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
         
@@ -578,7 +578,7 @@ public class SwordIT {
         /**
          * @todo This can probably be removed now that
          * https://github.com/IQSS/dataverse/issues/1837 has been fixed.
-         *
+         */
         Response reindexDatasetToFindDatabaseId = UtilIT.reindexDataset(persistentId);
         reindexDatasetToFindDatabaseId.prettyPrint();
         reindexDatasetToFindDatabaseId.then().assertThat()
@@ -598,7 +598,7 @@ public class SwordIT {
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837
-         *
+         */
         Response makeSuperuserRespone = UtilIT.makeSuperUser(username);
         makeSuperuserRespone.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -618,7 +618,7 @@ public class SwordIT {
 
         UtilIT.deleteUser(username);
         UtilIT.deleteUser(usernameNoPrivs);
-    */
+    
     }
 
     /**
