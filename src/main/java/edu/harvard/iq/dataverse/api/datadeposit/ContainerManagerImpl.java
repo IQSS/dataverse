@@ -316,7 +316,6 @@ public class ContainerManagerImpl implements ContainerManager {
                         if (dataset.isReleased() && dataset.getLatestVersion().isMinorUpdate()) {
                             doMinorVersionBump = true;
                         }
-                        System.out.println("*** SWORD before Publish Dataset for id: " + dataset.getId());
                         PublishDatasetCommand publishDatasetCommand = new PublishDatasetCommand(dataset, dvRequest, doMinorVersionBump);
                         if (!permissionService.isUserAllowedOn(user, publishDatasetCommand, dataset)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvThatOwnsDataset.getAlias());
@@ -343,6 +342,7 @@ public class ContainerManagerImpl implements ContainerManager {
                              */
                             if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
                                 try {
+                                    System.out.println("*** DVOBJECT: " + dataset.getId() + " - SWORD - pre call publish Dataset command");
                                     dataset = engineSvc.submit(publishDatasetCommand).getDataset();
                                 } catch (CommandException ex) {
                                     String msg = "Unable to publish dataset: " + ex;
@@ -370,7 +370,6 @@ public class ContainerManagerImpl implements ContainerManager {
                 if (dvAlias != null) {
                     Dataverse dvToRelease = dataverseService.findByAlias(dvAlias);
                     if (dvToRelease != null) {
-                        System.out.println("*** SWORD before Publish Dataverse for id / alias: " + dvToRelease.getId() + " / " + dvToRelease.getAlias());
                         PublishDataverseCommand publishDataverseCommand = new PublishDataverseCommand(dvRequest, dvToRelease);
                         if (!permissionService.isUserAllowedOn(user, publishDataverseCommand, dvToRelease)) {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify dataverse " + dvAlias);
@@ -379,6 +378,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
                         }
                         try {
+                            System.out.println("*** DVOBJECT: " + dvToRelease.getId() + " - SWORD - pre call Publish Dataverse command");
                             engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);
