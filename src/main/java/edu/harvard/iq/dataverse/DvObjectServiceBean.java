@@ -124,7 +124,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
-        System.out.println("*** DVOBJECT: " + dataset.getId() + " - DVObjectServiceBean - updateContentIndexTime");
+        System.out.println("*** DVOBJECT: " + dvObject.getId() + " - DVObjectServiceBean - updateContentIndexTime");
         return savedDvObject;
     }
 
@@ -149,7 +149,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
         logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
-        System.out.println("*** DVOBJECT: " + dataset.getId() + " - DVObjectServiceBean - updatePermissionIndexTime");
+        System.out.println("*** DVOBJECT: " + dvObject.getId() + " - DVObjectServiceBean - updatePermissionIndexTime");
         return savedDvObject;
     }
 
