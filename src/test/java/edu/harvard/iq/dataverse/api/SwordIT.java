@@ -524,7 +524,7 @@ public class SwordIT {
                 /**
                  * @todo It would be nice if this could be UNAUTHORIZED or
                  * FORBIDDEN rather than BAD_REQUEST.
-                 */
+                 *
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
 
@@ -541,7 +541,7 @@ public class SwordIT {
                 /**
                  * @todo It would be nice if this could be UNAUTHORIZED or
                  * FORBIDDEN rather than BAD_REQUEST.
-                 */
+                 *
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
         
@@ -578,7 +578,7 @@ public class SwordIT {
         /**
          * @todo This can probably be removed now that
          * https://github.com/IQSS/dataverse/issues/1837 has been fixed.
-         */
+         *
         Response reindexDatasetToFindDatabaseId = UtilIT.reindexDataset(persistentId);
         reindexDatasetToFindDatabaseId.prettyPrint();
         reindexDatasetToFindDatabaseId.then().assertThat()
@@ -586,7 +586,7 @@ public class SwordIT {
 
         Integer datasetId = JsonPath.from(reindexDatasetToFindDatabaseId.asString()).getInt("data.id");
 
-        /* get contents again after publication - should see id*/
+        // get contents again after publication - should see id
         thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiToken);
         thisDataverseContents.prettyPrint();
         thisDataverseContents.then().assertThat()
@@ -598,7 +598,7 @@ public class SwordIT {
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837
-         */
+         *
         Response makeSuperuserRespone = UtilIT.makeSuperUser(username);
         makeSuperuserRespone.then().assertThat()
                 .statusCode(OK.getStatusCode());
