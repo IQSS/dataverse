@@ -490,7 +490,7 @@ public class SwordIT {
      * This test requires the root dataverse to have been published already.
      */
     @Test
-    public void testCreateDatasetPublishDestroy() {        
+    public void testCreateDatasetPublishDestroy() {
         Response createUser = UtilIT.createRandomUser();
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
@@ -617,7 +617,7 @@ public class SwordIT {
 
         UtilIT.deleteUser(username);
         UtilIT.deleteUser(usernameNoPrivs);
-    
+
     }
 
     /**
