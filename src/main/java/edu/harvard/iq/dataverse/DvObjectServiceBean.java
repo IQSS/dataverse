@@ -124,7 +124,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
         DvObject dvObjectToModify = findDvObject(dvObject.getId());
         dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
-        logger.log(Level.INFO, "Updated index time for DvObject id {0}", dvObject.getId());
+        System.out.println("*** DVOBJECT: " + dataset.getId() + " - DVObjectServiceBean - updateContentIndexTime");
         return savedDvObject;
     }
 
@@ -143,12 +143,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
         Long dvObjectId = dvObject.getId();
         DvObject dvObjectToModify = findDvObject(dvObjectId);
         if (dvObjectToModify == null) {
-            logger.log(Level.SEVERE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
+            logger.log(Level.FINE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
             return dvObject;
         }
         dvObjectToModify.setPermissionIndexTime(new Timestamp(new Date().getTime()));
         DvObject savedDvObject = em.merge(dvObjectToModify);
-        logger.log(Level.INFO, "Updated permission index time for DvObject id {0}", dvObjectId);
+        logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
+        System.out.println("*** DVOBJECT: " + dataset.getId() + " - DVObjectServiceBean - updatePermissionIndexTime");
         return savedDvObject;
     }
 
