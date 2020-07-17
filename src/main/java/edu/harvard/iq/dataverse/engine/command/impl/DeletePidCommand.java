@@ -46,22 +46,13 @@ public class DeletePidCommand extends AbstractVoidCommand {
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
-            // idServiceBean.deleteIdentifier(dataset); // didn't work
-            String baseUrl = System.getProperty("doi.baseurlstringnext");
-            String username = System.getProperty("doi.username");
-            String password = System.getProperty("doi.password");
-            int result = PidUtil.deleteDoi(dataset.getGlobalId().asString(), baseUrl, username, password);
-            if (result == 204) {
-                // Success! Clear the create time, etc.
-                dataset.setGlobalIdCreateTime(null);
-                dataset.setIdentifierRegistered(false);
-                ctxt.datasets().merge(dataset);
-            } else {
-                String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureExpected", Arrays.asList(dataset.getId().toString(), Integer.toString(result)));
-                throw new IllegalCommandException(message, this);
-            }
-        } catch (IOException ex) {
-            String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureOther", Arrays.asList(dataset.getId().toString(), ex.getLocalizedMessage()));
+            idServiceBean.deleteIdentifier(dataset); 
+            // Success! Clear the create time, etc.
+            dataset.setGlobalIdCreateTime(null);
+            dataset.setIdentifierRegistered(false);
+            ctxt.datasets().merge(dataset);
+        } catch (Exception ex) {
+            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther", Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
