@@ -316,8 +316,7 @@ public class SolrIndexServiceBean {
              * Probably. Update it here.
              */
             for (DvObject dvObject : all) {
-                System.out.println("IN indexAllPermissions, right before dvObjectService.updatePermissionIndexTime for dvobject: " + dvObject.getId());
-
+                System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indexAllPermissions - for loop - right before dvObjectService.updatePermissionIndexTime");
                 dvObjectService.updatePermissionIndexTime(dvObject);
             }
             return new IndexResponse("indexed all permissions");
@@ -328,6 +327,7 @@ public class SolrIndexServiceBean {
     }
 
     public IndexResponse indexPermissionsForOneDvObject(DvObject dvObject) {
+        System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indePermissionForOneDVObject - Start");
         if (dvObject == null) {
             return new IndexResponse("problem indexing... null DvObject passed in");
         }
@@ -344,8 +344,6 @@ public class SolrIndexServiceBean {
             persistToSolr(docs);
             boolean updatePermissionTimeSuccessful = false;
             if (dvObject != null) {
-                System.out.println("IN indexPermissionsForOneDvObject, right before dvObjectService.updatePermissionIndexTime for dvobject: " + dvObject.getId());
-
                 DvObject savedDvObject = dvObjectService.updatePermissionIndexTime(dvObject);
                 if (savedDvObject != null) {
                     updatePermissionTimeSuccessful = true;
@@ -387,7 +385,7 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
-        System.out.println("START indexPermissionsOnSelfAndChildren on: " + definitionPoint.getId());
+        System.out.println("*** DVOBJECT: " + definitionPoint.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - Start");
 
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
@@ -411,8 +409,6 @@ public class SolrIndexServiceBean {
                 }
             }
         } else if (definitionPoint.isInstanceofDataset()) {
-            // index the dataset itself
-            //indexPermissionsForOneDvObject(definitionPoint);
             dvObjectsToReindexPermissionsFor.add(definitionPoint);
             // index files
             Dataset dataset = (Dataset) definitionPoint;
@@ -431,20 +427,17 @@ public class SolrIndexServiceBean {
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
 
-        List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
              */
-            logger.log(Level.INFO, "In for loop with dvobject id of {0}", dvObject.getId());
+            System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - In FOR loop");            
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
-            updatePermissionTimeSuccessStatus.add(dvObject.toString());
         }
         
-        System.out.println("END indexPermissionsOnSelfAndChildren on: " + definitionPoint.getId());
+        System.out.println("*** DVOBJECT: " + definitionPoint.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - End");
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
-                + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
-                + "): " + dvObjectsToReindexPermissionsFor.size()
+                + ": " + dvObjectsToReindexPermissionsFor.size()
         );
     }
 
