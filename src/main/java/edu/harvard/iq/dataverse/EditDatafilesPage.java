@@ -1075,7 +1075,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     }    
         
     public String save() {
-        Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion);
+        
+        Collection<String> duplicates = IngestUtil.findDuplicateFilenames(workingVersion, newFiles);
         if (!duplicates.isEmpty()) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.filesFailure"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.duplicateFilenames", new ArrayList<>(duplicates)));
             return null;
