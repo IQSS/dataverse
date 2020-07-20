@@ -1,29 +1,277 @@
-#metadataBlock	name	dataverseAlias	displayName														
-	socialscience		Social Science and Humanities Metadata														
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id
-	unitOfAnalysis	Unit of Analysis	Basic unit of analysis or observation that this Dataset describes, such as individuals, families/households, groups, institutions/organizations, administrative units, and more. For information about the DDI's controlled vocabulary for this element, please refer to the DDI web page at http://www.ddialliance.org/controlled-vocabularies.		textbox	0		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	universe	Universe	Description of the population covered by the data in the file; the group of people or other elements that are the object of the study and to which the study results refer. Age, nationality, and residence commonly help to  delineate a given universe, but any number of other factors may be used, such as age limits, sex, marital status, race, ethnic group, nationality, income, veteran status, criminal convictions, and more. The universe may consist of elements other than persons, such as housing units, court cases, deaths, countries, and so on. In general, it should be possible to tell from the description of the universe whether a given individual or element is a member of the population under study. Also known as the universe of interest, population of interest, and target population.		textbox	1		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	timeMethod	Time Method	The time method or time dimension of the data collection, such as panel, cross-sectional, trend, time- series, or other.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	socialscience
-	dataCollector	Data Collector	Individual, agency or organization responsible for  administering the questionnaire or interview or compiling the data.	FamilyName, GivenName or Organization	text	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	collectorTraining	Collector Training	Type of training provided to the data collector		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	frequencyOfDataCollection	Frequency	If the data collected includes more than one point in time, indicate the frequency with which the data was collected; that is, monthly, quarterly, or other.		text	5		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	socialscience
-	samplingProcedure	Sampling Procedure	Type of sample and sample design used to select the survey respondents to represent the population. May include reference to the target sample size and the sampling fraction.		textbox	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	targetSampleSize	Target Sample Size	Specific information regarding the target sample size, actual  sample size, and the formula used to determine this.		none	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	targetSampleActualSize	Actual	Actual sample size.	Enter an integer...	int	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	TEXT	{}	socialscience
-	targetSampleSizeFormula	Formula	Formula used to determine target sample size.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	TEXT	{}	socialscience
-	deviationsFromSampleDesign	Major Deviations for Sample Design	Show correspondence as well as discrepancies between the sampled units (obtained) and available statistics for the population (age, sex-ratio, marital status, etc.) as a whole.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	collectionMode	Collection Mode	Method used to collect the data; instrumentation characteristics (e.g., telephone interview, mail questionnaire, or other).		textbox	11		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	researchInstrument	Type of Research Instrument	Type of data collection instrument used. Structured indicates an instrument in which all respondents are asked the same questions/tests, possibly with precoded answers. If a small portion of such a questionnaire includes open-ended questions, provide appropriate comments. Semi-structured indicates that the research instrument contains mainly open-ended questions. Unstructured indicates that in-depth interviews were conducted.		text	12		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	dataCollectionSituation	Characteristics of Data Collection Situation	Description of noteworthy aspects of the data collection situation. Includes information on factors such as cooperativeness of respondents, duration of interviews, number of call backs, or similar.		textbox	13		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		text	14		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	controlOperations	Control Operations	Control OperationsMethods to facilitate data control performed by the primary investigator or by the data archive.		text	15		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	weighting	Weighting	The use of sampling procedures might make it necessary to apply weights to produce accurate statistical results. Describes the criteria for using weights in analysis of a collection. If a weighting formula or coefficient was developed, the formula is provided, its elements are defined, and it is indicated how the formula was applied to the data.		textbox	16		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	cleaningOperations	Cleaning Operations	Methods used to clean the data collection, such as consistency checking, wildcode checking, or other.		text	17		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	datasetLevelErrorNotes	Study Level Error Notes	Note element used for any information annotating or clarifying the methodology and processing of the study. 		text	18		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	responseRate	Response Rate	Percentage of sample members who provided information.		textbox	19		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXTBOX	{}	socialscience
-	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		text	20		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	otherDataAppraisal	Other Forms of Data Appraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate  and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		text	21		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	socialScienceNotes	Notes	General notes about this Dataset.		none	22		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
-	socialScienceNotesType	Type	Type of note.		text	23		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience
-	socialScienceNotesSubject	Subject	Note subject.		text	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience
-	socialScienceNotesText	Text	Text for this note.		textbox	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXTBOX	{}	socialscience
+#metadataBlock	name	dataverseAlias	displayName															
+	socialscience		Social Science and Humanities Metadata															
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id	termURI
+	socialScienceTopicClassification	Topic Classification for Social Science	Topic classification for the deposited social science data. Broader topic terms (in capital letters) should only be used if no narrower terms are applicable.		text	0		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	unitOfAnalysis	Unit of Analysis	Basic unit of analysis or observation that this Dataset describes.		text	1		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	universe	Universe	Description of the population covered by the data in the file; the group of people or other elements that are the object of the study and to which the study results refer. Age, nationality, and residence commonly help to delineate a given universe, but any number of other factors may be used, such as age limits, sex, marital status, race, ethnic group, nationality, income, veteran status, criminal convictions, and more. The universe may consist of elements other than persons, such as housing units, court cases, deaths, countries, and so on. In general, it should be possible to tell from the description of the universe whether a given individual or element is a member of the population under study. Also known as the universe of interest, population of interest, and target population.		textbox	2		TRUE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXTBOX	{}	socialscience	
+	timeMethod	Time Method	The time method or time dimension of the data collection.		text	3		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	dataCollector	Data Collector	Individual, agency or organization responsible for administering the questionnaire or interview or compiling the data.	FamilyName, GivenName or Organization	text	4		TRUE	FALSE	FALSE	TRUE	TRUE	FALSE		TEXT	{}	socialscience	
+	collectorTraining	Collector Training	Type of training provided to the data collector		textbox	5		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	frequencyOfDataCollection	Frequency of Data Collection	If the data collected includes more than one point in time, indicate the frequency with which the data was collected; that is, monthly, quarterly, or other.		text	6		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	socialscience	
+	dataSourceType	Data Source Type	Data source type for this dataset. 		text	7		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	samplingDescription	Sampling Procedure Description	Detailed description of the sample and sample design used to select the survey respondents to represent the population. May include reference to the target sample size and the sampling fraction.		textbox	8		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	socialscience	
+	samplingProcedure	Sampling Procedure Type	Type of sampling procedure used to select the survey respondents to represent the population.		text	9		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	targetSampleSize	Sample Size	Specific information regarding the target sample size and achieved sample size.		none	10	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	socialscience	
+	targetSampleActualSize	Targeted	Target sample size.	Enter an integer...	int	11	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	targetSampleSize	TEXT	{}	socialscience	
+	targetSampleSizeAchieved	Achieved	Achieved sample size. 	Enter an integer...	int	12	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	targetSampleSize	TEXT	{}	socialscience	
+	deviationsFromSampleDesign	Sample Deviations	Show discrepancies between the sample and available statistics for the population (age, sex-ratio, marital status, etc.) as a whole.		textbox	13		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	substitutionOfRespondents	Substitution of Respondents	Infromation regarding the substitution of respondents. 		none	14	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	socialscience	
+	substitutionOfRespondentsAcceptability	Acceptability			text	15	#NAME: #VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	substitutionOfRespondents	VOCABULARY_SELECT	{}	socialscience	
+	substitutionOfRespondentsDescription	Description	A detailed description of the substitution of respondents, especially when using reserved sample. 		textbox	16	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	substitutionOfRespondents	TEXTBOX	{}	socialscience	
+	ageCutOff	Age Cut-Off	Information regarding age cut-off in the sample. 		none	17	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	socialscience	
+	ageCutOffLower	Lower	Lower age cut-off.		int	18	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
+	ageCutOffUpper	Upper	Upper age cut-off. 		int	19	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
+	collectionMode	Collection Mode	Method used to collect the data.		text	20		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	contactAttempts	Contact Attempts	Information regarding contact attempts requirements. 		none	21	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
+	contactAttemptsNumber	Required Number of Contact Attempts	Required Number of Contact Attempts	Enter an integer...	int	22	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contactAttempts	TEXT	{}	socialscience	
+	contactAttemptsSameDay	Contact attempts at different times of day required	Indicate if there was a requirement of contact attempts at different times of day. 		text	23	#NAME: #VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	contactAttempts	VOCABULARY_SELECT	{}	socialscience	
+	contactAttemptsDifferentDays	Contact attempts on different days of week required	Indicate if there was a requirement of contact attempts on different days of week. 		text	24	#NAME: #VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	contactAttempts	VOCABULARY_SELECT	{}	socialscience	
+	researchInstrument	Type of Research Instrument	Type of used data collection instrument.		text	25		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	dataCollectionSituation	Characteristics of Data Collection Situation	Description of the context of the study, that could have an impact on the collected data.		textbox	26		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	weighting	Weight	Select type of weight applied to produce accurate statistical results.		text	27		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
+	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		textbox	28		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	controlOperations	Control Operations	Methods to facilitate data control performed by the primary investigator or by the data archive.		textbox	29		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	interviewsBackcheck	Interviews' Back-Check	Description of back-check control of completed interviews with respect to the fact and correctness of their fulfilment, eg. by coordinator.  		none	30	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
+	interviewsBackcheckPercentage	Percentage of Interviews	Approximate percentage of back-checked interviews.	Enter an integer...	int	31	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXT	{}	socialscience	
+	interviewsBackcheckProcedureDescription	Back-Check Procedure Description	A detailed description of back-check procedure.		textbox	32	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXTBOX	{}	socialscience	
+	cleaningOperations	Cleaning Operations	Description of data cleaning and logical control procedures		textbox	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	datasetLevelErrorNotes	Study Level Error Notes	Description of known errors and difficulties that occured during the study and data processing.		textbox	34		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	responseRate	Response Rate	Response rate according to AAPOR definition. 	Enter a floating-point number...	float	35		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
+	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		textbox	36		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	otherDataAppraisal	otherDataAppraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		textbox	37		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	socialScienceNotes	Notes	General notes about this Dataset.		none	38	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
+	socialScienceNotesType	Type	Type of note.		text	39	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience	
+	socialScienceNotesSubject	Subject	Note subject.		text	40	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience	
+	socialScienceNotesText	Text	Text for this note.		textbox	41		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXTBOX	{}	socialscience	
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder														
+	unitOfAnalysis	Individual		0														
+	unitOfAnalysis	Organization		1														
+	unitOfAnalysis	Family		2														
+	unitOfAnalysis	Family.HouseholdFamily		3														
+	unitOfAnalysis	Household		4														
+	unitOfAnalysis	HousingUnit		5														
+	unitOfAnalysis	EventOrProcess		6														
+	unitOfAnalysis	GeographicUnit		7														
+	unitOfAnalysis	TimeUnit		8														
+	unitOfAnalysis	TextUnit		9														
+	unitOfAnalysis	Group		10														
+	unitOfAnalysis	Object		11														
+	unitOfAnalysis	Other		12														
+	timeMethod	Longitudinal		0														
+	timeMethod	Longitudinal.CohortEventBased		1														
+	timeMethod	Longitudinal.TrendRepeatedCrossSection		2														
+	timeMethod	Longitudinal.Panel		3														
+	timeMethod	Longitudinal.Panel.Continuous		4														
+	timeMethod	Longitudinal.Panel.Interval		5														
+	timeMethod	TimeSeries		6														
+	timeMethod	TimeSeries.Continuous		7														
+	timeMethod	TimeSeries.Discrete		8														
+	timeMethod	CrossSection		9														
+	timeMethod	CrossSectionAdHocFollowUp		10														
+	timeMethod	Other		11														
+	samplingProcedure	TotalUniverseCompleteEnumeration		0														
+	samplingProcedure	Probability		1														
+	samplingProcedure	Probability.SimpleRandom		2														
+	samplingProcedure	Probability.SystematicRandom		3														
+	samplingProcedure	Probability.Stratified		4														
+	samplingProcedure	Probability.Stratified.Proportional		5														
+	samplingProcedure	Probability.Stratified.Disproportional		6														
+	samplingProcedure	Probability.Cluster		7														
+	samplingProcedure	Probability.Cluster.SimpleRandom		8														
+	samplingProcedure	Probability.Cluster.StratifiedRandom		9														
+	samplingProcedure	Probability.Multistage		10														
+	samplingProcedure	Nonprobability		11														
+	samplingProcedure	Nonprobability.Availability		12														
+	samplingProcedure	Nonprobability.Purposive		13														
+	samplingProcedure	Nonprobability.Quota		14														
+	samplingProcedure	Nonprobability.RespondentAssisted		15														
+	samplingProcedure	MixedProbabilityNonprobability		16														
+	samplingProcedure	Other		17														
+	substitutionOfRespondentsAcceptability	Allowed		0														
+	substitutionOfRespondentsAcceptability	Not allowed		1														
+	collectionMode	Interview		0														
+	collectionMode	Interview.FaceToFace		1														
+	collectionMode	Interview.FaceToFace.CAPIorCAMI		2														
+	collectionMode	Interview.FaceToFace.PAPI		3														
+	collectionMode	Interview.Telephone		4														
+	collectionMode	Interview.Telephone.CATI		5														
+	collectionMode	Interview.Email		6														
+	collectionMode	Interview.WebBased		7														
+	collectionMode	SelfAdministeredQuestionnaire		8														
+	collectionMode	SelfAdministeredQuestionnaire.Email		9														
+	collectionMode	SelfAdministeredQuestionnaire.Paper		10														
+	collectionMode	SelfAdministeredQuestionnaire.SMSorMMS		11														
+	collectionMode	SelfAdministeredQuestionnaire.CAWI		12														
+	collectionMode	SelfAdministeredQuestionnaire.CASI		13														
+	collectionMode	FocusGroup		14														
+	collectionMode	FocusGroup.FaceToFace		15														
+	collectionMode	FocusGroup.Telephone		16														
+	collectionMode	FocusGroup.Online		17														
+	collectionMode	SelfAdministeredWritingsAndDiaries		18														
+	collectionMode	SelfAdministeredWritingsAndDiaries.Email		19														
+	collectionMode	SelfAdministeredWritingsAndDiaries.Paper		20														
+	collectionMode	SelfAdministeredWritingsAndDiaries.WebBased		21														
+	collectionMode	Observation		22														
+	collectionMode	Observation.Field		23														
+	collectionMode	Observation.Field.Participant		24														
+	collectionMode	Observation.Field.Nonparticipant		25														
+	collectionMode	Observation.Laboratory		26														
+	collectionMode	Observation.Laboratory.Participant		27														
+	collectionMode	Observation.Laboratory.Nonparticipant		28														
+	collectionMode	Observation.ComputerBased		29														
+	collectionMode	Experiment		30														
+	collectionMode	Experiment.Laboratory		31														
+	collectionMode	Experiment.FieldIntervention		32														
+	collectionMode	Experiment.WebBased		33														
+	collectionMode	Recording		34														
+	collectionMode	ContentCoding		35														
+	collectionMode	Transcription		36														
+	collectionMode	CompilationSynthesis		37														
+	collectionMode	Summary		38														
+	collectionMode	Aggregation		39														
+	collectionMode	Simulation		40														
+	collectionMode	MeasurementsAndTests		41														
+	collectionMode	MeasurementsAndTests.Educational		42														
+	collectionMode	MeasurementsAndTests.Physical		43														
+	collectionMode	MeasurementsAndTests.Psychological		44														
+	collectionMode	Other		45														
+	dataSourceType	RegistersRecordsAccounts		0														
+	dataSourceType	RegistersRecordsAccounts.Administrative		1														
+	dataSourceType	RegistersRecordsAccounts.Historical		2														
+	dataSourceType	RegistersRecordsAccounts.Legal		3														
+	dataSourceType	RegistersRecordsAccounts.MedicalClinical		4														
+	dataSourceType	RegistersRecordsAccounts.AcademicAptitude		5														
+	dataSourceType	RegistersRecordsAccounts.EconomicFinancial		6														
+	dataSourceType	RegistersRecordsAccounts.Personal		7														
+	dataSourceType	RegistersRecordsAccounts.VotingResults		8														
+	dataSourceType	EventsInteractions		9														
+	dataSourceType	Processes		10														
+	dataSourceType	Processes.Workflows		11														
+	dataSourceType	Communications		12														
+	dataSourceType	Communications.Public		13														
+	dataSourceType	Communications.Interpersonal		14														
+	dataSourceType	ResearchData		15														
+	dataSourceType	ResearchData.Published		16														
+	dataSourceType	ResearchData.Unpublished		17														
+	dataSourceType	PopulationGroup		18														
+	dataSourceType	GeographicArea		19														
+	dataSourceType	PhysicalObjects		20														
+	dataSourceType	BiologicalSamples		21														
+	dataSourceType	Other		22														
+	socialScienceTopicClassification	Demography		0														
+	socialScienceTopicClassification	Demography.MorbidityAndMortality		1														
+	socialScienceTopicClassification	Demography.Censuses		2														
+	socialScienceTopicClassification	Demography.Migration		3														
+	socialScienceTopicClassification	Economics		4														
+	socialScienceTopicClassification	Economics.EconomicConditionsAndIndicators		5														
+	socialScienceTopicClassification	Economics.ConsumptionAndConsumerBehaviour		6														
+	socialScienceTopicClassification	Economics.EconomicPolicyPublicExpenditureAndRevenue		7														
+	socialScienceTopicClassification	Economics.IncomePropertyAndInvestment		8														
+	socialScienceTopicClassification	Economics.SystemsAndDevelopment		9														
+	socialScienceTopicClassification	Education		10														
+	socialScienceTopicClassification	Education.CompulsoryAndPreschool		11														
+	socialScienceTopicClassification	Education.HigherAndFurther		12														
+	socialScienceTopicClassification	Education.VocationalAndTraining		13														
+	socialScienceTopicClassification	Education.LifelongContinuing		14														
+	socialScienceTopicClassification	Education.EducationalPolicy		15														
+	socialScienceTopicClassification	Health		16														
+	socialScienceTopicClassification	Health.HealthCareServicesAndPolicies		17														
+	socialScienceTopicClassification	Health.SpecificDiseasesDisordersAndMedicalConditions		18														
+	socialScienceTopicClassification	Health.SignsAndSymptomsPathologicalConditions		19														
+	socialScienceTopicClassification	Health.WoundsAndInjuries		20														
+	socialScienceTopicClassification	Health.MedicationAndTreatment		21														
+	socialScienceTopicClassification	Health.GeneralHealthAndWellbeing		22														
+	socialScienceTopicClassification	Health.Public		23														
+	socialScienceTopicClassification	Health.Reproductive		24														
+	socialScienceTopicClassification	Health.Occupational		25														
+	socialScienceTopicClassification	Health.HealthBehaviour		26														
+	socialScienceTopicClassification	History		27														
+	socialScienceTopicClassification	HousingAndLandUse		28														
+	socialScienceTopicClassification	HousingAndLandUse.Housing		29														
+	socialScienceTopicClassification	HousingAndLandUse.LandUseAndPlanning		30														
+	socialScienceTopicClassification	LabourAndEmployment		31														
+	socialScienceTopicClassification	LabourAndEmployment.Employment		32														
+	socialScienceTopicClassification	LabourAndEmployment.Unemployment		33														
+	socialScienceTopicClassification	LabourAndEmployment.Retirement		34														
+	socialScienceTopicClassification	LabourAndEmployment.EmployeeTraining		35														
+	socialScienceTopicClassification	LabourAndEmployment.LabourRelationsConflict		36														
+	socialScienceTopicClassification	LabourAndEmployment.WorkingConditions		37														
+	socialScienceTopicClassification	LabourAndEmployment.LabourAndEmploymentPolicy		38														
+	socialScienceTopicClassification	LawCrimeAndLegalSystems		39														
+	socialScienceTopicClassification	LawCrimeAndLegalSystems.LegislationAndLegalSystems		40														
+	socialScienceTopicClassification	LawCrimeAndLegalSystems.CrimeAndLawEnforcement		41														
+	socialScienceTopicClassification	MediaCommunicationAndLanguage		42														
+	socialScienceTopicClassification	MediaCommunicationAndLanguage.Media		43														
+	socialScienceTopicClassification	MediaCommunicationAndLanguage.PublicRelations		44														
+	socialScienceTopicClassification	MediaCommunicationAndLanguage.InformationSociety		45														
+	socialScienceTopicClassification	MediaCommunicationAndLanguage.LanguageAndLinguistics		46														
+	socialScienceTopicClassification	NaturalEnvironment		47														
+	socialScienceTopicClassification	NaturalEnvironment.EnvironmentAndConservation		48														
+	socialScienceTopicClassification	NaturalEnvironment.EnergyAndNaturalResources		49														
+	socialScienceTopicClassification	NaturalEnvironment.PlantsAndAnimals		50														
+	socialScienceTopicClassification	NaturalEnvironment.NaturalLandscapes		51														
+	socialScienceTopicClassification	Politics		52														
+	socialScienceTopicClassification	Politics.PoliticalBehaviourAndAttitudes		53														
+	socialScienceTopicClassification	Politics.Elections		54														
+	socialScienceTopicClassification	Politics.PoliticalIdeology		55														
+	socialScienceTopicClassification	Politics.GovernmentPoliticalSystemsAndOrganisations		56														
+	socialScienceTopicClassification	Politics.InternationalPoliticsAndOrganisations		57														
+	socialScienceTopicClassification	Politics.ConflictSecurityAndPeace		58														
+	socialScienceTopicClassification	Psychology		59														
+	socialScienceTopicClassification	ScienceAndTechnology		60														
+	socialScienceTopicClassification	ScienceAndTechnology.InformationTechnology		61														
+	socialScienceTopicClassification	ScienceAndTechnology.Biotechnology		62														
+	socialScienceTopicClassification	SocialStratificationAndGroupings		63														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.EqualityAndInequality		64														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.SocialAndOccupationalMobility		65														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.GenderAndGenderRoles		66														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.FamilyLifeAndMarriage		67														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.Youth		68														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.Elderly		69														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.Children		70														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.Minorities		71														
+	socialScienceTopicClassification	SocialStratificationAndGroupings.ElitesAndLeadership		72														
+	socialScienceTopicClassification	SocialWelfarePolicyAndSystems		73														
+	socialScienceTopicClassification	SocialWelfarePolicyAndSystems.SocialWelfarePolicy		74														
+	socialScienceTopicClassification	SocialWelfarePolicyAndSystems.SocialWelfareSystemsStructures		75														
+	socialScienceTopicClassification	SocialWelfarePolicyAndSystems.SpecificSocialServices		76														
+	socialScienceTopicClassification	SocietyAndCulture		77														
+	socialScienceTopicClassification	SocietyAndCulture.SocialBehaviourAndAttitudes		78														
+	socialScienceTopicClassification	SocietyAndCulture.SocialConditionsAndIndicators		79														
+	socialScienceTopicClassification	SocietyAndCulture.CulturalActivitiesAndParticipation		80														
+	socialScienceTopicClassification	SocietyAndCulture.CulturalAndNationalIdentity		81														
+	socialScienceTopicClassification	SocietyAndCulture.LeisureTourismSport		82														
+	socialScienceTopicClassification	SocietyAndCulture.ReligionAndValues		83														
+	socialScienceTopicClassification	SocietyAndCulture.CommunityUrbanAndRuralLife		84														
+	socialScienceTopicClassification	SocietyAndCulture.TimeUse		85														
+	socialScienceTopicClassification	SocietyAndCulture.SocialChange		86														
+	socialScienceTopicClassification	TradeIndustryAndMarkets		87														
+	socialScienceTopicClassification	TradeIndustryAndMarkets.BusinessIndustrialManagementAndOrganisation		88														
+	socialScienceTopicClassification	TradeIndustryAndMarkets.AgricultureAndRuralIndustry		89														
+	socialScienceTopicClassification	TradeIndustryAndMarkets.ForeignTrade		90														
+	socialScienceTopicClassification	TransportAndTravel		91														
+	socialScienceTopicClassification	Other		92														
+	researchInstrument	Questionnaire		0														
+	researchInstrument	Questionnaire.Structured		1														
+	researchInstrument	Questionnaire.Semistructured		2														
+	researchInstrument	Questionnaire.Unstructured		3														
+	researchInstrument	InterviewSchemeAndThemes		4														
+	researchInstrument	DataCollectionGuidelines		5														
+	researchInstrument	DataCollectionGuidelines.ObservationGuide		6														
+	researchInstrument	DataCollectionGuidelines.DiscussionGuide		7														
+	researchInstrument	DataCollectionGuidelines.SelfAdministeredWritingsGuide		8														
+	researchInstrument	DataCollectionGuidelines.SecondaryDataCollectionGuide		9														
+	researchInstrument	ParticipantTasks		10														
+	researchInstrument	TechnicalInstruments		11														
+	researchInstrument	ProgrammingScript		12														
+	researchInstrument	Other		13														
+	weighting	PostStratification		0														
+	weighting	Design		1														
+	weighting	PopulationSize		2														
+	weighting	MixedPostStratificationDesign		3														
+	weighting	Other		4														
+	weighting	None		5														
+	contactAttemptsSameDay	Yes		0														
+	contactAttemptsSameDay	No		1														
+	contactAttemptsDifferentDays	Yes		0														
+	contactAttemptsDifferentDays	No		1														
