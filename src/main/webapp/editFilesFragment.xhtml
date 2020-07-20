@@ -545,7 +545,7 @@
         </div>
     </p:dialog>
     
-    <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{bundle['file.addreplace.already_exists.header']}" widgetVar="fileAlreadyExistsPopup" modal="true">
+    <p:dialog id="fileAlreadyExistsPopup" styleClass="smallPopUp" header="#{EditDatafilesPage.headerForAlreadyExistsPopUp}" widgetVar="fileAlreadyExistsPopup" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{EditDatafilesPage.warningMessageForAlreadyExistsPopUp}</p>
             <p class="help-block no-margin-top">                                           
                 <h:outputFormat value="#{bundle['dataset.file.upload.popup.explanation.tip']}" escape="false">

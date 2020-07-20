@@ -1790,6 +1790,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (uploadWarningMessage != null) {
                 if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
                     setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
+                    setHeaderForAlreadyExistsPopUp();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 }
@@ -1817,7 +1818,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if(isFileReplaceOperation() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound() ) {
                 setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
-                    PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
+                setHeaderForAlreadyExistsPopUp();    
+                PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                  
         }
@@ -1851,6 +1853,21 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setWarningMessageForAlreadyExistsPopUp(String warningMessageForAlreadyExistsPopUp) {
         this.warningMessageForAlreadyExistsPopUp = warningMessageForAlreadyExistsPopUp;
+    }
+    
+    private String headerForAlreadyExistsPopUp;
+
+    public String getHeaderForAlreadyExistsPopUp() {
+        return headerForAlreadyExistsPopUp;
+    }
+
+    public void setHeaderForAlreadyExistsPopUp(String headerForAlreadyExistsPopUp) {
+        this.headerForAlreadyExistsPopUp = headerForAlreadyExistsPopUp;
+    }
+    
+    public void setHeaderForAlreadyExistsPopUp() {
+        
+        this.headerForAlreadyExistsPopUp = ((multipleDupesExisting|| multipleDupesNew) ? BundleUtil.getStringFromBundle("file.addreplace.already_exists.header.multiple"):  BundleUtil.getStringFromBundle("file.addreplace.already_exists.header"));
     }
 
     private void handleReplaceFileUpload(FacesEvent event, InputStream inputStream, 
@@ -2199,6 +2216,21 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
 
+    public boolean isMultipleDupesExisting() {
+        return multipleDupesExisting;
+    }
+
+    public void setMultipleDupesExisting(boolean multipleDupesExisting) {
+        this.multipleDupesExisting = multipleDupesExisting;
+    }
+
+    public boolean isMultipleDupesNew() {
+        return multipleDupesNew;
+    }
+
+    public void setMultipleDupesNew(boolean multipleDupesNew) {
+        this.multipleDupesNew = multipleDupesNew;
+    }
 
     private String processUploadedFileList(List<DataFile> dFileList) {
         if (dFileList == null) {
