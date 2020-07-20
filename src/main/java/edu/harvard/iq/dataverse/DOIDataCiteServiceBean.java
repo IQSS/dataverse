@@ -187,14 +187,11 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
         logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifier(dvObject);
-        Map<String, String> doiMetadata = new HashMap<>();
-        try {
-            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "deleteIdentifier: get matadata failed. " + e.getMessage(), e);
-        }
-
-        String idStatus = doiMetadata.get("_status");
+        //ToDo - PidUtils currently has a DataCite API call that would get the status at DataCite for this identifier - that could be more accurate than assuming based on whether the dvObject has been published
+        String idStatus = DRAFT;
+        if(dvObject.isReleased()) {
+        	idStatus = PUBLIC;
+        } 
         if ( idStatus != null ) {
             switch ( idStatus ) {
                 case RESERVED:
