@@ -19,6 +19,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
+import javax.xml.ws.http.HTTPException;
+
+import org.apache.commons.httpclient.HttpStatus;
+
 /**
  * No required permissions because we check for superuser status.
  */
@@ -51,8 +55,12 @@ public class DeletePidCommand extends AbstractVoidCommand {
             dataset.setGlobalIdCreateTime(null);
             dataset.setIdentifierRegistered(false);
             ctxt.datasets().merge(dataset);
+        } catch (HTTPException hex) {
+        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getStatusCode())));
+            logger.info(message);
+            throw new IllegalCommandException(message, this);
         } catch (Exception ex) {
-            String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther", Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
+        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther", Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }

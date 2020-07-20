@@ -16,7 +16,9 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
+
 
 /**
  *
@@ -182,7 +184,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
      * Deletes a DOI if it is in DRAFT/RESERVED state or removes metadata and changes it from PUBLIC/FINDABLE to REGISTERED.
      */
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception {
+    public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
         logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifier(dvObject);
         Map<String, String> doiMetadata = new HashMap<>();
@@ -198,14 +200,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
                 case RESERVED:
                 case DRAFT:    
                     logger.log(Level.INFO, "Delete status is reserved..");
-                    try {
-                    	//service only removes the identifier from the cache (since it was written before DOIs could be registered in draft state)
-                        doiDataCiteRegisterService.deleteIdentifier(identifier);
-                        //So we call the deleteDraftIdentifier method below until things are refactored
-                        deleteDraftIdentifier(dvObject);
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "delete failed: " + e.getMessage(), e);
-                    }
+                  	//service only removes the identifier from the cache (since it was written before DOIs could be registered in draft state)
+                    doiDataCiteRegisterService.deleteIdentifier(identifier);
+                    //So we call the deleteDraftIdentifier method below until things are refactored
+                    deleteDraftIdentifier(dvObject);
                     break;
 
                 case PUBLIC:
@@ -248,7 +246,8 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
             connection.setRequestProperty("Authorization", basicAuth);
             int status = connection.getResponseCode();
             if(status!=HttpStatus.SC_NO_CONTENT) {
-            	throw new IOException(BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(doi.asString(), Integer.toString(status))));
+            	logger.warning("Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
+            	throw new HttpException("Status: " + status);
             }
             logger.fine("deleteDoi status for " + doi.asString() + ": " + status);
     }
