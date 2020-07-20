@@ -176,6 +176,14 @@ public class MoveDataverseCommandTest {
                             // no-op. The superclass accesses databases which we don't have.
                             return dataverse;
                     }
+                    
+                    @Override
+                    public boolean index(Dataverse dataverse, boolean indexPermisions) {
+                            // no-op. The superclass accesses databases which we don't have.
+                            return true;
+                    }
+                    
+                    
                     @Override 
                     public Dataverse find(Object pk) {
                     // fake this for what we need

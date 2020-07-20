@@ -34,5 +34,10 @@ public class RenameDataverseCommand extends AbstractCommand<Dataverse>{
 		renamed.setName(newName);
 		return ctxt.dataverses().save(renamed);
 	}
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        return ctxt.dataverses().index((Dataverse) r,true);
+    }        
 	
 }

@@ -313,4 +313,9 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
         }
     }
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        return ctxt.dataverses().index((Dataverse) r);
+    }    
 }
