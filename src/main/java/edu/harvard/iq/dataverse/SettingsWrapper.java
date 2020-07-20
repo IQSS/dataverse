@@ -251,6 +251,15 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
 
+    public boolean isDataCiteInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
+        if ("DataCite".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
