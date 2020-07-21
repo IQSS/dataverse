@@ -82,7 +82,9 @@ Download and Run the "Create Instance" Script
 
 Once you have done the configuration above, you are ready to try running the "ec2-create-instance.sh" script to spin up Dataverse in AWS.
 
-Download :download:`ec2-create-instance.sh<https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
+Download `ec2-create-instance.sh`_ and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
+
+.. _ec2-create-instance.sh: https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh
 
 To run it with default values you just need the script, but you may also want a current copy of the ansible `group vars <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_ file.
 
