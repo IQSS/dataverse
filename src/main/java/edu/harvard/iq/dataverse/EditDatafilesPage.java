@@ -1726,6 +1726,20 @@ public void requestDirectUploadUrls() {
         String storageIdentifier = null;
         try {
         	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+        	logger.info("SI " + storageIdentifier);
+        	logger.info("FS " + fileSize);
+        	if(dataset==null) {
+        		logger.info("dataset is null");
+        	} else {
+        		logger.info("ID " + dataset.getId());
+        	} if(s3io==null) {
+        		logger.info("s3io is null");
+        	} else {
+        	logger.info("BSL " + s3io.isBelowIngestSizeLimit());
+        	}
+        	if(!(s3io instanceof S3AccessIO)) {
+        		logger.info("Wrong type");
+        	}
         	urls = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
         	
         } catch (IOException io) {
