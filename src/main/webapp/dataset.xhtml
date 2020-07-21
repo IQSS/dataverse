@@ -31,11 +31,7 @@
                                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-        <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
-            <!-- ADDED TOOLS SPECIFIC LOGIC TO DatasetPage.canDownloadFiles() RENDER LOGIC, CAN BE REMOVED WHEN DOWNLOAD ALL FILES IS WIRED UP -->
-            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() 
-                                                                        and (DatasetPage.datasetExploreTools.size() >= 1 
-                                                                        or (DatasetPage.sessionUserAuthenticated and DatasetPage.showComputeButton())))
+            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
@@ -143,17 +139,38 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
                                                     
-                                                    <ui:remove>
                                                     <!-- DOWNLOAD -->
-                                                    <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
                                                     <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                        <li class="disabled">
-                                                            <span class="ui-commandlink ui-widget ui-state-disabled btn-download">Download (Placeholder)</span>
+                                                        <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
+                                                        <li jsf:rendered="#{!DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                #{bundle.download}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
+                                                                #{bundle.downloadOriginal}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                #{bundle.downloadArchival}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
                                                     <!-- END: DOWNLOAD -->
-                                                    </ui:remove>
 
                                                     <!-- EXPLORE -->
                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
@@ -868,6 +885,28 @@
                                              rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
                                              action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form"/>
                             <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="downloadAllMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadAllMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                        <table>
+                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadallableFiles}" >
+                                <tr>
+                                    <td>#{resFile.label}</td>
+                                </tr>
+                            </ui:repeat>
+                        </table>
+                        <div class="button-block">
+                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
+                                             rendered="#{!DatasetPage.downloadPopupRequired}"
+                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
+                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
+                                             action="#{DatasetPage.openDownloadPopupForDownloadAll()}" update="@form"/>
+                            <button class="btn btn-link" onclick="PF('downloadAllMixed').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
@@ -1589,7 +1628,7 @@
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
-                                             onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"/>
+                                             onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <button class="btn btn-link" onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}
                             </button>

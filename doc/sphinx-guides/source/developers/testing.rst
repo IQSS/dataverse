@@ -137,10 +137,10 @@ Running the Full API Test Suite Using EC2
 
 To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo<https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_:
 
-- `ec2-create-instance.sh<https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `main.yml<https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_
+- `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
+- `main.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_
 
 Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
 
