@@ -295,6 +295,7 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
         long moveDvEnd = System.currentTimeMillis();
         logger.info("Dataverse move took " + (moveDvEnd - moveDvStart) + " milliseconds");
         
+        //TODO: indexing should be moved to an on Success method
         ctxt.indexBatch().indexDataverseRecursively(moved);
         
         //REindex datasets linked to moved dv
@@ -313,9 +314,5 @@ public class MoveDataverseCommand extends AbstractVoidCommand {
             }
         }
     }
-    
-    @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {
-        return ctxt.dataverses().index((Dataverse) r);
-    }    
+       
 }
