@@ -360,6 +360,7 @@ public class DataversesIT {
         moveResponse.prettyPrint();
         moveResponse.then().assertThat().statusCode(OK.getStatusCode());
         
+        // because indexing happens aynchronously, we'll wait forst, and then retry a few times, before failing
         int numberofAttempts = 0;
         boolean checkIndex = true;
         while (checkIndex) {
@@ -368,7 +369,6 @@ public class DataversesIT {
                         Thread.sleep(2000);
                     } catch (InterruptedException ex) {
                     }                
-                System.out.println("*** GPD ***: checking index in Move Dataset: try #" + numberofAttempts);
                 Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
                 search.prettyPrint();
                 search.then().assertThat()
