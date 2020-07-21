@@ -29,6 +29,7 @@ import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -169,7 +170,13 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             session.configureSessionTimeout();
-            
+            HttpServletRequest h =            (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            String[] valNames=h.getSession(false).getValueNames();
+            for(String name: valNames) {
+            	logger.info("Session had: " + name);
+            }
+            h.getSession().invalidate();
+            h.getSession(true);
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
