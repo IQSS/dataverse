@@ -289,7 +289,7 @@ class fileUpload {
                         cache: false,
                         processData: false,
                         success: function() {
-                          console.log("Successfully cancelled upload of ' + this.file.name);
+                          console.log('Successfully cancelled upload of ' + this.file.name);
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Failure: ' + jqXHR.status);
@@ -307,7 +307,7 @@ class fileUpload {
                         processData: false,
                         success: function() {
                         
-                          console.log("Successfully completed upload of ' + this.file.name);
+                          console.log('Successfully completed upload of ' + this.file.name);
                           this.reportUpload();
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
