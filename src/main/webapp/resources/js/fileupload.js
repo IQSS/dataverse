@@ -153,7 +153,7 @@ class fileUpload {
                 var progBar = fileNode.find('.ui-fileupload-progress');
                 progBar.html('');
                 progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
-                if(this.urls.hasOwnProperty("url") {
+                if(this.urls.hasOwnProperty("url")) {
                 $.ajax({
                         url: this.urls.url,
                         headers: { "x-amz-tagging": "dv-state=temp" },
@@ -245,7 +245,7 @@ class fileUpload {
                                                           total = total+val;
                                                         }
                                                         progBar.children('progress').attr({
-                                                                value: total + ,
+                                                                value: total ,
                                                                 max: doublelength
                                                         });
                                                 }
