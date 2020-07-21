@@ -433,12 +433,12 @@ public class JsonParserTest {
 
     /**
      * 
-     * Expect an exception when the dataset version JSON contains fields
+     * Expect no exception when the dataset version JSON contains fields
      * that the {@link DatasetFieldService} doesn't know about.
-     * @throws JsonParseException as expected
+     * @throws JsonParseException should not happen here
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {

@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import static com.jayway.restassured.RestAssured.given;
-import com.jayway.restassured.path.json.JsonPath;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -12,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -21,9 +21,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -362,11 +360,28 @@ public class DataversesIT {
         moveResponse.prettyPrint();
         moveResponse.then().assertThat().statusCode(OK.getStatusCode());
         
-        Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
-        search.prettyPrint();
-        search.then().assertThat()
-                .body("data.total_count", equalTo(1))
-                .statusCode(200);
+        // because indexing happens aynchronously, we'll wait forst, and then retry a few times, before failing
+        int numberofAttempts = 0;
+        boolean checkIndex = true;
+        while (checkIndex) {
+            try {   
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                    }                
+                Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
+                search.prettyPrint();
+                search.then().assertThat()
+                        .body("data.total_count", equalTo(1))
+                        .statusCode(200);
+                checkIndex = false;
+            } catch (AssertionError ae) {
+                if (numberofAttempts++ > 5) {
+                    throw ae;
+                }
+            }
+        }
+
     }
     
     @Test

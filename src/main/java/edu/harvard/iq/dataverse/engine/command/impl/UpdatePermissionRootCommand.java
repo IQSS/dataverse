@@ -36,7 +36,14 @@ public class UpdatePermissionRootCommand extends AbstractCommand<Dataverse> {
             return ctxt.dataverses().save(dvoc);
 		}
 	}
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {  
+        return ctxt.dataverses().index((Dataverse) r,true);
+    }        
 
+    
+    //TODO: Review this as this will never be an instance of Dataset, will it?
     @Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         // for data file check permission on owning dataset

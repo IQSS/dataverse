@@ -394,7 +394,10 @@ public class JsonParser {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    fields.add(parseField(fieldJson, testType));
+                    DatasetField field = parseField(fieldJson, testType);
+                    if (field != null) {
+                        fields.add(field);
+                    }
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
@@ -566,7 +569,8 @@ public class JsonParser {
     
 
         if (type == null) {
-            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+            logger.fine("Can't find type '" + json.getString("typeName", "") + "'");
+            return null;
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));

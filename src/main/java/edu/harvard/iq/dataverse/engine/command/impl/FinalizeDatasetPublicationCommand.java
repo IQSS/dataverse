@@ -204,8 +204,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
         }
-	
-        //ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
+
         exportMetadata(dataset, ctxt.settings());
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
         return retVal;
