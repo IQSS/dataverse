@@ -342,6 +342,7 @@ public class ContainerManagerImpl implements ContainerManager {
                              */
                             if (!dataset.getLatestVersion().getVersionState().equals(DatasetVersion.VersionState.RELEASED)) {
                                 try {
+                                    System.out.println("*** DVOBJECT: " + dataset.getId() + " - SWORD - pre call publish Dataset command");
                                     dataset = engineSvc.submit(publishDatasetCommand).getDataset();
                                 } catch (CommandException ex) {
                                     String msg = "Unable to publish dataset: " + ex;
@@ -377,6 +378,7 @@ public class ContainerManagerImpl implements ContainerManager {
                             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unpublishing a dataverse is not supported.");
                         }
                         try {
+                            System.out.println("*** DVOBJECT: " + dvToRelease.getId() + " - SWORD - pre call Publish Dataverse command");
                             engineSvc.submit(publishDataverseCommand);
                             ReceiptGenerator receiptGenerator = new ReceiptGenerator();
                             String baseUrl = urlManager.getHostnamePlusBaseUrlPath(uri);

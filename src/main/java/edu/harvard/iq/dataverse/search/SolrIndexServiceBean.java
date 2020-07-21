@@ -316,6 +316,7 @@ public class SolrIndexServiceBean {
              * Probably. Update it here.
              */
             for (DvObject dvObject : all) {
+                System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indexAllPermissions - for loop - right before dvObjectService.updatePermissionIndexTime");
                 dvObjectService.updatePermissionIndexTime(dvObject);
             }
             return new IndexResponse("indexed all permissions");
@@ -326,6 +327,7 @@ public class SolrIndexServiceBean {
     }
 
     public IndexResponse indexPermissionsForOneDvObject(DvObject dvObject) {
+        System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indePermissionForOneDVObject - Start");
         if (dvObject == null) {
             return new IndexResponse("problem indexing... null DvObject passed in");
         }
@@ -383,6 +385,8 @@ public class SolrIndexServiceBean {
      * inheritance
      */
     public IndexResponse indexPermissionsOnSelfAndChildren(DvObject definitionPoint) {
+        System.out.println("*** DVOBJECT: " + definitionPoint.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - Start");
+
         List<DvObject> dvObjectsToReindexPermissionsFor = new ArrayList<>();
         List<DataFile> filesToReindexAsBatch = new ArrayList<>();
         /**
@@ -427,9 +431,11 @@ public class SolrIndexServiceBean {
             /**
              * @todo do something with this response
              */
+            System.out.println("*** DVOBJECT: " + dvObject.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - In FOR loop");            
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
         }
         
+        System.out.println("*** DVOBJECT: " + definitionPoint.getId() + " - SolrIndexServiceBean - indexPermissionOnSelfAndChildren - End");
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                 + ": " + dvObjectsToReindexPermissionsFor.size()
         );

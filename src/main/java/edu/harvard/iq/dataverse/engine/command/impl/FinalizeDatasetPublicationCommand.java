@@ -194,8 +194,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-
+	
         try {
+	    System.out.println("*** DVOBJECT: " + dataset.getId() + " - Finalize Publish Dataset command On Success");	
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
@@ -239,6 +240,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
+			System.out.println("*** DVOBJECT: " + dv.getId() + " - Finalize Publish Dataset command Update Dataverse (execute)");    
                         ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
                     }
                     dv = dv.getOwner();

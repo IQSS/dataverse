@@ -933,7 +933,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
-        try {
+	    try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
             }
@@ -960,6 +960,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
+	    System.out.println("*** DVOBJECT: " + ds.getId() + " - DVObjectServiceBean - Datatset API Publish");    
             if (updateCurrent) {
                 /*
                  * Note: The code here mirrors that in the

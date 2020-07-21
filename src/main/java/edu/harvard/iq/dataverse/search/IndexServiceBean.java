@@ -172,6 +172,7 @@ public class IndexServiceBean {
     }
 
     public Future<String> indexDataverse(Dataverse dataverse, boolean processPaths) throws SolrServerException, IOException {
+        System.out.println("*** DVOBJECT: " + dataverse.getId() + " - IndexServiceBean - indexDataverse start");
         logger.fine("indexDataverse called on dataverse id " + dataverse.getId() + "(" + dataverse.getAlias() + ")");
         if (dataverse.getId() == null) {
             // TODO: Investigate the root cause of this "unable to index dataverse"
@@ -347,7 +348,7 @@ public class IndexServiceBean {
     }
     
     public Future<String> indexDataset(Dataset dataset, boolean doNormalSolrDocCleanUp) throws  SolrServerException, IOException {
-        logger.fine("indexing dataset " + dataset.getId());
+        System.out.println("*** DVOBJECT: " + dataset.getId() + " - IndexServiceBean - indexDataset start");
         /**
          * @todo should we use solrDocIdentifierDataset or
          * IndexableObject.IndexableTypes.DATASET.getName() + "_" ?
@@ -682,6 +683,7 @@ public class IndexServiceBean {
     }
 
     private IndexResponse indexDatasetPermissions(Dataset dataset) {
+        System.out.println("*** DVOBJECT: " + dataset.getId() + " - IndexServiceBean - indexDatasetPermissions start");
         boolean disabledForDebugging = false;
         if (disabledForDebugging) {
             /**

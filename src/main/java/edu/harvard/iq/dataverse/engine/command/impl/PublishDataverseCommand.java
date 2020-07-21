@@ -61,7 +61,10 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
     
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataverse ret = (Dataverse) r;
+        System.out.println("*** DVOBJECT: " + ret.getId() + " - Publish Dataverse command On Success");
         return ctxt.dataverses().index((Dataverse) r,true);
+
     }
 
 }
