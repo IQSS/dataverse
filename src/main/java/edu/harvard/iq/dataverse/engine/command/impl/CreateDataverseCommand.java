@@ -105,7 +105,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
         String privateUrlToken = null;
 
-        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));
+        ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken),false);
         // Add additional role assignments if inheritance is set
         boolean inheritAllRoles = false;
         String rolesString = ctxt.settings().getValueForKey(SettingsServiceBean.Key.InheritParentRoleAssignments, "");
@@ -130,13 +130,13 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
                             if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
                                 ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken));
+                                        ctxt.authentication().getAuthenticatedUser(identifier), managedDv, privateUrlToken),false);
                             } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
                                 identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
                                 Group roleGroup = ctxt.groups().getGroup(identifier);
                                 if (roleGroup != null) {
                                     ctxt.roles().save(new RoleAssignment(role.getRole(),
-                                            roleGroup, managedDv, privateUrlToken));
+                                            roleGroup, managedDv, privateUrlToken),false);
                                 }
                             }
                         }
@@ -146,6 +146,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         managedDv.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        // TODO: save is called here and above; we likely don't need both
         managedDv = ctxt.dataverses().save(managedDv);
 
   //      ctxt.index().indexDataverse(managedDv);
@@ -168,17 +169,8 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
     }
     
     @Override
-    public boolean onSuccess(CommandContext ctxt, Object r) {
-        try{
-            ctxt.index().indexDataverse((Dataverse) r);
-        } catch (IOException | SolrServerException e){           
-            Dataverse dv = (Dataverse) r;            
-            String failureLogText = "Indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dv);
-            return false;
-        }
-        return true;
+    public boolean onSuccess(CommandContext ctxt, Object r) {  
+        return ctxt.dataverses().index((Dataverse) r);
     }
 
 }
