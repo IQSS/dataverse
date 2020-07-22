@@ -47,7 +47,7 @@ public class DeletePidCommand extends AbstractVoidCommand {
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
             // idServiceBean.deleteIdentifier(dataset); // didn't work
-            String baseUrl = System.getProperty("doi.baseurlstringnext");
+            String baseUrl = ctxt.systemConfig().getDataCiteRestApiUrlString();
             String username = System.getProperty("doi.username");
             String password = System.getProperty("doi.password");
             int result = PidUtil.deleteDoi(dataset.getGlobalId().asString(), baseUrl, username, password);

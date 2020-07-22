@@ -177,7 +177,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
      */
     @Override
     public void deleteIdentifier(DvObject dvObject) throws IOException {
-        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
         String pid = dvObject.getGlobalId().asString();
