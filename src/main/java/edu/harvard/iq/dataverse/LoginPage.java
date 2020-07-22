@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -30,6 +31,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -171,12 +173,17 @@ public class LoginPage implements java.io.Serializable {
             session.setUser(r);
             session.configureSessionTimeout();
             HttpServletRequest h =            (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            String[] valNames=h.getSession(false).getValueNames();
-            for(String name: valNames) {
-            	logger.info("Session had: " + name);
+            HttpSession session = h.getSession(false);
+            HashMap<String, Object> sessionAttributes = new HashMap<String,Object>();
+            for(Enumeration<String> e = session.getAttributeNames();e.hasMoreElements();) {
+            	String name = e.nextElement();
+            	sessionAttributes.put(name, session.getAttribute(name));
             }
             h.getSession().invalidate();
-            h.getSession(true);
+            session = h.getSession(true);
+            for(Entry<String, Object> entry: sessionAttributes.entrySet()) {
+            	session.setAttribute(entry.getKey(), entry.getValue());
+            }
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
