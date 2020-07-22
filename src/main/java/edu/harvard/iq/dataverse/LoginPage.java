@@ -13,12 +13,13 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SessionUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -31,7 +32,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -172,18 +172,7 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             session.configureSessionTimeout();
-            HttpServletRequest h =            (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-            HttpSession session = h.getSession(false);
-            HashMap<String, Object> sessionAttributes = new HashMap<String,Object>();
-            for(Enumeration<String> e = session.getAttributeNames();e.hasMoreElements();) {
-            	String name = e.nextElement();
-            	sessionAttributes.put(name, session.getAttribute(name));
-            }
-            h.getSession().invalidate();
-            session = h.getSession(true);
-            for(Entry<String, Object> entry: sessionAttributes.entrySet()) {
-            	session.setAttribute(entry.getKey(), entry.getValue());
-            }
+            SessionUtil.changeSessionId((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
