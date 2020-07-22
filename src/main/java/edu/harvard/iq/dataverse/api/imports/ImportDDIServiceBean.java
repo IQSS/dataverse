@@ -171,12 +171,15 @@ public class ImportDDIServiceBean {
     }
     
     private void processDDI(ImportType importType, XMLStreamReader xmlr, DatasetDTO datasetDTO, Map<String, String> filesMap) throws XMLStreamException, ImportException {
-       
         // make sure we have a codeBook
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
-        xmlr.nextTag();
-        xmlr.require(XMLStreamConstants.START_ELEMENT, null, "codeBook");
-
+        try {
+            xmlr.nextTag();
+            xmlr.require(XMLStreamConstants.START_ELEMENT, null, "codeBook");
+        } catch( XMLStreamException e) {
+            throw new XMLStreamException("It doesn't start with the XML element <codeBook>");
+        }
+        
         // Some DDIs provide an ID in the <codeBook> section.
         // We are going to treat it as just another otherId.
         // (we've seen instances where this ID was the only ID found in
