@@ -17,6 +17,12 @@ if [ ! -e dv/deps/glassfish4dv.tgz ]; then
 	# assuming that folks usually have /tmp auto-clean as needed
 fi
 
+if [ ! -e dv/deps/payara-5.2020.2.zip ]; then
+	echo "payara dependency prep"
+	# no more fiddly patching :)
+	wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip  -O dv/deps/payara-5.2020.2.zip
+fi
+
 if [ ! -e dv/deps/solr-7.7.2dv.tgz ]; then
 	echo "solr dependency prep"
 	# schema changes *should* be the only ones...
