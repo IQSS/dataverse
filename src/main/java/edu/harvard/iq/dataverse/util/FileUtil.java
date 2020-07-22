@@ -1091,8 +1091,13 @@ public class FileUtil implements java.io.Serializable  {
 
 			} 
 		} else {
-			//Remote file, trust supplier
-			finalType = suppliedContentType;
+			if(suppliedContentType==FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT) {
+				finalType=determineFileTypeByExtension(fileName);
+				logger.fine("Determined type: " + finalType);
+			} else {
+			  //Remote file, trust supplier
+			  finalType = suppliedContentType;
+			}
 		}
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
