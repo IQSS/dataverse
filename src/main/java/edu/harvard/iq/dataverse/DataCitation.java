@@ -62,7 +62,7 @@ public class DataCitation {
     private List<String> kindsOfData;
     private List<String> languages;
     private List<String> spatialCoverages;
-
+    private boolean unreservedPid;
     private List<DatasetField> optionalValues = new ArrayList<>();
     private int optionalURLcount = 0; 
 
@@ -79,6 +79,8 @@ public class DataCitation {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         persistentId = getPIDFrom(dsv, dsv.getDataset());
+        // DataCite, for example, allows you to reserve DOIs.
+        unreservedPid = dsv.getDataset().getGlobalIdCreateTime() == null;
 
         // UNF
         UNF = dsv.getUNF();
@@ -196,7 +198,7 @@ public class DataCitation {
         citationList.add(formatString(title, html, "\""));
         }
 
-        if (persistentId != null) {
+        if (persistentId != null && !unreservedPid) {
         	// always show url format
             citationList.add(formatURL(persistentId.toURL().toString(), persistentId.toURL().toString(), html)); 
         }
