@@ -1551,7 +1551,7 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 		String storageIdentifier = null;
 		try {
 			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-			response = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
+			response = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
 
 		} catch (IOException io) {
 			logger.warning(io.getMessage());
@@ -1567,7 +1567,7 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 }
 
 @DELETE
-@Path("{id}/mpupload")
+@Path("mpupload")
 public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
@@ -1582,7 +1582,7 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
 		}
 		try {
-			S3AccessIO.abortMultipartUpload(dataset, storageidentifier, uploadId);
+			S3AccessIO.abortMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId);
 		} catch (IOException io) {
 			logger.warning("Multipart upload abort failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
@@ -1595,7 +1595,7 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 }
 
 @PUT
-@Path("{id}/mpupload")
+@Path("mpupload")
 public Response completeMPUpload(String partETagBody, @PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
 	try {
 		Dataset dataset = findDatasetOrDie(idSupplied);
@@ -1625,12 +1625,12 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
 		}
 		try {
-			S3AccessIO.completeMultipartUpload(dataset, storageidentifier, uploadId, eTagList);
+			S3AccessIO.completeMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId, eTagList);
 		} catch (IOException io) {
 			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
 			try {
-				S3AccessIO.abortMultipartUpload(dataset, storageidentifier, uploadId);
+				S3AccessIO.abortMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId);
 			} catch (IOException e) {
 				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 				logger.severe(io.getMessage());

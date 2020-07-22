@@ -1740,7 +1740,7 @@ public void requestDirectUploadUrls() {
         	if(!(s3io instanceof S3AccessIO)) {
         		logger.info("Wrong type");
         	}
-        	urls = s3io.generateTemporaryS3UploadUrls(dataset.getId(), storageIdentifier, fileSize);
+        	urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
         	
         } catch (IOException io) {
         	logger.warning(io.getMessage());

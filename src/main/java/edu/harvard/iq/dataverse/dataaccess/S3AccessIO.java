@@ -790,12 +790,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     static String getMainFileKey(Dataset owner, String storageIdentifier, String driverId) throws IOException {
-    	String key = null;	 
+    		 
     	// or about the owner dataset having null for the authority and/or identifier?
     	// we should probably check for that and throw an exception. (unless we are 
     	// super positive that this condition would have been intercepted by now)
     	String baseKey = owner.getAuthorityForFileStorage() + "/" + owner.getIdentifierForFileStorage();
-
+    	return getMainFileKey(baseKey, storageIdentifier, driverId);
+    }
+    
+    private static String getMainFileKey(String baseKey, String storageIdentifier, String driverId) throws IOException {
+    	String key = null;
     	if (storageIdentifier == null || "".equals(storageIdentifier)) {
     		throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
     	}
@@ -919,7 +923,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return urlString;
     }
     
-	public JsonObjectBuilder generateTemporaryS3UploadUrls(long datasetId, String storageIdentifier, long fileSize) throws IOException {
+	public JsonObjectBuilder generateTemporaryS3UploadUrls(String globalId, String storageIdentifier, long fileSize) throws IOException {
 
 		JsonObjectBuilder response = Json.createObjectBuilder();
 		key = getMainFileKey();
@@ -927,6 +931,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		long msec = expiration.getTime();
 		msec += 60 * 1000 * getUrlExpirationMinutes();
 		expiration.setTime(msec);
+		logger.info(fileSize + " ? " + minPartSize);
 		if (fileSize <= minPartSize) {
 			response.add("url", generateTemporaryS3UploadUrl(key, expiration));
 		} else {
@@ -961,9 +966,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 				urls.add(Integer.toString(i), urlString);
 			}
 			response.add("urls", urls);
-			response.add("abort", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+			response.add("abort", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
 					+ "&storageidentifier=" + storageIdentifier);
-			response.add("complete", "/api/datasets/" + datasetId + "/mpupload?uploadid=" + uploadId
+			response.add("complete", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
 					+ "&storageidentifier=" + storageIdentifier);
 
 		}
@@ -1113,24 +1118,41 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		
 	}
 
-	public static void abortMultipartUpload(Dataset owner, String storageIdentifier, String uploadId) throws IOException {
-	 String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
-	 String driverId = info[0]; 
-	  AmazonS3 s3Client = getClient(driverId);
-	  String bucketName = getBucketName(driverId);
-	  String key = getMainFileKey(owner, storageIdentifier, driverId);
-	  AbortMultipartUploadRequest req = new AbortMultipartUploadRequest(bucketName, key, uploadId);
-	  s3Client.abortMultipartUpload(req);
+	public static void abortMultipartUpload(String globalId, String storageIdentifier, String uploadId)
+			throws IOException {
+		String baseKey = null;
+		int index = globalId.indexOf(":");
+		if (index >= 0) {
+			baseKey = globalId.substring(index + 1);
+		} else {
+			throw new IOException("Invalid Global ID (expected form with '<type>:' prefix)");
+		}
+		String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+		String driverId = info[0];
+		AmazonS3 s3Client = getClient(driverId);
+		String bucketName = getBucketName(driverId);
+		String key = getMainFileKey(baseKey, storageIdentifier, driverId);
+		AbortMultipartUploadRequest req = new AbortMultipartUploadRequest(bucketName, key, uploadId);
+		s3Client.abortMultipartUpload(req);
 	}
 
-	public static void completeMultipartUpload(Dataset owner, String storageIdentifier, String uploadId, List<PartETag> etags) throws IOException {
+	public static void completeMultipartUpload(String globalId, String storageIdentifier, String uploadId,
+			List<PartETag> etags) throws IOException {
+		String baseKey = null;
+		int index = globalId.indexOf(":");
+		if (index >= 0) {
+			baseKey = globalId.substring(index + 1);
+		} else {
+			throw new IOException("Invalid Global ID (expected form with '<type>:' prefix)");
+		}
+
 		String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
-		 String driverId = info[0]; 
-		  AmazonS3 s3Client = getClient(driverId);
-		  String bucketName = getBucketName(driverId);
-		  String key = getMainFileKey(owner, storageIdentifier, driverId);
-		  CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
-		  s3Client.completeMultipartUpload(req);
+		String driverId = info[0];
+		AmazonS3 s3Client = getClient(driverId);
+		String bucketName = getBucketName(driverId);
+		String key = getMainFileKey(baseKey, storageIdentifier, driverId);
+		CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
+		s3Client.completeMultipartUpload(req);
 	}
 
 }
