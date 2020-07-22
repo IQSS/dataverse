@@ -10,7 +10,7 @@
         <distrbtr source="archive">Root</distrbtr>
         <distDate>2020-02-19</distDate>
       </distStmt>
-      <verStmt source="producer">
+      <verStmt source="archive">
         <version date="2020-02-19" type="RELEASED">1</version>
       </verStmt>
       <biblCit>LastAuthor1, FirstAuthor1; LastAuthor2, FirstAuthor2, 2020, "Replication Data for: Title", https://doi.org/10.5072/FK2/WKUKGV, Root, V1</biblCit>
@@ -92,6 +92,12 @@
           <eastBL>20</eastBL>
           <northBL>30</northBL>
           <southBL>40</southBL>
+        </geoBndBox>
+        <geoBndBox>
+          <southBL>80</southBL>
+          <northBL>70</northBL>
+          <eastBL>60</eastBL>
+          <westBL>50</westBL>
         </geoBndBox>
         <geogUnit>GeographicUnit1</geogUnit>
         <geogUnit>GeographicUnit2</geogUnit>
