@@ -1,23 +1,18 @@
 package edu.harvard.iq.dataverse.consent.action;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.consent.ConsentActionType;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import io.vavr.control.Option;
 
-import javax.ejb.Stateful;
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-
-@Stateful
+@Stateless
 public class ConsentActionFactory {
 
     private MailService mailService;
     private DataverseDao dataverseDao;
-
-    private Map<ConsentActionType, Action> consentActions = new HashMap<>();
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -41,16 +36,12 @@ public class ConsentActionFactory {
      */
     public Action retrieveAction(ConsentActionType consentActionType, AuthenticatedUser authenticatedUser) {
 
-        return Option.of(consentActions.get(consentActionType))
-                .getOrElse(() -> loadAllActions(authenticatedUser).get(consentActionType));
+        if (ConsentActionType.SEND_NEWSLETTER_EMAIL.equals(consentActionType)) {
+            return new SendNewsletterEmailAction(mailService,
+                    dataverseDao.findRootDataverse().getName(),
+                    authenticatedUser);
+        }
+        return null;
     }
 
-    // -------------------- PRIVATE --------------------
-
-    private Map<ConsentActionType, Action> loadAllActions(AuthenticatedUser authenticatedUser) {
-        consentActions.put(ConsentActionType.SEND_NEWSLETTER_EMAIL, new SendNewsletterEmailAction(mailService,
-                                                                                                  dataverseDao.findRootDataverse().getName(),
-                                                                                                  authenticatedUser));
-        return consentActions;
-    }
 }

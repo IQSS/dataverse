@@ -1,35 +1,30 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.apache.commons.lang.StringUtils;
-import org.swordapp.server.SwordError;
-import org.swordapp.server.UriRegistry;
-
-import javax.ejb.Stateful;
-import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-@Stateful
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
+import org.swordapp.server.SwordError;
+import org.swordapp.server.UriRegistry;
+
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
+@Stateless
 public class UrlManagerServiceBean {
     private static final Logger logger = Logger.getLogger(UrlManagerServiceBean.class.getCanonicalName());
-
-    private UrlManager urlManager = new UrlManager();
 
     @Inject
     private SystemConfig systemConfig;
 
     // -------------------- GETTERS --------------------
-    public UrlManager getUrlManager() {
-        return urlManager;
-    }
-
-    // -------------------- LOGIC --------------------
-    public String processUrl(String url) throws SwordError {
+    public UrlManager getUrlManager(String url)  throws SwordError {
+        UrlManager urlManager = new UrlManager();
         String warning = null;
         urlManager.setOriginalUrl(url);
         URI javaNetUri;
@@ -156,7 +151,8 @@ public class UrlManagerServiceBean {
         if (warning != null) {
             logger.info(warning);
         }
-        return warning;
+        urlManager.setWarning(warning);
+        return urlManager;
     }
 
     public String getHostnamePlusBaseUrlPath() {

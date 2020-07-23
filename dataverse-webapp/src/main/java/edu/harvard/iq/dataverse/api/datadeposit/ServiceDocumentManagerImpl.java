@@ -41,7 +41,8 @@ public class ServiceDocumentManagerImpl implements ServiceDocumentManager {
             throws SwordError, SwordServerException, SwordAuthException {
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
-        String warning = urlManagerServiceBean.processUrl(sdUri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(sdUri);
+        String warning = urlManager.getWarning();
         ServiceDocument service = new ServiceDocument();
         SwordWorkspace swordWorkspace = new SwordWorkspace();
         Dataverse rootDataverse = dataverseDao.findRootDataverse();

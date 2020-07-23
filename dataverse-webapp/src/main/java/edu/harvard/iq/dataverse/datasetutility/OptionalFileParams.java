@@ -5,9 +5,20 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import javax.ejb.Stateful;
+import javax.inject.Inject;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+
 import edu.harvard.iq.dataverse.api.dto.FileTermsOfUseDTO;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
@@ -18,14 +29,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
-
-import javax.ejb.Stateful;
-import javax.inject.Inject;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * This is used in conjunction with the AddReplaceFileHelper
@@ -42,7 +45,9 @@ import java.util.stream.Collectors;
  * @author rmp553
  */
 @Stateful
-public class OptionalFileParams {
+public class OptionalFileParams implements Serializable {
+
+    private static final long serialVersionUID = 9103033252084387893L;
 
     private static final Logger logger = Logger.getLogger(OptionalFileParams.class.getName());
 

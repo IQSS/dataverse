@@ -19,22 +19,25 @@ public class OAI_OREExporter implements Exporter {
 
     private boolean excludeEmailFromExport;
     private String dataverseSiteUrl;
-    private LocalDate modificationDate;
+    private LocalDate modificationDate = null;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OAI_OREExporter(boolean excludeEmailFromExport, String dataverseSiteUrl, LocalDate modificationDate) {
+    public OAI_OREExporter(boolean excludeEmailFromExport, String dataverseSiteUrl) {
         this.excludeEmailFromExport = excludeEmailFromExport;
         this.dataverseSiteUrl = dataverseSiteUrl;
-        this.modificationDate = modificationDate;
     }
 
+    public OAI_OREExporter(boolean excludeEmailFromExport, String dataverseSiteUrl, LocalDate modificationDate) {
+        this(excludeEmailFromExport, dataverseSiteUrl);
+        this.modificationDate = modificationDate;
+    }
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            new OREMap(version, excludeEmailFromExport, dataverseSiteUrl, modificationDate)
+            new OREMap(version, excludeEmailFromExport, dataverseSiteUrl, modificationDate != null ? modificationDate : LocalDate.now())
                     .writeOREMap(byteArrayOutputStream);
 
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());

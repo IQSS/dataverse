@@ -74,8 +74,7 @@ public class ExportServiceTest {
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
         mockDatasetFields();
 
-        exportService = new ExportService(settingsService, systemConfig);
-        exportService.setCurrentDate(LocalDate.of(2019, 7, 11));
+        exportService = new ExportService(settingsService, systemConfig, LocalDate.of(2019, 7, 11));
         exportService.loadAllExporters();
     }
 
@@ -260,7 +259,6 @@ public class ExportServiceTest {
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
 
         exportService = new ExportService(settingsService, systemConfig);
-        exportService.setCurrentDate(LocalDate.of(2019, 7, 11));
         exportService.loadAllExporters();
     }
 

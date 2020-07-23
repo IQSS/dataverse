@@ -79,8 +79,7 @@ public class ContainerManagerImpl implements ContainerManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         logger.fine("getEntry called with url: " + uri);
-        urlManagerServiceBean.processUrl(uri);
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(uri);
 
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
@@ -118,8 +117,7 @@ public class ContainerManagerImpl implements ContainerManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         logger.fine("replaceMetadata called with url: " + uri);
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
-        urlManagerServiceBean.processUrl(uri);
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
@@ -208,8 +206,7 @@ public class ContainerManagerImpl implements ContainerManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvRequest = new DataverseRequest(user, httpRequest);
         logger.fine("deleteContainer called with url: " + uri);
-        urlManagerServiceBean.processUrl(uri);
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(uri);
         logger.fine("original url: " + urlManager.getOriginalUrl());
         if (!"edit".equals(urlManager.getServlet())) {
             throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "edit servlet expected, not " +
@@ -327,8 +324,7 @@ public class ContainerManagerImpl implements ContainerManager {
         logger.fine("isInProgress:" + deposit.isInProgress());
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvRequest = new DataverseRequest(user, httpRequest);
-        urlManagerServiceBean.processUrl(uri);
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(uri);
         String targetType = urlManager.getTargetType();
         if (!targetType.isEmpty()) {
             logger.fine("operating on target type: " + urlManager.getTargetType());
@@ -433,8 +429,7 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public boolean isStatementRequest(String uri, Map<String, String> map, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
-        urlManagerServiceBean.processUrl(uri);
-        String servlet = urlManagerServiceBean.getUrlManager().getServlet();
+        String servlet = urlManagerServiceBean.getUrlManager(uri).getServlet();
         if (servlet != null) {
             return servlet.equals("statement");
         } else {

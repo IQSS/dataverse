@@ -48,8 +48,7 @@ public class CollectionListManagerImpl implements CollectionListManager {
     public Feed listCollectionContents(IRI iri, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordServerException, SwordAuthException, SwordError {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, request);
-        urlManagerServiceBean.processUrl(iri.toString());
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(iri.toString());
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {
 

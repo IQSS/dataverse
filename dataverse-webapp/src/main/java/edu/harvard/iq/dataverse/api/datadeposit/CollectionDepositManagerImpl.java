@@ -69,8 +69,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, request);
 
-        urlManagerServiceBean.processUrl(collectionUri);
-        UrlManager urlManager = urlManagerServiceBean.getUrlManager();
+        UrlManager urlManager = urlManagerServiceBean.getUrlManager(collectionUri);
 
         String dvAlias = urlManager.getTargetIdentifier();
         if (urlManager.getTargetType().equals("dataverse") && dvAlias != null) {

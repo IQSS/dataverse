@@ -1,5 +1,16 @@
 package edu.harvard.iq.dataverse.export;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
+
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -7,28 +18,16 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
-import org.apache.commons.lang.StringUtils;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
-import javax.inject.Inject;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Logger;
 
 
 /**
  * Class responsible for managing exporters and mainly exporting.
  */
-@Stateful
+@Stateless
 public class ExportService {
 
-    private static final Logger logger = Logger.getLogger(ExportService.class.getCanonicalName());
-
     private Map<ExporterType, Exporter> exporters = new HashMap<>();
-    private LocalDate currentDate = LocalDate.now();
+    private LocalDate currentDate = null;
 
     private SettingsServiceBean settingsService;
     private SystemConfig systemConfig;
@@ -46,6 +45,12 @@ public class ExportService {
         this.settingsService = settingsService;
         this.systemConfig = systemConfig;
     }
+
+    public ExportService(SettingsServiceBean settingsService,
+            SystemConfig systemConfig, LocalDate currentDate) {
+        this(settingsService, systemConfig);
+        this.currentDate = currentDate;
+}
 
     @PostConstruct
     void loadAllExporters() {
@@ -116,9 +121,4 @@ public class ExportService {
         return Optional.ofNullable(exporters.get(exporter));
     }
 
-    // -------------------- SETTERS --------------------
-
-    public void setCurrentDate(LocalDate currentDate) {
-        this.currentDate = currentDate;
-    }
 }
