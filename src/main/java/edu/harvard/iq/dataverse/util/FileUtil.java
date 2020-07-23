@@ -517,17 +517,20 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String determineFileTypeByExtension(String fileName) {
-        String mimetypesFileTypeMapResult = MIME_TYPE_MAP.getContentType(fileName);
-        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + mimetypesFileTypeMapResult);
-        if (mimetypesFileTypeMapResult != null) {
-            if ("application/octet-stream".equals(mimetypesFileTypeMapResult)) {
-                return lookupFileTypeFromPropertiesFile(fileName);
-            } else {
-                return mimetypesFileTypeMapResult;
-            }
-        } else {
-            return null;
-        }
+    	
+        String fileType = MIME_TYPE_MAP.getContentType(fileName);
+        logger.fine("MimetypesFileTypeMap type by extension, for " + fileName + ": " + fileType);
+        if (fileType != null) {
+            if ("application/octet-stream".equals(fileType)) {
+                fileType = lookupFileTypeFromPropertiesFile(fileName);
+            } 
+        } 
+        //Do a check for statistical files if we have plain text or the alt tsv mimetype (which won't be ingested)
+//        String fileExtension = getFileExtension(fileName);
+//        if (fileType != null && (fileType.startsWith("text/plain")|| fileType.startsWith(MIME_TYPE_TSV_ALT)) && STATISTICAL_FILE_EXTENSION.containsKey(fileExtension)) {
+//          fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
+//        }
+        return fileType;
     }
 
     public static String lookupFileTypeFromPropertiesFile(String fileName) {
