@@ -1459,7 +1459,7 @@ Note: File-level PID registration was added in 4.9; it could not be disabled unt
 :PIDAsynchRegFileCount (DEPRECATED)
 +++++++++++++++++++++++++++++++++++
 
-Before v5.0 this setting used to specify the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously (in the bnackground) during publishing. As of v5.0 publishing *always* happens asynchronously, with the dataset locked for the duration of the process. The setting will be ignored if present. 
+Before v5.0 this setting used to specify the number of files in the dataset to warrant performing the registration of the persistent identifiers (section above) and/or file validation asynchronously (in the background) during publishing. As of v5.0 publishing *always* happens asynchronously, with the dataset locked for the duration of the process. The setting will be ignored if present. 
 
 ``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
 
