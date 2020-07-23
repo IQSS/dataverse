@@ -159,7 +159,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
-
+            
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
@@ -436,7 +436,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             .filter(  ra -> ra.getRole().permissions().contains(Permission.DownloadFile) )
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
-            .forEach( au -> ctxt.notifications().sendNotificationInTransaction(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()) );
+            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()) );
     }
     
     private void notifyUsersDatasetPublishStatus(CommandContext ctxt, DvObject subject, UserNotification.Type type) {
@@ -446,7 +446,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
             //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
-            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), type, getDataset().getLatestVersion().getId()) ); 
+            .forEach( au -> ctxt.notifications().sendNotificationInTransaction(au, getTimestamp(), type, getDataset().getLatestVersion().getId()) ); 
     }
 
 }
