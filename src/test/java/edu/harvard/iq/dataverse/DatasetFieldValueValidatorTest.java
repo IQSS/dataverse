@@ -53,7 +53,20 @@ public class DatasetFieldValueValidatorTest {
     
             // URL
             Arguments.of(DatasetFieldType.FieldType.URL, "http://foo.bar", true),
-            Arguments.of(DatasetFieldType.FieldType.URL, "foo.bar", false)
+            Arguments.of(DatasetFieldType.FieldType.URL, "foo.bar", false),
+            Arguments.of(DatasetFieldType.FieldType.URL, "rsync://foo.bar", false),
+    
+            // non-opaque URIs (being URLs), see #7117
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "fish://foo.bar", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "http://foo.bar/hello", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "http://foo.bar/hello#rack-1", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "http://foo.bar/hello?whoami=peter", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "http://foo.bar/hello?whoami=peter#test", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "rsync://foo.bar/target", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "smb://foo.bar/share/folder/file.csv", true),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "foo.bar", false),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "scheme:foo.bar", false),
+            Arguments.of(DatasetFieldType.FieldType.URI_NO, "urn:isbn:1234567890", false)
         );
     }
     
