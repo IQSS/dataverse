@@ -1478,7 +1478,7 @@ By default this setting is absent and Dataverse assumes it to be false.
 :FileValidationOnPublishEnabled
 +++++++++++++++++++++++++++++++
 
-Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistent identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
 
 If you don't want the datafiles to be validated on publish, set:
 
