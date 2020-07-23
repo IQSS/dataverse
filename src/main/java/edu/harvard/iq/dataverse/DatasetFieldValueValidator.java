@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -176,6 +178,20 @@ public class DatasetFieldValueValidator implements ConstraintValidator<ValidateD
 
                 }
 
+                return false;
+            }
+        }
+    
+        if (fieldType.equals(FieldType.URI_NO) && !lengthOnly) {
+            try {
+                URI uri = new URI(value.getValue());
+                if (! uri.isAbsolute() || uri.isOpaque()) {
+                    throw new URISyntaxException(value.getValue(), "Has to be absolute and non opaque (but may contain a fragment).");
+                }
+            } catch (URISyntaxException e) {
+                try {
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + value.getValue() + "  is not a valid URL.").addConstraintViolation();
+                } catch (NullPointerException npe) {}
                 return false;
             }
         }
