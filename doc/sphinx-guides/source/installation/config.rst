@@ -186,7 +186,7 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
-- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
+- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (DEPRECATED)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -1446,22 +1446,20 @@ Note that in either case, when using the ``sequentialNumber`` option, datasets a
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
-
-Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
+Note: File-level PID registration was added in 4.9; it could not be disabled until version 4.9.3.
 
 .. _:PIDAsynchRegFileCount:
 
-:PIDAsynchRegFileCount
-++++++++++++++++++++++
+:PIDAsynchRegFileCount (DEPRECATED)
++++++++++++++++++++++++++++++++++++
 
-Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
+Before v5.0 this setting used to specify the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously (in the bnackground) during publishing. As of v5.0 publishing *always* happens asynchronously, with the dataset locked for the duration of the process. The setting will be ignored if present. 
 
 ``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
 
@@ -1480,13 +1478,11 @@ By default this setting is absent and Dataverse assumes it to be false.
 :FileValidationOnPublishEnabled
 +++++++++++++++++++++++++++++++
 
-Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
 
 If you don't want the datafiles to be validated on publish, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
-
-Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
 
 
 :ApplicationTermsOfUse
