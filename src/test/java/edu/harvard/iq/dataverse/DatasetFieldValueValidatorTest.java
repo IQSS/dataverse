@@ -5,137 +5,94 @@
  */
 package edu.harvard.iq.dataverse;
 
+import java.sql.Timestamp;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.validation.ConstraintValidatorContext;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.mockito.Mockito;
 
-/**
- *
- * @author skraffmi
- */
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class DatasetFieldValueValidatorTest {
     
+    @Mock
+    ConstraintValidatorContext context;
     
-    public DatasetFieldValueValidatorTest() {
+    DatasetFieldValueValidator validator = new DatasetFieldValueValidator();
+    
+    // provides inputs to testShowVerifyEmailButton()
+    private static Stream<Arguments> provider_testIsValid() {
+        return Stream.of(
+            // DATES
+            Arguments.of(DatasetFieldType.FieldType.DATE, "1999AD", true),
+            Arguments.of(DatasetFieldType.FieldType.DATE, "44BCE", true),
+            Arguments.of(DatasetFieldType.FieldType.DATE, "2004-10-27", true),
+            Arguments.of(DatasetFieldType.FieldType.DATE, "2002-08", true),
+            Arguments.of(DatasetFieldType.FieldType.DATE, "[1999?]", true),
+            Arguments.of(DatasetFieldType.FieldType.DATE, "Blergh", false),
+            
+            // FLOAT
+            Arguments.of(DatasetFieldType.FieldType.FLOAT, "44", true),
+            Arguments.of(DatasetFieldType.FieldType.FLOAT, "44 1/2", false),
+            Arguments.of(DatasetFieldType.FieldType.FLOAT, "12.14", true),
+            
+            // INTEGER
+            Arguments.of(DatasetFieldType.FieldType.INT, "44", true),
+            Arguments.of(DatasetFieldType.FieldType.INT, "-44", true),
+            Arguments.of(DatasetFieldType.FieldType.INT, "12.14", false),
+    
+            // URL
+            Arguments.of(DatasetFieldType.FieldType.URL, "http://foo.bar", true),
+            Arguments.of(DatasetFieldType.FieldType.URL, "foo.bar", false)
+        );
     }
     
-    @BeforeClass
-    public static void setUpClass() {
+    @ParameterizedTest
+    @MethodSource("provider_testIsValid")
+    public void testIsValid(DatasetFieldType.FieldType type, String date, boolean expected) {
+        // given
+        DatasetFieldValue value = generateDatasetFieldValue(type);
+        value.setValue(date);
+        
+        // when
+        boolean result = validator.isValid(value, context);
+        
+        // then
+        assertEquals(expected, result);
     }
     
-    @AfterClass
-    public static void tearDownClass() {
+    // provides inputs to testShowVerifyEmailButton()
+    private static Stream<Arguments> provider_testIsValidForRegex() {
+        return Stream.of(
+            Arguments.of("asdfg", true),
+            Arguments.of("asdfgX", false),
+            Arguments.of("asdf", false)
+        );
     }
     
-    @Before
-    public void setUp() {
-    }
+    @ParameterizedTest
+    @MethodSource("provider_testIsValidForRegex")
+    public void testIsValidForRegex(String test, boolean expected) {
+        // given
+        DatasetFieldValue value = generateDatasetFieldValue(DatasetFieldType.FieldType.TEXT);
+        value.getDatasetField().getDatasetFieldType().setValidationFormat("^[a-zA-Z ]{5,5}$");
+        value.setValue(test);
     
-    @After
-    public void tearDown() {
-    }
-
-
-    /**
-     * Test of isValid method, of class DatasetFieldValueValidator.
-     */
-    @Test
-    public void testIsValid() {
-        System.out.println("isValid");
-        DatasetFieldValue value = new DatasetFieldValue();
-        DatasetField df = new DatasetField();
-        DatasetFieldType dft = new DatasetFieldType();
-        dft.setFieldType(DatasetFieldType.FieldType.TEXT);
-        //Test Text against regular expression that takes a 5 character string
-        dft.setValidationFormat("^[a-zA-Z ]{5,5}$");
-        df.setDatasetFieldType(dft);
-        value.setDatasetField(df);
-        value.setValue("asdfg");
-        final ConstraintValidatorContext ctx =
-            Mockito.mock(ConstraintValidatorContext.class);
-        DatasetFieldValueValidator instance = new DatasetFieldValueValidator();
-        boolean expResult = true;
-        boolean result = instance.isValid(value, ctx);
-        assertEquals(expResult, result);
-        
-        //Make string too long - should fail.
-        value.setValue("asdfgX");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        //Make string too long - should fail.
-        value.setValue("asdf");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        //Now lets try Dates
-        dft.setFieldType(DatasetFieldType.FieldType.DATE);   
-        dft.setValidationFormat(null);
-        value.setValue("1999AD");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
-        value.setValue("44BCE");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
-        value.setValue("2004-10-27");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
-        value.setValue("2002-08");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);  
-        
-        value.setValue("[1999?]");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result); 
-        
-        value.setValue("Blergh");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);  
-        
-        //Float
-        dft.setFieldType(DatasetFieldType.FieldType.FLOAT); 
-        value.setValue("44");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        value.setValue("44 1/2");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        //Integer
-        dft.setFieldType(DatasetFieldType.FieldType.INT); 
-        value.setValue("44");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        value.setValue("-44");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        value.setValue("12.14");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
-        //URL
-        dft.setFieldType(DatasetFieldType.FieldType.URL); 
-        value.setValue("http://cnn.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(true, result);
-        
-        
-        value.setValue("espn.com");
-        result = instance.isValid(value, ctx);
-        assertEquals(false, result);
-        
+        // when
+        boolean result = validator.isValid(value, context);
+    
+        // then
+        assertEquals(expected, result);
     }
 
     @Test
@@ -183,5 +140,16 @@ public class DatasetFieldValueValidatorTest {
         assertTrue(validator.isValidAuthorIdentifier("4079154-3", pattern));
         assertFalse(validator.isValidAuthorIdentifier("junk", pattern));
     }
-
+    
+    
+    static DatasetFieldValue generateDatasetFieldValue(DatasetFieldType.FieldType type) {
+        DatasetFieldValue value = new DatasetFieldValue();
+        DatasetField df = new DatasetField();
+        DatasetFieldType dft = new DatasetFieldType();
+        
+        dft.setFieldType(type);
+        df.setDatasetFieldType(dft);
+        value.setDatasetField(df);
+        return value;
+    }
 }
