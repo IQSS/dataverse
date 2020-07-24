@@ -1497,6 +1497,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
 			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
 		} catch (WrappedResponse ex) {
 			logger.info("Exception thrown while trying to figure out permissions while getting upload URL for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+			throw ex;
 		}
 		if (!canUpdateDataset) {
             return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
@@ -1538,6 +1539,7 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 			logger.info(
 					"Exception thrown while trying to figure out permissions while getting upload URLs for dataset id "
 							+ dataset.getId() + ": " + ex.getLocalizedMessage());
+			throw ex;
 		}
 		if (!canUpdateDataset) {
 			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
@@ -1570,23 +1572,49 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 @Path("mpupload")
 public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
 	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
-
-		boolean canUpdateDataset = false;
-		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while getting aborting upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
+		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
+		//Allow the API to be used within a session (e.g. for direct upload in the UI)
+		User user =session.getUser();
+		if (!user.isAuthenticated()) {
+			try {
+				user = findAuthenticatedUserOrDie();
+			} catch (WrappedResponse ex) {
+				logger.info(
+						"Exception thrown while trying to figure out permissions while getting aborting upload for dataset id "
+								+ dataset.getId() + ": " + ex.getLocalizedMessage());
+				throw ex;
+			}
 		}
-		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
+		boolean allowed = false;
+		if (dataset != null) {
+				allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
+						.canIssue(UpdateDatasetVersionCommand.class);
+		} else {
+			/*
+			 * The only legitimate case where a global id won't correspond to a dataset is
+			 * for uploads during creation. Given that this call will still fail unless all
+			 * three parameters correspond to an active multipart upload, it should be safe
+			 * to allow the attempt for an authenticated user. If there are concerns about
+			 * permissions, one could check with the current design that the user is allowed
+			 * to create datasets in some dataverse that is configured to use the storage
+			 * provider specified in the storageidentifier, but testing for the ability to
+			 * create a dataset in a specific dataverse would requiring changing the design
+			 * somehow (e.g. adding the ownerId to this call).
+			 */
+			allowed = true;
+		}
+		if (!allowed) {
+			return error(Response.Status.FORBIDDEN,
+					"You are not permitted to abort file uploads with the supplied parameters.");
 		}
 		try {
-			S3AccessIO.abortMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId);
+			S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
 		} catch (IOException io) {
-			logger.warning("Multipart upload abort failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
+			logger.warning("Multipart upload abort failed for uploadId: " + uploadId + " storageidentifier="
+					+ storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
-			throw new WrappedResponse(io, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload")); 
+			throw new WrappedResponse(io,
+					error(Response.Status.INTERNAL_SERVER_ERROR, "Could not abort multipart upload"));
 		}
 		return Response.noContent().build();
 	} catch (WrappedResponse wr) {
@@ -1598,7 +1626,41 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 @Path("mpupload")
 public Response completeMPUpload(String partETagBody, @PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
 	try {
-		Dataset dataset = findDatasetOrDie(idSupplied);
+		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
+		//Allow the API to be used within a session (e.g. for direct upload in the UI)
+		User user =session.getUser();
+		if (!user.isAuthenticated()) {
+			try {
+				findUserOrDie();
+			} catch (WrappedResponse ex) {
+				logger.info(
+						"Exception thrown while trying to figure out permissions to complete mpupload for dataset id "
+								+ dataset.getId() + ": " + ex.getLocalizedMessage());
+				throw ex;
+			}
+		}
+		boolean allowed = false;
+		if (dataset != null) {
+				allowed = permissionSvc.requestOn(createDataverseRequest(user), dataset)
+						.canIssue(UpdateDatasetVersionCommand.class);
+		} else {
+			/*
+			 * The only legitimate case where a global id won't correspond to a dataset is
+			 * for uploads during creation. Given that this call will still fail unless all
+			 * three parameters correspond to an active multipart upload, it should be safe
+			 * to allow the attempt for an authenticated user. If there are concerns about
+			 * permissions, one could check with the current design that the user is allowed
+			 * to create datasets in some dataverse that is configured to use the storage
+			 * provider specified in the storageidentifier, but testing for the ability to
+			 * create a dataset in a specific dataverse would requiring changing the design
+			 * somehow (e.g. adding the ownerId to this call).
+			 */
+			allowed = true;
+		}
+		if (!allowed) {
+			return error(Response.Status.FORBIDDEN,
+					"You are not permitted to complete file uploads with the supplied parameters.");
+		}
 		List<PartETag> eTagList = new ArrayList<PartETag>();
         logger.info("Etags: " + partETagBody);
 		try {
@@ -1615,22 +1677,13 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 			logger.info("Unable to parse eTags from: " + partETagBody);
 			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
 		}
-		boolean canUpdateDataset = false;
 		try {
-			canUpdateDataset = permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), dataset).canIssue(UpdateDatasetVersionCommand.class);
-		} catch (WrappedResponse ex) {
-			logger.info("Exception thrown while trying to figure out permissions while completing upload for dataset id " + dataset.getId() + ": " + ex.getLocalizedMessage());
-		}
-		if (!canUpdateDataset) {
-			return error(Response.Status.FORBIDDEN, "You are not permitted to upload files to this dataset.");
-		}
-		try {
-			S3AccessIO.completeMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId, eTagList);
+			S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
 		} catch (IOException io) {
 			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 			logger.warning(io.getMessage());
 			try {
-				S3AccessIO.abortMultipartUpload(dataset.getGlobalId().asString(), storageidentifier, uploadId);
+				S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
 			} catch (IOException e) {
 				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
 				logger.severe(io.getMessage());
