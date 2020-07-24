@@ -1631,7 +1631,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 		User user =session.getUser();
 		if (!user.isAuthenticated()) {
 			try {
-				findUserOrDie();
+				user=findAuthenticatedUserOrDie();
 			} catch (WrappedResponse ex) {
 				logger.info(
 						"Exception thrown while trying to figure out permissions to complete mpupload for dataset id "
