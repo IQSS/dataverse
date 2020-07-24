@@ -187,19 +187,29 @@ class fileUpload {
                         }
                 });
                 } else {
+                  this.etags=[];
+                  this.loaded=[];
+                  var partSize= this.urls.partSize;
                   for (const [key, value] of Object.entries(this.urls.urls)) {
-                  if(this.etags[key] == 'undefined' || this.etags[key]==-1) {
-                     var size = Math.min(this.partSize, this.file.size-key*partSize);
-                     var blob=this.file.slice(key*this.partSize, size);
-                     $.ajax({
+                    if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
+                       var size = Math.min(partSize, this.file.size-(key-1)*partSize);
+                       var blob=this.file.slice((key-1)*this.partSize, size);
+                       this.loaded[key]=0;
+                       $.ajax({
                         url: value,
-                        headers: { "x-amz-tagging": "dv-state=temp" },
+  //                      headers: { "x-amz-tagging": "dv-state=temp" },
                         type: 'PUT',
                         data: blob,
                         context:this,
                         cache: false,
                         processData: false,
-                        success: function(data) {
+                        success: function(data, status, response) {
+                        var headers=response.getAllResponseHeaders();
+                        console.log('headers ' + headers);
+var arr = headers.trim().split(/[\r\n]+/);
+arr.forEach(function(line){console.log('line ' + line)});
+
+ 
                                 console.log('upload of part ' + key + ' returned' + data);
                                 this.etags[key]=data.data.values[0];
                                 if(this.etags.size == this.urls.size) {
