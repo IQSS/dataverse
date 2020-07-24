@@ -187,14 +187,18 @@ class fileUpload {
                         }
                 });
                 } else {
-                  this.etags=[];
-                  this.loaded=[];
+                  var loaded=[];
+                  this.etags=[];                
+                  this.numEtags=0;
+                  var doublelength = 2* this.file.size;
                   var partSize= this.urls.partSize;
+                  console.log('Num parts: ' + Object.keys(this.urls.urls).length);
+                  loaded[thisFile]=[];
                   for (const [key, value] of Object.entries(this.urls.urls)) {
                     if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
+                       this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
                        var blob=this.file.slice((key-1)*this.partSize, size);
-                       this.loaded[key]=0;
                        $.ajax({
                         url: value,
   //                      headers: { "x-amz-tagging": "dv-state=temp" },
@@ -204,22 +208,17 @@ class fileUpload {
                         cache: false,
                         processData: false,
                         success: function(data, status, response) {
-                        var headers=response.getAllResponseHeaders();
-                        console.log('headers ' + headers);
-var arr = headers.trim().split(/[\r\n]+/);
-arr.forEach(function(line){console.log('line ' + line)});
-
- 
-                                console.log('upload of part ' + key + ' returned' + data);
-                                this.etags[key]=data.data.values[0];
-                                if(this.etags.size == this.urls.size) {
+                                console.log('upload of part ' + key + ' etags size:' + Object.keys(this.urls.urls).length);
+                                this.etags[key]=response.getResponseHeader('ETag');
+                                this.numEtags = this.numEtags+1;
+                                if(this.numEtags == Object.keys(this.urls.urls).length) {
                                   console.log('reporting file ' + this.file.name);
                                   var allGood=true;
                                   for(val in this.etags.values()) {
                                     if (val==-1) {
                                       allGood=false;
                                       break;
-                                    }  
+                                    }
                                   }
                                   if(!allGood) {
                                     if(this.alreadyRetried) {
@@ -229,8 +228,8 @@ arr.forEach(function(line){console.log('line ' + line)});
                                     } else {
                                       this.alreadyRetried=true;
                                       this.doUpload();
-                                    }  
-                                  } else {  
+                                    }
+                                  } else {
                                     this.finishMPUpload();
                                   }
                                 }
@@ -248,10 +247,9 @@ arr.forEach(function(line){console.log('line ' + line)});
                                         myXhr.upload.addEventListener('progress', function(e) {
                                                 if (e.lengthComputable) {
                                                 console.log(e.loaded + ':'+ e.total +':' + key);
-                                                        var doublelength = 2 * e.total;
-                                                        this.loaded[key]=e.loaded;
+                                                        loaded[thisFile][key-1]=e.loaded;
                                                         var total=0;
-                                                        for(val in this.loaded.values()) {
+                                                        for(let val of loaded[thisFile].values()) {
                                                           total = total+val;
                                                         }
                                                         progBar.children('progress').attr({
@@ -264,13 +262,9 @@ arr.forEach(function(line){console.log('line ' + line)});
                                 return myXhr;
                         }
                 });
-                }
-                  }
-                
-                
-                
-                
-                }
+              }
+            }
+          }
         }
 
         reportUpload() {
@@ -316,7 +310,6 @@ arr.forEach(function(line){console.log('line ' + line)});
                         cache: false,
                         processData: false,
                         success: function() {
-                        
                           console.log('Successfully completed upload of ' + this.file.name);
                           this.reportUpload();
                         },
@@ -326,7 +319,7 @@ arr.forEach(function(line){console.log('line ' + line)});
 
                         }
             });        }
-        
+
         async handleDirectUpload(md5) {
                 this.state = UploadState.HASHED;
                 //Wait for each call to finish and update the DOM
@@ -338,8 +331,6 @@ arr.forEach(function(line){console.log('line ' + line)});
                 //(String uploadComponentId, String fullStorageIdentifier, String fileName, String contentType, String checksumType, String checksumValue)
                 handleExternalUpload([{ name: 'uploadComponentId', value: 'datasetForm:fileUpload' }, { name: 'fullStorageIdentifier', value: this.storageId }, { name: 'fileName', value: this.file.name }, { name: 'contentType', value: this.file.type }, { name: 'checksumType', value: 'MD5' }, { name: 'checksumValue', value: md5 }]);
         }
-
-
 }
 
 function queueFileForDirectUpload(file) {
