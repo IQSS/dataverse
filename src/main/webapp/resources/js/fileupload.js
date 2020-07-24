@@ -2,7 +2,7 @@ var fileList = [];
 var observer2 = null;
 var numDone = 0;
 var delay = 100; //milliseconds
-const UploadState = {
+var UploadState = {
         QUEUED: 'queued',
         REQUESTING: 'requesting',
         UPLOADING: 'uploading',
@@ -188,7 +188,7 @@ class fileUpload {
                 });
                 } else {
                   var loaded=[];
-                  this.etags=[];                
+                  this.etags=[];
                   this.numEtags=0;
                   var doublelength = 2* this.file.size;
                   var partSize= this.urls.partSize;
@@ -198,7 +198,8 @@ class fileUpload {
                     if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
                        this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
-                       var blob=this.file.slice((key-1)*this.partSize, size);
+                       var offset=(key-1)*partSize;
+                       var blob=this.file.slice(offset, offset + size);
                        $.ajax({
                         url: value,
   //                      headers: { "x-amz-tagging": "dv-state=temp" },
@@ -208,8 +209,9 @@ class fileUpload {
                         cache: false,
                         processData: false,
                         success: function(data, status, response) {
-                                console.log('upload of part ' + key + ' etags size:' + Object.keys(this.urls.urls).length);
-                                this.etags[key]=response.getResponseHeader('ETag');
+                                console.log('Successful upload of part ' + key + ' of ' + Object.keys(this.urls.urls).length);
+                                //The header has quotes around the eTag
+                                this.etags[key]=response.getResponseHeader('ETag').replace(/["]+/g, '');
                                 this.numEtags = this.numEtags+1;
                                 if(this.numEtags == Object.keys(this.urls.urls).length) {
                                   console.log('reporting file ' + this.file.name);
@@ -246,7 +248,6 @@ class fileUpload {
                                 if (myXhr.upload) {
                                         myXhr.upload.addEventListener('progress', function(e) {
                                                 if (e.lengthComputable) {
-                                                console.log(e.loaded + ':'+ e.total +':' + key);
                                                         loaded[thisFile][key-1]=e.loaded;
                                                         var total=0;
                                                         for(let val of loaded[thisFile].values()) {
@@ -302,11 +303,16 @@ class fileUpload {
                         }
             });
          }
-        async finishMPUpload(md5) {
+        async finishMPUpload() {
+          var eTagsObject={};
+          for(var i=1;i<=this.numEtags;i++) {
+             eTagsObject[i]=this.etags[i];
+          }
                $.ajax({
                         url: this.urls.complete,
                         type: 'PUT',
                         context:this,
+                        data: JSON.stringify(eTagsObject),
                         cache: false,
                         processData: false,
                         success: function() {
