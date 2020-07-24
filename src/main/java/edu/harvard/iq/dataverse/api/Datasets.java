@@ -1570,7 +1570,7 @@ public Response getMPUploadUrls(@PathParam("id") String idSupplied, @QueryParam(
 
 @DELETE
 @Path("mpupload")
-public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
+public Response abortMPUpload(@QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId) {
 	try {
 		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
 		//Allow the API to be used within a session (e.g. for direct upload in the UI)
@@ -1624,7 +1624,7 @@ public Response abortMPUpload(@PathParam("id") String idSupplied, @QueryParam("s
 
 @PUT
 @Path("mpupload")
-public Response completeMPUpload(String partETagBody, @PathParam("id") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
+public Response completeMPUpload(String partETagBody, @QueryParam("globalid") String idSupplied, @QueryParam("storageidentifier") String storageidentifier, @QueryParam("uploadid") String uploadId)  {
 	try {
 		Dataset dataset = datasetSvc.findByGlobalId(idSupplied);
 		//Allow the API to be used within a session (e.g. for direct upload in the UI)
@@ -1680,12 +1680,12 @@ public Response completeMPUpload(String partETagBody, @PathParam("id") String id
 		try {
 			S3AccessIO.completeMultipartUpload(idSupplied, storageidentifier, uploadId, eTagList);
 		} catch (IOException io) {
-			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
+			logger.warning("Multipart upload completion failed for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
 			logger.warning(io.getMessage());
 			try {
 				S3AccessIO.abortMultipartUpload(idSupplied, storageidentifier, uploadId);
 			} catch (IOException e) {
-				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " dataset Id: " + dataset.getId());
+				logger.severe("Also unable to abort the upload (and release the space on S3 for uploadId: " + uploadId +" storageidentifier=" + storageidentifier + " globalId: " + idSupplied);
 				logger.severe(io.getMessage());
 			}
 
