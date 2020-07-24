@@ -1710,31 +1710,37 @@ public class EditDatafilesPage implements java.io.Serializable {
     	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
     
-public void requestDirectUploadUrls() {
-        
-	Map<String,String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
-	
-	String sizeString = paramMap.get("fileSize");
-	long fileSize=Long.parseLong(sizeString);
-    
-        
-        S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
-        if(s3io == null) {
-        	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Direct upload not supported for this dataset"));
-        }
-        JsonObjectBuilder urls = null;
-        String storageIdentifier = null;
-        try {
-        	storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
-        	urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
-        	
-        } catch (IOException io) {
-        	logger.warning(io.getMessage());
-       	FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), "Issue in connecting to S3 store for direct upload"));
-       }
-        
-    	PrimeFaces.current().executeScript("uploadFileDirectly('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
-    }
+	public void requestDirectUploadUrls() {
+
+		Map<String, String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+
+		String sizeString = paramMap.get("fileSize");
+		long fileSize = Long.parseLong(sizeString);
+
+		S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+		if (s3io == null) {
+			FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+					new FacesMessage(FacesMessage.SEVERITY_ERROR,
+							BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+							"Direct upload not supported for this dataset"));
+		}
+		JsonObjectBuilder urls = null;
+		String storageIdentifier = null;
+		try {
+			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+			urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
+
+		} catch (IOException io) {
+			logger.warning(io.getMessage());
+			FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+					new FacesMessage(FacesMessage.SEVERITY_ERROR,
+							BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+							"Issue in connecting to S3 store for direct upload"));
+		}
+
+		PrimeFaces.current().executeScript(
+				"uploadFileDirectly('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
+	}
 
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
