@@ -44,7 +44,8 @@ with the contents of the file cors.json as follows:
              {
                 "AllowedOrigins": ["https://<DATAVERSE SERVER>"],
                 "AllowedHeaders": ["*"],
-                "AllowedMethods": ["PUT", "GET"]
+                "AllowedMethods": ["PUT", "GET"],
+                "ExposeHeaders": ["ETag"]
              }
           ]
         }
