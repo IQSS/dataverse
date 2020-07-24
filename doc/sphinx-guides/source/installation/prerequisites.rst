@@ -52,7 +52,9 @@ Payara 5.2020.2 is recommended. Newer versions might work fine.
 Installing Payara
 =================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose:
+
+	# useradd dataverse
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
