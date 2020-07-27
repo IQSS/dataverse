@@ -2627,7 +2627,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
-        return returnToDatasetOnly();
+        return returnToDraftVersion();
     }
 
     @Deprecated
