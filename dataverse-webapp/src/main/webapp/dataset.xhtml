@@ -719,6 +719,10 @@
                             <ui:include src="dataset-versions.xhtml">
                             </ui:include>
                         </p:tab>
+                        <ui:include src="pluggable/dataset-extra-tabs.xhtml">
+                            <ui:param name="DatasetPage" value="#{DatasetPage}"/>
+                        </ui:include>
+                        
                     </p:tabView>
                 </div>
                 <!-- END View/Tabs infoMode -->

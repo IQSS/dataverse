@@ -133,6 +133,12 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     @OrderBy("displayOrder ASC")
     private List<DatasetField> datasetFields = new ArrayList<>();
 
+    @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true,
+            cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @CustomizeSelectionQuery(EntityCustomizer.Customizations.DATASET_FIELDS_NO_PRIMARY_SOURCE)
+    @OrderBy("displayOrder ASC")
+    private List<DatasetField> datasetFieldsOptional = new ArrayList<>();
+
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date createTime;
@@ -194,6 +200,10 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
+    }
+
+    public List<DatasetField> getDatasetFieldsOptional() {
+        return datasetFieldsOptional;
     }
 
     public Date getArchiveTime() {

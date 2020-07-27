@@ -27,6 +27,17 @@ public class EntityCustomizer implements DescriptorCustomizer {
             Expression additionalCriteria = expressionBuilder
                     .get("source").equal(DatasetField.DEFAULT_SOURCE);
             datasetFieldsMapping.setSelectionCriteria(currentCriteria.and(additionalCriteria));
+        }),
+        DATASET_FIELDS_NO_PRIMARY_SOURCE(mapping -> {
+            if (!mapping.isOneToManyMapping()) {
+                return;
+            }
+            OneToManyMapping datasetFieldsMapping = (OneToManyMapping) mapping;
+            Expression currentCriteria = datasetFieldsMapping.buildSelectionCriteria();
+            ExpressionBuilder expressionBuilder = currentCriteria.getBuilder();
+            Expression additionalCriteria = expressionBuilder
+                    .get("source").notEqual(DatasetField.DEFAULT_SOURCE);
+            datasetFieldsMapping.setSelectionCriteria(currentCriteria.and(additionalCriteria));
         })
         ;
 
