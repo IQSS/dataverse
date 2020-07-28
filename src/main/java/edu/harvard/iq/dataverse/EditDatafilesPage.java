@@ -896,11 +896,24 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         Iterator<FileMetadata> fmItr = fileMetadatas.iterator();
         
-        while (fmItr.hasNext()){
+        String fileNames = null;
+        while (fmItr.hasNext()) {
             FileMetadata test = fmItr.next();
-            if(test.isMarkedAsDuplicate()){
+            if (test.isMarkedAsDuplicate()) {
+                if (fileNames == null) {
+                    fileNames = test.getLabel();
+                } else {
+                    fileNames = fileNames.concat(", " + test.getLabel());
+                }
                 fmItr.remove();
             }
+        }
+
+        if (fileNames != null) {
+            String successMessage = getBundleString("file.deleted.upload.success");
+            logger.fine(successMessage);
+            successMessage = successMessage.replace("{0}", fileNames);
+            JsfHelper.addFlashMessage(successMessage);
         }
         
         if (isFileReplaceOperation()){
@@ -988,8 +1001,12 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             }
         }
+
         if (fileNames != null) {
             String successMessage = getBundleString("file.deleted.success");
+            if (mode == FileEditMode.UPLOAD) {
+                successMessage = getBundleString("file.deleted.upload.success");
+            }
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
@@ -1792,6 +1809,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 if (existingFilesWithDupeContent != null || newlyUploadedFilesWithDupeContent != null) {
                     setWarningMessageForAlreadyExistsPopUp(uploadWarningMessage);
                     setHeaderForAlreadyExistsPopUp();
+                    setLabelForDeleteFilesPopup();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
                 }
@@ -1864,6 +1882,23 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setHeaderForAlreadyExistsPopUp(String headerForAlreadyExistsPopUp) {
         this.headerForAlreadyExistsPopUp = headerForAlreadyExistsPopUp;
     }
+    
+    private String labelForDeleteFilesPopup;
+
+    public String getLabelForDeleteFilesPopup() {
+        return labelForDeleteFilesPopup;
+    }
+
+    public void setLabelForDeleteFilesPopup(String labelForDeleteFilesPopup) {
+        this.labelForDeleteFilesPopup = labelForDeleteFilesPopup;
+    }
+    
+    public void setLabelForDeleteFilesPopup() {
+        this.labelForDeleteFilesPopup = ((multipleDupesExisting|| multipleDupesNew) ? BundleUtil.getStringFromBundle("file.delete.duplicate.multiple") :  
+                BundleUtil.getStringFromBundle("file.delete.duplicate.single"));
+    }
+    
+    //((multipleDupesExisting|| multipleDupesNew) ? BundleUtil.getStringFromBundle("file.addreplace.already_exists.header.multiple"):  BundleUtil.getStringFromBundle("file.addreplace.already_exists.header"));
     
     public void setHeaderForAlreadyExistsPopUp() {
         
