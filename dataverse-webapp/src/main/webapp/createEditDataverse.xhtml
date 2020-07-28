@@ -335,8 +335,7 @@
                                                             <h:outputText value="#{dsft.displayName}" escape="false"/>
                                                         </legend>
                                                         <div class="col-xs-5">
-                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}"
-                                                                                value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).requiredField}"
+                                                            <p:selectOneRadio value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).requiredField}"
                                                                                 disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)}"
                                                                                 rendered="#{!dsft.required}">
                                                                 <f:selectItems
@@ -364,10 +363,19 @@
                                                                 </p:selectBooleanCheckbox>
                                                          </div>
                                                          <div class="col-xs-5">
-                                                                <span class="text-muted"
-                                                                        jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
-                                                                            #{bundle['dataverse.field.requiredByDataverse']}
-                                                                </span>
+                                                            <p:selectOneRadio value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).requiredField}"
+                                                                                disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)}"
+                                                                                rendered="#{!dsft.hasChildren and !dsft.required}">
+                                                                <f:selectItems
+                                                                        value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).selectedDatasetFields}"
+                                                                />
+                                                                <p:ajax/>
+                                                            </p:selectOneRadio>
+
+                                                            <span class="text-muted"
+                                                                    jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
+                                                                        #{bundle['dataverse.field.requiredByDataverse']}
+                                                            </span>
                                                          </div>
                                                     </div>
                                                     </li>
