@@ -16,6 +16,9 @@ import java.util.stream.Stream;
 
 /**
  * Produces a generic 500 message for the API, being a fallback handler for not specially treated exceptions.
+ *
+ * This catches bad exceptions like ArrayOutOfBoundsExceptions, NullPointerExceptions and ServeletExceptions,
+ * which had formerly specialised handlers, generating a generic error message. (This is now handled here.)
  */
 @Provider
 public class ThrowableHandler implements ExceptionMapper<Throwable>{
