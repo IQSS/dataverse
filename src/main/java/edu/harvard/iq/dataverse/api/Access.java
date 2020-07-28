@@ -559,8 +559,8 @@ public class Access extends AbstractApiBean {
             final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
-        } catch (WrappedResponse ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
@@ -598,8 +598,8 @@ public class Access extends AbstractApiBean {
             }
             String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
-        } catch (WrappedResponse ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

@@ -13,9 +13,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
@@ -91,7 +92,9 @@ public class DownloadFilesIT {
         Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, null);
         downloadFiles2.prettyPrint();
         downloadFiles2.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("User :guest is not permitted to perform requested action."));
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
@@ -191,11 +194,27 @@ public class DownloadFilesIT {
         HashSet<String> expectedFiles7 = new HashSet<>(Arrays.asList("LICENSE.md", "MANIFEST.TXT", "README.md", "CONTRIBUTING.md"));
         Assert.assertEquals(expectedFiles7, filenamesFound7);
 
+        // Guests cannot download draft versions.
+        String datasetVersionDraft = ":draft";
+        Response downloadFiles10 = UtilIT.downloadFiles(datasetPid, datasetVersionDraft, null);
+        downloadFiles10.prettyPrint();
+        downloadFiles10.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("User :guest is not permitted to perform requested action."));
+
+        // Users are told about bad API tokens.
+        Response downloadFiles11 = UtilIT.downloadFiles(datasetPid, "junkToken");
+        downloadFiles11.prettyPrint();
+        downloadFiles11.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("Bad api key "));
+
     }
 
     /**
-     * This test is focused on downloading all files by their version. All files
-     * are public.
+     * This test is focused on downloading all files that are restricted.
      */
     @Test
     public void downloadAllFilesRestricted() throws IOException {
@@ -246,6 +265,28 @@ public class DownloadFilesIT {
         // The creator can download a restricted file from a draft.
         Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles1.getBody().asInputStream()));
 
+        Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, apiToken);
+        downloadFiles2.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The creator can download a restricted file and an unrestricted file from a draft.
+        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken)
+                .then().assertThat().statusCode(OK.getStatusCode());
+
+        // A guest user can't download the only file because it's restricted.
+        Response downloadFiles3 = UtilIT.downloadFiles(datasetPid, null);
+        downloadFiles3.prettyPrint();
+        downloadFiles3.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("'/api/v1/access/dataset/%3ApersistentId' you are not authorized to access this object via this api endpoint. Please check your code for typos, or consult our API guide at http://guides.dataverse.org."));
+
+        // The creator uploads a README that will be public.
         Path pathToReadme = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
         Files.write(pathToReadme, "My findings.".getBytes());
 
@@ -255,26 +296,23 @@ public class DownloadFilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.files[0].label", equalTo("README.md"));
 
-        Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, apiToken);
-        downloadFiles2.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
-        // The creator can download a restricted file and an unrestricted file from a draft.
-        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
-
-        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
-                .then().assertThat().statusCode(OK.getStatusCode());
-
         UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
 
-        // Now a guest user can download files (published now)
-        Response downloadFiles3 = UtilIT.downloadFiles(datasetPid, null);
-        downloadFiles3.then().assertThat()
+        // Now a guest user can download files and get the public one.
+        Response downloadFiles4 = UtilIT.downloadFiles(datasetPid, null);
+        downloadFiles4.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         // The guest can only get the unrestricted file (and the manifest).
-        Assert.assertEquals(new HashSet<>(Arrays.asList("README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles3.getBody().asInputStream()));
+        Assert.assertEquals(new HashSet<>(Arrays.asList("README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles4.getBody().asInputStream()));
+
+        Response downloadFiles5 = UtilIT.downloadFiles(datasetPid, apiToken);
+        downloadFiles5.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // The creator can download both files (and the manifest).
+        Assert.assertEquals(new HashSet<>(Arrays.asList("secrets.md", "README.md", "MANIFEST.TXT")), gatherFilenames(downloadFiles5.getBody().asInputStream()));
 
     }
 
@@ -315,7 +353,8 @@ public class DownloadFilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.files[0].label", equalTo("50by1000.dta"));
 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 4));
 
         Response downloadFiles1 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles1.then().assertThat()
