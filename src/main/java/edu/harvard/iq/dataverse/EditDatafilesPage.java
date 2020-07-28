@@ -910,9 +910,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if (fileNames != null) {
-            String successMessage = getBundleString("file.deleted.upload.success");
+            String successMessage = "";
+            if(fileNames.contains(", ")){
+                    successMessage = getBundleString("file.deleted.upload.success.multiple");
+                } else {
+                    successMessage = getBundleString("file.deleted.upload.success.single");
+                }
             logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);
         }
         
@@ -1003,12 +1007,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if (fileNames != null) {
-            String successMessage = getBundleString("file.deleted.success");
-            if (mode == FileEditMode.UPLOAD) {
-                successMessage = getBundleString("file.deleted.upload.success");
+            String successMessage;
+            if (fileNames.contains(", ")) {
+                successMessage = getBundleString("file.deleted.upload.success.multiple");
+            } else {
+                successMessage = getBundleString("file.deleted.upload.success.single");
             }
             logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
+
             JsfHelper.addFlashMessage(successMessage);
         }
     }
