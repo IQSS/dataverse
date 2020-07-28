@@ -104,6 +104,12 @@ public class Pids extends AbstractApiBean {
     public Response deletePid(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
+            //Restrict to never-published datasets (that should have draft/nonpublic pids). The underlying code will invalidate
+            //pids that have been made public by a pid-specific method, but it's not clear that invalidating such a pid via an api that doesn't
+            //destroy the dataset is a good idea.
+            if(dataset.isReleased()) {
+            	return badRequest("Not allowed for Datasets that have been published.");
+            }
             execCommand(new DeletePidCommand(createDataverseRequest(findUserOrDie()), dataset));
             return ok(BundleUtil.getStringFromBundle("pids.api.deletePid.success", Arrays.asList(dataset.getGlobalId().asString())));
         } catch (WrappedResponse ex) {

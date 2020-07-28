@@ -2594,7 +2594,7 @@ The fully expanded example above (without environment variables) looks like this
 Delete a PID
 ~~~~~~~~~~~~
 
-Delete PID from DataCite (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
+Delete PID (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
