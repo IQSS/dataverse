@@ -100,6 +100,9 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                     message = "Requested service or method not available on the requested object";
                 }
                 break;
+            default:
+                message = ex.getMessage();
+                break;
         }
         
         return message;
