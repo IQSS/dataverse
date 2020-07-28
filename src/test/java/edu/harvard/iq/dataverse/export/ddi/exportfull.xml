@@ -77,34 +77,34 @@
         <collDate cycle="P1" event="end" date="1006-01-01">1006-01-01</collDate>
         <collDate cycle="P2" event="start" date="1006-02-01">1006-02-01</collDate>
         <collDate cycle="P2" event="end" date="1006-02-02">1006-02-02</collDate>
-        <dataKind>KindOfData1</dataKind>
-        <dataKind>KindOfData2</dataKind>
         <nation>Afghanistan</nation>
+        <nation>Albania</nation>
         <geogCover>GeographicCoverageCity1</geogCover>
         <geogCover>GeographicCoverageStateProvince1</geogCover>
         <geogCover>GeographicCoverageOther1</geogCover>
-        <nation>Albania</nation>
         <geogCover>GeographicCoverageCity2</geogCover>
         <geogCover>GeographicCoverageStateProvince2</geogCover>
         <geogCover>GeographicCoverageOther2</geogCover>
+        <geogUnit>GeographicUnit1</geogUnit>
+        <geogUnit>GeographicUnit2</geogUnit>
         <geoBndBox>
           <westBL>10</westBL>
           <eastBL>20</eastBL>
-          <northBL>30</northBL>
           <southBL>40</southBL>
+          <northBL>30</northBL>
         </geoBndBox>
         <geoBndBox>
+          <westBL>50</westBL>
+          <eastBL>60</eastBL>
           <southBL>80</southBL>
           <northBL>70</northBL>
-          <eastBL>60</eastBL>
-          <westBL>50</westBL>
         </geoBndBox>
-        <geogUnit>GeographicUnit1</geogUnit>
-        <geogUnit>GeographicUnit2</geogUnit>
         <anlyUnit>UnitOfAnalysis1</anlyUnit>
         <anlyUnit>UnitOfAnalysis2</anlyUnit>
         <universe>Universe1</universe>
         <universe>Universe2</universe>
+        <dataKind>KindOfData1</dataKind>
+        <dataKind>KindOfData2</dataKind>
       </sumDscr>
       <notes>Notes1</notes>
     </stdyInfo>
@@ -143,8 +143,6 @@
       <notes type="NotesType" subject="NotesSubject">NotesText</notes>
     </method>
     <dataAccs>
-      <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
-      <notes type="DVN:TOA" level="dv">Terms of Access</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>
         <origArch>Original Archive</origArch>
@@ -162,6 +160,8 @@
         <conditions>Conditions </conditions>
         <disclaimer>Disclaimer</disclaimer>
       </useStmt>
+      <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
+      <notes type="DVN:TOA" level="dv">Terms of Access</notes>
     </dataAccs>
     <othrStdyMat>
       <relMat>RelatedMaterial1</relMat>
