@@ -24,16 +24,4 @@ public class PidUtilTest {
         System.out.println("out: " + out);
     }
 
-    @Ignore
-    @Test
-    public void testDeleteDoi() throws IOException {
-        String username = System.getenv("DataCiteUsername");
-        String password = System.getenv("DataCitePassword");
-        String baseUrl = "https://api.test.datacite.org";
-        String pid = "";
-        pid = "doi:10.70122/FK2/UAESPI";
-        int result = PidUtil.deleteDoi(pid, baseUrl, username, password);
-        System.out.println("out: " + result);
-    }
-
 }
