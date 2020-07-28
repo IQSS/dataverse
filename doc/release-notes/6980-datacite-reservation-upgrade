@@ -7,9 +7,7 @@ This approach makes the process of publishing datasets simpler and less error-pr
 `/api/pids/unreserved`  will report the ids of the datasets 
 `/api/pids/:persistentId/reserve` - reserves the assigned DOI with Datacite (will need to be run on every id reported by the the first API). 
 
-Scripted, the whole process would look as follows (adjust as needed): 
-
-.. code-block:: bash
+Scripted, the whole process would look as follows (adjust as needed)::
 
 	  API_TOKEN='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 
