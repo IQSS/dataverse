@@ -21,26 +21,28 @@ import java.util.stream.Stream;
 public class ThrowableHandler implements ExceptionMapper<Throwable>{
     
     private static final Logger logger = Logger.getLogger(ThrowableHandler.class.getName());
+    static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error. More details available at the server logs.";
     
     @Context
     HttpServletRequest request;
     
     @Override
     public Response toResponse(Throwable ex){
-        String incidentId = UUID.randomUUID().toString();
-        logger.log(Level.SEVERE, "Uncaught REST API exception:\n"+
-                                 "    Incident: " + incidentId +"\n"+
-                                 "    URL: "+getOriginalURL(request)+"\n"+
-                                 "    Method: "+request.getMethod(), ex);
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity( Json.createObjectBuilder()
-                             .add("status", "ERROR")
-                             .add("code", Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
-                             .add("type", ex.getClass().getSimpleName())
-                             .add("message", "Internal server error. More details available at the server logs.")
-                             .add("incidentId", incidentId)
-                        .build())
-                .type(MediaType.APPLICATION_JSON_TYPE).build();
+        String requestMethod = request.getMethod();
+        String requestUrl = ThrowableHandler.getOriginalURL(request);
+    
+        String incidentId = ThrowableHandler.handleLogging(INTERNAL_SERVER_ERROR_MESSAGE,
+            requestMethod,
+            requestUrl,
+            Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+            ex);
+    
+        return ThrowableHandler.createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+            requestMethod,
+            requestUrl,
+            ex.getClass().getSimpleName(),
+            INTERNAL_SERVER_ERROR_MESSAGE,
+            incidentId);
     }
     
     /**
