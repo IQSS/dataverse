@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+
 import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -150,7 +152,9 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
             url.append(pathInfo);
         }
         if (queryString != null) {
-            url.append("?").append(queryString);
+            // filter for unblock-key parameter and mask the key
+            String maskedQueryString = queryString.replaceAll(ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=.+?\\b", ApiBlockingFilter.UNBLOCK_KEY_QUERYPARAM+"=****");
+            url.append("?").append(maskedQueryString);
         }
         
         return url.toString();
