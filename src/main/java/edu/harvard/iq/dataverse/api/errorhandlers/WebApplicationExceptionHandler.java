@@ -5,14 +5,18 @@
  */
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
+import edu.harvard.iq.dataverse.api.util.JSONResponseBuilder;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -29,83 +33,72 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
     @Override
     public Response toResponse(WebApplicationException ex) {
         
-        String requestMethod = request.getMethod();
-        String requestUrl = ThrowableHandler.getOriginalURL(request);
-        String message = createMessage(ex);
+        // If this is not a HTTP client or server error, just pass the response.
+        if (ex.getResponse().getStatus() < 400)
+            return ex.getResponse();
         
-        String incidentId = ThrowableHandler.handleLogging(message,
-            requestMethod,
-            requestUrl,
-            ex.getResponse().getStatus(),
-            ex);
-        
-        return ThrowableHandler.createErrorResponse(ex.getResponse(),
-            requestMethod,
-            requestUrl,
-            ex.getClass().getSimpleName(),
-            message,
-            incidentId);
-    }
-    
-    /**
-     * Analyse the exception and generate a human readable (and helpful) error message.
-     * @param ex The exception thrown
-     * @return A human readable error message.
-     */
-    String createMessage(WebApplicationException ex) {
-        
-        String message = "";
-        String exMessage = ex.getMessage();
+        // Otherwise, do stuff.
+        JSONResponseBuilder jrb = JSONResponseBuilder.error(ex.getResponse());
         
         // See also https://en.wikipedia.org/wiki/List_of_HTTP_status_codes for a list of status codes.
         switch (ex.getResponse().getStatus()) {
-            // Redirects (permanent & temporary)
-            case 302:
-            case 307:
-                message = ex.getResponse().getLocation().toString();
-                break;
             // BadRequest
             case 400:
-                if (exMessage != null && exMessage.toLowerCase().startsWith("tabular data required")) {
-                    message = BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file");
+                if ( (ex.getMessage()+"").toLowerCase().startsWith("tabular data required")) {
+                    jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file"));
                 } else {
-                    message = "Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+                    jrb.message("Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                    jrb.request(request);
                 }
                 break;
             // Forbidden
             case 403:
-                message = "Not authorized to access this object via this API endpoint. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+                jrb.message("Not authorized to access this object via this API endpoint. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                jrb.request(request);
                 break;
             // NotFound
             case 404:
-                if (exMessage != null && exMessage.toLowerCase().startsWith("datafile")) {
-                    message = exMessage;
+                if ( (ex.getMessage()+"").toLowerCase().startsWith("datafile")) {
+                    jrb.message(ex.getMessage());
                 } else {
-                    message = "API endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+                    jrb.message("API endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                    jrb.request(request);
                 }
                 break;
             // MethodNotAllowed
             case 405:
-                message = "API endpoint does not support this method. Consult our API guide at http://guides.dataverse.org.";
+                jrb.message("API endpoint does not support this method. Consult our API guide at http://guides.dataverse.org.");
+                jrb.request(request);
+                break;
+            // NotAcceptable (might be content type, charset, encoding or language)
+            case 406:
+                jrb.message("API endpoint does not accept your request. Consult our API guide at http://guides.dataverse.org.");
+                jrb.request(request);
+                jrb.requestContentType(request);
                 break;
             // InternalServerError
             case 500:
-                message = "Internal server error. More details available at the server logs. Please contact your dataverse administrator.";
+                jrb.randomIncidentId();
+                jrb.internalError(ex);
+                jrb.request(request);
+                jrb.log(logger, Level.SEVERE, Optional.of(ex));
                 break;
             // ServiceUnavailable
             case 503:
-                if (exMessage != null && exMessage.toLowerCase().startsWith("datafile")) {
-                    message = exMessage;
+                if ( (ex.getMessage()+"").toLowerCase().startsWith("datafile")) {
+                    jrb.message(ex.getMessage());
                 } else {
-                    message = "Requested service or method not available on the requested object";
+                    jrb.message("Requested service or method not available on the requested object");
                 }
                 break;
             default:
-                message = ex.getMessage();
+                jrb.message(ex.getMessage());
                 break;
         }
-        
-        return message;
+    
+        // Logging for debugging. Will not double-log messages.
+        jrb.log(logger, Level.FINEST, Optional.of(ex));
+        return jrb.build();
     }
     
 }
