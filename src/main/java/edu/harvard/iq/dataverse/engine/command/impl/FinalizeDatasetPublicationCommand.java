@@ -163,7 +163,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
-                // This will end the exucition of the command, but the method 
+                // This will end the execution of the command, but the method 
                 // above takes proper care to "cleani after itself" in case of
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
