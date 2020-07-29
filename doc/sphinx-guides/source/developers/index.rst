@@ -17,6 +17,7 @@ Developer Guide
    troubleshooting
    version-control
    sql-upgrade-scripts
+   api
    testing
    documentation
    dependencies
