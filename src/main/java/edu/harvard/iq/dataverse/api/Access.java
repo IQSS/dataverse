@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import static edu.harvard.iq.dataverse.api.Datasets.handleVersion;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
@@ -45,10 +46,16 @@ import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -547,12 +554,73 @@ public class Access extends AbstractApiBean {
 
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
+
+    @Path("dataset/{id}")
+    @GET
+    @Produces({"application/zip"})
+    public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
+            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
+            return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @Path("dataset/{id}/versions/{versionId}")
+    @GET
+    @Produces({"application/zip"})
+    public Response downloadAllFromVersion(@PathParam("id") String datasetIdOrPersistentId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            final Dataset ds = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
+            DatasetVersion dsv = execCommand(handleVersion(versionId, new Datasets.DsVersionHandler<Command<DatasetVersion>>() {
+
+                @Override
+                public Command<DatasetVersion> handleLatest() {
+                    return new GetLatestAccessibleDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleDraft() {
+                    return new GetDraftDatasetVersionCommand(req, ds);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleSpecific(long major, long minor) {
+                    return new GetSpecificPublishedDatasetVersionCommand(req, ds, major, minor);
+                }
+
+                @Override
+                public Command<DatasetVersion> handleLatestPublished() {
+                    return new GetLatestPublishedDatasetVersionCommand(req, ds);
+                }
+            }));
+            if (dsv == null) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
+            }
+            String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
+            return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    private static String getFileIdsAsCommaSeparated(List<FileMetadata> fileMetadatas) {
+        List<String> ids = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            Long fileId = fileMetadata.getDataFile().getId();
+            ids.add(String.valueOf(fileId));
+        }
+        return String.join(",", ids);
+    }
+
     /*
      * API method for downloading zipped bundles of multiple files:
      */
-
-    // TODO: Rather than only supporting looking up files by their database IDs,
-    // consider supporting persistent identifiers.
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
