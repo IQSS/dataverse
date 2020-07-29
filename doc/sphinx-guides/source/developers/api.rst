@@ -15,15 +15,15 @@ over the wire as responses.
 
 .. warning:: To be extended and changed with refactoring of API code to align code paths.
 
-`JSONResponseBuilder`
+`JsonResponseBuilder`
 ^^^^^^^^^^^^^^^^^^^^^
 
 To make response building easier and aligned throught the API code base, a factory and decorator pattern based helper
-utility has been introduced in `edu.harvard.iq.dataverse.api.util.JSONResponseBuilder`_.
+utility has been introduced in `edu.harvard.iq.dataverse.api.util.JsonResponseBuilder`_.
 
 *Hint: Right now, only the exception handlers listed below use it.*
 
-Create a response builder by using ``JSONResponseBuilder.error()``.
+Create a response builder by using ``JsonResponseBuilder.error()``.
 
 1. Add decorations as you see fit (messages, incident identifiers, ...). For current options, see the classes extensive Javadoc.
 2. You can also use the same builder to log your response for the admins by using ``.log()`` before you ``.build()``.

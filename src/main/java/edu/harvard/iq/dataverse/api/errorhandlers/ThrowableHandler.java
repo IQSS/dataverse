@@ -1,19 +1,15 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
-import edu.harvard.iq.dataverse.api.util.JSONResponseBuilder;
+import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Produces a generic 500 message for the API, being a fallback handler for not specially treated exceptions.
@@ -31,7 +27,7 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
     
     @Override
     public Response toResponse(Throwable ex){
-        return JSONResponseBuilder.error(Response.Status.INTERNAL_SERVER_ERROR)
+        return JsonResponseBuilder.error(Response.Status.INTERNAL_SERVER_ERROR)
             .randomIncidentId()
             .internalError(ex)
             .request(request)
