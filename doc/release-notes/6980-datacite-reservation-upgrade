@@ -1,4 +1,4 @@
-##Dataverse installatins using Datacite: upgrade action required.
+# Dataverse installatins using Datacite: upgrade action required.
 
 For Dataverses using Datacite v5.0 changes the process of registering the Global Identifier (DOI) for the dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using Datacite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). 
 
@@ -6,6 +6,7 @@ This approach makes the process of publishing datasets simpler and less error-pr
 
 `/api/pids/unreserved`  will report the ids of the datasets 
 `/api/pids/:persistentId/reserve` reserves the assigned DOI with Datacite (will need to be run on every id reported by the the first API). 
+(See the Native API guide for more information).
 
 Scripted, the whole process would look as follows (adjust as needed):
 
