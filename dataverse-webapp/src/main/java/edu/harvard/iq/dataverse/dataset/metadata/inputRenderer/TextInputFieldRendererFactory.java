@@ -54,7 +54,7 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
             return createRendererWithActionHandler(rendererOptions);
         }
 
-        return new TextInputFieldRenderer();
+        return new TextInputFieldRenderer(rendererOptions.isRenderInTwoColumns());
     }
 
     // -------------------- PRIVATE --------------------
@@ -66,7 +66,7 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
             throw new InputRendererInvalidConfigException("Action handler with name: " + options.getButtonActionHandler() + " doesn't exist.");
         }
         
-        return new TextInputFieldRenderer(actionHandler, options.getButtonActionTextKey(), options.getActionForOperations());
+        return new TextInputFieldRenderer(options.isRenderInTwoColumns(), actionHandler, options.getButtonActionTextKey(), options.getActionForOperations());
     }
     
     // -------------------- INNER CLASSES --------------------
@@ -75,6 +75,7 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
      * Class representing allowed options for {@link TextInputFieldRenderer}
      */
     public static class TextInputRendererOptions {
+        private boolean renderInTwoColumns = true;
         private String buttonActionHandler;
         private String buttonActionTextKey;
         private List<MetadataOperationSource> actionForOperations;
@@ -82,6 +83,9 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
         
         // -------------------- GETTERS --------------------
         
+        public boolean isRenderInTwoColumns() {
+            return renderInTwoColumns;
+        }
         public String getButtonActionHandler() {
             return buttonActionHandler;
         }
@@ -93,6 +97,9 @@ public class TextInputFieldRendererFactory implements InputFieldRendererFactory<
         }
         // -------------------- SETTERS --------------------
         
+        public void setRenderInTwoColumns(boolean renderInTwoColumns) {
+            this.renderInTwoColumns = renderInTwoColumns;
+        }
         public void setButtonActionHandler(String buttonActionHandlerName) {
             this.buttonActionHandler = buttonActionHandlerName;
         }

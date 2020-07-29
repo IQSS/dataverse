@@ -19,11 +19,11 @@
 	substitutionOfRespondentsAcceptability	Acceptability			text	15	#NAME: #VALUE	TRUE	TRUE	FALSE	TRUE	TRUE	FALSE	substitutionOfRespondents	VOCABULARY_SELECT	{}	socialscience	
 	substitutionOfRespondentsDescription	Description	A detailed description of the substitution of respondents, especially when using reserved sample. 		textbox	16	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	substitutionOfRespondents	TEXTBOX	{}	socialscience	
 	ageCutOff	Age Cut-Off	Information regarding age cut-off in the sample. 		none	17	#NEWLINE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXT	{}	socialscience	
-	ageCutOffLower	Lower	Lower age cut-off.		int	18	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
-	ageCutOffUpper	Upper	Upper age cut-off. 		int	19	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
+	ageCutOffLower	Lower	Lower age cut-off.	Enter an integer...	int	18	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
+	ageCutOffUpper	Upper	Upper age cut-off. 	Enter an integer...	int	19	#NAME: #VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	ageCutOff	TEXT	{}	socialscience	
 	collectionMode	Collection Mode	Method used to collect the data.		text	20		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
 	contactAttempts	Contact Attempts	Information regarding contact attempts requirements. 		none	21	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
-	contactAttemptsNumber	Required Number of Contact Attempts	Required Number of Contact Attempts	Enter an integer...	int	22	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contactAttempts	TEXT	{}	socialscience	
+	contactAttemptsNumber	Required Number of Contact Attempts	Required Number of Contact Attempts.	Enter an integer...	int	22	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	contactAttempts	TEXT	{}	socialscience	
 	contactAttemptsSameDay	Contact attempts at different times of day required	Indicate if there was a requirement of contact attempts at different times of day. 		text	23	#NAME: #VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	contactAttempts	VOCABULARY_SELECT	{}	socialscience	
 	contactAttemptsDifferentDays	Contact attempts on different days of week required	Indicate if there was a requirement of contact attempts on different days of week. 		text	24	#NAME: #VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	contactAttempts	VOCABULARY_SELECT	{}	socialscience	
 	researchInstrument	Type of Research Instrument	Type of used data collection instrument.		text	25		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
@@ -31,11 +31,11 @@
 	weighting	Weight	Select type of weight applied to produce accurate statistical results.		text	27		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
 	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		textbox	28		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
 	controlOperations	Control Operations	Methods to facilitate data control performed by the primary investigator or by the data archive.		textbox	29		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	interviewsBackcheck	Interviews' Back-Check	Description of back-check control of completed interviews with respect to the fact and correctness of their fulfilment, eg. by coordinator.  		none	30	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
+	interviewsBackcheck	Interviews' Back-Check	Description of back-check control of completed interviews with respect to the fact and correctness of their fulfillment, e.g. by coordinator.  		none	30	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
 	interviewsBackcheckPercentage	Percentage of Interviews	Approximate percentage of back-checked interviews.	Enter an integer...	int	31	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXT	{}	socialscience	
 	interviewsBackcheckProcedureDescription	Back-Check Procedure Description	A detailed description of back-check procedure.		textbox	32	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXTBOX	{}	socialscience	
-	cleaningOperations	Cleaning Operations	Description of data cleaning and logical control procedures		textbox	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	datasetLevelErrorNotes	Study Level Error Notes	Description of known errors and difficulties that occured during the study and data processing.		textbox	34		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	cleaningOperations	Cleaning Operations	Description of data cleaning and logical control procedures.		textbox	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
+	datasetLevelErrorNotes	Study Level Error Notes	Description of known errors and difficulties that occurred during the study and data processing.		textbox	34		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
 	responseRate	Response Rate	Response rate according to AAPOR definition. 	Enter a floating-point number...	float	35		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
 	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		textbox	36		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
 	otherDataAppraisal	otherDataAppraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		textbox	37		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	

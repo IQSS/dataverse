@@ -74,6 +74,16 @@ public class TextInputFieldRendererFactoryTest {
     }
     
     @Test
+    public void createRenderer__withRenderInTwoColumns() {
+        // given
+        JsonObject rendererOptions = TestJsonCreator.stringAsJsonElement("{'renderInTwoColumns':false}").getAsJsonObject();
+        // when
+        TextInputFieldRenderer renderer = inputFieldRendererFactory.createRenderer(fieldType, rendererOptions);
+        // then
+        assertFalse(renderer.renderInTwoColumns());
+    }
+    
+    @Test
     public void createRenderer__withActionButton() {
         // given
         JsonObject rendererOptions = TestJsonCreator.stringAsJsonElement(

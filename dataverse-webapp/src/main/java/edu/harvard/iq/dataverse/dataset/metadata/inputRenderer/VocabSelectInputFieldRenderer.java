@@ -4,21 +4,22 @@ import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 
 public class VocabSelectInputFieldRenderer implements InputFieldRenderer {
 
+    private boolean renderInTwoColumns = true;
+
     /**
      * Sort vocabulary values list in localized labels order 
      */
-	private boolean sortByLocalisedStringsOrder = false;
+    private boolean sortByLocalisedStringsOrder = false;
 
-	public VocabSelectInputFieldRenderer() {
-	}
-	
-	
-	public VocabSelectInputFieldRenderer(boolean sortByLocalisedStringsOrder) {
-		this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
-	}
+    // -------------------- CONSTRUCTORS --------------------
 
-	// -------------------- GETTERS --------------------
-    
+    public VocabSelectInputFieldRenderer(boolean renderInTwoColumns, boolean sortByLocalisedStringsOrder) {
+        this.renderInTwoColumns = renderInTwoColumns;
+        this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
+    }
+
+    // -------------------- GETTERS --------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -32,11 +33,11 @@ public class VocabSelectInputFieldRenderer implements InputFieldRenderer {
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation always returns {@code true}
+     * This implementation returns value provided in constructor
      */
     @Override
     public boolean renderInTwoColumns() {
-        return true;
+        return renderInTwoColumns;
     }
 
     /**
@@ -50,6 +51,6 @@ public class VocabSelectInputFieldRenderer implements InputFieldRenderer {
     }
 
     public boolean isSortByLocalisedStringsOrder() {
-    	return sortByLocalisedStringsOrder;
+        return sortByLocalisedStringsOrder;
     }
 }

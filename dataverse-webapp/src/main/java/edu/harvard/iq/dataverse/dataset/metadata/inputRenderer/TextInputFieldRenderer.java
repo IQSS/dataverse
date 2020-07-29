@@ -10,6 +10,7 @@ import java.util.List;
 
 public class TextInputFieldRenderer implements InputFieldRenderer {
 
+    private boolean renderInTwoColumns;
     private FieldButtonActionHandler actionButtonHandler;
     private List<MetadataOperationSource> enableActionForOperations;
     private String actionButtonTextKey;
@@ -20,13 +21,15 @@ public class TextInputFieldRenderer implements InputFieldRenderer {
     /**
      * Constructs simple renderer (without additional action button)
      */
-    public TextInputFieldRenderer() {
+    public TextInputFieldRenderer(boolean renderInTwoColumns) {
+        this.renderInTwoColumns = renderInTwoColumns;
     }
 
     /**
      * Constructs renderer with support for action button.
      */
-    public TextInputFieldRenderer(FieldButtonActionHandler actionButtonHandler, String actionButtonTextKey, List<MetadataOperationSource> enableActionForOperations) {
+    public TextInputFieldRenderer(boolean renderInTwoColumns, FieldButtonActionHandler actionButtonHandler, String actionButtonTextKey, List<MetadataOperationSource> enableActionForOperations) {
+        this.renderInTwoColumns = renderInTwoColumns;
         this.actionButtonHandler = actionButtonHandler;
         this.enableActionForOperations = enableActionForOperations;
         this.actionButtonTextKey = actionButtonTextKey;
@@ -47,11 +50,11 @@ public class TextInputFieldRenderer implements InputFieldRenderer {
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation always returns {@code true}
+     * This implementation returns value provided in constructor
      */
     @Override
     public boolean renderInTwoColumns() {
-        return true;
+        return renderInTwoColumns;
     }
 
     /**

@@ -32,7 +32,8 @@ public class VocabSelectInputFieldRendererFactory implements InputFieldRendererF
         VocabularyInputRendererOptions rendererOptions = Try.of(() -> new Gson().fromJson(jsonOptions, VocabularyInputRendererOptions.class))
                 .getOrElseThrow((e) -> new InputRendererInvalidConfigException("Invalid syntax of input renderer options " + jsonOptions + ")", e));
         
-        return new VocabSelectInputFieldRenderer(rendererOptions.isSortByLocalisedStringsOrder());
+        return new VocabSelectInputFieldRenderer(rendererOptions.isRenderInTwoColumns(),
+                rendererOptions.isSortByLocalisedStringsOrder());
     }
 
     // -------------------- INNER CLASSES --------------------
@@ -42,18 +43,26 @@ public class VocabSelectInputFieldRendererFactory implements InputFieldRendererF
      */
     public static class VocabularyInputRendererOptions {
         private boolean sortByLocalisedStringsOrder = false;
-        
+        private boolean renderInTwoColumns = true;
+
         // -------------------- GETTERS --------------------
 
         public boolean isSortByLocalisedStringsOrder() {
-			return sortByLocalisedStringsOrder;
-		}
-        
-        
+            return sortByLocalisedStringsOrder;
+        }
+
+        public boolean isRenderInTwoColumns() {
+            return renderInTwoColumns;
+        }
+
         // -------------------- SETTERS --------------------
-        
-		public void setBySortLocalisedStringsOrder(boolean sortByLocalisedStringsOrder) {
-			this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
-		}
+
+        public void setBySortLocalisedStringsOrder(boolean sortByLocalisedStringsOrder) {
+            this.sortByLocalisedStringsOrder = sortByLocalisedStringsOrder;
+        }
+
+        public void setRenderInTwoColumns(boolean renderInTwoColumns) {
+            this.renderInTwoColumns = renderInTwoColumns;
+        }
     }
 }
