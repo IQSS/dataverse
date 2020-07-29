@@ -22,10 +22,6 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 
-import java.util.Arrays;
-
-import static java.util.stream.Collectors.joining;
-
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
  * but may also result in a workflow being started and pending on some external 
