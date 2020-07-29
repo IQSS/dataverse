@@ -1,6 +1,6 @@
 ## Dataverse installations using Datacite: upgrade action required.
 
-For installations that are using Datacite, Dataverse v5.0 introduces a change in the process of registering the Global Identifier (DOI) for a dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using Datacite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). 
+For installations that are using Datacite, Dataverse v5.0 introduces a change in the process of registering the Persistent Identifier (DOI) for a dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using Datacite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). 
 
 This approach makes the process of publishing datasets simpler and less error-prone. One drawback is that a dataset cannot be published until the DOI has been reserved. Specifically, if your installation uses Datacite, the moment it is upgraded to v5.0, all the pre-existing unpublished drafts will become "unpublishable", until you reserve the DOIs as described below. So it is important to do that immediately after the upgrade, by using the following APIs:
 
