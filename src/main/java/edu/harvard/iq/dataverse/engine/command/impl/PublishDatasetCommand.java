@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+
+import java.util.Arrays;
+
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -75,7 +78,17 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
         if (reservingPidsSupported) {
             if (theDataset.getGlobalIdCreateTime() == null) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+            	//Backward compatibility and recovery from PID provider outage - if we should have reserved at creation time but didn't, try here as well to keep moving. If we still can't reserve (service down, connflict, etc.) then bail
+            	try {
+                    String returnString = idServiceBean.createIdentifier(this.getDataset());
+                    logger.fine(returnString);
+                    // No errors caught, so mark PID as reserved.
+                    getDataset().setGlobalIdCreateTime(new Date());
+                    // Don't setIdentifierRegistered(true) yet (that means identifier has been made public - occurs in FinalizeDatasetPublicationCommand)
+                } catch (Throwable ex) {
+                    logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                }
             }
         }
 
