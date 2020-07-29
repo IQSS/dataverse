@@ -121,9 +121,11 @@ documentation
 for details. Currently Dataverse ``>=4.8.x`` is required for the import to work. If you need
 support for an earlier version of Dataverse, please get in touch with the Renku team at
 `Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
-The UI implementation of the import is in progress and will be
-completed in Q12020.
 
+Avgidea Data Search
++++++++++++++++++++
+
+Researchers can use a Google Sheets add-on to search for Dataverse CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
 Discoverability
 ---------------
