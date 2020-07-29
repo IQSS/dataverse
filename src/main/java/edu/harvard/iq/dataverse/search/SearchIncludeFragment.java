@@ -272,9 +272,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
         filterQueries = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
-                filterQueries.add(fq);
+                if (!isfilterQueryAlreadyInURL(fq)) {
+                    filterQueries.add(fq);
+                }
             }
-        }
+        } 
 
         SolrQueryResponse solrQueryResponse = null;
 
@@ -508,6 +510,23 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+    
+    private Map<String, Integer> fqMap = null;
+
+    private boolean isfilterQueryAlreadyInURL(String fq) {
+        if (fqMap == null) {
+            fqMap = new HashMap<>();
+            fqMap.put(fq, 1);
+            return false;
+        }
+
+        if (fqMap.get(fq) != null) {
+            return true;
+        } else {
+            fqMap.put(fq, 1);
+            return false;
+        }
     }
 
   
