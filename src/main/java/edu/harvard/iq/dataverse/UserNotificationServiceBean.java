@@ -86,7 +86,7 @@ public class UserNotificationServiceBean {
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void sendNotificationInTransaction(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+    public void sendNotificationInNewTransaction(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
     
