@@ -879,43 +879,37 @@ public class EditDatafilesPage implements java.io.Serializable {
         */
 
         for (DataFile remove : uploadedInThisProcess) {
-            if(remove.isMarkedAsDuplicate()){               
-               // deleteTempFile();
+            if (remove.isMarkedAsDuplicate()) {
                 FileUtil.deleteTempFile(remove, dataset, ingestService);
             }
         }
         
         Iterator<DataFile> dfItr = newFiles.iterator();
-        
-        while (dfItr.hasNext()){
+        int countRemoved = 0;
+        while (dfItr.hasNext()) {
             DataFile test = dfItr.next();
-            if(test.isMarkedAsDuplicate()){
+            if (test.isMarkedAsDuplicate()) {
+                countRemoved++;
                 dfItr.remove();
             }
         }
-        
+
         Iterator<FileMetadata> fmItr = fileMetadatas.iterator();
-        
-        String fileNames = null;
+
         while (fmItr.hasNext()) {
             FileMetadata test = fmItr.next();
             if (test.isMarkedAsDuplicate()) {
-                if (fileNames == null) {
-                    fileNames = test.getLabel();
-                } else {
-                    fileNames = fileNames.concat(", " + test.getLabel());
-                }
                 fmItr.remove();
             }
         }
 
-        if (fileNames != null) {
-            String successMessage = "";
-            if(fileNames.contains(", ")){
-                    successMessage = getBundleString("file.deleted.upload.success.multiple");
-                } else {
-                    successMessage = getBundleString("file.deleted.upload.success.single");
-                }
+        if (countRemoved > 0) {
+            String successMessage;
+            if (countRemoved > 1) {
+                successMessage = getBundleString("file.deleted.upload.success.multiple");
+            } else {
+                successMessage = getBundleString("file.deleted.upload.success.single");
+            }
             logger.fine(successMessage);
             JsfHelper.addFlashMessage(successMessage);
         }
