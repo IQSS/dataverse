@@ -24,5 +24,4 @@ Scripted, the whole process would look as follows (adjust as needed):
 
 If you have a large number of unpublished drafts in the database, reserving them one by one may take some time. So if you want to be extra nice to your users, you may warn them ahead of time that some may have trouble publishing their drafts immediately after the upgrade. 
 
-Going forward, once all the DOIs have been reserved for the legacy drafts, some newly-created datasets may still end up with unreserved DOIs. (For example, if Datacite service was unavailable at the time of the datast creation; we don't expect it to happen too often, but it is not impossible). To address this preemptively we recommend that you set up a cronjob to run the script above (perhaps with some extra diagnostics added) weekly or even nightly. 
-
+Going forward, once all the DOIs have been reserved for the legacy drafts, some newly-created datasets may still end up with unreserved DOIs. (For example, if Datacite service was unavailable at the time of the dataset creation; we don't expect it to happen too often, but it is not impossible). To address this preemptively we recommend that you set up a cronjob to run the script above (perhaps with some extra diagnostics added) weekly or even nightly. 
