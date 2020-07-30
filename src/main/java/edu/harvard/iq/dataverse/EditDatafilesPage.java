@@ -2300,7 +2300,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //allowing the user to decide whether to delete
                 //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
-                dataFile.getFileMetadata().setMarkedAsDuplicate(true);
                 dataFile.setDuplicateFilename(inLineMessage);
 
             } else if (isFileAlreadyUploaded(dataFile)) {
@@ -2317,9 +2316,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 //now we are marking as duplicate and
                 //allowing the user to decide whether to delete
-                //   deleteTempFile(dataFile);
                 dataFile.setMarkedAsDuplicate(true);
-                dataFile.getFileMetadata().setMarkedAsDuplicate(true);
                 List<String> args = Arrays.asList(existingFile.getDisplayName());
                 String inLineMessage = BundleUtil.getStringFromBundle("dataset.file.inline.message", args);
                 dataFile.setDuplicateFilename(inLineMessage);
