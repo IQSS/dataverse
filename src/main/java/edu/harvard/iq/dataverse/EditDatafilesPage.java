@@ -142,6 +142,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
     private List<DataFile> uploadedInThisProcess = new ArrayList<>();
+    
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     private String dropBoxSelection = "";
@@ -869,62 +870,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void deleteFilesCompleted(){
         
     }
-    
-    public void deleteMarkedAsDuplicateFiles() {
-        
-        /*
-        If a file is uploaded that is already in the current dataset version
-        or had already been uploaded in this session the user will be prompted with 
-        a popup. if they press delete the files marked as duplicate are removed here
-        */
-
-        for (DataFile remove : uploadedInThisProcess) {
-            if (remove.isMarkedAsDuplicate()) {
-                FileUtil.deleteTempFile(remove, dataset, ingestService);
-            }
-        }
-        
-        Iterator<DataFile> dfItr = newFiles.iterator();
-        int countRemoved = 0;
-        while (dfItr.hasNext()) {
-            DataFile test = dfItr.next();
-            if (test.isMarkedAsDuplicate()) {
-                countRemoved++;
-                dfItr.remove();
-            }
-        }
-
-        Iterator<FileMetadata> fmItr = fileMetadatas.iterator();
-
-        while (fmItr.hasNext()) {
-            FileMetadata test = fmItr.next();
-            if (test.isMarkedAsDuplicate()) {
-                fmItr.remove();
-            }
-        }
-
-        if (countRemoved > 0) {
-            String successMessage;
-            if (countRemoved > 1) {
-                successMessage = getBundleString("file.deleted.upload.success.multiple");
-            } else {
-                successMessage = getBundleString("file.deleted.upload.success.single");
-            }
-            logger.fine(successMessage);
-            JsfHelper.addFlashMessage(successMessage);
-        }
-        
-        if (isFileReplaceOperation()){
-            try {
-                deleteReplacementFile();
-            } catch (FileReplaceException ex) {
-                Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            return;
-        }
-        
-    }
-        
+      
     public void deleteFiles() {
         logger.fine("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()) {
@@ -934,6 +880,20 @@ public class EditDatafilesPage implements java.io.Serializable {
                 Logger.getLogger(EditDatafilesPage.class.getName()).log(Level.SEVERE, null, ex);
             }
             return;
+        }
+
+        /*
+        If selected files are empty it means that we are dealing 
+        with a duplicate files delete situation
+        so we are adding the marked as dup files as selected
+        and moving on accordingly.
+        */
+        if(this.selectedFiles.isEmpty()){
+            for(DataFile df : newFiles ){
+                if (df.isMarkedAsDuplicate()){
+                    this.selectedFiles.add(df.getFileMetadata());
+                }
+            }
         }
 
         String fileNames = null;
@@ -1002,13 +962,17 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         if (fileNames != null) {
             String successMessage;
-            if (fileNames.contains(", ")) {
-                successMessage = getBundleString("file.deleted.upload.success.multiple");
+            if (mode == FileEditMode.UPLOAD) {
+                if (fileNames.contains(", ")) {
+                    successMessage = getBundleString("file.deleted.upload.success.multiple");
+                } else {
+                    successMessage = getBundleString("file.deleted.upload.success.single");
+                }
             } else {
-                successMessage = getBundleString("file.deleted.upload.success.single");
+                successMessage = getBundleString("file.deleted.success");
+                successMessage = successMessage.replace("{0}", fileNames);
             }
             logger.fine(successMessage);
-
             JsfHelper.addFlashMessage(successMessage);
         }
     }
@@ -1798,6 +1762,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             newFiles.add(dataFile);
         }
         
+        
        
         if(uploadInProgress.isTrue()) {
             uploadedFiles.clear();
@@ -1838,6 +1803,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (isFileReplaceOperation() && !fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileErrorFound() && fileReplacePageHelper.getAddReplaceFileHelper().isDuplicateFileWarningFound()) {
             setWarningMessageForAlreadyExistsPopUp(fileReplacePageHelper.getAddReplaceFileHelper().getDuplicateFileWarningString());
             setHeaderForAlreadyExistsPopUp();
+            setLabelForDeleteFilesPopup();
             PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
             PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
         }
@@ -2015,6 +1981,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uploadInProgress.isFalse()) {
             uploadInProgress.setValue(true);
         }
+                
+        //resetting marked as dup in case there are multiple uploads 
+        //we only want to delete as dupes those that we uploaded in this 
+        //session
+        
+        newFiles.forEach((df) -> {
+            df.setMarkedAsDuplicate(false);
+        });
         
         if (event == null){
             throw new NullPointerException("event cannot be null");
