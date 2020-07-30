@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.Metric;
 import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -477,7 +478,7 @@ public class MetricsServiceBean implements Serializable {
         try {
             List<Object[]> results = query.getResultList();
             for(Object[] result : results) {
-                JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (long)result[2]).build();
+                JsonObject stats= Json.createObjectBuilder().add("Counts", (BigDecimal)result[1]).add("Size", (long)result[2]).build();
                 job.add((String)result[0], stats);
             }
             
