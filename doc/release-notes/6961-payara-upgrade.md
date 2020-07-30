@@ -1,6 +1,8 @@
 Upgrade Dataverse from Glassfish 4.1 to Payara 5
 ================================================
 
+The instruction below describes the upgrade procedure based on moving an existing glassfish4 domain directory under Payara. We recommend this method, instead of setting up a brand-new Payara domain using the installer because it appears to be the easiset way to recreate your current configuration and preserve all your data. 
+
 Download Payara, v5.2020.2 as of this writing:
 
 	# curl -L -O https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip
@@ -19,10 +21,10 @@ Move payara5/glassfish/domains/domain1 out of the way
 
 	# sudo mv /usr/local/payara5/glassfish/domains/domain1 /usr/local/payara5/glassfish/domains/domain1.orig
 
-Undeploy the Dataverse web application
+Undeploy the Dataverse web application (if deployed; version 4.20 is assumed in the example below)
 
 	# sudo /usr/local/glassfish4/bin/asadmin list-applications
-	# sudo /usr/local/glassfish4/bin/asadmin undeploy dataverse
+	# sudo /usr/local/glassfish4/bin/asadmin undeploy dataverse-4.20
 
 Stop Glassfish; copy domain1 to Payara
 
@@ -60,8 +62,10 @@ In domain1/config/jhove.conf, change the hard-coded /usr/local/glassfish4 path, 
 
 (Optional): If you renamed your service account from glassfish to payara or appserver, update the ownership permissions:
 
-	# sudo chown -R appserver /usr/local/payara5/glassfish/domains/domain1
-	# sudo chown -R appserver /usr/local/payara5/glassfish/lib
+	# sudo chown -R payara /usr/local/payara5/glassfish/domains/domain1
+	# sudo chown -R payara /usr/local/payara5/glassfish/lib
+	
+You will also need to check that the new user has write permission on the files directory, if they are located outside the old Glassfish domain. And/or make sure the new user account has the correct AWS credentials, if you are using S3 for storage. 
 
 Finally, start Payara:
 
@@ -75,4 +79,4 @@ Then restart Payara:
 
 	# sudo -u payara /usr/local/payara5/bin/asadmin stop-domain
 	# sudo -u payara /usr/local/payara5/bin/asadmin start-domain
-
+ 
