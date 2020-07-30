@@ -555,7 +555,7 @@
             </p>
         <div class="button-block">
             <p:commandButton  styleClass="btn btn-default" value="#{EditDatafilesPage.labelForDeleteFilesPopup}" onclick="PF('fileAlreadyExistsPopup').hide()" oncomplete="uploadWidgetDropMsg();"
-                              action="#{EditDatafilesPage.deleteFiles()}"
+                              action="#{EditDatafilesPage.deleteDuplicateFiles()}"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage,@([id$=filesButtons])"/>
             <button class="btn btn-default" onclick="PF('fileAlreadyExistsPopup').hide();" type="button">
                 #{bundle.continue}

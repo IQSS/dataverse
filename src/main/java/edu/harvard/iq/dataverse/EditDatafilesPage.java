@@ -870,8 +870,23 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void deleteFilesCompleted(){
         
     }
+    
+    public void deleteFiles(){        
+        deleteFiles(this.selectedFiles);
+    }
+    
+    public void deleteDuplicateFiles(){
+        List<FileMetadata> filesForDelete = new ArrayList();
+        for(DataFile df : newFiles ){
+                if (df.isMarkedAsDuplicate()){
+                    filesForDelete.add(df.getFileMetadata());
+                }
+            }
+        deleteFiles(filesForDelete);
+    }
+    
       
-    public void deleteFiles() {
+    private void deleteFiles(List<FileMetadata> filesForDelete) {
         logger.fine("entering bulk file delete (EditDataFilesPage)");
         if (isFileReplaceOperation()) {
             try {
@@ -888,16 +903,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         so we are adding the marked as dup files as selected
         and moving on accordingly.
         */
-        if(this.selectedFiles.isEmpty()){
-            for(DataFile df : newFiles ){
-                if (df.isMarkedAsDuplicate()){
-                    this.selectedFiles.add(df.getFileMetadata());
-                }
-            }
-        }
 
         String fileNames = null;
-        for (FileMetadata fmd : this.getSelectedFiles()) {
+        for (FileMetadata fmd : filesForDelete) {
             // collect the names of the files, 
             // to show in the success message:
             if (fileNames == null) {
@@ -907,7 +915,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
-        for (FileMetadata markedForDelete : this.getSelectedFiles()) {
+        for (FileMetadata markedForDelete : filesForDelete) {
             logger.fine("delete requested on file " + markedForDelete.getLabel());
             logger.fine("file metadata id: " + markedForDelete.getId());
             logger.fine("datafile id: " + markedForDelete.getDataFile().getId());
@@ -955,7 +963,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
                 // should be allowed/the checksum list is part of the state to clean-up
-                checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
+                if(checksumMapNew != null && markedForDelete.getDataFile().getChecksumValue() != null)
+                    checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
 
             }
         }
