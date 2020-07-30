@@ -468,7 +468,7 @@ public class MetricsServiceBean implements Serializable {
     public JsonObjectBuilder fileContents(Dataverse d) {
        // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
         
-        Query query = em.createQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
+        Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
                 + " FROM DataFile df, DvObject ob"
                 + " where ob.id = df.id and "
                 + " ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") 
