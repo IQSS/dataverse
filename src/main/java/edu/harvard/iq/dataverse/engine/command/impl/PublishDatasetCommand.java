@@ -68,26 +68,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         Dataset theDataset = getDataset();
 
-        // If PID can be reserved, only allow publishing if it is.
-        String protocol = getDataset().getProtocol();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
-        if (reservingPidsSupported) {
-            if (theDataset.getGlobalIdCreateTime() == null) {
-            	//Backward compatibility and recovery from PID provider outage - if we should have reserved at creation time but didn't, try here as well to keep moving. If we still can't reserve (service down, connflict, etc.) then bail
-            	try {
-                    String returnString = idServiceBean.createIdentifier(this.getDataset());
-                    logger.fine(returnString);
-                    // No errors caught, so mark PID as reserved.
-                    getDataset().setGlobalIdCreateTime(new Date());
-                    // Don't setIdentifierRegistered(true) yet (that means identifier has been made public - occurs in FinalizeDatasetPublicationCommand)
-                } catch (Throwable ex) {
-                    logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
-                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
-                }
-            }
-        }
-
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {

@@ -83,9 +83,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
-        
+
+		/*
+		 * Try to register the dataset identifier (making it public). The
+		 * registerExternalIdentifier command will also create the identifier if needed:
+		 * - In the case where the PID provider doesn't support reservations, in which
+		 *   case it will retry if collisions are found 
+		 * - In the case where the PID Provider
+		 *   does support reservations, but the Dataset's PID hasn't been reserved (was
+		 *   created prior to v5.0 and admin hasn't run reserve API, or PID Provider was
+		 *   offline at creation time), in which case no retries will be attempted.
+		 */
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(getDataset().getProtocol(), ctxt);
         if ( theDataset.getGlobalIdCreateTime() == null ) {
-            registerExternalIdentifier(theDataset, ctxt);
+            registerExternalIdentifier(theDataset, ctxt, idServiceBean.registerWhenPublished());
         }
                 
         // is this the first publication of the dataset?
