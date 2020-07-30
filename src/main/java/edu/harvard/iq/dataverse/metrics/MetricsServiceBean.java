@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.json.Json;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -467,8 +468,8 @@ public class MetricsServiceBean implements Serializable {
     public JsonObjectBuilder fileContents(Dataverse d) {
        // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
         
-        Query query = em.createQuery("SELECT DISTINCT df.contenttype, sum(df.filesize) "
-                + " FROM datafile df, dvObject ob"
+        Query query = em.createQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
+                + " FROM DataFile df, DvObject ob"
                 + " where ob.id = df.id and "
                 + " ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") 
                 + ") group by df.contenttype;");
@@ -476,7 +477,8 @@ public class MetricsServiceBean implements Serializable {
         try {
             List<Object[]> results = query.getResultList();
             for(Object[] result : results) {
-                job.add((String)result[0],  (long)result[1]);
+                JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (long)result[2]).build();
+                job.add((String)result[0], stats);
             }
             
         } catch (javax.persistence.NoResultException nr) {
