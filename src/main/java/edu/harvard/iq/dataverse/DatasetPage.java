@@ -2128,6 +2128,15 @@ public class DatasetPage implements java.io.Serializable {
                     BundleUtil.getStringFromBundle("dataset.locked.ingest.message"));
             lockedDueToIngestVar = true;
         }
+
+        // With DataCite, we try to reserve the DOI when the dataset is created. Sometimes this
+        // fails because DataCite is down. We show the message below to set expectations that the
+        // "Publish" button won't work until the DOI has been reserved using the "Reserve PID" API.
+        if (settingsWrapper.isDataCiteInstallation() && dataset.getGlobalIdCreateTime() == null && editMode != EditMode.CREATE) {
+            JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message"),
+                    BundleUtil.getStringFromBundle("dataset.locked.pidNotReserved.message.details"));
+        }
+
     }
     
     private Boolean fileTreeViewRequired = null; 
