@@ -2111,7 +2111,7 @@ See :ref:`i18n` for a curl example and related settings.
 +++++++++++++++++++++++++++++
 
 ``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role).
-This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``::InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
+This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``:InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
 
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or
