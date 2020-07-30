@@ -470,7 +470,7 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createQuery("SELECT DISTINCT df.contenttype, sum(df.filesize) "
                 + " FROM datafile df, dvObject ob"
                 + " where ob.id = df.id and "
-                + " dob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") 
+                + " ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") 
                 + ") group by df.contenttype;");
         JsonObjectBuilder job = Json.createObjectBuilder();
         try {
