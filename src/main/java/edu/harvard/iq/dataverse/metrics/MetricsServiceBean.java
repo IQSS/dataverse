@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
 import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -9,12 +11,15 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -457,6 +462,62 @@ public class MetricsServiceBean implements Serializable {
             metric = (Metric) query.getResultList().get(0);
         }
         return metric;
+    }
+
+    public JsonObjectBuilder fileContents(Dataverse d) {
+       // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
+        
+        Query query = em.createQuery("SELECT DISTINCT df.contenttype, sum(df.filesize) "
+                + " FROM datafile df, dvObject ob"
+                + " where ob.id = df.id and "
+                + " dob.owner_id in" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset"));
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        try {
+            List<Object[]> results = query.getResultList();
+            for(Object[] result : results) {
+                job.add((String)result[0],  (long)result[1]);
+            }
+            
+        } catch (javax.persistence.NoResultException nr) {
+            //do nothing
+        } 
+        return job;
+        
+    }
+    
+  //Modified from DANS https://github.com/DANS-KNAW/dataverse/blob/dans-develop/src/main/java/edu/harvard/iq/dataverse/metrics/MetricsDansServiceBean.java
+    
+    private String convertListIdsToStringCommasparateIds(long dvId, String dtype) {
+        String[] dvObjectIds = Arrays.stream(getChildrenIdsRecursively(dvId, dtype, null).stream().mapToInt(i->i).toArray())
+                .mapToObj(String::valueOf).toArray(String[]::new);
+        return String.join(",", dvObjectIds);
+    }
+
+    
+    private List<Integer> getChildrenIdsRecursively(Long dvId, String dtype, DatasetVersion.VersionState versionState) {
+        String sql =  "WITH RECURSIVE querytree AS (\n"
+                + "     SELECT id, dtype, owner_id, publicationdate\n"
+                + "     FROM dvobject\n"
+                + "     WHERE id = " + dvId + "\n"
+                + "     UNION ALL\n"
+                + "     SELECT e.id, e.dtype, e.owner_id, e.publicationdate\n"
+                + "     FROM dvobject e\n"
+                + "     INNER JOIN querytree qtree ON qtree.id = e.owner_id\n"
+                + ")\n"
+                + "SELECT id\n"
+                + "FROM querytree\n"
+                + "where dtype='" + dtype + "' and owner_id is not null\n";
+        if (versionState != null ) {
+            switch (versionState) {
+                case RELEASED: sql += "and publicationdate is not null\n";
+                    break;
+                case DRAFT:sql += "and publicationdate is null\n";
+                    break;
+            }
+        } else sql+=";";
+        
+        logger.fine("query  - (" + dvId + ") - getChildrenIdsRecursivelly: " + sql);
+        return em.createNativeQuery(sql).getResultList();
     }
 
 }

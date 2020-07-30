@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import java.util.Arrays;
@@ -12,6 +13,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -416,6 +419,34 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
+    
+    @GET
+    @Path("/dataverse/{alias}/files")
+    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("alias") String alias) {
+                
+        String metricName = "fileContents";
+        try {
+            Dataverse d = dataverseSvc.findByAlias(alias);
+            if(d==null) {
+                return error(NOT_FOUND, "No Dataverse with alias: " + alias);
+            }
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, alias, null);
+
+            if (null == jsonString) { //run query and save
+                JsonObjectBuilder jsonObjBuilder =  metricsSvc.fileContents(d);
+                jsonString = jsonObjBuilder.build().toString();
+                metricsSvc.save(new Metric(metricName, alias, null, jsonString));
+            }
+
+            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+
+        } catch (Exception ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+    }
+        
+    
+    
 
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
         for(String theKey : uriDetails.getQueryParameters().keySet()) {
