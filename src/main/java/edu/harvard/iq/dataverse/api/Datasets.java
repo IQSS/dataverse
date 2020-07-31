@@ -95,6 +95,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -1942,7 +1943,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
             if (yyyymm != null) {
                 // We add "-01" because we store "2018-05-01" rather than "2018-05" in the "monthyear" column.
                 // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
-                monthYear = yyyymm + "-01";
+                monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
@@ -2023,6 +2024,9 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
             return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (Exception e) {
+            //bad date - caught in sanitize call
+            return error(BAD_REQUEST, e.getMessage());
         }
     }
 
