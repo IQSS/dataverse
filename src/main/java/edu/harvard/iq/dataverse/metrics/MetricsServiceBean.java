@@ -550,7 +550,7 @@ public class MetricsServiceBean implements Serializable {
             }
             metric = (Metric) query.getResultList().get(0);
         }
-        logger.fine("returning: " + metric==null? "Null" : metric.getValueJson());
+        logger.fine("returning: " + ((metric==null) ? "Null" : metric.getValueJson()));
         return metric;
     }
 
