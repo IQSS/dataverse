@@ -234,7 +234,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void search(boolean onlyDataRelatedToMe) {
         logger.fine("search called");
-        
+
         // wildcard/browse (*) unless user supplies a query
         String queryToPassToSolr = "*";
         if (this.query == null) {
@@ -276,7 +276,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     filterQueries.add(fq);
                 }
             }
-        } 
+        }
 
         SolrQueryResponse solrQueryResponse = null;
 
@@ -318,8 +318,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
         }
         filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);
-        
+        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);       
         if (!isfilterQueryAlreadyInMap(typeFilterQuery))
             filterQueriesFinal.add(typeFilterQuery);
         
@@ -517,6 +516,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private Map<String, Integer> fqMap = null;
 
     private boolean isfilterQueryAlreadyInMap(String fq) {
+        
         if (fqMap == null) {
             fqMap = new HashMap<>();
             fqMap.put(fq, 1);
@@ -529,6 +529,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             fqMap.put(fq, 1);
             return false;
         }
+        
     }
 
   
