@@ -1,8 +1,12 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.MetricType;
+
 import static edu.harvard.iq.dataverse.metrics.MetricsUtil.*;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -370,7 +375,19 @@ public class MetricsServiceBean implements Serializable {
          return job;
          
      }
-
+    public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
+        DatasetMetrics dsm = null;
+        String queryStr = "SELECT sum(" + metricType.toString() +") FROM DatasetMetrics\n" 
+                + d==null ? "" : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ")\n"
+                + " and date_trunc('month', monthYear) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                + " and countryCode = '" + country + "';";
+        Query query = em.createNativeQuery(queryStr);
+        BigDecimal sum = (BigDecimal) query.getSingleResult();
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add(metricType.toString(), sum.longValue());
+        return job;
+    }
+    
     
     /** Helper functions for metric caching */
     

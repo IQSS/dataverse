@@ -1,10 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
+import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+
 import java.util.Arrays;
+
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -13,6 +22,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
+import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
@@ -64,16 +75,15 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         //TODO: Eventually the catch in each endpoint should be more specific
         //          and more general errors should be logged.
@@ -99,16 +109,15 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.dataversesPastDays(days, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
@@ -129,15 +138,14 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesByCategory";
 
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d);
+            JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(d));
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, d, jsonArrayString));
+            if (null == jsonArray) { //run query and save
+                jsonArray = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(d)).build();
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
+            return ok(jsonArray);
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
@@ -157,15 +165,14 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesBySubject";
         
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d);
+            JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject(d));
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, d, jsonArrayString));
+            if (null == jsonArray) { //run query and save
+                jsonArray = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject(d)).build();
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
+            return ok(jsonArray);
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
@@ -203,16 +210,15 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.datasetsToMonth(sanitizedyyyymm, validDataLocation, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
@@ -237,16 +243,15 @@ public class Metrics extends AbstractApiBean {
         }
         try {
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.datasetsPastDays(days, validDataLocation, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
@@ -275,15 +280,14 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d);
+            JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d));
             
-            if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation, d));
-                jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonArrayString));
+            if (null == jsonArray) { //run query and save
+                jsonArray = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation, d)).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonArray.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
+            return ok(jsonArray);
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
@@ -320,16 +324,15 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.filesToMonth(sanitizedyyyymm, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
@@ -352,16 +355,15 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.filesPastDays(days, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
@@ -373,8 +375,6 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("downloads")
     public Response getDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
-
         return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
     
@@ -401,16 +401,15 @@ public class Metrics extends AbstractApiBean {
         try {
             
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
         } catch (IllegalArgumentException ia) {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         } catch (Exception ex) {
@@ -435,16 +434,15 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
-            if (null == jsonString) { //run query and save
+            if (null == jsonObj) { //run query and save
                 Long count = metricsSvc.downloadsPastDays(days, d);
-                JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
+                jsonObj = MetricsUtil.countToJson(count).build();
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonObj.toString()));
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
@@ -454,26 +452,75 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("/files/byType")
     public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getFilesInDataverse(uriInfo,null, parentAlias);
+    }        
+
+    @GET
+    @Path("/files/byType/toMonth/{yyyymm}")
+    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
                 
         String metricName = "filesByType";
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, parentAlias, null, d);
-
-            if (null == jsonString) { //run query and save
-                JsonObjectBuilder jsonObjBuilder =  metricsSvc.fileContents(d);
-                jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, parentAlias, null, d, jsonString));
+            String sanitizedyyyymm = null;
+            if (yyyymm != null) {
+                sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             }
 
-            return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+            if (null == jsonObj) { // run query and save
+                jsonObj = metricsSvc.fileContents(d).build();
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonObj.toString()));
+            }
+
+            return ok(jsonObj);
 
         } catch (Exception ex) {
             return error(BAD_REQUEST, ex.getLocalizedMessage());
         }
     }
         
+    @GET
+    @Path("makeDataCount/{metric}")
+    public Response getMakeDataCountMetricCurrentMonth(@PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+        String nullCurrentMonth = null;
+        return getMakeDataCountMetric(metricSupplied, nullCurrentMonth, country, parentAlias);
+    }
     
+    @GET
+    @Path("makeDataCount/{metric}/toMonth/{yyyymm}")
+    public Response getMakeDataCountMetric(@PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
+            MakeDataCountUtil.MetricType metricType = null;
+            try {
+                metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
+            } catch (IllegalArgumentException ex) {
+                return error(Response.Status.BAD_REQUEST, ex.getMessage());
+            }
+            String metricName = "MDC-" + metricType.toString();
+
+            String sanitizedyyyymm = null;
+            if (yyyymm != null) {
+                sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+            }
+            
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+            if (null == jsonObj) { //run query and save
+                jsonObj =  metricsSvc.getDatasetMetricsByDatasetForDisplay(metricType, sanitizedyyyymm, country, d).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+            }
+
+            return ok(jsonObj);
+        } catch (Exception ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+    }
+
     
 
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
