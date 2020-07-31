@@ -13,6 +13,10 @@ All the other pieces will be downloaded automatically (from the
 either locally, where you're running the script, or on the newly
 created instance.
 
+The script downloads an Ansible config file called `main.yml` which you
+should copy to `main2.yml` and edit to enable "sampledata". This config
+file changes often enough upstream that it's better to make changes locally.
+
 Run the script as follows: 
 
 ```
