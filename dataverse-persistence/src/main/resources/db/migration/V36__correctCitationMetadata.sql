@@ -1,0 +1,1 @@
+UPDATE datasetfieldtype SET displayorder=33, displayOnCreate=TRUE, watermark='http://... or https://...'  WHERE name='publicationURL';
