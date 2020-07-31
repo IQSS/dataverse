@@ -1,7 +1,7 @@
 Upgrade Dataverse from Glassfish 4.1 to Payara 5
 ================================================
 
-The instruction below describes the upgrade procedure based on moving an existing glassfish4 domain directory under Payara. We recommend this method, instead of setting up a brand-new Payara domain using the installer because it appears to be the easiset way to recreate your current configuration and preserve all your data. 
+The instruction below describes the upgrade procedure based on moving an existing glassfish4 domain directory under Payara. We recommend this method, instead of setting up a brand-new Payara domain using the installer because it appears to be the easiest way to recreate your current configuration and preserve all your data. 
 
 Download Payara, v5.2020.2 as of this writing:
 
@@ -60,23 +60,23 @@ Change any full pathnames /usr/local/glassfish4/... to /usr/local/payara5/... or
 
 In domain1/config/jhove.conf, change the hard-coded /usr/local/glassfish4 path, as above.
 
-(Optional): If you renamed your service account from glassfish to payara or appserver, update the ownership permissions:
+(Optional): If you renamed your service account from glassfish to payara or appserver, update the ownership permissions. The IQSS guides recommend a service account of `dataverse`:
 
-	# sudo chown -R payara /usr/local/payara5/glassfish/domains/domain1
-	# sudo chown -R payara /usr/local/payara5/glassfish/lib
+	# sudo chown -R dataverse /usr/local/payara5/glassfish/domains/domain1
+	# sudo chown -R dataverse /usr/local/payara5/glassfish/lib
 	
-You will also need to check that the new user has write permission on the files directory, if they are located outside the old Glassfish domain. And/or make sure the new user account has the correct AWS credentials, if you are using S3 for storage. 
+You will also need to check that the service account has write permission on the files directory, if they are located outside the old Glassfish domain. And/or make sure the service account has the correct AWS credentials, if you are using S3 for storage. 
 
 Finally, start Payara:
 
-	# sudo -u payara /usr/local/payara5/bin/asadmin start-domain
+	# sudo -u dataverse /usr/local/payara5/bin/asadmin start-domain
 
 Deploy the Dataverse 5 warfile:
 
-	# sudo -u payara /usr/local/payara5/bin/asadmin deploy /path/to/dataverse-5.0.war
+	# sudo -u dataverse /usr/local/payara5/bin/asadmin deploy /path/to/dataverse-5.0.war
 
 Then restart Payara:
 
-	# sudo -u payara /usr/local/payara5/bin/asadmin stop-domain
-	# sudo -u payara /usr/local/payara5/bin/asadmin start-domain
+	# sudo -u dataverse /usr/local/payara5/bin/asadmin stop-domain
+	# sudo -u dataverse /usr/local/payara5/bin/asadmin start-domain
  
