@@ -234,7 +234,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     public void search(boolean onlyDataRelatedToMe) {
         logger.fine("search called");
-
+        
         // wildcard/browse (*) unless user supplies a query
         String queryToPassToSolr = "*";
         if (this.query == null) {
@@ -272,7 +272,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         filterQueries = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
-                if (!isfilterQueryAlreadyInURL(fq)) {
+                if (!isfilterQueryAlreadyInMap(fq)) {
                     filterQueries.add(fq);
                 }
             }
@@ -293,6 +293,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
+                if (!isfilterQueryAlreadyInMap(filterDownToSubtree))
                 filterQueriesFinal.add(filterDownToSubtree);
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
@@ -318,7 +319,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
         filterQueriesFinal.addAll(filterQueries);
         filterQueriesFinalAllTypes.addAll(filterQueriesFinal);
-        filterQueriesFinal.add(typeFilterQuery);
+        
+        if (!isfilterQueryAlreadyInMap(typeFilterQuery))
+            filterQueriesFinal.add(typeFilterQuery);
+        
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
@@ -477,9 +481,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     }
                 }
             }
-            
-
-            
+                        
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
             dataversePage.setFilterQueries(filterQueriesFinal);
@@ -514,7 +516,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     
     private Map<String, Integer> fqMap = null;
 
-    private boolean isfilterQueryAlreadyInURL(String fq) {
+    private boolean isfilterQueryAlreadyInMap(String fq) {
         if (fqMap == null) {
             fqMap = new HashMap<>();
             fqMap.put(fq, 1);
