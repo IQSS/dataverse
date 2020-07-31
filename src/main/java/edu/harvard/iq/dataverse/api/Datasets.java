@@ -221,7 +221,7 @@ public class Datasets extends AbstractApiBean {
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
      */
-    private interface DsVersionHandler<T> {
+    public interface DsVersionHandler<T> {
         T handleLatest();
         T handleDraft();
         T handleSpecific( long major, long minor );
@@ -1861,7 +1861,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     
-    private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
+    public static <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
         switch (versionId) {
             case ":latest": return hdl.handleLatest();
