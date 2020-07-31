@@ -49,7 +49,7 @@ public class Metric implements Serializable {
     private String dayString;
 
     @ManyToOne
-    @JoinColumn(nullable=false)
+    @JoinColumn(nullable=true)
     private Dataverse dataverse;
     
     @Temporal(value = TemporalType.TIMESTAMP)
