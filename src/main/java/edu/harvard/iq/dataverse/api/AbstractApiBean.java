@@ -662,6 +662,14 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
+    
+    protected Response ok( JsonObject jo ) {
+        return Response.ok( Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", jo).build() )
+                .type(MediaType.APPLICATION_JSON)
+                .build();    
+    }
 
     protected Response ok( String msg ) {
         return Response.ok().entity(Json.createObjectBuilder()
