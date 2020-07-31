@@ -60,7 +60,7 @@ Change any full pathnames /usr/local/glassfish4/... to /usr/local/payara5/... or
 
 In domain1/config/jhove.conf, change the hard-coded /usr/local/glassfish4 path, as above.
 
-(Optional): If you renamed your service account from glassfish to payara or appserver, update the ownership permissions. The IQSS guides recommend a service account of `dataverse`:
+(Optional): If you renamed your service account from glassfish to payara or appserver, update the ownership permissions. The Installation Guide recommends a service account of `dataverse`:
 
 	# sudo chown -R dataverse /usr/local/payara5/glassfish/domains/domain1
 	# sudo chown -R dataverse /usr/local/payara5/glassfish/lib
