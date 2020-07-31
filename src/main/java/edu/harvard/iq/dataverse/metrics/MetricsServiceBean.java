@@ -539,6 +539,7 @@ public class MetricsServiceBean implements Serializable {
             metric = (Metric) query.getSingleResult();
         } catch (javax.persistence.NoResultException nr) {
             //do nothing
+            logger.fine("No result");
         } catch (NonUniqueResultException nur) {
             //duplicates can happen when a new/requeried metric is called twice and saved twice before one can use the cache
             //this remove all but the 0th index one in that case
@@ -549,6 +550,7 @@ public class MetricsServiceBean implements Serializable {
             }
             metric = (Metric) query.getResultList().get(0);
         }
+        logger.fine("returning: " + metric==null? "Null" : metric.getValueJson());
         return metric;
     }
 

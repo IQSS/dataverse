@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -41,6 +42,7 @@ import javax.ws.rs.core.UriInfo;
  */
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
+    private static final Logger logger = Logger.getLogger(Metrics.class.getName());
 
     /** Dataverses */
     
@@ -323,9 +325,11 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
-
+            
             if (null == jsonObj) { //run query and save
+                logger.fine("Getting filesToMonth : " + sanitizedyyyymm + " dvId=" +d.getId() );
                 Long count = metricsSvc.filesToMonth(sanitizedyyyymm, d);
+                logger.fine("count = " + count);
                 jsonObj = MetricsUtil.countToJson(count).build();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
