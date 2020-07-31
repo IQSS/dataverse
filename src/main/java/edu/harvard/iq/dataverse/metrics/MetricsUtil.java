@@ -129,41 +129,19 @@ public class MetricsUtil {
         return LocalDate.now().format(DateTimeFormatter.ofPattern(MetricsUtil.YEAR_AND_MONTH_PATTERN));
     }
 
-    //Responses need jsonObjectBuilder's to return correct json
-    //Sadly this first requires creating a non-builder object and then populating a builder
-    public static JsonObjectBuilder stringToJsonObjectBuilder(String str) {
+    public static JsonObject stringToJsonObject(String str) {
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonObject jo = jsonReader.readObject();
         jsonReader.close();
 
-        JsonObjectBuilder job = Json.createObjectBuilder();
-
-        for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
-            job.add(entry.getKey(), entry.getValue());
-        }
-
-        return job;
+        return jo;
     }
-
-    //Responses need jsonObjectBuilder's to return correct json
-    //Sadly this first requires creating a non-builder object and then populating a builder
-    public static JsonArrayBuilder stringToJsonArrayBuilder(String str) {
+    
+    public static JsonArray stringToJsonArray(String str) {
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonArray ja = jsonReader.readArray();
         jsonReader.close();
 
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-
-        for (int i = 0; i < ja.size(); i++) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-
-            for (Map.Entry<String, JsonValue> entry : ja.getJsonObject(i).entrySet()) {
-                job.add(entry.getKey(), entry.getValue());
-            }
-
-            jab.add(job);
-        }
-
-        return jab;
+        return ja;
     }
 }
