@@ -149,9 +149,9 @@ public class MetricsServiceBean implements Serializable {
             +   "from datasetversion\n"
             +   "join dataset on dataset.id = datasetversion.dataset_id\n"
             +   "where versionstate='RELEASED' \n"
+            +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n "
             +   "and \n" 
             +   dataLocationLine //be careful about adding more and statements after this line.
-            +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n "
             +   "group by dataset_id \n"
             +") sub_temp"
         );
@@ -358,8 +358,8 @@ public class MetricsServiceBean implements Serializable {
          //ToDo - published only?     
          Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
                  + " FROM DataFile df, DvObject ob"
-                 + " where ob.id = df.id and "
-                 + d==null ? "":" ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") +")\n" 
+                 + " where ob.id = df.id "
+                 + d==null ? "":"and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") +")\n" 
                  + "group by df.contenttype;");
          JsonObjectBuilder job = Json.createObjectBuilder();
          try {
@@ -375,6 +375,31 @@ public class MetricsServiceBean implements Serializable {
          return job;
          
      }
+
+    public JsonObjectBuilder uniqueDatasetDownloads(Dataverse d) {
+
+    //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
+
+        Query query = em.createNativeQuery("select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  "
+                + " FROM guestbookresponse gb, DvObject ob"
+                + " where ob.id = gb.dataset_id "
+                + d==null ? "":" and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") +")\n" 
+                + "group by gb.dataset_id, date_trunc('month',gb.responsetime) order by gb.dataset_id,date_trunc('month', gb.responsetime);");
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        try {
+            List<Object[]> results = query.getResultList();
+            for(Object[] result : results) {
+                JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (BigDecimal)result[2]).build();
+                job.add((String)result[0], stats);
+            }
+            
+        } catch (javax.persistence.NoResultException nr) {
+            //do nothing
+        } 
+        return job;
+        
+    }
+
     public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
         DatasetMetrics dsm = null;
         String queryStr = "SELECT sum(" + metricType.toString() +") FROM DatasetMetrics\n" 
