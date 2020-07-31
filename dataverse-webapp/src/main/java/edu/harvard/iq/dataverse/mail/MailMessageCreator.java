@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -94,13 +95,10 @@ public class MailMessageCreator {
      */
     public String createMailFooterMessage(Locale messageLocale, String rootDataverseName, InternetAddress systemAddress) {
 
-        return BundleUtil.getStringFromBundle("notification.email.closing",
-                                                            messageLocale,
-                                                            Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(
-                                                                    systemAddress),
-                                                                          BrandingUtil.getSupportTeamName(systemAddress,
-                                                                                                          rootDataverseName,
-                                                                                                        messageLocale)));
+        return BundleUtil.getStringFromBundle("notification.email.closing", messageLocale,
+                Arrays.asList(
+                        BrandingUtil.getSupportTeamEmailAddress(systemAddress),
+                        BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName, messageLocale)));
     }
 
     /**
@@ -163,42 +161,17 @@ public class MailMessageCreator {
             return Tuple.of(message, subject);
         }
 
-        if (notificationDto.getNotificationObjectType() == NotificationObjectType.FILEMETADATA) {
-            FileMetadata fileMetadata = genericDao.find(notificationDto.getDvObjectId(), FileMetadata.class);
-            String message = fileMetadataMessage(notificationDto, fileMetadata);
+        if (notificationDto.getNotificationObjectType() == NotificationObjectType.DATAFILE) {
+            DataFile dataFile = genericDao.find(notificationDto.getDvObjectId(), DataFile.class);
+            String message = dataFileMessage(notificationDto, dataFile);
             String subject = getSubjectText(notificationDto, rootDataverseName.get());
 
             return Tuple.of(message, subject);
         }
 
-        return Tuple.of(StringUtils.EMPTY, StringUtils.EMPTY);
-    }
-
-    /**
-     * Retrives message and subject template based on {@link NotificationObjectType} and {@link NotificationType} which requires requester.
-     *
-     * @return message and subject or blank tuple if notificationType didn't match any template.
-     */
-    public Tuple2<String, String> getMessageAndSubject(EmailNotificationDto notificationDto, AuthenticatedUser requester) {
-        Lazy<String> rootDataverseName = Lazy.of(() -> dataverseDao.findRootDataverse().getName());
-
-        if (notificationDto.getNotificationObjectType() == NotificationObjectType.DATASET_VERSION) {
-            DatasetVersion datasetVersion = genericDao.find(notificationDto.getDvObjectId(), DatasetVersion.class);
-            String message = datasetVersionMessage(notificationDto, datasetVersion, requester);
-
-            String subject = getSubjectText(notificationDto, rootDataverseName.get());
-
-            return subject.isEmpty() ?
-                    Tuple.of(message,
-                             getSubjectTextForDatasetVersion(notificationDto,
-                                                             rootDataverseName.get(),
-                                                             datasetVersion)) :
-                    Tuple.of(message, subject);
-        }
-
-        if (notificationDto.getNotificationObjectType() == NotificationObjectType.DATAFILE) {
-            DataFile dataFile = genericDao.find(notificationDto.getDvObjectId(), DataFile.class);
-            String message = dataFileMessage(notificationDto, dataFile, requester);
+        if (notificationDto.getNotificationObjectType() == NotificationObjectType.FILEMETADATA) {
+            FileMetadata fileMetadata = genericDao.find(notificationDto.getDvObjectId(), FileMetadata.class);
+            String message = fileMetadataMessage(notificationDto, fileMetadata);
             String subject = getSubjectText(notificationDto, rootDataverseName.get());
 
             return Tuple.of(message, subject);
@@ -232,7 +205,7 @@ public class MailMessageCreator {
                                                     dataverse.getDisplayName(),
                                                     getDataverseLink(dataverse));
 
-                if (joinedRoleNames.contains("fileDownloader")) {
+                if (joinedRoleNames.contains(DataverseRole.FILE_DOWNLOADER)) {
                     pattern = BundleUtil.getStringFromBundle(
                             "notification.access.granted.fileDownloader.additionalDataverse",
                             notificationsEmailLanguage);
@@ -292,7 +265,7 @@ public class MailMessageCreator {
                                                     dataset.getDisplayName(),
                                                     getDatasetLink(dataset));
 
-                if (joinedRoleNames.contains("File Downloader")) {
+                if (joinedRoleNames.contains(DataverseRole.FILE_DOWNLOADER)) {
                     pattern = BundleUtil.getStringFromBundle(
                             "notification.access.granted.fileDownloader.additionalDataverse",
                             notificationsEmailLanguage);
@@ -320,36 +293,6 @@ public class MailMessageCreator {
                                                                         ));
                 logger.fine("checksumFailMsg: " + checksumFailMsg);
                 return messageText + checksumFailMsg;
-        }
-
-        return StringUtils.EMPTY;
-    }
-
-    private String datasetVersionMessage(EmailNotificationDto notificationDto, DatasetVersion version, AuthenticatedUser requestor) {
-        Locale notificationsEmailLanguage = notificationDto.getNotificationReceiver().getNotificationsLanguage();
-        String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
-                notificationsEmailLanguage);
-
-        if (notificationDto.getNotificationType().equals(SUBMITTEDDS)) {
-
-            String requestorName = requestor.getFirstName() + " " + requestor.getLastName();
-
-            String requestorEmail = requestor.getEmail();
-
-            String pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview",
-                    notificationsEmailLanguage);
-
-            pattern += addUserCustomMessage(notificationDto,
-                    BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationsEmailLanguage));
-
-            messageText += MessageFormat.format(pattern,
-                                                version.getDataset().getDisplayName(),
-                                                getDatasetDraftLink(version.getDataset()),
-                                                version.getDataset().getOwner().getDisplayName(),
-                                                getDataverseLink(version.getDataset().getOwner()),
-                                                requestorName,
-                                                requestorEmail);
-            return messageText;
         }
 
         return StringUtils.EMPTY;
@@ -394,6 +337,11 @@ public class MailMessageCreator {
                                                     getDataverseLink(version.getDataset().getOwner()));
                 return messageText;
             case SUBMITTEDDS:
+                AuthenticatedUser requestor = notificationDto.getRequestor();
+                String requestorName = requestor.getFirstName() + " " + requestor.getLastName();
+
+                String requestorEmail = requestor.getEmail();
+
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview",
                         notificationsEmailLanguage);
 
@@ -401,12 +349,12 @@ public class MailMessageCreator {
                         BundleUtil.getStringFromBundle("dataset.reject.messageBox.label", notificationsEmailLanguage));
 
                 messageText += MessageFormat.format(pattern,
-                        version.getDataset().getDisplayName(),
-                        getDatasetDraftLink(version.getDataset()),
-                        version.getDataset().getOwner().getDisplayName(),
-                        getDataverseLink(version.getDataset().getOwner()),
-                        "",
-                        "");
+                                                    version.getDataset().getDisplayName(),
+                                                    getDatasetDraftLink(version.getDataset()),
+                                                    version.getDataset().getOwner().getDisplayName(),
+                                                    getDataverseLink(version.getDataset().getOwner()),
+                                                    requestorName,
+                                                    requestorEmail);
                 return messageText;
             case RETURNEDDS:
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer",
@@ -419,8 +367,7 @@ public class MailMessageCreator {
                                                     version.getDataset().getDisplayName(),
                                                     getDatasetDraftLink(version.getDataset()),
                                                     version.getDataset().getOwner().getDisplayName(),
-                                                    getDataverseLink(version.getDataset().getOwner()),
-                                                    "");
+                                                    getDataverseLink(version.getDataset().getOwner()));
                 return messageText;
             case FILESYSTEMIMPORT:
 
@@ -458,13 +405,13 @@ public class MailMessageCreator {
          return StringUtils.EMPTY;
     }
 
-    private String dataFileMessage(EmailNotificationDto notificationDto, DataFile dataFile, AuthenticatedUser requestor) {
+    private String dataFileMessage(EmailNotificationDto notificationDto, DataFile dataFile) {
         Locale notificationsEmailLanguage = notificationDto.getNotificationReceiver().getNotificationsLanguage();
         String messageText = BundleUtil.getStringFromBundle("notification.email.greeting",
                 notificationsEmailLanguage);
 
         if (notificationDto.getNotificationType().equals(REQUESTFILEACCESS)) {
-
+            AuthenticatedUser requestor = notificationDto.getRequestor();
             String pattern = BundleUtil.getStringFromBundle("notification.email.requestFileAccess",
                     notificationsEmailLanguage);
 
@@ -626,7 +573,7 @@ public class MailMessageCreator {
     }
 
     private String getDatasetDraftLink(Dataset dataset) {
-        return systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
+        return systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&version=DRAFT";
     }
 
     private String getDataverseLink(Dataverse dataverse) {

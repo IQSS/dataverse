@@ -9,30 +9,17 @@ import javax.ejb.Stateless;
 public class EmailNotificationMapper {
 
     public EmailNotificationDto toDto(UserNotification userNotification,
-                                      long dvObjectId,
                                       NotificationObjectType notificationObjectType) {
-
-        return new EmailNotificationDto(userNotification.getId(),
-                                        userNotification.getUser().getDisplayInfo().getEmailAddress(),
-                                        userNotification.getType(),
-                                        dvObjectId,
-                                        notificationObjectType,
-                                        userNotification.getUser()
-        );
-    }
-
-    public EmailNotificationDto toDto(UserNotification userNotification,
-                                      Long dvObjectId,
-                                      NotificationObjectType notificationObjectType, String returnReason) {
 
 
         return new EmailNotificationDto(userNotification.getId(),
                 userNotification.getUser().getDisplayInfo().getEmailAddress(),
                 userNotification.getType(),
-                dvObjectId,
+                userNotification.getObjectId(),
                 notificationObjectType,
                 userNotification.getUser(),
-                returnReason
+                userNotification.getRequestor(),
+                userNotification.getAdditionalMessage()
         );
     }
 }

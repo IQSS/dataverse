@@ -156,10 +156,6 @@ public class ConfirmEmailServiceBean {
                 return tokenUnusable;
             } else {
                 ConfirmEmailExecResponse goodTokenCanProceed = new ConfirmEmailExecResponse(tokenQueried, confirmEmailData);
-                if (confirmEmailData == null) {
-                    logger.fine("Invalid token.");
-                    return null;
-                }
                 long nowInMilliseconds = new Date().getTime();
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();

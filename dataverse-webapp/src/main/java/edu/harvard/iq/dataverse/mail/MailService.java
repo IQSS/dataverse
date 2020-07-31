@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse.mail;
 
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import io.vavr.Tuple2;
@@ -83,29 +82,9 @@ public class MailService implements java.io.Serializable {
     public Boolean sendNotificationEmail(EmailNotificationDto notification) {
 
         String userEmail = notification.getUserEmail();
+        
         String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
-
         Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notification, systemEmail);
-
-        if (messageAndSubject._1().isEmpty() || messageAndSubject._2().isEmpty()) {
-            return false;
-        }
-
-        String footerMessage = getFooterMailMessage(notification.getNotificationReceiver().getNotificationsLanguage());
-
-        return sendMail(userEmail, new EmailContent(messageAndSubject._2(), messageAndSubject._1(), footerMessage));
-    }
-
-    /**
-     * Gathers template messages for given notification and sends email.
-     *
-     * @return true if email was sent or false if some error occurred and email could not be sent.
-     */
-    public Boolean sendNotificationEmail(EmailNotificationDto notification, AuthenticatedUser requestor) {
-
-        String userEmail = notification.getUserEmail();
-
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(notification, requestor);
 
         if (messageAndSubject._1().isEmpty() && messageAndSubject._2().isEmpty()) {
             return false;

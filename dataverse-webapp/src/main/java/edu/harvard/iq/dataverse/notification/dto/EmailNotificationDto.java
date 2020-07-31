@@ -12,6 +12,7 @@ public class EmailNotificationDto {
     private Long dvObjectId;
     private NotificationObjectType notificationObjectType;
     private AuthenticatedUser notificationReceiver;
+    private AuthenticatedUser requestor;
     private String customUserMessage;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -19,23 +20,20 @@ public class EmailNotificationDto {
 
     public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
                                 Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver) {
-        this.userNotificationId = userNotificationId;
-        this.userEmail = userEmail;
-        this.notificationType = notificationType;
-        this.dvObjectId = dvObjectId;
-        this.notificationObjectType = notificationObjectType;
-        this.notificationReceiver = notificationReceiver;
-        this.customUserMessage = StringUtils.EMPTY;
+        this(userNotificationId, userEmail, notificationType, dvObjectId, notificationObjectType, 
+                notificationReceiver, null, null);
     }
 
     public EmailNotificationDto(long userNotificationId, String userEmail, String notificationType,
-                                Long dvObjectId, NotificationObjectType notificationObjectType, AuthenticatedUser notificationReceiver, String customUserMessage) {
+                                Long dvObjectId, NotificationObjectType notificationObjectType,
+                                AuthenticatedUser notificationReceiver, AuthenticatedUser requestor, String customUserMessage) {
         this.userNotificationId = userNotificationId;
         this.userEmail = userEmail;
         this.notificationType = notificationType;
         this.dvObjectId = dvObjectId;
         this.notificationObjectType = notificationObjectType;
         this.notificationReceiver = notificationReceiver;
+        this.requestor = requestor;
         this.customUserMessage = customUserMessage;
     }
 
@@ -51,6 +49,10 @@ public class EmailNotificationDto {
 
     public AuthenticatedUser getNotificationReceiver() {
         return notificationReceiver;
+    }
+
+    public AuthenticatedUser getRequestor() {
+        return requestor;
     }
 
     public String getUserEmail() {

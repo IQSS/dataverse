@@ -47,7 +47,7 @@ public class MailServiceTest {
     public void prepare() {
         Mockito.when(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail)).thenReturn("test@email.com");
         Mockito.when(mailMessageCreator.getMessageAndSubject(any(EmailNotificationDto.class),
-                                                             any(AuthenticatedUser.class)))
+                                                             any(String.class)))
                 .thenReturn(Tuple.of("Nice Message", "Nice Subject"));
 
         Mockito.when(mailMessageCreator.createMailFooterMessage(any(Locale.class), anyString(), any(InternetAddress.class)))
@@ -69,7 +69,7 @@ public class MailServiceTest {
         EmailNotificationDto testEmailNotificationDto = createTestEmailNotificationDto();
 
         //when
-        Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto, new AuthenticatedUser());
+        Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto);
 
         //then
         Assert.assertTrue(emailSent);
@@ -91,7 +91,7 @@ public class MailServiceTest {
         EmailNotificationDto testEmailNotificationDto = createTestEmailNotificationDto();
 
         //when
-        Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto, new AuthenticatedUser());
+        Boolean emailSent = mailService.sendNotificationEmail(testEmailNotificationDto);
 
         //then
         Assert.assertFalse(emailSent);

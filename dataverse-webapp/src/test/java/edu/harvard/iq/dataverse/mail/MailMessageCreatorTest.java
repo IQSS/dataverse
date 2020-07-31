@@ -222,8 +222,7 @@ public class MailMessageCreatorTest {
         EmailNotificationDto testEmailNotificationDto = createSubmitForReviewNotificationDto();
 
         //when
-        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto,
-                 MocksFactory.makeAuthenticatedUser("Leonardo", "Żółw nie malarz"));
+        Tuple2<String, String> messageAndSubject = mailMessageCreator.getMessageAndSubject(testEmailNotificationDto, "system@email.com");
 
         //then
         Assert.assertEquals(getSubmitForReviewMessage(), messageAndSubject._1);
@@ -259,16 +258,16 @@ public class MailMessageCreatorTest {
 
     private String getReturnToAuthorMessage() {
         return "Hello, \n"
-                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT&faces-redirect=true) was returned by the curator "
+                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was returned by the curator "
                 + "of rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse).\n\n"
                 + "Additional information:\n\nDataset returned to author message";
     }
 
     private String getSubmitForReviewMessage() {
         return "Hello, \n"
-                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT&faces-redirect=true) was submitted for review to be published in "
+                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in "
                 + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
-                + "Don't forget to publish it or send it back to the contributor, Leonardo Żółw nie malarz (Leonardo.Żółw nie malarz@someU.edu)!\n\n"
+                + "Don't forget to publish it or send it back to the contributor, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n"
                 + "Additional information:\n\nContributors message for curator";
     }
 
@@ -334,7 +333,8 @@ public class MailMessageCreatorTest {
                 NotificationType.RETURNEDDS,
                 3L,
                 NotificationObjectType.DATASET_VERSION,
-                new AuthenticatedUser(),
+                MocksFactory.makeAuthenticatedUser("Notification", "Reciever"),
+                MocksFactory.makeAuthenticatedUser("Notifcation", "Requester"),
                 "Dataset returned to author message");
     }
 
@@ -345,6 +345,7 @@ public class MailMessageCreatorTest {
                 3L,
                 NotificationObjectType.DATASET_VERSION,
                 MocksFactory.makeAuthenticatedUser("Jurek","Kiler"),
+                MocksFactory.makeAuthenticatedUser("Notifcation", "Requester"),
                 "Contributors message for curator");
     }
 
