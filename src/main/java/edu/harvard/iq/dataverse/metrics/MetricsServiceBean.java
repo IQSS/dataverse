@@ -525,12 +525,12 @@ public class MetricsServiceBean implements Serializable {
                 + " where o.name = :name"
                 + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")
                 + " and o.dayString" + (dayString == null ? " is null" :  " = :dayString")
-                + (dataverse == null ? " and o.dataverse is null" :  " and o.dataverse.id = :dataverse_id")
+                + (dataverse == null ? " and o.dataverse is null" :  " and o.dataverse.id = :dataverseId")
                 , Metric.class);
         query.setParameter("name", name);
         if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
         if(dayString != null) {query.setParameter("dayString", dayString);}
-        if(dataverse != null) {query.setParameter("dataverse_id", dataverse.getId());}
+        if(dataverse != null) {query.setParameter("dataverseId", dataverse.getId());}
         
         logger.log(Level.FINE, "getMetric query: {0}", query);
         
