@@ -408,8 +408,8 @@ public class MetricsServiceBean implements Serializable {
     public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
         DatasetMetrics dsm = null;
         String queryStr = "SELECT sum(" + metricType.toString() +") FROM DatasetMetrics\n" 
-                + ((d==null) ? "" : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ")\n")
-                + " and date_trunc('month', monthYear) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                + ((d==null) ? "WHERE " : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ") and\n")
+                + "date_trunc('month', monthYear) <=  to_date('" + yyyymm + "','YYYY-MM')"
                 + " and countryCode = '" + country + "';";
         Query query = em.createNativeQuery(queryStr);
         BigDecimal sum = (BigDecimal) query.getSingleResult();
