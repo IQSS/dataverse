@@ -130,6 +130,9 @@ public class MetricsUtil {
     }
 
     public static JsonObject stringToJsonObject(String str) {
+        if(str==null) {
+            return null;
+        }
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonObject jo = jsonReader.readObject();
         jsonReader.close();
@@ -138,6 +141,9 @@ public class MetricsUtil {
     }
     
     public static JsonArray stringToJsonArray(String str) {
+        if(str==null) {
+            return null;
+        }
         JsonReader jsonReader = Json.createReader(new StringReader(str));
         JsonArray ja = jsonReader.readArray();
         jsonReader.close();

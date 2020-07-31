@@ -324,8 +324,9 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+            logger.fine("yyyymm: " + sanitizedyyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
-            
+            logger.fine("Returned");
             if (null == jsonObj) { //run query and save
                 logger.fine("Getting filesToMonth : " + sanitizedyyyymm + " dvId=" +d.getId() );
                 Long count = metricsSvc.filesToMonth(sanitizedyyyymm, d);
