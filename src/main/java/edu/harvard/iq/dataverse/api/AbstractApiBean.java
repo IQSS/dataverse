@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -653,6 +654,12 @@ public abstract class AbstractApiBean {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
             .add("data", bld).build()).build();
+    }
+    
+    protected Response ok( JsonArray ja ) {
+        return Response.ok(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", ja).build()).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
