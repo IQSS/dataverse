@@ -45,13 +45,15 @@ public class MetricsServiceBean implements Serializable {
     
     /**
      * @param yyyymm Month in YYYY-MM format.
+     * @param d 
      */
-    public long dataversesToMonth(String yyyymm) throws Exception {        
+    public long dataversesToMonth(String yyyymm, Dataverse d) throws Exception {        
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
+                + d==null ? "": "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -59,12 +61,13 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long dataversesPastDays(int days) throws Exception {
+    public long dataversesPastDays(int days, Dataverse d) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
+                + d==null ? "": "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "and publicationdate > current_date - interval '"+days+"' day;\n"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -72,12 +75,13 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> dataversesByCategory() throws Exception {
+    public List<Object[]> dataversesByCategory(Dataverse d) throws Exception {
 
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
+                + d==null ? "": "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "group by dataversetype\n"
                 + "order by count desc;"
         );
@@ -86,11 +90,13 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    public List<Object[]> dataversesBySubject() {
+    public List<Object[]> dataversesBySubject(Dataverse d) {
+        //ToDo - published only?
         Query query = em.createNativeQuery(""
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id \n"
                 //+ "where dataverse_id != ( select id from dvobject where owner_id is null) \n" //removes root, we decided to do this in the homepage js instead
+                + d==null ? "": "and dataverse_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
         );
@@ -104,8 +110,9 @@ public class MetricsServiceBean implements Serializable {
     
     /**
      * @param yyyymm Month in YYYY-MM format.
+     * @param d 
      */
-    public long datasetsToMonth(String yyyymm, String dataLocation) throws Exception {
+    public long datasetsToMonth(String yyyymm, String dataLocation, Dataverse d) throws Exception {
         String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n"; 
         
         if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
@@ -139,6 +146,7 @@ public class MetricsServiceBean implements Serializable {
             +   "where versionstate='RELEASED' \n"
             +   "and \n" 
             +   dataLocationLine //be careful about adding more and statements after this line.
+            +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n "
             +   "group by dataset_id \n"
             +") sub_temp"
         );
@@ -147,7 +155,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation) {  
+    public List<Object[]> datasetsBySubjectToMonth(String yyyymm, String dataLocation, Dataverse d) {  
         // The SQL code below selects the local, non-harvested dataset versions:
         // A published local datasets may have more than one released version!
         // So that's why we have to jump through some extra hoops below
@@ -192,6 +200,7 @@ public class MetricsServiceBean implements Serializable {
                 + "WHERE\n"
                 + originClause
                 + "AND datasetfieldtype.name = 'subject'\n"
+                +   d==null ? "": "AND dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "GROUP BY strvalue\n"
                 + "ORDER BY count(dataset.id) desc;"
         );
@@ -200,7 +209,7 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    public long datasetsPastDays(int days, String dataLocation) throws Exception {
+    public long datasetsPastDays(int days, String dataLocation, Dataverse d) throws Exception {
         String dataLocationLine = "(releasetime > current_date - interval '"+days+"' day and dataset.harvestingclient_id IS NULL)\n"; 
         
         if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
@@ -220,6 +229,7 @@ public class MetricsServiceBean implements Serializable {
             +   "from datasetversion\n"
             +   "join dataset on dataset.id = datasetversion.dataset_id\n"
             +   "where versionstate='RELEASED' \n"
+            +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
             +   "and \n" 
             +   dataLocationLine //be careful about adding more and statements after this line.
             +   "group by dataset_id \n"
@@ -235,8 +245,9 @@ public class MetricsServiceBean implements Serializable {
     
     /**
      * @param yyyymm Month in YYYY-MM format.
+     * @param d 
      */
-    public long filesToMonth(String yyyymm) throws Exception {
+    public long filesToMonth(String yyyymm, Dataverse d) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -247,6 +258,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
+                +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
@@ -257,7 +269,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(int days) throws Exception {
+    public long filesPastDays(int days, Dataverse d) throws Exception {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -269,6 +281,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '"+days+"' day\n"
+                +   d==null ? "": "AND dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
@@ -278,7 +291,8 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
 
-    /** Downloads */
+    /** Downloads 
+     * @param d */
     
     /*
      * This includes getting historic download without a timestamp if query
@@ -286,7 +300,8 @@ public class MetricsServiceBean implements Serializable {
      * 
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsToMonth(String yyyymm) throws Exception {
+    public long downloadsToMonth(String yyyymm, Dataverse d) throws Exception {
+        //ToDo - published only?
         Query earlyDateQuery = em.createNativeQuery(""
                + "select responsetime from guestbookresponse\n"
                + "ORDER BY responsetime LIMIT 1;"
@@ -303,7 +318,8 @@ public class MetricsServiceBean implements Serializable {
                     + "select count(id)\n"
                     + "from guestbookresponse\n"
                     + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
-                    + "or responsetime is NULL;" //includes historic guestbook records without date
+                    + "or responsetime is NULL\n" //includes historic guestbook records without date
+                    +   d==null ? ";": "AND dataset_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ");" 
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
                 return (long) query.getSingleResult();
@@ -319,21 +335,47 @@ public class MetricsServiceBean implements Serializable {
 
     }
 
-    public long downloadsPastDays(int days) throws Exception {
+    public long downloadsPastDays(int days, Dataverse d) throws Exception {
+        //ToDo - published only?
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
-                + "where responsetime > current_date - interval '"+days+"' day;\n"
+                + "where responsetime > current_date - interval '"+days+"' day\n"
+                +   d==null ? ";": "AND dataset_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ");"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
         return (long) query.getSingleResult();
     }
     
+    public JsonObjectBuilder fileContents(Dataverse d) {
+        // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
+         //ToDo - published only?     
+         Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
+                 + " FROM DataFile df, DvObject ob"
+                 + " where ob.id = df.id and "
+                 + d==null ? "":" ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") +")\n" 
+                 + "group by df.contenttype;");
+         JsonObjectBuilder job = Json.createObjectBuilder();
+         try {
+             List<Object[]> results = query.getResultList();
+             for(Object[] result : results) {
+                 JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (BigDecimal)result[2]).build();
+                 job.add((String)result[0], stats);
+             }
+             
+         } catch (javax.persistence.NoResultException nr) {
+             //do nothing
+         } 
+         return job;
+         
+     }
+
+    
     /** Helper functions for metric caching */
     
-    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation) throws Exception {
-        Metric queriedMetric = getMetric(metricName, dataLocation, days);
+    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation, Dataverse d) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, days, d);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
             return queriedMetric.getValueJson();
@@ -341,8 +383,8 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
     
-    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation) throws Exception {
-        Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm);
+    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation, Dataverse d) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm, d);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {
             return queriedMetric.getValueJson();
@@ -350,8 +392,8 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
 
-    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation) throws Exception {
-        Metric queriedMetric = getMetric(metricName, dataLocation, null); //MAD: not passing a date
+    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation, Dataverse d) throws Exception {
+        Metric queriedMetric = getMetric(metricName, dataLocation, null, d); //MAD: not passing a date
 
         if (!doWeQueryAgainAllTime(queriedMetric)) {
             return queriedMetric.getValueJson();
@@ -424,7 +466,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public Metric save(Metric newMetric) throws Exception {
-        Metric oldMetric = getMetric(newMetric.getName(), newMetric.getDataLocation(), newMetric.getDateString());
+        Metric oldMetric = getMetric(newMetric.getName(), newMetric.getDataLocation(), newMetric.getDateString(), newMetric.getDataverse());
 
         if (oldMetric != null) {
             em.remove(oldMetric);
@@ -436,15 +478,17 @@ public class MetricsServiceBean implements Serializable {
 
     //This works for date and day based metrics
     //It is ok to pass null for dataLocation and dayString
-    public Metric getMetric(String name, String dataLocation, String dayString) throws Exception {
+    public Metric getMetric(String name, String dataLocation, String dayString, Dataverse dataverse) throws Exception {
         Query query = em.createQuery("select object(o) from Metric as o"
                 + " where o.name = :name"
                 + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")
                 + " and o.dayString" + (dayString == null ? " is null" :  " = :dayString")
+                + " and o.dataverse" + (dataverse == null ? " is null" :  " = :dataverse")
                 , Metric.class);
         query.setParameter("name", name);
         if(dataLocation != null){ query.setParameter("dataLocation", dataLocation);}
         if(dayString != null) {query.setParameter("dayString", dayString);}
+        if(dataverse != null) {query.setParameter("dataverse", dataverse);}
         
         logger.log(Level.FINE, "getMetric query: {0}", query);
         
@@ -466,28 +510,6 @@ public class MetricsServiceBean implements Serializable {
         return metric;
     }
 
-    public JsonObjectBuilder fileContents(Dataverse d) {
-       // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
-        
-        Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
-                + " FROM DataFile df, DvObject ob"
-                + " where ob.id = df.id and "
-                + " ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") 
-                + ") group by df.contenttype;");
-        JsonObjectBuilder job = Json.createObjectBuilder();
-        try {
-            List<Object[]> results = query.getResultList();
-            for(Object[] result : results) {
-                JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (BigDecimal)result[2]).build();
-                job.add((String)result[0], stats);
-            }
-            
-        } catch (javax.persistence.NoResultException nr) {
-            //do nothing
-        } 
-        return job;
-        
-    }
     
   //Modified from DANS https://github.com/DANS-KNAW/dataverse/blob/dans-develop/src/main/java/edu/harvard/iq/dataverse/metrics/MetricsDansServiceBean.java
     
