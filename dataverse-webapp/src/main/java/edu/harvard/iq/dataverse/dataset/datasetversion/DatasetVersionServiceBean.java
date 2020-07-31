@@ -186,7 +186,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end RetrieveDatasetVersionResponse
 
     public DatasetVersion getById(Long id) {
-        return versionRepository.getById(id);
+        return versionRepository.findById(id).orElse(null);
     }
 
     public DatasetVersion findByFriendlyVersionNumber(Long datasetId, String friendlyVersionNumber) {
