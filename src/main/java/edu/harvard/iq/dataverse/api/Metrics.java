@@ -7,6 +7,7 @@ import java.util.Arrays;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -34,20 +35,25 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses")
-    public Response getDataversesAllTime(@Context UriInfo uriInfo) {
-        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+    public Response getDataversesAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
     
+
+
     @Deprecated //for better path
     @GET
     @Path("dataverses/toMonth")
     public Response getDataversesToMonthCurrent(@Context UriInfo uriInfo) {
-        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
     }
     
     @GET
     @Path("dataverses/toMonth/{yyyymm}")
-    public Response getDataversesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
+    public Response getDataversesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -58,13 +64,13 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm);
+                Long count = metricsSvc.dataversesToMonth(sanitizedyyyymm, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -78,7 +84,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/pastDays/{days}")
-    public Response getDataversesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+    public Response getDataversesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -91,13 +99,13 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.dataversesPastDays(days);
+                Long count = metricsSvc.dataversesPastDays(days, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -109,7 +117,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/byCategory")
-    public Response getDataversesByCategory(@Context UriInfo uriInfo) {
+    public Response getDataversesByCategory(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -119,12 +129,12 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesByCategory";
 
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d);
 
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory());
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(d));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonArrayString));
             }
 
             return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
@@ -135,7 +145,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("dataverses/bySubject")
-    public Response getDataversesBySubject(@Context UriInfo uriInfo) {
+    public Response getDataversesBySubject(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -145,12 +157,12 @@ public class Metrics extends AbstractApiBean {
         String metricName = "dataversesBySubject";
         
         try {
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d);
 
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject());
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.dataversesBySubjectToJson(metricsSvc.dataversesBySubject(d));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, null, null, jsonArrayString));
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonArrayString));
             }
 
             return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
@@ -163,20 +175,23 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets")
-    public Response getDatasetsAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+
+        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias );
     }
     
     @Deprecated //for better path
     @GET
     @Path("datasets/toMonth")
     public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, null);
     }
 
     @GET
     @Path("datasets/toMonth/{yyyymm}")
-    public Response getDatasetsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
@@ -188,13 +203,13 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.datasetsToMonth(sanitizedyyyymm, validDataLocation);
+                Long count = metricsSvc.datasetsToMonth(sanitizedyyyymm, validDataLocation, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -206,7 +221,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets/pastDays/{days}")
-    public Response getDatasetsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
@@ -220,13 +237,13 @@ public class Metrics extends AbstractApiBean {
         }
         try {
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.datasetsPastDays(days, validDataLocation);
+                Long count = metricsSvc.datasetsPastDays(days, validDataLocation, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, jsonString));
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), validDataLocation, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -238,13 +255,15 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("datasets/bySubject")
-    public Response getDatasetsBySubject(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation);
+    public Response getDatasetsBySubject(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+        return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias);
     }
   
     @GET
     @Path("datasets/bySubject/toMonth/{yyyymm}")
-    public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation) {
+    public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"dataLocation"});
         } catch (IllegalArgumentException ia) {
@@ -256,12 +275,12 @@ public class Metrics extends AbstractApiBean {
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation);
+            String jsonArrayString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d);
             
             if (null == jsonArrayString) { //run query and save
-                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation));
+                JsonArrayBuilder jsonArrayBuilder = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation, d));
                 jsonArrayString = jsonArrayBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, jsonArrayString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonArrayString));
             }
 
             return ok(MetricsUtil.stringToJsonArrayBuilder(jsonArrayString));
@@ -273,20 +292,24 @@ public class Metrics extends AbstractApiBean {
     /** Files */
     @GET
     @Path("files")
-    public Response getFilesAllTime(@Context UriInfo uriInfo) {
-        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+    public Response getFilesAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
     
     @Deprecated //for better path
     @GET
     @Path("files/toMonth")
     public Response getFilesToMonthCurrent(@Context UriInfo uriInfo) {
-        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
     }
 
     @GET
     @Path("files/toMonth/{yyyymm}")
-    public Response getFilesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {
+    public Response getFilesToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -297,13 +320,13 @@ public class Metrics extends AbstractApiBean {
 
         try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesToMonth(sanitizedyyyymm);
+                Long count = metricsSvc.filesToMonth(sanitizedyyyymm, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -314,7 +337,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("files/pastDays/{days}")
-    public Response getFilesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+    public Response getFilesPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -327,13 +352,13 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.filesPastDays(days);
+                Long count = metricsSvc.filesPastDays(days, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -347,20 +372,24 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("downloads")
-    public Response getDownloadsAllTime(@Context UriInfo uriInfo) {
-        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+    public Response getDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
     
     @Deprecated //for better path
     @GET
     @Path("downloads/toMonth")
     public Response getDownloadsToMonthCurrent(@Context UriInfo uriInfo) {
-        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth());
+        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
     }
 
     @GET
     @Path("downloads/toMonth/{yyyymm}")
-    public Response getDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm) {                
+    public Response getDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {                
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -372,13 +401,13 @@ public class Metrics extends AbstractApiBean {
         try {
             
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null);
+            String jsonString = metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm);
+                Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, jsonString));
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -391,7 +420,9 @@ public class Metrics extends AbstractApiBean {
     
     @GET
     @Path("downloads/pastDays/{days}")
-    public Response getDownloadsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days) {
+    public Response getDownloadsPastDays(@Context UriInfo uriInfo, @PathParam("days") int days, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
         try { 
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{""});
         } catch (IllegalArgumentException ia) {
@@ -404,13 +435,13 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
         try {
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d);
 
             if (null == jsonString) { //run query and save
-                Long count = metricsSvc.downloadsPastDays(days);
+                Long count = metricsSvc.downloadsPastDays(days, d);
                 JsonObjectBuilder jsonObjBuilder = MetricsUtil.countToJson(count);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, jsonString));
+                metricsSvc.save(new Metric(metricName, String.valueOf(days), null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -421,21 +452,18 @@ public class Metrics extends AbstractApiBean {
     }
     
     @GET
-    @Path("/dataverse/{alias}/files")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("alias") String alias) {
+    @Path("/files/byType")
+    public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
                 
-        String metricName = "fileContents";
+        String metricName = "filesByType";
         try {
-            Dataverse d = dataverseSvc.findByAlias(alias);
-            if(d==null) {
-                return error(NOT_FOUND, "No Dataverse with alias: " + alias);
-            }
-            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, alias, null);
+            String jsonString = metricsSvc.returnUnexpiredCacheDayBased(metricName, parentAlias, null, d);
 
             if (null == jsonString) { //run query and save
                 JsonObjectBuilder jsonObjBuilder =  metricsSvc.fileContents(d);
                 jsonString = jsonObjBuilder.build().toString();
-                metricsSvc.save(new Metric(metricName, alias, null, jsonString));
+                metricsSvc.save(new Metric(metricName, parentAlias, null, d, jsonString));
             }
 
             return ok(MetricsUtil.stringToJsonObjectBuilder(jsonString));
@@ -455,6 +483,18 @@ public class Metrics extends AbstractApiBean {
             }
         }
         
+    }
+    
+    //Throws a WebApplicationException if alias is not null and Dataverse can't be found
+    private Dataverse findDataverseOrDieIfNotFound(String alias) {
+        Dataverse d = null;
+        if (alias != null) {
+            d = dataverseSvc.findByAlias(alias);
+            if (d == null) {
+                throw new NotFoundException("No Dataverse with alias: " + alias);
+            }
+        }
+        return d;
     }
     
 }
