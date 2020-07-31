@@ -22,8 +22,10 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
@@ -120,6 +122,17 @@ public class SavedSearchServiceBean {
             return savedSearch;
         } else {
             return em.merge(savedSearch);
+        }
+    }
+    
+    
+    @Schedule(dayOfWeek="Sun", hour="0",minute="30")
+    public void makeLinksForAllSavedSearchesTimer(){
+        logger.info("Linking saved searches");
+        try {
+            JsonObjectBuilder makeLinksForAllSavedSearches = makeLinksForAllSavedSearches(false);
+        } catch (SearchException | CommandException ex) {
+            Logger.getLogger(SavedSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
