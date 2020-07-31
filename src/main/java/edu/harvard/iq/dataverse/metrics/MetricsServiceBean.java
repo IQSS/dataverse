@@ -263,7 +263,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + "where versionstate='RELEASED'\n"
-                +   d==null ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n"
+                +   ((d==null) ? "": "and dataset.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
