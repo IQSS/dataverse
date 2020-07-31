@@ -1147,8 +1147,31 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String noLeadingQuote = value.replaceAll("^\"", "");
         String noTrailingQuote = noLeadingQuote.replaceAll("\"$", "");
         String valueWithoutQuotes = noTrailingQuote;
+        if(key.equals(SearchFields.SUBTREE)){
+            valueWithoutQuotes = getAliasforFriendlyValue(valueWithoutQuotes);           
+        }
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
+    }
+    
+    private String getAliasforFriendlyValue(String subTreeId) {
+        /*
+        Converting ids in the subtree path to dv alias
+        -possibly more meaningful to endusers
+        */
+        String retVal = "";
+        subTreeId = subTreeId.replaceFirst("/", "");
+        String[] parts = subTreeId.split("/");
+        if (parts[0].isEmpty()) {
+            parts[0] = subTreeId;
+        }
+        for (String part : parts) {
+            Long id = new Long(part);
+            Dataverse dv = dataverseService.find(id);
+            String alias = dv.getAlias();
+            retVal = retVal + "/" + alias;
+        }
+        return retVal;
     }
 
     public String getNewSelectedTypes(String typeClicked) {
