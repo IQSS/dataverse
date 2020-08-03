@@ -2111,7 +2111,7 @@ See :ref:`i18n` for a curl example and related settings.
 +++++++++++++++++++++++++++++
 
 ``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role).
-This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``::InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
+This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``:InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
 
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or
@@ -2134,3 +2134,16 @@ Unlike other facets, those indexed by Date/Year are sorted chronologically by de
 If you don’t want date facets to be sorted chronologically, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``
+
+:CustomZipDownloadServiceUrl
+++++++++++++++++++++++++++++
+
+The location of the "Standalone Zipper" service. If this option is specified, Dataverse will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of v5.0).
+
+To enable redirects to the zipper installed on the same server as the main Dataverse application: 
+
+``curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
+
+To enable redirects to the zipper on a different server: 
+
+``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 

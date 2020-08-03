@@ -204,7 +204,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             retVal = false;
         }
 
-        ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
         exportMetadata(dataset, ctxt.settings());
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
         return retVal;

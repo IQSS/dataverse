@@ -2311,6 +2311,8 @@ Place this ``user-add.json`` file in your current directory and run the followin
 
   curl -d @user-add.json -H "Content-type:application/json" "$SERVER_URL/api/builtin-users?password=$NEWUSER_PASSWORD&key=$BUILTIN_USERS_KEY"
 
+Optionally, you may use a third query parameter "sendEmailNotification=false" to explicitly disable sending an email notification to the new user.
+
 Roles
 -----
 
@@ -2592,7 +2594,7 @@ The fully expanded example above (without environment variables) looks like this
 Delete a PID
 ~~~~~~~~~~~~
 
-Delete PID from DataCite (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
+Delete PID (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
