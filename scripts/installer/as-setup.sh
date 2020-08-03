@@ -73,7 +73,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+DisableExplicitGC"
 
   # alias passwords
-  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
+  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "dataverse.db.password ${DB_PASS}"
   do
       set -- $alias
       echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
@@ -149,6 +149,12 @@ function preliminary_setup()
 function final_setup(){
         ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
         ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
+
+        # Set up the database connection properties
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.user=${DB_USER}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.host=${DB_HOST}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.port=${DB_PORT}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.name=${DB_NAME}"
 
         # Set up the data source for the timers (using the @DataSourceDefinition from util/DataSourceProducer.java)
         ./asadmin $ASADMIN_OPTS set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=java:global/jdbc/dataverse
