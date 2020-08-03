@@ -133,14 +133,23 @@ public class IngestUtil {
     }
 
     /**
-     * Given a DatasetVersion, iterate across all the files (including their
+     * Given a DatasetVersion, and the newFiles about to be added to the 
+     * version iterate across all the files (including their
      * paths) and return any duplicates.
      *
      * @param datasetVersion
+     * @param newFiles
      * @return A Collection of Strings in the form of path/to/file.txt
      */
-    public static Collection<String> findDuplicateFilenames(DatasetVersion datasetVersion) {
-        List<String> allFileNamesWithPaths = getPathsAndFileNames(datasetVersion.getFileMetadatas());
+    public static Collection<String> findDuplicateFilenames(DatasetVersion datasetVersion, List<DataFile> newFiles) {
+        List<FileMetadata> toTest = new ArrayList();
+        datasetVersion.getFileMetadatas().forEach((fm) -> {
+            toTest.add(fm);
+        });
+        newFiles.forEach((df) -> {
+            toTest.add(df.getFileMetadata());
+        });
+        List<String> allFileNamesWithPaths = getPathsAndFileNames(toTest);
         return findDuplicates(allFileNamesWithPaths);
     }
 

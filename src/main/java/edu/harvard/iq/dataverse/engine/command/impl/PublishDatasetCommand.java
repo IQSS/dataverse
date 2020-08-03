@@ -119,28 +119,33 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             
             boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-            if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
-                    && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
-                // TODO? The time it takes to validate the physical files in the dataset
-                // is a function of the total file size, NOT the number of files; 
-                // so that's what we should be checking. 
-                String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
-                info += "Validating Datafiles Asynchronously";
-                AuthenticatedUser user = request.getAuthenticatedUser();
+            // As of v5.0, publishing a dataset is always done asynchronously, 
+            // with the dataset locked for the duration of the operation. 
+            
+            //if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
+            //        && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
                 
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                lock.setDataset(theDataset);
-                lock.setInfo(info);
-                ctxt.datasets().addDatasetLock(theDataset, lock);
-                theDataset = ctxt.em().merge(theDataset);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
-                return new PublishDatasetResult(theDataset, false);
-                
+            String info = "Publishing the dataset; "; 
+            info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
+            info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+            
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+            lock.setDataset(theDataset);
+            lock.setInfo(info);
+            ctxt.datasets().addDatasetLock(theDataset, lock);
+            theDataset = ctxt.em().merge(theDataset);
+            ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+            return new PublishDatasetResult(theDataset, false);
+
+            /**
+              * Code for for "synchronous" (while-you-wait) publishing 
+              * is preserved below, commented out:
             } else {
                 // Synchronous publishing (no workflow involved)
                 theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
                 return new PublishDatasetResult(theDataset, true);
-            }
+            } */
         }
     }
     
