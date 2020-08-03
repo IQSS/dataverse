@@ -372,15 +372,9 @@ public class Files extends AbstractApiBean {
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    // Not sure I understand why we are comparing the checksum values here, 
-                    // and not the DataFile ids. (probably because this code was 
-                    // copy-and-pasted from somewhere where it was potentially operating 
-                    // on *new* datafiles, that haven't been saved in the database yet;
-                    // but it should never be the case in the context of this API) 
-                    // -- L.A. Mar. 2020
-                    if(daf.getChecksumType().equals(df.getChecksumType())
-                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
-                        upFmd = testFmd;
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 
@@ -413,7 +407,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {
