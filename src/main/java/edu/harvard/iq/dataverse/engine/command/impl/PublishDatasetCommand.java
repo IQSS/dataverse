@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.joining;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -68,16 +67,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         //              When importing a released dataset, the latest version is marked as RELEASED.
 
         Dataset theDataset = getDataset();
-
-        // If PID can be reserved, only allow publishing if it is.
-        String protocol = getDataset().getProtocol();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
-        if (reservingPidsSupported) {
-            if (theDataset.getGlobalIdCreateTime() == null) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
-            }
-        }
 
         // Set the version numbers:
 

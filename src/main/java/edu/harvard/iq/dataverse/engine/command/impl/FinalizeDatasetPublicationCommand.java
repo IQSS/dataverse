@@ -78,16 +78,18 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
-        
+
+		/*
+		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
+		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
+		 * For registerWhenPublished == true providers, if a PID conflict is found, the call will retry with new PIDs. 
+		 */
         if ( theDataset.getGlobalIdCreateTime() == null ) {
-            // If this were a "reservable" type of a global id 
-            // (Datacite, EZID), an attempt to publish it would have already 
-            // failed, in the PublishDatasetCommand earlier. So we can try 
-            // to register it now. 
-            // This can potentially throw a CommandException, so let's make 
-            // sure we exit cleanly:
             try {
-                registerExternalIdentifier(theDataset, ctxt);
+                // This can potentially throw a CommandException, so let's make 
+                // sure we exit cleanly:
+
+            	registerExternalIdentifier(theDataset, ctxt, false);
             } catch (CommandException comEx) {
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
@@ -159,12 +161,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
 	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
             // some imported datasets may already be released.
-            
+
             if (!datasetExternallyReleased) {
                 publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
                 // This will end the execution of the command, but the method 
-                // above takes proper care to "cleani after itself" in case of
+                // above takes proper care to "clean up after itself" in case of
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
             }
