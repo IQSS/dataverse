@@ -486,6 +486,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case CREATEDS:
                 case SUBMITTEDDS:
                 case PUBLISHEDDS:
+                case PUBLISHFAILED_PIDREG:
                 case RETURNEDDS:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
