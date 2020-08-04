@@ -1,4 +1,4 @@
-## Dataverse installations using DataCite: upgrade action required.
+## Dataverse installations using DataCite: upgrade action recommended.
 
 For installations that are using DataCite, Dataverse v5.0 introduces a change in the process of registering the Persistent Identifier (DOI) for a dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using DataCite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). 
 
