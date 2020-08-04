@@ -73,6 +73,12 @@ public class CreateDataverseCommandTest {
             return dataverse;
         }
         
+        @Override
+        public boolean index(Dataverse dataverse) {
+            indexCalled=true;
+            return true;
+        }        
+        
     };
     
     DataverseRoleServiceBean roles = new DataverseRoleServiceBean(){
@@ -99,6 +105,11 @@ public class CreateDataverseCommandTest {
             assignments.add(assignment);
             return assignment;
         }
+        
+        @Override
+        public RoleAssignment save(RoleAssignment assignment, boolean index) {
+            return save (assignment);
+        }        
 
         @Override
         public List<RoleAssignment> directRoleAssignments(DvObject dvo) {

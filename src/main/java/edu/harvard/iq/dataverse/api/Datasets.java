@@ -219,7 +219,7 @@ public class Datasets extends AbstractApiBean {
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
      */
-    private interface DsVersionHandler<T> {
+    public interface DsVersionHandler<T> {
         T handleLatest();
         T handleDraft();
         T handleSpecific( long major, long minor );
@@ -1659,7 +1659,13 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                    return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                } else {
+                    return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                }
+                
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -1684,7 +1690,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
     }
     
     
-    private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
+    public static <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
         switch (versionId) {
             case ":latest": return hdl.handleLatest();

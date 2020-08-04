@@ -34,6 +34,7 @@ import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 
 public class DatasetUtil {
 
@@ -440,4 +441,24 @@ public class DatasetUtil {
         return datasetFields;
     }
 
+    /**
+     * Given a dataset version, return it's size in human readable units such as
+     * 42.9 MB.There is a GetDatasetStorageSizeCommand but it's overly complex
+     * for the use case.
+     *
+     * @param original Use the original file size rather than the archival file
+     * size for tabular files.
+     */
+    public static String getDownloadSize(DatasetVersion dsv, boolean original) {
+        long bytes = 0l;
+        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            if (original && dataFile.isTabularData()) {
+                bytes += dataFile.getOriginalFileSize();
+            } else {
+                bytes += dataFile.getFilesize();
+            }
+        }
+        return FileSizeChecker.bytesToHumanReadable(bytes);
+    }
 }
