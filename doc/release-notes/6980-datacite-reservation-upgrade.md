@@ -23,4 +23,4 @@ Scripted, the whole process would look as follows (adjust as needed):
    done
 ``` 
 
-Going forward, once all the DOIs have been reserved for the legacy drafts, you may still get an occasional dataset with an unreserved identfier. Datacite service instability would be a potential cause. There is no reason to expect that to happen often, but it is not impossible. You may consider running the script above (perhaps with some extra diagnostics added) regularly, from a cron job or otherwise, to address this preemptively.  
+Going forward, once all the DOIs have been reserved for the legacy drafts, you may still get an occasional dataset with an unreserved identifier. Datacite service instability would be a potential cause. There is no reason to expect that to happen often, but it is not impossible. You may consider running the script above (perhaps with some extra diagnostics added) regularly, from a cron job or otherwise, to address this preemptively.
