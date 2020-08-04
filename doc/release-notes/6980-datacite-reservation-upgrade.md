@@ -1,11 +1,11 @@
 ## Dataverse installations using DataCite: upgrade action recommended.
 
-For installations that are using DataCite, Dataverse v5.0 introduces a change in the process of registering the Persistent Identifier (DOI) for a dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using DataCite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). 
+For installations that are using DataCite, Dataverse v5.0 introduces a change in the process of registering the Persistent Identifier (DOI) for a dataset. Instead of registering it when the dataset is published for the first time, Dataverse will try to "reserve" the DOI when it's created (by registering it as a "draft", using DataCite terminology). When the user publishes the dataset, the DOI will be publicized as well (by switching the registration status to "findable"). This approach makes the process of publishing datasets simpler and less error-prone. 
 
-This approach makes the process of publishing datasets simpler and less error-prone. If the DOI has not been reserved (for example, if DataCite was down when the dataset was created), the author can still attempt to publish. But it does help to ensure that the DOI is guaranteed to be available beforehand. New APIs have been provided for finding any unreserved DataCite-issued DOIs in your Dataverse, and for reserving them (see below). If you are upgrading an installation that uses DataCite, we specifically recommend that you reserve the DOIs for all your pre-existing unpublished drafts as soon as Dataverse v5.0 is deployed, since none of them were registered at create time. 
+New APIs have been provided for finding any unreserved DataCite-issued DOIs in your Dataverse, and for reserving them (see below). While not required - the user can still attempt to publish a dataset with an unreserved DOI - having all the identifiers reserved ahead of time is recommended. If you are upgrading an installation that uses DataCite, we specifically recommend that you reserve the DOIs for all your pre-existing unpublished drafts as soon as Dataverse v5.0 is deployed, since none of them were registered at create time. This can be done using the following API calls:  
 
-The following API calls should be used:
 `/api/pids/unreserved`  will report the ids of the datasets 
+
 `/api/pids/:persistentId/reserve` reserves the assigned DOI with DataCite (will need to be run on every id reported by the the first API). 
 (See the Native API guide for more information).
 
@@ -23,4 +23,4 @@ Scripted, the whole process would look as follows (adjust as needed):
    done
 ``` 
 
-Going forward, once all the DOIs have been reserved for the legacy drafts, you may still get an occasional dataset with an unreserved identifier. DataCite service instability would be a potential cause. There is no reason to expect that to happen often, but it is not impossible. You may consider running the script above (perhaps with some extra diagnostics added) regularly, from a cron job or otherwise, to address this preemptively.
+Going forward, once all the DOIs have been reserved for the legacy drafts, you may still get an occasional dataset with an unreserved identifier. DataCite service instability would be a potential cause. There is no reason to expect that to happen often, but it is not impossible. You may consider running the script above (perhaps with some extra diagnostics added) regularly, from a cron job or otherwise, to address this preemptively. 
