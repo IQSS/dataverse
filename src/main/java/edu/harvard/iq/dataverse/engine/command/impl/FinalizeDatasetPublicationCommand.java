@@ -173,15 +173,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
-
-        // Remove locks
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.finalizePublication));
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.engine().submit( 
-                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
-        }
-        
         final Dataset ds = ctxt.em().merge(theDataset);
         
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
@@ -222,7 +213,15 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 
         exportMetadata(dataset, ctxt.settings());
+        
+        ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.Workflow);
+        ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
+        if ( dataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.InReview);
+        }
+                
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
+
         return retVal;
     }
 
