@@ -12,10 +12,10 @@ curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dat
 chmod 755 ec2-create-instance.sh
 
 # download the sample data ec2 config: 
-curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml
+curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/memorytests.yml
 
 # run the script: 
-./ec2-create-instance.sh -b ${dataverse_branch} -r https://github.com/IQSS/dataverse.git -g main2.yml 2>&1 | tee create-instance.log
+./ec2-create-instance.sh -b ${dataverse_branch} -r https://github.com/IQSS/dataverse.git -g memorytests.yml 2>&1 | tee create-instance.log
 
 # obtain the address of the new instance, and the ssh key: 
 
