@@ -140,6 +140,11 @@ SHARE
 
 `SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add an installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
 
+Geodisy
++++++++
+
+`Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse Installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository <https://github.com/ubc-library/geodisy>`_
+
 Research Data Preservation
 --------------------------
 
