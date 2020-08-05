@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,6 +55,8 @@ public class SavedSearchServiceBean {
     DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
+    @EJB
+    SystemConfig systemConfig;
 
     private final String resultString = "result";
 
@@ -126,13 +129,15 @@ public class SavedSearchServiceBean {
     }
     
     
-    @Schedule(dayOfWeek="Sun", hour="0",minute="30")
-    public void makeLinksForAllSavedSearchesTimer(){
-        logger.info("Linking saved searches");
-        try {
-            JsonObjectBuilder makeLinksForAllSavedSearches = makeLinksForAllSavedSearches(false);
-        } catch (SearchException | CommandException ex) {
-            Logger.getLogger(SavedSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+    @Schedule(dayOfWeek="0", hour="0",minute="30")
+    public void makeLinksForAllSavedSearchesTimer() {
+        if (systemConfig.isTimerServer()) {
+            logger.info("Linking saved searches");
+            try {
+                JsonObjectBuilder makeLinksForAllSavedSearches = makeLinksForAllSavedSearches(false);
+            } catch (SearchException | CommandException ex) {
+                Logger.getLogger(SavedSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
