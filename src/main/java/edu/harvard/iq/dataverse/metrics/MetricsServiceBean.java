@@ -409,7 +409,7 @@ public class MetricsServiceBean implements Serializable {
         DatasetMetrics dsm = null;
         String queryStr = "SELECT sum(" + metricType.toString() +") FROM DatasetMetrics\n" 
                 + ((d==null) ? "WHERE " : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ") and\n")
-                + "date_trunc('month', monthYear) <=  to_date('" + yyyymm + "','YYYY-MM')"
+                + " monthYear <=  yyyymm)"
                 + " and countryCode = '" + country + "';";
         Query query = em.createNativeQuery(queryStr);
         BigDecimal sum = (BigDecimal) query.getSingleResult();
