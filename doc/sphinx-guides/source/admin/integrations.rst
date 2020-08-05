@@ -143,7 +143,7 @@ SHARE
 Geodisy
 +++++++
 
-`Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse Installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository <https://github.com/ubc-library/geodisy>`_
+`Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse Installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository. <https://github.com/ubc-library/geodisy>`_
 
 Research Data Preservation
 --------------------------
