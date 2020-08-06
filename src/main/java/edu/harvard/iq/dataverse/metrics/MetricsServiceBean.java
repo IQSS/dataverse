@@ -415,7 +415,9 @@ public class MetricsServiceBean implements Serializable {
         
         Query query = em.createNativeQuery(queryStr);
         BigDecimal sum = (BigDecimal) query.getSingleResult();
-        logger.info("Sum: " + sum);
+        if(sum==null) {
+            sum = BigDecimal.ZERO;
+        }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(metricType.toString(), sum.longValue());
         return job;
