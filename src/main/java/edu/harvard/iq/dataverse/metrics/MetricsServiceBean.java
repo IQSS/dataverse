@@ -381,21 +381,21 @@ public class MetricsServiceBean implements Serializable {
          
      }
 
-    public JsonObjectBuilder uniqueDatasetDownloads(Dataverse d) {
+    public JsonObjectBuilder uniqueDatasetDownloads(String yyyymm, Dataverse d) {
 
     //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
 
-        Query query = em.createNativeQuery("select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  "
+        Query query = em.createNativeQuery("select 'doi:' || ob.authority || '/' || ob.identifier as pid, distinct count(distinct email) "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
-                + ((d==null) ? "":" and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") +")\n") 
-                + "group by gb.dataset_id, date_trunc('month',gb.responsetime) order by gb.dataset_id,date_trunc('month', gb.responsetime);");
+                + ((d==null) ? "":" and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") +")\n")
+                + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "group by gb.dataset_id, ob.authority, ob.identifier;");
         JsonObjectBuilder job = Json.createObjectBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for(Object[] result : results) {
-                JsonObject stats= Json.createObjectBuilder().add("Counts", (long)result[1]).add("Size", (BigDecimal)result[2]).build();
-                job.add((String)result[0], stats);
+                job.add((String)result[0], (long)result[1]);
             }
             
         } catch (javax.persistence.NoResultException nr) {
