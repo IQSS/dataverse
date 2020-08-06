@@ -385,7 +385,7 @@ public class MetricsServiceBean implements Serializable {
 
     //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
 
-        Query query = em.createNativeQuery("select 'doi:' || ob.authority || '/' || ob.identifier as pid, distinct count(distinct email) "
+        Query query = em.createNativeQuery("select 'doi:' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d==null) ? "":" and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") +")\n")
