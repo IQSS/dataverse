@@ -213,7 +213,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
