@@ -190,6 +190,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
         }
         
+        // Finally, unlock the dataset:
+        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
+        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
+        }
+        
         return readyDataset;
     }
     
@@ -202,7 +209,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-
+        
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
@@ -213,12 +220,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 
         exportMetadata(dataset, ctxt.settings());
-        
-        ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.Workflow);
-        ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
-        if ( dataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.InReview);
-        }
                 
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
 

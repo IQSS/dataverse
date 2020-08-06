@@ -788,21 +788,22 @@ public class DatasetServiceBean implements java.io.Serializable {
      * Any failure notifications to users should be sent from inside the command.
      */
     @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 
         // the dataset initiated by the PublishDatasetCommand has finished, 
         // to avoid any concurrency/optimistic lock issues. 
-        // Aug. 2020/v5.0: It appears to be working consistently without any 
+        // Aug. 2020/v5.0: It MAY be working consistently without any 
         // sleep here, after the call the method has been moved to the onSuccess()
         // portion of the PublishDatasetCommand. I'm going to leave the 1 second
-        // sleep commented-out below for now: -- L.A.
-        /*try {
+        // sleep below, for just in case reasons: -- L.A.
+        try {
             Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for 1 second.");
-        }*/
+            logger.warning("Failed to sleep for a second.");
+        }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
         try {
