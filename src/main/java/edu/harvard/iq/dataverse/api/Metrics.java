@@ -455,7 +455,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("/files/byType")
     public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getFilesInDataverse(uriInfo,null, parentAlias);
+        return getFilesInDataverse(uriInfo,MetricsUtil.getCurrentMonth(), parentAlias);
     }        
 
     @GET
