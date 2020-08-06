@@ -1949,7 +1949,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
                 monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
             }
             country = country.toLowerCase();
-            if(!DatasetMetrics.isValidCountryCode(country)) {
+            if(!MakeDataCountUtil.isValidCountryCode(country)) {
                 return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
