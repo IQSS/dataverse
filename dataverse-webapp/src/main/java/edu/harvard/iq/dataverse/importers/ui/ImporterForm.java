@@ -56,6 +56,7 @@ public class ImporterForm {
     private static final Logger logger = LoggerFactory.getLogger(ImporterForm.class);
 
     private static final String METADATA_IMPORT_RESULT_ERROR = "metadata.import.result.error";
+    private static final String UPLOAD_SUCCESSFUL = "metadata.import.upload.successful";
 
     public enum ImportStep {
         FIRST, SECOND;
@@ -128,6 +129,10 @@ public class ImporterForm {
         Path tempPath = prepareTempPath(file);
         Files.copy(file.getInputStream(), tempPath, StandardCopyOption.REPLACE_EXISTING);
         component.setValue(tempPath.toFile());
+        FacesContext.getCurrentInstance().addMessage(component.getClientId(), 
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                BundleUtil.getStringFromBundle(UPLOAD_SUCCESSFUL, Collections.singletonList(file.getFileName())),
+                StringUtils.EMPTY));
     }
 
     public void nextStep() {
