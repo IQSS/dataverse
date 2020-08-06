@@ -532,6 +532,43 @@ public class Metrics extends AbstractApiBean {
     }
 
     
+    @GET
+    @Path("uniquedownloads")
+    public Response getUniqueDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getUniqueDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    }
+    
+    @GET
+    @Path("uniquedownloads/toMonth/{yyyymm}")
+    public Response getUniqueDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {                
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        
+        String metricName = "uniqueDownloadsToMonth";
+        
+        try {
+            
+            String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+            if (null == jsonObj) { //run query and save
+                jsonObj = metricsSvc.uniqueDatasetDownloads(sanitizedyyyymm, d).build();
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+            }
+
+            return ok(jsonObj);
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        } catch (Exception ex) {
+            return error(BAD_REQUEST, ex.getLocalizedMessage());
+        }
+    }
+
 
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
         for(String theKey : uriDetails.getQueryParameters().keySet()) {
