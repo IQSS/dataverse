@@ -504,7 +504,11 @@ public class Metrics extends AbstractApiBean {
             } catch (IllegalArgumentException ex) {
                 return error(Response.Status.BAD_REQUEST, ex.getMessage());
             }
-            String metricName = "MDC-" + metricType.toString();
+            country = country.toLowerCase();
+            if(!DatasetMetrics.isValidCountryCode(country)) {
+                return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+            }
+            String metricName = "MDC-" + metricType.toString() + ((country==null)?"" : "-" + country);
 
             String sanitizedyyyymm = null;
             if (yyyymm != null) {
