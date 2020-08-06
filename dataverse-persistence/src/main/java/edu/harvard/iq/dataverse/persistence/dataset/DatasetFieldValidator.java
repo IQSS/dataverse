@@ -72,7 +72,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             boolean valid = false;
             String testString = value.getValue();
             if (testString.startsWith("-")) {
-            	testString = testString.substring(1);
+                testString = testString.substring(1);
             }
 
             String YYYYMMDDformat = "yyyy-MM-dd";
@@ -184,7 +184,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         } catch (ParseException e) {
             valid = false;
         }
-        if (dateString.length() > pattern.length()) {
+        if (dateString.length() != pattern.length()) {
             valid = false;
         }
         return valid;

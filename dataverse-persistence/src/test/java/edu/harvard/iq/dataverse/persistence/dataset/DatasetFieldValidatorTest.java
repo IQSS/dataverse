@@ -146,11 +146,14 @@ public class DatasetFieldValidatorTest {
                 
                 //more date cases
                 
-                Arguments.of("966", Option.of(FieldType.DATE), Option.none(), true),
-                Arguments.of("1999-1", Option.of(FieldType.DATE), Option.none(), true),
-                Arguments.of("1999-1-1", Option.of(FieldType.DATE), Option.none(), true),
-                Arguments.of("1999-01-1", Option.of(FieldType.DATE), Option.none(), true),
+                Arguments.of("966", Option.of(FieldType.DATE), Option.none(), false),
+                Arguments.of("0966", Option.of(FieldType.DATE), Option.none(), true),
+                Arguments.of("1999-1", Option.of(FieldType.DATE), Option.none(), false),
+                Arguments.of("1999-1-1", Option.of(FieldType.DATE), Option.none(), false),
+                Arguments.of("1999-01-1", Option.of(FieldType.DATE), Option.none(), false),
                 Arguments.of("-1999", Option.of(FieldType.DATE), Option.none(), true),
+                Arguments.of("-999", Option.of(FieldType.DATE), Option.none(), false),
+                Arguments.of("-0999", Option.of(FieldType.DATE), Option.none(), true),
                 Arguments.of("-1991-01", Option.of(FieldType.DATE), Option.none(), true),
                 Arguments.of("10000", Option.of(FieldType.DATE), Option.none(), false),
                 Arguments.of("1999-13", Option.of(FieldType.DATE), Option.none(), false),
