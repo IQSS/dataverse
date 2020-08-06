@@ -1948,9 +1948,11 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
                 // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
                 monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
             }
-            country = country.toLowerCase();
-            if(!MakeDataCountUtil.isValidCountryCode(country)) {
-                return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+            if (country != null) {
+                country = country.toLowerCase();
+                if (!MakeDataCountUtil.isValidCountryCode(country)) {
+                    return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+                }
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
