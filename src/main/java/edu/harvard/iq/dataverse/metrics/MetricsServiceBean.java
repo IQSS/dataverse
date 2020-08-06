@@ -411,8 +411,11 @@ public class MetricsServiceBean implements Serializable {
                 + ((d==null) ? "WHERE " : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ") and\n")
                 + " monthYear <= '" + yyyymm + "' "
                 + ((country == null) ? ";" : " and countryCode = '" + country + "';");
+        logger.info("final query: " + queryStr);
+        
         Query query = em.createNativeQuery(queryStr);
         BigDecimal sum = (BigDecimal) query.getSingleResult();
+        logger.info("Sum: " + sum);
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(metricType.toString(), sum.longValue());
         return job;
