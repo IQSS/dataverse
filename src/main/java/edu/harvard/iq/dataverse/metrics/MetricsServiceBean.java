@@ -670,7 +670,7 @@ public class MetricsServiceBean implements Serializable {
         }
         sql = sql + "order by depth desc, ownerId asc;";
 
-        logger.fine("query  - (" + d.getId() + ") - getDataversesChildrenRecursively: " + sql);
+        logger.fine("query  - getDataversesChildrenRecursively: " + sql);
         return em.createNativeQuery(sql).getResultList();
     }
 
