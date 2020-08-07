@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
@@ -18,20 +17,25 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
+import org.json.JSONArray;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -587,6 +591,7 @@ public class MetricsServiceBean implements Serializable {
                 + "SELECT id\n"
                 + "FROM querytree\n"
                 + "where dtype='" + dtype + "' and owner_id is not null\n";
+        //TODO: DEACCESSIONED datasets still have a publication date - should check versionstate explicitly?
         if (versionState != null ) {
             switch (versionState) {
                 case RELEASED: sql += "and publicationdate is not null\n";
@@ -594,9 +599,80 @@ public class MetricsServiceBean implements Serializable {
                 case DRAFT:sql += "and publicationdate is null\n";
                     break;
             }
-        } else sql+=";";
+        } 
+        sql+=";";
         
-        logger.fine("query  - (" + dvId + ") - getChildrenIdsRecursivelly: " + sql);
+        logger.fine("query  - (" + dvId + ") - getChildrenIdsRecursively: " + sql);
+        return em.createNativeQuery(sql).getResultList();
+    }
+    
+    public JsonObject getDataverseTree(Dataverse d, String yyyymm, DatasetVersion.VersionState state) {
+        List<Object[]> results = getDataversesChildrenRecursively(d, yyyymm, state);
+        HashMap<Long, JsonArray> subtrees = new HashMap<Long, JsonArray>();
+        // Relying on the depth-first order
+        // id, depth, alias, name, ownerid
+        // (String)objs[2], (int)objs[0], (int) (long)objs[4], (int)objs[1],
+        // (String)objs[3]));
+        int currentDepth = Integer.MAX_VALUE;
+        long currentOwnerId = -1;
+        JsonArrayBuilder children = null;
+        for (Object[] result : results) {
+            int depth = (int) result[1];
+            long ownerId = (long) result[4];
+            long id = (long) result[0];
+            JsonObjectBuilder node = Json.createObjectBuilder()
+                    .add("id", id)
+                    .add("ownerId", ownerId)
+                    .add("alias", (String) result[2])
+                    .add("depth", depth)
+                    .add("name", (String) result[3]);
+            if (ownerId != currentOwnerId) {
+                // Add current array of children to map and start a new one
+                if (children != null) {
+                    subtrees.put(currentOwnerId, children.build());
+                }
+                children = Json.createArrayBuilder();
+                currentOwnerId = ownerId;
+            }
+            if (subtrees.containsKey(id)) {
+                node.add("children", subtrees.get(id));
+                subtrees.remove(id);
+            }
+            children.add(node);
+        }
+        return (JsonObject) children.build().get(0);
+    }
+
+    private List<Object[]> getDataversesChildrenRecursively(Dataverse d, String yyyymm, DatasetVersion.VersionState versionState) {
+        String sql =  "WITH RECURSIVE querytree AS (\n"
+                + "     SELECT id, dtype, owner_id, publicationdate, 0 as depth\n"
+                + "     FROM dvobject\n"
+                + "     WHERE id =" + d.getId() + "\n"
+                + "     UNION ALL\n"
+                + "     SELECT e.id, e.dtype, e.owner_id, e.publicationdate, depth+ 1\n"
+                + "     FROM dvobject e\n"
+                + "     INNER JOIN querytree qtree ON qtree.id = e.owner_id\n"
+                + ")\n"
+                + "SELECT qt.id, depth, dv.alias, dv.name, coalesce(qt.owner_id,0) as ownerId\n"
+                + "FROM querytree qt, dataverse dv\n"
+                + "where dtype='Dataverse'\n"
+                + "and qt.id=dv.id\n";
+                
+                
+                
+              //TODO: DEACCESSIONED datasets still have a publication date - should check versionstate explicitly?
+        if (versionState != null ) {
+            switch (versionState) {
+                case RELEASED:
+                    sql += " and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM')\n";
+                    break;
+                case DRAFT: sql += "and publicationdate is null\n";
+                    break;
+            }
+        }
+              sql = sql + "order by depth desc, ownerId asc;";
+
+        logger.fine("query  - (" + d.getId() + ") - getDataversesChildrenRecursively: " + sql);
         return em.createNativeQuery(sql).getResultList();
     }
 
