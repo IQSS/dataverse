@@ -646,7 +646,7 @@ public class MetricsServiceBean implements Serializable {
         String sql = "WITH RECURSIVE querytree AS (\n"
                 + "     SELECT id, dtype, owner_id, publicationdate, 0 as depth\n"
                 + "     FROM dvobject\n"
-                + ((d == null) ? "" :"WHERE id =" + d.getId() + "\n")
+                + "     WHERE id =" + ((d == null) ? "1" : d.getId() + " \n")
                 + "     UNION ALL\n"
                 + "     SELECT e.id, e.dtype, e.owner_id, e.publicationdate, depth+ 1\n"
                 + "     FROM dvobject e\n"
