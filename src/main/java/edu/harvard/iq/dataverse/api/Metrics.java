@@ -1,22 +1,19 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
-import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
-import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -28,8 +25,6 @@ import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -77,7 +72,7 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "dataversesToMonth";
 
-        try {
+
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
@@ -89,11 +84,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        //TODO: Eventually the catch in each endpoint should be more specific
-        //          and more general errors should be logged.
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -112,7 +102,6 @@ public class Metrics extends AbstractApiBean {
         if(days < 1) {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
-        try {
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
             if (null == jsonObj) { //run query and save
@@ -123,9 +112,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -141,7 +127,6 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "dataversesByCategory";
 
-        try {
             JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 
             if (null == jsonArray) { //run query and save
@@ -150,9 +135,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonArray);
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -168,7 +150,6 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "dataversesBySubject";
         
-        try {
             JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
 
             if (null == jsonArray) { //run query and save
@@ -177,9 +158,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonArray);
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     /** Datasets */
@@ -211,9 +189,9 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "datasetsToMonth";
 
-        try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-            String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
+            String validDataLocation;
+                validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d));
 
             if (null == jsonObj) { //run query and save
@@ -224,9 +202,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -245,7 +220,6 @@ public class Metrics extends AbstractApiBean {
         if(days < 1) {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
-        try {
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), validDataLocation, d));
 
@@ -257,9 +231,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -281,7 +252,6 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "datasetsBySubjectToMonth";
 
-        try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
             JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d));
@@ -292,9 +262,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonArray);
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     /** Files */
@@ -324,7 +291,7 @@ public class Metrics extends AbstractApiBean {
             
         String metricName = "filesToMonth";
 
-        try {
+
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             logger.fine("yyyymm: " + sanitizedyyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
@@ -338,9 +305,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonObj);
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -359,7 +323,7 @@ public class Metrics extends AbstractApiBean {
         if(days < 1) {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
-        try {
+
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
             if (null == jsonObj) { //run query and save
@@ -370,9 +334,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
 
     /** Downloads */
@@ -403,23 +364,22 @@ public class Metrics extends AbstractApiBean {
         
         String metricName = "downloadsToMonth";
         
-        try {
             
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
             if (null == jsonObj) { //run query and save
-                Long count = metricsSvc.downloadsToMonth(sanitizedyyyymm, d);
+                Long count;
+                try {
+                    count = metricsSvc.downloadsToMonth(sanitizedyyyymm, d);
+                } catch (ParseException e) {
+                    return error(BAD_REQUEST, "Unable to parse supplied date: " + e.getLocalizedMessage());
+                }
                 jsonObj = MetricsUtil.countToJson(count).build();
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
 
             return ok(jsonObj);
-        } catch (IllegalArgumentException ia) {
-            return error(BAD_REQUEST, ia.getLocalizedMessage());
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -438,7 +398,6 @@ public class Metrics extends AbstractApiBean {
         if(days < 1) {
             return error(BAD_REQUEST, "Invalid parameter for number of days.");
         }
-        try {
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheDayBased(metricName, String.valueOf(days), null, d));
 
             if (null == jsonObj) { //run query and save
@@ -448,10 +407,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonObj);
-
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
     
     @GET
@@ -467,7 +422,7 @@ public class Metrics extends AbstractApiBean {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
                 
         String metricName = "filesByType";
-        try {
+
             String sanitizedyyyymm = null;
             if (yyyymm != null) {
                 sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
@@ -482,9 +437,6 @@ public class Metrics extends AbstractApiBean {
 
             return ok(jsonObj);
 
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
         
     @GET
@@ -498,8 +450,6 @@ public class Metrics extends AbstractApiBean {
     @Path("makeDataCount/{metric}/toMonth/{yyyymm}")
     public Response getMakeDataCountMetric(@PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
-        try {
-            NullSafeJsonBuilder jsonObjectBuilder = jsonObjectBuilder();
             MakeDataCountUtil.MetricType metricType = null;
             try {
                 metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
@@ -528,9 +478,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonObj);
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
 
     
@@ -553,7 +500,6 @@ public class Metrics extends AbstractApiBean {
         
         String metricName = "uniqueDownloadsToMonth";
         
-        try {
             
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
@@ -564,11 +510,6 @@ public class Metrics extends AbstractApiBean {
             }
 
             return ok(jsonObj);
-        } catch (IllegalArgumentException ia) {
-            return error(BAD_REQUEST, ia.getLocalizedMessage());
-        } catch (Exception ex) {
-            return error(BAD_REQUEST, ex.getLocalizedMessage());
-        }
     }
 
     @GET
@@ -590,7 +531,6 @@ public class Metrics extends AbstractApiBean {
         }
 
         String metricName = "tree";
-        try {
             String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
 
             JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
@@ -599,9 +539,6 @@ public class Metrics extends AbstractApiBean {
                 metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
             }
             return ok(jsonObj);
-        } catch (Exception ex) {
-            return error(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
-        }
     }
     
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
