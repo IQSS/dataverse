@@ -407,7 +407,7 @@ public class MetricsServiceBean implements Serializable {
 
     public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
         DatasetMetrics dsm = null;
-        String queryStr = "SELECT sum(" + metricType.toString() +") FROM DatasetMetrics\n" 
+        String queryStr = "SELECT coalesce(sum(" + metricType.toString() +"),0) FROM DatasetMetrics\n" 
                 + ((d==null) ? "WHERE " : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ") and\n")
                 + " monthYear <= '" + yyyymm + "' "
                 + ((country == null) ? ";" : " and countryCode = '" + country + "';");
@@ -415,9 +415,9 @@ public class MetricsServiceBean implements Serializable {
         
         Query query = em.createNativeQuery(queryStr);
         BigDecimal sum = (BigDecimal) query.getSingleResult();
-        if(sum==null) {
-            sum = BigDecimal.ZERO;
-        }
+//        if(sum==null) {
+//            sum = BigDecimal.ZERO;
+//        }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(metricType.toString(), sum.longValue());
         return job;
