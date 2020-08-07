@@ -62,10 +62,7 @@ public class Metric implements Serializable {
 
     //For monthly and day metrics
     
-    public Metric(String name, String dayString, String dataLocation, Dataverse d, String value) throws IOException {
-        if(null == name || null == value) {
-            throw new IOException("A created metric must have a metricName and metricValue");
-        }
+    public Metric(String name, String dayString, String dataLocation, Dataverse d, String value) {
         this.name = name;
         this.valueJson = value;
         this.dataLocation = dataLocation;

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,7 +57,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      * @param d 
      */
-    public long dataversesToMonth(String yyyymm, Dataverse d) throws Exception {        
+    public long dataversesToMonth(String yyyymm, Dataverse d) {        
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -70,7 +71,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long dataversesPastDays(int days, Dataverse d) throws Exception {
+    public long dataversesPastDays(int days, Dataverse d) {
         Query query = em.createNativeQuery(""
                 + "select count(dvobject.id)\n"
                 + "from dataverse\n"
@@ -84,7 +85,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public List<Object[]> dataversesByCategory(Dataverse d) throws Exception {
+    public List<Object[]> dataversesByCategory(Dataverse d) {
 
         Query query = em.createNativeQuery(""
                 + "select dataversetype, count(dataversetype) from dataverse\n"
@@ -121,7 +122,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      * @param d 
      */
-    public long datasetsToMonth(String yyyymm, String dataLocation, Dataverse d) throws Exception {
+    public long datasetsToMonth(String yyyymm, String dataLocation, Dataverse d) {
         String dataLocationLine = "(date_trunc('month', releasetime) <=  to_date('" + yyyymm +"','YYYY-MM') and dataset.harvestingclient_id IS NULL)\n"; 
         
         if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
@@ -220,7 +221,7 @@ public class MetricsServiceBean implements Serializable {
         return query.getResultList();
     }
     
-    public long datasetsPastDays(int days, String dataLocation, Dataverse d) throws Exception {
+    public long datasetsPastDays(int days, String dataLocation, Dataverse d) {
         String dataLocationLine = "(releasetime > current_date - interval '"+days+"' day and dataset.harvestingclient_id IS NULL)\n"; 
         
         if(!DATA_LOCATION_LOCAL.equals(dataLocation)) { //Default api state is DATA_LOCATION_LOCAL
@@ -259,7 +260,7 @@ public class MetricsServiceBean implements Serializable {
      * @param yyyymm Month in YYYY-MM format.
      * @param d 
      */
-    public long filesToMonth(String yyyymm, Dataverse d) throws Exception {
+    public long filesToMonth(String yyyymm, Dataverse d) {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -282,7 +283,7 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
     
-    public long filesPastDays(int days, Dataverse d) throws Exception {
+    public long filesPastDays(int days, Dataverse d) {
         Query query = em.createNativeQuery(""
                 + "select count(*)\n"
                 + "from filemetadata\n"
@@ -306,7 +307,8 @@ public class MetricsServiceBean implements Serializable {
     }
 
     /** Downloads 
-     * @param d */
+     * @param d 
+     * @throws ParseException */
     
     /*
      * This includes getting historic download without a timestamp if query
@@ -314,7 +316,7 @@ public class MetricsServiceBean implements Serializable {
      * 
      * @param yyyymm Month in YYYY-MM format.
      */
-    public long downloadsToMonth(String yyyymm, Dataverse d) throws Exception {
+    public long downloadsToMonth(String yyyymm, Dataverse d) throws ParseException {
         //ToDo - published only?
         Query earlyDateQuery = em.createNativeQuery(""
                + "select responsetime from guestbookresponse\n"
@@ -349,7 +351,7 @@ public class MetricsServiceBean implements Serializable {
 
     }
 
-    public long downloadsPastDays(int days, Dataverse d) throws Exception {
+    public long downloadsPastDays(int days, Dataverse d) {
         //ToDo - published only?
         Query query = em.createNativeQuery(""
                 + "select count(id)\n"
@@ -430,7 +432,7 @@ public class MetricsServiceBean implements Serializable {
     
     /** Helper functions for metric caching */
     
-    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation, Dataverse d) throws Exception {
+    public String returnUnexpiredCacheDayBased(String metricName, String days, String dataLocation, Dataverse d) {
         Metric queriedMetric = getMetric(metricName, dataLocation, days, d);
 
         if (!doWeQueryAgainDayBased(queriedMetric)) {
@@ -439,7 +441,7 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
     
-    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation, Dataverse d) throws Exception {
+    public String returnUnexpiredCacheMonthly(String metricName, String yyyymm, String dataLocation, Dataverse d) {
         Metric queriedMetric = getMetric(metricName, dataLocation, yyyymm, d);
 
         if (!doWeQueryAgainMonthly(queriedMetric)) {
@@ -448,7 +450,7 @@ public class MetricsServiceBean implements Serializable {
         return null;
     }
 
-    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation, Dataverse d) throws Exception {
+    public String returnUnexpiredCacheAllTime(String metricName, String dataLocation, Dataverse d) {
         Metric queriedMetric = getMetric(metricName, dataLocation, null, d); //MAD: not passing a date
 
         if (!doWeQueryAgainAllTime(queriedMetric)) {
@@ -521,7 +523,7 @@ public class MetricsServiceBean implements Serializable {
         return (todayMinus.after(lastCalled));
     }
 
-    public Metric save(Metric newMetric) throws Exception {
+    public Metric save(Metric newMetric) {
         Metric oldMetric = getMetric(newMetric.getName(), newMetric.getDataLocation(), newMetric.getDateString(), newMetric.getDataverse());
 
         if (oldMetric != null) {
@@ -534,7 +536,7 @@ public class MetricsServiceBean implements Serializable {
 
     //This works for date and day based metrics
     //It is ok to pass null for dataLocation and dayString
-    public Metric getMetric(String name, String dataLocation, String dayString, Dataverse dataverse) throws Exception {
+    public Metric getMetric(String name, String dataLocation, String dayString, Dataverse dataverse) {
         Query query = em.createQuery("select object(o) from Metric as o"
                 + " where o.name = :name"
                 + " and o.dataLocation" + (dataLocation == null ? " is null" : " = :dataLocation")

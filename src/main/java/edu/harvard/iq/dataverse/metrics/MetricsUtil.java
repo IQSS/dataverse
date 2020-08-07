@@ -19,6 +19,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
+import javax.ws.rs.BadRequestException;
 
 public class MetricsUtil {
 
@@ -86,11 +87,11 @@ public class MetricsUtil {
      * @param userInput A year and month in YYYY-MM format.
      * @return A year and month in YYYY-MM format.
      *
-     * Note that along with sanitization, this checks that the inputted month is
+     * Note that along with sanitization, this checks that the requested month is
      * not after the current one. This will need to be made more robust if we
      * start writing metrics for farther in the future (e.g. the current year)
      */
-    public static String sanitizeYearMonthUserInput(String userInput) throws Exception {
+    public static String sanitizeYearMonthUserInput(String userInput) throws BadRequestException {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
         DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()
                 .appendPattern("yyyy-MM")
@@ -101,25 +102,25 @@ public class MetricsUtil {
         try {
             inputLocalDate = LocalDate.parse(userInput, dateTimeFormatter);
         } catch (DateTimeParseException ex) {
-            throw new Exception("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
+            throw new BadRequestException("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
 
         LocalDate currentDate = (new Date()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
         if (inputLocalDate.isAfter(currentDate)) {
-            throw new Exception("The inputted date is set past the current month.");
+            throw new BadRequestException("The requested date is set past the current month.");
         }
 
         String sanitized = inputLocalDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
         return sanitized;
     }
 
-    public static String validateDataLocationStringType(String dataLocation) throws Exception {
+    public static String validateDataLocationStringType(String dataLocation) throws BadRequestException {
         if( null == dataLocation || "".equals(dataLocation)) {
             dataLocation = DATA_LOCATION_LOCAL;
         } 
         if(!(DATA_LOCATION_LOCAL.equals(dataLocation) || DATA_LOCATION_REMOTE.equals(dataLocation) || DATA_LOCATION_ALL.equals(dataLocation))) {
-            throw new Exception("The inputted data location is not valid");
+            throw new BadRequestException("Data location must be 'local', 'remote', or 'all'");
         }
         
         return dataLocation;
