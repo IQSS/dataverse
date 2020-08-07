@@ -79,6 +79,19 @@ public class MetadataBlockService {
 
 
     /**
+     * Refresh metadata block view options in order to change editable given metadata block.
+     */
+    public MetadataBlockViewOptions refreshDatasetFieldTypes(DataverseMetaBlockOptions dataverseMetaBlockOptions, Long metadataBlockId,
+                                                                boolean editable, boolean fieldsVisible) {
+        return dataverseMetaBlockOptions.getMdbViewOptions().put(metadataBlockId,
+                                                                 MetadataBlockViewOptions.newBuilder()
+                                                                         .showDatasetFieldTypes(fieldsVisible)
+                                                                         .editableDatasetFieldTypes(editable)
+                                                                         .selected(dataverseMetaBlockOptions.isMetaBlockSelected(metadataBlockId))
+                                                                         .build());
+    }
+
+    /**
      * Changes metadata block view options in order to show uneditable dataset fields for given metadata block.
      */
     public MetadataBlockViewOptions prepareDatasetFieldsToBeUnEditable(DataverseMetaBlockOptions dataverseMetaBlockOptions, Long metadataBlockId) {

@@ -150,6 +150,11 @@ public class CreateEditDataversePage implements Serializable {
         }
     }
 
+    public void refreshDatasetFieldTypes(Long mdbId, boolean editable, boolean fieldsVisible) {
+        metadataBlockService.refreshDatasetFieldTypes(mdbOptions, mdbId, editable, fieldsVisible);
+    }
+
+    
     /**
      * Changes metadata block view options in order to show editable dataset fields for given metadata block.
      */
@@ -234,6 +239,8 @@ public class CreateEditDataversePage implements Serializable {
     public void makeMetadataBlocksSelectable() {
         mdbOptions.setInheritMetaBlocksFromParent(false);
         dataverse.setMetadataBlockRoot(true);
+        allMetadataBlocks = metadataBlockService.prepareMetaBlocksAndDatasetfields(dataverse, mdbOptions);
+
     }
 
     /**

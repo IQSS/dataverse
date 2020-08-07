@@ -282,13 +282,17 @@
                                                     jsf:value="#{CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected}"
                                                     name="mdbSelectRequiredInherited" disabled="disabled"
                                                     jsf:rendered="#{CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}">
-                                                <p:ajax update="@widgetVar(optionBlock)"/>
+                                                <p:ajax update="@widgetVar(optionBlock)" onsuccess="#{CreateEditDataversePage.refreshDatasetFieldTypes(mdb.id,
+                                                CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected,
+                                                CreateEditDataversePage.mdbOptions.isShowDatasetFieldTypes(mdb.id))}" />
                                             </input>
                                             <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}"
                                                     jsf:value="#{CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected}"
                                                     name="mdbSelectOptional"
                                                     jsf:rendered="#{!mdb.isCitationMetaBlock() and !CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}">
-                                                <p:ajax update="@widgetVar(optionBlock)"/>
+                                                <p:ajax update="@widgetVar(optionBlock)" onsuccess="#{CreateEditDataversePage.refreshDatasetFieldTypes(mdb.id,
+                                                CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).selected,
+                                                CreateEditDataversePage.mdbOptions.isShowDatasetFieldTypes(mdb.id))}" />
                                             </input>
                                             
                                             <h:outputText
@@ -336,7 +340,8 @@
                                                         </legend>
                                                         <div class="col-xs-5">
                                                             <p:selectOneRadio value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).requiredField}"
-                                                                                disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)}"
+                                                                                disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)
+                                                                                            or CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}"
                                                                                 rendered="#{!dsft.required}">
                                                                 <f:selectItems
                                                                         value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).selectedDatasetFields}"
@@ -357,14 +362,17 @@
                                                                         value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).included}"
                                                                         itemLabel="#{dsft.displayName}"
                                                                         escape="false"
-                                                                        disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) or !CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).editableDatasetFieldTypes}">
+                                                                        disabled="#{(!dsft.hasParent and (dsft.hasRequiredChildren or dsft.required)) 
+                                                                                    or !CreateEditDataversePage.mdbOptions.mdbViewOptions.get(mdb.id).editableDatasetFieldTypes
+                                                                                    or CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}">
                                                                     <p:ajax update="#{p:resolveClientIds('@id(metadataFieldOptionsPanelContent)', view)}"
                                                                             onsuccess="#{CreateEditDataversePage.refreshDatasetFieldsViewOptions(mdb.id,dsft.id)}"/>
                                                                 </p:selectBooleanCheckbox>
                                                          </div>
                                                          <div class="col-xs-5">
                                                             <p:selectOneRadio value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).requiredField}"
-                                                                                disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)}"
+                                                                                disabled="#{!CreateEditDataversePage.mdbOptions.isEditableDatasetFieldTypes(mdb.id)
+                                                                                            or CreateEditDataversePage.mdbOptions.inheritMetaBlocksFromParent}"
                                                                                 rendered="#{!dsft.hasChildren and !dsft.required}">
                                                                 <f:selectItems
                                                                         value="#{CreateEditDataversePage.mdbOptions.datasetFieldViewOptions.get(dsft.id).selectedDatasetFields}"
