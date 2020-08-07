@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.Response;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import javax.ws.rs.core.UriInfo;
@@ -569,7 +571,39 @@ public class Metrics extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Path("tree")
+    public Response getDataversesTree(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getDataversesTree(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    }
+    
+    @GET
+    @Path("tree/toMonth/{yyyymm}")
+    public Response getDataversesTree(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm,  @QueryParam("parentAlias") String parentAlias) {
 
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        try { 
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[]{"parentAlias"});
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "tree";
+        try {
+            String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+
+            JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+            if (null == jsonObj) { //run query and save
+                jsonObj = metricsSvc.getDataverseTree(d, sanitizedyyyymm, DatasetVersion.VersionState.RELEASED);
+                metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+            }
+            return ok(jsonObj);
+        } catch (Exception ex) {
+            return error(INTERNAL_SERVER_ERROR, ex.getLocalizedMessage());
+        }
+    }
+    
     private void errorIfUnrecongizedQueryParamPassed(UriInfo uriDetails, String[] allowedQueryParams) throws IllegalArgumentException {
         for(String theKey : uriDetails.getQueryParameters().keySet()) {
             if(!Arrays.stream(allowedQueryParams).anyMatch(theKey::equals)) {
