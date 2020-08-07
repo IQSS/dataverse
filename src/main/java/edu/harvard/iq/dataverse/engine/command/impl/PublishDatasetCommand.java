@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
+import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -91,7 +92,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
             ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
-            return new PublishDatasetResult(theDataset, false);
+            return new PublishDatasetResult(theDataset, Status.Workflow);
             
         } else{
             // We will skip trying to register the global identifiers for datafiles 
@@ -135,8 +136,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             lock.setInfo(info);
             ctxt.datasets().addDatasetLock(theDataset, lock);
             theDataset = ctxt.em().merge(theDataset);
-            ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
-            return new PublishDatasetResult(theDataset, false);
+            // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
+            // method:
+            //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+            return new PublishDatasetResult(theDataset, Status.Inprogress);
 
             /**
               * Code for for "synchronous" (while-you-wait) publishing 
@@ -144,7 +147,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             } else {
                 // Synchronous publishing (no workflow involved)
                 theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
-                return new PublishDatasetResult(theDataset, true);
+                return new PublishDatasetResult(theDataset, Status.Completed);
             } */
         }
     }
@@ -196,6 +199,24 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
         }
-    }   
+    }
+    
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataset dataset = null;
+        try{
+            dataset = (Dataset) r;
+        } catch (ClassCastException e){
+            dataset  = ((PublishDatasetResult) r).getDataset();
+        }
+
+        if (dataset != null) {
+            ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
+            return true;
+        }
+        
+        return false;
+    }
     
 }

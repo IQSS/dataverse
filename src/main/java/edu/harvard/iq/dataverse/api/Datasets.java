@@ -1020,7 +1020,7 @@ public class Datasets extends AbstractApiBean {
             PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                         createDataverseRequest(user),
                     isMinor));
-            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
+            return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
