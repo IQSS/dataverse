@@ -83,6 +83,8 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
+
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import java.util.Arrays;
@@ -1091,12 +1093,14 @@ public class FileUtil implements java.io.Serializable  {
 
 			} 
 		} else {
+			//Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
+            finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
 			if(suppliedContentType==FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT) {
-				finalType=determineFileTypeByExtension(fileName);
-				logger.fine("Determined type: " + finalType);
-			} else {
-			  //Remote file, trust supplier
-			  finalType = suppliedContentType;
+				String type=determineFileTypeByExtension(fileName);
+				if(!StringUtils.isBlank(type)) {
+					finalType=type;
+					logger.fine("Determined type: " + finalType);
+				} 
 			}
 		}
         // Finally, if none of the special cases above were applicable (or 
