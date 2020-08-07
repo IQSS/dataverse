@@ -574,6 +574,8 @@ public class MetricsServiceBean implements Serializable {
     }
 
     private List<Integer> getChildrenIdsRecursively(Long dvId, String dtype, DatasetVersion.VersionState versionState) {
+        
+        //Intended to be called only with dvId != null
         String sql = "WITH RECURSIVE querytree AS (\n"
                 + "     SELECT id, dtype, owner_id, publicationdate\n"
                 + "     FROM dvobject\n"
@@ -616,7 +618,7 @@ public class MetricsServiceBean implements Serializable {
         for (Object[] result : results) {
             int depth = (int) result[1];
             long ownerId = (long) result[4];
-            long id = (long) result[0];
+            long id = (int) result[0];
             JsonObjectBuilder node = Json.createObjectBuilder()
                     .add("id", id)
                     .add("ownerId", ownerId)
@@ -644,7 +646,7 @@ public class MetricsServiceBean implements Serializable {
         String sql = "WITH RECURSIVE querytree AS (\n"
                 + "     SELECT id, dtype, owner_id, publicationdate, 0 as depth\n"
                 + "     FROM dvobject\n"
-                + "     WHERE id =" + d.getId() + "\n"
+                + ((d == null) ? "" :"WHERE id =" + d.getId() + "\n")
                 + "     UNION ALL\n"
                 + "     SELECT e.id, e.dtype, e.owner_id, e.publicationdate, depth+ 1\n"
                 + "     FROM dvobject e\n"
