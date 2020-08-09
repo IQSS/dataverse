@@ -218,7 +218,7 @@ public class DatasetMetrics implements Serializable {
     }
 
     public void setCountryCode(String countryCode) {
-        this.countryCode = countryCode.toLowerCase();
+        this.countryCode = ((countryCode == null) ? null : countryCode.toLowerCase());
     }
     
     @Transient private Long viewsUnique;
