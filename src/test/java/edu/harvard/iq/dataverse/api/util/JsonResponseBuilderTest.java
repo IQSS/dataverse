@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api.util;
 
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import edu.harvard.iq.dataverse.api.errorhandlers.ThrowableHandler;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
@@ -13,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class JSONResponseBuilderTest {
+class JsonResponseBuilderTest {
     
     @ParameterizedTest
     @NullSource
@@ -27,6 +26,6 @@ class JSONResponseBuilderTest {
     void testMaskingOriginalURL(String query) {
         HttpServletRequest test = Mockito.mock(HttpServletRequest.class);
         when(test.getQueryString()).thenReturn(query);
-        assertFalse(JSONResponseBuilder.getOriginalURL(test).contains("supersecret"));
+        assertFalse(JsonResponseBuilder.getOriginalURL(test).contains("supersecret"));
     }
 }

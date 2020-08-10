@@ -15,13 +15,13 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class JSONResponseBuilder {
+public class JsonResponseBuilder {
     
     private JsonObjectBuilder entityBuilder = Json.createObjectBuilder();
     private Response.ResponseBuilder jerseyResponseBuilder;
     private boolean alreadyLogged = false;
     
-    private JSONResponseBuilder() {}
+    private JsonResponseBuilder() {}
     
     /**
      * Create an error response from an numeric error code (should be >= 400)
@@ -29,12 +29,12 @@ public class JSONResponseBuilder {
      * @return A builder with a basic JSON body
      * @throws IllegalArgumentException if fromResponse isn't an error response
      */
-    public static JSONResponseBuilder error(int httpStatusCode) {
+    public static JsonResponseBuilder error(int httpStatusCode) {
         if (httpStatusCode < 400) {
             throw new IllegalArgumentException("A status code < 400 cannot be an error indicating response.");
         }
         
-        JSONResponseBuilder b = new JSONResponseBuilder();
+        JsonResponseBuilder b = new JsonResponseBuilder();
         b.jerseyResponseBuilder = Response.status(httpStatusCode);
         b.entityBuilder.add("status", "ERROR");
         b.entityBuilder.add("code", httpStatusCode);
@@ -50,8 +50,8 @@ public class JSONResponseBuilder {
      * @return A builder with a basic JSON body
      * @throws IllegalArgumentException if fromResponse isn't an error response
      */
-    public static JSONResponseBuilder error(Response.Status status) {
-        JSONResponseBuilder b = error(status.getStatusCode());
+    public static JsonResponseBuilder error(Response.Status status) {
+        JsonResponseBuilder b = error(status.getStatusCode());
         b.jerseyResponseBuilder = Response.status(status);
         return b;
     }
@@ -62,8 +62,8 @@ public class JSONResponseBuilder {
      * @return A builder with a basic JSON body
      * @throws IllegalArgumentException if fromResponse isn't an error response
      */
-    public static JSONResponseBuilder error(Response fromResponse) {
-        JSONResponseBuilder b = error(fromResponse.getStatus());
+    public static JsonResponseBuilder error(Response fromResponse) {
+        JsonResponseBuilder b = error(fromResponse.getStatus());
         b.jerseyResponseBuilder = Response.fromResponse(fromResponse);
         return b;
     }
@@ -73,7 +73,7 @@ public class JSONResponseBuilder {
      * @param message A human readable message
      * @return The enhanced builder
      */
-    public JSONResponseBuilder message(String message) {
+    public JsonResponseBuilder message(String message) {
         this.entityBuilder.add("message", message);
         return this;
     }
@@ -83,7 +83,7 @@ public class JSONResponseBuilder {
      * @param id A String containing an (ideally unique) identifier
      * @return The enhanced builder
      */
-    public JSONResponseBuilder incidentId(String id) {
+    public JsonResponseBuilder incidentId(String id) {
         this.entityBuilder.add("incidentId", id);
         return this;
     }
@@ -92,7 +92,7 @@ public class JSONResponseBuilder {
      * Add a UUID random identifier for errors. Will overwrite existing.
      * @return The enhanced builder
      */
-    public JSONResponseBuilder randomIncidentId() {
+    public JsonResponseBuilder randomIncidentId() {
         this.entityBuilder.add("incidentId", UUID.randomUUID().toString());
         return this;
     }
@@ -103,7 +103,7 @@ public class JSONResponseBuilder {
      * @param request The original request (usually provided from a context)
      * @return The enhanced builder
      */
-    public JSONResponseBuilder request(HttpServletRequest request) {
+    public JsonResponseBuilder request(HttpServletRequest request) {
         this.entityBuilder.add("requestUrl", getOriginalURL(request));
         this.entityBuilder.add("requestMethod", request.getMethod());
         return this;
@@ -114,7 +114,7 @@ public class JSONResponseBuilder {
      * @param request The original request (usually provided from a context)
      * @return The enhanced builder
      */
-    public JSONResponseBuilder requestContentType(HttpServletRequest request) {
+    public JsonResponseBuilder requestContentType(HttpServletRequest request) {
         this.entityBuilder.add("requestContentType", request.getContentType());
         return this;
     }
@@ -125,7 +125,7 @@ public class JSONResponseBuilder {
      * @param ex An exception.
      * @return The enhanced builder
      */
-    public JSONResponseBuilder internalError(Throwable ex) {
+    public JsonResponseBuilder internalError(Throwable ex) {
         this.entityBuilder.add("interalError", ex.getClass().getSimpleName());
         if (ex.getCause() != null) {
             this.entityBuilder.add("internalCause", ex.getCause().getClass().getSimpleName());
@@ -181,7 +181,7 @@ public class JSONResponseBuilder {
      * @param level Provide a level at which this should be logged
      * @return The unmodified builder.
      */
-    public JSONResponseBuilder log(Logger logger, Level level) {
+    public JsonResponseBuilder log(Logger logger, Level level) {
         return this.log(logger, level, Optional.empty());
     }
     
@@ -202,7 +202,7 @@ public class JSONResponseBuilder {
      * @param ex An optional exception to be included in the log message.
      * @return The unmodified builder.
      */
-    public JSONResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex) {
+    public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex) {
         if ( ! logger.isLoggable(level) || alreadyLogged )
             return this;
         

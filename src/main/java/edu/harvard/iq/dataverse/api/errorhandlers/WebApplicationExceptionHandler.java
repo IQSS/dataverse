@@ -5,11 +5,10 @@
  */
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
-import edu.harvard.iq.dataverse.api.util.JSONResponseBuilder;
+import edu.harvard.iq.dataverse.api.util.JsonResponseBuilder;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.Option;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -38,7 +37,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
             return ex.getResponse();
         
         // Otherwise, do stuff.
-        JSONResponseBuilder jrb = JSONResponseBuilder.error(ex.getResponse());
+        JsonResponseBuilder jrb = JsonResponseBuilder.error(ex.getResponse());
         
         // See also https://en.wikipedia.org/wiki/List_of_HTTP_status_codes for a list of status codes.
         switch (ex.getResponse().getStatus()) {
