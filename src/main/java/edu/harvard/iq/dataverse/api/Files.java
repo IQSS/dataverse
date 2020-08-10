@@ -372,15 +372,9 @@ public class Files extends AbstractApiBean {
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    // Not sure I understand why we are comparing the checksum values here, 
-                    // and not the DataFile ids. (probably because this code was 
-                    // copy-and-pasted from somewhere where it was potentially operating 
-                    // on *new* datafiles, that haven't been saved in the database yet;
-                    // but it should never be the case in the context of this API) 
-                    // -- L.A. Mar. 2020
-                    if(daf.getChecksumType().equals(df.getChecksumType())
-                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
-                        upFmd = testFmd;
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 
@@ -390,18 +384,21 @@ public class Files extends AbstractApiBean {
 
                 JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
                 javax.json.JsonObject jsonObject = jsonReader.readObject();
-                String label = jsonObject.getString("label", null);
-                String directoryLabel = jsonObject.getString("directoryLabel", null);
-                String path = "";
-                if (directoryLabel != null) {
-                    path = directoryLabel + "/";
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
+                    }
                 }
-                if (label == null) {
-                    label = df.getFileMetadata().getLabel();
-                }
-                if (IngestUtil.conflictsWithExistingFilenames(label, directoryLabel, fmdList, df)) {
-                    String incomingPathPlusFileName = path + label;
-                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(incomingPathPlusFileName)));
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
@@ -410,7 +407,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {

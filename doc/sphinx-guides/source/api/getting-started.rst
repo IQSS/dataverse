@@ -106,7 +106,9 @@ Downloading Files
 
 The :doc:`dataaccess` section explains how to download files.
 
-In order to download files, you must know their database IDs which you can get from the ``dataverse_json`` metadata at the dataset level. See :ref:`export-dataset-metadata-api`.
+To download all the files in a dataset, see :ref:`download-by-dataset-api`.
+
+In order to download individual files, you must know their database IDs which you can get from the ``dataverse_json`` metadata at the dataset level. See :ref:`export-dataset-metadata-api`.
 
 Downloading Metadata
 ~~~~~~~~~~~~~~~~~~~~

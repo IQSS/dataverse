@@ -47,17 +47,19 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.201 is recommended. Newer versions might work fine.
+Payara 5.2020.2 is recommended. Newer versions might work fine.
 
 Installing Payara
 =================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
+
+	# useradd dataverse
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
-	# unzip payara-5.201.zip
+	# wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip
+	# unzip payara-5.2020.2.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -108,13 +110,16 @@ Version 9.6 is strongly recommended because it is the version developers and QA 
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 
-Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 8 use::
+The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must install Postgres 10 or higher::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql96-server
-	# service postgresql-9.6 initdb
-	# service postgresql-9.6 start
+	# yum install -y postgresql10-server
+	# /usr/pgsql-10/bin/postgresql-10-setup initdb
+	# systemctl start postgresql-10
+	# systemctl enable postgresql-10
+
+Note that the Dataverse installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer)
 =======================================================================================
@@ -208,7 +213,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 	# yum install lsof
 
-Finally, you need to tell Solr to create the core "collection1" on startup:
+Finally, you need to tell Solr to create the core "collection1" on startup::
 
         echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
 
@@ -234,25 +239,25 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy. 
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
 
 It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
-If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es). 
+If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
 
-We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
         # usermod -s /sbin/nologin solr
 
-For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell::
 
         # usermod -s /bin/bash solr
 
-or simply prepend each command you would run as the Solr user with "sudo -u solr":
+or simply prepend each command you would run as the Solr user with "sudo -u solr"::
 
         # sudo -u solr command
 
-Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised. 
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised.
 
 jq
 --

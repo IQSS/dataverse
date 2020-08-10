@@ -269,8 +269,8 @@ if not pgOnly:
    # 1d. check java version
    java_version = subprocess.check_output(["java", "-version"], stderr=subprocess.STDOUT).decode()
    print("Found java version "+java_version)
-   if not re.search("1.8", java_version):
-      sys.exit("Dataverse requires Java 1.8. Please install it, or make sure it's in your PATH, and try again")
+   if not re.search('(1.8|11)', java_version):
+      sys.exit("Dataverse requires OpenJDK 1.8 or 11. Please make sure it's in your PATH, and try again.")
 
    # 1e. check if the setup scripts - setup-all.sh, are available as well, maybe?
    # @todo (?)
@@ -461,17 +461,6 @@ try:
 except:
    print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
-# 4b2. JSF patch for Payara:
-
-jsf_patch_path = "jsfpatch/jakarta.faces_dv.jar"
-
-try:
-   # overwrite the jar file supplied with Payara:
-   copy2(jsf_patch_path, gfModulePath+"/jakarta.faces.jar")
-   print("Copied "+jsf_patch_path+" into "+gfModulePath)
-except:
-   print("Couldn't copy "+jsf_patch_path+" into "+gfModulePath+". Check its permissions?")
-
 # 4c. create payara admin credentials file
 
 userHomeDir = pwd.getpwuid(os.getuid())[5]
@@ -512,7 +501,9 @@ if re.match(gfDomain+" not running", domain_status):
 
 # 4e. check if asadmin login works
 #gf_adminpass_status = subprocess.check_output([asadmincmd, "login", "--user="+gfAdminUser, "--passwordfile "+gfClientFile])
-gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
+
+if not nonInteractive:
+   gfAdminLoginStatus = subprocess.call([asadmincmd, "login", "--user="+gfAdminUser])
 
 # 4f. configure glassfish by running the standalone shell script that executes the asadmin commands as needed.
 

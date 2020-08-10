@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -83,6 +85,11 @@ public class UserNotificationServiceBean {
         em.remove(em.merge(userNotification));
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void sendNotificationInNewTransaction(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
+        sendNotification(dataverseUser, sendDate, type, objectId, "");
+    }
+    
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId) {
         sendNotification(dataverseUser, sendDate, type, objectId, "");
     }
@@ -106,10 +113,9 @@ public class UserNotificationServiceBean {
         if (mailService.sendNotificationEmail(userNotification, comment, requestor, isHtmlContent)) {
             logger.fine("email was sent");
             userNotification.setEmailed(true);
-            save(userNotification);
         } else {
             logger.fine("email was not sent");
-            save(userNotification);
         }
+        save(userNotification);
     }
 }

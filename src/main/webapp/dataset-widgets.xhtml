@@ -38,13 +38,14 @@
                                             <f:param value="#{systemConfig.uploadLogoSizeLimit/1000}"/>
                                         </h:outputFormat>
                                     </p>
-                                    <div id="thumbnailPreview" class="col-sm-2 text-center">
-                                        <p>
-                                            <span class="icon-dataset text-info" style="font-size: 2.8em;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
-                                            <img src="#{DatasetWidgetsPage.datasetThumbnail.base64image}" alt="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.alt']}" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
-                                        </p>
-                                        <span class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></span>
+                                    <div id="thumbnailPreview" class="col-sm-3 text-center">
+                                        <span class="icon-dataset text-primary" style="font-size:7em !important;color:#428BCA;line-height:1.2;" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"/>
+                                        <div class="text-muted" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail == null}"><em>#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.default']}</em></div>
+                                        
+                                        <img class="margin-bottom-half" src="#{DatasetWidgetsPage.datasetThumbnail.base64image}" alt="#{bundle['dataset.thumbnailsAndWidget.thumbnailImage.alt']}" jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail != null}"/>
+                                        
                                         <p:commandButton update="@form" value="#{bundle.remove}" action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}" rendered="#{DatasetWidgetsPage.datasetThumbnail != null and DatasetWidgetsPage.datasetThumbnail.fromDataFile != true}" oncomplete="bind_bsui_components();"/>
+                                        
                                         <div jsf:rendered="#{DatasetWidgetsPage.datasetThumbnail.fromDataFile == true}">
                                             <button class="btn btn-default" onclick="PF('confrmRemove').show()" type="button">
                                                 #{bundle.remove}
@@ -82,8 +83,6 @@
                                 <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.saveChanges}" action="#{DatasetWidgetsPage.save()}"/>
                                 <p:commandButton styleClass="btn btn-link" update="@form" value="#{bundle.cancel}" action="#{DatasetWidgetsPage.cancel()}"/>
                             </div>
-
-
                     </p:tab>
                     <p:tab id="widgetsTab" title="#{bundle['dataset.thumbnailsAndWidget.widgets.title']}">
                         <div id="no-widgets-message" class="panel panel-default" jsf:rendered="#{DatasetWidgetsPage.dataset.id.intValue() > 0 and !DatasetWidgetsPage.dataset.released}">
@@ -112,7 +111,6 @@
                                 </p>
                             </div>
                         </div>
-
                         <ui:fragment rendered="#{DatasetWidgetsPage.dataset.released}">
                             <p class="help-block">
                                 <h:outputFormat value="#{bundle['dataset.widgets.tip']}" escape="false">
@@ -145,51 +143,48 @@
                         </div>
                     </p:tab>
                 </p:tabView>
-                    
-                    <p:dialog id="confrmRemove" header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
-                        <p class="help-block">
-                            <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
-                        </p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
-                                             action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
-                                             update="@form"/>
-                            <button class="btn btn-link" onclick="PF('confrmRemove').hide()" type="button">
-                                        #{bundle.cancel}
-                            </button>
-                        </div> 
-                    </p:dialog>
-                    <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
-                        <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
-                                <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
-                                <p:outputPanel id="customPanel">
-                                    <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
-                                        <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
-                                    </p:selectOneRadio>
-                                    <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
-                                        <div class="col-xs-4 text-center radio">
-                                            <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
-                                            <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
-                                                <div style="height:48px;"><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
-                                                <h:outputText value="#{thumbnail.filename}"/>
-                                            </h:outputLabel>
-                                        </div>
-                                    </c:forEach>
-                                </p:outputPanel>
-                            </div>
+                <p:dialog id="confrmRemove" header="#{bundle['dataset.thumbnailsAndWidget.removeThumbnail']}" widgetVar="confrmRemove" modal="true">
+                    <p class="help-block">
+                        <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataset.thumbnailsAndWidget.removeThumbnail.tip']}</span>
+                    </p>
+                    <div class="button-block">
+                        <p:commandButton value="#{bundle.continue}" styleClass="btn btn-default" onclick="PF('confrmRemove').hide()"
+                                         action="#{DatasetWidgetsPage.flagDatasetThumbnailForRemoval()}"
+                                         update="@form"/>
+                        <button class="btn btn-link" onclick="PF('confrmRemove').hide()" type="button">
+                                    #{bundle.cancel}
+                        </button>
+                    </div> 
+                </p:dialog>
+                <p:dialog id="selectFileThumbnail" header="#{bundle['dataset.thumbnailsAndWidget.availableThumbnails']}" widgetVar="selectFileThumbnail" modal="true">
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <p class="help-block">#{bundle['dataset.thumbnailsAndWidget.availableThumbnails.tip']}</p>
+                            <p:outputPanel id="customPanel">
+                                <p:selectOneRadio id="selectDatasetThumbnail" value="#{DatasetWidgetsPage.datasetFileThumbnailToSwitchTo}" layout="custom" converter="dataFileConverter">
+                                    <f:selectItems value="#{DatasetWidgetsPage.datasetThumbnails}" var="thumb" itemLabel="#{thumb}" itemValue="#{thumb.dataFile}"/>
+                                </p:selectOneRadio>
+                                <c:forEach items="#{DatasetWidgetsPage.datasetThumbnails}" var="thumbnail" varStatus="loop">
+                                    <div class="col-xs-4 text-center radio">
+                                        <p:radioButton for="selectDatasetThumbnail" id="opt#{loop.index}" itemIndex="#{loop.index}" />
+                                        <h:outputLabel for="opt#{loop.index}" style="padding:4px;">
+                                            <div><img src="#{thumbnail.base64image}" alt="#{thumbnail.filename}"/></div>
+                                            <h:outputText value="#{thumbnail.filename}"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </c:forEach>
+                            </p:outputPanel>
                         </div>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
-                            <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
-                                        #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-
+                    </div>
+                    <div class="button-block">
+                        <p:commandButton styleClass="btn btn-default" update="@form" value="#{bundle.continue}" action="#{DatasetWidgetsPage.setDataFileAsThumbnail()}"/>
+                        <button class="btn btn-link" onclick="PF('selectFileThumbnail').hide()" type="button">
+                                    #{bundle.cancel}
+                        </button>
+                    </div>
+                </p:dialog>
                </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>
