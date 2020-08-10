@@ -31,11 +31,7 @@
                                                                             and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
                                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-        <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
-            <!-- ADDED TOOLS SPECIFIC LOGIC TO DatasetPage.canDownloadFiles() RENDER LOGIC, CAN BE REMOVED WHEN DOWNLOAD ALL FILES IS WIRED UP -->
-            <ui:param name="showAccessDatasetButtonGroup" value="#{(DatasetPage.canDownloadFiles() 
-                                                                        and (DatasetPage.datasetExploreTools.size() >= 1 
-                                                                        or (DatasetPage.sessionUserAuthenticated and DatasetPage.showComputeButton())))
+            <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
@@ -143,17 +139,38 @@
                                                 </button>
                                                 <ul class="dropdown-menu pull-right text-left">
                                                     
-                                                    <ui:remove>
                                                     <!-- DOWNLOAD -->
-                                                    <!-- TO-DO #3513 DOWNLOAD ALL LINK -->
                                                     <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
                                                         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                        <li class="disabled">
-                                                            <span class="ui-commandlink ui-widget ui-state-disabled btn-download">Download (Placeholder)</span>
+                                                        <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
+                                                        <li jsf:rendered="#{!DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                #{bundle.download}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
+                                                                #{bundle.downloadOriginal}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
+                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                #{bundle.downloadArchival}
+                                                                <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                    <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                </h:outputFormat>
+                                                            </p:commandLink>
                                                         </li>
                                                     </ui:fragment>
                                                     <!-- END: DOWNLOAD -->
-                                                    </ui:remove>
 
                                                     <!-- EXPLORE -->
                                                     <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
@@ -161,7 +178,7 @@
                                                         <!-- Explore tool links -->
                                                         <ui:repeat var="tool" value="#{DatasetPage.datasetExploreTools}">
                                                             <li>
-                                                                <h:commandLink action="#{DatasetPage.explore(tool)}">
+                                                                <h:commandLink styleClass="btn-explore" action="#{DatasetPage.explore(tool)}">
                                                                     <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                                 </h:commandLink>
                                                             </li>
@@ -234,7 +251,7 @@
                                                 <!-- Publish BTN -->
                                                 <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
                                                     <c:if test="#{!(showSubmitForReviewLink or showReturnToAuthorLink)}">
-                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
                                                         <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                     </c:if>
                                                     <c:if test="#{showSubmitForReviewLink or showReturnToAuthorLink}">
@@ -872,6 +889,28 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="downloadAllMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadAllMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                        <table>
+                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadallableFiles}" >
+                                <tr>
+                                    <td>#{resFile.label}</td>
+                                </tr>
+                            </ui:repeat>
+                        </table>
+                        <div class="button-block">
+                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
+                                             rendered="#{!DatasetPage.downloadPopupRequired}"
+                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
+                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
+                                             action="#{DatasetPage.openDownloadPopupForDownloadAll()}" update="@form"/>
+                            <button class="btn btn-link" onclick="PF('downloadAllMixed').hide();" type="button">
+                                #{bundle.cancel}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="deleteConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                         <div class="button-block">
@@ -994,7 +1033,7 @@
                                     <label for="reasonForDeaccession">
                                     #{bundle['file.deaccessionDialog.enterInfo']}
                                     </label>
-                                    <p:inputTextarea id="reasonForDeaccession" styleClass="form-control"  autoResize="false" rows="2" cols="40"                                           
+                                    <p:inputTextarea id="reasonForDeaccession" styleClass="form-control" autoResize="false" rows="2" cols="40" title="#{bundle['file.deaccessionDialog.enterInfo']}"
                                                      value="#{DatasetPage.deaccessionReasonText}" widgetVar="reasonForDeaccession" validator="#{DatasetPage.validateDeaccessionReason}">
                                         <f:attribute name="reasonRadio" value="#{reasonRadio}" />
                                     </p:inputTextarea>
@@ -1491,17 +1530,17 @@
                             <p:focus for="termsAccessInput"/>
                             <div class="form-horizontal">
                                 <div class="form-group">
-                                    <label for="metadata_TermsAccess" class="col-sm-3 control-label">
+                                    <label for="termsAccessInput" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                                     </label>
                                     <div class="col-sm-9">
-                                        <p:inputTextarea id="termsAccessInput" value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
+                                        <p:inputTextarea id="termsAccessInput" value="#{DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess}" title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="metadata_RequestAccess" class="col-sm-3 control-label">
+                                    <label for="requestAccess" class="col-sm-3 control-label">
                                         #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
@@ -1565,7 +1604,7 @@
                             #{bundle['dataset.publishBoth.tip']}
                             </p>
                         </ui:fragment>
-                        <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.displayPublishPopupCustomText}">
+                        <div class="well terms-agreement-block" jsf:rendered="#{DatasetPage.displayPublishPopupCustomText}">
                             <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
                         </div>
                         <ui:fragment rendered="#{releaseDraft}">
@@ -1589,7 +1628,7 @@
                         </ui:fragment>
                         <div class="button-block">
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
-                                             onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" immediate="true"/>
+                                             onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
                             <button class="btn btn-link" onclick="PF('publishDataset').hide();PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
@@ -1640,7 +1679,7 @@
                         </p>
                         <ui:remove>
                         <!--FIXME update for new comments table -->
-                        <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}" maxlength="200" widgetVar="returnReason"
+                        <p:inputTextarea id="returnReason" rows="3" value="#{DatasetPage.workingVersion.returnReason}" title="#{bundle['dataset.rejectMessage.label']}" maxlength="200" widgetVar="returnReason"
                                          cols="70" counter="display" counterTemplate="{0} characters remaining." autoResize="false"
                                          requiredMessage="#{bundle['dataset.reject.enterReason.error']}"/>
                         <!--FIXME validation error msg for returnReason was in confirmDialog using testReturnReason() in commandButton below but all that was removed

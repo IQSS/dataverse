@@ -47,17 +47,19 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.201 is recommended. Newer versions might work fine.
+Payara 5.2020.2 is recommended. Newer versions might work fine.
 
 Installing Payara
 =================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
+
+	# useradd dataverse
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
-	# unzip payara-5.201.zip
+	# wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip
+	# unzip payara-5.2020.2.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -211,7 +213,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 	# yum install lsof
 
-Finally, you need to tell Solr to create the core "collection1" on startup:
+Finally, you need to tell Solr to create the core "collection1" on startup::
 
         echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
 
@@ -243,15 +245,15 @@ It is **very important** not to allow direct access to the Solr API from outside
 
 If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
 
-We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
         # usermod -s /sbin/nologin solr
 
-For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell::
 
         # usermod -s /bin/bash solr
 
-or simply prepend each command you would run as the Solr user with "sudo -u solr":
+or simply prepend each command you would run as the Solr user with "sudo -u solr"::
 
         # sudo -u solr command
 
