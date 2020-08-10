@@ -47,7 +47,7 @@ In Dataverse, browsing is the default view when a user hasn't begun a search on 
 Saved Search
 ------------
 
-Saved Search is currently an experimental feature only available to superusers. Please see the :doc:`/api/native-api` section of the API Guide for more information.
+Saved Search is currently an experimental feature only available to superusers. Please see :ref:`saved-search` in the API Guide for more information.
 
 Using Data
 ==========

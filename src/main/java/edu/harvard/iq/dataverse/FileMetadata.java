@@ -472,6 +472,7 @@ public class FileMetadata implements Serializable {
         this.selected = selected;
     }
     
+    
     @Transient
     private boolean restrictedUI;
 

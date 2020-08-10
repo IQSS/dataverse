@@ -1022,7 +1022,7 @@ public class Datasets extends AbstractApiBean {
             PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                         createDataverseRequest(user),
                     isMinor));
-            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
+            return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1836,7 +1836,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                    return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                } else {
+                    return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                }
+                
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);

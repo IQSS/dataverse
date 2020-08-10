@@ -434,7 +434,7 @@
                         <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
                     </div>
 
-                    <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
+                    <div class="file-description-block small" jsf:rendered="#{!(empty fileMetadata.description)}">
                         <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE') and !(empty fileMetadata.description)}"/>
                     </div>
 

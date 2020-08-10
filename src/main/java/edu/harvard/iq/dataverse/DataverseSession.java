@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,7 +62,8 @@ public class DataverseSession implements Serializable{
         logSvc.log( 
                 new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
                     .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
-        
+        //#3254 - change session id when user changes
+        SessionUtil.changeSessionId((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
         this.user = aUser;
     }
 

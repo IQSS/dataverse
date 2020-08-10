@@ -172,7 +172,6 @@ public class LoginPage implements java.io.Serializable {
             logger.log(Level.FINE, "User authenticated: {0}", r.getEmail());
             session.setUser(r);
             session.configureSessionTimeout();
-            SessionUtil.changeSessionId((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
             if ("dataverse.xhtml".equals(redirectPage)) {
                 redirectPage = redirectToRoot();
             }
