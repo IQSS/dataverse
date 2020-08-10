@@ -83,26 +83,4 @@ public class PidUtil {
         }
         return globalId.getAuthority() + "/" + globalId.getIdentifier();
     }
-
-    /**
-     * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
-     * (only possible for "draft" DOIs), 405 (method not allowed) if the DOI
-     * wasn't deleted (because it's in "findable" state, for example, 404 if the
-     * DOI wasn't found, and possibly other status codes such as 500 if DataCite
-     * is down.
-     */
-    public static int deleteDoi(String persistentId, String baseUrl, String username, String password) throws IOException {
-        String doi = acceptOnlyDoi(persistentId);
-        URL url = new URL(baseUrl + "/dois/" + doi);
-        HttpURLConnection connection = null;
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("DELETE");
-        String userpass = username + ":" + password;
-        String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-        connection.setRequestProperty("Authorization", basicAuth);
-        int status = connection.getResponseCode();
-        logger.fine("deleteDoi status for " + persistentId + ": " + status);
-        return status;
-    }
-
 }

@@ -186,7 +186,6 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
-- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -1446,24 +1445,13 @@ Note that in either case, when using the ``sequentialNumber`` option, datasets a
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
-
-Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
-
-.. _:PIDAsynchRegFileCount:
-
-:PIDAsynchRegFileCount
-++++++++++++++++++++++
-
-Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
-
-``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
+Note: File-level PID registration was added in 4.9; it could not be disabled until version 4.9.3.
 
 .. _:IndependentHandleService:
 
@@ -1480,13 +1468,11 @@ By default this setting is absent and Dataverse assumes it to be false.
 :FileValidationOnPublishEnabled
 +++++++++++++++++++++++++++++++
 
-Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistent identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
 
 If you don't want the datafiles to be validated on publish, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
-
-Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
 
 
 :ApplicationTermsOfUse
@@ -2111,7 +2097,7 @@ See :ref:`i18n` for a curl example and related settings.
 +++++++++++++++++++++++++++++
 
 ``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role).
-This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``::InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
+This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``:InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
 
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or

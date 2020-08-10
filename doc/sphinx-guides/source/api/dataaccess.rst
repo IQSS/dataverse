@@ -7,6 +7,75 @@ More advanced features of the Access API include format-specific transformations
 .. contents:: |toctitle|
    :local:
 
+.. _download-by-dataset-api:
+
+Downloading All Files in a Dataset
+----------------------------------
+
+The "download by dataset" API downloads as many files as possible from a dataset as a zipped bundle.
+
+By default, tabular files are downloaded in their "archival" form (tab-separated values). To download the original files (Stata, for example), add ``format=original`` as a query parameter.
+
+There are a number of reasons why not all of the files can be downloaded:
+
+- Some of the files are restricted and your API token doesn't have access (you will still get the unrestricted files).
+- The Dataverse installation has limited how large the zip bundle can be.
+
+In the curl example below, the flags ``-O`` and ``J`` are used. When there are no errors, this has the effect of saving the file as "dataverse_files.zip" (just like the web interface). The flags force errors to be downloaded as a file.
+
+Please note that in addition to the files from dataset, an additional file call "MANIFEST.TXT" will be included in the zipped bundle. It has additional information about the files.
+
+There are two forms of the "download by dataset" API, a basic form and one that supports dataset versions.
+
+Basic Download By Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The basic form downloads files from the latest accessible version of the dataset. If you are not using an API token, this means the most recently published version. If you are using an API token with full access to the dataset, this means the draft version or the most recently published version if no draft exists.
+
+A curl example using a DOI (no version):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
+
+  curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/?persistentId=$PERSISTENT_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/?persistentId=doi:10.70122/FK2/N2XGBJ
+
+Download By Dataset By Version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second form of the "download by dataset" API allows you to specify which version you'd like to download files from. As with the ``datasets`` API endpoints described in the :doc:`native-api` section, the following identifiers can be used.
+
+* ``:draft``  the draft version, if any
+* ``:latest`` either a draft (if exists) or the latest published version.
+* ``:latest-published`` the latest published version
+* ``x.y`` a specific version, where ``x`` is the major version number and ``y`` is the minor version number.
+* ``x`` same as ``x.0``
+
+A curl example using a DOI (with version):
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
+  export VERSION=2.0
+
+  curl -O -J -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/access/dataset/:persistentId/versions/$VERSION?persistentId=$PERSISTENT_ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/access/dataset/:persistentId/versions/2.0?persistentId=doi:10.70122/FK2/N2XGBJ
+
 Basic File Access
 -----------------
 
