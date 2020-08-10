@@ -173,15 +173,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
-
-        // Remove locks
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.finalizePublication));
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.engine().submit( 
-                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
-        }
-        
         final Dataset ds = ctxt.em().merge(theDataset);
         
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
@@ -199,6 +190,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
         }
         
+        // Finally, unlock the dataset:
+        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
+        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
+        }
+        
         return readyDataset;
     }
     
@@ -211,18 +209,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-
+        
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
         }
 
         exportMetadata(dataset, ctxt.settings());
+                
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
+
         return retVal;
     }
 
