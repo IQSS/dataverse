@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api.util;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 
 import javax.json.Json;
+import javax.json.JsonValue;
 import javax.json.JsonObjectBuilder;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
