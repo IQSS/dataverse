@@ -11,13 +11,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
+
+import javax.xml.ws.http.HTTPException;
 
 /**
  * No required permissions because we check for superuser status.
@@ -46,22 +46,17 @@ public class DeletePidCommand extends AbstractVoidCommand {
         String protocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         try {
-            // idServiceBean.deleteIdentifier(dataset); // didn't work
-            String baseUrl = ctxt.systemConfig().getDataCiteRestApiUrlString();
-            String username = System.getProperty("doi.username");
-            String password = System.getProperty("doi.password");
-            int result = PidUtil.deleteDoi(dataset.getGlobalId().asString(), baseUrl, username, password);
-            if (result == 204) {
-                // Success! Clear the create time, etc.
-                dataset.setGlobalIdCreateTime(null);
-                dataset.setIdentifierRegistered(false);
-                ctxt.datasets().merge(dataset);
-            } else {
-                String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureExpected", Arrays.asList(dataset.getId().toString(), Integer.toString(result)));
-                throw new IllegalCommandException(message, this);
-            }
-        } catch (IOException ex) {
-            String message = BundleUtil.getStringFromBundle("pids.commands.deletePid.failureOther", Arrays.asList(dataset.getId().toString(), ex.getLocalizedMessage()));
+            idServiceBean.deleteIdentifier(dataset); 
+            // Success! Clear the create time, etc.
+            dataset.setGlobalIdCreateTime(null);
+            dataset.setIdentifierRegistered(false);
+            ctxt.datasets().merge(dataset);
+        } catch (HTTPException hex) {
+        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getStatusCode())));
+            logger.info(message);
+            throw new IllegalCommandException(message, this);
+        } catch (Exception ex) {
+        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureOther", Arrays.asList(dataset.getGlobalId().asString(), ex.getLocalizedMessage()));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
