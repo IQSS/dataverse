@@ -17,7 +17,7 @@ In the past (before adopting Flyway) we used to keep SQL upgrade scripts in ``sc
 How to Determine if You Need to Create a SQL Upgrade Script
 -----------------------------------------------------------
 
-If you are creating a new database table (which maps to an ``@Entity`` in JPA), you do not need to create or update a SQL upgrade script. The reason for this is that we use ``create-tables`` in ``src/main/resources/META-INF/persistence.xml`` so that new tables are automatically created by Glassfish when you deploy your war file.
+If you are creating a new database table (which maps to an ``@Entity`` in JPA), you do not need to create or update a SQL upgrade script. The reason for this is that we use ``create-tables`` in ``src/main/resources/META-INF/persistence.xml`` so that new tables are automatically created by the app server when you deploy your war file.
 
 If you are doing anything other than creating a new database table such as adding a column to an existing table, you must create or update a SQL upgrade script.
 

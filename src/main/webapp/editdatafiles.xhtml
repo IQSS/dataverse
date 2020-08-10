@@ -24,7 +24,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
-                    <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
+                    <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>

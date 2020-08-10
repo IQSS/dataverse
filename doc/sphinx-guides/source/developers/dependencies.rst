@@ -5,7 +5,7 @@ Dependency Management
 .. contents:: |toctitle|
 	:local:
 
-Dataverse is (currently) a Java EE 7 based application, that uses a lot of additional libraries for special purposes.
+Dataverse is (currently) a Jakarta EE 8 based application, that uses a lot of additional libraries for special purposes.
 This includes features like support for SWORD-API, S3 storage and many others.
 
 Besides the code that glues together the single pieces, any developer needs to describe used dependencies for the
@@ -76,7 +76,7 @@ dependency definition does not change.
 2. **Clean up** direct dependencies no longer in use. It will bloat the deployment package otherwise!
 3. Care about the **scope**. Do not include "testing only" dependencies in the package - it will hurt you in IDEs and bloat things. [#f1]_
 4. Avoid using different dependencies for the **same purpose**, e. g. different JSON parsing libraries.
-5. Refactor your code to **use Java EE** standards as much as possible.
+5. Refactor your code to **use Jakarta EE** standards as much as possible.
 6. When you rely on big SDKs or similar big cool stuff, try to **include the smallest portion possible**. Complete SDK
    bundles are typically heavyweight and most of the time unnecessary.
 7. **Don't include transitive dependencies.** [#f2]_
@@ -194,13 +194,13 @@ A reduced example, only showing bits relevant to the above cases and usage of an
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and removed now that we are on Jakarta EE 8 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <!-- no version here as managed above! -->
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and removed now that we are on Jakarta EE 8 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

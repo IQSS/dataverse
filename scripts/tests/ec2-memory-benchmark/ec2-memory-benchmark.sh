@@ -8,14 +8,14 @@ then
 fi
 
 # download the ec2-create-instance script:
-curl -O https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh
+curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh
 chmod 755 ec2-create-instance.sh
 
 # download the sample data ec2 config: 
-curl -O https://raw.githubusercontent.com/IQSS/dataverse-sample-data/memory-monitoring-experiments/ec2config_memory_test.yaml
+curl -O https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/memorytests.yml
 
 # run the script: 
-./ec2-create-instance.sh -a ec2-memory-benchmark -b ${dataverse_branch} -r https://github.com/IQSS/dataverse.git -g ec2config_memory_test.yaml 2>&1 | tee create-instance.log
+./ec2-create-instance.sh -b ${dataverse_branch} -r https://github.com/IQSS/dataverse.git -g memorytests.yml 2>&1 | tee create-instance.log
 
 # obtain the address of the new instance, and the ssh key: 
 

@@ -21,7 +21,7 @@ Open Science Framework (OSF)
 
 The Center for Open Science's Open Science Framework (OSF) is an open source software project that facilitates open collaboration in science research across the lifespan of a scientific project.
 
-For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit http://help.osf.io/m/addons/l/863978-connect-dataverse-to-a-project
+For instructions on depositing data from OSF to your installation of Dataverse, your researchers can visit https://help.osf.io/hc/en-us/articles/360019737314-Connect-Dataverse-to-a-Project
 
 RSpace
 ++++++
@@ -121,9 +121,11 @@ documentation
 for details. Currently Dataverse ``>=4.8.x`` is required for the import to work. If you need
 support for an earlier version of Dataverse, please get in touch with the Renku team at
 `Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
-The UI implementation of the import is in progress and will be
-completed in Q12020.
 
+Avgidea Data Search
++++++++++++++++++++
+
+Researchers can use a Google Sheets add-on to search for Dataverse CSV data and then import that data into a sheet. See `Avgidea Data Search <https://www.avgidea.io/avgidea-data-platform.html>`_ for details.
 
 Discoverability
 ---------------
@@ -139,6 +141,11 @@ SHARE
 +++++
 
 `SHARE <http://www.share-research.org>`_ is building a free, open, data set about research and scholarly activities across their life cycle. It's possible to add an installation of Dataverse as one of the `sources <https://share.osf.io/sources>`_ they include if you contact the SHARE team.
+
+Geodisy
++++++++
+
+`Geodisy <https://researchdata.library.ubc.ca/find/geodisy>`_ will take your Dataverse Installation’s data, search for geospatial metadata and files, and copy them to a new system that allows for visual searching. Your original data and search methods are untouched; you have the benefit of both. For more information, please refer to `Geodisy's GitHub Repository. <https://github.com/ubc-library/geodisy>`_
 
 Research Data Preservation
 --------------------------

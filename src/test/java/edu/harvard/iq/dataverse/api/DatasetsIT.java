@@ -26,14 +26,15 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.apache.commons.lang.StringUtils;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Status.ERROR;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,20 +42,37 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
+    
+    
 
     @BeforeClass
     public static void setUpClass() {
+        
+        
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
@@ -1869,4 +1887,158 @@ public class DatasetsIT {
 
     }
     
+    @Test
+    public void testUpdateDatasetVersionWithFiles() throws InterruptedException {
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String curatorApiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(curatorApiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createAuthor = UtilIT.createRandomUser();
+        createAuthor.prettyPrint();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createAuthor);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+ 
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"))
+                .statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // FIXME: have the initial create return the DOI or Handle to obviate the need for this call.
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        System.out.println("datasetPersistentId: " + datasetPersistentId);
+
+       String pathToJsonFile = "src/test/resources/json/update-dataset-version-with-files.json";
+
+        Response updateMetadataAddFilesViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
+        updateMetadataAddFilesViaNative.prettyPrint();
+        updateMetadataAddFilesViaNative.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // These println's are here in case you want to log into the GUI to see what notifications look like.
+        System.out.println("Curator username/password: " + curatorUsername);
+        System.out.println("Author username/password: " + authorUsername);
+
+    }
+    
+    @Test
+    public void testLinkingDatasets() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        createSuperUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        makeSuperuser.prettyPrint();
+        makeSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDataverse1 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Response createDataverse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2);
+        Integer dataverse2Id = UtilIT.getDatasetIdFromResponse(createDataverse2);
+        String dataverse2Name = JsonPath.from(createDataverse2.asString()).getString("data.name");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Link dataset to second dataverse.
+        //should fail if dataset is not published
+        Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.available")))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Once published you should be able to link it
+        linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+//Experimental code for trying to trick test into thinking the dataset has been harvested
+/*
+createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid2 = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        
+        linkDataset = UtilIT.linkDataset(datasetPid2, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .body("message", equalTo( BundleUtil.getStringFromBundle("dataset.link.not.available")))
+                .statusCode(FORBIDDEN.getStatusCode());
+                EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        // Do stuff...
+        entityManager.createNativeQuery("UPDATE dataset SET harvestingclient_id=1 WHERE id="+datasetId2).executeUpdate();
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        
+        UtilIT.linkDataset(datasetId2.toString(), dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+         */
+    }
+
 }

@@ -12,23 +12,32 @@
 
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
-        <div class="#{widgetWrapper.widgetView ? 'col-xs-12' : 'col-xs-8'}">
-            <h:form>
-                <p:inputText id="searchBasic" styleClass="search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
-                <p:commandLink id="searchbutton" styleClass="btn btn-default" 
-                               action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
-                    <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
-                </p:commandLink>
-                <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}"/>
-                <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
-                    <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
-                    <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
-                    <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
-                </h:outputLink>
+        <div class="#{widgetWrapper.widgetView ? 'col-xs-12' : 'col-sm-9'}">
+            <h:form styleClass="form-inline">
+                <div class="form-group">
+                    <label class="sr-only" for="searchBasic">#{bundle.search}</label>
+                    <div class="input-group">
+                        <p:inputText id="searchBasic" title="#{bundle.search}" styleClass="form-control search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                        <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
+
+                        <span class="input-group-btn">
+                            <p:commandLink id="searchbutton" styleClass="btn btn-default" 
+                                           action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
+                                <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                            </p:commandLink>
+                        </span>
+
+                        <p:remoteCommand name="submitsearch" action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}"/>
+                    </div>
+                    <h:outputLink id="advsearchlink" value="#{widgetWrapper.wrapURL('/search/advanced.xhtml')}">
+                        <f:param name="dataverseIdentifier" value="#{SearchIncludeFragment.dataverse.alias}"/>
+                        <h:outputText value="#{bundle['dataverse.search.advancedSearch']}"/>
+                        <!--<f:param name="q" value="#{SearchIncludeFragment.query}" disable="#{empty SearchIncludeFragment.query}"/>-->
+                    </h:outputLink>
+                </div>
             </h:form>
         </div>
-        <div class="col-xs-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
+        <div class="col-sm-3 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="button-block">
                 <!-- ADD DATA -->
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
@@ -329,7 +338,9 @@
 
                 <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
                     <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
+                    <ui:param name="filterType" value="#{SearchIncludeFragment.getTypeFromFilterQuery(filterQuery)}"/>
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames
+                                and filterType != DataversePage.searchFieldType and filterType != DataversePage.searchFieldSubtree}">
                         <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
@@ -518,8 +529,8 @@
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
-                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{result.title}"/>                               
-                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl}"/>
+                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>                               
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}"/>
                             </a>
                         </div>
 
@@ -657,15 +668,6 @@
                          actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
     </h:form>
 
-    <p:dialog id="addDataGuest" header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
-        <p class="help-block">
-            <h:outputText value="#{dataverseHeaderFragment.signupAllowed ? bundle['dataverse.results.dialog.addDataGuest.msg.signup'] : bundle['dataverse.results.dialog.addDataGuest.msg']}" escape="false"></h:outputText>
-        </p>
-        <div class="button-block">
-            <ui:fragment rendered="#{dataverseHeaderFragment.signupAllowed}">
-                <a class="btn btn-default" href="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}" title="#{bundle['dataverse.results.dialog.addDataGuest.signup.title']}">#{bundle['signup']}</a>
-            </ui:fragment>
-            <a class="btn btn-default" href="/loginpage.xhtml#{navigationWrapper.redirectPage}" title="#{bundle['dataverse.results.dialog.addDataGuest.login.title']}">#{bundle['login']}</a>
-        </div>
-    </p:dialog>
+    <ui:include src="addDataFormFragment.xhtml"></ui:include>
+
 </ui:composition>
