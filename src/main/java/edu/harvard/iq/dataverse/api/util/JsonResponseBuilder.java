@@ -117,7 +117,7 @@ public class JsonResponseBuilder {
      */
     public JsonResponseBuilder requestContentType(HttpServletRequest request) {
         String type = request.getContentType();
-        this.entityBuilder.add("requestContentType", ((type==null) ? JsonValue.NULL : type));
+        this.entityBuilder.add("requestContentType", ((type==null) ? JsonValue.NULL : Json.createValue(type)));
         return this;
     }
     
