@@ -59,13 +59,17 @@ public class DataverseSession implements Serializable{
     }
 
     public void setUser(User aUser) {
-        logSvc.log( 
-                new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
-                    .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
-        //#3254 - change session id when user changes
+        
         FacesContext context = FacesContext.getCurrentInstance();
-        if(context != null) {
-          //Change the session id if we're using the UI and have a session (versus an API call with no session)
+		// Log the login/logout and Change the session id if we're using the UI and have
+		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
+		// which sets the user in the session to pass it through to the underlying command)
+		if(context != null) {
+          logSvc.log( 
+                      new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
+                          .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
+
+          //#3254 - change session id when user changes
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
         }
         this.user = aUser;
