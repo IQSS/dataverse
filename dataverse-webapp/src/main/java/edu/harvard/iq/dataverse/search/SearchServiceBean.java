@@ -811,7 +811,7 @@ public class SearchServiceBean {
 
     private String getDatasetFieldFacetLabelName(String facetLabelName, String formattedFacetLabelName, DatasetFieldType matchedDatasetField) {
         if (matchedDatasetField.isControlledVocabulary()) {
-            return BundleUtil.getStringFromPropertyFile("controlledvocabulary."
+            return BundleUtil.getStringFromNonDefaultBundle("controlledvocabulary."
                             + matchedDatasetField.getName() + "." + formattedFacetLabelName,
                     matchedDatasetField.getMetadataBlock().getName().toLowerCase());
         }

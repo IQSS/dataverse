@@ -127,13 +127,13 @@ public class PasswordResetServiceBean {
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
         AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
 
-        String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset", authUser.getNotificationsLanguage());
+        String pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordReset", authUser.getNotificationsLanguage());
 
         String[] paramArray = {authUser.getName(), aUser.getUserName(), passwordResetUrl, systemConfig.getMinutesUntilPasswordResetTokenExpires() + ""};
         String messageBody = MessageFormat.format(pattern, paramArray);
 
         String toAddress = authUser.getEmail();
-        String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject", authUser.getNotificationsLanguage());
+        String subject = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordReset.subject", authUser.getNotificationsLanguage());
 
         String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
         boolean emailSent = mailService.sendMail(toAddress, new EmailContent(subject, messageBody, footerMailMessage));

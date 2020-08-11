@@ -4,12 +4,12 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.faces.context.FacesContext;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Optional;
@@ -28,81 +28,24 @@ public class BundleUtil {
 
     // -------------------- LOGIC --------------------
 
-    /**
-     * @return value or empty string if not found.
-     */
-    public static String getStringFromBundle(String key) {
-        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, getCurrentLocale());
+    public static String getStringFromBundle(String key, Object ... arguments) {
+        return getStringFromBundleWithLocale(key, getCurrentLocale(), arguments);
     }
 
-    public static String getStringFromBundle(String key, Locale locale) {
-        return getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, locale);
-    }
-
-    public static String getStringFromBundle(String key, Locale locale, List<String> arguments) {
+    public static String getStringFromBundleWithLocale(String key, Locale locale, Object... arguments) {
         String message = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE, locale);
 
-        return MessageFormat.format(message, arguments.toArray());
+        return MessageFormat.format(message, arguments);
     }
 
-    public static String getStringFromBundle(String key, List<String> arguments) {
-        String stringFromPropertyFile = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
-
-        if (arguments != null) {
-            return MessageFormat.format(stringFromPropertyFile, arguments.toArray());
-        }
-
-        return stringFromPropertyFile;
+    public static String getStringFromNonDefaultBundle(String key, String bundleName, Object... arguments) {
+        return getStringFromNonDefaultBundleWithLocale(key, bundleName, getCurrentLocale(), arguments);
     }
 
-    public static String getStringFromBundle(String key, Object ... arguments) {
-        String stringFromPropertyFile = getStringFromPropertyFile(key, DEFAULT_BUNDLE_FILE);
-
-        if (arguments.length > 0) {
-            return MessageFormat.format(stringFromPropertyFile, arguments);
-        }
-
-        return stringFromPropertyFile;
-    }
-
-    public static String getStringFromBundle(String key, String bundleName, Object... arguments) {
+    public static String getStringFromNonDefaultBundleWithLocale(String key, String bundleName, Locale locale, Object... arguments) {
         String stringFromPropertyFile = getStringFromPropertyFile(key, bundleName);
 
-        if (arguments.length > 0) {
-            return MessageFormat.format(stringFromPropertyFile, arguments);
-        }
-
-        return stringFromPropertyFile;
-    }
-
-    /**
-     * Gets display name for specified bundle key. If it is external bundle,
-     * method tries to access external directory (jvm property - dataverse.lang.directory)
-     * where bundles are kept and return the display name.
-     * <p>
-     * If it is default bundle or default metadata block #{@link DefaultMetadataBlocks#METADATA_BLOCK_NAMES}
-     * method tries to get the name from default bundles otherwise it returns empty string.
-     */
-    public static String getStringFromPropertyFile(String bundleKey, String bundleName, Locale locale) throws MissingResourceException {
-        Optional<String> displayNameFromExternalBundle = Optional.empty();
-
-        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
-                && System.getProperty("dataverse.lang.directory") != null) {
-            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, locale);
-        }
-
-        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, locale));
-    }
-
-    public static String getStringFromPropertyFile(String bundleKey, String bundleName) throws MissingResourceException {
-        Optional<String> displayNameFromExternalBundle = Optional.empty();
-
-        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
-                && System.getProperty("dataverse.lang.directory") != null) {
-            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, getCurrentLocale());
-        }
-
-        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, getCurrentLocale()));
+        return MessageFormat.format(stringFromPropertyFile, arguments);
     }
 
     public static Locale getCurrentLocale() {
@@ -119,6 +62,30 @@ public class BundleUtil {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private static String getStringFromPropertyFile(String bundleKey, String bundleName) throws MissingResourceException {
+        return getStringFromPropertyFile(bundleKey, bundleName, getCurrentLocale());
+    }
+
+    /**
+     * Gets display name for specified bundle key. If it is external bundle,
+     * method tries to access external directory (jvm property - dataverse.lang.directory)
+     * where bundles are kept and return the display name.
+     * <p>
+     * If it is default bundle or default metadata block #{@link DefaultMetadataBlocks#METADATA_BLOCK_NAMES}
+     * method tries to get the name from default bundles otherwise it returns empty string.
+     */
+    private static String getStringFromPropertyFile(String bundleKey, String bundleName, Locale locale) throws MissingResourceException {
+        Optional<String> displayNameFromExternalBundle = Optional.empty();
+
+        if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
+                && System.getProperty("dataverse.lang.directory") != null) {
+            displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, locale);
+        }
+
+        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, locale));
+    }
+
 
     private static String getStringFromInternalBundle(String bundleKey, String bundleName, Locale locale) {
         ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);

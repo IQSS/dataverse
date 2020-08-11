@@ -70,11 +70,11 @@ public class MailMessageCreatorTest {
     @Mock
     private MailService mailService;
 
-    private static String GUIDESBASEURL = "http://guides.dataverse.org";
-    private static String GUIDESVERSION = "V8";
-    private static String SITEURL = "http://localhost:8080";
-    private static String ROOTDVNAME = "Root";
-    private static String SYSTEMEMAIL = "test@icm.pl";
+    private final static String GUIDESBASEURL = "http://guides.dataverse.org";
+    private final static String GUIDESVERSION = "V8";
+    private final static String SITEURL = "http://localhost:8080";
+    private final static String ROOTDVNAME = "Root";
+    private final static String SYSTEMEMAIL = "test@icm.pl";
 
     private Dataverse testDataverse = createTestDataverse();
     private DatasetVersion testDatasetVersion = createTestDatasetVersion();

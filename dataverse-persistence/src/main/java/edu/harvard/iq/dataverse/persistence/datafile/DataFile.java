@@ -498,7 +498,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     public String getOriginalChecksumType() {
-        return BundleUtil.getStringFromBundle("file.originalChecksumType", Arrays.asList(this.checksumType.toString()));
+        return BundleUtil.getStringFromBundle("file.originalChecksumType", this.checksumType.toString());
     }
 
     /*

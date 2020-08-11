@@ -190,7 +190,7 @@ public class MetadataBlock implements Serializable {
 
     public String getLocaleDisplayName() {
         try {
-            return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
+            return BundleUtil.getStringFromNonDefaultBundle("metadatablock.displayName", getName());
         } catch (MissingResourceException e) {
             return displayName;
         }

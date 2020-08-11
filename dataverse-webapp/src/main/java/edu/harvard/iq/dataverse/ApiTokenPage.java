@@ -50,9 +50,7 @@ public class ApiTokenPage implements java.io.Serializable {
             if (apiToken != null) {
                 return apiToken.getTokenString();
             } else {
-                List<String> arguments = new ArrayList<>();
-                arguments.add(au.getName());
-                return BundleUtil.getStringFromBundle("apitoken.notFound", arguments);
+                return BundleUtil.getStringFromBundle("apitoken.notFound", au.getName());
             }
         } else {
             // It should be impossible to get here from the UI.

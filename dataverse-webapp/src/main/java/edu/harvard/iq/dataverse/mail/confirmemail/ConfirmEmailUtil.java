@@ -61,12 +61,12 @@ public class ConfirmEmailUtil {
         double expirationDouble = Double.valueOf(expirationLong);
 
         if (expirationLong == 1) {
-            measurement = BundleUtil.getStringFromBundle("minute", language);
+            measurement = BundleUtil.getStringFromBundleWithLocale("minute", language);
         } else if (expirationLong < 60) {
-            measurement = BundleUtil.getStringFromBundle("minutes", language);
+            measurement = BundleUtil.getStringFromBundleWithLocale("minutes", language);
         } else if (expirationLong == 60) {
             expirationLong = expirationLong / 60;
-            measurement = BundleUtil.getStringFromBundle("hour", language);
+            measurement = BundleUtil.getStringFromBundleWithLocale("hour", language);
         } else {
             if (expirationLong % 60 == 0) {
                 expirationLong = (long) (expirationLong / 60.0);
@@ -74,7 +74,7 @@ public class ConfirmEmailUtil {
                 expirationDouble /= 60;
                 hasDecimal = true;
             }
-            measurement = BundleUtil.getStringFromBundle("hours", language);
+            measurement = BundleUtil.getStringFromBundleWithLocale("hours", language);
         }
         if (hasDecimal == true) {
             expirationString = String.valueOf(expirationDouble);

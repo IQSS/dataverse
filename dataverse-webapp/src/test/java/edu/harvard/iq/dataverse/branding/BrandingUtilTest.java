@@ -47,11 +47,10 @@ public class BrandingUtilTest {
     public void testWelcomeInAppNotification() {
         System.out.println("testWelcomeInAppNotification");
         String message = BundleUtil.getStringFromBundle("notification.welcome",
-                                                        Arrays.asList(
                                                                 "LibraScholar",
                                                                 "<a href=\"http://guides.dataverse.org/en/4.3/user/index.html\">User Guide</a>",
                                                                 "<a href=\"https://demo.dataverse.org\">Demo Site</a>"
-                                                        ));
+                                                        );
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
                              + "Have questions? Check out the <a href=\"http://guides.dataverse.org/en/4.3" +
@@ -65,13 +64,12 @@ public class BrandingUtilTest {
     public void testWelcomeEmail() {
         System.out.println("testWelcomeEmail");
         String message = BundleUtil.getStringFromBundle("notification.email.welcome",
-                                                        Arrays.asList(
                                                                 "LibraScholar",
                                                                 "http://guides.librascholar.edu/en",
                                                                 "4.3",
                                                                 "LibraScholar Support",
                                                                 "support@librascholar.edu"
-                                                        ));
+                                                        );
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
                              + "Have questions? Check out the User Guide at http://guides.librascholar.edu/en/4.3/user/index.html or"
@@ -83,10 +81,9 @@ public class BrandingUtilTest {
     public void testEmailClosing() {
         System.out.println("testEmailClosing");
         String message = BundleUtil.getStringFromBundle("notification.email.closing",
-                                                        Arrays.asList(
                                                                 "support@librascholar.edu",
                                                                 "LibraScholar Support Team"
-                                                        ));
+                                                        );
         System.out.println("message: " + message);
         assertEquals("\n\nYou may contact us for support at support@librascholar.edu.\n\nThank you,\nLibraScholar Support Team",
                      message);
@@ -96,9 +93,8 @@ public class BrandingUtilTest {
     public void testEmailSubject() {
         System.out.println("testEmailSubject");
         String message = BundleUtil.getStringFromBundle("notification.email.create.account.subject",
-                                                        Arrays.asList(
                                                                 "LibraScholar"
-                                                        ));
+                                                        );
         System.out.println("message: " + message);
         assertEquals("LibraScholar: Your account has been created",
                      message);

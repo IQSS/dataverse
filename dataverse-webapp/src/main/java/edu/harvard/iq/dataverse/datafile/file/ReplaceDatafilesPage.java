@@ -355,7 +355,7 @@ public class ReplaceDatafilesPage implements Serializable {
         String fileToBeSavedType = fileToBeSaved == null ? "" : fileToBeSaved.getFriendlyType();
 
         return BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type",
-                                              fileToBeReplaced.getFriendlyType(), fileToBeSavedType);
+                                              Lists.newArrayList(fileToBeReplaced.getFriendlyType(), fileToBeSavedType));
     }
 
     public String returnToFileLandingPage() {

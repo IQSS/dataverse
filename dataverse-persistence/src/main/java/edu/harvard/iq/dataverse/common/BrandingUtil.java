@@ -11,17 +11,7 @@ public class BrandingUtil {
     }
 
     public static String getSupportTeamName(InternetAddress systemAddress, String rootDataverseName) {
-        if (systemAddress != null) {
-            String personalName = systemAddress.getPersonal();
-            if (personalName != null) {
-                return personalName;
-            }
-        }
-        if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
-            return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support");
-        }
-        String saneDefault = BundleUtil.getStringFromBundle("dataverse");
-        return BundleUtil.getStringFromBundle("contact.support", Arrays.asList(saneDefault));
+        return getSupportTeamName(systemAddress, rootDataverseName, BundleUtil.getCurrentLocale());
     }
 
     public static String getSupportTeamName(InternetAddress systemAddress, String rootDataverseName, Locale locale) {
@@ -32,10 +22,10 @@ public class BrandingUtil {
             }
         }
         if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
-            return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support", locale);
+            return rootDataverseName + " " + BundleUtil.getStringFromBundleWithLocale("contact.support", locale);
         }
-        String saneDefault = BundleUtil.getStringFromBundle("dataverse", locale);
-        return BundleUtil.getStringFromBundle("contact.support", locale, Arrays.asList(saneDefault));
+        String saneDefault = BundleUtil.getStringFromBundleWithLocale("dataverse", locale);
+        return BundleUtil.getStringFromBundleWithLocale("contact.support", locale, saneDefault);
     }
 
     public static String getSupportTeamEmailAddress(InternetAddress systemAddress) {
@@ -46,7 +36,7 @@ public class BrandingUtil {
     }
 
     public static String getContactHeader(InternetAddress systemAddress, String rootDataverseName) {
-        return BundleUtil.getStringFromBundle("contact.header", Arrays.asList(getSupportTeamName(systemAddress, rootDataverseName)));
+        return BundleUtil.getStringFromBundle("contact.header", getSupportTeamName(systemAddress, rootDataverseName));
     }
 
 }

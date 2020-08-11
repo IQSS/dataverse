@@ -92,7 +92,7 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
 
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", Lists.newArrayList(YYYYMMDDformat, YYYYMMformat, YYYYformat))).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", YYYYMMDDformat, YYYYMMformat, YYYYformat)).addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }

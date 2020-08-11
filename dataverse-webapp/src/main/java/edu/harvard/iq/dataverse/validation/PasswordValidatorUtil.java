@@ -141,7 +141,7 @@ public class PasswordValidatorUtil {
 
 
             String eachOrSomeCharacteristics = ((characterRules.size()) > numberOfCharacteristics) ? Integer.toString(numberOfCharacteristics) : BundleUtil.getStringFromBundle("passwdVal.passwdReq.each");
-            return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq", Arrays.asList(eachOrSomeCharacteristics))
+            return BundleUtil.getStringFromBundle("passwdVal.passwdReq.characteristicsReq", eachOrSomeCharacteristics)
                     + " " + StringUtils.strip(returnString, " ,");
         } else {
             //if requiring multiple of any character type, we use a different string format

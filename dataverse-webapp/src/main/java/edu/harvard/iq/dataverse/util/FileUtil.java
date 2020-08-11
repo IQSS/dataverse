@@ -169,12 +169,12 @@ public class FileUtil implements java.io.Serializable {
             fileType = fileType.substring(0, fileType.indexOf(";"));
         }
         if (fileType.split("/")[0].isEmpty()) {
-            return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale);
+            return BundleUtil.getStringFromNonDefaultBundleWithLocale("application/octet-stream", "MimeTypeFacets", locale);
         }
 
-        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets", locale))
+        return Optional.ofNullable(BundleUtil.getStringFromNonDefaultBundleWithLocale(fileType, "MimeTypeFacets", locale))
                 .filter(bundleName -> !bundleName.isEmpty())
-                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale));
+                .orElse(BundleUtil.getStringFromNonDefaultBundleWithLocale("application/octet-stream", "MimeTypeFacets", locale));
     }
 
     public static String retestIngestableFileType(File file, String fileType) {

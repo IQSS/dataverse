@@ -317,7 +317,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         }
 
         for (String groupName : groupsMap.keySet()) {
-            String groupLabel = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + getName() + "." + groupName,
+            String groupLabel = BundleUtil.getStringFromNonDefaultBundle("controlledvocabulary." + getName() + "." + groupName,
                     getMetadataBlock().getName());
 
             SelectItemGroup selectItemGroup = new SelectItemGroup(groupLabel);
@@ -411,7 +411,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return title;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".title",
+                return BundleUtil.getStringFromNonDefaultBundle("datasetfieldtype." + getName() + ".title",
                                                             getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return title;
@@ -424,7 +424,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return description;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".description",
+                return BundleUtil.getStringFromNonDefaultBundle("datasetfieldtype." + getName() + ".description",
                                                             getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return description;
@@ -437,7 +437,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             return watermark;
         } else {
             try {
-                return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".watermark",
+                return BundleUtil.getStringFromNonDefaultBundle("datasetfieldtype." + getName() + ".watermark",
                                                             getMetadataBlock().getName());
             } catch (MissingResourceException e) {
                 return watermark;
@@ -456,7 +456,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     private String getLocaleTitleWithParent() {
         try {
-            return BundleUtil.getStringFromPropertyFile("datasetfieldtype." + getName() + ".withParent.title",
+            return BundleUtil.getStringFromNonDefaultBundle("datasetfieldtype." + getName() + ".withParent.title",
                     getMetadataBlock().getName());
         } catch (MissingResourceException | NullPointerException e) {
             return StringUtils.EMPTY;

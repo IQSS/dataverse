@@ -44,7 +44,7 @@ public enum IngestError {
     }
 
     public String getErrorMessage(List<String> arguments) {
-        return arguments.isEmpty() ? getDefaultErrorMessage() : BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + toString(), arguments);
+        return arguments.isEmpty() ? getDefaultErrorMessage() : BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + toString(), arguments.toArray());
     }
 
     // -------------------- PRIVATE --------------------

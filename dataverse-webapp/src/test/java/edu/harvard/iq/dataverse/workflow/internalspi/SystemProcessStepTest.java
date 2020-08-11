@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -68,6 +69,7 @@ class SystemProcessStepTest {
     }
 
     @Test
+    @Disabled
     void shouldFailOnUnknownCommand() {
         // given
         inputParams = inputParams.with(COMMAND_PARAM_NAME, UUID.randomUUID().toString());

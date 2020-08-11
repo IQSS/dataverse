@@ -264,7 +264,7 @@ public class OREMap {
         JsonObject oremap = Json.createObjectBuilder()
                 .add(JsonLDTerm.dcTerms("modified").getLabel(), modifiedDate.toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                     BundleUtil.getStringFromBundle("institution.name", Locale.ENGLISH))
+                     BundleUtil.getStringFromBundleWithLocale("institution.name", Locale.ENGLISH))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
                 // Define an id for the map itself (separate from the @id of the dataset being
                 // described

@@ -21,9 +21,9 @@ public class FriendlyFileTypeUtil {
             dataFileContentType = dataFileContentType.substring(0, dataFileContentType.indexOf(";"));
         }
 
-        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(dataFileContentType, "MimeTypeDisplay"))
+        return Optional.ofNullable(BundleUtil.getStringFromNonDefaultBundle(dataFileContentType, "MimeTypeDisplay"))
                 .filter(bundleName -> !bundleName.isEmpty())
-                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay"));
+                .orElse(BundleUtil.getStringFromNonDefaultBundle("application/octet-stream", "MimeTypeDisplay"));
     }
 
     public static String getUserFriendlyFileType(DataFile dataFile, Locale locale) {
@@ -36,9 +36,9 @@ public class FriendlyFileTypeUtil {
             fileType = fileType.substring(0, fileType.indexOf(";"));
         }
 
-        return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeFacets", locale))
+        return Optional.ofNullable(BundleUtil.getStringFromNonDefaultBundleWithLocale(fileType, "MimeTypeFacets", locale))
                 .filter(bundleName -> !bundleName.isEmpty())
-                .orElse(BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeFacets", locale));
+                .orElse(BundleUtil.getStringFromNonDefaultBundleWithLocale("application/octet-stream", "MimeTypeFacets", locale));
     }
     
     
@@ -54,11 +54,11 @@ public class FriendlyFileTypeUtil {
                 fileType = fileType.substring(0, fileType.indexOf(";"));
             }
 
-            return Optional.ofNullable(BundleUtil.getStringFromPropertyFile(fileType, "MimeTypeDisplay"))
+            return Optional.ofNullable(BundleUtil.getStringFromNonDefaultBundle(fileType, "MimeTypeDisplay"))
                     .filter(bundleName -> !bundleName.isEmpty())
                     .orElse(fileType);
         }
 
-        return BundleUtil.getStringFromPropertyFile("application/octet-stream", "MimeTypeDisplay");
+        return BundleUtil.getStringFromNonDefaultBundle("application/octet-stream", "MimeTypeDisplay");
     }
 }

@@ -34,14 +34,14 @@ public class FeedbackUtil {
             userEmail = loggedInUserEmail(dataverseSession);
         }
         if (recipient != null) {
-            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", Arrays.asList(installationBrandName, messageSubject));
+            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.dvobject", installationBrandName, messageSubject);
             if (recipient.isInstanceofDataverse()) {
                 Dataverse dataverse = (Dataverse) recipient;
-                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail));
+                String dataverseContextEnding = BundleUtil.getStringFromBundle("contact.context.dataverse.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataverse.getAlias(), supportTeamName, systemEmail);
                 List<DvObjectContact> dataverseContacts = getDataverseContacts(dataverse);
                 for (DvObjectContact dataverseContact : dataverseContacts) {
                     String placeHolderIfDataverseContactsGetNames = "";
-                    String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", Arrays.asList(placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias()));
+                    String dataverseContextIntro = BundleUtil.getStringFromBundle("contact.context.dataverse.intro", placeHolderIfDataverseContactsGetNames, userEmail, installationBrandName, dataverse.getAlias());
                     Feedback feedback = new Feedback(userEmail, dataverseContact.getEmail(), messageSubject, dataverseContextIntro + userMessage + dataverseContextEnding);
                     feedbacks.add(feedback);
                 }
@@ -57,11 +57,11 @@ public class FeedbackUtil {
                 Dataset dataset = (Dataset) recipient;
                 String datasetTitle = dataset.getLatestVersion().getTitle();
                 String datasetPid = dataset.getGlobalIdString();
-                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail));
+                String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail);
                 List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
                 for (DvObjectContact datasetContact : datasetContacts) {
                     String contactFullName = getGreeting(datasetContact);
-                    String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid));
+                    String datasetContextIntro = BundleUtil.getStringFromBundle("contact.context.dataset.intro", contactFullName, userEmail, installationBrandName, datasetTitle, datasetPid);
                     Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, datasetContextIntro + userMessage + datasetContextEnding);
                     feedbacks.add(feedback);
                 }
@@ -79,10 +79,10 @@ public class FeedbackUtil {
                 String datasetPid = datafile.getOwner().getGlobalIdString();
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());
-                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", Arrays.asList(supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail));
+                String fileContextEnding = BundleUtil.getStringFromBundle("contact.context.file.ending", supportTeamName, systemEmail, dataverseSiteUrl, datafile.getId().toString(), supportTeamName, systemEmail);
                 for (DvObjectContact datasetContact : datasetContacts) {
                     String contactFullName = getGreeting(datasetContact);
-                    String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", Arrays.asList(contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid));
+                    String fileContextIntro = BundleUtil.getStringFromBundle("contact.context.file.intro", contactFullName, userEmail, installationBrandName, filename, datasetTitle, datasetPid);
                     Feedback feedback = new Feedback(userEmail, datasetContact.getEmail(), messageSubject, fileContextIntro + userMessage + fileContextEnding);
                     feedbacks.add(feedback);
                 }
@@ -96,9 +96,9 @@ public class FeedbackUtil {
                 }
             }
         } else {
-            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", Arrays.asList(installationBrandName, messageSubject));
-            String noDvObjectContextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", Arrays.asList(supportTeamName, userEmail));
-            String noDvObjectContextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", Arrays.asList(""));
+            messageSubject = BundleUtil.getStringFromBundle("contact.context.subject.support", installationBrandName, messageSubject);
+            String noDvObjectContextIntro = BundleUtil.getStringFromBundle("contact.context.support.intro", supportTeamName, userEmail);
+            String noDvObjectContextEnding = BundleUtil.getStringFromBundle("contact.context.support.ending", "");
             Feedback feedback = new Feedback(userEmail, systemEmail, messageSubject, noDvObjectContextIntro + userMessage + noDvObjectContextEnding);
             feedbacks.add(feedback);
             return feedbacks;
@@ -174,7 +174,7 @@ public class FeedbackUtil {
             String[] lastFirstParts = lastFirstString.split(",");
             String last = lastFirstParts[0];
             String first = lastFirstParts[1];
-            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.helloFirstLast", Arrays.asList(first.trim(), last.trim()));
+            return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.helloFirstLast", first.trim(), last.trim());
         } catch (Exception ex) {
             logger.warning("problem in getGreeting: " + ex);
             return BundleUtil.getStringFromBundle("contact.context.dataset.greeting.organization");
