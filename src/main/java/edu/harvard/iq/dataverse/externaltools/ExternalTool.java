@@ -148,7 +148,8 @@ public class ExternalTool implements Serializable {
     public enum Type {
 
         EXPLORE("explore"),
-        CONFIGURE("configure");
+        CONFIGURE("configure"),
+        REQUESTACCESS("requestaccess");
 
         private final String text;
 
