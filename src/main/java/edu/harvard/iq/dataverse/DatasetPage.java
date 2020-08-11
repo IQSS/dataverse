@@ -1270,6 +1270,9 @@ public class DatasetPage implements java.io.Serializable {
         return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
     public boolean canPublishDataverse() {
+        if (dataset.getOwner() == null){
+            return false;
+        }
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
 
@@ -1623,6 +1626,9 @@ public class DatasetPage implements java.io.Serializable {
      *
      */    
      private void updateDatasetFieldInputLevels() {
+         if(dataset.getOwner() == null){
+             return;
+         }
          Long dvIdForInputLevel = ownerId;
         
          // OPTIMIZATION (?): replaced "dataverseService.find(ownerId)" with 
@@ -1864,7 +1870,9 @@ public class DatasetPage implements java.io.Serializable {
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
             }
-            this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+            if (dataset.getOwner() != null) {
+                this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+            }
 
 
             if (retrieveDatasetVersionResponse == null) {
@@ -3948,12 +3956,15 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean publishDatasetPopup(){
         if (!dataset.isReleased()) {
-            return dataset.getOwner().isReleased();
+            return dataset.getOwner() != null && dataset.getOwner().isReleased();
         }
        return false; 
     }
     
     public boolean publishBothPopup() {
+        if (dataset.getOwner() == null){
+            return false;
+        }
         if (!dataset.getOwner().isReleased()) {
             if (canPublishDataverse()) {
                 if (dataset.getOwner().getOwner() == null

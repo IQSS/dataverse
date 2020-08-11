@@ -3082,7 +3082,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
     	// When those restrictions are lifted/rsync can be configured per store, this test should check that setting
     	// instead of testing for the 's3" store.
-    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext() != null &&
+                dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
     }
     
     
