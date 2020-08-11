@@ -5601,7 +5601,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     };
 
-    public void explore(ExternalTool externalTool) {
+    private ApiToken getApiTokenForTool(){
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
@@ -5612,10 +5612,24 @@ public class DatasetPage implements java.io.Serializable {
             apiToken = new ApiToken();
             apiToken.setTokenString(privUrl.getToken());
         }
+        return apiToken;
+    }
+    
+    public void explore(ExternalTool externalTool) {
+        ApiToken apiToken = getApiTokenForTool();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
         PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+    }
+    
+    public void requestAccess(ExternalTool tool){
+        ApiToken apiToken = getApiTokenForTool();
+        
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Request Access with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');"); 
     }
 
 }
