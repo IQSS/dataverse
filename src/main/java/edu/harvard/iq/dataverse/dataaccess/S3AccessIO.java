@@ -852,10 +852,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // specified explicitly, as below:
             responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8")
                     .replaceAll("\\+", "%20")
-                    .replaceAll("\\%21", "!")
-                    .replaceAll("\\%27", "'")
-                    .replaceAll("\\%28", "(")
-                    .replaceAll("\\%29", ")")
                     .replaceAll("\\%7E", "~"));
             // - without it, download will work, but Firefox will leave the special
             // characters in the file name encoded. For example, the file name 
