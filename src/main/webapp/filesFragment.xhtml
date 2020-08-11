@@ -575,7 +575,7 @@
                 <p:commandLink rendered="#{DatasetPage.datasetFileRequestAccessTool != null and DatasetPage.sessionUserAuthenticated and !dataset.isFileAccessRequest() and !DatasetPage.downloadAllButtonEnabled}"
                                 styleClass="btn btn-default btn-request"                                   
                                 update="@form" 
-                                action="#{DatasetPage.requestAccess(DatasetPage.datasetFileAccessRequestTool)}"
+                                action="#{DatasetPage.requestAccess(DatasetPage.datasetFileRequestAccessTool)}"
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
