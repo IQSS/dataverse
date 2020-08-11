@@ -69,13 +69,13 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
 * Alternatively, you can insert an ejb-jar.xml file into a provided dataverse war file without building the application.
 
-    * Check if there is already an ejb-jar.xml file in the war file (as I'm writing, the dataverse war file is named dataverse-4.20.war)
+    * Check if there is already an ejb-jar.xml file in the war file 
 
-        * jar tvf dataverse-4.20.war | grep ejb-jar.xml
+        * jar tvf $DATAVERSE-WAR-FILENAME | grep ejb-jar.xml
 
             * if the response includes " WEB-INF/ejb-jar.xml", you will need to extract the ejb-jar.xml file for editing
 
-                * jar xvf dataverse-4.20.war WEB-INF/ejb-jar.xml 
+                * jar xvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml 
 
                     * edit the extracted WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
 
@@ -85,7 +85,7 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
         * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
 
-            * jar uvf dataverse-4.20.war WEB-INF/ejb-jar.xml
+            * jar uvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml
 
         * Deploy the war file
 
