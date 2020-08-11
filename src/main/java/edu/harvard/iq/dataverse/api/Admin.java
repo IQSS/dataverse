@@ -1674,8 +1674,7 @@ public class Admin extends AbstractApiBean {
     public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
 
         try {
-            AuthenticatedUser au = findAuthenticatedUserOrDie();
-            session.setUser(au);
+            findAuthenticatedUserOrDie();
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
