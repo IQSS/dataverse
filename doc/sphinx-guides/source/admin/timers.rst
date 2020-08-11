@@ -59,13 +59,36 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
 * Create or edit dataverse/src/main/webapp/WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
 
-* Edit the parameters in the <schedule> section ejb-jar file in the WEB-INF directory to suit your preferred schedule
+* Edit the parameters in the <schedule> section of the ejb-jar file in the WEB-INF directory to suit your preferred schedule
 
   * The provided parameters in the sample file are <minute>, <hour>, and <dayOfWeek>; additional parameters are available
 
     * For a complete reference for calendar expressions that can be used to schedule Timer services see: https://docs.oracle.com/javaee/7/tutorial/ejb-basicexamples004.htm
 
 * Build and deploy the application
+
+* Alternatively, you can insert an ejb-jar.xml file into a provided dataverse war file without building the application.
+
+    * Check if there is already an ejb-jar.xml file in the war file (as I'm writing, the dataverse war file is named dataverse-4.20.war)
+
+        * jar tvf dataverse-4.20.war | grep ejb-jar.xml
+
+            * if the response includes " WEB-INF/ejb-jar.xml", you will need to extract the ejb-jar.xml file for editing
+
+                * jar xvf dataverse-4.20.war WEB-INF/ejb-jar.xml 
+
+                    * edit the extracted WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+
+            * if the response is empty, create a WEB-INF directory and create en ejb-jar.xml file in it, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+
+                * edit the parameters in the <schedule> section of the WEB-INF/ejb-jar.xml to suit your preferred schedule
+
+        * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
+
+            * jar uvf dataverse-4.20.war WEB-INF/ejb-jar.xml
+
+        * Deploy the war file
+
 
 See also :ref:`saved-search` in the API Guide.
 
