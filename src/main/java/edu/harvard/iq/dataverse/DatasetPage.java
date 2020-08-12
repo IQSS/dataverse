@@ -1811,7 +1811,20 @@ public class DatasetPage implements java.io.Serializable {
             init(true);
             // rebuild the bred crumbs display:
             dataverseHeaderFragment.initBreadcrumbs(dataset);
+        }       
+    }
+    
+    public boolean rsyncUploadSupported() {
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
+        // instead of testing for the 's3" store.
+
+        /*failsafe when no new owner selected*/
+        if (dataset.getOwner() == null || dataset.getOwner().getId() == null) {
+            dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
         }
+
+        return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
     }
     
     private String init(boolean initFull) {
@@ -3494,6 +3507,7 @@ public class DatasetPage implements java.io.Serializable {
     }
      
     public String save() {
+        
         //Before dataset saved, write cached prov freeform to version
         if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
