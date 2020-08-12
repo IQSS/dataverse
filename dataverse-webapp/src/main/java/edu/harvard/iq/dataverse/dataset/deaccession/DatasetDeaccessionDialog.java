@@ -115,7 +115,7 @@ public class DatasetDeaccessionDialog implements Serializable {
         }
         if (StringUtils.length((String)value) > DatasetVersion.VERSION_NOTE_MAX_LENGTH) {
             String lengthString = String.valueOf(DatasetVersion.VERSION_NOTE_MAX_LENGTH);
-            String userMsg = BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.limitChar.error", Arrays.asList(lengthString));
+            String userMsg = BundleUtil.getStringFromBundle("file.deaccessionDialog.dialog.limitChar.error", lengthString);
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, StringUtils.EMPTY, userMsg));
         }
     }

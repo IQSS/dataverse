@@ -205,7 +205,7 @@ public class Shib implements java.io.Serializable {
         if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
-            msg = BundleUtil.getStringFromBundle("shib.invalidEmailAddress", Arrays.asList(emailAddressInAssertion));
+            msg = BundleUtil.getStringFromBundle("shib.invalidEmailAddress", emailAddressInAssertion);
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
             if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
@@ -424,7 +424,7 @@ public class Shib implements java.io.Serializable {
                 showMessage = false;
             }
             if (showMessage) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror", Arrays.asList(key))));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror", key)));
             }
             throw new Exception(msg);
         }

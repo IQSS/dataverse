@@ -166,7 +166,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         String protocol = getDataset().getProtocol();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         if (idServiceBean != null) {
-            List<String> args = idServiceBean.getProviderInformation();
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol);
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
@@ -200,7 +199,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
-                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
+                throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", idServiceBean.getProviderInformation().toArray()), this);
             }
         }
     }

@@ -58,7 +58,7 @@ public class FileSizeChecker {
 
         // Nope!  Sorry! File is too big
         //
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", Collections.singletonList(FileSizeUtil.bytesToHumanReadable(maxFileSize)));
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit", FileSizeUtil.bytesToHumanReadable(maxFileSize));
 
         return new FileSizeResponse(false, errMsg);
 

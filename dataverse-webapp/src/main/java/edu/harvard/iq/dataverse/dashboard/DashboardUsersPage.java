@@ -145,7 +145,7 @@ public class DashboardUsersPage implements java.io.Serializable {
 
     public String getConfirmRemoveRolesMessage() {
         if (selectedUser != null) {
-            return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText", Collections.singletonList(selectedUser.getUserIdentifier()));
+            return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText", selectedUser.getUserIdentifier());
         }
         return BundleUtil.getStringFromBundle("dashboard.list_users.tbl_header.roles.removeAll.confirmationText");
     }

@@ -565,7 +565,7 @@ public class DatasetPage implements java.io.Serializable {
         Try.of(() -> commandEngine.submit(new ReturnDatasetToAuthorCommand(dvRequestService.getDataverseRequest(), dataset, returnToAuthorReason)))
                 .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.reject.success")))
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Sending back to Contributor failed:", throwable))
-                .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", Collections.singletonList(throwable.getMessage()))));
+                .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.reject.failure", throwable.getMessage())));
 
         return returnToLatestVersion();
     }
@@ -575,7 +575,7 @@ public class DatasetPage implements java.io.Serializable {
                 .onSuccess(ds -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.submit.success")))
                 .onSuccess(ds -> stateChanged = true)
                 .onFailure(throwable -> logger.log(Level.SEVERE, "Submitting for review failed:", throwable))
-                .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", Collections.singletonList(throwable.getMessage()))));
+                .onFailure(throwable -> JsfHelper.addFlashErrorMessage(BundleUtil.getStringFromBundle("dataset.submit.failure", throwable.getMessage())));
 
         return returnToLatestVersion();
     }
@@ -831,13 +831,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
 
-    private List<String> getSuccessMessageArguments() {
+    private Object[] getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         String dataverseString = "";
         arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
         dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
         arguments.add(dataverseString);
-        return arguments;
+        return arguments.toArray();
     }
 
 
@@ -853,7 +853,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getPrivateUrlMessageDetails() {
-        return BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor.details", Arrays.asList(getPrivateUrlLink(privateUrl)));
+        return BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor.details", getPrivateUrlLink(privateUrl));
     }
 
     private String linkingDataverseErrorMessage = "";

@@ -232,7 +232,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
             session.setUser(existingUser);
             AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", Arrays.asList(newUserAuthProvider.getInfo().getTitle())));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", newUserAuthProvider.getInfo().getTitle()));
 
             return "/dataverse.xhtml?faces-redirect=true";
 
@@ -290,7 +290,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
         String displayName = AuthUtil.getDisplayName(displayInfo.getFirstName(), displayInfo.getLastName());
         if (displayName != null) {
-            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", Arrays.asList(displayName));
+            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", displayName);
         } else {
             return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeNoName");
         }
@@ -356,7 +356,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (authProvider == null) {
             return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
         }
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", Arrays.asList(authProvider.getInfo().getTitle(), installationName));
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", authProvider.getInfo().getTitle(), installationName);
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
@@ -365,15 +365,15 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getSuggestConvertInsteadOfCreate() {
-        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", Arrays.asList(installationName));
+        return BundleUtil.getStringFromBundle("oauth2.newAccount.suggestConvertInsteadOfCreate", installationName);
     }
 
     public String getConvertTip() {
         if (authProvider == null) {
             return "";
         }
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", Arrays.asList(installationName, authProvider.getInfo().getTitle(),
-                systemConfig.getGuidesBaseUrl(preferredNotificationsLanguage), systemConfig.getGuidesVersion()));
+        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", installationName, authProvider.getInfo().getTitle(),
+                systemConfig.getGuidesBaseUrl(preferredNotificationsLanguage), systemConfig.getGuidesVersion());
     }
 
     public List<String> getEmailsToPickFrom() {

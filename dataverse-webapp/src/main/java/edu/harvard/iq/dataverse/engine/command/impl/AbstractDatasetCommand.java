@@ -184,7 +184,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     theDataset.setIdentifierRegistered(true);
 
                 } catch (Throwable e) {
-                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation().toArray()), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);

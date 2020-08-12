@@ -397,7 +397,7 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
             int minLength = getMinLength();
             if (goodStrength <= minLength) {
                 int reset = minLength + 1;
-                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength", Arrays.asList(Integer.toString(goodStrength), Integer.toString(minLength), Integer.toString(reset))));
+                logger.log(Level.WARNING, BundleUtil.getStringFromBundle("passwdVal.passwdValBean.warnSetStrength", Integer.toString(goodStrength), Integer.toString(minLength), Integer.toString(reset)));
                 goodStrength = reset;
             }
         }

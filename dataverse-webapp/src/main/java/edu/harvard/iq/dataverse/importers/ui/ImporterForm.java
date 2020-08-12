@@ -131,7 +131,7 @@ public class ImporterForm {
         component.setValue(tempPath.toFile());
         FacesContext.getCurrentInstance().addMessage(component.getClientId(), 
                 new FacesMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle(UPLOAD_SUCCESSFUL, Collections.singletonList(file.getFileName())),
+                BundleUtil.getStringFromBundle(UPLOAD_SUCCESSFUL, file.getFileName()),
                 StringUtils.EMPTY));
     }
 

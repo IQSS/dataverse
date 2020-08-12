@@ -177,7 +177,7 @@ public class DashboardDatamovePage implements Serializable {
     }
 
     public String getMessageDetails() {
-        return getStringFromBundle("dashboard.datamove.message.details", Lists.newArrayList(settings.getGuidesBaseUrl(), settings.getGuidesVersion()));
+        return getStringFromBundle("dashboard.datamove.message.details", settings.getGuidesBaseUrl(), settings.getGuidesVersion());
     }
 
     // -------------------- PRIVATE --------------------
@@ -303,13 +303,13 @@ public class DashboardDatamovePage implements Serializable {
         }
 
         public void showSuccessMessage() {
-            JsfHelper.addFlashSuccessMessage(getStringFromBundle(buildKey("message.success"), summaryParameters));
+            JsfHelper.addFlashSuccessMessage(getStringFromBundle(buildKey("message.success"), summaryParameters.toArray()));
         }
 
         public void showFailureMessage() {
             JsfHelper.addErrorMessage(
                     getStringFromBundle(buildKey("message.failure.summary")), 
-                    getStringFromBundle(buildKey("message.failure.details"), summaryParameters));
+                    getStringFromBundle(buildKey("message.failure.details"), summaryParameters.toArray()));
         }
 
         // -------------------- PRIVATE --------------------

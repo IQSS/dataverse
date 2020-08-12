@@ -419,12 +419,12 @@ public abstract class AbstractApiBean {
         try {
             dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
             if (dvld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", dataverseId, linkedDataverseId)));
             }
             return dvld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", dataverseId, linkedDataverseId)));
         }
     }
 
@@ -434,11 +434,11 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", PERSISTENT_ID_KEY.substring(1))));
             }
             dataset = datasetSvc.findByGlobalId(persistentId);
             if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", persistentId)));
             }
             return dataset;
 
@@ -446,12 +446,12 @@ public abstract class AbstractApiBean {
             try {
                 dataset = datasetSvc.find(Long.parseLong(id));
                 if (dataset == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", Collections.singletonList(id))));
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.id", id)));
                 }
                 return dataset;
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", id)));
             }
         }
     }
@@ -462,23 +462,23 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", PERSISTENT_ID_KEY.substring(1))));
             }
             datafile = fileService.findByGlobalId(persistentId);
             if (datafile == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", persistentId)));
             }
             return datafile;
         } else {
             try {
                 datafile = fileService.find(Long.parseLong(id));
                 if (datafile == null) {
-                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", id)));
                 }
                 return datafile;
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+                        badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", id)));
             }
         }
     }
@@ -491,24 +491,24 @@ public abstract class AbstractApiBean {
             String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
             if (persistentId == null) {
                 throw new WrappedResponse(
-                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", PERSISTENT_ID_KEY.substring(1))));
             }
 
             Dataset dataset = datasetSvc.findByGlobalId(persistentId);
             if (dataset == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", persistentId)));
             }
             datasetId = dataset.getId().toString();
         }
         try {
             dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), linkingDataverse.getId());
             if (dsld == null) {
-                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", datasetId, linkingDataverse.getId().toString())));
             }
             return dsld;
         } catch (NumberFormatException nfe) {
             throw new WrappedResponse(
-                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
+                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", datasetId, linkingDataverse.getId().toString())));
         }
     }
 

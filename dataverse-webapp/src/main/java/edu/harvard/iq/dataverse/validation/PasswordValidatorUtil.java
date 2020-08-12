@@ -43,9 +43,9 @@ public class PasswordValidatorUtil {
         message += "<ul>";
         String optionalGoodStrengthNote = "";
         if (goodStrength > 0) {
-            optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength", Arrays.asList(Integer.toString(goodStrength))) + ")";
+            optionalGoodStrengthNote = " (" + BundleUtil.getStringFromBundle("passwdVal.passwdReq.goodStrength", Integer.toString(goodStrength)) + ")";
         }
-        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq", Arrays.asList(Integer.toString(minLength))) + " " + optionalGoodStrengthNote + "</li>";
+        message += "<li " + getColor(errors, ErrorType.TOO_SHORT) + ">" + getOkOrFail(errors, ErrorType.TOO_SHORT) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.lengthReq", Integer.toString(minLength)) + " " + optionalGoodStrengthNote + "</li>";
         message += "<li " + getColor(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + ">" + getOkOrFail(errors, ErrorType.INSUFFICIENT_CHARACTERISTICS) + getRequiredCharacters(characterRules, numberOfCharacteristics) + "</li>";
         message += "</ul>";
         boolean repeatingDigitRuleEnabled = Integer.MAX_VALUE != numberOfConsecutiveDigitsAllowed;
@@ -55,7 +55,7 @@ public class PasswordValidatorUtil {
             message += "<ul>";
         }
         if (repeatingDigitRuleEnabled) {
-            message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.consecutiveDigits", Arrays.asList(Integer.toString(numberOfConsecutiveDigitsAllowed))) + "</li>";
+            message += "<li " + getColor(errors, ErrorType.ILLEGAL_MATCH) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_MATCH) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.consecutiveDigits", Integer.toString(numberOfConsecutiveDigitsAllowed)) + "</li>";
         }
         if (dictionaryEnabled) {
             message += "<li " + getColor(errors, ErrorType.ILLEGAL_WORD) + ">" + getOkOrFail(errors, ErrorType.ILLEGAL_WORD) + BundleUtil.getStringFromBundle("passwdVal.passwdReq.dictionaryWords") + "</li>";

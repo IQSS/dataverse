@@ -143,13 +143,13 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.requestedVersion)) {
                     userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftNotFound");
                 } else {
-                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", Arrays.asList(MarkupChecker.escapeHtml(this.requestedVersion)));
+                    userMsg = BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionNotFound", MarkupChecker.escapeHtml(this.requestedVersion));
                 }
 
                 if (DatasetVersionServiceBean.this.isVersionAskingForDraft(this.actualVersion)) {
                     userMsg += BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.draftFound");
                 } else {
-                    userMsg += BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionFound", Arrays.asList(this.actualVersion));
+                    userMsg += BundleUtil.getStringFromBundle("file.viewDiffDialog.msg.versionFound", this.actualVersion);
                 }
 
                 return userMsg;

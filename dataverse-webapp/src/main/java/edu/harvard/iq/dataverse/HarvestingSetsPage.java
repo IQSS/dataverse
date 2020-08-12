@@ -292,7 +292,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
         try {
             oaiSetService.save(oaiSet);
             configuredHarvestingSets = oaiSetService.findAll();
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success", Arrays.asList(oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec())));
+            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success", oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec()));
             success = true;
 
         } catch (Exception ex) {

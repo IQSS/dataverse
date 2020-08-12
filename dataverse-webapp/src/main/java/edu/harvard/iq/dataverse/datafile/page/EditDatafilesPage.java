@@ -476,7 +476,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String getMultiUploadDetailsMessage() {
-        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(session.getLocale()), systemConfig.getGuidesVersion()));
+        return BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", systemConfig.getGuidesBaseUrl(session.getLocale()), systemConfig.getGuidesVersion());
     }
 
     public boolean isInstallationPublic() {
@@ -1844,8 +1844,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadStream = file.getInputStream();
             } catch (IOException ioex) {
                 logger.info("the file " + file.getFileName() + " failed to upload!");
-                List<String> args = Arrays.asList(file.getFileName());
-                String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", args);
+
+                String msg = BundleUtil.getStringFromBundle("dataset.file.uploadFailure.detailmsg", file.getFileName());
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadFailure"), msg);
                 FacesContext.getCurrentInstance().addMessage(null, message);
                 return;
@@ -1854,8 +1854,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             savedLabelsTempFile = saveTempFile(uploadStream);
 
             logger.fine(file.getFileName() + " is successfully uploaded.");
-            List<String> args = Arrays.asList(file.getFileName());
-            FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", args));
+
+            FacesMessage message = new FacesMessage(BundleUtil.getStringFromBundle("dataset.file.upload", file.getFileName()));
             FacesContext.getCurrentInstance().addMessage(null, message);
         }
 

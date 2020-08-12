@@ -928,8 +928,7 @@ public class Access extends AbstractApiBean {
         try {
             dataset = findDatasetOrDie(datasetToAllowAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(datasetToAllowAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.allowRequests.failure.noDataset", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.allowRequests.failure.noDataset", datasetToAllowAccessId));
         }
 
         boolean allowRequest = Boolean.valueOf(requestStr);
@@ -937,8 +936,7 @@ public class Access extends AbstractApiBean {
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", wr.getLocalizedMessage()));
         }
 
         dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
@@ -946,13 +944,12 @@ public class Access extends AbstractApiBean {
         try {
             engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
         } catch (CommandException ex) {
-            List<String> args = Arrays.asList(dataset.getDisplayName(), ex.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noSave", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noSave", dataset.getDisplayName(), ex.getLocalizedMessage()));
         }
 
         String text = allowRequest ? BundleUtil.getStringFromBundle("access.api.allowRequests.allows") : BundleUtil.getStringFromBundle("access.api.allowRequests.disallows");
-        List<String> args = Arrays.asList(dataset.getDisplayName(), text);
-        return ok(BundleUtil.getStringFromBundle("access.api.allowRequests.success", args));
+
+        return ok(BundleUtil.getStringFromBundle("access.api.allowRequests.success", dataset.getDisplayName(), text));
 
     }
 
@@ -975,8 +972,7 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", fileToRequestAccessId));
         }
 
         AuthenticatedUser requestor;
@@ -985,8 +981,7 @@ public class Access extends AbstractApiBean {
             requestor = findAuthenticatedUserOrDie();
             dataverseRequest = createDataverseRequest(requestor);
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", wr.getLocalizedMessage()));
         }
 
         if (isAccessAuthorized(dataFile, getRequestApiKey())) {
@@ -1002,12 +997,10 @@ public class Access extends AbstractApiBean {
             
             filePermissionsService.sendRequestFileAccessNotification(dataFile.getOwner(), dataFile.getId(), requestor);
         } catch (CommandException ex) {
-            List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", dataFile.getDisplayName(), ex.getLocalizedMessage()));
         }
 
-        List<String> args = Arrays.asList(dataFile.getDisplayName());
-        return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", args));
+        return ok(BundleUtil.getStringFromBundle("access.api.requestAccess.success.for.single.file", dataFile.getDisplayName()));
 
     }
 
@@ -1031,15 +1024,13 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestList.fileNotFound", fileToRequestAccessId));
         }
 
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", wr.getLocalizedMessage()));
         }
 
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() ||
@@ -1085,22 +1076,19 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", fileToRequestAccessId));
         }
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
 
         if (ra == null) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", identifier));
         }
 
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", identifier));
         }
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
@@ -1112,8 +1100,7 @@ public class Access extends AbstractApiBean {
             }
 
         } catch (CommandException ex) {
-            List<String> args = Arrays.asList(dataFile.getDisplayName(), ex.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.failure.commandError", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.failure.commandError", dataFile.getDisplayName(), ex.getLocalizedMessage()));
         }
 
         try {
@@ -1124,8 +1111,7 @@ public class Access extends AbstractApiBean {
             //nothing to do here - can only send a notification to an authenticated user
         }
 
-        List<String> args = Arrays.asList(dataFile.getDisplayName());
-        return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", args));
+        return ok(BundleUtil.getStringFromBundle("access.api.grantAccess.success.for.single.file", dataFile.getDisplayName()));
 
     }
 
@@ -1149,15 +1135,13 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", fileToRequestAccessId));
         }
 
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(wr.getLocalizedMessage());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", wr.getLocalizedMessage()));
         }
 
         if (identifier == null || identifier.equals("")) {
@@ -1166,8 +1150,7 @@ public class Access extends AbstractApiBean {
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
         if (ra == null) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", identifier));
         }
 
         DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
@@ -1180,8 +1163,7 @@ public class Access extends AbstractApiBean {
         List<RoleAssignment> roles = query.getResultList();
 
         if (roles == null || roles.isEmpty()) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.revokeAccess.noRoleFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.revokeAccess.noRoleFound", identifier));
         }
 
         try {
@@ -1192,9 +1174,7 @@ public class Access extends AbstractApiBean {
             return wr.getResponse();
         }
 
-        List<String> args = Arrays.asList(ra.getIdentifier(), dataFile.getDisplayName());
-
-        return ok(BundleUtil.getStringFromBundle("access.api.revokeAccess.success.for.single.file", args));
+        return ok(BundleUtil.getStringFromBundle("access.api.revokeAccess.success.for.single.file", ra.getIdentifier(), dataFile.getDisplayName()));
 
     }
 
@@ -1218,22 +1198,19 @@ public class Access extends AbstractApiBean {
         try {
             dataFile = findDataFileOrDie(fileToRequestAccessId);
         } catch (WrappedResponse ex) {
-            List<String> args = Arrays.asList(fileToRequestAccessId);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.fileNotFound", fileToRequestAccessId));
         }
 
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(identifier);
 
         if (ra == null) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", identifier));
         }
 
         try {
             dataverseRequest = createDataverseRequest(findUserOrDie());
         } catch (WrappedResponse wr) {
-            List<String> args = Arrays.asList(identifier);
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", identifier));
         }
 
         if (!(dataverseRequest.getAuthenticatedUser().isSuperuser() ||
@@ -1254,12 +1231,10 @@ public class Access extends AbstractApiBean {
                 //nothing to do here - can only send a notification to an authenticated user
             }
 
-            List<String> args = Arrays.asList(dataFile.getDisplayName());
-            return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", args));
+            return ok(BundleUtil.getStringFromBundle("access.api.rejectAccess.success.for.single.file", dataFile.getDisplayName()));
 
         } else {
-            List<String> args = Arrays.asList(dataFile.getDisplayName(), ra.getDisplayInfo().getTitle());
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", args));
+            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.rejectFailure.noRequest", dataFile.getDisplayName(), ra.getDisplayInfo().getTitle()));
         }
     }
 

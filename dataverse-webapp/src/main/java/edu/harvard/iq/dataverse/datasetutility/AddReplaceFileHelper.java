@@ -707,7 +707,7 @@ public class AddReplaceFileHelper {
         DataFile existingFile = fileService.find(dataFileId);
 
         if (existingFile == null) {
-            this.addError(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", Collections.singletonList(dataFileId.toString())));
+            this.addError(BundleUtil.getStringFromBundle("file.addreplace.error.existing_file_to_replace_not_found_by_id", dataFileId.toString()));
             return false;
         }
 
@@ -940,11 +940,9 @@ public class AddReplaceFileHelper {
             //
             if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileToReplace.getContentType())) {
 
-                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
-                                                       finalFileList.get(0).getFriendlyType());
-
                 String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type",
-                                                                       errParams);
+                        fileToReplace.getFriendlyType(),
+                        finalFileList.get(0).getFriendlyType());
 
                 if (isForceFileOperation()) {
                     // for force replace, just give a warning
@@ -1017,11 +1015,8 @@ public class AddReplaceFileHelper {
             //
             if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
             
-                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
-                                                df.getFriendlyType());
-                
                 String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
-                                errParams);
+                                fileToReplace.getFriendlyType(), df.getFriendlyType());
                                         
                 if (isForceFileOperation()){
                     // for force replace, just give a warning

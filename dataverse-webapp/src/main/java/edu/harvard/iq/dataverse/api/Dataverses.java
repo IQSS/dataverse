@@ -862,18 +862,16 @@ public class Dataverses extends AbstractApiBean {
                 Dataverse dv = findDataverseOrDie(dvIdtf);
                 defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
             } catch (Exception nre) {
-                List<String> args = Arrays.asList(roleAlias);
                 String retStringError = BundleUtil.getStringFromBundle(
                         "dataverses.api.update.default.contributor.role.failure.role.not.found",
-                        args);
+                        roleAlias);
                 return error(Status.NOT_FOUND, retStringError);
             }
 
             if (!defaultRole.doesDvObjectClassHavePermissionForObject(Dataset.class)) {
-                List<String> args = Arrays.asList(roleAlias);
                 String retStringError = BundleUtil.getStringFromBundle(
                         "dataverses.api.update.default.contributor.role.failure.role.does.not.have.dataset.permissions",
-                        args);
+                        roleAlias);
                 return error(Status.BAD_REQUEST, retStringError);
             }
 
@@ -888,10 +886,10 @@ public class Dataverses extends AbstractApiBean {
 
             return response(req -> {
                 execCommand(new UpdateDataverseDefaultContributorRoleCommand(defaultRole, req, dv));
-                List<String> args = Arrays.asList(dv.getDisplayName(), defaultRoleName);
+
                 String retString = BundleUtil.getStringFromBundle(
                         "dataverses.api.update.default.contributor.role.success",
-                        args);
+                        dv.getDisplayName(), defaultRoleName);
                 return ok(retString);
             });
 

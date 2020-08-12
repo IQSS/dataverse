@@ -265,8 +265,7 @@ public class ManageGroupsPage implements java.io.Serializable {
         Try.of(() -> mgCrudService.create(dataverse, explicitGroupName, explicitGroupIdentifier, newExplicitGroupDescription, newExplicitGroupRoleAssignees))
             .onSuccess((eg) -> {
                 explicitGroups.add(eg.get());
-                List<String> args = Arrays.asList(eg.get().getDisplayName());
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", args));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.create.success", eg.get().getDisplayName()));
             })
             .onFailure(throwable -> {
                 logger.log(Level.WARNING, "Group creation failed", throwable);
@@ -279,8 +278,7 @@ public class ManageGroupsPage implements java.io.Serializable {
 
         Try.of(() -> mgCrudService.update(selectedGroup, selectedGroupAddRoleAssignees))
             .onSuccess((eg) -> {
-                List<String> args = Arrays.asList(eg.get().getDisplayName());
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.save.success", args));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.save.success", eg.get().getDisplayName()));
                 explicitGroups.set(explicitGroups.indexOf(eg.get()), eg.get());
             })
             .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.manageGroups.edit.fail"),

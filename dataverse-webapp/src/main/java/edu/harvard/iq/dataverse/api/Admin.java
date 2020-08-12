@@ -1116,11 +1116,10 @@ public class Admin extends AbstractApiBean {
 
         } catch (WrappedResponse r) {
             logger.info("Failed to migrate Dataset Handle id: " + id);
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", Arrays.asList(id)));
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failure", id));
         } catch (Exception e) {
             logger.info("Failed to migrate Dataset Handle id: " + id + " Unexpected Exception " + e.getMessage());
-            List<String> args = Arrays.asList(id, e.getMessage());
-            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", args));
+            return badRequest(BundleUtil.getStringFromBundle("admin.api.migrateHDL.failureWithException", id, e.getMessage()));
         }
         System.out.print("before the return ok...");
         return ok(BundleUtil.getStringFromBundle("admin.api.migrateHDL.success"));

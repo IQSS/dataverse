@@ -222,7 +222,7 @@ public class DataversePage implements java.io.Serializable {
                 .onSuccess(savedSearch -> {
                     String hrefArgument = "<a href=\"/dataverse/" + targetDataverseLink.getAlias() + "\">" + StringEscapeUtils.escapeHtml(targetDataverseLink
                                                                                                                                                   .getDisplayName()) + "</a>";
-                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.success", Collections.singleton(hrefArgument)));
+                    JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataverse.saved.search.success", hrefArgument));
                 })
                 .onFailure(ex -> {
                     logger.log(Level.SEVERE, "There was a problem linking this search", ex);
@@ -275,20 +275,20 @@ public class DataversePage implements java.io.Serializable {
     // -------------------- PRIVATE --------------------
 
     private void handleSaveLinkedDataverseExceptions(Throwable ex, long dataverseToLinkId) {
-        String msg = BundleUtil.getStringFromBundle("dataverse.link.error", Lists.newArrayList(dataverse.getDisplayName()));
+        String msg = BundleUtil.getStringFromBundle("dataverse.link.error", dataverse.getDisplayName());
         JsfHelper.addFlashErrorMessage(msg);
 
         logger.log(Level.SEVERE, "Unable to link dataverse with id: " + dataverse.getId() + " to " + dataverseToLinkId, ex);
     }
 
 
-    private List<String> getSuccessMessageArguments() {
+    private Object[] getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         arguments.add(StringEscapeUtils.escapeHtml(dataverse.getDisplayName()));
         String linkString = "<a href=\"/dataverse/" + targetDataverseLink.getAlias() + "\">" + StringEscapeUtils.escapeHtml(targetDataverseLink
                                                                                                                                     .getDisplayName()) + "</a>";
         arguments.add(linkString);
-        return arguments;
+        return arguments.toArray();
     }
 
     private AuthenticatedUser getAuthenticatedUser() {

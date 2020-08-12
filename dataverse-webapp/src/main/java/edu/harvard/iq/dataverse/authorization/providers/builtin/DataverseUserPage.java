@@ -446,7 +446,7 @@ public class DataverseUserPage implements java.io.Serializable {
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
                 String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(
                         SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
-                List<String> args = Arrays.asList(currentUser.getEmail(), expTime);
+
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
@@ -455,7 +455,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", currentUser.getEmail(), expTime));
             } else {
                 JsfHelper.addFlashSuccessMessage(msg.toString());
             }
@@ -600,11 +600,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
         try {
             confirmEmailService.beginConfirm(currentUser);
-            List<String> args = Arrays.asList(
-                    userEmail,
-                    ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires)));
+            String expirationString = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
+
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.submitRequest.success",
-                                                                            args));
+                                                                            userEmail, expirationString));
         } catch (ConfirmEmailException ex) {
             Logger.getLogger(DataverseUserPage.class.getName()).log(Level.SEVERE, null, ex);
         }

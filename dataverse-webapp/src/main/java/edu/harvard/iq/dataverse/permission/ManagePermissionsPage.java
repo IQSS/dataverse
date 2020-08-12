@@ -450,15 +450,15 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     private void assignRole(RoleAssignee ra, DataverseRole r) {
-        List<String> args = Arrays.asList(
+        Object[] messageArgs = {
                 r.getName(),
                 ra.getDisplayInfo().getTitle(),
                 StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
-        );
+        };
 
         Try.of(() -> managePermissionsService.assignRoleWithNotification(r, ra, dvObject))
-                .onSuccess(roleAssignment -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args)))
-                .onFailure(throwable -> handleAssignRoleFailure(throwable, args));
+                .onSuccess(roleAssignment -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", messageArgs)))
+                .onFailure(throwable -> handleAssignRoleFailure(throwable, messageArgs));
 
         showAssignmentMessages();
     }
@@ -519,7 +519,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                     .onSuccess(this::setRole)
                     .onSuccess(modifiedRole -> {
                         String roleState = !isCreateRoleAction ? BundleUtil.getStringFromBundle("permission.updated") : BundleUtil.getStringFromBundle("permission.created");
-                        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", Collections.singletonList(roleState)));
+                        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWas", roleState));
                     })
                     .onFailure(this::handleUpdateRoleFailure);
         }
@@ -632,8 +632,8 @@ public class ManagePermissionsPage implements java.io.Serializable {
         Try.run(() -> managePermissionsService.removeRoleAssignmentWithNotification(ra))
                 .onSuccess(Void -> {
                     JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.roleWasRemoved",
-                            Arrays.asList(ra.getRole().getName(),
-                                    roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle())));
+                            ra.getRole().getName(),
+                            roleAssigneeService.getRoleAssignee(ra.getAssigneeIdentifier()).getDisplayInfo().getTitle()));
                 })
                 .onFailure(this::handleRemoveRoleAssignmentFailure);
     }
@@ -642,7 +642,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if(throwable instanceof PermissionException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
+                            ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), "");
             logger.log(Level.SEVERE, "Error removing role assignment: " + throwable.getMessage(), throwable);
@@ -654,19 +654,19 @@ public class ManagePermissionsPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(
                     BundleUtil.getStringFromBundle("permission.roleNotSaved"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
+                            ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotSaved"), "");
             logger.log(Level.SEVERE, "Error saving role: " + throwable.getMessage(), throwable);
         }
     }
 
-    private void handleAssignRoleFailure(Throwable throwable, List<String> messageDetails) {
+    private void handleAssignRoleFailure(Throwable throwable, Object[] messageDetails) {
         if (throwable instanceof PermissionException) {
             JsfHelper.addErrorMessage(
                     BundleUtil.getStringFromBundle("permission.roleNotAbleToBeAssigned"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
+                            ((PermissionException) throwable).getMissingPermissions().toString()));
 
         } else if (throwable instanceof CommandException) {
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", messageDetails);
@@ -679,7 +679,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if(throwable instanceof PermissionException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"),
                     BundleUtil.getStringFromBundle("permission.permissionsMissing",
-                            Collections.singletonList(((PermissionException) throwable).getMissingPermissions().toString())));
+                            ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
             logger.log(Level.SEVERE, "Error assigning default permissions: " + throwable.getMessage(), throwable);

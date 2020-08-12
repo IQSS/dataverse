@@ -286,7 +286,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
 
     private void rejectAccessToRequests(AuthenticatedUser au, List<DataFile> files) {
         filePermissionsService.rejectRequestAccessToFiles(au, files);
-        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessRejected", Arrays.asList(au.getDisplayInfo().getTitle())));
+        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.fileAccessRejected", au.getDisplayInfo().getTitle()));
         initMaps();
     }
     
@@ -315,7 +315,7 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
         Set<Permission> requiredPermissions = ex.getMissingPermissions();
         JsfHelper.addErrorMessage(
                 BundleUtil.getStringFromBundle(operationErrorSummaryKey),
-                BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(requiredPermissions.toString())));
+                BundleUtil.getStringFromBundle("permission.permissionsMissing", requiredPermissions.toString()));
     }
     
     private void initMaps() {
