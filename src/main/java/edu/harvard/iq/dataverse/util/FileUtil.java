@@ -1095,7 +1095,7 @@ public class FileUtil implements java.io.Serializable  {
 		} else {
 			//Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
             finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
-			if(suppliedContentType==FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT) {
+			if(finalType==FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT) {
 				String type=determineFileTypeByExtension(fileName);
 				if(!StringUtils.isBlank(type)) {
 					finalType=type;
