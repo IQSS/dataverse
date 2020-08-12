@@ -503,16 +503,16 @@ public class SystemConfig {
     public String getApplicationTermsOfUse() {
         String language = BundleUtil.getCurrentLocale().getLanguage();
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = "";
-         if(language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage()) )
-        {
-             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        }
-        else
-        {
-            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, saneDefaultForAppTermsOfUse);
-        }
-        return appTermsOfUse;
+		// Get the value for the defaultLocale. IT will either be used as the return
+		// value, or as a better default than the saneDefaultForAppTermsOfUse if there
+		// is no language-specific value
+		String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse,
+				saneDefaultForAppTermsOfUse);
+		//Now get the language-specific value if it exists
+		if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+			appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
+		}
+		return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
