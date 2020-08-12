@@ -287,6 +287,15 @@ public class DatasetPage implements java.io.Serializable {
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
+    private Dataverse selectedHostDataverse;
+
+    public Dataverse getSelectedHostDataverse() {
+        return selectedHostDataverse;
+    }
+
+    public void setSelectedHostDataverse(Dataverse selectedHostDataverse) {
+        this.selectedHostDataverse = selectedHostDataverse;
+    }
     
     // Version tab lists
     private List<DatasetVersion> versionTabList = new ArrayList<>();
@@ -1796,8 +1805,9 @@ public class DatasetPage implements java.io.Serializable {
     }     
     
     public void updateOwnerDataverse() {
-        if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
-            ownerId = dataset.getOwner().getId();
+        if (selectedHostDataverse != null && selectedHostDataverse.getId() != null) {
+            ownerId = selectedHostDataverse.getId();
+            dataset.setOwner(selectedHostDataverse);
             logger.info("New host dataverse id: "+ownerId);
             // discard the dataset already created
             //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
@@ -1815,16 +1825,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean rsyncUploadSupported() {
-        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
-        // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
-        // instead of testing for the 's3" store.
 
-        /*failsafe when no new owner selected*/
-        if (dataset.getOwner() == null || dataset.getOwner().getId() == null) {
-            dataset.setOwner(ownerId != null ? dataverseService.find(ownerId) : null);
-        }
-
-        return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+        return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     private String init(boolean initFull) {
@@ -1991,7 +1993,8 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             readOnly = false; 
             editMode = EditMode.CREATE;
-            dataset.setOwner(dataverseService.find(ownerId));
+            selectedHostDataverse = dataverseService.find(ownerId);
+            dataset.setOwner(selectedHostDataverse);
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
 

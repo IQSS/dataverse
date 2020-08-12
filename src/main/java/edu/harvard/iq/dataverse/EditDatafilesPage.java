@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -3084,7 +3085,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// instead of testing for the 's3" store.
         //NOTE - This method also exists in DatasetPage so when it is changed here it must be
         //changed there. SEK 8/12/2020
-    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     

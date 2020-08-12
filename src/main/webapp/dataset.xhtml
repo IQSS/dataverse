@@ -593,7 +593,7 @@
                                                             emptyMessage="#{bundle['dataverse.host.autocomplete.nomatches']}"
                                                             scrollHeight="180" forceSelection="true" 
                                                             minQueryLength="1" queryDelay="1000"
-                                                            value="#{DatasetPage.dataset.owner}" 
+                                                            value="#{DatasetPage.selectedHostDataverse}" 
                                                             multiple="false"
                                                             completeMethod="#{DatasetPage.completeHostDataverseMenuList}"
                                                             required="#{param['DO_DS_LINK_VALIDATION']}" requiredMessage="#{bundle['dataverse.link.select']}"
@@ -727,6 +727,7 @@
                             <ui:include src="editFilesFragment.xhtml">
                                 <ui:param name="datasetPage" value="true"/>
                                 <ui:param name="editDatafilesPage" value="false"/>
+                                <ui:param name="rsyncSupported" value="#{DatasetPage.rsyncUploadSupported()}"/>
                                 <ui:param name="dataverse" value="#{DatasetPage.dataset.owner}"/>
                                 <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
                                 <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
