@@ -83,11 +83,11 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
           * edit the parameters in the <schedule> section of the WEB-INF/ejb-jar.xml to suit your preferred schedule
 
-    * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
+  * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
 
     * jar uvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml
 
-    * Deploy the war file
+  * Deploy the war file
 
 
 See also :ref:`saved-search` in the API Guide.
