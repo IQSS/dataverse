@@ -54,6 +54,7 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -81,6 +82,7 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> configureTools;
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
+    private List<ExternalTool> fileRequestAccessTools;
     private Long datasetVersionId;
 
     @EJB
@@ -230,6 +232,7 @@ public class FilePage implements java.io.Serializable {
             if(!toolsWithPreviews.isEmpty()){
                 setSelectedTool(toolsWithPreviews.get(0));                
             }
+            fileRequestAccessTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.REQUESTACCESS, contentType);
         } else {
 
             return permissionsWrapper.notFound();
@@ -959,6 +962,20 @@ public class FilePage implements java.io.Serializable {
         return toolsWithPreviews;
     }
     
+    public List<ExternalTool> getFileRequestAccessTools() {
+        return fileRequestAccessTools;
+    }
+    
+    public ExternalTool getFileRequestAccessTool(){
+        ExternalTool fileRequestAccessTool = null;
+        
+        if(!fileRequestAccessTools.isEmpty()){
+            fileRequestAccessTool = fileRequestAccessTools.get(0); //there should be only 1 of these tools
+        }
+       
+        return fileRequestAccessTool;
+    }
+    
     private ExternalTool selectedTool;
 
     public ExternalTool getSelectedTool() {
@@ -1001,5 +1018,28 @@ public class FilePage implements java.io.Serializable {
             return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());
         }
     };
+    
+    private ApiToken getApiTokenForTool(){ //repeat of DatasetPage.getApiTokenForTool() - should be implemented in a different class
+        ApiToken apiToken = null;
+        User user = session.getUser();
+        if (user instanceof AuthenticatedUser) {
+            apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
+        } else if (user instanceof PrivateUrlUser) {
+            PrivateUrlUser privateUrlUser = (PrivateUrlUser) user;
+            PrivateUrl privUrl = privateUrlService.getPrivateUrlFromDatasetId(privateUrlUser.getDatasetId());
+            apiToken = new ApiToken();
+            apiToken.setTokenString(privUrl.getToken());
+        }
+        return apiToken;
+    }
+    
+    public void requestAccess(ExternalTool tool){
+        ApiToken apiToken = getApiTokenForTool();
+        
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Request Access with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');"); 
+    }
 
 }
