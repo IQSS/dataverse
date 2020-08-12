@@ -3507,7 +3507,6 @@ public class DatasetPage implements java.io.Serializable {
     }
      
     public String save() {
-        
         //Before dataset saved, write cached prov freeform to version
         if (systemConfig.isProvCollectionEnabled()) {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
