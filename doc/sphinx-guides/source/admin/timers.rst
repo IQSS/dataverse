@@ -69,25 +69,25 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
 * Alternatively, you can insert an ejb-jar.xml file into a provided dataverse war file without building the application.
 
-    * Check if there is already an ejb-jar.xml file in the war file 
+  * Check if there is already an ejb-jar.xml file in the war file 
 
-        * jar tvf $DATAVERSE-WAR-FILENAME | grep ejb-jar.xml
+    * jar tvf $DATAVERSE-WAR-FILENAME | grep ejb-jar.xml
 
-            * if the response includes " WEB-INF/ejb-jar.xml", you will need to extract the ejb-jar.xml file for editing
+      * if the response includes " WEB-INF/ejb-jar.xml", you will need to extract the ejb-jar.xml file for editing
 
-                * jar xvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml 
+        * jar xvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml 
 
-                    * edit the extracted WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+          * edit the extracted WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
 
-            * if the response is empty, create a WEB-INF directory and create en ejb-jar.xml file in it, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+        * if the response is empty, create a WEB-INF directory and create en ejb-jar.xml file in it, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
 
-                * edit the parameters in the <schedule> section of the WEB-INF/ejb-jar.xml to suit your preferred schedule
+          * edit the parameters in the <schedule> section of the WEB-INF/ejb-jar.xml to suit your preferred schedule
 
-        * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
+    * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
 
-            * jar uvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml
+    * jar uvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml
 
-        * Deploy the war file
+    * Deploy the war file
 
 
 See also :ref:`saved-search` in the API Guide.
