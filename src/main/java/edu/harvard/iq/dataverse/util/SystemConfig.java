@@ -1056,4 +1056,10 @@ public class SystemConfig {
 	public boolean directUploadEnabled(Dataset dataset) {
     	return Boolean.getBoolean("dataverse.files." + dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
 	}
+	
+	public String getDataCiteRestApiUrlString() {
+		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
+        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
+	}
+
 }
