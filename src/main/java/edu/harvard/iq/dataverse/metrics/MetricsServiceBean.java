@@ -53,7 +53,7 @@ public class MetricsServiceBean implements Serializable {
     
     public JsonArray getDataversesTimeSeries(UriInfo uriInfo, Dataverse d) {
         Query query = em.createNativeQuery(""
-                + "select distinct to_date(date_trunc('month', dvobject.publicationdate),'YYYY-MM') as month, count(date_trunc('month', dvobject.publicationdate))\n"
+                + "select distinct to_char(date_trunc('month', dvobject.publicationdate),'YYYY-MM') as month, count(date_trunc('month', dvobject.publicationdate))\n"
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
