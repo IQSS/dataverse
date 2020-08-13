@@ -226,7 +226,7 @@ public class Dataverse extends DvObjectContainer {
 
     public void setDataverseFeaturingDataverses(List<DataverseFeaturedDataverse> dataverseFeaturingDataverses) {
         this.dataverseFeaturingDataverses = dataverseFeaturingDataverses;
-	    //test
+	    //test2
     }
     
     @OneToMany(mappedBy="dataverse", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
