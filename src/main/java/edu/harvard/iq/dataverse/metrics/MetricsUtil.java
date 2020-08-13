@@ -28,6 +28,7 @@ public class MetricsUtil {
     final static String COUNT = "count";
     private final static String CATEGORY = "category";
     private final static String SUBJECT = "subject";
+    final static String DATE = "date";
     final static String SIZE = "size";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 

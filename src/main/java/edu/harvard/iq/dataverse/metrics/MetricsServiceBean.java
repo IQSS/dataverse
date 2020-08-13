@@ -29,14 +29,12 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-
-import org.json.JSONArray;
+import javax.ws.rs.core.UriInfo;
 
 @Stateless
 public class MetricsServiceBean implements Serializable {
@@ -52,6 +50,28 @@ public class MetricsServiceBean implements Serializable {
 
     /** Dataverses */
 
+    
+    public JsonArray getDataversesTimeSeries(UriInfo uriInfo, Dataverse d) {
+        Query query = em.createNativeQuery(""
+                + "select distinct to_date(date_trunc('month', dvobject.publicationdate),'YYYY-MM') as month, count(date_trunc('month', dvobject.publicationdate))\n"
+                + "from dataverse\n"
+                + "join dvobject on dvobject.id = dataverse.id\n"
+                + "where dvobject.publicationdate is not null\n"
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + "group by  date_trunc('month', publicationdate);"
+        );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (Object[] result : results) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add(MetricsUtil.DATE, (String)result[0]);
+            job.add(MetricsUtil.COUNT, (long)result[1]);
+            jab.add(job);
+        }
+        return jab.build();
+    }
+    
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
