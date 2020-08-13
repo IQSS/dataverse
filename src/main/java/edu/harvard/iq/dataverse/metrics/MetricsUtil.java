@@ -25,9 +25,10 @@ public class MetricsUtil {
 
     private static final Logger logger = Logger.getLogger(MetricsUtil.class.getCanonicalName());
 
-    private final static String COUNT = "count";
+    final static String COUNT = "count";
     private final static String CATEGORY = "category";
     private final static String SUBJECT = "subject";
+    final static String SIZE = "size";
     public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
     public static final String DATA_LOCATION_LOCAL = "local";
