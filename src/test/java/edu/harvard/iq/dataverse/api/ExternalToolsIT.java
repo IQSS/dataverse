@@ -17,6 +17,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 public class ExternalToolsIT {
 
