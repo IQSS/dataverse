@@ -3081,10 +3081,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public boolean rsyncUploadSupported() {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
-    	// When those restrictions are lifted/rsync can be configured per store, this test should check that setting
-    	// instead of testing for the 's3" store.
-        //NOTE - This method also exists in DatasetPage so when it is changed here it must be
-        //changed there. SEK 8/12/2020
+    	// When those restrictions are lifted/rsync can be configured per store, the test in the 
+        // Dataset Util method should be updated
+
     	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
