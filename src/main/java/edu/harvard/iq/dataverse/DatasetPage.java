@@ -2012,7 +2012,11 @@ public class DatasetPage implements java.io.Serializable {
             }                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
-                dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
+                for (Template templateTest: dataverseService.find(ownerId).getParentTemplates()){
+                   if(!dataverseTemplates.contains(templateTest)){
+                       dataverseTemplates.add(templateTest);
+                   }
+                }               
             }
             Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
