@@ -347,7 +347,7 @@
     
     <!-- Request Access Button -->
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and (fileMetadata.dataFile.owner.fileAccessRequest or not empty FilePage.fileRequestAccessTools)}">
+                             and (fileMetadata.dataFile.owner.fileAccessRequest or not empty fileRequestAccessTools)}">
         <!-- FILE PG and fileRequestAccessTool 
         note: this calls the ExternalTool regardless of whether requestAccessPopupRequired is T or F-->
         <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
