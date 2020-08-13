@@ -681,7 +681,7 @@ public class MetricsServiceBean implements Serializable {
         if (versionState != null) {
             switch (versionState) {
             case RELEASED:
-                sql += " and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM')\n";
+                sql += " and publicationdate is not null and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM')\n";
                 break;
             case DRAFT:
                 sql += "and publicationdate is null\n";
