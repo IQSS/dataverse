@@ -84,6 +84,7 @@ public class ExternalToolsIT {
         uploadTabularFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToTabularFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));                
         Integer tabularFileId = JsonPath.from(uploadTabularFile.getBody().asString()).getInt("data.files[0].dataFile.id");
 
         JsonObjectBuilder job = Json.createObjectBuilder();
