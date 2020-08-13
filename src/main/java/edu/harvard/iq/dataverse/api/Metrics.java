@@ -5,15 +5,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
-import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -22,9 +19,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -50,11 +45,25 @@ public class Metrics extends AbstractApiBean {
         return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
-    @Deprecated // for better path
     @GET
-    @Path("dataverses/toMonth")
-    public Response getDataversesToMonthCurrent(@Context UriInfo uriInfo) {
-        return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
+    @Path("dataverses/monthly")
+    public Response getDataversesTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "dataverses";
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+
+        jsonArray= metricsSvc.getDataversesTimeSeries(uriInfo, d);
+        metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+    }
+    return ok(jsonArray);
+
     }
 
     @GET
