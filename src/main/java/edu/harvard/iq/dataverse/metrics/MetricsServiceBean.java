@@ -372,7 +372,7 @@ public class MetricsServiceBean implements Serializable {
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                JsonObject stats = Json.createObjectBuilder().add("Counts", (long) result[1]).add("Size", (BigDecimal) result[2]).build();
+                JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
                 job.add((String) result[0], stats);
             }
 
