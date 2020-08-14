@@ -58,7 +58,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + ((d == null) ? "" : "and dvobject.id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "group by  date_trunc('month', publicationdate);"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -83,7 +83,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM');"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -97,7 +97,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "and publicationdate > current_date - interval '"+days+"' day;\n"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -111,7 +111,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select dataversetype, count(dataversetype) from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "group by dataversetype\n"
                 + "order by count desc;"
         );
@@ -126,7 +126,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select cvv.strvalue, count(dataverse_id) from dataversesubjects\n"
                 + "join controlledvocabularyvalue cvv ON cvv.id = controlledvocabularyvalue_id \n"
                 //+ "where dataverse_id != ( select id from dvobject where owner_id is null) \n" //removes root, we decided to do this in the homepage js instead
-                + ((d == null) ? "" : "and dataverse_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dataverse_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "group by cvv.strvalue\n"
                 + "order by count desc;"
         );
@@ -148,7 +148,7 @@ public class MetricsServiceBean implements Serializable {
                 + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
                 + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
                 + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n "  : "")
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n ")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n ")
                 + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
                 + "group by dataset_id) as subq group by subq.date order by date;"
 
@@ -206,7 +206,7 @@ public class MetricsServiceBean implements Serializable {
                         + "join dataset on dataset.id = datasetversion.dataset_id\n"
                         + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                         + "where versionstate='RELEASED' \n"
-                        + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n ")
+                        + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n ")
                         + "and \n"
                         + dataLocationLine // be careful about adding more and statements after this line.
                         + "group by dataset_id \n"
@@ -263,7 +263,7 @@ public class MetricsServiceBean implements Serializable {
                 + "WHERE\n"
                 + originClause
                 + "AND datasetfieldtype.name = 'subject'\n"
-                + ((d == null) ? "" : "AND dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "AND dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "GROUP BY strvalue\n"
                 + "ORDER BY count(dataset.id) desc;"
         );
@@ -293,7 +293,7 @@ public class MetricsServiceBean implements Serializable {
                         + "join dataset on dataset.id = datasetversion.dataset_id\n"
                         + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                         + "where versionstate='RELEASED' \n"
-                        + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                        + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                         + "and \n"
                         + dataLocationLine // be careful about adding more and statements after this line.
                         + "group by dataset_id \n"
@@ -322,7 +322,7 @@ public class MetricsServiceBean implements Serializable {
                 + "join dataset on dataset.id = datasetversion.dataset_id\n"
                 + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                 + "where versionstate='RELEASED'\n"
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "and date_trunc('month', releasetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
@@ -346,7 +346,7 @@ public class MetricsServiceBean implements Serializable {
                 + ((d == null) ? "" : "join dvobject on dvobject.id = dataset.id\n")
                 + "where versionstate='RELEASED'\n"
                 + "and releasetime > current_date - interval '" + days + "' day\n"
-                + ((d == null) ? "" : "AND dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "AND dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + "and dataset.harvestingclient_id is null\n"
                 + "group by dataset_id \n"
                 + ");"
@@ -385,7 +385,7 @@ public class MetricsServiceBean implements Serializable {
                         + "from guestbookresponse\n"
                         + "where date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')"
                         + "or responsetime is NULL\n" // includes historic guestbook records without date
-                    + ((d==null) ? ";": "AND dataset_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ");") 
+                    + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ");") 
                 );
                 logger.log(Level.FINE, "Metric query: {0}", query);
                 return (long) query.getSingleResult();
@@ -406,7 +406,7 @@ public class MetricsServiceBean implements Serializable {
                 + "select count(id)\n"
                 + "from guestbookresponse\n"
                 + "where responsetime > current_date - interval '" + days + "' day\n"
-                + ((d==null) ? ";": "AND dataset_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ");")
+                + ((d==null) ? ";": "AND dataset_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ");")
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
 
@@ -419,7 +419,7 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
                 + " FROM DataFile df, DvObject ob"
                 + " where ob.id = df.id "
-                + ((d == null) ? "" : "and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ")\n")
+                + ((d == null) ? "" : "and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ")\n")
                 + "group by df.contenttype;");
         JsonObjectBuilder job = Json.createObjectBuilder();
         try {
@@ -443,7 +443,7 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery("select 'doi:' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
-                + ((d == null) ? "" : " and ob.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "group by gb.dataset_id, ob.authority, ob.identifier;");
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -463,7 +463,7 @@ public class MetricsServiceBean implements Serializable {
     public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
         DatasetMetrics dsm = null;
         String queryStr = "SELECT coalesce(sum(" + metricType.toString() + "),0) FROM DatasetMetrics\n"
-                + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + convertListIdsToStringCommasparateIds(d.getId(), "Dataset") + ") and\n")
+                + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ") and\n")
                 + " monthYear <= '" + yyyymm + "' "
                 + ((country == null) ? ";" : " and countryCode = '" + country + "';");
         logger.info("final query: " + queryStr);
@@ -620,7 +620,7 @@ public class MetricsServiceBean implements Serializable {
     // Modified from DANS
     // https://github.com/DANS-KNAW/dataverse/blob/dans-develop/src/main/java/edu/harvard/iq/dataverse/metrics/MetricsDansServiceBean.java
 
-    private String convertListIdsToStringCommasparateIds(long dvId, String dtype) {
+    private String getCommaSeparatedIdStringForSubtree(long dvId, String dtype) {
         String[] dvObjectIds = Arrays.stream(getChildrenIdsRecursively(dvId, dtype, null).stream().mapToInt(i -> i).toArray())
                 .mapToObj(String::valueOf).toArray(String[]::new);
         dvObjectIds[dvObjectIds.length] = "" + dvId;
