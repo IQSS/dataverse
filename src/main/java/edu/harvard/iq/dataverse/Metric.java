@@ -61,7 +61,14 @@ public class Metric implements Serializable {
     }
 
     //For monthly and day metrics
-    
+    /**
+     * 
+     * @param name - metric name
+     * @param dayString - how many days (day metric only)
+     * @param dataLocation - local, remote, all
+     * @param d - the parent dataverse
+     * @param value - the value to cache
+     */
     public Metric(String name, String dayString, String dataLocation, Dataverse d, String value) {
         this.name = name;
         this.valueJson = value;
