@@ -146,8 +146,8 @@ public class MetricsServiceBean implements Serializable {
                 + "from datasetversion\n"
                 + "where versionstate='RELEASED' \n"
                 + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
-                + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "" : "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n ")
-                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "" : "and dataset.harvestingclient_id IS NOT NULL\n ")
+                + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
+                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n "  : "")
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n ")
                 + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
                 + "group by dataset_id) as subq group by subq.date order by date;"
