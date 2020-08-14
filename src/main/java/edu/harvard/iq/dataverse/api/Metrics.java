@@ -172,14 +172,43 @@ public class Metrics extends AbstractApiBean {
     @Path("datasets")
     public Response getDatasetsAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
 
-        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias);
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
+        String metricName = "datasets";
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, validDataLocation, d));
+
+        if (null == jsonArray) { // run query and save
+
+        jsonArray= metricsSvc.getDatasetsTimeSeries(uriInfo, validDataLocation, d);
+        metricsSvc.save(new Metric(metricName, null, validDataLocation, d, jsonArray.toString()));
+    }
+    return ok(jsonArray);
     }
 
-    @Deprecated // for better path
     @GET
-    @Path("datasets/toMonth")
-    public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation) {
-        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, null);
+    @Path("datasets/monthly")
+    public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "datasets";
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+
+            jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, dataLocation, d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        return ok(jsonArray);
     }
 
     @GET
@@ -196,8 +225,7 @@ public class Metrics extends AbstractApiBean {
         String metricName = "datasetsToMonth";
 
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        String validDataLocation;
-        validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
+        String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
         JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, validDataLocation, d));
 
         if (null == jsonObj) { // run query and save

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
@@ -136,6 +137,35 @@ public class MetricsServiceBean implements Serializable {
 
     /** Datasets */
 
+    
+    public JsonArray getDatasetsTimeSeries(UriInfo uriInfo, String dataLocation, Dataverse d) {
+        Query query = em.createNativeQuery(                
+                "select distinct date, count(dataset_id)\n"
+                + "from (\n"
+                + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, dataset_id\n"
+                + "from datasetversion\n"
+                + "where versionstate='RELEASED' \n"
+                + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
+                + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "" : "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n ")
+                + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "" : "and dataset.harvestingclient_id IS NOT NULL\n ")
+                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n ")
+                + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
+                + "group by dataset_id) as subq group by subq.date order by date;"
+
+        );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        for (Object[] result : results) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add(MetricsUtil.DATE, (String)result[0]);
+            job.add(MetricsUtil.COUNT, (long)result[1]);
+            jab.add(job);
+        }
+        return jab.build();
+    }
+    
+    
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
@@ -165,7 +195,10 @@ public class MetricsServiceBean implements Serializable {
         // But do not use this notation if you need the values returned to
         // meaningfully identify the datasets!
 
+  
         Query query = em.createNativeQuery(
+                        
+                        
                 "select count(*)\n"
                         + "from (\n"
                         + "select datasetversion.dataset_id || ':' || max(datasetversion.versionnumber + (.1 * datasetversion.minorversionnumber))\n"
