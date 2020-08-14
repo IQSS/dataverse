@@ -620,10 +620,19 @@ public class MetricsServiceBean implements Serializable {
     // Modified from DANS
     // https://github.com/DANS-KNAW/dataverse/blob/dans-develop/src/main/java/edu/harvard/iq/dataverse/metrics/MetricsDansServiceBean.java
 
+    /**
+     * 
+     * @param dvId - parent dataverse id
+     * @param dtype - type of object to return 'Dataverse' or 'Dataset'
+     * @return - list of objects of specified type included in the subtree (includes parent dataverse if dtype is 'Dataverse')
+     */
     private String getCommaSeparatedIdStringForSubtree(long dvId, String dtype) {
         String[] dvObjectIds = Arrays.stream(getChildrenIdsRecursively(dvId, dtype, null).stream().mapToInt(i -> i).toArray())
                 .mapToObj(String::valueOf).toArray(String[]::new);
-        dvObjectIds[dvObjectIds.length] = "" + dvId;
+        //Add parent if dataverse substree
+        if(dtype.equals("Dataverse")) {
+            dvObjectIds[dvObjectIds.length] = "" + dvId;
+        }
         return String.join(",", dvObjectIds);
     }
 
