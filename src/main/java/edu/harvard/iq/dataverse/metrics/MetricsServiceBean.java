@@ -627,13 +627,16 @@ public class MetricsServiceBean implements Serializable {
      * @return - list of objects of specified type included in the subtree (includes parent dataverse if dtype is 'Dataverse')
      */
     private String getCommaSeparatedIdStringForSubtree(long dvId, String dtype) {
+        // Start with parentID if returning a subtree of dataverses
+        String idString = (dtype.equals("Dataverse")) ? "" : Long.toString(dvId);
+
         String[] dvObjectIds = Arrays.stream(getChildrenIdsRecursively(dvId, dtype, null).stream().mapToInt(i -> i).toArray())
                 .mapToObj(String::valueOf).toArray(String[]::new);
-        //Add parent if dataverse substree
-        if(dtype.equals("Dataverse")) {
-            dvObjectIds[dvObjectIds.length] = "" + dvId;
+        if (dvObjectIds.length != 0) {
+            // Append parent if returning Dataverses
+            idString = String.join(",", dvObjectIds) + ((dtype.equals("Dataverse")) ? ("," + idString) : "");
         }
-        return String.join(",", dvObjectIds);
+        return idString;
     }
 
     private List<Integer> getChildrenIdsRecursively(Long dvId, String dtype, DatasetVersion.VersionState versionState) {
