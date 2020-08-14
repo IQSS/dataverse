@@ -58,7 +58,7 @@ public class MetricsServiceBean implements Serializable {
                 + "from dataverse\n"
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
-                + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
+                + ((d == null) ? "" : "and dvobject.id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n")
                 + "group by  date_trunc('month', publicationdate);"
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -145,11 +145,11 @@ public class MetricsServiceBean implements Serializable {
                 + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, dataset_id\n"
                 + "from datasetversion\n"
                 + "where versionstate='RELEASED' \n"
-                + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
+                + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n")
                 + ((DATA_LOCATION_LOCAL.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n " : "")
                 + ((DATA_LOCATION_REMOTE.equals(dataLocation)) ? "and dataset.harvestingclient_id IS NOT NULL\n "  : "")
                 + ((d == null) ? "" : "and dvobject.owner_id in (" + convertListIdsToStringCommasparateIds(d.getId(), "Dataverse") + ")\n ")
-                + (((d == null)||(!DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
+                + (((d == null)&&(DATA_LOCATION_ALL.equals(dataLocation))) ? "" : ")\n")
                 + "group by dataset_id) as subq group by subq.date order by date;"
 
         );
@@ -623,6 +623,7 @@ public class MetricsServiceBean implements Serializable {
     private String convertListIdsToStringCommasparateIds(long dvId, String dtype) {
         String[] dvObjectIds = Arrays.stream(getChildrenIdsRecursively(dvId, dtype, null).stream().mapToInt(i -> i).toArray())
                 .mapToObj(String::valueOf).toArray(String[]::new);
+        dvObjectIds[dvObjectIds.length] = "" + dvId;
         return String.join(",", dvObjectIds);
     }
 
