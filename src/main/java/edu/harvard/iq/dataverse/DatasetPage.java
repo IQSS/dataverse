@@ -5649,4 +5649,15 @@ public class DatasetPage implements java.io.Serializable {
         PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');"); 
     }
 
+    /* request access to dataset datafile */
+    public void requestAccess(ExternalTool tool, FileMetadata fmd){
+        ApiToken apiToken = getApiTokenForTool();
+        
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, fmd.getDataFile(), apiToken, fmd, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Request Access with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+        
+    }
+    
 }
