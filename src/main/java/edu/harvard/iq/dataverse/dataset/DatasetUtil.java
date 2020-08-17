@@ -440,7 +440,16 @@ public class DatasetUtil {
             
         return datasetFields;
     }
-
+    
+    public static boolean isAppropriateStorageDriver(Dataset dataset){
+        // ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
+        // When those restrictions are lifted/rsync can be configured per store, this test should check that setting
+        // instead of testing for the 's3" store,
+        //This method is used by both the dataset and edit files page so one change here
+        //will fix both
+       return dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    }
+    
     /**
      * Given a dataset version, return it's size in human readable units such as
      * 42.9 MB.There is a GetDatasetStorageSizeCommand but it's overly complex
