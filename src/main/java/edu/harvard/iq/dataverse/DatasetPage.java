@@ -338,6 +338,7 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
     private List<ExternalTool> datasetExploreTools;
     private List<ExternalTool> datasetFileRequestAccessTools;
+    private List<ExternalTool> fileRequestAccessTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -2073,7 +2074,8 @@ public class DatasetPage implements java.io.Serializable {
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         datasetFileRequestAccessTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.REQUESTACCESS);
-    
+        fileRequestAccessTools = externalToolService.findFileToolsByType(ExternalTool.Type.REQUESTACCESS);
+        
         rowsPerPage = 10;
       
         
@@ -5452,6 +5454,21 @@ public class DatasetPage implements java.io.Serializable {
         return datasetFileRequestAccessTool;
     }
 
+    public List<ExternalTool> getFileRequestAccessTools(){
+        return fileRequestAccessTools;
+    }
+    
+    public ExternalTool getFileRequestAccessTool(){
+        ExternalTool fileRequestAccessTool = null;
+        
+        if(!fileRequestAccessTools.isEmpty()){
+            fileRequestAccessTool = fileRequestAccessTools.get(0); //there should be only 1 of these tools
+        }
+       
+        return fileRequestAccessTool;
+    }
+    
+    
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
