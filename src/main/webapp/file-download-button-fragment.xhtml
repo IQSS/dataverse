@@ -401,7 +401,7 @@
 
         <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"
                         process="@this"
-                        actionListener="#{DatasetPage.requestAccess(DatasetPage.fileRequestAccessTool)}"
+                        actionListener="#{DatasetPage.requestAccess(DatasetPage.fileRequestAccessTool,fileMetadata)}"
                         update="@this"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
