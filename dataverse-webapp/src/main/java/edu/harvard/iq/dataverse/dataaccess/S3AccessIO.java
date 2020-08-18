@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -19,6 +20,9 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
@@ -105,7 +109,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.s3 = s3client;
     }
 
-    public static String S3_IDENTIFIER_PREFIX = "s3";
+    public final static String S3_IDENTIFIER_PREFIX = "s3";
+    private final static long S3_MULTIPART_UPLOAD_THRESHOLD = 100 * 1024 * 1024;
 
     private AmazonS3 s3 = null;
     /**
@@ -251,34 +256,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     // StorageIO method for copying a local Path (for ex., a temp file), into this DataAccess location:
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
-        long newFileSize = -1;
-
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-
-        try {
-            File inputFile = fileSystemPath.toFile();
-            if (dvObject instanceof DataFile) {
-                s3.putObject(new PutObjectRequest(bucketName, key, inputFile));
-
-                newFileSize = inputFile.length();
-            } else {
-                throw new IOException("DvObject type other than datafile is not yet supported");
-            }
-
-        } catch (SdkClientException ioex) {
-            String failureMsg = ioex.getMessage();
-            if (failureMsg == null) {
-                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object " + key;
-            }
-
-            throw new IOException(failureMsg);
+        if (!(dvObject instanceof DataFile)) {
+            throw new IOException("DvObject type other than datafile is not yet supported");
         }
+
+        File inputFile = fileSystemPath.toFile();
+        
+        putFileToS3(fileSystemPath.toFile(), key);
 
         // if it has uploaded successfully, we can reset the size
         // of the object:
-        setSize(newFileSize);
+        setSize(inputFile.length());
     }
 
     /**
@@ -304,25 +295,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
         if (filesize == null || filesize < 0) {
             saveInputStream(inputStream);
-        } else {
-            if (!this.canWrite()) {
-                open(DataAccessOption.WRITE_ACCESS);
-            }
-
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(filesize);
-            try {
-                s3.putObject(bucketName, key, inputStream, metadata);
-            } catch (SdkClientException ioex) {
-                String failureMsg = ioex.getMessage();
-                if (failureMsg == null) {
-                    failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
-                }
-
-                throw new IOException(failureMsg);
-            }
-            setSize(filesize);
+            return;
         }
+        
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+
+        putInputStreamToS3(inputStream, filesize, key);
+        
+        setSize(filesize);
     }
 
     @Override
@@ -330,27 +312,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
         }
-        String directoryString = FileUtil.getFilesTempDirectory();
-
-        Random rand = new Random();
-        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
-        File tempFile = createTempFile(tempPath, inputStream);
+        
+        File tempFile = copyInputStreamToTempFile(inputStream);
+        long tempFileSize = tempFile.length();
 
         try {
-            s3.putObject(bucketName, key, tempFile);
-        } catch (SdkClientException ioex) {
-            String failureMsg = ioex.getMessage();
-            if (failureMsg == null) {
-                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3 Storage.";
-            }
+            putFileToS3(tempFile, key);
+        } finally {
             tempFile.delete();
-            throw new IOException(failureMsg);
         }
-        tempFile.delete();
-        ObjectMetadata objectMetadata = s3.getObjectMetadata(bucketName, key);
-        if (objectMetadata != null) {
-            setSize(objectMetadata.getContentLength());
-        }
+        
+        setSize(tempFileSize);
     }
 
     @Override
@@ -452,37 +424,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             open(DataAccessOption.WRITE_ACCESS);
         }
         String destinationKey = getDestinationKey(auxItemTag);
-        try {
-            File inputFile = fileSystemPath.toFile();
-            s3.putObject(new PutObjectRequest(bucketName, destinationKey, inputFile));
-        } catch (AmazonClientException ase) {
-            logger.warning("Caught an AmazonClientException in S3AccessIO.savePathAsAux():    " + ase.getMessage());
-            throw new IOException("S3AccessIO: Failed to save path as an auxiliary object.");
-        }
+        File inputFile = fileSystemPath.toFile();
+
+        putFileToS3(inputFile, destinationKey);
     }
 
     @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
         if (filesize == null || filesize < 0) {
             saveInputStreamAsAux(inputStream, auxItemTag);
-        } else {
-            if (!this.canWrite()) {
-                open(DataAccessOption.WRITE_ACCESS);
-            }
-            String destinationKey = getDestinationKey(auxItemTag);
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(filesize);
-            try {
-                s3.putObject(bucketName, destinationKey, inputStream, metadata);
-            } catch (SdkClientException ioex) {
-                String failureMsg = ioex.getMessage();
-
-                if (failureMsg == null) {
-                    failureMsg = "S3AccessIO: SdkClientException occured while saving a local InputStream as S3Object";
-                }
-                throw new IOException(failureMsg);
-            }
+            return;
         }
+        
+        if (!this.canWrite()) {
+            open(DataAccessOption.WRITE_ACCESS);
+        }
+        String destinationKey = getDestinationKey(auxItemTag);
+        putInputStreamToS3(inputStream, filesize, destinationKey);
     }
 
     /**
@@ -510,44 +468,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             open(DataAccessOption.WRITE_ACCESS);
         }
 
-        String directoryString = FileUtil.getFilesTempDirectory();
-
-        Random rand = new Random();
-        String pathNum = Integer.toString(rand.nextInt(Integer.MAX_VALUE));
-        Path tempPath = Paths.get(directoryString, pathNum);
-        File tempFile = createTempFile(tempPath, inputStream);
-
         String destinationKey = getDestinationKey(auxItemTag);
+        File tempFile = copyInputStreamToTempFile(inputStream);
 
         try {
-            s3.putObject(bucketName, destinationKey, tempFile);
-        } catch (SdkClientException ioex) {
-            String failureMsg = ioex.getMessage();
-
-            if (failureMsg == null) {
-                failureMsg = "S3AccessIO: SdkClientException occured while saving a local InputStream as S3Object";
-            }
+            putFileToS3(tempFile, destinationKey);
+        } finally {
             tempFile.delete();
-            throw new IOException(failureMsg);
         }
-        tempFile.delete();
-    }
-
-    //Helper method for supporting saving streams with unknown length to S3
-    //We save those streams to a file and then upload the file
-    private File createTempFile(Path path, InputStream inputStream) throws IOException {
-
-        File targetFile = new File(path.toUri()); //File needs a name
-        OutputStream outStream = new FileOutputStream(targetFile);
-
-        byte[] buffer = new byte[8 * 1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
-        }
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(outStream);
-        return targetFile;
     }
 
     @Override
@@ -833,5 +761,70 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
         }
         return 60;
+    }
+    
+    
+    private void putFileToS3(File file, String s3Key) throws IOException {
+        
+        PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Key, file);
+        putObjectToS3(putRequest);
+    }
+    
+    private void putInputStreamToS3(InputStream inputStream, long filesize, String s3Key) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(filesize);
+        
+        PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Key, inputStream, metadata);
+        putObjectToS3(putRequest);
+    }
+
+    private void putObjectToS3(PutObjectRequest putRequest) throws IOException {
+        TransferManager s3Transfer = TransferManagerBuilder.standard()
+                .withMultipartUploadThreshold(S3_MULTIPART_UPLOAD_THRESHOLD)
+                .withS3Client(s3).build();
+        
+        try {
+            Upload s3Upload = s3Transfer.upload(putRequest);
+            s3Upload.waitForCompletion();
+        } catch (InterruptedException e) {
+            throw new IOException("Interrupted s3 upload", e);
+        } catch (AmazonClientException e) {
+            String failureMsg = e.getMessage();
+            if (failureMsg == null) {
+                failureMsg = "S3AccessIO: Unknown exception occured while uploading a local file into S3Object " + putRequest.getKey();
+            }
+
+            throw new IOException(failureMsg, e);
+        }
+        
+        s3Transfer.shutdownNow(false);
+    }
+    
+
+    private File copyInputStreamToTempFile(InputStream inputStream) throws IOException {
+        String directoryString = FileUtil.getFilesTempDirectory();
+
+        Random rand = new Random();
+        Path tempPath = Paths.get(directoryString, Integer.toString(rand.nextInt(Integer.MAX_VALUE)));
+        File tempFile = createTempFile(tempPath, inputStream);
+        
+        return tempFile;
+    }
+    
+    //Helper method for supporting saving streams with unknown length to S3
+    //We save those streams to a file and then upload the file
+    private File createTempFile(Path path, InputStream inputStream) throws IOException {
+
+        File targetFile = new File(path.toUri()); //File needs a name
+        OutputStream outStream = new FileOutputStream(targetFile);
+
+        byte[] buffer = new byte[8 * 1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(outStream);
+        return targetFile;
     }
 }
