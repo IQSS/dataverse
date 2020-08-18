@@ -73,7 +73,6 @@ You can upload files to a dataset while first creating that dataset. You can als
 
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
 
-
 HTTP Upload
 -----------
 
@@ -146,6 +145,20 @@ File Handling
 =============
 
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation; and exploration through data visualization and analysis. See the sections below for information about special functionality for specific file types.
+
+.. _duplicate-files:
+
+Duplicate Files
+===============
+
+Beginning with Dataverse 5.0, the way Dataverse handles duplicate files (filename and checksums) is changing to be more flexible. Specifically:
+
+- Files with the same checksum can be included in a dataset, even if the files are in the same directory.
+- Files with the same filename can be included in a dataset as long as the files are in different directories.
+- If a user uploads a file to a directory where a file already exists with that directory/filename combination, Dataverse will adjust the file path and names by adding "-1" or "-2" as applicable. This change will be visible in the list of files being uploaded. 
+- If the directory or name of an existing or newly uploaded file is edited in such a way that would create a directory/filename combination that already exists, Dataverse will display an error.
+- If a user attempts to replace a file with another file that has the same checksum, an error message will be displayed and the file will not be able to be replaced.
+- If a user attempts to replace a file with a file that has the same checksum as a different file in the dataset, a warning will be displayed.
 
 File Previews
 -------------
@@ -268,7 +281,7 @@ Variable Metadata can be edited directly through an API call (:ref:`API Guide: E
 File Path
 ---------
 
-The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path.
+The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path. Only one file with a given path and name may exist in a dataset. Editing a file to give it the same path and name as another file already existing in the dataset will cause an error.
 
 A file's File Path can be manually added or edited on the Edit Files page. Changing a file's File Path will change its location in the folder structure that is created when a user downloads the full dataset or a selection of files from it.
 
@@ -464,6 +477,8 @@ Publish Dataset
 ===============
 
 When you publish a dataset (available to an Admin, Curator, or any custom role which has this level of permission assigned), you make it available to the public so that other users can browse or search for it. Once your dataset is ready to go public, go to your dataset page and click on the "Publish" button on the right hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish since once a dataset is made public it can no longer be unpublished. 
+
+Before Dataverse finalizes the publication of the dataset, it will attempt to validate all the physical files in it, to make sure they are present and intact. In an unlikely event that any files fail the validation, you will see an error message informing you that the problem must be fixed by the local Dataverse Admin before the dataset can be published. 
 
 Whenever you edit your dataset, you are able to publish a new version of the dataset. The publish dataset button will reappear whenever you edit the metadata of the dataset or add a file.
 

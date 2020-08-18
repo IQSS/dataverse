@@ -175,26 +175,18 @@ public class DataCiteRESTfullClient implements Closeable {
      * @param metadata
      * @return
      */
-    public String postMetadata(String metadata) {
-        
+    public String postMetadata(String metadata) throws IOException {
         HttpPost httpPost = new HttpPost(this.url + "/metadata");
         httpPost.setHeader("Content-Type", "application/xml;charset=UTF-8");
-        try {
-            httpPost.setEntity(new StringEntity(metadata, "utf-8"));
-            HttpResponse response = httpClient.execute(httpPost,context);
-            
-            String data = EntityUtils.toString(response.getEntity(), encoding);
-            if (response.getStatusLine().getStatusCode() != 201) {
-                String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
-                logger.log(Level.SEVERE, errMsg);
-                throw new RuntimeException(errMsg);
-            }
-            return data;
-            
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "IOException when post metadata");
-            throw new RuntimeException("IOException when post metadata", ioe);
+        httpPost.setEntity(new StringEntity(metadata, "utf-8"));
+        HttpResponse response = httpClient.execute(httpPost, context);
+        String data = EntityUtils.toString(response.getEntity(), encoding);
+        if (response.getStatusLine().getStatusCode() != 201) {
+            String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
+            logger.log(Level.SEVERE, errMsg);
+            throw new IOException(errMsg);
         }
+        return data;
     }
 
     /**

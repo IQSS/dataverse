@@ -82,6 +82,7 @@ import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
@@ -218,7 +219,7 @@ public class Datasets extends AbstractApiBean {
      * Used to consolidate the way we parse and handle dataset versions.
      * @param <T> 
      */
-    private interface DsVersionHandler<T> {
+    public interface DsVersionHandler<T> {
         T handleLatest();
         T handleDraft();
         T handleSpecific( long major, long minor );
@@ -572,6 +573,11 @@ public class Datasets extends AbstractApiBean {
             incomingVersion.setDataset(ds);
             incomingVersion.setCreateTime(null);
             incomingVersion.setLastUpdateTime(null);
+            
+            if (!incomingVersion.getFileMetadatas().isEmpty()){
+                return error( Response.Status.BAD_REQUEST, "You may not add files via this api.");
+            }
+            
             boolean updateDraft = ds.getLatestVersion().isDraft();
             
             DatasetVersion managedVersion;
@@ -1014,7 +1020,7 @@ public class Datasets extends AbstractApiBean {
             PublishDatasetResult res = execCommand(new PublishDatasetCommand(ds,
                         createDataverseRequest(user),
                     isMinor));
-            return res.isCompleted() ? ok(json(res.getDataset())) : accepted(json(res.getDataset()));
+            return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -1213,7 +1219,7 @@ public class Datasets extends AbstractApiBean {
             }
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
-            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate)) {
+            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
@@ -1238,7 +1244,7 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
+            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             if(is == null) {
                 return notFound("Thumbnail not available");
             }
@@ -1653,7 +1659,13 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
                  * user. Human readable.
                  */
                 logger.fine("successMsg: " + successMsg);
-                return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                    return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                } else {
+                    return ok(addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                }
+                
                 //"Look at that!  You added a file! (hey hey, it may have worked)");
             } catch (NoFilesException ex) {
                 Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -1678,7 +1690,7 @@ public Response getUploadUrl(@PathParam("id") String idSupplied) {
     }
     
     
-    private <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
+    public static <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
         switch (versionId) {
             case ":latest": return hdl.handleLatest();
