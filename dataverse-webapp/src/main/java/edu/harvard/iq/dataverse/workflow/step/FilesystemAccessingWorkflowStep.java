@@ -41,6 +41,9 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
      * If not defined a temporary directory will be created for that purpose.
      */
     public static final String WORK_DIR_PARAM_NAME = "workDir";
+    
+    public static final String BASE_WORK_DIR_PARAM_NAME = "baseWorkDir";
+    
     /**
      * Semicolon (;) separated list of file artifacts to save in case of failure.
      * Can be used i.e. to save command input files for later debug.
@@ -48,6 +51,7 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
     public static final String FAILURE_ARTIFACTS_PARAM_NAME = "failureArtifacts";
 
     private final String workDirParam;
+    private final String baseWorkDirParam;
     private final Set<String> failureArtifacts;
 
     private Path workDir;
@@ -56,6 +60,7 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
 
     public FilesystemAccessingWorkflowStep(WorkflowStepParams inputParams) {
         workDirParam = inputParams.get(WORK_DIR_PARAM_NAME);
+        baseWorkDirParam = inputParams.get(BASE_WORK_DIR_PARAM_NAME);
         failureArtifacts = new HashSet<>(inputParams.getList(FAILURE_ARTIFACTS_PARAM_NAME, ";"));
     }
 
@@ -107,23 +112,27 @@ public abstract class FilesystemAccessingWorkflowStep implements WorkflowStep {
                 .map(path -> new WorkflowArtifactSource(name, encoding.name(), () -> newInputStream(path)));
     }
 
-    // -------------------- PRIVATE --------------------
-
-    private Path createWorkDir(WorkflowExecutionContext context) throws IOException {
-        return Files.createDirectories(resolveWorkDir(context));
-    }
-
-    private Path resolveWorkDir(WorkflowExecutionContext context) {
+    protected Path resolveWorkDir(WorkflowExecutionContext context) {
         if (workDirParam == null) {
-            return Paths.get(System.getProperty("java.io.tmpdir"),
-                    "dataverse",
+            Path basePath = baseWorkDirParam != null ?
+                    Paths.get(baseWorkDirParam)
+                    : Paths.get(System.getProperty("java.io.tmpdir"), "dataverse");
+            Path subPath = Paths.get(
                     Long.toString(context.getDatasetId()),
                     Long.toString(context.getVersionNumber()),
                     Long.toString(context.getMinorVersionNumber()),
                     randomUUID().toString());
+            
+            return basePath.resolve(subPath);
         } else {
             return Paths.get(workDirParam);
         }
+    }
+    
+    // -------------------- PRIVATE --------------------
+
+    private Path createWorkDir(WorkflowExecutionContext context) throws IOException {
+        return Files.createDirectories(resolveWorkDir(context));
     }
 
     private HashMap<String, String> defaultOutputParams() {

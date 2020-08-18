@@ -38,6 +38,7 @@ public class BundleUtil {
         return MessageFormat.format(message, arguments);
     }
 
+
     public static String getStringFromNonDefaultBundle(String key, String bundleName, Object... arguments) {
         return getStringFromNonDefaultBundleWithLocale(key, bundleName, getCurrentLocale(), arguments);
     }
@@ -47,6 +48,14 @@ public class BundleUtil {
 
         return MessageFormat.format(stringFromPropertyFile, arguments);
     }
+
+
+    public static String getStringFromClasspathBundle(String key, String bundleName, Object... arguments) {
+        String stringFromPropertyFile = getStringFromInternalBundle(key, bundleName, getCurrentLocale());
+
+        return MessageFormat.format(stringFromPropertyFile, arguments);
+    }
+
 
     public static Locale getCurrentLocale() {
         if (FacesContext.getCurrentInstance() == null) {

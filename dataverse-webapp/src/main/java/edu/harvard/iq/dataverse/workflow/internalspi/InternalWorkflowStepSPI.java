@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.workflow.internalspi;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepRegistry;
 import edu.harvard.iq.dataverse.workflow.WorkflowStepSPI;
+import edu.harvard.iq.dataverse.workflow.step.ClearWorkingDirWorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepParams;
 
@@ -53,6 +54,8 @@ public class InternalWorkflowStepSPI implements WorkflowStepSPI {
                 return new ArchivalSubmissionWorkflowStep(datasetVersions);
             case SystemProcessStep.STEP_ID:
                 return new SystemProcessStep(stepParameters);
+            case ClearWorkingDirWorkflowStep.STEP_ID:
+                return new ClearWorkingDirWorkflowStep(stepParameters);
             default:
                 throw new IllegalArgumentException("Unsupported step type: '" + stepType + "'.");
         }

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionContextSou
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecutionRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import org.awaitility.Awaitility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,10 @@ import javax.ejb.Singleton;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A factory responsible for creating a {@link WorkflowExecutionContext} from different sources of data.
@@ -119,9 +122,12 @@ public class WorkflowExecutionContextFactory {
     }
 
     private WorkflowContext reCreateContext(WorkflowContextSource source) {
-        datasetVersions.findByDatasetIdAndVersionNumber(source)
-                .orElseThrow(() -> new IllegalStateException(String.format("Target dataset %s version %s.%s no longer exists",
-                        source.getDatasetId(), source.getVersionNumber(), source.getMinorVersionNumber())));
+        Awaitility.await(String.format("Dataset %s version %s.%s - wait until dataset exists", source.getDatasetId(), source.getVersionNumber(), source.getMinorVersionNumber()))
+                .with()
+                .pollDelay(Duration.ofMillis(100))
+                .pollInterval(Duration.ofSeconds(3))
+                .atMost(Duration.ofSeconds(20))
+                .until(() -> datasetVersions.findByDatasetIdAndVersionNumber(source), version -> version.isPresent());
         DataverseRequest request = new DataverseRequest(
                 (User) roleAssignees.getRoleAssignee(source.getUserId()),
                 IpAddress.valueOf(source.getIpAddress()));
