@@ -79,7 +79,9 @@ public class MetricsServiceBean implements Serializable {
             if(date.equals(curDate)) {
                 total += (long) results.get(i)[1];
                 i+=1;
-                curDate= (String) results.get(i)[0];
+                if(i<results.size()) {
+                  curDate= (String) results.get(i)[0];
+                }
             }
             //Then add the aggregate count
             job.add(MetricsUtil.COUNT, total);
