@@ -70,7 +70,7 @@ public class Metrics extends AbstractApiBean {
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
         if((requestedType!=null) && (requestedType.equalsIgnoreCase(FileUtil.MIME_TYPE_CSV))) {
-            return ok(FileUtil.jsonToCSV(jsonArray, "month", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
+            return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
         }
         return ok(jsonArray);
 
