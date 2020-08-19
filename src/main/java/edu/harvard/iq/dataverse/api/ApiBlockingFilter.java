@@ -163,7 +163,7 @@ public class ApiBlockingFilter implements javax.servlet.Filter {
             if (settingsSvc.isTrueForKey(SettingsServiceBean.Key.AllowCors, true )) {
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Origin", "*");
                 ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Content-Type, X-Dataverse-Key");
+                ((HttpServletResponse) sr1).addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, X-Dataverse-Key");
             }
             fc.doFilter(sr, sr1);
         } catch ( ServletException se ) {
