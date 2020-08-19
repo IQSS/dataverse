@@ -61,6 +61,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.xml.stream.XMLStreamConstants;
@@ -1699,5 +1701,18 @@ public class FileUtil implements java.io.Serializable  {
         int driverEnd = location.indexOf("://") + 3;
         int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
         return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
+    }
+
+    public static String jsonToCSV(JsonArray jsonArray, String... headers) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
+        jsonArray.forEach((jv) -> {
+            JsonObject jo = (JsonObject) jv;
+            String[] values = new String[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                values[i] = jo.getString(headers[i]);
+            }
+            csvSB.append("\n").append(String.join(",", values));
+        });
+        return csvSB.toString();
     }
 }
