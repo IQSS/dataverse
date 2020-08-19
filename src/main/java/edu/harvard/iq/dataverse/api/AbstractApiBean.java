@@ -653,13 +653,15 @@ public abstract class AbstractApiBean {
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
-            .add("data", bld).build()).build();
+            .add("data", bld).build())
+            .type(MediaType.APPLICATION_JSON).build();
     }
     
     protected Response ok( JsonArray ja ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
-            .add("data", ja).build()).build();
+            .add("data", ja).build())
+            .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
