@@ -32,8 +32,8 @@
 # DOI_PASSWORD
 # DOI_BASEURL
 #
-# Base URL the Make Data Count: 
-# DOI_MDCBASEURL
+# Base URL the DataCite REST API (Make Data Count, /pids API): 
+# DOI_DATACITERESTAPIURL
 #
 # other local configuration:
 # HOST_ADDRESS
@@ -111,8 +111,8 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.baseurlstring=$DOI_BASEURL_ESC"
 
   # jvm-options use colons as separators, escape as literal
-  DOI_MDCBASEURL_ESC=`echo $DOI_MDCBASEURL | sed -e 's/:/\\\:/'`
-  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.mdcbaseurlstring=$DOI_MDCBASEURL_ESC"
+  DOI_DATACITERESTAPIURL_ESC=`echo $DOI_DATACITERESTAPIURL | sed -e 's/:/\\\:/'`
+  ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddoi.dataciterestapiurlstring=$DOI_DATACITERESTAPIURL_ESC"
 
   ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.timerServer=true"
 
