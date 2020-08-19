@@ -1675,6 +1675,10 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
+			// Note - the user is being set in the session so it becomes part of the
+			// DataverseRequest and is sent to the back-end command where it is used to get
+			// the API Token which is then used to retrieve files (e.g. via S3 direct
+			// downloads) to create the Bag
             session.setUser(au);
             Dataset ds = findDatasetOrDie(dsid);
 

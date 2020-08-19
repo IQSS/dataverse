@@ -1,1 +1,0 @@
-If you are using DataCite as your DOI provider you must add a new JVM option called "doi.baseurlstringnext" with a value of "https://api.datacite.org" for production environments and "https://api.test.datacite.org" for test environments. More information about this JVM option can be found in the Installation Guide.
