@@ -1869,7 +1869,7 @@ public class FileUtil implements java.io.Serializable  {
             JsonObject jo = (JsonObject) jv;
             String[] values = new String[headers.length];
             for (int i = 0; i < headers.length; i++) {
-                values[i] = jo.getString(headers[i]);
+                values[i] = jo.getJsonObject(headers[i]).toString();
             }
             csvSB.append("\n").append(String.join(",", values));
         });
