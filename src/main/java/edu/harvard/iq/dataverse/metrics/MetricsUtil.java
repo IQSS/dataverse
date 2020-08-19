@@ -157,7 +157,7 @@ public class MetricsUtil {
 
     public static List<String> getDatesFrom(String startMonth) {
         List<String> dates = new ArrayList<String>();
-        LocalDate next = LocalDate.parse(startMonth).plusMonths(1);
+        LocalDate next = LocalDate.parse(startMonth+ "-01").plusMonths(1);
         dates.add(startMonth);
         DateTimeFormatter monthFormat = DateTimeFormatter.ofPattern("YYYY-MM");
         while (next.isBefore(LocalDate.now())) {
