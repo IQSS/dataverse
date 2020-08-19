@@ -69,11 +69,10 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.getDataversesTimeSeries(uriInfo, d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        if((requestedType!=null) && (requestedType.equalsIgnoreCase(FileUtil.MIME_TYPE_CSV))) {
-            return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
+        if((requestedType!=null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
         }
-        return ok(jsonArray);
-
+        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
     }
 
     @GET
