@@ -2,12 +2,15 @@ package edu.harvard.iq.dataverse.metrics;
 
 import edu.harvard.iq.dataverse.Dataverse;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -150,5 +153,17 @@ public class MetricsUtil {
         jsonReader.close();
 
         return ja;
+    }
+
+    public static List<String> getDatesFrom(String startMonth) {
+        List<String> dates = new ArrayList<String>();
+        LocalDate next = LocalDate.parse(startMonth).plusMonths(1);
+        dates.add(startMonth);
+        DateTimeFormatter monthFormat = DateTimeFormatter.ofPattern("YYYY-MM");
+        while (next.isBefore(LocalDate.now())) {
+            dates.add(next.format(monthFormat));
+            next = next.plusMonths(1);
+        }
+        return dates;
     }
 }
