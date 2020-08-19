@@ -73,7 +73,7 @@ public class MetricsServiceBean implements Serializable {
         //Create an entry for each date
         for(String date: dates) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, curDate);
+            job.add(MetricsUtil.DATE, date);
             //If there's a result for this date, add it's count to the total
             // and find the date of the next entry
             if(date.equals(curDate)) {
