@@ -384,15 +384,16 @@ public class Index extends AbstractApiBean {
         JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
 
         JsonObjectBuilder contentInSolrButNotDatabase;
+        JsonObjectBuilder permissionsInSolrButNotDatabase;
         try {
             contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
-        } catch (SearchException ex) {
+            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
+ } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 
         JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
-
+    
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
                 .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
@@ -401,7 +402,38 @@ public class Index extends AbstractApiBean {
 
         return ok(data);
     }
-
+    
+    @GET
+    @Path("clear-orphans")
+    public Response clearOrphans() {
+        try {
+            List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+            List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+            List<Long> filesInSolrOnly = indexService.findFilesInSolrOnly();
+            List<String> permissionsInSolrOnly = indexService.findPermissionsInSolrOnly();
+     
+            // Convert these Ids to solrIds
+            List<String> solrIds = new ArrayList<>();
+            for (Long id : dataversesInSolrOnly) {
+                solrIds.add(IndexServiceBean.solrDocIdentifierDataverse+id);           
+            }
+            
+            for(Long id: datasetsInSolrOnly){
+                solrIds.add(IndexServiceBean.solrDocIdentifierDataset+id);   
+            }
+            for(Long id: filesInSolrOnly) {
+                solrIds.add(IndexServiceBean.solrDocIdentifierFile+id);
+            }
+            for(String id: permissionsInSolrOnly) {
+                solrIds.add(id);
+            }
+            IndexResponse resultOfSolrDeletionAttempt = solrIndexService.deleteMultipleSolrIds(solrIds);
+            return ok(resultOfSolrDeletionAttempt.getMessage());
+        } catch(SearchException ex) {
+                  return error(Response.Status.INTERNAL_SERVER_ERROR, "Error deleting orphaned documents: " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+        }
+       
+    }
     private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
         List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
         List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
@@ -444,9 +476,9 @@ public class Index extends AbstractApiBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", dataversesInSolrButNotDatabase.build().size())
-                .add("datasets", datasetsInSolrButNotDatabase.build().size())
-                .add("files", filesInSolrButNotDatabase.build().size());
+                .add("dataverses", dataversesInSolrButNotDatabase.build())
+                .add("datasets", datasetsInSolrButNotDatabase.build())
+                .add("files", filesInSolrButNotDatabase.build());
         return contentInSolrButNotDatabase;
     }
 
@@ -458,17 +490,18 @@ public class Index extends AbstractApiBean {
             stalePermissionList.add(dvObjectId);
         }
         return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
+                .add("dvobjects", stalePermissionList.build());
     }
-
-    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
-        List<Long> staleOrMissingPermissions = solrIndexService.findPermissionsInSolrNoLongerInDatabase();
+    
+    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() throws SearchException {
+        
+        List<String> staleOrMissingPermissions = indexService.findPermissionsInSolrOnly();
         JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
-        for (Long dvObjectId : staleOrMissingPermissions) {
-            stalePermissionList.add(dvObjectId);
+        for (String id : staleOrMissingPermissions) {
+            stalePermissionList.add(id);
         }
         return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
+                .add("permissions", stalePermissionList.build());
     }
 
     /**

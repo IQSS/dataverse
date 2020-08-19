@@ -22,16 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -564,15 +560,5 @@ public class SolrIndexServiceBean {
         return indexingRequired;
     }
 
-    /**
-     * @return A list of dvobject ids that should have their permissions
-     * re-indexed because Solr was down when a permission was revoked. The
-     * permission should be removed from Solr.
-     */
-    public List<Long> findPermissionsInSolrNoLongerInDatabase() {
-        /**
-         * @todo Implement this!
-         */
-        return new ArrayList<>();
-    }
+  
 }
