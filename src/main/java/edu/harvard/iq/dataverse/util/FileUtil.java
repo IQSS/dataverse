@@ -71,6 +71,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.ejb.EJBException;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -1861,4 +1863,16 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
 
+    public static String jsonToCSV(JsonArray jsonArray, String... headers) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
+        jsonArray.forEach((jv) -> {
+            JsonObject jo = (JsonObject) jv;
+            String[] values = new String[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                values[i] = jo.getString(headers[i]);
+            }
+            csvSB.append("\n").append(String.join(",", values));
+        });
+        return csvSB.toString();
+    }
 }

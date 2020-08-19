@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -15,8 +17,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -47,8 +51,11 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("dataverses/monthly")
+    @Produces("application/json, text/csv")
     public Response getDataversesTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        String requestedType = httpRequest.getHeader("Accept");
+
         try {
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
         } catch (IllegalArgumentException ia) {
@@ -59,10 +66,13 @@ public class Metrics extends AbstractApiBean {
 
         if (null == jsonArray) { // run query and save
 
-        jsonArray= metricsSvc.getDataversesTimeSeries(uriInfo, d);
-        metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
-    }
-    return ok(jsonArray);
+            jsonArray = metricsSvc.getDataversesTimeSeries(uriInfo, d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        if((requestedType!=null) && (requestedType.equalsIgnoreCase(FileUtil.MIME_TYPE_CSV))) {
+            return ok(FileUtil.jsonToCSV(jsonArray, "month", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
+        }
+        return ok(jsonArray);
 
     }
 
