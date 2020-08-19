@@ -396,7 +396,7 @@
             </p:commandLink>
         </li>
         <!-- END: FILE PG -->
-        <ui:fragment rendered="#{!isFilePg and not empty empty DatasetPage.fileRequestAccessTools}">
+        <ui:fragment rendered="#{!isFilePg and not empty DatasetPage.fileRequestAccessTools}">
         <!-- DATASET PG -->
 
         <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"
