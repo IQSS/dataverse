@@ -58,34 +58,10 @@ public class MetricsServiceBean implements Serializable {
                 + "join dvobject on dvobject.id = dataverse.id\n"
                 + "where dvobject.publicationdate is not null\n"
                 + ((d == null) ? "" : "and dvobject.id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
-                + "group by  date_trunc('month', publicationdate);"
-        );
+                + "group by  date_trunc('month', publicationdate);");
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-        long total =0;
-        String curDate = (String) results.get(0)[0];
-        //Get a list of all the monthly dates from the start until now
-        List<String> dates = MetricsUtil.getDatesFrom(curDate);
-        int i=0;
-        //Create an entry for each date
-        for(String date: dates) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, date);
-            //If there's a result for this date, add it's count to the total
-            // and find the date of the next entry
-            if(date.equals(curDate)) {
-                total += (long) results.get(i)[1];
-                i+=1;
-                if(i<results.size()) {
-                  curDate= (String) results.get(i)[0];
-                }
-            }
-            //Then add the aggregate count
-            job.add(MetricsUtil.COUNT, total);
-            jab.add(job);
-        }
-        return jab.build();
+        return MetricsUtil.timeSeriesToJson(results);
     }
     
     /**
@@ -170,30 +146,7 @@ public class MetricsServiceBean implements Serializable {
         );
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
-        JsonArrayBuilder jab = Json.createArrayBuilder();
-        long total =0;
-        String curDate = (String) results.get(0)[0];
-        //Get a list of all the monthly dates from the start until now
-        List<String> dates = MetricsUtil.getDatesFrom(curDate);
-        int i=0;
-        //Create an entry for each date
-        for(String date: dates) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, date);
-            //If there's a result for this date, add it's count to the total
-            // and find the date of the next entry
-            if(date.equals(curDate)) {
-                total += (long) results.get(i)[1];
-                i+=1;
-                if(i<results.size()) {
-                  curDate= (String) results.get(i)[0];
-                }
-            }
-            //Then add the aggregate count
-            job.add(MetricsUtil.COUNT, total);
-            jab.add(job);
-        }
-        return jab.build();
+        return MetricsUtil.timeSeriesToJson(results);
     }
     
     
@@ -337,6 +290,28 @@ public class MetricsServiceBean implements Serializable {
 
     /** Files */
 
+    /**
+     * @param yyyymm Month in YYYY-MM format.
+     * @param d
+     */
+    public JsonArray filesTimeSeries(Dataverse d) {
+        Query query = em.createNativeQuery(
+                "select distinct date, count(id)\n"
+                + "from (\n"
+                + "select min(to_char(COALESCE(releasetime, createtime), 'YYYY-MM')) as date, filemetadata.id as id\n"
+                + "from datasetversion, filemetadata\n"
+                + "where datasetversion.id=filemetadata.datasetversion_id\n"
+                + "and versionstate='RELEASED' \n"
+                + "and dataset_id in (select dataset.id from dataset, dvobject where dataset.id=dvobject.id\n"
+                + "and dataset.harvestingclient_id IS NULL and publicationdate is not null\n "
+                + ((d == null) ? ")" : "and dvobject.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + "))\n ")
+                + "group by filemetadata.id) as subq group by subq.date order by date;"
+        );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesToJson(results);    }
+
+    
     /**
      * @param yyyymm Month in YYYY-MM format.
      * @param d
