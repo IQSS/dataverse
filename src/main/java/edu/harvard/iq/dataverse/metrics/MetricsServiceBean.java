@@ -482,11 +482,24 @@ public class MetricsServiceBean implements Serializable {
         return (long) query.getSingleResult();
     }
 
+    public JsonArray uniqueDownloadsTimeSeries(Dataverse d) {
+        Query query = em.createNativeQuery("select distinct to_char(gb.responsetime, 'YYYY-MM') as date, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
+                + " FROM guestbookresponse gb, DvObject ob"
+                + " where ob.id = gb.dataset_id "
+                + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
+                + "group by gb.dataset_id, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
+
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesByPIDToJson(results);
+
+    }
+    
     public JsonObjectBuilder uniqueDatasetDownloads(String yyyymm, Dataverse d) {
 
     //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
 
-        Query query = em.createNativeQuery("select 'doi:' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
+        Query query = em.createNativeQuery("select ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataverse") + ")\n")
@@ -510,7 +523,7 @@ public class MetricsServiceBean implements Serializable {
     
     
     public JsonArray mdcMetricTimeSeries(MetricType metricType, String country, Dataverse d) {
-        Query query = em.createNativeQuery("SELECT distinct substring(monthyear from 1 for 7), coalesce(sum(" + metricType.toString() + "),0) FROM DatasetMetrics\n"
+        Query query = em.createNativeQuery("SELECT distinct substring(monthyear from 1 for 7) as date, coalesce(sum(" + metricType.toString() + "),0) as count FROM DatasetMetrics\n"
                 + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ") and\n")
                 + ((country == null) ? "" : " and countryCode = '" + country + "'")
                 + " group by substring(monthyear from 1 for 7) order by substring(monthyear from 1 for 7);"
@@ -521,7 +534,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
     public JsonObject getMDCDatasetMetrics(MetricType metricType, String yyyymm, String country, Dataverse d) {
-        String queryStr = "SELECT coalesce(sum(" + metricType.toString() + "),0) FROM DatasetMetrics\n"
+        String queryStr = "SELECT coalesce(sum(" + metricType.toString() + "),0) as count FROM DatasetMetrics\n"
                 + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ") and\n")
                 + " monthYear <= '" + yyyymm + "' "
                 + ((country == null) ? ";" : " and countryCode = '" + country + "';");
@@ -798,7 +811,5 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query  - getDataversesChildrenRecursively: " + sql);
         return em.createNativeQuery(sql).getResultList();
     }
-
-
 
 }
