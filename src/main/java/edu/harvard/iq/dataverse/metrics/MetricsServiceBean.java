@@ -419,7 +419,7 @@ public class MetricsServiceBean implements Serializable {
         // Counts historic guestbook records without date as occurring in the month
         // prior to the first dated counts
         Query query = em.createNativeQuery(""
-                + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "'), count(id)\n"
+                + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
                 + ((d == null) ? ";" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ");")
                 + " group by responsetime order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'\" + earliest + \"');");
