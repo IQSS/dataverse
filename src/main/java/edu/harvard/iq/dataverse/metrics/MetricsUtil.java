@@ -132,8 +132,7 @@ public class MetricsUtil {
         int i = 0;
         // Create an entry for each date
         for (String date : dates) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, date);
+
             // If there's are results for this date, add their counts to the totals
             // and find the date of the next entry(ies)
             while (date.equals(curDate) && i < results.size()) {
@@ -147,11 +146,13 @@ public class MetricsUtil {
             }
             // Then add the aggregate count and size for all types
             for(String type: totals.keySet()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add(MetricsUtil.DATE, date);
                 job.add(CONTENTTYPE, type);
                 job.add(COUNT, totals.get(type));
                 job.add(SIZE, sizes.get(type));
+                jab.add(job);
             }
-            jab.add(job);
         }
         return jab.build();
     }
@@ -165,8 +166,6 @@ public class MetricsUtil {
         int i = 0;
         // Create an entry for each date
         for (String date : dates) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, date);
             // If there's are results for this date, add their counts to the totals
             // and find the date of the next entry(ies)
             while (date.equals(curDate) && i < results.size()) {
@@ -179,10 +178,12 @@ public class MetricsUtil {
             }
             // Then add the aggregate count and size for all types
             for(String type: totals.keySet()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add(MetricsUtil.DATE, date);
                 job.add(PID, type);
                 job.add(COUNT, totals.get(type));
+                jab.add(job);
             }
-            jab.add(job);
         }
         return jab.build();
     }
