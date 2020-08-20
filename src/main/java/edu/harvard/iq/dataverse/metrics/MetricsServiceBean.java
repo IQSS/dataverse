@@ -505,9 +505,22 @@ public class MetricsServiceBean implements Serializable {
         return job;
 
     }
+    
+    //MDC 
+    
+    
+    public JsonArray mdcMetricTimeSeries(MetricType metricType, String country, Dataverse d) {
+        Query query = em.createNativeQuery("SELECT distinct substring(monthyear from 1 for 7), coalesce(sum(" + metricType.toString() + "),0) FROM DatasetMetrics\n"
+                + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ") and\n")
+                + ((country == null) ? "" : " and countryCode = '" + country + "'")
+                + " group by substring(monthyear from 1 for 7) order by substring(monthyear from 1 for 7);"
+                );
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesToJson(results, true);
+    }
 
-    public JsonObjectBuilder getDatasetMetricsByDatasetForDisplay(MetricType metricType, String yyyymm, String country, Dataverse d) {
-        DatasetMetrics dsm = null;
+    public JsonObject getMDCDatasetMetrics(MetricType metricType, String yyyymm, String country, Dataverse d) {
         String queryStr = "SELECT coalesce(sum(" + metricType.toString() + "),0) FROM DatasetMetrics\n"
                 + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ") and\n")
                 + " monthYear <= '" + yyyymm + "' "
@@ -521,7 +534,7 @@ public class MetricsServiceBean implements Serializable {
         // }
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add(metricType.toString(), sum.longValue());
-        return job;
+        return job.build();
     }
 
     /** Helper functions for metric caching */
@@ -785,5 +798,7 @@ public class MetricsServiceBean implements Serializable {
         logger.fine("query  - getDataversesChildrenRecursively: " + sql);
         return em.createNativeQuery(sql).getResultList();
     }
+
+
 
 }

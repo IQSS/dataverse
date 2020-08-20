@@ -552,16 +552,52 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("makeDataCount/{metric}")
-    public Response getMakeDataCountMetricCurrentMonth(@PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
-        String nullCurrentMonth = null;
-        return getMakeDataCountMetric(metricSupplied, nullCurrentMonth, country, parentAlias);
+    public Response getMakeDataCountMetricCurrentMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+        return getMakeDataCountMetric(uriInfo, metricSupplied, MetricsUtil.getCurrentMonth(), country, parentAlias);
+    }
+    
+    @GET
+    @Path("makeDataCount/{metric}/monthly")
+    @Produces("application/json, text/csv")
+    public Response getMakeDataCountMetricTimeSeries(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+        String requestedType = httpRequest.getHeader("Accept");
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        MakeDataCountUtil.MetricType metricType = null;
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias", "country" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        try {
+            metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
+        } catch (IllegalArgumentException ex) {
+            return error(Response.Status.BAD_REQUEST, ex.getMessage());
+        }
+        String metricName = "MDC-" + metricType.toString() + ((country == null) ? "" : "-" + country);
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+            //Only handling published right now
+            jsonArray = metricsSvc.mdcMetricTimeSeries(metricType, country, d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
     @Path("makeDataCount/{metric}/toMonth/{yyyymm}")
-    public Response getMakeDataCountMetric(@PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+    public Response getMakeDataCountMetric(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias", "country" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
         try {
             metricType = MakeDataCountUtil.MetricType.fromString(metricSupplied);
         } catch (IllegalArgumentException ex) {
@@ -584,7 +620,7 @@ public class Metrics extends AbstractApiBean {
         JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
         if (null == jsonObj) { // run query and save
-            jsonObj = metricsSvc.getDatasetMetricsByDatasetForDisplay(metricType, sanitizedyyyymm, country, d).build();
+            jsonObj = metricsSvc.getMDCDatasetMetrics(metricType, sanitizedyyyymm, country, d);
             metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
         }
 
