@@ -136,7 +136,7 @@ public class MetricsUtil {
             job.add(MetricsUtil.DATE, date);
             // If there's are results for this date, add their counts to the totals
             // and find the date of the next entry(ies)
-            while (date.equals(curDate)) {
+            while (date.equals(curDate) && i < results.size()) {
                 String type = (String) results.get(i)[1];
                 totals.put(type,  (totals.containsKey(type) ? totals.get(type) : 0) + (long) results.get(i)[2]);
                 sizes.put(type,  (sizes.containsKey(type) ? sizes.get(type) : 0) + ((BigDecimal) results.get(i)[3]).longValue());
@@ -169,7 +169,7 @@ public class MetricsUtil {
             job.add(MetricsUtil.DATE, date);
             // If there's are results for this date, add their counts to the totals
             // and find the date of the next entry(ies)
-            while (date.equals(curDate)) {
+            while (date.equals(curDate) && i < results.size()) {
                 String pid = (String) results.get(i)[1];
                 totals.put(pid,  (totals.containsKey(pid) ? totals.get(pid) : 0) + (long) results.get(i)[2]);
                 i += 1;
