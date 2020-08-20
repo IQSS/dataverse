@@ -293,14 +293,17 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("datasets/bySubject")
+    @Produces("application/json, text/csv")
     public Response getDatasetsBySubject(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
         return getDatasetsBySubjectToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias);
     }
 
     @GET
     @Path("datasets/bySubject/toMonth/{yyyymm}")
+    @Produces("application/json, text/csv")
     public Response getDatasetsBySubjectToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        String requestedType = httpRequest.getHeader("Accept");
 
         try {
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
@@ -318,8 +321,10 @@ public class Metrics extends AbstractApiBean {
             jsonArray = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation, d)).build();
             metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonArray.toString()));
         }
-
-        return ok(jsonArray);
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.SUBJECT, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     /** Files */
