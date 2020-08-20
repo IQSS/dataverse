@@ -90,6 +90,10 @@ public class MetricsUtil {
     }
     
     public static JsonArray timeSeriesToJson(List<Object[]> results) {
+        return timeSeriesToJson(results, false);
+    }
+    
+    public static JsonArray timeSeriesToJson(List<Object[]> results, boolean isBigDecimal) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
         long total = 0;
         String curDate = (String) results.get(0)[0];
@@ -103,7 +107,11 @@ public class MetricsUtil {
             // If there's a result for this date, add it's count to the total
             // and find the date of the next entry
             if (date.equals(curDate)) {
-                total += (long) results.get(i)[1];
+                if(isBigDecimal) {
+                    total +=((BigDecimal) results.get(i)[1]).longValue();
+                } else {
+                    total += (long) results.get(i)[1];
+                }
                 i += 1;
                 if (i < results.size()) {
                     curDate = (String) results.get(i)[0];
