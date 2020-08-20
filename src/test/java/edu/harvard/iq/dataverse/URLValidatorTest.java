@@ -16,7 +16,6 @@ import org.junit.Test;
  * @author skraffmi
  */
 public class URLValidatorTest {
-    //static DefaultTimeProvider timeProvider = DefaultTimeProvider.getInstance();
     ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
     
 
