@@ -173,10 +173,26 @@ public class MetricsServiceBean implements Serializable {
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        for (Object[] result : results) {
+        long total =0;
+        String curDate = (String) results.get(0)[0];
+        //Get a list of all the monthly dates from the start until now
+        List<String> dates = MetricsUtil.getDatesFrom(curDate);
+        int i=0;
+        //Create an entry for each date
+        for(String date: dates) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, (String)result[0]);
-            job.add(MetricsUtil.COUNT, (long)result[1]);
+            job.add(MetricsUtil.DATE, date);
+            //If there's a result for this date, add it's count to the total
+            // and find the date of the next entry
+            if(date.equals(curDate)) {
+                total += (long) results.get(i)[1];
+                i+=1;
+                if(i<results.size()) {
+                  curDate= (String) results.get(i)[0];
+                }
+            }
+            //Then add the aggregate count
+            job.add(MetricsUtil.COUNT, total);
             jab.add(job);
         }
         return jab.build();
