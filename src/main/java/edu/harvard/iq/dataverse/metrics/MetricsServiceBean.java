@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.metrics;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.Metric;
@@ -17,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -409,8 +407,8 @@ public class MetricsServiceBean implements Serializable {
         try {
             Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
             Date earliestDate = new Date(earlyDateTimestamp.getTime());
-            SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM");
-            Date dateQueried = formatter2.parse(yyyymm);
+
+            Date dateQueried = yyyymmFormat.parse(yyyymm);
 
             if (!dateQueried.before(earliestDate)) {
                 Query query = em.createNativeQuery(""
