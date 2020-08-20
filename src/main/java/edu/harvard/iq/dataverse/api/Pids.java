@@ -45,7 +45,7 @@ public class Pids extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("api.errors.invalidApiToken"));
         }
-        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
         JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
