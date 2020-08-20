@@ -4,17 +4,14 @@ import edu.harvard.iq.dataverse.Dataverse;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -31,6 +28,7 @@ public class MetricsUtil {
     public final static String CONTENTTYPE = "contenttype";
     public final static String COUNT = "count";
     public final static String CATEGORY = "category";
+    public final static String PID = "pid";
     public final static String SUBJECT = "subject";
     public final static String DATE = "date";
     public final static String SIZE = "size";
@@ -152,6 +150,37 @@ public class MetricsUtil {
                 job.add(CONTENTTYPE, type);
                 job.add(COUNT, totals.get(type));
                 job.add(SIZE, sizes.get(type));
+            }
+            jab.add(job);
+        }
+        return jab.build();
+    }
+    
+    public static JsonArray timeSeriesByPIDToJson(List<Object[]> results) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        Map<String, Long> totals = new HashMap<String, Long>();
+        String curDate = (String) results.get(0)[0];
+        // Get a list of all the monthly dates from the start until now
+        List<String> dates = getDatesFrom(curDate);
+        int i = 0;
+        // Create an entry for each date
+        for (String date : dates) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add(MetricsUtil.DATE, date);
+            // If there's are results for this date, add their counts to the totals
+            // and find the date of the next entry(ies)
+            while (date.equals(curDate)) {
+                String pid = (String) results.get(i)[1];
+                totals.put(pid,  (totals.containsKey(pid) ? totals.get(pid) : 0) + (long) results.get(i)[2]);
+                i += 1;
+                if (i < results.size()) {
+                    curDate = (String) results.get(i)[0];
+                }
+            }
+            // Then add the aggregate count and size for all types
+            for(String type: totals.keySet()) {
+                job.add(PID, type);
+                job.add(COUNT, totals.get(type));
             }
             jab.add(job);
         }

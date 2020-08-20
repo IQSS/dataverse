@@ -632,6 +632,32 @@ public class Metrics extends AbstractApiBean {
     public Response getUniqueDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         return getUniqueDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
+    
+    @GET
+    @Path("uniquedownloads/monthly")
+    @Produces("application/json, text/csv")
+    public Response getUniqueDownloadsTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+            String requestedType = httpRequest.getHeader("Accept");
+            Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+            try {
+                errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias"});
+            } catch (IllegalArgumentException ia) {
+                return error(BAD_REQUEST, ia.getLocalizedMessage());
+            }
+            String metricName = "uniqueDownloads";
+
+            JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+            if (null == jsonArray) { // run query and save
+                //Only handling published right now
+                jsonArray = metricsSvc.uniqueDownloadsTimeSeries(d);
+                metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+            }
+            if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+                return ok(jsonArray);
+            }
+            return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));        
+     }
 
     @GET
     @Path("uniquedownloads/toMonth/{yyyymm}")
@@ -644,7 +670,7 @@ public class Metrics extends AbstractApiBean {
             return error(BAD_REQUEST, ia.getLocalizedMessage());
         }
 
-        String metricName = "uniqueDownloadsToMonth";
+        String metricName = "uniqueDownloads";
 
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
         JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
