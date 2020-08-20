@@ -131,8 +131,10 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("dataverses/byCategory")
+    @Produces("application/json, text/csv")
     public Response getDataversesByCategory(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        String requestedType = httpRequest.getHeader("Accept");
 
         try {
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
@@ -148,14 +150,18 @@ public class Metrics extends AbstractApiBean {
             jsonArray = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(d)).build();
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-
-        return ok(jsonArray);
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.CATEGORY, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
     @Path("dataverses/bySubject")
+    @Produces("application/json, text/csv")
     public Response getDataversesBySubject(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        String requestedType = httpRequest.getHeader("Accept");
 
         try {
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
@@ -172,7 +178,10 @@ public class Metrics extends AbstractApiBean {
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
 
-        return ok(jsonArray);
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.SUBJECT, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     /** Datasets */
