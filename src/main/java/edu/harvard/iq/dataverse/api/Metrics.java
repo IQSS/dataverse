@@ -193,17 +193,20 @@ public class Metrics extends AbstractApiBean {
 
         if (null == jsonArray) { // run query and save
 
-        jsonArray= metricsSvc.getDatasetsTimeSeries(uriInfo, validDataLocation, d);
-        metricsSvc.save(new Metric(metricName, null, validDataLocation, d, jsonArray.toString()));
+            jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, validDataLocation, d);
+            metricsSvc.save(new Metric(metricName, null, validDataLocation, d, jsonArray.toString()));
+        }
+        return ok(jsonArray);
     }
-    return ok(jsonArray);
-    }
+
 
     @GET
     @Path("datasets/monthly")
+    @Produces("application/json, text/csv")
     public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
-        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        String requestedType = httpRequest.getHeader("Accept");
         try {
             errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
         } catch (IllegalArgumentException ia) {
@@ -217,7 +220,10 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, dataLocation, d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        return ok(jsonArray);
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
