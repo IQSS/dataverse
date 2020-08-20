@@ -400,6 +400,62 @@ public class Metrics extends AbstractApiBean {
         return ok(jsonObj);
 
     }
+    
+    @GET
+    @Path("/files/byType")
+    public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getFilesInDataverse(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    }
+
+    @GET
+    @Path("/files/byType/monthly")
+    @Produces("application/json, text/csv")
+    public Response getFilesByTypeTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        String requestedType = httpRequest.getHeader("Accept");
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "filesByType";
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+            //Only handling published right now
+            jsonArray = metricsSvc.filesByTypeTimeSeries(d, true);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.CONTENTTYPE, MetricsUtil.COUNT, MetricsUtil.SIZE), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+    }
+    
+    @GET
+    @Path("/files/byType/toMonth/{yyyymm}")
+    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        String metricName = "filesByType";
+
+        String sanitizedyyyymm = null;
+        if (yyyymm != null) {
+            sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        }
+
+        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+        if (null == jsonObj) { // run query and save
+            jsonObj = metricsSvc.filesByType(d).build();
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+        }
+
+        return ok(jsonObj);
+
+    }
 
     /** Downloads */
 
@@ -473,35 +529,7 @@ public class Metrics extends AbstractApiBean {
         return ok(jsonObj);
     }
 
-    @GET
-    @Path("/files/byType")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getFilesInDataverse(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
-    }
 
-    @GET
-    @Path("/files/byType/toMonth/{yyyymm}")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
-
-        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
-
-        String metricName = "filesByType";
-
-        String sanitizedyyyymm = null;
-        if (yyyymm != null) {
-            sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        }
-
-        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
-
-        if (null == jsonObj) { // run query and save
-            jsonObj = metricsSvc.fileContents(d).build();
-            metricsSvc.save(new Metric(metricName, null, null, d, jsonObj.toString()));
-        }
-
-        return ok(jsonObj);
-
-    }
 
     @GET
     @Path("makeDataCount/{metric}")
