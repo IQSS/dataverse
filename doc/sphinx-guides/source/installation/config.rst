@@ -175,7 +175,7 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
-- :ref:`doi.mdcbaseurlstring`
+- :ref:`doi.dataciterestapiurlstring`
 
 **Database Settings:**
 
@@ -1068,38 +1068,24 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.baseurlstringnext:
+.. _doi.dataciterestapiurlstring:
 
-doi.baseurlstringnext
-+++++++++++++++++++++
+doi.dataciterestapiurlstring
+++++++++++++++++++++++++++++
 
-Dataverse uses multiple APIs from DataCite:
-
-- The DataCite MDS API is older, XML-based, and configured using :ref:`doi.baseurlstring`.
-- The DataCite REST API is newer, JSON-based, and configured using ``doi.baseurlstringnext``.
-
-In production, ``doi.baseurlstringnext`` should be set to ``https://api.datacite.org``
-
-While testing, ``doi.baseurlstringnext`` should be set to ``https://api.test.datacite.org``
-
-.. _doi.mdcbaseurlstring:
-
-doi.mdcbaseurlstring
-++++++++++++++++++++
-
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
 
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
-Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
+Out of the box, Dataverse is configured to use a test DataCite REST API base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
+``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
 
 Then, to switch to production DataCite, you can issue the following command:
 
-``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
 
-For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
+For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
 
 See also these related database settings below:
 

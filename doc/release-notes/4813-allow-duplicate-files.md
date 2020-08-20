@@ -1,1 +1,0 @@
-We should note that duplicate files are now allowed, and installations may want to contact people now that this is available. Point to rules in the Guides.

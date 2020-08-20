@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -3114,9 +3115,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public boolean rsyncUploadSupported() {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
-    	// When those restrictions are lifted/rsync can be configured per store, this test should check that setting
-    	// instead of testing for the 's3" store.
-    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    	// When those restrictions are lifted/rsync can be configured per store, the test in the 
+        // Dataset Util method should be updated
+
+    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     
