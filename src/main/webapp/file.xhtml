@@ -399,6 +399,31 @@
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
                                    rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
+                                
+                                
+                                <!-- TO-DO ... CHANGE FilePage.previewAllowed LOGIC TO DISPLAY TERMS + GUESTBOOK FOR RESTRICTED FILES -->
+                                
+                                
+                                <ui:fragment rendered="#{FilePage.downloadPopupRequired}">
+                                    
+                                    <!-- TO-DO ... WIRE UP TERMS + GUESTBOOK LOGIC ... COPIED DOWNLOAD POPUP CONTENTS BELOW ... -->
+                                    
+                                    <ui:include src="file-download-popup-fragment.xhtml">
+                                        <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
+                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
+                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
+                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
+                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
+                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
+                                    </ui:include>
+                                    
+                                </ui:fragment>
+                                <ui:fragment rendered="#{true}">
+                                    
+                                    
+                                <!-- TO-DO ... CHANGE FilePage.previewAllowed LOGIC TO DISPLAY TERMS + GUESTBOOK FOR RESTRICTED FILES -->
+                                
+                                
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
@@ -417,6 +442,11 @@
                                     </div>
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
+                                        
+                                        
+                                        <!-- TO-DO ... CHANGE BTN TEXT TO CONDITIONAL OPEN VS EXPLORE DEPENDING ON TOOL TYPE -->
+                                        
+                                        
                                         <!-- Modular/Configured Explore Tool -->
                                         <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
                                                          type="submit"
@@ -475,6 +505,8 @@
                                 <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
+                                </ui:fragment>
+                                
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 

@@ -64,7 +64,7 @@ Optional Components
 There are a number of optional components you may choose to install or configure, including:
 
 - External Tools: Third party tools for data exploration can be added to Dataverse by following the instructions in the :doc:`/admin/external-tools` section of the Admin Guide.
-- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`/admin/external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
+- R, rApache, Zelig, and TwoRavens: Statistical tools for data exploration, analysis, and meta-analysis. See the :doc:`r-rapache-tworavens` section of the Installation Guide, as well as :doc:`/user/data-exploration/tworavens` section of the User Guide.
 - Dropbox integration :ref:`dataverse.dropbox.key`: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Jakarta EE applications (like Dataverse) and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.

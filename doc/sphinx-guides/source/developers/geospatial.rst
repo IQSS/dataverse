@@ -10,7 +10,7 @@ Geoconnect
 
 Geoconnect works as a middle layer, allowing geospatial data files in Dataverse to be visualized with Harvard WorldMap. To set up a Geoconnect development environment, you can follow the steps outlined in the `local_setup.md <https://github.com/IQSS/geoconnect/blob/master/local_setup.md>`_ guide. You will need Python and a few other prerequisites.
 
-As mentioned under the :ref:`architecture` section of Preparation in the Installation Guide, Geoconnect is an optional component of Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
+As mentioned under the :ref:`architecture` section of Preparation in the Installation Guide, Geoconnect is an optional external tool for Dataverse, so this section is only necessary to follow it you are working on an issue related to this feature.
 
 How Dataverse Ingests Shapefiles
 --------------------------------
@@ -186,7 +186,7 @@ The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent Joi
 Setting Up WorldMap Test Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the "Explore Map" button should appear for a tabular file or shapefile. In the example SQL queries below, substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate ID's.
+For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the explore in WorldMap option should display for tabular files or shapefiles. In the example SQL queries below, substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate ID's.
 
 To add sample map data for a tabular file:
 
