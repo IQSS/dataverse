@@ -172,7 +172,7 @@ public class MetricsUtil {
             throw new BadRequestException("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
 
-        LocalDate currentDate = (new Date()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
 
         if (inputLocalDate.isAfter(currentDate)) {
             throw new BadRequestException("The requested date is set past the current month.");

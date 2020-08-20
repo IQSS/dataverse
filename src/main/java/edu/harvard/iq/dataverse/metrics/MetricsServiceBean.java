@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -404,6 +405,30 @@ public class MetricsServiceBean implements Serializable {
      * @param d
      * @throws ParseException */
 
+    
+    public JsonArray downloadsTimeSeries(Dataverse d) {
+        // ToDo - published only?
+        Query earlyDateQuery = em.createNativeQuery(""
+                + "select responsetime from guestbookresponse\n"
+                + "ORDER BY responsetime LIMIT 1;");
+
+        Timestamp earlyDateTimestamp = (Timestamp) earlyDateQuery.getSingleResult();
+        LocalDate earliestDate = earlyDateTimestamp.toLocalDateTime().toLocalDate().minusMonths(1);
+        String earliest = earliestDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
+
+        // Counts historic guestbook records without date as occurring in the month
+        // prior to the first dated counts
+        Query query = em.createNativeQuery(""
+                + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "'), count(id)\n"
+                + "from guestbookresponse\n"
+                + ((d == null) ? ";" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ");")
+                + " group by responsetime order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'\" + earliest + \"');");
+
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesToJson(results);
+    }
+    
     /*
      * This includes getting historic download without a timestamp if query
      * is earlier than earliest timestamped record

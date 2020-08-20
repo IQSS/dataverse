@@ -465,11 +465,30 @@ public class Metrics extends AbstractApiBean {
         return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
-    @Deprecated // for better path
     @GET
-    @Path("downloads/toMonth")
-    public Response getDownloadsToMonthCurrent(@Context UriInfo uriInfo) {
-        return getDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
+    @Path("downloads/monthly")
+    @Produces("application/json, text/csv")
+    public Response getDownloadsTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        String requestedType = httpRequest.getHeader("Accept");
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "downloads";
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+            //Only handling published right now
+            jsonArray = metricsSvc.downloadsTimeSeries(d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
