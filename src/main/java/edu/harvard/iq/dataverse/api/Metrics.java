@@ -189,23 +189,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets")
     public Response getDatasetsAllTime(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
-
-        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
-        try {
-            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "dataLocation", "parentAlias" });
-        } catch (IllegalArgumentException ia) {
-            return error(BAD_REQUEST, ia.getLocalizedMessage());
-        }
-        String validDataLocation = MetricsUtil.validateDataLocationStringType(dataLocation);
-        String metricName = "datasets";
-        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, validDataLocation, d));
-
-        if (null == jsonArray) { // run query and save
-
-            jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, validDataLocation, d);
-            metricsSvc.save(new Metric(metricName, null, validDataLocation, d, jsonArray.toString()));
-        }
-        return ok(jsonArray);
+        return getDatasetsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias);
     }
 
 
@@ -334,11 +318,30 @@ public class Metrics extends AbstractApiBean {
         return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
-    @Deprecated // for better path
     @GET
-    @Path("files/toMonth")
-    public Response getFilesToMonthCurrent(@Context UriInfo uriInfo) {
-        return getFilesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), null);
+    @Path("files/monthly")
+    @Produces("application/json, text/csv")
+    public Response getFilesTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        String requestedType = httpRequest.getHeader("Accept");
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "files";
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+
+            jsonArray = metricsSvc.filesTimeSeries(d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET

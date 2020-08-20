@@ -11,6 +11,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -82,6 +83,34 @@ public class MetricsUtil {
         }
         return jab;
     }
+    
+    public static JsonArray timeSeriesToJson(List<Object[]> results) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        long total = 0;
+        String curDate = (String) results.get(0)[0];
+        // Get a list of all the monthly dates from the start until now
+        List<String> dates = getDatesFrom(curDate);
+        int i = 0;
+        // Create an entry for each date
+        for (String date : dates) {
+            JsonObjectBuilder job = Json.createObjectBuilder();
+            job.add(MetricsUtil.DATE, date);
+            // If there's a result for this date, add it's count to the total
+            // and find the date of the next entry
+            if (date.equals(curDate)) {
+                total += (long) results.get(i)[1];
+                i += 1;
+                if (i < results.size()) {
+                    curDate = (String) results.get(i)[0];
+                }
+            }
+            // Then add the aggregate count
+            job.add(MetricsUtil.COUNT, total);
+            jab.add(job);
+        }
+        return jab.build();
+    }
+    
 
     /**
      *
