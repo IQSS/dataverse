@@ -728,6 +728,11 @@ public class Metrics extends AbstractApiBean {
                 throw new NotFoundException("No Dataverse with alias: " + alias);
             }
         }
+        //For a public API - we only want released dataverses used as parentAliases
+        //Code could be updated to handle draft info as well (with access controls in place)
+        if(!d.isReleased()) {
+            d=null;
+        }
         return d;
     }
 
