@@ -33,7 +33,7 @@ public class MetricsUtil {
     public final static String DATE = "date";
     public final static String SIZE = "size";
 
-    public static String YEAR_AND_MONTH_PATTERN = "YYYY-MM";
+    public static String YEAR_AND_MONTH_PATTERN = "yyyy-MM";
 
     public static final String DATA_LOCATION_LOCAL = "local";
     public static final String DATA_LOCATION_REMOTE = "remote";
