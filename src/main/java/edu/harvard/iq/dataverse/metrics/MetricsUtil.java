@@ -192,17 +192,14 @@ public class MetricsUtil {
     /**
      *
      * @param userInput A year and month in YYYY-MM format.
-     * @return A year and month in YYYY-M     * Note that along with sanitization, this checks that the requested month is
+     * @return A year and month in YYYY-M     
+     * Note that along with sanitization, this checks that the requested month is
      * not after the current one. This will need to be made more robust if we
      * start writing metrics for farther in the future (e.g. the current year) the current year)
      */
     public static String sanitizeYearMonthUserInput(String userInput) throws BadRequestException {
         logger.fine("string from user to sanitize (hopefully YYYY-MM format): " + userInput);
-        DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()
-                .appendPattern(YEAR_AND_MONTH_PATTERN)
-                // To make the parser happy, we set the day of the month to the first of the month.
-                .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
-                .toFormatter();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN);
         LocalDate inputLocalDate = null;
         try {
             inputLocalDate = LocalDate.parse(userInput, dateTimeFormatter);
@@ -216,7 +213,7 @@ public class MetricsUtil {
             throw new BadRequestException("The requested date is set past the current month.");
         }
 
-        String sanitized = inputLocalDate.format(DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN));
+        String sanitized = inputLocalDate.format(dateTimeFormatter);
         return sanitized;
     }
 
