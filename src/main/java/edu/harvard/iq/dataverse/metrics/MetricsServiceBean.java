@@ -421,7 +421,7 @@ public class MetricsServiceBean implements Serializable {
         Query query = em.createNativeQuery(""
                 + "select  distinct COALESCE(to_char(responsetime, 'YYYY-MM'),'" + earliest + "') as date, count(id)\n"
                 + "from guestbookresponse\n"
-                + ((d == null) ? ";" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
+                + ((d == null) ? "" : "where dataset_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ");")
                 + " group by responsetime order by  COALESCE(to_char(responsetime, 'YYYY-MM'),'\" + earliest + \"');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
@@ -487,7 +487,7 @@ public class MetricsServiceBean implements Serializable {
                 + " FROM guestbookresponse gb, DvObject ob"
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
-                + "group by gb.dataset_id, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
+                + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
         List<Object[]> results = query.getResultList();
@@ -504,7 +504,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "group by gb.dataset_id, ob.authority, ob.identifier;");
+                + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier;");
         JsonObjectBuilder job = Json.createObjectBuilder();
         try {
             List<Object[]> results = query.getResultList();
