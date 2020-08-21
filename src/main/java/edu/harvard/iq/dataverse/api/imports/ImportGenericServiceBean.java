@@ -366,24 +366,35 @@ public class ImportGenericServiceBean {
     }
     
     private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        List<String> otherIds = new ArrayList<>();
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
-                        String otherId = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (FieldDTO next : foo) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
-                                    otherId =  next.getSinglePrimitive();
+                                    otherIds.add(next.getSinglePrimitive());
                                 }
-                            }
-                            if (!otherId.isEmpty()){
-                                return otherId;
                             }
                         }
                     }
+                }
+            }
+        }
+        if (!otherIds.isEmpty()) {
+            // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
+            for (String otherId : otherIds) {
+                if (otherId.contains(GlobalId.DOI_PROTOCOL) || otherId.contains(GlobalId.HDL_PROTOCOL)) {
+                    return otherId;
+                }
+            }
+            // But identifiers without hdl or doi like "10.6084/m9.figshare.12725075.v1" are also allowed
+            for (String otherId : otherIds) {
+                if (otherId.startsWith("10.") && otherId.contains("/")) {
+                    return GlobalId.HDL_PROTOCOL + ":" + otherId;
                 }
             }
         }
