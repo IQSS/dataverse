@@ -364,7 +364,7 @@ public class MetricsServiceBean implements Serializable {
     }
 
 
-    public JsonObjectBuilder filesByType(Dataverse d) {
+    public JsonArray filesByType(Dataverse d) {
         // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
         // ToDo - published only?
         Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
@@ -372,18 +372,18 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = df.id "
                 + ((d == null) ? "" : "and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d.getId(), "Dataset") + ")\n")
                 + "group by df.contenttype;");
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
-                job.add((String) result[0], stats);
+                JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.CONTENTTYPE, (String) result[0]).add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
+                jab.add(stats);
             }
 
         } catch (javax.persistence.NoResultException nr) {
             // do nothing
         }
-        return job;
+        return jab.build();
 
     }
     
@@ -802,7 +802,7 @@ public class MetricsServiceBean implements Serializable {
                 sql += " and date_trunc('month', publicationdate) <=  to_date('" + yyyymm + "','YYYY-MM')\n";
                 break;
             case DRAFT:
-                sql += "and publicationdate is null\n";
+                sql += " and date_trunc('month', createdate) <=  to_date('" + yyyymm + "','YYYY-MM')\n";
                 break;
             }
         }
