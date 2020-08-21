@@ -72,7 +72,7 @@ public class Metrics extends AbstractApiBean {
         if((requestedType!=null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
             return ok(jsonArray);
         }
-        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV)) ;
     }
 
     @GET
@@ -196,7 +196,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/monthly")
     @Produces("application/json, text/csv")
-    public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+    public Response getDatasetsTimeSeries(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         String requestedType = httpRequest.getHeader("Accept");
@@ -216,7 +216,7 @@ public class Metrics extends AbstractApiBean {
         if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
             return ok(jsonArray);
         }
-        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
@@ -341,7 +341,7 @@ public class Metrics extends AbstractApiBean {
         if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
             return ok(jsonArray);
         }
-        return ok(FileUtil.jsonToCSV(jsonArray, "date", "count"), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     @GET
@@ -402,12 +402,6 @@ public class Metrics extends AbstractApiBean {
     }
     
     @GET
-    @Path("/files/byType")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getFilesInDataverse(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
-    }
-
-    @GET
     @Path("/files/byType/monthly")
     @Produces("application/json, text/csv")
     public Response getFilesByTypeTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
@@ -434,27 +428,31 @@ public class Metrics extends AbstractApiBean {
     }
     
     @GET
-    @Path("/files/byType/toMonth/{yyyymm}")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
-
+    @Path("/files/byType")
+    @Produces("application/json, text/csv")
+    public Response getFilesByType(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        String requestedType = httpRequest.getHeader("Accept");
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
 
         String metricName = "filesByType";
 
-        String sanitizedyyyymm = null;
-        if (yyyymm != null) {
-            sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+            jsonArray = metricsSvc.filesByType(d);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
 
-        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
-
-        if (null == jsonObj) { // run query and save
-            jsonObj = metricsSvc.filesByType(d).build();
-            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+        if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
+            return ok(jsonArray);
         }
-
-        return ok(jsonObj);
-
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.CONTENTTYPE, MetricsUtil.COUNT, MetricsUtil.SIZE), MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
     }
 
     /** Downloads */
@@ -553,7 +551,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("makeDataCount/{metric}")
     public Response getMakeDataCountMetricCurrentMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
-        return getMakeDataCountMetric(uriInfo, metricSupplied, MetricsUtil.getCurrentMonth(), country, parentAlias);
+        return getMakeDataCountMetricToMonth(uriInfo, metricSupplied, MetricsUtil.getCurrentMonth(), country, parentAlias);
     }
     
     @GET
@@ -590,7 +588,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("makeDataCount/{metric}/toMonth/{yyyymm}")
-    public Response getMakeDataCountMetric(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+    public Response getMakeDataCountMetricToMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
         try {
@@ -686,12 +684,12 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("tree")
     public Response getDataversesTree(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getDataversesTree(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+        return getDataversesTreeToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
     @GET
     @Path("tree/toMonth/{yyyymm}")
-    public Response getDataversesTree(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+    public Response getDataversesTreeToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 

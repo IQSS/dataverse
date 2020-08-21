@@ -620,7 +620,7 @@ public class MetricsServiceBean implements Serializable {
             String lastRunYYYYMM = yyyymmFormat.format(lastCalled);
 
             // if queried was last run during the month it was querying.
-            // Allows one requery of a past month to make it up to date.
+            // Allows requery of a past month to make it up to date.
             return (lastRunYYYYMM.equals(yyyymm));
         }
     }
