@@ -196,7 +196,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("datasets/monthly")
     @Produces("application/json, text/csv")
-    public Response getDatasetsToMonthCurrent(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
+    public Response getDatasetsTimeSeriest(@Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         String requestedType = httpRequest.getHeader("Accept");
@@ -430,7 +430,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("/files/byType")
     @Produces("application/json, text/csv")
-    public Response getFilesInDataverse(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+    public Response getFilesByType(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         String requestedType = httpRequest.getHeader("Accept");
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -551,7 +551,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("makeDataCount/{metric}")
     public Response getMakeDataCountMetricCurrentMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
-        return getMakeDataCountMetric(uriInfo, metricSupplied, MetricsUtil.getCurrentMonth(), country, parentAlias);
+        return getMakeDataCountMetricToMonth(uriInfo, metricSupplied, MetricsUtil.getCurrentMonth(), country, parentAlias);
     }
     
     @GET
@@ -588,7 +588,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("makeDataCount/{metric}/toMonth/{yyyymm}")
-    public Response getMakeDataCountMetric(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
+    public Response getMakeDataCountMetricToMonth(@Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @PathParam("yyyymm") String yyyymm, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
         try {
@@ -684,12 +684,12 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("tree")
     public Response getDataversesTree(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getDataversesTree(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+        return getDataversesTreeToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
     @GET
     @Path("tree/toMonth/{yyyymm}")
-    public Response getDataversesTree(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+    public Response getDataversesTreeToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
