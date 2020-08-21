@@ -25,19 +25,19 @@ Managing External Tools
 Adding External Tools to Dataverse
 +++++++++++++++++++++++++++++++++++
 
-To add an external tool to your installation of Dataverse you must first download a JSON file for that tool, which we refer to as a "manifest". It should look something like this:
+To add an external tool to your Dataverse installation, configure the JSON manifest file for that tool. Here is an example manifest for a sample explore tool:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
-Go to :ref:`inventory-of-external-tools` and download a JSON manifest for one of the tools by following links in the description to installation instructions.
+Download the JSON manifest file from :ref:`inventory-of-external-tools` for the tools you wish to install.
 
-In the curl command below, replace the placeholder "fabulousFileTool.json" placeholder for the actual name of the JSON file you downloaded.
+Configure the tool with the curl command below, making sure to replace the ``fabulousFileTool.json`` placeholder for name of the JSON manifest file you downloaded.
 
 .. code-block:: bash
 
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json 
 
-Note that some tools will provide a preview mode, which provides an embedded, simplified view of the tool on the file pages of your installation. This is controlled by the `hasPreviewMode` parameter. 
+Note that some tools will provide a preview mode, which provides an embedded, simplified view of the tool on the file pages of your installation. This is controlled by the ``hasPreviewMode`` parameter. 
 
 Listing All External Tools in Dataverse
 +++++++++++++++++++++++++++++++++++++++
@@ -78,12 +78,12 @@ Once you have added an external tool to your installation of Dataverse, you will
 File Level Explore Tools
 ++++++++++++++++++++++++
 
-File level explore tools are specific to the file type (content type or MIME type). For example, Data Explorer is tool for exploring tabular data files.
+File level explore tools are specific to the file type (content type or MIME type). For example, the Data Explorer tool can be configured to explore tabular data files.
 
 File Level Preview Tools
 ++++++++++++++++++++++++
 
-File level preview tools allow the user to see a preview of the file contents without having to download it. Explore tools can also be set up to display in a preview, which is a simplified view of an explore tool designed specifically for embedding in the file page.
+File level preview tools allow the user to see a preview of the file contents without having to download it. Explore tools can also use the ``hasPreviewMode`` parameter to display a preview, which is a simplified view of an explore tool designed specifically for embedding in the file page.
 
 File Level Configure Tools
 ++++++++++++++++++++++++++

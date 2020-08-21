@@ -580,6 +580,9 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
             <div class="btn-group" role="group" aria-label="File Actions">
+                <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-preview btn btn-link bootstrap-button-tooltip" aria-label="Preview" data-original-title="Preview">
+                    <span class="glyphicon glyphicon-eye-open"></span><span class="sr-only">Preview</span>
+                </a>
                 <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-download btn btn-link bootstrap-button-tooltip" aria-label="Download" data-original-title="Download">
                     <span class="glyphicon glyphicon-download-alt"></span><span class="sr-only">Download</span>
                 </a>
@@ -624,6 +627,14 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
 .. code-block:: html
 
     <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
+
+        <ui:fragment rendered="#{true}">
+            <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(...)}">
+                <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+            </a>
+        </ui:fragment>
+
         <p:commandLink rendered="#{true}" styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
                        title="#{bundle.download}"
                        disabled="#{locked ? 'disabled' : ''}" 
