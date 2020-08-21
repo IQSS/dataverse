@@ -730,7 +730,7 @@ public class Metrics extends AbstractApiBean {
         }
         //For a public API - we only want released dataverses used as parentAliases
         //Code could be updated to handle draft info as well (with access controls in place)
-        if(!d.isReleased()) {
+        if((d!=null) && !d.isReleased()) {
             d=null;
         }
         return d;
