@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
@@ -202,7 +203,7 @@ public class MetricsUtil {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(YEAR_AND_MONTH_PATTERN);
         LocalDate inputLocalDate = null;
         try {
-            inputLocalDate = LocalDate.parse(userInput, dateTimeFormatter);
+            inputLocalDate = YearMonth.parse(userInput, dateTimeFormatter).atDay(1);
         } catch (DateTimeParseException ex) {
             throw new BadRequestException("The expected format is YYYY-MM but an exception was thrown: " + ex.getLocalizedMessage());
         }
