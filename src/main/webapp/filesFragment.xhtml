@@ -570,7 +570,7 @@
                 </div>
 
                 
-                <p:commandLink rendered="#{dataset.fileAccessRequest and DatasetPage.datasetFileRequestAccessTool != null and  DatasetPage.sessionUserAuthenticated and !DatasetPage.downloadAllButtonEnabled}"
+                <p:commandLink rendered="#{dataset.fileAccessRequest and DatasetPage.datasetFileRequestAccessTool != null and DatasetPage.sessionUserAuthenticated}"
                                 styleClass="btn btn-default btn-request"                                   
                                 update="@form" 
                                 action="#{DatasetPage.requestAccess(DatasetPage.datasetFileRequestAccessTool)}"
@@ -585,7 +585,7 @@
                                 disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-                <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired or (DatasetPage.datasetFileRequestAccessTool != null and !DatasetPage.sessionUserAuthenticated and !DatasetPage.downloadAllButtonEnabled) }"
+                <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
                                 styleClass="btn btn-default btn-request"
                                 onclick="PF('accessSignUpLogIn_popup').show()"
                                 disabled="#{DatasetPage.locked}">
