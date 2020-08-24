@@ -1,5 +1,0 @@
-##Payara 5
-
-A major upgrade of the application server will provide security updates, access to new features like MicroProfile Config API, and will enable upgrades to other core technologies.
-
-Note that moving from Glassfish to Payara will be required as part of the move to Dataverse 5.
