@@ -495,7 +495,7 @@ public class MetricsServiceBean implements Serializable {
 
     }
     
-    public JsonObjectBuilder uniqueDatasetDownloads(String yyyymm, Dataverse d) {
+    public JsonArray uniqueDatasetDownloads(String yyyymm, Dataverse d) {
 
     //select distinct count(distinct email),dataset_id, date_trunc('month', responsetime)  from guestbookresponse group by dataset_id, date_trunc('month',responsetime) order by dataset_id,date_trunc('month',responsetime);
 
@@ -505,17 +505,20 @@ public class MetricsServiceBean implements Serializable {
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
                 + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier;");
-        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
-                job.add((String) result[0], (long) result[1]);
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add(MetricsUtil.PID, (String) result[0]);
+                job.add(MetricsUtil.COUNT, (long) result[1]);
+                jab.add(job);
             }
 
         } catch (javax.persistence.NoResultException nr) {
             // do nothing
         }
-        return job;
+        return jab.build();
 
     }
     

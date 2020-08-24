@@ -671,14 +671,13 @@ public class Metrics extends AbstractApiBean {
         String metricName = "uniqueDownloads";
 
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        JsonObject jsonObj = MetricsUtil.stringToJsonObject(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+        JsonArray jsonArr = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
-        if (null == jsonObj) { // run query and save
-            jsonObj = metricsSvc.uniqueDatasetDownloads(sanitizedyyyymm, d).build();
-            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonObj.toString()));
+        if (null == jsonArr) { // run query and save
+            jsonArr = metricsSvc.uniqueDatasetDownloads(sanitizedyyyymm, d);
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArr.toString()));
         }
-
-        return ok(jsonObj);
+        return ok(jsonArr);
     }
 
     @GET
