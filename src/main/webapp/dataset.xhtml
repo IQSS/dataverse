@@ -808,8 +808,6 @@
                     </div>
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                      <!--  completionButtons panel needed to mirror panel in editdatafiles.xhtml - AllUploadsFinished has to update the buttons there so an element of the same name is needed here, despite the fact that no button update is needed in dataset create mode -->
-                      <p:outputPanel id="completionButtons"></p:outputPanel>
                         <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
@@ -821,7 +819,6 @@
                                          update=":datasetForm,:messagePanel"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
                                          action="#{DatasetPage.save}"/>
-                                         
                     </div>
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>

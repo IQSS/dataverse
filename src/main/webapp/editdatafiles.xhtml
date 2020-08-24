@@ -69,7 +69,7 @@
                     <!-- Create/Save Dataset Button Panel -->
                     <ui:fragment id="editDataFilesButtons">
                         <div class="button-block">
-                            <p:outputPanel id="completionButtons">
+                            <p:outputPanel id="filesButtons">
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
                                     <button id="savebutton" class="btn btn-default" onclick="checkNewlyRestricted();" type='button'>
                                         #{bundle.saveChanges}
