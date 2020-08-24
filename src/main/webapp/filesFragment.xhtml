@@ -574,7 +574,7 @@
                                 styleClass="btn btn-default btn-request"                                   
                                 update="@form" 
                                 action="#{DatasetPage.requestAccess(DatasetPage.datasetFileRequestAccessTool)}"
-                                disabled="#{DatasetPage.locked}">
+                                disabled="#{DatasetPage.locked or not DatasetPage.fileAccessRequestMultiButtonEnabled}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 
@@ -582,7 +582,7 @@
                                 styleClass="btn btn-default btn-request"                                   
                                 update="@form" 
                                 action="#{DatasetPage.requestAccessMultipleFiles()}"
-                                disabled="#{DatasetPage.locked}">
+                                disabled="#{DatasetPage.locked or not DatasetPage.fileAccessRequestMultiButtonEnabled}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
