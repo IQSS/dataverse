@@ -527,8 +527,8 @@ public class MetricsServiceBean implements Serializable {
     
     public JsonArray mdcMetricTimeSeries(MetricType metricType, String country, Dataverse d) {
         Query query = em.createNativeQuery("SELECT distinct substring(monthyear from 1 for 7) as date, coalesce(sum(" + metricType.toString() + "),0) as count FROM DatasetMetrics\n"
-                + ((d == null) ? "WHERE " : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ") and\n")
-                + ((country == null) ? "" : " and countryCode = '" + country + "'")
+                + ((d == null) ? "" : "WHERE dataset_id in ( " + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + ((country == null) ? "" : ((d == null) ? "WHERE " : "and ") + "countryCode = '" + country + "'")
                 + " group by substring(monthyear from 1 for 7) order by substring(monthyear from 1 for 7);"
                 );
         logger.log(Level.FINE, "Metric query: {0}", query);
