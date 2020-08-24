@@ -92,6 +92,12 @@ public class MakeDataCountUtil {
 
         @Override
         public String toString() {
+            if(this.equals(MetricType.DOWNLOADS_TOTAL)) {
+                return (MetricType.DOWNLOADS_TOTAL_MACHINE + " + " + MetricType.DOWNLOADS_TOTAL_REGULAR);
+            } else if (this.equals(MetricType.VIEWS_TOTAL)) {  
+                return (MetricType.VIEWS_TOTAL_MACHINE + " + " + MetricType.VIEWS_TOTAL_REGULAR);
+                
+            } 
             return text;
         }
     }
