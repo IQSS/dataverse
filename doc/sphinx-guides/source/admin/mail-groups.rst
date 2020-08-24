@@ -33,11 +33,9 @@ To list just that Mail Domain Group, you can include the alias in the curl comma
 Creating a Mail Domain Group
 ----------------------------
 
-Mail Domain Groups can be created with a simple JSON file:
+Mail Domain Groups can be created with a simple JSON file such as domainGroup1.json:
 
 .. code-block:: json
-   :caption: domainGroup1.json
-   :name: domainGroup1.json
 
     {
       "name": "Users from @example.org",
