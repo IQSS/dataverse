@@ -214,34 +214,18 @@ class fileUpload {
                                 this.etags[key]=response.getResponseHeader('ETag').replace(/["]+/g, '');
                                 this.numEtags = this.numEtags+1;
                                 if(this.numEtags == Object.keys(this.urls.urls).length) {
-                                  console.log('reporting file ' + this.file.name);
-                                  var allGood=true;
-                                  for(val in this.etags.values()) {
-                                    if (val==-1) {
-                                      allGood=false;
-                                      break;
-                                    }
-                                  }
-                                  if(!allGood) {
-                                    if(this.alreadyRetried) {
-                                      console.log('Error after retrying ' + this.file.name);
-                                      uploadFailure(jqXHR, thisFile);
-                                      this.cancelMPUpload();
-                                    } else {
-                                      this.alreadyRetried=true;
-                                      this.doUpload();
-                                    }
-                                  } else {
-                                    this.finishMPUpload();
-                                  }
+                                  this.multipartComplete();
                                 }
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Failure: ' + jqXHR.status);
                                 console.log('Failure: ' + errorThrown);
                                 console.log(thisFile + ' : part' + key);
+                                this.numEtags = this.numEtags+1;
                                 this.etags[key]=-1;
-                                //uploadFailure(jqXHR, thisFile);
+                                if(this.numEtags == Object.keys(this.urls.urls).length) {
+                                  this.multipartComplete();
+                                }
                         },
                         xhr: function() {
                                 var myXhr = $.ajaxSettings.xhr();
@@ -268,6 +252,31 @@ class fileUpload {
           }
         }
 
+        //All of the multipart part uploads have succeeded or failed. Here we decide whether to finish, retry, or cancel/abort 
+        multipartComplete() {
+          console.log('reporting file ' + this.file.name);
+          var allGood=true;
+          //Safety check - verify that all eTags were set
+          for(val in this.etags.values()) {
+            if (val==-1) {
+              allGood=false;
+              break;
+            }
+          }
+          if(!allGood) {
+            if(this.alreadyRetried) {
+              console.log('Error after retrying ' + this.file.name);
+              uploadFailure(jqXHR, thisFile);
+              this.cancelMPUpload();
+            } else {
+              this.alreadyRetried=true;
+              this.doUpload();
+            }
+          } else {
+            this.finishMPUpload();
+          }
+        }
+        
         reportUpload() {
                 this.state = UploadState.UPLOADED;
                 console.log('S3 Upload complete for ' + this.file.name + ' : ' + this.storageId);
