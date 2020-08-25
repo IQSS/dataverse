@@ -504,7 +504,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.dataset_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataverse") + ")\n")
                 + " and date_trunc('month', responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier;");
+                + "group by gb.dataset_id, ob.protocol, ob.authority, ob.identifier order by count(distinct email) desc;");
         JsonArrayBuilder jab = Json.createArrayBuilder();
         try {
             List<Object[]> results = query.getResultList();
