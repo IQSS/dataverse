@@ -931,7 +931,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		long msec = expiration.getTime();
 		msec += 60 * 1000 * getUrlExpirationMinutes();
 		expiration.setTime(msec);
-		logger.info(fileSize + " ? " + minPartSize);
+		
 		if (fileSize <= minPartSize) {
 			response.add("url", generateTemporaryS3UploadUrl(key, expiration));
 		} else {
@@ -998,7 +998,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 	private static long getMinPartSize(String driverId) {
-		long min = 5 * 1024 * 1024l; // as a default, pick the 5 MB minimum part size for AWS S3 (confirmed that they use base 2 definitions)
+		long min = 1024 * 1024 * 1024l; // as a default, pick 1 GB minimum part size for AWS S3 (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
 
 		String partLength = System.getProperty("dataverse.files." + driverId + ".min-part-size");
 		try {
