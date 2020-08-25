@@ -1,3 +1,3 @@
 # Large Data Support (continued)
 
-Installations configured for direct S3 upload will be able to use the [Dataverse Uploader](https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader) to upload large (>5 GB) files to Dataverse.
+Direct S3 uploads now support multi-part uploading of large files (> 1GB by default) via the user interface and the API (which is used in the [Dataverse Uploader](https://github.com/GlobalDataverseCommunityConsortium/dataverse-uploader)). This allows uploads larger than 5 GB when using Amazon AWS S3 stores.
