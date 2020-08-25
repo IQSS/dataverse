@@ -18,6 +18,7 @@ This option can handle files >40GB and could be appropriate for files up to a TB
 To configure these options, an administrator must set two JVM options for the Dataverse server using the same process as for other configuration options:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
+
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
 
 
