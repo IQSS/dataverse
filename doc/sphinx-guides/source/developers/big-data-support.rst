@@ -21,7 +21,13 @@ To configure these options, an administrator must set two JVM options for the Da
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
 
 
-With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.  
+With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.
+
+The direct upload option now switches between uploading the file in one piece (up to 1 GB by default) and sending it as multiple parts. The default can be changed by setting:
+  
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.min-part-size=<size in bytes>"``
+
+For AWS, the minimum allowed part size is 5*1024*1024 bytes and the maximum is 5 GB (5*1024**3). Other providers may set different limits.
 
 It is also possible to set file upload size limits per store. See the :MaxFileUploadSizeInBytes setting described in the :doc:`/installation/config` guide.
 
@@ -30,8 +36,8 @@ At present, one potential drawback for direct-upload is that files are only part
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
 
-**IMPORTANT:** One additional step that is required to enable direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
-The example below shows how to enable the minimum needed CORS rules on a bucket using the AWS CLI command line tool. Note that you may need to add more methods and/or locations, if you also need to support certain previewers and external tools. 
+**IMPORTANT:** One additional step that is required to enable direct uploads via Dataverse and for direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
+The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
 
 ``aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json``
 
@@ -42,7 +48,7 @@ with the contents of the file cors.json as follows:
         {
           "CORSRules": [
              {
-                "AllowedOrigins": ["https://<DATAVERSE SERVER>"],
+                "AllowedOrigins": ["*"],
                 "AllowedHeaders": ["*"],
                 "AllowedMethods": ["PUT", "GET"],
                 "ExposeHeaders": ["ETag"]
