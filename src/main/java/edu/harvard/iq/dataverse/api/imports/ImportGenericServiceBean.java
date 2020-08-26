@@ -40,6 +40,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLInputFactory;
+import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleResolver;
 
 
 /**
@@ -393,8 +395,12 @@ public class ImportGenericServiceBean {
             }
             // But identifiers without hdl or doi like "10.6084/m9.figshare.12725075.v1" are also allowed
             for (String otherId : otherIds) {
-                if (otherId.startsWith("10.") && otherId.contains("/")) {
+                try {
+                    HandleResolver hr = new HandleResolver();
+                    hr.resolveHandle(otherId);
                     return GlobalId.HDL_PROTOCOL + ":" + otherId;
+                } catch (HandleException e) {
+                    logger.fine("Not a valid handle: " + e.toString());
                 }
             }
         }
