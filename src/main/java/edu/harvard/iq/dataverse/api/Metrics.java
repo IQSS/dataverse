@@ -48,7 +48,6 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("dataverses")
     public Response getDataversesAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         return getDataversesToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
@@ -71,8 +70,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.getDataversesTimeSeries(uriInfo, d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataverses.timeseries.csv");
@@ -152,8 +151,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = MetricsUtil.dataversesByCategoryToJson(metricsSvc.dataversesByCategory(d)).build();
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.CATEGORY, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataverses.byCategory.csv");
@@ -180,8 +179,8 @@ public class Metrics extends AbstractApiBean {
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
 
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.SUBJECT, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataverses.bySubject.csv");
@@ -214,8 +213,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.getDatasetsTimeSeries(uriInfo, dataLocation, d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.timeseries.csv");
@@ -306,8 +305,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = MetricsUtil.datasetsBySubjectToJson(metricsSvc.datasetsBySubjectToMonth(sanitizedyyyymm, validDataLocation, d)).build();
             metricsSvc.save(new Metric(metricName, sanitizedyyyymm, validDataLocation, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.SUBJECT, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.bySubject.csv");
@@ -339,8 +338,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.filesTimeSeries(d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datafiles.timeseries.csv");
@@ -422,8 +421,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.filesByTypeTimeSeries(d, true);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.CONTENTTYPE, MetricsUtil.COUNT, MetricsUtil.SIZE), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datafiles.byType.timeseries.csv");
@@ -449,8 +448,8 @@ public class Metrics extends AbstractApiBean {
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
 
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.CONTENTTYPE, MetricsUtil.COUNT, MetricsUtil.SIZE), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datafiles.byType.csv");
@@ -484,8 +483,8 @@ public class Metrics extends AbstractApiBean {
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
 
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "downloads.timeseries.csv");
@@ -579,8 +578,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.mdcMetricTimeSeries(metricType, country, d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "makeDataCount." + metricType.toString() + ".timeseries.csv");
@@ -650,8 +649,8 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.uniqueDownloadsTimeSeries(d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
-        Variant requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
-        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON))) {
+        MediaType requestedType = getVariant(req, MediaType.APPLICATION_JSON_TYPE, MediaType.valueOf(FileUtil.MIME_TYPE_CSV));
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
         return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquedownloads.timeseries.csv");
@@ -738,12 +737,12 @@ public class Metrics extends AbstractApiBean {
     }
 
     // Determine which content type matches the user's request
-    private Variant getVariant(Request req, MediaType... types) {
+    private MediaType getVariant(Request req, MediaType... types) {
         List<Variant> vars = Variant
                 .mediaTypes(types)
                 .add()
                 .build();
-        return req.selectVariant(vars);
+        return req.selectVariant(vars).getMediaType();
     }
 
 }
