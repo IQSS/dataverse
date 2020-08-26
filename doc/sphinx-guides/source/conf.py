@@ -225,7 +225,7 @@ html_title = 'Dataverse.org'
 html_static_path = ['_static']
 
 html_js_files = [
-    'js/jquery-3.4.1.min.js',
+    'js/jquery-3.5.1.min.js',
 ]
 
 # Add any extra paths that contain custom files (such as robots.txt or
