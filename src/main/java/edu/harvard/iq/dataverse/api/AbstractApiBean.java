@@ -76,6 +76,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import static org.apache.commons.lang.StringUtils.isNumeric;
 
@@ -706,10 +707,15 @@ public abstract class AbstractApiBean {
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
+     * @param downloadFilename - add Content-Disposition header to suggest filename if not null
      * @return Non-JSON response, such as a shell script.
      */
-    protected Response ok(String data, MediaType mediaType) {
-        return Response.ok().entity(data).type(mediaType).build();
+    protected Response ok(String data, MediaType mediaType, String downloadFilename) {
+        ResponseBuilder res =Response.ok().entity(data).type(mediaType);
+        if(downloadFilename != null) {
+            res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
+        }
+        return res.build();
     }
 
     protected Response created( String uri, JsonObjectBuilder bld ) {
