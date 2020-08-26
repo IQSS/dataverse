@@ -42,13 +42,16 @@
                             <div class="row">
                                 <div id="file-title-block" class="col-xs-12 margin-bottom-half">
                                     <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
-
-                                    <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
-                                        <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
-                                        <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="bottom" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{FilePage.fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
-                                            <span class="glyphicon glyphicon-warning-sign text-danger"/>
+                                    
+                                    <!-- FILE LEVEL MSGs -->
+                                    <div class="bg-warning text-warning text-center margin-bottom-half" jsf:rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
+                                        <!-- Ingest failed -->
+                                        <span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.ingestFailed.header']}&#160;
+                                        <span data-toggle="tooltip" data-trigger="hover" data-placement="top" data-title="#{bundle['file.ingestFailed.message']} #{FilePage.fileMetadata.dataFile.ingestReportMessage}">
+                                            <span class="glyphicon glyphicon-question-sign"/>
                                         </span>
-                                    </ui:fragment>
+                                    </div>
+                                    <!-- END: FILE LEVEL MSGs -->
 
                                     <p class="help-block">
                                         <h:outputFormat value="#{bundle['file.citation.notice']}" escape="false">

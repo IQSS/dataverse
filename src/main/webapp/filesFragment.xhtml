@@ -594,8 +594,7 @@
             </f:facet>
             
             <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
-                and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://') 
-                }">
+                                                                    and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
                 <!-- Data Access for Rsync Download -->
                 <ui:include src="file-data-access-fragment.xhtml">
                     <ui:param name="fileMetadata" value="#{fileMetadata}"/>
@@ -604,37 +603,23 @@
                 </ui:include>
             </div>
             
-            <!-- FILE LEVEL INLINE INDICATORS, MSG, ICON, ET AL -->
-            <div id="txtInprogess" class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
+            <!-- FILE LEVEL MSGs -->
+            <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 <!-- Ingest in progress... -->
-                #{bundle['file.ingestInProgress']}
+                <span class="glyphicon glyphicon-info-sign"/> #{bundle['file.ingestInProgress']}
             </div>
-            <ui:fragment rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
-                <!-- Ingest Problem - this is the infamous "red triangle" error. As of 4.2, we only want to show it to the owner of the dataset: -->
-                <span class="ingest-warning" data-toggle="popover" data-container="body" data-trigger="hover" data-placement="left" data-html="true" data-title="&lt;span class='text-danger h5'&gt;#{bundle['file.ingestFailed.header']}&lt;/span&gt;" data-content="&lt;span class='text-danger'&gt;#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}&lt;/span&gt;">
-                    <span class="glyphicon glyphicon-warning-sign text-danger"/>
-                </span>
-            </ui:fragment>
-            <!-- END: FILE LEVEL INLINE INDICATORS, MSG, ICON, ET AL -->
             
+            <div class="bg-warning text-warning text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestProblem and DatasetPage.canUpdateDataset()}">
+                <!-- Ingest failed -->
+                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.ingestFailed.header']}&#160;
+                <span data-toggle="tooltip" data-trigger="hover" data-placement="top" data-title="#{bundle['file.ingestFailed.message']} #{fileMetadata.dataFile.ingestReportMessage}">
+                    <span class="glyphicon glyphicon-question-sign"/>
+                </span>
+            </div>
+            <!-- END: FILE LEVEL MSGs -->
             
             <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
-            
-                <!---Modular configure-->
-                <ui:fragment rendered="#{!widgetWrapper.widgetView 
-                                         and DatasetPage.sessionUserAuthenticated 
-                                         and DatasetPage.canUpdateDataset() 
-                                         and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 
-                                                or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) 
-                                                or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
-                    <ui:include src="file-configure-dropdown-fragment.xhtml">
-                        <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                        <ui:param name="isFilePg" value="false"/>
-                        <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
-                        <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
-                    </ui:include>
-                </ui:fragment>
-
+                
                 <ui:fragment rendered="#{!fileMetadata.dataFile.filePackage or
                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}">
 
@@ -650,6 +635,56 @@
                         <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                     </ui:include>
                 </ui:fragment>
+                
+                <!-- TO-DO NEW FILE OPTIONS RENDER LOGIC -->
+                <!-- File Options -->
+                <ui:fragment rendered="#{!widgetWrapper.widgetView 
+                                         and DatasetPage.sessionUserAuthenticated 
+                                         and DatasetPage.canUpdateDataset()}">
+                    <div class="btn-group">
+                        <!-- Kebab / Edit / File Options Dropdown -->
+                        <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle" 
+                                      title="#{bundle['file.optionsBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu multi-level pull-right text-left">
+                            <!-- TO-DO NEW FILE-LEVEL EDIT OPTIONS... RENDER LOGIC, LINKS, DISABLED LOGIC -->
+                            <!-- Edit Options -->
+                            <li class="dropdown-header">#{bundle['file.optionsBtn.header.edit']} <span class="glyphicon glyphicon-pencil"/></li>
+                            <li>
+                                <a href="javascript:void(0);">#{bundle['file.delete']}</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">#{bundle['file.metadata']}</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">#{bundle['file.restrict']}</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">#{bundle['file.unrestrict']}</a>
+                            </li>
+                            <li>
+                                <a href="javascript:void(0);">#{bundle['file.tags']}</a>
+                            </li>
+                            <!-- End: Edit Options -->
+                            <!---Modular configure-->
+                            <ui:fragment rendered="#{!widgetWrapper.widgetView
+                                                     and DatasetPage.sessionUserAuthenticated 
+                                                     and DatasetPage.canUpdateDataset() 
+                                                     and (DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id).size() > 0 
+                                                            or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) 
+                                                            or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+                                <ui:include src="file-configure-dropdown-fragment.xhtml">
+                                    <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                                    <ui:param name="isFilePg" value="false"/>
+                                    <ui:param name="fileId" value="#{fileMetadata.dataFile.id}"/>
+                                    <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
+                                </ui:include>
+                            </ui:fragment>
+                        </ul>
+                    </div>
+                </ui:fragment>
+                <!-- END: File Options -->
             
             </div>
             
