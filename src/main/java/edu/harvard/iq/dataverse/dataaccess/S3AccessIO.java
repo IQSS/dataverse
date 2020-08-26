@@ -998,7 +998,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 	private static long getMinPartSize(String driverId) {
-		long min = 1024 * 1024 * 1024l; // as a default, pick 1 GB minimum part size for AWS S3 (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
+		// as a default, pick 1 GB minimum part size for AWS S3 
+		// (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
+		long min = 5 * 1024 * 1024l; 
 
 		String partLength = System.getProperty("dataverse.files." + driverId + ".min-part-size");
 		try {
@@ -1009,6 +1011,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 				} else {
 					logger.warning(min + " is the minimum part size allowed for jvm option dataverse.files." + driverId + ".min-part-size" );
 				}
+			} else {
+				min = 1024 * 1024 * 1024l;
 			}
 		} catch (NumberFormatException nfe) {
 			logger.warning("Unable to parse dataverse.files." + driverId + ".min-part-size as long: " + partLength);
