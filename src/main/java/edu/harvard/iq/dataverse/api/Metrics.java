@@ -53,7 +53,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("dataverses/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDataversesTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
@@ -133,7 +133,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("dataverses/byCategory")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDataversesByCategory(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
@@ -160,7 +160,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("dataverses/bySubject")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDataversesBySubject(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
@@ -196,7 +196,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("datasets/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDatasetsTimeSeriest(@Context Request req, @Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
 
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
@@ -278,14 +278,14 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("datasets/bySubject")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDatasetsBySubject(@Context Request req, @Context UriInfo uriInfo, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
         return getDatasetsBySubjectToMonth(req, uriInfo, MetricsUtil.getCurrentMonth(), dataLocation, parentAlias);
     }
 
     @GET
     @Path("datasets/bySubject/toMonth/{yyyymm}")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDatasetsBySubjectToMonth(@Context Request req, @Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("dataLocation") String dataLocation, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
@@ -321,7 +321,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("files/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getFilesTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -404,7 +404,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("/files/byType/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getFilesByTypeTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -430,7 +430,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("/files/byType")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getFilesByType(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -465,7 +465,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("downloads/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -555,7 +555,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("makeDataCount/{metric}/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getMakeDataCountMetricTimeSeries(@Context Request req, @Context UriInfo uriInfo, @PathParam("metric") String metricSupplied, @QueryParam("country") String country, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         MakeDataCountUtil.MetricType metricType = null;
@@ -632,7 +632,7 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("uniquedownloads/monthly")
-    @Produces("application/json, text/csv")
+    @Produces("text/csv, application/json")
     public Response getUniqueDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
