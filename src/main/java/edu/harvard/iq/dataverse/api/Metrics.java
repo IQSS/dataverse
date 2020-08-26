@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.json.JsonArray;
@@ -21,10 +22,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Variant;
 
 /**
  * API endpoints for various metrics.
@@ -466,7 +469,7 @@ public class Metrics extends AbstractApiBean {
     @GET
     @Path("downloads/monthly")
     @Produces("application/json, text/csv")
-    public Response getDownloadsTimeSeries(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+    public Response getDownloadsTimeSeries(@Context UriInfo uriInfo, @Context Request req, @QueryParam("parentAlias") String parentAlias) {
         String requestedType = httpRequest.getHeader("Accept");
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
         try {
@@ -483,6 +486,13 @@ public class Metrics extends AbstractApiBean {
             jsonArray = metricsSvc.downloadsTimeSeries(d);
             metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
         }
+        MediaType types[] = {MediaType.APPLICATION_JSON_TYPE,MediaType.valueOf(FileUtil.MIME_TYPE_CSV)};
+        List<Variant> vars = Variant
+          .mediaTypes(types)
+          .add()
+          .build();
+        Variant var = req.selectVariant(vars);
+        logger.info(var.getMediaType().toString());
         if ((requestedType != null) && (requestedType.equalsIgnoreCase(MediaType.APPLICATION_JSON))) {
             return ok(jsonArray);
         }
