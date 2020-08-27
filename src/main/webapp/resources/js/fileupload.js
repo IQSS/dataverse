@@ -131,7 +131,7 @@ class fileUpload {
                 requestDirectUploadUrls([{ name: 'fileSize', value: this.file.size }]);
         }
 
-        doUpload() {
+        async doUpload() {
                 this.state = UploadState.UPLOADING;
                 var thisFile = curFile-1;
                 //This appears to be the earliest point when the file table has been populated, and, since we don't know how many table entries have had ids added already, we check
@@ -192,9 +192,15 @@ class fileUpload {
                   this.numEtags=0;
                   var doublelength = 2* this.file.size;
                   var partSize= this.urls.partSize;
+                  var started=0;
                   console.log('Num parts: ' + Object.keys(this.urls.urls).length);
                   loaded[thisFile]=[];
                   for (const [key, value] of Object.entries(this.urls.urls)) {
+                    started=started+1;
+                    //Don't queue more than 100 parts at a time
+                    while((started-this.numEtags)>100) {
+                      await sleep(delay);
+                    }
                     if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
                        this.etags[key]=-1;
                        var size = Math.min(partSize, this.file.size-(key-1)*partSize);
