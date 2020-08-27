@@ -761,6 +761,7 @@ a.popoverHTML {display:inline-block;}
 
 
 div[id$="versionsTable"] th.col-select-width * {display:none;}
+div[id$="versionsTable"] th span {color:white;text-shadow:none;}
 
 div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
 div[id$="filesTable"].ui-datatable.ui-widget {margin-bottom:20px;}
