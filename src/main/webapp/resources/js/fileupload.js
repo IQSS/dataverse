@@ -151,6 +151,9 @@ class fileUpload {
                 //Decrement number queued for processing
                 filesInProgress = filesInProgress - 1;
                 var progBar = fileNode.find('.ui-fileupload-progress');
+                var cancelButton = fileNode.find('.ui-fileupload-cancel');
+                 var cancelled=false;
+                  $(cancelButton).click(function() {cancelled=true});
                 progBar.html('');
                 progBar.append($('<progress/>').attr('class', 'ui-progressbar ui-widget ui-widget-content ui-corner-all'));
                 if(this.urls.hasOwnProperty("url")) {
@@ -163,7 +166,10 @@ class fileUpload {
                         cache: false,
                         processData: false,
                         success: function() {
-                                this.reportUpload();
+                                //ToDo - cancelling abandons the file. It is marked as temp so can be cleaned up later, but would be good to remove now (requires either sending a presigned delete URL or adding a callback to delete only a temp file
+                                if(!cancelled) {
+                                    this.reportUpload();
+                                }
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                                 console.log('Failure: ' + jqXHR.status);
@@ -196,9 +202,19 @@ class fileUpload {
                   console.log('Num parts: ' + Object.keys(this.urls.urls).length);
                   loaded[thisFile]=[];
                   for (const [key, value] of Object.entries(this.urls.urls)) {
+                    if(!directUploadEnabled || cancelled) {
+                      //Direct upload has been cancelled - quit uploading new parts and abort this mp upload
+                      //once the parts in progress are done
+                      while((started-this.numEtags)>0) {
+                        await sleep(delay);
+                      }
+                      this.cancelMPUpload();
+                      directUploadFinished();
+                      break;
+                    }
                     started=started+1;
-                    //Don't queue more than 100 parts at a time
-                    while((started-this.numEtags)>100) {
+                    //Don't queue more than 10 parts at a time
+                    while((started-this.numEtags)>10) {
                       await sleep(delay);
                     }
                     if(typeof this.etags[key] == 'undefined' || this.etags[key]==-1) {
@@ -241,7 +257,10 @@ class fileUpload {
                                                         loaded[thisFile][key-1]=e.loaded;
                                                         var total=0;
                                                         for(let val of loaded[thisFile].values()) {
-                                                          total = total+val;
+                                                          //if parts with lower keys haven't reported yet, there could be undefined values in the array = skip those
+                                                          if(typeof val !== 'undefined') {
+                                                            total = total+val;
+                                                          }
                                                         }
                                                         progBar.children('progress').attr({
                                                                 value: total ,
@@ -304,7 +323,7 @@ class fileUpload {
         async cancelMPUpload() {
                $.ajax({
                         url: this.urls.abort,
-                        type: 'PUT',
+                        type: 'DELETE',
                         context:this,
                         cache: false,
                         processData: false,
@@ -506,8 +525,10 @@ async function uploadFailure(jqXHR, upid, filename) {
 
         var name = null;
         var id = null;
-
-        if ((typeof jqXHR !== 'undefined')) {
+        if(jqXHR=== null) {
+          status=1;  //made up
+          statusText='Aborting';
+        } else if ((typeof jqXHR !== 'undefined')) {
                 status = jqXHR.status;
                 statusText = jqXHR.statusText;
                 id = upid;
