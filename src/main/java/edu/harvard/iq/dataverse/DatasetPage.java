@@ -345,6 +345,10 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "previewToolsByFileId" to "file:PreviewToolsByFileId".
+    Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "previewTools" to "filePreviewTools".
+    List<ExternalTool> previewTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
     
     public Boolean isHasRsyncScript() {
@@ -5416,6 +5420,11 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
+    
+    public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
+    }
+    
 
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
@@ -5436,6 +5445,10 @@ public class DatasetPage implements java.io.Serializable {
             case CONFIGURE:
                 cachedToolsByFileId = configureToolsByFileId;
                 externalTools = configureTools;
+                break;
+            case PREVIEW:
+                cachedToolsByFileId = previewToolsByFileId;
+                externalTools = previewTools;
                 break;
             default:
                 break;
