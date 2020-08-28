@@ -27,7 +27,7 @@ Install Java
 
 Dataverse requires Java 8.
 
-On Mac, we recommend Oracle's version of the JDK, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+We suggest downloading OpenJDK from https://adoptopenjdk.net
 
 On Linux, you are welcome to use the OpenJDK available from package managers.
 
