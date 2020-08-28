@@ -263,7 +263,7 @@ public class ExternalTool implements Serializable {
     }
     
     public boolean getHasPreviewMode() {
-        return hasPreviewMode;
+        return type.equals(ExternalTool.Type.PREVIEW) || hasPreviewMode;
     }
 
     public void setHasPreviewMode(boolean hasPreviewMode) {
