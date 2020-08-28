@@ -91,19 +91,6 @@ To install Payara, run the following commands:
 
 ``sudo chown -R $USER /usr/local/payara5``
 
-Test Payara Startup Time on Mac
-+++++++++++++++++++++++++++++++
-
-``cd /usr/local/payara5/glassfish/bin``
-
-``./asadmin start-domain``
-
-``grep "startup time" /usr/local/payara5/glassfish/domains/domain1/logs/server.log``
-
-If you are seeing startup times in the 30 second range (31,584ms for "Felix" for example) please be aware that startup time can be greatly reduced (to less than 1.5 seconds in our testing) if you make a small edit to your ``/etc/hosts`` file as described at https://stackoverflow.com/questions/39636792/jvm-takes-a-long-time-to-resolve-ip-address-for-localhost/39698914#39698914 and https://thoeni.io/post/macos-sierra-java/
-
-Look for a line that says ``127.0.0.1 localhost`` and add a space followed by the output of ``hostname`` which should be something like ``foobar.local`` depending on the name of your Mac. For example, the line would say ``127.0.0.1 localhost foobar.local`` if your Mac's name is "foobar".
-
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
