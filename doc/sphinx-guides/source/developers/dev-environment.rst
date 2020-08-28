@@ -162,7 +162,19 @@ Navigate to the directory where you cloned the Dataverse git repo change directo
 
 ``cd scripts/installer``
 
-Follow the instructions in :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` which can be found in the directory above.
+Create a Python virtual environment, activate it, then install dependencies:
+
+``python3 -m venv venv``
+
+``source venv/bin/activate``
+
+``pip install psycopg2-binary``
+
+The installer will try to connect to the SMTP server you tell it to use. If you don't have a mail server handy you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
+
+Finally, run the installer (see also :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` if necessary):
+
+``python3 install.py``
 
 Verify Dataverse is Running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
