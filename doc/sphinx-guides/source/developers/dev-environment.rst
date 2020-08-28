@@ -53,15 +53,14 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 Build the Dataverse War File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To build the Dataverse war file using versions of Netbeans newer than 8.2 requires some setup because Jakarta EE support is not enabled by default. An alternative is to build the war file with Maven, which is explained below.
+If you installed Netbeans, follow these steps:
 
-Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+- If you see "resolve project problems," go ahead and let Netbeans try to resolve them. This will probably including downloading dependencies, which can take a while.
+- Allow Netbeans to install nb-javac (required for Java 8 and below).
+- Select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". Check back for "BUILD SUCCESS" at the end.
 
-If you are using Netbeans 8.2, Jakarta EE support should "just work" but if you are using a newer version of Netbeans, you will see "dataverse (broken)". If you see "broken", click "Tools", "Plugins", and "Installed". Check the box next to "Java Web and EE" and click "Activate". Let Netbeans install all the dependencies. You will observe that the green "Active" checkmark does not appear next to "Java Web and EE". Restart Netbeans.
-
-In Netbeans, select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
-
-If you installed Maven instead of Netbeans, run ``mvn package``.
+If you installed Maven instead of Netbeans, run ``mvn package``. Check for "BUILD SUCCESS" at the end.
 
 NOTE: Do you use a locale different than ``en_US.UTF-8`` on your development machine? Are you in a different timezone
 than Harvard (Eastern Time)? You might experience issues while running tests that were written with these settings
