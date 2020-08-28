@@ -96,7 +96,7 @@ Install PostgreSQL
 
 PostgreSQL 9.6 is recommended to match the version in the Installation Guide.
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EnterpriseDB" option. We've tested version 9.6.9. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. We've tested version 9.6.19. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
@@ -106,11 +106,11 @@ Then edit ``pg_hba.conf`` with an editor such as vi:
 
 ``sudo vi /Library/PostgreSQL/9.6/data/pg_hba.conf``
 
-In the "METHOD" column, change all instances of "md5" to "trust".
+In the "METHOD" column, change all instances of "md5" to "trust". This will make it so PostgreSQL doesn't require a password.
 
 In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
