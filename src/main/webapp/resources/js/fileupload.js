@@ -15,6 +15,8 @@ var UploadState = {
 //true indicates direct upload is being used, but cancel may set it back to false at which point direct upload functions should not do further work
 var directUploadEnabled = false;
 
+var directUploadReport = true;
+
 //How many files have started being processed but aren't yet being uploaded
 var filesInProgress = 0;
 //The # of the current file being processed (total number of files for which upload has at least started)
@@ -86,10 +88,11 @@ function sleep(ms) {
 }
 
 async function cancelDatasetCreate() {
-        //Page is going away - don't upload any more files, finish reporting current uploads, and then call calncelCreateCommand to clean up temp files
+        //Page is going away - don't upload any more files, finish reporting current uploads, and then call cancelCreateCommand to clean up temp files
         if (directUploadEnabled) {
                 fileList = [];
                 directUploadEnabled = false;
+                directUploadReport = false;
                 while (curFile != numDone) {
                         $("#cancelCreate").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
                         $("#datasetForm\\:save").prop('disabled', true);
@@ -101,13 +104,20 @@ async function cancelDatasetCreate() {
         }
 }
 
-var directUploadReport = true;
+
 async function cancelDatasetEdit() {
         //Don't upload any more files and don't send any more file entries to Dataverse, report any direct upload files that didn't get handled
         if (directUploadEnabled) {
                 fileList = [];
                 directUploadEnabled = false;
                 directUploadReport = false;
+                        while (curFile != numDone) {
+                        $("#doneFilesButtonnop").prop('onclick', null).text("Cancel In Progress...").prop('disabled', true);
+                        await sleep(1000);
+                }
+                cancelEditCommand();
+        } else {
+                cancelEditCommand();
         }
 }
 
