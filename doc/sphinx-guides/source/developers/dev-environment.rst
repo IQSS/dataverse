@@ -85,9 +85,9 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip``
+``sudo curl -O -L https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip``
 
-``sudo unzip payara-5.201.zip``
+``sudo unzip payara-5.2020.2.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 
