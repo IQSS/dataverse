@@ -1678,8 +1678,8 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param event
      */
     public void handleHypothesisUpload(ActionEvent event) {
-        if (!uploadInProgress) {
-            uploadInProgress = true;
+        if (uploadInProgress.isFalse()) {
+            uploadInProgress.setValue(true);
         }
         logger.fine("handleHypothesisUpload");
         uploadComponentId = event.getComponent().getClientId();
@@ -1740,7 +1740,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                             // For annotations, the warning means we should not upload anything so skip the
                             // normal processing
                             uploadWarningMessage = datafiles.get(0).getIngestReportMessage();
-                            uploadInProgress = false;
+                            uploadInProgress.setValue(false);
                         } else {
 
                             //Set the category for this file
@@ -1749,10 +1749,10 @@ public class EditDatafilesPage implements java.io.Serializable {
                             logger.fine("Warning message during upload: " + uploadWarningMessage);
                         }
                     }
-                    if(!uploadInProgress) {
+                    if(uploadInProgress.isFalse()) {
                         logger.warning("Upload in progress cancelled");
                         for (DataFile newFile : datafiles) {
-                            deleteTempFile(newFile);
+                            FileUtil.deleteTempFile(newFile, dataset, ingestService);
                         }
                         datafiles = new ArrayList<>(); 
                     }
