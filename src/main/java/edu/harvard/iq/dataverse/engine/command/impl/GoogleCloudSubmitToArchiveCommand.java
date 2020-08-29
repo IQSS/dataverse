@@ -64,7 +64,7 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                 Bucket bucket = storage.get(bucketName);
 
                 Dataset dataset = dv.getDataset();
-                if (dataset.getLockFor(Reason.pidRegister) == null) {
+                if (dataset.getLockFor(Reason.finalizePublication) == null) {
 
                     String spaceName = dataset.getGlobalId().asString().replace(':', '-').replace('/', '-')
                             .replace('.', '-').toLowerCase();
