@@ -24,7 +24,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
-                    <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
+                    <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -60,6 +60,7 @@
                                 <ui:param name="editDatafilesPage" value="true"/>
                                 <ui:param name="createDataset" value="false"/>
                                 <ui:param name="showFileButtonUpdate" value="true"/>
+                                <ui:param name="rsyncSupported" value="#{EditDatafilesPage.rsyncUploadSupported()}"/>
                                 <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
                             </ui:include>
                         </div>

@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+
 
 /**
  *
@@ -31,7 +39,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true;
+        return false;
     }
 
     @Override
@@ -72,7 +80,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
-            String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
+            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
@@ -169,30 +177,29 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
     }
 
+    /*
+     * Deletes a DOI if it is in DRAFT/RESERVED state or removes metadata and changes it from PUBLIC/FINDABLE to REGISTERED.
+     */
     @Override
-    public void deleteIdentifier(DvObject dvObject) throws Exception {
+    public void deleteIdentifier(DvObject dvObject) throws IOException, HttpException {
         logger.log(Level.FINE,"deleteIdentifier");
         String identifier = getIdentifier(dvObject);
-        Map<String, String> doiMetadata = new HashMap<>();
-        try {
-            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "deleteIdentifier: get matadata failed. " + e.getMessage(), e);
-        }
-
-        String idStatus = doiMetadata.get("_status");
+        //ToDo - PidUtils currently has a DataCite API call that would get the status at DataCite for this identifier - that could be more accurate than assuming based on whether the dvObject has been published
+        String idStatus = DRAFT;
+        if(dvObject.isReleased()) {
+        	idStatus = PUBLIC;
+        } 
         if ( idStatus != null ) {
             switch ( idStatus ) {
                 case RESERVED:
                 case DRAFT:    
                     logger.log(Level.INFO, "Delete status is reserved..");
-                    try {
-                        doiDataCiteRegisterService.deleteIdentifier(identifier);
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "delete failed: " + e.getMessage(), e);
-                    }
+                  	//service only removes the identifier from the cache (since it was written before DOIs could be registered in draft state)
+                    doiDataCiteRegisterService.deleteIdentifier(identifier);
+                    //So we call the deleteDraftIdentifier method below until things are refactored
+                    deleteDraftIdentifier(dvObject);
                     break;
-                       
+
                 case PUBLIC:
                 case FINDABLE:
                     //if public then it has been released set to unavailable and reset target to n2t url
@@ -204,20 +211,39 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
             }
         }
     }
+        
+    /**
+     * Deletes DOI from the DataCite side, if possible. Only "draft" DOIs can be
+     * deleted.
+     */
+    private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
+    	
+    	//ToDo - incorporate into DataCiteRESTfulClient
+        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
+        String username = System.getProperty("doi.username");
+        String password = System.getProperty("doi.password");
+        GlobalId doi = dvObject.getGlobalId();
+        /**
+         * Deletes the DOI from DataCite if it can. Returns 204 if PID was deleted
+         * (only possible for "draft" DOIs), 405 (method not allowed) if the DOI
+         * wasn't deleted (because it's in "findable" state, for example, 404 if the
+         * DOI wasn't found, and possibly other status codes such as 500 if DataCite
+         * is down.
+         */
 
-    private boolean updateIdentifierStatus(DvObject dvObject, String statusIn) {
-        logger.log(Level.FINE,"updateIdentifierStatus");
-        String identifier = getIdentifier(dvObject);
-        Map<String, String> metadata = getUpdateMetadata(dvObject);
-        metadata.put("_status", statusIn);
-        metadata.put("_target", getTargetUrl(dvObject));
-        try {
-            doiDataCiteRegisterService.registerIdentifier(identifier, metadata, dvObject);
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "modifyMetadata failed: " + e.getMessage(), e);
-            return false;
-        }
+            URL url = new URL(baseUrl + "/dois/" + doi.getAuthority() + "/" + doi.getIdentifier());
+            HttpURLConnection connection = null;
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            String userpass = username + ":" + password;
+            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+            connection.setRequestProperty("Authorization", basicAuth);
+            int status = connection.getResponseCode();
+            if(status!=HttpStatus.SC_NO_CONTENT) {
+            	logger.warning("Incorrect Response Status from DataCite: " + status + " : " + connection.getResponseMessage());
+            	throw new HttpException("Status: " + status);
+            }
+            logger.fine("deleteDoi status for " + doi.asString() + ": " + status);
     }
 
     @Override

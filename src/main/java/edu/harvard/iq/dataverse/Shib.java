@@ -66,6 +66,8 @@ public class Shib implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
+	@EJB
+	SystemConfig systemConfig;
 
     HttpServletRequest request;
     HttpServletResponse response;
@@ -514,6 +516,9 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
+		if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+			attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
+		}
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
         return trimmedValue;

@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
@@ -16,6 +18,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,6 +35,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -68,6 +73,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     AuthenticationServiceBean authService;
     @EJB
     PrivateUrlServiceBean privateUrlService;
+    @EJB
+    SettingsServiceBean settingsService;
 
     @Inject
     DataverseSession session;
@@ -90,9 +97,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
+         
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
+        
+        boolean original = "original".equals(guestbookResponse.getFileFormat());
 
         // Let's intercept the case where a multiple download method was called, 
         // with only 1 file on the list. We'll treat it like a single file download 
@@ -119,21 +129,46 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         
         // OK, this is a real batch (multi-file) download. 
+        
+        String customZipDownloadUrl = settingsService.getValueForKey(SettingsServiceBean.Key.CustomZipDownloadServiceUrl);
+        boolean useCustomZipService = customZipDownloadUrl != null; 
+        String zipServiceKey = null; 
+
         // Do we need to write GuestbookRecord entries for the files? 
-        if (!doNotSaveGuestbookRecord) {
+        if (!doNotSaveGuestbookRecord || useCustomZipService) {
 
             List<String> list = new ArrayList<>(Arrays.asList(guestbookResponse.getSelectedFileIds().split(",")));
-
+            Timestamp timestamp = null; 
+            
             for (String idAsString : list) {
-                DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
+                //DataFile df = datafileService.findCheapAndEasy(new Long(idAsString));
+                DataFile df = datafileService.find(new Long(idAsString));
                 if (df != null) {
-                    guestbookResponse.setDataFile(df);
-                    writeGuestbookResponseRecord(guestbookResponse);
+                    if (!doNotSaveGuestbookRecord) {
+                        guestbookResponse.setDataFile(df);
+                        writeGuestbookResponseRecord(guestbookResponse);
+                    }
+                    
+                    if (useCustomZipService) {
+                        if (zipServiceKey == null) {
+                            zipServiceKey = generateServiceKey();
+                        }
+                        if (timestamp == null) {
+                            timestamp = new Timestamp(new Date().getTime());
+                        }
+                        
+                        addFileToCustomZipJob(zipServiceKey, df, timestamp, original);
+                    }
                 }
             }
         }
-
-        redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(), "original".equals(guestbookResponse.getFileFormat()));
+        
+        if (useCustomZipService) {
+            redirectToCustomZipDownloadService(customZipDownloadUrl, zipServiceKey);
+        } else {
+            // Use the "normal" /api/access/datafiles/ API:
+            redirectToBatchDownloadAPI(guestbookResponse.getSelectedFileIds(),original);
+        }
     }
     
     public void writeGuestbookAndStartFileDownload(GuestbookResponse guestbookResponse, FileMetadata fileMetadata, String format) {
@@ -215,6 +250,17 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         
         PrimeFaces.current().executeScript("downloadFiles('"+fileDownloadUrl + "','"+ multiFileString+"');");
 
+    }
+    
+    private void redirectToCustomZipDownloadService(String customZipServiceUrl, String jobKey) {
+        
+        customZipServiceUrl += "?" + jobKey; 
+        
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(customZipServiceUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to the custom Zip download service.");
+        }
     }
 
     private void redirectToDownloadAPI(String downloadType, Long fileId, boolean guestBookRecordAlreadyWritten, Long fileMetadataId) {
@@ -488,6 +534,66 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             userNotificationService.sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.REQUESTFILEACCESS, fileId, null, requestor, false);
         });
 
-    }    
+    } 
+    
+    public String generateServiceKey() {
+        UUID uid = UUID.randomUUID();
+        // last 8 bytes, of the random UUID, 16 hex digits: 
+        return uid.toString().substring(20);
+    }
+    
+    public void addFileToCustomZipJob(String key, DataFile dataFile, Timestamp timestamp, boolean orig) {
+        String location = null; 
+        String fileName = null; 
+        
+        try {
+            StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile);
+            location = getDirectStorageLocatrion(storageIO.getStorageLocation());
+
+            if (orig && dataFile.isTabularData()) {
+                location = location.concat(".orig");
+            }
+        } catch (IOException ioex) {
+            logger.info("Failed to open StorageIO for datafile " + dataFile.getId());
+        }
+        
+        if (dataFile.getFileMetadata() != null) {
+            if (orig && dataFile.isTabularData()) {
+                fileName = dataFile.getOriginalFileName();
+            } else {
+                fileName = dataFile.getFileMetadata().getLabel();
+            }
+        }
+                
+        if (location != null && fileName != null) {
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
+                    + "'" + key + "',"
+                    + "'" + location + "',"
+                    + "'" + fileName + "',"
+                    + "'" + timestamp + "');").executeUpdate();
+        }
+        
+        // TODO:
+        // While we are here, issue another query, to delete all the entries that are 
+        // more than N seconds old?
+        Timestamp deleteTime = new Timestamp(new Date().getTime() - 300000L);
+        em.createNativeQuery("DELETE FROM CUSTOMZIPSERVICEREQUEST WHERE ISSUETIME < " 
+                + "'" + deleteTime + "';").executeUpdate();
+    }
+    
+    public String getDirectStorageLocatrion(String storageLocation) {
+        String storageDriverId;
+        int separatorIndex = storageLocation.indexOf("://");
+        if ( separatorIndex > 0 ) {
+            storageDriverId = storageLocation.substring(0,separatorIndex);
+        
+            String storageType = DataAccess.getDriverType(storageDriverId);
+            if ("file".equals(storageType) || "s3".equals(storageType)) {
+                return storageType.concat(storageLocation.substring(separatorIndex));
+            }
+        }
+            
+        return null; 
+    }
     
 }

@@ -58,7 +58,9 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         if (!uningest.isTabularData()) {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id="+uningest.getId()+")", this);
         }
-        
+
+        String originalFileName = uningest.getOriginalFileName();
+
         StorageIO<DataFile> dataAccess = null;
         // size of the stored original:
         Long storedOriginalFileSize;
@@ -138,9 +140,14 @@ public class UningestFileCommand extends AbstractVoidCommand  {
         // Modify the file name - which is stored in FileMetadata, and there
         // could be more than one: 
         
-        String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
-        
+       // String originalExtension = FileUtil.generateOriginalExtension(originalFileFormat);
         for (FileMetadata fm : uningest.getFileMetadatas()) {
+            
+            fm.setLabel(originalFileName);
+            ctxt.em().merge(fm);
+            
+            /* 
+            getOriginalFileName method replaces this code
             String filename = fm.getLabel();
             String extensionToRemove = StringUtil.substringIncludingLast(filename, ".");
             if (StringUtil.nonEmpty(extensionToRemove)) {
@@ -148,6 +155,7 @@ public class UningestFileCommand extends AbstractVoidCommand  {
                 fm.setLabel(newFileName);
                 ctxt.em().merge(fm);
             }
+             */
             
             DatasetVersion dv = fm.getDatasetVersion();
             

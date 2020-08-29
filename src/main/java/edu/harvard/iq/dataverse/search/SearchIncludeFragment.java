@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -21,23 +20,11 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.SettingsWrapper;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -268,18 +254,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 selectedTypesString = "dataverses:datasets:files";
             }
         }
-
+        
         filterQueries = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
-                filterQueries.add(fq);
+                if (!isfilterQueryAlreadyInMap(fq)) {
+                    filterQueries.add(fq);
+                }
             }
         }
 
         SolrQueryResponse solrQueryResponse = null;
 
         List<String> filterQueriesFinal = new ArrayList<>();
-
+        
         if (dataverseAlias != null) {
             this.dataverse = dataverseService.findByAlias(dataverseAlias);
         }
@@ -291,7 +279,9 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 /**
                  * @todo centralize this into SearchServiceBean
                  */
-                filterQueriesFinal.add(filterDownToSubtree);
+                if (!isfilterQueryAlreadyInMap(filterDownToSubtree)){
+                    filterQueriesFinal.add(filterDownToSubtree);
+                }
 //                this.dataverseSubtreeContext = dataversePath;
             } else {
 //                this.dataverseSubtreeContext = "all";
@@ -315,8 +305,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
         }
         filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);
-        filterQueriesFinal.add(typeFilterQuery);
+        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);       
+        if (!isfilterQueryAlreadyInMap(typeFilterQuery)) {
+            filterQueriesFinal.add(typeFilterQuery);
+        }
+
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
 
@@ -476,8 +469,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 }
             }
             
-
-            
             dataversePage.setQuery(query);
             dataversePage.setFacetCategoryList(facetCategoryList);
             dataversePage.setFilterQueries(filterQueriesFinal);
@@ -508,6 +499,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
 //        friendlyName.put(SearchFields.FILE_TYPE, "File Type");
 //        friendlyName.put(SearchFields.PRODUCTION_DATE_YEAR_ONLY, "Production Date");
 //        friendlyName.put(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, "Distribution Date");
+    }
+    
+    private Map<String, Integer> fqMap = null;
+
+    private boolean isfilterQueryAlreadyInMap(String fq) {
+        
+        if (fqMap == null) {
+            fqMap = new HashMap<>();
+            fqMap.put(fq, 1);
+            return false;
+        }
+
+        if (fqMap.get(fq) != null) {
+            return true;
+        } else {
+            fqMap.put(fq, 1);
+            return false;
+        }
+        
     }
 
   
@@ -1083,6 +1093,22 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return true;
     }
     
+    public String getTypeFromFilterQuery(String filterQuery) {
+
+        if (filterQuery == null) {
+            return null;
+        }
+
+        String[] parts = filterQuery.split(":");
+
+        if (parts.length != 2) {
+            //Filter query must has 2 parts delimited by a :
+            return null;
+        } else {
+            return parts[0];
+        }
+    }
+    
     public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
         
         
@@ -1129,6 +1155,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         friendlyNames.add(valueWithoutQuotes);
         return friendlyNames;
     }
+    
 
     public String getNewSelectedTypes(String typeClicked) {
         List<String> newTypesSelected = new ArrayList<>();

@@ -54,6 +54,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.submit.dataset.subject", rootDvNameAsList);
             case PUBLISHEDDS:
                 return BundleUtil.getStringFromBundle("notification.email.publish.dataset.subject", rootDvNameAsList);
+            case PUBLISHFAILED_PIDREG:
+                return BundleUtil.getStringFromBundle("notification.email.publishFailure.dataset.subject", rootDvNameAsList);
             case RETURNEDDS:
                 return BundleUtil.getStringFromBundle("notification.email.returned.dataset.subject", rootDvNameAsList);
             case CREATEACC:

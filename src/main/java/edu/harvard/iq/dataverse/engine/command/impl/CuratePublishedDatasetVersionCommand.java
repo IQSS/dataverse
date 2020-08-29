@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -88,11 +89,14 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
         int pubFileCount = pubFmds.size();
         int newFileCount = tempDataset.getEditVersion().getFileMetadatas().size();
-        if(pubFileCount!=newFileCount) {
+        /* The policy for this command is that it should only be used when the change is a 'minor update' with no file changes.
+         * Nominally we could call .isMinorUpdate() for that but we're making the same checks as we go through the update here. 
+         */
+        if (pubFileCount != newFileCount) {
             logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
-            throw new IllegalCommandException("Different number of files in draft version", this); 
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
         }
-        for(FileMetadata publishedFmd: pubFmds) {
+        for (FileMetadata publishedFmd : pubFmds) {
             DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
             boolean metadataUpdated = false;
@@ -102,9 +106,9 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 } else {
                     logger.severe("No filemetadata for file id: " + dataFile.getId() + " in draft version");
                 }
-                throw new IllegalCommandException("Cannot change files in the dataset", this);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
             } else {
-                
+
                 if (!draftFmd.getLabel().equals(publishedFmd.getLabel())) {
                     publishedFmd.setLabel(draftFmd.getLabel());
                     metadataUpdated = true;
@@ -139,7 +143,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
-            } 
+            }
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
             }

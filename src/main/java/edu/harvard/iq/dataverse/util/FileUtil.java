@@ -35,6 +35,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
+import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
 import java.awt.image.BufferedImage;
@@ -61,7 +62,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -87,6 +87,12 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import com.amazonaws.AmazonServiceException;
+
+import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import java.util.Arrays;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -153,6 +159,7 @@ public class FileUtil implements java.io.Serializable  {
 
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
 
+    //Todo - this is the same as MIME_TYPE_TSV_ALT
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
     public static final String MIME_TYPE_HYPOTHESIS_ANNOTATIONS = "application/x-json-hypothesis";
@@ -764,38 +771,7 @@ public class FileUtil implements java.io.Serializable  {
                 recognizedType = determineFileType(tempFile.toFile(), fileName);
                 logger.fine("File utility recognized the file as " + recognizedType);
                 if (recognizedType != null && !recognizedType.equals("")) {
-                    // is it any better than the type that was supplied to us,
-                    // if any?
-                    // This is not as trivial a task as one might expect... 
-                    // We may need a list of "good" mime types, that should always
-                    // be chosen over other choices available. Maybe it should 
-                    // even be a weighed list... as in, "application/foo" should 
-                    // be chosen over "application/foo-with-bells-and-whistles".
-
-                    // For now the logic will be as follows: 
-                    //
-                    // 1. If the contentType supplied (by the browser, most likely) 
-                    // is some form of "unknown", we always discard it in favor of 
-                    // whatever our own utilities have determined; 
-                    // 2. We should NEVER trust the browser when it comes to the 
-                    // following "ingestable" types: Stata, SPSS, R;
-                    // 2a. We are willing to TRUST the browser when it comes to
-                    //  the CSV and XSLX ingestable types.
-                    // 3. We should ALWAYS trust our utilities when it comes to 
-                    // ingestable types. 
-
-                    if (suppliedContentType == null
-                            || suppliedContentType.equals("")
-                            || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-                            || suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-                            || (canIngestAsTabular(suppliedContentType)
-                                    && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-                                    && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-                                    && !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                            || canIngestAsTabular(recognizedType)
-                            || recognizedType.equals("application/fits-gzipped")
-                            || recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-                            || recognizedType.equals(MIME_TYPE_ZIP)) {
+					if(useRecognizedType(suppliedContentType, recognizedType)) {
                         finalType = recognizedType;
                     }
                 }
@@ -1108,8 +1084,16 @@ public class FileUtil implements java.io.Serializable  {
                 }
             }
         } else {
-            //Remote file, trust supplier
-            finalType = suppliedContentType;
+			// Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
+			finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+			String type = determineFileTypeByExtension(fileName);
+			if (!StringUtils.isBlank(type)) {
+				//Use rules for deciding when to trust browser supplied type
+				if (useRecognizedType(finalType, type)) {
+					finalType = type;
+				}
+				logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+			}
         }
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
@@ -1142,6 +1126,41 @@ public class FileUtil implements java.io.Serializable  {
         return null;
     }   // end createDataFiles
 
+
+	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+		// is it any better than the type that was supplied to us,
+		// if any?
+		// This is not as trivial a task as one might expect...
+		// We may need a list of "good" mime types, that should always
+		// be chosen over other choices available. Maybe it should
+		// even be a weighed list... as in, "application/foo" should
+		// be chosen over "application/foo-with-bells-and-whistles".
+
+		// For now the logic will be as follows:
+		//
+		// 1. If the contentType supplied (by the browser, most likely)
+		// is some form of "unknown", we always discard it in favor of
+		// whatever our own utilities have determined;
+		// 2. We should NEVER trust the browser when it comes to the
+		// following "ingestable" types: Stata, SPSS, R;
+		// 2a. We are willing to TRUST the browser when it comes to
+		// the CSV and XSLX ingestable types.
+		// 3. We should ALWAYS trust our utilities when it comes to
+		// ingestable types.
+		if (suppliedContentType == null || suppliedContentType.equals("")
+				|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
+				|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+				|| (canIngestAsTabular(suppliedContentType) 
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
+				|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
+				|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+				|| recognizedType.equals(MIME_TYPE_ZIP)) {
+			return true;
+		}
+		return false;
+	}
 
     private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {
@@ -1697,6 +1716,96 @@ public class FileUtil implements java.io.Serializable  {
         return s3io;
     }
 
+    public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
+        DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+        if (checksumType == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        StorageIO<DataFile> storage = dataFile.getStorageIO();
+        InputStream in = null;
+        
+        try {
+            storage.open(DataAccessOption.READ_ACCESS);
+            
+            if (!dataFile.isTabularData()) {
+                in = storage.getInputStream();
+            } else {
+                // if this is a tabular file, read the preserved original "auxiliary file"
+                // instead:
+                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+            }
+        } catch (IOException ioex) {
+            in = null;
+        }
+
+        if (in == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        String recalculatedChecksum = null;
+        try {
+            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+        } catch (RuntimeException rte) {
+            recalculatedChecksum = null;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+
+        if (recalculatedChecksum == null) {
+            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
+            logger.log(Level.INFO, info);
+            throw new IOException(info);
+        }
+
+        // TODO? What should we do if the datafile does not have a non-null checksum?
+        // Should we fail, or should we assume that the recalculated checksum
+        // is correct, and populate the checksumValue field with it?
+        if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+            // There's one possible condition that is 100% recoverable and can
+            // be automatically fixed (issue #6660):
+            boolean fixed = false;
+            if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
+                // try again, see if the .orig file happens to be there:
+                try {
+                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                } catch (IOException ioex) {
+                    in = null;
+                }
+                if (in != null) {
+                    try {
+                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                    } catch (RuntimeException rte) {
+                        recalculatedChecksum = null;
+                    } finally {
+                        IOUtils.closeQuietly(in);
+                    }
+                    // try again: 
+                    if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                        fixed = true;
+                        try {
+                            storage.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        } catch (IOException ioex) {
+                            fixed = false;
+                        }
+                    }
+                }
+            }
+            
+            if (!fixed) {
+                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+                logger.log(Level.INFO, info);
+                throw new IOException(info);
+            }
+        }
+
+        logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
+    }
+    
     public static String getStorageIdentifierFromLocation(String location) {
         int driverEnd = location.indexOf("://") + 3;
         int bucketEnd = driverEnd + location.substring(driverEnd).indexOf("/");
@@ -1715,4 +1824,89 @@ public class FileUtil implements java.io.Serializable  {
         });
         return csvSB.toString();
     }
+    public static void deleteTempFile(DataFile dataFile, Dataset dataset, IngestServiceBean ingestService) {
+    	logger.info("Deleting " + dataFile.getStorageIdentifier());
+    	// Before we remove the file from the list and forget about 
+    	// it:
+    	// The physical uploaded file is still sitting in the temporary
+    	// directory. If it were saved, it would be moved into its 
+    	// permanent location. But since the user chose not to save it,
+    	// we have to delete the temp file too. 
+    	// 
+    	// Eventually, we will likely add a dedicated mechanism
+    	// for managing temp files, similar to (or part of) the storage 
+    	// access framework, that would allow us to handle specialized
+    	// configurations - highly sensitive/private data, that 
+    	// has to be kept encrypted even in temp files, and such. 
+    	// But for now, we just delete the file directly on the 
+    	// local filesystem: 
+
+    	try {
+    		List<Path> generatedTempFiles = ingestService.listGeneratedTempFiles(
+    				Paths.get(getFilesTempDirectory()), dataFile.getStorageIdentifier());
+    		if (generatedTempFiles != null) {
+    			for (Path generated : generatedTempFiles) {
+    				logger.fine("(Deleting generated thumbnail file " + generated.toString() + ")");
+    				try {
+    					Files.delete(generated);
+    				} catch (IOException ioex) {
+    					logger.warning("Failed to delete generated file " + generated.toString());
+    				}
+    			}
+    		}
+    		String si = dataFile.getStorageIdentifier();
+    		if (si.contains("://")) {
+    			//Direct upload files will already have a store id in their storageidentifier
+    			//but they need to be associated with a dataset for the overall storagelocation to be calculated
+    			//so we temporarily set the owner
+    			if(dataFile.getOwner()!=null) {
+    				logger.warning("Datafile owner was not null as expected");
+    			}
+    			dataFile.setOwner(dataset);
+    			//Use one StorageIO to get the storageLocation and then create a direct storage storageIO class to perform the delete 
+    			// (since delete is forbidden except for direct storage)
+    			String sl = DataAccess.getStorageIO(dataFile).getStorageLocation();
+    			DataAccess.getDirectStorageIO(sl).delete();
+    		} else {
+    			//Temp files sent to this method have no prefix, not even "tmp://"
+    			Files.delete(Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier()));
+    		}
+    	} catch (IOException ioEx) {
+    		// safe to ignore - it's just a temp file. 
+    		logger.warning(ioEx.getMessage());
+    		if(dataFile.getStorageIdentifier().contains("://")) {
+    			logger.warning("Failed to delete temporary file " + dataFile.getStorageIdentifier());
+    		} else {
+    			logger.warning("Failed to delete temporary file " + FileUtil.getFilesTempDirectory() + "/"
+    					+ dataFile.getStorageIdentifier());
+    		}
+    	} finally {
+    		dataFile.setOwner(null);
+    	}
+    }
+    
+    public static boolean isFileAlreadyUploaded(DataFile dataFile, Map checksumMapNew, Map fileAlreadyExists) {
+        if (checksumMapNew == null) {
+            checksumMapNew = new HashMap<>();
+        }
+        
+        if (fileAlreadyExists == null) {
+            fileAlreadyExists = new HashMap<>();
+        }
+        
+        String chksum = dataFile.getChecksumValue();
+        
+        if (chksum == null) {
+            return false;
+        }
+        
+        if (checksumMapNew.get(chksum) != null) {
+            fileAlreadyExists.put(dataFile, checksumMapNew.get(chksum));
+            return true;
+        }
+        
+        checksumMapNew.put(chksum, dataFile);
+        return false;
+    }
+
 }

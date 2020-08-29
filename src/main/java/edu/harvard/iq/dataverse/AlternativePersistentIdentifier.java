@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;

@@ -244,7 +244,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
                         
                         if (redirect_url_str == null) {
-                            throw new WebApplicationException(new ServiceUnavailableException());
+                            throw new ServiceUnavailableException();
                         }
                         
                         logger.fine("Data Access API: direct S3 url: "+redirect_url_str);
@@ -274,7 +274,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("Issuing redirect to the file location on S3.");
                             throw new RedirectionException(response);
                         }
-                        throw new WebApplicationException(new ServiceUnavailableException());
+                        throw new ServiceUnavailableException();
                     }
                 }
                 
@@ -368,7 +368,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             }
         }
         
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
+        throw new NotFoundException();
 
     }
     

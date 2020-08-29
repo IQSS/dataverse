@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -98,6 +99,87 @@ public class IngestUtil {
 
         existingFileNames.add(pathName);
         return fileName;
+    }
+
+    /**
+     * Given an existing file that may or may not have a directoryLabel, take
+     * the incoming label and/or directory label and combine it with what's in
+     * the existing file, overwriting and filling in as necessary.
+     */
+    public static String getPathAndFileNameToCheck(String incomingLabel, String incomingDirectoryLabel, String existingLabel, String existingDirectoryLabel) {
+        String labelToReturn = existingLabel;
+        String directoryLabelToReturn = existingDirectoryLabel;
+        if (incomingLabel != null) {
+            labelToReturn = incomingLabel;
+        }
+        if (incomingDirectoryLabel != null) {
+            directoryLabelToReturn = incomingDirectoryLabel;
+        }
+        if (directoryLabelToReturn != null) {
+            return directoryLabelToReturn + "/" + labelToReturn;
+        } else {
+            return labelToReturn;
+        }
+    }
+
+    /**
+     * Given a new proposed label or directoryLabel for a file, check against
+     * existing files if a duplicate directoryLabel/label combination would be
+     * created.
+     */
+    public static boolean conflictsWithExistingFilenames(String pathPlusFilename, List<FileMetadata> fileMetadatas) {
+        List<String> filePathsAndNames = getPathsAndFileNames(fileMetadatas);
+        return filePathsAndNames.contains(pathPlusFilename);
+    }
+
+    /**
+     * Given a DatasetVersion, and the newFiles about to be added to the 
+     * version iterate across all the files (including their
+     * paths) and return any duplicates.
+     *
+     * @param datasetVersion
+     * @param newFiles
+     * @return A Collection of Strings in the form of path/to/file.txt
+     */
+    public static Collection<String> findDuplicateFilenames(DatasetVersion datasetVersion, List<DataFile> newFiles) {
+        List<FileMetadata> toTest = new ArrayList();
+        datasetVersion.getFileMetadatas().forEach((fm) -> {
+            toTest.add(fm);
+        });
+        newFiles.forEach((df) -> {
+            toTest.add(df.getFileMetadata());
+        });
+        List<String> allFileNamesWithPaths = getPathsAndFileNames(toTest);
+        return findDuplicates(allFileNamesWithPaths);
+    }
+
+    // https://stackoverflow.com/questions/7414667/identify-duplicates-in-a-list
+    private static <T> Set<T> findDuplicates(Collection<T> collection) {
+        Set<T> duplicates = new HashSet<>();
+        Set<T> uniques = new HashSet<>();
+        for (T t : collection) {
+            if (!uniques.add(t)) {
+                duplicates.add(t);
+            }
+        }
+        return duplicates;
+    }
+
+    /**
+     * @return A List of Strings in the form of path/to/file.txt
+     */
+    public static List<String> getPathsAndFileNames(List<FileMetadata> fileMetadatas) {
+        List<String> allFileNamesWithPaths = new ArrayList<>();
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String directoryLabel = fileMetadata.getDirectoryLabel();
+            String path = "";
+            if (directoryLabel != null) {
+                path = directoryLabel + "/";
+            }
+            String pathAndfileName = path + fileMetadata.getLabel();
+            allFileNamesWithPaths.add(pathAndfileName);
+        }
+        return allFileNamesWithPaths;
     }
 
     // This method is called on a single file, when we need to modify the name 
@@ -172,9 +254,10 @@ public class IngestUtil {
         // create list of existing path names from all FileMetadata in the DatasetVersion
         // (skipping the one specified fileMetadata, if supplied. That's in order to 
         // be able to call this method 
+        // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if (fm.getId() != null && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
+            if ((fm.isInPriorVersion() || fm.getId() != null) && (fileMetadata == null || !fm.getId().equals(fileMetadata.getId()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 

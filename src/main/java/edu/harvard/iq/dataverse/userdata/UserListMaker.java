@@ -69,8 +69,10 @@ public class UserListMaker {
         return userService.getUserCount(searchTerm);
     }
   
-    public UserListResult runUserSearch(String searchTerm, Integer itemsPerPage, Integer selectedPage, String sorKey){
-        
+    public UserListResult runUserSearch(String searchTerm,
+                                        Integer itemsPerPage,
+                                        Integer selectedPage,
+                                        String sortKey) {
         // Initialize searchTerm
         if ((searchTerm == null) || (searchTerm.trim().isEmpty())){
             searchTerm = null;
@@ -86,9 +88,6 @@ public class UserListMaker {
             selectedPage = 1;
         }
 
-        // Initialize sortKey
-        String sortKey = null;
-        
         Pager pager;
 
          // -------------------------------------------------
@@ -97,7 +96,7 @@ public class UserListMaker {
         Long userCount = userService.getUserCount(searchTerm);
         
         // Are there any hits?  No; return info
-        if ((userCount == null)||(userCount == 0)){
+        if ((userCount == null) || (userCount == 0)) {
             pager = new Pager(0, itemsPerPage, selectedPage);
             return new UserListResult(searchTerm, pager, null);
         }
@@ -114,7 +113,7 @@ public class UserListMaker {
         // (3) Retrieve the users
         // -------------------------------------------------
         List<AuthenticatedUser> userList = userService.getAuthenticatedUserList(searchTerm, sortKey, itemsPerPage, offset);       
-        if (userList ==null){
+        if (userList == null) {
             pager = new Pager(0, itemsPerPage, selectedPage);
             return new UserListResult(searchTerm, pager, null);
         }

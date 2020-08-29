@@ -7,26 +7,20 @@ fi
 WAR=/dataverse/target/dataverse*.war
 if [ ! -f $WAR ]; then
   echo "no war file found... building"
-  echo "Installing nss on CentOS 6 to avoid java.security.KeyException while building war file: https://github.com/IQSS/dataverse/issues/2744"
-  yum install -y nss
-  su $SUDO_USER -s /bin/sh -c "cd /dataverse && mvn package"
+  #echo "Installing nss on CentOS 6 to avoid java.security.KeyException while building war file: https://github.com/IQSS/dataverse/issues/2744"
+  #yum install -y nss
+  su $SUDO_USER -s /bin/sh -c "cd /dataverse && mvn -q package"
 fi
 cd /dataverse/scripts/installer
 
 # move any pre-existing `default.config` file out of the way to avoid overwriting
 pid=$$
 if [ -e default.config ]; then
-	mv default.config tmp-${pid}-default.config
+	cp default.config tmp-${pid}-default.config
 fi
 
-echo "HOST_DNS_ADDRESS	localhost" > default.config
-echo "GLASSFISH_DIRECTORY	/home/glassfish/glassfish4" >> default.config
-
-if [ ! -z "$MAILSERVER" ]; then
-	echo "MAIL_SERVER	$MAILSERVER" >> default.config
-fi
-
-./install -y -f
+# Switch to newer Python-based installer
+python3 ./install.py --noninteractive --config_file="default.config"
 
 if [ -e tmp-${pid}-default.config ]; then # if we moved it out, move it back
 	mv -f tmp-${pid}-default.config default.config

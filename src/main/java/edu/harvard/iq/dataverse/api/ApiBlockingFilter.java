@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author michael
  */
 public class ApiBlockingFilter implements javax.servlet.Filter {
-    private static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
+    public static final String UNBLOCK_KEY_QUERYPARAM = "unblock-key";
             
     interface BlockPolicy {
         public void doBlock(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException;

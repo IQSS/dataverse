@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -18,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author michael
  */
-
 public class DataverseRequest {
 
     private final User user;
