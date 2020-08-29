@@ -66,8 +66,6 @@ public class Shib implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     SettingsServiceBean settingsService;
-	@EJB
-	SystemConfig systemConfig;
 
     HttpServletRequest request;
     HttpServletResponse response;

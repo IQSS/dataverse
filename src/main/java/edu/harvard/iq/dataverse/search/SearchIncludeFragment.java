@@ -23,6 +23,9 @@ import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -447,7 +450,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             
             setDisplayCardValues();
             
-            if (settingsWrapper.sortDateFacets()) {
+            if (settingsWrapper.displayChronologicalDateFacets()) {
                 Set<String> facetsToSort = new HashSet<String>();
                 facetsToSort.add(SearchFields.PUBLICATION_YEAR);
                 List<DataverseFacet> facets = dataversePage.getDataverse().getDataverseFacets();
