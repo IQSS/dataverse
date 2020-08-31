@@ -1866,7 +1866,7 @@ A curl example using an ``ID``
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' $SERVER_URL/api/files/$ID/metadata
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' $SERVER_URL/api/files/$ID/replace
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -1885,7 +1885,7 @@ A curl example using a ``PERSISTENT_ID``
   export PERSISTENT_ID=doi:10.5072/FK2/AAA000
 
   curl -H "X-Dataverse-key:$API_TOKEN" -X POST -F 'file=@file.extension' -F 'jsonData={json}' \
-    "$SERVER_URL/api/files/:persistentId/metadata?persistentId=$PERSISTENT_ID"
+    "$SERVER_URL/api/files/:persistentId/replace?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
@@ -1893,7 +1893,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST -F 'file=@data.tsv' \
     -F 'jsonData={"description":"My description.","categories":["Data"],"forceReplace":false}' \
-    "https://demo.dataverse.org/api/files/:persistentId/metadata?persistentId=doi:10.5072/FK2/AAA000"
+    "https://demo.dataverse.org/api/files/:persistentId/replace?persistentId=doi:10.5072/FK2/AAA000"
 
 Getting File Metadata
 ~~~~~~~~~~~~~~~~~~~~~

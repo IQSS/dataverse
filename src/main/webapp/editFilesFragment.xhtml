@@ -157,7 +157,7 @@
                     
                     </div>
                     
-                    <div jsf:id="rsyncPanel" jsf:rendered="#{EditDatafilesPage.rsyncUploadSupported() and !EditDatafilesPage.fileReplaceOperation}" class="panel panel-default">
+                    <div jsf:id="rsyncPanel" jsf:rendered="#{rsyncSupported and !EditDatafilesPage.fileReplaceOperation}" class="panel panel-default">
                         <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
                         <div role="tab" id="headingRsync" data-toggle="collapse" data-target="#panelCollapseRsync" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseRsync">
                             #{bundle['file.fromRsync']} &#160;<span class="glyphicon #{!settingsWrapper.HTTPUpload ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
@@ -528,7 +528,7 @@
     </div>
     <!-- END: Static Tab Layout -->
     <p:remoteCommand  name="returnToDatasetPage" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.returnToDatasetOnly()}"  />
-    <p:remoteCommand  name="requestDirectUploadUrl" partialSubmit="true" async="true" update="@none" action="#{EditDatafilesPage.requestDirectUploadUrl()}" onerror="javascript:uploadFailure();" />
+    <p:remoteCommand  name="requestDirectUploadUrls" partialSubmit="true" async="true" update="@none" action="#{EditDatafilesPage.requestDirectUploadUrls()}" onerror="javascript:uploadFailure();" />
     <p:remoteCommand  name="handleExternalUpload" partialSubmit="true" async="true"  update="@none" action="#{EditDatafilesPage.handleExternalUpload()}" oncomplete="javascript:bind_bsui_components();directUploadFinished();" onerror="javascript:uploadFailure();" />
     <!-- TODO: a message panel informing the unauthorized, or unauthenticated user that they don't have permission - should it be here? L.A. 4.2 -->
 

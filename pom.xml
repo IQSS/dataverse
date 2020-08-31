@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.20</version>
+    <version>5.0</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -294,9 +294,13 @@
             <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>5.0.3.Final</version>
+        </dependency>
+      <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
