@@ -891,6 +891,7 @@
             <id>container</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
+                <app.image.name>gdcc/dataverse-k8s:${project.version}</app.image.name>
             </properties>
         
             <build>
@@ -904,7 +905,7 @@
                                 <!-- Dataverse K8s image -->
                                 <image>
                                     <alias>dataverse</alias>
-                                    <name>gdcc/dataverse-k8s:${project.version}</name>
+                                    <name>${app.image.name}</name>
                                     <build>
                                         <dockerFile>${project.basedir}/conf/container/Dockerfile</dockerFile>
                                         <filter>@</filter>
