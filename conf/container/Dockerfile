@@ -16,7 +16,11 @@ ENV DATA_DIR=/data\
     PGDRIVER_PKG=https://jdbc.postgresql.org/download/postgresql-42.2.12.jar\
     JREBEL_LIB=${HOME_DIR}/jrebel/lib/libjrebel64.so\
     # Make heap dumps on OOM appear in DUMPS_DIR
-    JVM_ARGS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${ENV=DUMPS_DIR}"
+    JVM_ARGS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${ENV=DUMPS_DIR}"\
+    # Documenting development options (see init_3_enabledev.sh)
+    ENABLE_JMX=0\
+    ENABLE_JDWP=0\
+    ENABLE_JREBEL=0
 
 # Create basic pathes
 USER root
@@ -55,5 +59,5 @@ COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
 COPY --chown=payara:payara maven/supplements ${DEPLOY_DIR}/dataverse/supplements/
 
 # Copy init and application scripts
-#COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
+COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
 RUN chmod +x ${SCRIPT_DIR}/*

@@ -36,9 +36,11 @@
         <fileSet>
             <directory>conf/jhove</directory>
             <outputDirectory>supplements</outputDirectory>
-            <includes>
-                <include>*</include>
-            </includes>
+        </fileSet>
+        <!-- Init scripts and usage scripts (bootstrapping, configuration, ...) -->
+        <fileSet>
+            <directory>conf/container/scripts</directory>
+            <outputDirectory>scripts</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>
