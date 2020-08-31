@@ -14,5 +14,31 @@
             <directory>target/${project.artifactId}-${project.version}/WEB-INF/lib</directory>
             <outputDirectory>deps</outputDirectory>
         </fileSet>
+        <!-- Supplemental data (configs, metadata, ...) -->
+        <fileSet>
+            <directory>scripts/api</directory>
+            <outputDirectory>supplements</outputDirectory>
+            <includes>
+                <include>data/**/*</include>
+                <include>*.sh</include>
+            </includes>
+            <excludes>
+                <exclude>data/metadatablocks/custom*.tsv</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>scripts/database</directory>
+            <outputDirectory>supplements</outputDirectory>
+            <includes>
+                <include>reference_data.sql</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>conf/jhove</directory>
+            <outputDirectory>supplements</outputDirectory>
+            <includes>
+                <include>*</include>
+            </includes>
+        </fileSet>
     </fileSets>
 </assembly>
