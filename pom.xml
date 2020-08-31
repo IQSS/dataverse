@@ -887,5 +887,39 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>container</id>
+            <properties>
+                <skipUnitTests>true</skipUnitTests>
+            </properties>
+        
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.33.0</version>
+                        <configuration>
+                            <images>
+                                <!-- Dataverse K8s image -->
+                                <image>
+                                    <alias>dataverse</alias>
+                                    <name>gdcc/dataverse-k8s:${project.version}</name>
+                                    <build>
+                                        <dockerFile>${project.basedir}/conf/container/Dockerfile</dockerFile>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                            <descriptor>${project.basedir}/conf/container/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
