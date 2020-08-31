@@ -20,7 +20,7 @@ There are several types of dataset locks. Locks can be managed using the locks A
 
 It's normal for the ingest process described in the :doc:`/user/tabulardataingest/ingestprocess` section of the User Guide to take some time but if hours or days have passed and the dataset is still locked, you might want to inspect the locks and consider deleting some or all of them. It is recommended to restart the application server if you are deleting an ingest lock, to make sure the ingest job is no longer running in the background. Ingest locks are idetified by the label ``Ingest`` in the ``reason`` column of the ``DatasetLock`` table in the database.
 
-A dataset is locked with a lock of type ``finalizePublication`` while the persistent identifiers for the datafiles in the dataset are registered or updated, and/or while the physical files are being validated by recalculating the checksums and verifying them against the values stored in the database, before the publication process can be completed (Note that either of the two tasks can be disabled via database options - see :doc:`config`). If a dataset has been in this state for a long period of time, for hours or longer, it is somewhat safe to assume that it is stuck (for example, the process may have been interrupted by an application server restart, or a system crash), so you may want to remove the lock (to be safe, do restart the application server, to ensure that the job is no longer running in the background) and advise the user to try publishing again. See :doc:`dataverses-datasets` for more information on publishing.
+A dataset is locked with a lock of type ``finalizePublication`` while the persistent identifiers for the datafiles in the dataset are registered or updated, and/or while the physical files are being validated by recalculating the checksums and verifying them against the values stored in the database, before the publication process can be completed (Note that either of the two tasks can be disabled via database options - see :doc:`/installation/config`). If a dataset has been in this state for a long period of time, for hours or longer, it is somewhat safe to assume that it is stuck (for example, the process may have been interrupted by an application server restart, or a system crash), so you may want to remove the lock (to be safe, do restart the application server, to ensure that the job is no longer running in the background) and advise the user to try publishing again. See :doc:`dataverses-datasets` for more information on publishing.
 
 If any files in the dataset fail the validation above the dataset will be left locked with a ``DatasetLock.Reason=FileValidationFailed``. The user will be notified that they need to contact their Dataverse support in order to address the issue before another attempt to publish can be made. The admin will have to address and fix the underlying problems (by either restoring the missing or corrupted files, or by purging the affected files from the dataset) before deleting the lock and advising the user to try to publish again. The goal of the validation framework is to catch these types of conditions while the dataset is still in DRAFT. 
 
@@ -43,22 +43,22 @@ A User Needs Their Account to Be Converted From Institutional (Shibboleth), ORCI
 
 See :ref:`converting-shibboleth-users-to-local` and :ref:`converting-oauth-users-to-local`.
 
-.. _troubleshooting-glassfish:
+.. _troubleshooting-payara:
 
-Glassfish
----------
+Payara
+------
 
-.. _glassfish-log:
+.. _payara-log:
 
-Finding the Glassfish Log File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Finding the Payara Log File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``/usr/local/glassfish4/glassfish/domains/domain1/logs/server.log`` is the main place to look when you encounter problems (assuming you installed Glassfish in the default directory). Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version or commit. Send more of the stack trace (the entire file if possible) to developers who can help (see "Getting Help", below) and be sure to say which version of Dataverse you are running.
+``/usr/local/payara5/glassfish/domains/domain1/logs/server.log`` is the main place to look when you encounter problems (assuming you installed Payara in the default directory). Hopefully an error message has been logged. If there's a stack trace, it may be of interest to developers, especially they can trace line numbers back to a tagged version or commit. Send more of the stack trace (the entire file if possible) to developers who can help (see "Getting Help", below) and be sure to say which version of Dataverse you are running.
 
-.. _increase-glassfish-logging:
+.. _increase-payara-logging:
 
-Increasing Glassfish Logging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Increasing Payara Logging
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For debugging purposes, you may find it helpful to temporarily increase logging levels. Here's an example of increasing logging for the Java class behind the "datasets" API endpoints:
 
@@ -66,26 +66,26 @@ For debugging purposes, you may find it helpful to temporarily increase logging 
 
 For more on setting log levels, see the :doc:`/developers/debugging` section of the Developer Guide.
 
-Our guides focus on using the command line to manage Glassfish but you might be interested in an admin GUI at http://localhost:4848
+Our guides focus on using the command line to manage Payara but you might be interested in an admin GUI at http://localhost:4848
 
 
 Deployment fails, "EJB Timer Service not available"
 ---------------------------------------------------
 
-Sometimes the Dataverse application fails to deploy, or Glassfish fails to restart once the application is deployed, with the following error message: :fixedwidthplain:`"remote failure: Error occurred during deployment: Exception while loading the app : EJB Timer Service is not available. Please see server.log for more details."`
+Sometimes the Dataverse application fails to deploy, or Payara fails to restart once the application is deployed, with the following error message: :fixedwidthplain:`"remote failure: Error occurred during deployment: Exception while loading the app : EJB Timer Service is not available. Please see server.log for more details."`
 
 We don't know what's causing this issue, but here's a known workaround: 
 
-- Stop Glassfish; 
+- Stop Payara; 
 
 - Remove the ``generated`` and ``osgi-cache`` directories; 
 
 - Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
 
-- Start Glassfish
+- Start Payara
 
 The shell script below performs the steps above. 
-Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. Aside from the configuration values that need to be changed to reflect your environment (the Glassfish directory, name of the database, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
+Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. Aside from the configuration values that need to be changed to reflect your environment (the Payara directory, name of the database, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 
@@ -94,7 +94,7 @@ Note that it may or may not work on your system, so it is provided as an example
 Timer Not Working
 -----------------
 
-Dataverse relies on EJB timers to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. (See :doc:`timers` for details.) If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgreSQL database you are using, and PostgreSQL JDBC driver in use by your instance of Glassfish. The symptoms:
+Dataverse relies on EJB timers to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. (See :doc:`timers` for details.) If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgreSQL database you are using, and PostgreSQL JDBC driver in use by your instance of Payara. The symptoms:
 
 If you are seeing the following in your server.log...
 
@@ -108,14 +108,14 @@ followed by an Exception stack trace with these lines in it:
 
 
 ... it most likely means that it is the JDBC driver incompatibility that's preventing the timer from working correctly. 
-Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
-to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Glassfish. (You may need to remove the entire contents of :fixedwidthplain:`<GLASSFISH FOLDER>/glassfish/domains/domain1/generated` before you start Glassfish). 
+Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<PAYARA FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
+to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Payara. (You may need to remove the entire contents of :fixedwidthplain:`<PAYARA FOLDER>/glassfish/domains/domain1/generated` before you start Payara). 
 
 
 Constraint Violations Issues
 ----------------------------
 
-In real life production use, it may be possible to end up in a situation where some values associated with the datasets in your database are no longer valid under the constraints enforced by the latest version of Dataverse. This is not very likely to happen, but if it does, the symptomps will be as follows: Some datasets can no longer be edited, long exception stack traces logged in the Glassfish server log, caused by::
+In real life production use, it may be possible to end up in a situation where some values associated with the datasets in your database are no longer valid under the constraints enforced by the latest version of Dataverse. This is not very likely to happen, but if it does, the symptoms will be as follows: Some datasets can no longer be edited, long exception stack traces logged in the app server log, caused by::
 
    javax.validation.ConstraintViolationException: 
    Bean Validation constraint(s) violated while executing Automatic Bean Validation on callback event:'preUpdate'. 

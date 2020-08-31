@@ -708,12 +708,6 @@ public class PermissionServiceBean {
 
     public void checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
-            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                // The "InReview" lock is not really a lock for curators. They can still make edits.
-                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
-                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
-                }
-            }
             if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
             }
@@ -730,6 +724,46 @@ public class PermissionServiceBean {
             }
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators. They can still make edits.
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowedInReview"), command);
+                }
+            } else {
+                //catch all for locked for any other reason
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.editNotAllowed"), command);
+            }
+        }
+    }
+    
+    public void checkPublishDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
+        if (dataset.isLocked()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.Ingest)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "Workflow"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            // TODO: Do we need to check for "DcmUpload"? Should the message be more specific?
+            if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+            }
+            if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
+                // The "InReview" lock is not really a lock for curators. They can still publish
+                if (!isUserAllowedOn(dataverseRequest.getUser(), new PublishDatasetCommand(dataset, dataverseRequest, true), dataset)) {
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
+                }
+            } else {
+                //catch all for locked for some other reason
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.publishNotAllowed"), command);
             }
         }
     }

@@ -100,7 +100,7 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 
 * If you are running Counter Processor for the first time in the middle of a month, you will need create blank log files for the previous days. e.g.:
 
-  * ``cd /usr/local/glassfish4/glassfish/domains/domain1/logs``
+  * ``cd /usr/local/payara5/glassfish/domains/domain1/logs``
 
   * ``touch counter_2019-02-01.log``
   
@@ -142,7 +142,7 @@ Configuring Dataverse for Make Data Count Citations
 
 Please note: as explained in the note above about limitations, this feature is not available to installations of Dataverse that use Handles.
 
-To configure Dataverse to pull citations from the test vs. production DataCite server see :ref:`doi.mdcbaseurlstring` in the Installation Guide.
+To configure Dataverse to pull citations from the test vs. production DataCite server see :ref:`doi.dataciterestapiurlstring` in the Installation Guide.
 
 Please note that in the curl example, Bash environment variables are used with the idea that you can set a few environment variables and copy and paste the examples as is. For example, "$DOI" could become "doi:10.5072/FK2/BL2IBM" by issuing the following export command from Bash:
 

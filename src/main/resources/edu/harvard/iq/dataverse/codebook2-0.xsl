@@ -177,7 +177,7 @@ font-size: 10pt;
             </head>
             <body bgcolor="#ffffff" lang="en-US">
                 <h1>
-                    <xsl:value-of select="stdyDscr/citation/titlStmt/titl"/> (ICPSR <xsl:value-of
+                    <xsl:value-of select="stdyDscr/citation/titlStmt/titl"/> (<xsl:value-of
                         select="stdyDscr/citation/titlStmt/IDNo"/>)<xsl:if test="stdyDscr/citation/titlStmt/altTitl">
                         <br/>(<xsl:value-of select="stdyDscr/citation/titlStmt/altTitl"/>)</xsl:if>
                 </h1>

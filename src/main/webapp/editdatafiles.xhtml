@@ -24,7 +24,7 @@
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
-                    <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
+                    <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -60,6 +60,7 @@
                                 <ui:param name="editDatafilesPage" value="true"/>
                                 <ui:param name="createDataset" value="false"/>
                                 <ui:param name="showFileButtonUpdate" value="true"/>
+                                <ui:param name="rsyncSupported" value="#{EditDatafilesPage.rsyncUploadSupported()}"/>
                                 <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
                             </ui:include>
                         </div>
@@ -76,7 +77,9 @@
                                     <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="bind_bsui_components();"/>
                                 </div>
                                 <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
-                                    <p:commandButton styleClass="btn btn-default" id="doneFilesButtonnop" value="#{bundle.done}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="bind_bsui_components();"/>
+                                    <button id="doneFilesButtonnop" class="btn btn-default" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;">#{bundle.done}</button>
+                                    <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>     
+ 
                                 </div>
                                 <p:commandButton value="Direct" id="datasetSave"
                                                  style="display:none"

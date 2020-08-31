@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns = "http://java.sun.com/xml/ns/javaee" 
+         version = "3.1"
+         xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation = "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd">
+    <enterprise-beans>
+        <session>
+            <ejb-name>SavedSearchServiceBean</ejb-name>
+            <ejb-class>edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <timer>
+                <schedule>
+                    <minute>30</minute>
+                    <hour>14</hour>
+                    <day-of-week>2</day-of-week>
+                </schedule>
+                <timeout-method>
+                    <method-name>makeLinksForAllSavedSearchesTimer</method-name>
+                </timeout-method>
+            </timer>
+        </session>
+    </enterprise-beans>
+</ejb-jar>
