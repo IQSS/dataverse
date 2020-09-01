@@ -31,7 +31,7 @@ public class DataFileComparator implements Comparator<FileMetadata> {
             this.field = field;
         }
         this.ascending = ascending;
-        logger.fine("Folder " + getByFolder() + " Categories: " + getByCategory() + " Field: " + field + " asc: " + getAsc());
+        logger.fine("Folder " + getByFolder() + " Categories: " + getByCategory() + " Field: " + ((field==null) ? "null - using name" : getField()) + " asc: " + getAsc());
         return this;
     }
     
