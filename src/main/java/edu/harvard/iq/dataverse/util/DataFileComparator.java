@@ -4,8 +4,6 @@ package edu.harvard.iq.dataverse.util;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
-import java.util.logging.Logger;
-
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -15,8 +13,6 @@ import edu.harvard.iq.dataverse.FileMetadata;
  * @author qqmyers
  */
 public class DataFileComparator implements Comparator<FileMetadata> {
-
-    private static final Logger logger = Logger.getLogger(DataFileComparator.class.getCanonicalName());
 
     boolean byFolder = false;
     boolean byCategory = false;
@@ -30,7 +26,6 @@ public class DataFileComparator implements Comparator<FileMetadata> {
             this.field = field;
         }
         this.ascending = ascending;
-        logger.fine("Folder " + getByFolder() + " Categories: " + getByCategory() + " Field: " + (StringUtil.isEmpty(field) ? "empty - using name" : getField()) + " asc: " + getAsc());
         return this;
     }
     
