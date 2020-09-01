@@ -652,11 +652,6 @@ public class DatasetPage implements java.io.Serializable {
         
         DataFileComparator dfc = new DataFileComparator();
         Comparator<FileMetadata> comp = dfc.compareBy(folderPresort, tagPresort, fileSortField, !"desc".equals(fileSortOrder));
-        if(null == comp) {
-            logger.warning("Null comparator");
-        } else {
-            logger.fine("Folder " + dfc.getByFolder() + " Categories: " + dfc.getByCategory() + " Field: " + dfc.getField() + " asc: " + dfc.getAsc());
-        }
         Collections.sort(fileList, comp);
     }
     
