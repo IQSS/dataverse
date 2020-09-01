@@ -434,7 +434,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> fileMetadatas;
-    private String fileSortField = "name";
+    private String fileSortField;
     private String fileSortOrder;
     private boolean tagPresort = true;
     private boolean folderPresort = true;
