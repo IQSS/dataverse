@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
-import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.FileMetadata;
 
 /**
@@ -27,11 +26,11 @@ public class DataFileComparator implements Comparator<FileMetadata> {
     public Comparator<FileMetadata> compareBy(boolean byFolder, boolean byCategory, String field, boolean ascending) {
         this.byFolder = byFolder;
         this.byCategory = byCategory;
-        if(field!=null) {
+        if(StringUtil.nonEmpty(field)) {
             this.field = field;
         }
         this.ascending = ascending;
-        logger.fine("Folder " + getByFolder() + " Categories: " + getByCategory() + " Field: " + ((field==null) ? "null - using name" : getField()) + " asc: " + getAsc());
+        logger.fine("Folder " + getByFolder() + " Categories: " + getByCategory() + " Field: " + (StringUtil.isEmpty(field) ? "empty - using name" : getField()) + " asc: " + getAsc());
         return this;
     }
     
