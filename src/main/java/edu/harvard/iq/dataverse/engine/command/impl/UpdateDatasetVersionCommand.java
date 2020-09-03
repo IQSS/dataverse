@@ -172,7 +172,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // at the merge at line 177
             //Is this merge needed to add the lock?  - seems to be 'no' so what is it needed for?
             //See qqmyers comment on #5847 re possible need for merge 
-        //    theDataset = ctxt.em().merge(theDataset);
+            theDataset = ctxt.em().merge(theDataset);
 
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
