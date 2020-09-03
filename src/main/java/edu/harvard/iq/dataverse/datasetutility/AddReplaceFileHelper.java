@@ -1586,92 +1586,6 @@ public class AddReplaceFileHelper{
     }
 
     
-    /**
-     * Go through the working DatasetVersion and remove the
-     * FileMetadata of the file to replace
-     * 
-     * @return 
-     */
-    private boolean step_085_auto_remove_filemetadata_to_replace_from_working_version(){
-
-        msgt("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
-
-        if (!isFileReplaceOperation()){
-            // Shouldn't happen!
-            this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_085_auto_remove_filemetadata_to_replace_from_working_version");
-            return false;
-        }
-        msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 2");
-
-        if (this.hasError()){
-            return false;
-        }
-
-        
-        msgt("File to replace getId: " + fileToReplace.getId());
-        
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        msgt("Clear file to replace");
-        int cnt = 0;
-        while (fmIt.hasNext()) {
-            cnt++;
-
-            FileMetadata fm = fmIt.next();
-            msg(cnt + ") next file: " + fm);
-            msg("   getDataFile().getId(): " + fm.getDataFile().getId());
-            if (fm.getDataFile().getId() != null) {
-                if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())) {
-                    msg("Let's remove it!");
-                    // If this is a tabular data file with a UNF, we'll need 
-                    // to recalculate the version UNF, once the file is removed: 
-                    
-                    boolean recalculateUNF = !StringUtils.isEmpty(fm.getDataFile().getUnf());
-
-                    if (workingVersion.getId() != null) {
-                        // If this is an existing draft (i.e., this draft version 
-                        // is already saved in the dataset, we'll also need to remove this filemetadata 
-                        // explicitly:
-                        msg(" this is an existing draft version...");
-                        fileService.removeFileMetadata(fm);
-
-                        // remove the filemetadata from the list of filemetadatas
-                        // attached to the datafile object as well, for a good 
-                        // measure: 
-                        fileToReplace.getFileMetadatas().remove(fm);
-                        // (and yes, we can do .remove(fm) safely - if this released
-                        // file is part of an existing draft, we know that the 
-                        // filemetadata object also exists in the database, and thus
-                        // has the id, and can be identified unambiguously. 
-                    }
-
-                    // and remove it from the list of filemetadatas attached
-                    // to the version object, via the iterator:
-                    fmIt.remove();
-
-                    
-                    if(!fileToReplace.isReleased()) {
-                        //and delete the file if it has never been released
-                        
-                    }
-
-                    
-                    if (recalculateUNF) {
-                        msg("recalculating the UNF");
-                        ingestService.recalculateDatasetVersionUNF(workingVersion);
-                        msg("UNF recalculated: "+workingVersion.getUNF());
-                    }
-                    
-                    return true;
-                }
-            }
-        }
-        
-        msg("No matches found!");
-        addErrorSevere(getBundleErr("failed_to_remove_old_file_from_dataset"));
-        runMajorCleanup();
-        return false;
-    }
-    
 
     private boolean runMajorCleanup(){
         
@@ -1745,14 +1659,6 @@ public class AddReplaceFileHelper{
         }
 
         // -----------------------------------------------------------
-        // Remove the "fileToReplace" from the current working version
-        // -----------------------------------------------------------
-//        if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
-//            return false;
-//        }
-        
-        
-        // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
         //  (1) Old file: Set the Root File Id on the original file  
@@ -1781,7 +1687,7 @@ public class AddReplaceFileHelper{
 
             }
         }
-        // Call the update dataset command
+        // Call the update dataset command which will delete the replaced filemetadata and file in needed (if file is not released)
         //
         return step_070_run_update_dataset_command();
         
