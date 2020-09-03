@@ -1063,10 +1063,10 @@ public class AddReplaceFileHelper{
         
         // Is the file published?
         //
-        if (!existingFile.isReleased()){
-            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
-            return false;            
-        }
+//        if (!existingFile.isReleased()){
+//            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
+//            return false;            
+//        }
         
         // Is the file in the latest dataset version?
         //
