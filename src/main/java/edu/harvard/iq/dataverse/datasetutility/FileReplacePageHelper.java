@@ -110,13 +110,14 @@ public class FileReplacePageHelper {
         }
         
         OptionalFileParams ofp = null;
+        try {
+            ofp = new OptionalFileParams(null);
+            ofp.addOptionalParams(getFileToReplace());
+        } catch (DataFileTagException e) {
+            //Shouldn't happen with null input
+            e.printStackTrace();
+        }
         if(checkSum != null) {
-        	try {
-				ofp = new OptionalFileParams(null);
-			} catch (DataFileTagException e) {
-				//Shouldn't happen with null input
-				e.printStackTrace();
-			}
         	ofp.setCheckSum(checkSum);
         }
         // Run 1st phase of replace
