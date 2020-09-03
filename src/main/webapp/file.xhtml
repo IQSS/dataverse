@@ -284,7 +284,7 @@
                                                                 </li>
                                                             </ui:fragment>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
+                                                        <ui:fragment rendered="#{FilePage.draftReplacementFile == false and !FilePage.fileMetadata.dataFile.filePackage}">                                        
                                                         <li><!-- start: replace file link -->
                                                             <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;fid=#{FilePage.fileMetadata.dataFile.id}&#38;version=#{FilePage.version}">
                                                                  <h:outputText value="#{bundle['file.replace']}"/>
