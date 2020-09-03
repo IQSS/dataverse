@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -1591,7 +1592,6 @@ public class AddReplaceFileHelper{
             if (fm.getDataFile().getId() != null) {
                 if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())) {
                     msg("Let's remove it!");
-
                     // If this is a tabular data file with a UNF, we'll need 
                     // to recalculate the version UNF, once the file is removed: 
                     
@@ -1618,6 +1618,13 @@ public class AddReplaceFileHelper{
                     // to the version object, via the iterator:
                     fmIt.remove();
 
+                    
+                    if(!fileToReplace.isReleased()) {
+                        //and delete the file if it has never been released
+                        
+                    }
+
+                    
                     if (recalculateUNF) {
                         msg("recalculating the UNF");
                         ingestService.recalculateDatasetVersionUNF(workingVersion);
@@ -1714,6 +1721,8 @@ public class AddReplaceFileHelper{
             return false;
         }
         
+        
+        //ToDo - is this a step?
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
@@ -1723,23 +1732,32 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
  
         
-        /*
-            Check the root file id on fileToReplace, updating it if necessary
-        */
-        if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)){
+        if (fileToReplace.isReleased()) {
+            /*
+             * Check the root file id on fileToReplace, updating it if necessary
+             */
+            if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)) {
 
-            fileToReplace.setRootDataFileId(fileToReplace.getId());
-            fileToReplace = fileService.save(fileToReplace);
-        }
-        
-        /*
-            Go through the final file list, settting the rootFileId and previousFileId
-        */
-        for (DataFile df : finalFileList){            
-            df.setPreviousDataFileId(fileToReplace.getId());
-            
-            df.setRootDataFileId(fileToReplace.getRootDataFileId());
-            
+                fileToReplace.setRootDataFileId(fileToReplace.getId());
+                fileToReplace = fileService.save(fileToReplace);
+            }
+
+            /*
+             * Go through the final file list, settting the rootFileId and previousFileId
+             */
+            for (DataFile df : finalFileList) {
+                df.setPreviousDataFileId(fileToReplace.getId());
+
+                df.setRootDataFileId(fileToReplace.getRootDataFileId());
+
+            }
+        } else {
+          //Delete the old file/ don't set references to root file
+            try {
+                commandEngine.submit(new DeleteDataFileCommand(fileToReplace, dvRequest, false));
+            } catch (CommandException e) {
+                logger.warning("unable to delete file (id: " + fileToReplace.getId() + ") during replace.");
+            }
         }
 
         // Call the update dataset command
