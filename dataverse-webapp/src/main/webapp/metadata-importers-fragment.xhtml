@@ -85,7 +85,8 @@
                                         <c:choose>
                                             <c:when test="#{item.type eq Type.INPUT}">
                                                 <div class="col-sm-9">
-                                                    <p:inputText id="_#{item.viewId}" value="#{item.value}"/>
+                                                    <p:inputText id="_#{item.viewId}" value="#{item.value}"
+                                                        onkeypress="if (event.keyCode == 13) { nextStepCommand(); return false; }" />
                                                     <p:message for="_#{item.viewId}"/>
                                                 </div>
                                             </c:when>
@@ -114,9 +115,10 @@
                         </div>
                     </c:forEach>
                     <div class="button-block">
-                        <p:commandLink type="button" process="formFirstStep" styleClass="btn btn-default"
-                                       action="#{pageBean.importerForm.nextStep}"
-                                       update="formFirstStep,formSecondStep">
+                        <p:remoteCommand name="nextStepCommand" action="#{pageBean.importerForm.nextStep}" process="formFirstStep"
+                                        update="formFirstStep,formSecondStep"/>
+                        <p:commandLink id="nextStepButton" type="button" styleClass="btn btn-default"
+                                       onclick="nextStepCommand(); return false;">
                         <span class="glyphicon glyphicon-menu-right"/>#{bundle['metadata.import.form.next.step.button']}
                         </p:commandLink>
                         <p:commandButton value="#{bundle['cancel']}"
