@@ -1529,7 +1529,22 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+        String deleteStorageLocation = null;
+        long deleteFileId=-1;
+        if(isFileReplaceOperation()) {
+            List<FileMetadata> filesToDelete = new ArrayList<FileMetadata>();
+            filesToDelete.add(fileToReplace.getFileMetadata());
+            
+            if(!fileToReplace.isReleased()) {
+                //If file is only in draft version, also need to delete the physical file
+            deleteStorageLocation = fileService.getPhysicalFileToDelete(fileToReplace);
+            deleteFileId=fileToReplace.getId();
+            }
+            //Adding the file to the delete list for the command will delete this filemetadata and, if the file hasn't been released, the datafile itself. 
+            update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, filesToDelete, clone);
+        } else {
+          update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+        }
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
@@ -1551,7 +1566,22 @@ public class AddReplaceFileHelper{
             this.addErrorSevere("add.add_file_error (see logs)");
             logger.severe(ex.getMessage());
             return false;
-        } 
+        }
+        //Sanity check
+        if(isFileReplaceOperation()) {
+            if (deleteStorageLocation != null) {
+                // Finalize the delete of the physical file 
+                // (File service will double-check that the datafile no 
+                // longer exists in the database, before proceeding to 
+                // delete the physical file)
+                try {
+                    fileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                } catch (IOException ioex) {
+                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                            + deleteFileId + ", storage location: " + deleteStorageLocation);
+                }
+            }
+        }
         return true;
     }
 
@@ -1717,12 +1747,11 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
         // Remove the "fileToReplace" from the current working version
         // -----------------------------------------------------------
-        if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
-            return false;
-        }
+//        if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
+//            return false;
+//        }
         
         
-        //ToDo - is this a step?
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
@@ -1751,15 +1780,7 @@ public class AddReplaceFileHelper{
                 df.setRootDataFileId(fileToReplace.getRootDataFileId());
 
             }
-        } else {
-          //Delete the old file/ don't set references to root file
-            try {
-                commandEngine.submit(new DeleteDataFileCommand(fileToReplace, dvRequest, false));
-            } catch (CommandException e) {
-                logger.warning("unable to delete file (id: " + fileToReplace.getId() + ") during replace.");
-            }
         }
-
         // Call the update dataset command
         //
         return step_070_run_update_dataset_command();
