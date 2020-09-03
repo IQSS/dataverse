@@ -2037,6 +2037,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                                     contentType, 
                                     null
                                 )){
+            setFileMetadatas(fileReplacePageHelper.getNewFileMetadatasBeforeSave());
             saveEnabled = true;
 
             /**
@@ -2102,7 +2103,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
     	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
     		saveEnabled = true;
-
+    		setFileMetadatas(fileReplacePageHelper.getNewFileMetadatasBeforeSave());
     		/**
     		 * If the file content type changed, let the user know
     		 */
