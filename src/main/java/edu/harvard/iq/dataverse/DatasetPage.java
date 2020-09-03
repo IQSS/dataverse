@@ -3646,7 +3646,7 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset. 
                     dataset = datasetService.find(dataset.getId());
                     
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, false);
                     newFiles.clear();
                     
                     // and another update command: 
