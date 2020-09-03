@@ -1468,7 +1468,11 @@ public class AddReplaceFileHelper{
         // --------------------------------------------
         for (DataFile df : finalFileList){
             try {
-                optionalFileParams.addOptionalParams(df);
+                if(fileToReplace!=null) {
+                  optionalFileParams.addOptionalParams(fileToReplace);
+                } else {
+                  optionalFileParams.addOptionalParams(df);
+                }
                 
                 // call restriction command here
                 boolean restrict = optionalFileParams.getRestriction();

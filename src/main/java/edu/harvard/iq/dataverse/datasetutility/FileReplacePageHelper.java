@@ -112,7 +112,7 @@ public class FileReplacePageHelper {
         OptionalFileParams ofp = null;
         try {
             ofp = new OptionalFileParams(null);
-            ofp.addOptionalParams(getFileToReplace());
+//optionalFileParams.addOptionalParams(df);
         } catch (DataFileTagException e) {
             //Shouldn't happen with null input
             e.printStackTrace();
