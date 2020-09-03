@@ -36,7 +36,7 @@
         <o:importFunctions type="java.lang.Math" />
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
-        <p:remoteCommand name="refreshPaginator" action="#{datasetFilesTab.refreshPaginator()}" process="@this" update="@form" />
+        <p:remoteCommand name="refreshPaginator" action="#{datasetFilesTab.refreshPaginator()}" process="@this" update="filesTable" />
         <!-- Files Table -->
         <p:dataTable id="filesTable"
                      rows="10" paginator="#{datasetFilesTab.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
