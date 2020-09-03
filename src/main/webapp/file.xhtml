@@ -41,7 +41,8 @@
                     <div id="fileVersionBlock" class="row">
                         <div class="col-xs-12">
                                 <div class="row">
-                                <div id="file-title-block" class="col-xs-12 margin-bottom-half">
+                                  <p:fragment id="fileTitleFragment">
+                                   <div id="file-title-block" class="col-xs-12 margin-bottom-half">
                                     <span class="file-title-label">#{FilePage.fileMetadata.label}</span>
 
                                     <ui:fragment rendered="#{FilePage.fileMetadata.dataFile.ingestProblem and FilePage.canUpdateDataset()}">
@@ -73,6 +74,7 @@
                                                               value="#{bundle['file.DatasetVersion']} #{FilePage.fileMetadata.datasetVersion.versionState}"/>
                                             </div>
                                         </div>
+                                      </p:fragment>
                                     </div>
 
                             <!-- START: NEW RESPONSIVE ABOVE FOLD BLOCK -->
