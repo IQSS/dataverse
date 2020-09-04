@@ -58,7 +58,7 @@ To load it into your Dataverse installation, either use a ``POST`` or ``PUT`` re
 Updating a Mail Domain Group
 ----------------------------
 
-Editing a group is done by replacing it. Grab your group definition like the :ref:`above example <domainGroup1.json>`,
+Editing a group is done by replacing it. Grab your group definition like the domainGroup1.json example above,
 change it as you like and ``PUT`` it into your installation:
 
 ``curl -X PUT -H 'Content-type: application/json' http://localhost:8080/api/admin/groups/domain/domainGroup1 --upload-file domainGroup1.json``
