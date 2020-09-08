@@ -528,12 +528,15 @@ public class SolrIndexServiceBean {
     }
 
     /**
-     * @todo Do we want to report the root dataverse (id 1, often) in
-     * permissionsInDatabaseButMissingFromSolr?
+     * 
      *
      * @return A list of dvobject ids that should have their permissions
      * re-indexed Solr was down when a permission was added. The permission
-     * should be added to Solr.
+     * should be added to Solr. The id of the permission contains the type of
+     * DvObject and the primary key of the dvObject.
+     * DvObjects of type DataFile are currently skipped because their index
+     * time isn't stored in the database, since they are indexed along 
+     * with their parent dataset (this may change).
      */
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
@@ -543,7 +546,7 @@ public class SolrIndexServiceBean {
             Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
             Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
             if (permissionIndexTime == null) {
-                if (dvObject.getId() != rootDvId) {
+                if (dvObject.getId() != rootDvId && !dvObject.isInstanceofDataFile()) {
                     // we don't index the rootDv
                     indexingRequired.add(dvObject.getId());
                 }
