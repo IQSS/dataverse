@@ -72,6 +72,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -114,6 +115,8 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+        @EJB
+        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
 	@EJB
 	BuiltinUserServiceBean builtinUserService;
 	@EJB
@@ -223,9 +226,9 @@ public class Admin extends AbstractApiBean {
 				managed = row;
 			}
 			if (managed.isEnabled()) {
-				AuthenticationProvider provider = authSvc.loadProvider(managed);
-				authSvc.deregisterProvider(provider.getId());
-				authSvc.registerProvider(provider);
+				AuthenticationProvider provider = authProvidersRegistrationSvc.loadProvider(managed);
+				authProvidersRegistrationSvc.deregisterProvider(provider.getId());
+				authProvidersRegistrationSvc.registerProvider(provider);
 			}
 			return created("/api/admin/authenticationProviders/" + managed.getId(), json(managed));
 		} catch (AuthorizationSetupException e) {
@@ -271,7 +274,7 @@ public class Admin extends AbstractApiBean {
 				return ok(String.format("Authentication provider '%s' already enabled", id));
 			}
 			try {
-				authSvc.registerProvider(authSvc.loadProvider(row));
+				authProvidersRegistrationSvc.registerProvider(authProvidersRegistrationSvc.loadProvider(row));
 				return ok(String.format("Authentication Provider %s enabled", row.getId()));
 
 			} catch (AuthenticationProviderFactoryNotFoundException ex) {
@@ -285,7 +288,7 @@ public class Admin extends AbstractApiBean {
 
 		} else {
 			// disable a provider
-			authSvc.deregisterProvider(id);
+			authProvidersRegistrationSvc.deregisterProvider(id);
 			return ok("Authentication Provider '" + id + "' disabled. "
 					+ (authSvc.getAuthenticationProviderIds().isEmpty()
 							? "WARNING: no enabled authentication providers left."
@@ -309,7 +312,7 @@ public class Admin extends AbstractApiBean {
 	@DELETE
 	@Path("authenticationProviders/{id}/")
 	public Response deleteAuthenticationProvider(@PathParam("id") String id) {
-		authSvc.deregisterProvider(id);
+		authProvidersRegistrationSvc.deregisterProvider(id);
 		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
 		if (row != null) {
 			em.remove(row);
@@ -1672,6 +1675,10 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
+			// Note - the user is being set in the session so it becomes part of the
+			// DataverseRequest and is sent to the back-end command where it is used to get
+			// the API Token which is then used to retrieve files (e.g. via S3 direct
+			// downloads) to create the Bag
             session.setUser(au);
             Dataset ds = findDatasetOrDie(dsid);
 

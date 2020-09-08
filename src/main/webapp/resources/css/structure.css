@@ -137,6 +137,7 @@ td.col-select-width, th.col-select-width {width:36px;}
 .no-margin-bottom {margin-bottom:0 !important;}
 .margin-sides {margin-left:1em; margin-right:1em;}
 .padding-12 {padding: 12px;}
+.padding-6 {padding: 6px;}
 .padding-none {padding: 0 !important;}
 .clear-both {clear:both;}
 
@@ -901,6 +902,7 @@ div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete
 /* Overwrite Primefaces */
 .ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #555555;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
+button.btn-default span.ui-button-text {line-height:inherit !important;}
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
 .ui-confirm-dialog-severity {margin-top:3px;}
 .ui-widget-content a.btn-default {color:#333;}

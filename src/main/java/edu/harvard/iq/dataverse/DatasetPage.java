@@ -287,6 +287,15 @@ public class DatasetPage implements java.io.Serializable {
     private Long linkingDataverseId;
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
+    private Dataverse selectedHostDataverse;
+
+    public Dataverse getSelectedHostDataverse() {
+        return selectedHostDataverse;
+    }
+
+    public void setSelectedHostDataverse(Dataverse selectedHostDataverse) {
+        this.selectedHostDataverse = selectedHostDataverse;
+    }
     
     // Version tab lists
     private List<DatasetVersion> versionTabList = new ArrayList<>();
@@ -1796,8 +1805,9 @@ public class DatasetPage implements java.io.Serializable {
     }     
     
     public void updateOwnerDataverse() {
-        if (dataset.getOwner() != null && dataset.getOwner().getId() != null) {
-            ownerId = dataset.getOwner().getId();
+        if (selectedHostDataverse != null && selectedHostDataverse.getId() != null) {
+            ownerId = selectedHostDataverse.getId();
+            dataset.setOwner(selectedHostDataverse);
             logger.info("New host dataverse id: "+ownerId);
             // discard the dataset already created
             //If a global ID was already assigned, as is true for direct upload, keep it (if files were already uploaded, they are at the path corresponding to the existing global id)
@@ -1811,7 +1821,12 @@ public class DatasetPage implements java.io.Serializable {
             init(true);
             // rebuild the bred crumbs display:
             dataverseHeaderFragment.initBreadcrumbs(dataset);
-        }
+        }       
+    }
+    
+    public boolean rsyncUploadSupported() {
+
+        return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     private String init(boolean initFull) {
@@ -1978,7 +1993,8 @@ public class DatasetPage implements java.io.Serializable {
             // create mode for a new child dataset
             readOnly = false; 
             editMode = EditMode.CREATE;
-            dataset.setOwner(dataverseService.find(ownerId));
+            selectedHostDataverse = dataverseService.find(ownerId);
+            dataset.setOwner(selectedHostDataverse);
             dataset.setProtocol(protocol);
             dataset.setAuthority(authority);
 
@@ -1996,7 +2012,11 @@ public class DatasetPage implements java.io.Serializable {
             }                        
             dataverseTemplates.addAll(dataverseService.find(ownerId).getTemplates());
             if (!dataverseService.find(ownerId).isTemplateRoot()) {
-                dataverseTemplates.addAll(dataverseService.find(ownerId).getParentTemplates());
+                for (Template templateTest: dataverseService.find(ownerId).getParentTemplates()){
+                   if(!dataverseTemplates.contains(templateTest)){
+                       dataverseTemplates.add(templateTest);
+                   }
+                }               
             }
             Collections.sort(dataverseTemplates, (Template t1, Template t2) -> t1.getName().compareToIgnoreCase(t2.getName()));
 
@@ -2658,7 +2678,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
-        return returnToDatasetOnly();
+        return returnToDraftVersion();
     }
 
     @Deprecated

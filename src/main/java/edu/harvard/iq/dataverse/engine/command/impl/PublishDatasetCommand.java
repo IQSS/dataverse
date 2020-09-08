@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.joining;
+import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -69,16 +69,6 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         Dataset theDataset = getDataset();
 
-        // If PID can be reserved, only allow publishing if it is.
-        String protocol = getDataset().getProtocol();
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-        boolean reservingPidsSupported = !idServiceBean.registerWhenPublished();
-        if (reservingPidsSupported) {
-            if (theDataset.getGlobalIdCreateTime() == null) {
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
-            }
-        }
-
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {
@@ -102,7 +92,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
             ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
-            return new PublishDatasetResult(theDataset, false);
+            return new PublishDatasetResult(theDataset, Status.Workflow);
             
         } else{
             // We will skip trying to register the global identifiers for datafiles 
@@ -130,28 +120,35 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             
             boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-            if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
-                    && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
-                // TODO? The time it takes to validate the physical files in the dataset
-                // is a function of the total file size, NOT the number of files; 
-                // so that's what we should be checking. 
-                String info = registerGlobalIdsForFiles ? "Registering PIDs for Datafiles and " : "";
-                info += "Validating Datafiles Asynchronously";
-                AuthenticatedUser user = request.getAuthenticatedUser();
+            // As of v5.0, publishing a dataset is always done asynchronously, 
+            // with the dataset locked for the duration of the operation. 
+            
+            //if ((registerGlobalIdsForFiles || validatePhysicalFiles) 
+            //        && theDataset.getFiles().size() > ctxt.systemConfig().getPIDAsynchRegFileCount()) { 
                 
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                lock.setDataset(theDataset);
-                lock.setInfo(info);
-                ctxt.datasets().addDatasetLock(theDataset, lock);
-                theDataset = ctxt.em().merge(theDataset);
-                ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
-                return new PublishDatasetResult(theDataset, false);
-                
+            String info = "Publishing the dataset; "; 
+            info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
+            info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+            
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+            lock.setDataset(theDataset);
+            lock.setInfo(info);
+            ctxt.datasets().addDatasetLock(theDataset, lock);
+            theDataset = ctxt.em().merge(theDataset);
+            // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
+            // method:
+            //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+            return new PublishDatasetResult(theDataset, Status.Inprogress);
+
+            /**
+              * Code for for "synchronous" (while-you-wait) publishing 
+              * is preserved below, commented out:
             } else {
                 // Synchronous publishing (no workflow involved)
                 theDataset = ctxt.engine().submit(new FinalizeDatasetPublicationCommand(theDataset, getRequest(),datasetExternallyReleased));
-                return new PublishDatasetResult(theDataset, true);
-            }
+                return new PublishDatasetResult(theDataset, Status.Completed);
+            } */
         }
     }
     
@@ -202,6 +199,24 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
             }
         }
-    }   
+    }
+    
+    
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        Dataset dataset = null;
+        try{
+            dataset = (Dataset) r;
+        } catch (ClassCastException e){
+            dataset  = ((PublishDatasetResult) r).getDataset();
+        }
+
+        if (dataset != null) {
+            ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
+            return true;
+        }
+        
+        return false;
+    }
     
 }

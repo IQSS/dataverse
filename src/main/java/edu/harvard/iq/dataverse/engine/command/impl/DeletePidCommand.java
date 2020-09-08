@@ -11,17 +11,13 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.pidproviders.PidUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
 
 import javax.xml.ws.http.HTTPException;
-
-import org.apache.commons.httpclient.HttpStatus;
 
 /**
  * No required permissions because we check for superuser status.

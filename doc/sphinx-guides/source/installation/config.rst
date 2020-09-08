@@ -175,7 +175,7 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
-- :ref:`doi.mdcbaseurlstring`
+- :ref:`doi.dataciterestapiurlstring`
 
 **Database Settings:**
 
@@ -186,7 +186,6 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
-- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -372,7 +371,7 @@ Amazon S3 Storage (or Compatible)
 
 Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse.
 
-The Dataverse S3 driver supports multipart upload for files over 4 GB.
+The Dataverse S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
@@ -527,21 +526,22 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-===========================================  ==================  ==================================================================  =============
-JVM Option                                   Value               Description                                                         Default value
-===========================================  ==================  ==================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-===========================================  ==================  ==================================================================  =============
+===========================================  ==================  =========================================================================  =============
+JVM Option                                   Value               Description                                                                Default value
+===========================================  ==================  =========================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                 ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                         ``false``
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.         ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                 (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.            60
+dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
+===========================================  ==================  =========================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -766,7 +766,7 @@ Tracking Button Clicks
 
 The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
 
-Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
+Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
@@ -1069,38 +1069,24 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.baseurlstringnext:
+.. _doi.dataciterestapiurlstring:
 
-doi.baseurlstringnext
-+++++++++++++++++++++
+doi.dataciterestapiurlstring
+++++++++++++++++++++++++++++
 
-Dataverse uses multiple APIs from DataCite:
-
-- The DataCite MDS API is older, XML-based, and configured using :ref:`doi.baseurlstring`.
-- The DataCite REST API is newer, JSON-based, and configured using ``doi.baseurlstringnext``.
-
-In production, ``doi.baseurlstringnext`` should be set to ``https://api.datacite.org``
-
-While testing, ``doi.baseurlstringnext`` should be set to ``https://api.test.datacite.org``
-
-.. _doi.mdcbaseurlstring:
-
-doi.mdcbaseurlstring
-++++++++++++++++++++
-
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
 
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
-Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
+Out of the box, Dataverse is configured to use a test DataCite REST API base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
+``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
 
 Then, to switch to production DataCite, you can issue the following command:
 
-``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
 
-For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
+For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
 
 See also these related database settings below:
 
@@ -1446,24 +1432,13 @@ Note that in either case, when using the ``sequentialNumber`` option, datasets a
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
-
-Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
-
-.. _:PIDAsynchRegFileCount:
-
-:PIDAsynchRegFileCount
-++++++++++++++++++++++
-
-Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
-
-``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
+Note: File-level PID registration was added in 4.9; it could not be disabled until version 4.9.3.
 
 .. _:IndependentHandleService:
 
@@ -1480,13 +1455,11 @@ By default this setting is absent and Dataverse assumes it to be false.
 :FileValidationOnPublishEnabled
 +++++++++++++++++++++++++++++++
 
-Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistent identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
 
 If you don't want the datafiles to be validated on publish, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
-
-Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
 
 
 :ApplicationTermsOfUse
@@ -1649,7 +1622,7 @@ You can override this global setting on a per-format basis for the following for
 - CSV
 - XLSX
 
-For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger that 1 MB, use this setting:
+For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
 

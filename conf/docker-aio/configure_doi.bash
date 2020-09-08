@@ -17,8 +17,8 @@ if [ ! -z "${doi_baseurl}" ]; then
         doi_baseurl_esc=`echo ${doi_baseurl} | sed -e 's/:/\\:/'`
         bin/asadmin create-jvm-options "\"-Ddoi.baseurlstring=${doi_baseurl_esc}\""
 fi
-if [ ! -z "${doi_mdcbaseurl}" ]; then
-        bin/asadmin delete-jvm-options "-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org"
-        doi_mdcbaseurl_esc=`echo ${doi_mdcbaseurl} | sed -e 's/:/\\:/'`
-        bin/asadmin create-jvm-options "\"-Ddoi.mdcbaseurlstring=${doi_mdcbaseurl_esc}\""
+if [ ! -z "${doi_dataciterestapiurl}" ]; then
+        bin/asadmin delete-jvm-options "-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org"
+        doi_dataciterestapiurl_esc=`echo ${doi_dataciterestapiurl} | sed -e 's/:/\\:/'`
+        bin/asadmin create-jvm-options "\"-Ddoi.dataciterestapiurlstring=${doi_dataciterestapiurl_esc}\""
 fi
