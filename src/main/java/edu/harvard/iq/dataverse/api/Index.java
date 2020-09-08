@@ -450,8 +450,8 @@ public class Index extends AbstractApiBean {
                  * @todo What about files? Currently files are always indexed
                  * along with their parent dataset
                  */
-                .add("dataverses", jsonStateOrMissingDataverses.build().size())
-                .add("datasets", datasetsInDatabaseButNotSolr.build().size());
+                .add("dataverses", jsonStateOrMissingDataverses.build())
+                .add("datasets", datasetsInDatabaseButNotSolr.build());
         return contentInDatabaseButStaleInOrMissingFromSolr;
     }
 
