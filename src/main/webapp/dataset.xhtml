@@ -34,6 +34,8 @@
             <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
                                                                    and (!DatasetPage.workingVersion.deaccessioned
                                                                     or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
+            <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
+                                                    fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
             <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(fileMetadata)
                                                                   or (!fileDownloadHelper.canDownloadFile(fileMetadata) and DatasetPage.dataset.fileAccessRequest)
                                                                   and (!DatasetPage.workingVersion.deaccessioned
@@ -1423,6 +1425,19 @@
                             <ui:param name="selectedGuestbook" value="#{DatasetPage.selectedGuestbook}"/>
                             <ui:param name="enableEdit" value="false"/>
                         </ui:include>
+                    </p:dialog>
+                    <p:dialog id="rsyncDataAccessPopup" styleClass="smallPopUp" header="#{bundle['file.dataFilesTab.dataAccess']}" widgetVar="rsyncDataAccessPopup" modal="true"
+                              rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
+                                            and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
+                        <!-- Data Access for Rsync Download -->
+                        <ui:include src="file-data-access-fragment.xhtml">
+                            <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                            <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                        </ui:include>
+                        <button class="btn btn-default" onclick="PF('rsyncDataAccessPopup').hide();">
+                            #{bundle.done}
+                        </button>
                     </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />

@@ -758,7 +758,6 @@ div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.
 div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
 div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0;}
 div[id$="filesTable"] td.col-file-action .btn-group .btn-link {font-size:2em !important;}
-div[id$="filesTable"] td.col-file-access {width:50%;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
 div[id$="cloudStorageBlock"] {margin-bottom:12px;}

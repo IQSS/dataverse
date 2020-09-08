@@ -454,7 +454,7 @@
             </div>
         </p:column>
 
-        <p:column class="col-file-action button-block text-right #{settingsWrapper.rsyncOnly ? 'col-file-access' : ''}" ariaHeaderText="#{bundle['file.actionsBlock']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+        <p:column class="col-file-action button-block text-right" ariaHeaderText="#{bundle['file.actionsBlock']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
             <f:facet name="header">
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
@@ -593,16 +593,6 @@
                 </script>
             </f:facet>
             
-            <div class="col-xs-12 text-left small" jsf:rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
-                                                                    and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
-                <!-- Data Access for Rsync Download -->
-                <ui:include src="file-data-access-fragment.xhtml">
-                    <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                    <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
-                    <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                </ui:include>
-            </div>
-            
             <!-- FILE LEVEL MSGs -->
             <div class="bg-info text-info text-center margin-bottom-half" jsf:rendered="#{fileMetadata.dataFile.ingestInProgress}">
                 <!-- Ingest in progress... -->
@@ -645,6 +635,18 @@
                             </ui:include>
                         </ui:fragment>
                         <!-- END: Explore/Download/Request Button Block -->
+                        
+                        <!-- Data Access for Rsync Download -->
+                        <ui:fragment rendered="#{fileMetadata.dataFile.filePackage and systemConfig.rsyncDownload 
+                                                    and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}">
+                            <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+                            <li>
+                                <p:commandLink onclick="PF('rsyncDataAccessPopup').show()">
+                                    #{bundle['file.dataFilesTab.dataAccess']}
+                                </p:commandLink>
+                            </li>
+                        </ui:fragment>
+                        <!-- END: Data Access for Rsync Download -->
                     </ul>
                 </div>
                 
