@@ -196,6 +196,11 @@
             <!-- no version here as managed by BOM above! -->
         </dependency>
         <dependency>
+          <groupId>com.apicatalog</groupId>
+          <artifactId>titanium-json-ld</artifactId>
+          <version>0.8.4</version>
+        </dependency>
+        <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
             <groupId>org.apache.abdera</groupId>
             <artifactId>abdera-core</artifactId>

@@ -105,6 +105,7 @@ import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
@@ -163,6 +164,9 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.api.JsonLdError;
+import com.apicatalog.jsonld.document.JsonDocument;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -631,10 +635,11 @@ public class Datasets extends AbstractApiBean {
             Dataset ds = findDatasetOrDie(id);
             boolean updateDraft = ds.getLatestVersion().isDraft();
             DatasetVersion dsv = ds.getEditVersion();
-            JsonObject json = Json.createReader(rdr).readObject();
-            Map<String, String> context = JSONLDUtil.populateContext(json.get("@context"));
+            //JsonObject json = Json.createReader(rdr).readObject();
+            //Map<String, String> context = JSONLDUtil.populateContext(json.get("@context"));
             
             //ToDo - check that the context and localContext align w.r.t. keys mapping to URIs (prefixes and terms) - can translate otherwise
+
             
             Map<String, String> localContext = new TreeMap<String,String>();
             //Add namespaces corresponding to core terms
@@ -662,6 +667,22 @@ public class Datasets extends AbstractApiBean {
             		}
             	}
             }
+            
+//          Use JsonLd to expand/compact to localContext?
+//     	  Or just use expanded form against URIs?
+            
+            JsonObject jsonld = Json.createReader(rdr).readObject();
+            JsonDocument doc = JsonDocument.of(jsonld);
+            JsonArray array = null;
+            try {
+                array = JsonLd.expand(doc).get();
+
+                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext))).get();
+            } catch (JsonLdError e) {
+                System.out.println(e.getMessage());
+            }
+            
+            
             //get existing ones?
             List<DatasetField> dsfl = dsv.getDatasetFields();
             Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
