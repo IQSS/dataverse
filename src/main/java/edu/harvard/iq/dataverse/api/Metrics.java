@@ -681,8 +681,9 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("uniquedownloads")
-    public Response getUniqueDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getUniqueDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    @Produces("text/csv, application/json")
+    public Response getUniqueDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getUniqueDownloadsToMonth(req, uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
 
     @GET
@@ -713,7 +714,8 @@ public class Metrics extends AbstractApiBean {
 
     @GET
     @Path("uniquedownloads/toMonth/{yyyymm}")
-    public Response getUniqueDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+    @Produces("text/csv, application/json")
+    public Response getUniqueDownloadsToMonth(@Context Request req, @Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
@@ -725,24 +727,30 @@ public class Metrics extends AbstractApiBean {
         String metricName = "uniqueDownloads";
 
         String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
-        JsonArray jsonArr = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
 
-        if (null == jsonArr) { // run query and save
-            jsonArr = metricsSvc.uniqueDatasetDownloads(sanitizedyyyymm, d);
-            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArr.toString()));
+        if (null == jsonArray) { // run query and save
+            jsonArray = metricsSvc.uniqueDatasetDownloads(sanitizedyyyymm, d);
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArray.toString()));
         }
-        return ok(jsonArr);
+        MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquedownloads.csv");
     }
 
     @GET
     @Path("uniquefiledownloads")
-    public Response getUniqueFileDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
-        return getUniqueFileDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    @Produces("text/csv, application/json")
+    public Response getUniqueFileDownloadsAllTime(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getUniqueFileDownloadsToMonth(req, uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
     }
     
     @GET
     @Path("uniquefiledownloads/toMonth/{yyyymm}")
-    public Response getUniqueFileDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+    @Produces("text/csv, application/json")
+    public Response getUniqueFileDownloadsToMonth(@Context Request req, @Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
         Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
 
         try {
@@ -760,7 +768,11 @@ public class Metrics extends AbstractApiBean {
             jsonArr = metricsSvc.fileDownloads(sanitizedyyyymm, d, true);
             metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArr.toString()));
         }
-        return ok(jsonArr);
+        MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+            return ok(jsonArr);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArr, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquefiledownloads.csv");
     }
     
     @GET
