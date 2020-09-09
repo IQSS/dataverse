@@ -501,7 +501,7 @@ public class MetricsServiceBean implements Serializable {
                 + " where ob.id = gb.datafile_id "
                 + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
                 + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
-                + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count;");
+                + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count desc;");
 
         logger.log(Level.FINE, "Metric query: {0}", query);
         JsonArrayBuilder jab = Json.createArrayBuilder();
