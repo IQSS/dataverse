@@ -348,15 +348,15 @@ Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your clo
 - Compute on multiple datasets
 - Compute on a single datafile
 
-The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute button will redirect to:
+The compute tool options on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute tool option will redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId``
 
-If a user is computing on multiple datasets, the compute button will redirect to:
+If a user is computing on multiple datasets, the compute tool option will redirect to:
 
 ``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
 
-If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to:
+If a user is computing on a single file, depending on the configuration of your installation, the compute tool option will either redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId=yourObject``
 
