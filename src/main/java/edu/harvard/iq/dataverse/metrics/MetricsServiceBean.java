@@ -481,6 +481,20 @@ public class MetricsServiceBean implements Serializable {
 
         return (long) query.getSingleResult();
     }
+    
+    public JsonArray fileDownloadsTimeSeries(Dataverse d, boolean uniqueCounts) {
+        Query query = em.createNativeQuery("select distinct to_char(gb.responsetime, 'YYYY-MM') as date, ob.id, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(" + (uniqueCounts ? "distinct email" : "*") + ") "
+                + " FROM guestbookresponse gb, DvObject ob"
+                + " where ob.id = gb.datafile_id "
+                + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier, to_char(gb.responsetime, 'YYYY-MM') order by to_char(gb.responsetime, 'YYYY-MM');");
+
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        List<Object[]> results = query.getResultList();
+        return MetricsUtil.timeSeriesByIDAndPIDToJson(results);
+
+    }
+    
 
     public JsonArray uniqueDownloadsTimeSeries(Dataverse d) {
         Query query = em.createNativeQuery("select distinct to_char(gb.responsetime, 'YYYY-MM') as date, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "

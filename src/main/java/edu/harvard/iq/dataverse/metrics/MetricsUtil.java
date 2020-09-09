@@ -29,6 +29,7 @@ public class MetricsUtil {
     public final static String CONTENTTYPE = "contenttype";
     public final static String COUNT = "count";
     public final static String CATEGORY = "category";
+    public final static String ID = "id";
     public final static String PID = "pid";
     public final static String SUBJECT = "subject";
     public final static String DATE = "date";
@@ -183,6 +184,41 @@ public class MetricsUtil {
                 job.add(MetricsUtil.DATE, date);
                 job.add(PID, type);
                 job.add(COUNT, totals.get(type));
+                jab.add(job);
+            }
+        }
+        return jab.build();
+    }
+    
+    public static JsonArray timeSeriesByIDAndPIDToJson(List<Object[]> results) {
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        Map<Long, Long> totals = new HashMap<Long, Long>();
+        Map<Long, String> pids = new HashMap<Long, String>();
+        String curDate = (String) results.get(0)[0];
+        // Get a list of all the monthly dates from the start until now
+        List<String> dates = getDatesFrom(curDate);
+        int i = 0;
+        // Create an entry for each date
+        for (String date : dates) {
+            // If there's are results for this date, add their counts to the totals
+            // and find the date of the next entry(ies)
+            while (date.equals(curDate) && i < results.size()) {
+                Long id = (Long) results.get(i)[1];
+                String pid = (String) results.get(i)[2];
+                totals.put(id,  (totals.containsKey(id) ? totals.get(id) : 0) + (long) results.get(i)[3]);
+                pids.put(id,  pid);
+                i += 1;
+                if (i < results.size()) {
+                    curDate = (String) results.get(i)[0];
+                }
+            }
+            // Then add the aggregate count and size for all types
+            for(Long id: totals.keySet()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add(MetricsUtil.DATE, date);
+                job.add(ID, id);
+                job.add(PID, pids.get(id));
+                job.add(COUNT, totals.get(id));
                 jab.add(job);
             }
         }
