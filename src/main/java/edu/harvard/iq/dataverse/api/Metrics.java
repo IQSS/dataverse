@@ -625,6 +625,35 @@ public class Metrics extends AbstractApiBean {
     }
     
     @GET
+    @Path("filedownloads")
+    public Response getFileDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getFileDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    }
+    
+    @GET
+    @Path("filedownloads/toMonth/{yyyymm}")
+    public Response getFileDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "fileDownloads";
+
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        JsonArray jsonArr = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+        if (null == jsonArr) { // run query and save
+            jsonArr = metricsSvc.fileDownloads(sanitizedyyyymm, d, false);
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArr.toString()));
+        }
+        return ok(jsonArr);
+    }
+    
+    @GET
     @Path("filedownloads/monthly")
     @Produces("text/csv, application/json")
     public Response getFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
@@ -705,6 +734,61 @@ public class Metrics extends AbstractApiBean {
         return ok(jsonArr);
     }
 
+    @GET
+    @Path("uniquefiledownloads")
+    public Response getUniqueFileDownloadsAllTime(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        return getUniqueFileDownloadsToMonth(uriInfo, MetricsUtil.getCurrentMonth(), parentAlias);
+    }
+    
+    @GET
+    @Path("uniquefiledownloads/toMonth/{yyyymm}")
+    public Response getUniqueFileDownloadsToMonth(@Context UriInfo uriInfo, @PathParam("yyyymm") String yyyymm, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+
+        String metricName = "uniquefileDownloads";
+
+        String sanitizedyyyymm = MetricsUtil.sanitizeYearMonthUserInput(yyyymm);
+        JsonArray jsonArr = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheMonthly(metricName, sanitizedyyyymm, null, d));
+
+        if (null == jsonArr) { // run query and save
+            jsonArr = metricsSvc.fileDownloads(sanitizedyyyymm, d, true);
+            metricsSvc.save(new Metric(metricName, sanitizedyyyymm, null, d, jsonArr.toString()));
+        }
+        return ok(jsonArr);
+    }
+    
+    @GET
+    @Path("uniquefiledownloads/monthly")
+    @Produces("text/csv, application/json")
+    public Response getUniqueFileDownloadsTimeSeries(@Context Request req, @Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {
+        Dataverse d = findDataverseOrDieIfNotFound(parentAlias);
+        try {
+            errorIfUnrecongizedQueryParamPassed(uriInfo, new String[] { "parentAlias" });
+        } catch (IllegalArgumentException ia) {
+            return error(BAD_REQUEST, ia.getLocalizedMessage());
+        }
+        String metricName = "uniquefileDownloads";
+
+        JsonArray jsonArray = MetricsUtil.stringToJsonArray(metricsSvc.returnUnexpiredCacheAllTime(metricName, null, d));
+
+        if (null == jsonArray) { // run query and save
+            // Only handling published right now
+            jsonArray = metricsSvc.fileDownloadsTimeSeries(d, true);
+            metricsSvc.save(new Metric(metricName, null, null, d, jsonArray.toString()));
+        }
+        MediaType requestedType = getVariant(req, MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE);
+        if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+            return ok(jsonArray);
+        }
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquefiledownloads.timeseries.csv");
+    }
+    
     @GET
     @Path("tree")
     public Response getDataversesTree(@Context UriInfo uriInfo, @QueryParam("parentAlias") String parentAlias) {

@@ -495,6 +495,30 @@ public class MetricsServiceBean implements Serializable {
 
     }
     
+    public JsonArray fileDownloads(String yyyymm, Dataverse d, boolean uniqueCounts) {
+        Query query = em.createNativeQuery("select ob.id, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(" + (uniqueCounts ? "distinct email" : "*") + ") "
+                + " FROM guestbookresponse gb, DvObject ob"
+                + " where ob.id = gb.datafile_id "
+                + ((d == null) ? "" : " and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
+                + " and date_trunc('month', gb.responsetime) <=  to_date('" + yyyymm + "','YYYY-MM')\n"
+                + "group by gb.datafile_id, ob.id, ob.protocol, ob.authority, ob.identifier order by count;");
+
+        logger.log(Level.FINE, "Metric query: {0}", query);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        try {
+            List<Object[]> results = query.getResultList();
+            for (Object[] result : results) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add(MetricsUtil.ID, (int) result[0]);
+                job.add(MetricsUtil.PID, (String) result[1]);
+                job.add(MetricsUtil.COUNT, (long) result[2]);
+                jab.add(job);
+            }
+        } catch (javax.persistence.NoResultException nr) {
+            // do nothing
+        }
+        return jab.build();
+    }
 
     public JsonArray uniqueDownloadsTimeSeries(Dataverse d) {
         Query query = em.createNativeQuery("select distinct to_char(gb.responsetime, 'YYYY-MM') as date, ob.protocol || ':' || ob.authority || '/' || ob.identifier as pid, count(distinct email) "
