@@ -192,8 +192,8 @@ public class MetricsUtil {
     
     public static JsonArray timeSeriesByIDAndPIDToJson(List<Object[]> results) {
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        Map<Long, Long> totals = new HashMap<Long, Long>();
-        Map<Long, String> pids = new HashMap<Long, String>();
+        Map<Integer, Long> totals = new HashMap<Integer, Long>();
+        Map<Integer, String> pids = new HashMap<Integer, String>();
         String curDate = (String) results.get(0)[0];
         // Get a list of all the monthly dates from the start until now
         List<String> dates = getDatesFrom(curDate);
@@ -203,7 +203,7 @@ public class MetricsUtil {
             // If there's are results for this date, add their counts to the totals
             // and find the date of the next entry(ies)
             while (date.equals(curDate) && i < results.size()) {
-                Long id = (Long) results.get(i)[1];
+                Integer id = (Integer) results.get(i)[1];
                 String pid = (String) results.get(i)[2];
                 totals.put(id,  (totals.containsKey(id) ? totals.get(id) : 0) + (long) results.get(i)[3]);
                 pids.put(id,  pid);
@@ -213,7 +213,7 @@ public class MetricsUtil {
                 }
             }
             // Then add the aggregate count and size for all types
-            for(Long id: totals.keySet()) {
+            for(Integer id: totals.keySet()) {
                 JsonObjectBuilder job = Json.createObjectBuilder();
                 job.add(MetricsUtil.DATE, date);
                 job.add(ID, id);
