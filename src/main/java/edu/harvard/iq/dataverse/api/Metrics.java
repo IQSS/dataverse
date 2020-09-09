@@ -647,7 +647,7 @@ public class Metrics extends AbstractApiBean {
         if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
             return ok(jsonArray);
         }
-        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "uniquedownloads.timeseries.csv");
+        return ok(FileUtil.jsonToCSV(jsonArray, MetricsUtil.DATE, MetricsUtil.ID, MetricsUtil.PID, MetricsUtil.COUNT), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "filedownloads.timeseries.csv");
     }
 
     @GET
