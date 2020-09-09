@@ -199,7 +199,8 @@
                                                 <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                                     <div class="row col-xs-12 form-group">
                                                         <div class="col-xs-9 form-col-container">
-                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" >
+                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="true"
+                                                                         requiredMessage="#{valMsg['dataverse.contact']}">
                                                                 <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                             </p:inputText>
                                                             <p:message for="contactEmail" display="text"/>
