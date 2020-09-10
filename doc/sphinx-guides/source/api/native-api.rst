@@ -3061,20 +3061,6 @@ Note that if you are attempting to validate a very large number of datasets in y
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
 
-
-
-Index and Database Consistency
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Get a list of all database objects that are missing in Solr, and Solr documents that are missing in the database::
-
-  curl $SERVER_URL/api/admin/index/status
-
-Remove all Solr documents that are orphaned (ie not associated with objects in the database)::
-
-  curl $SERVER_URL/api/admin/index/clear-orphans
-
-
 Workflows
 ~~~~~~~~~
 

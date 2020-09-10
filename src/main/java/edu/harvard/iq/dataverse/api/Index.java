@@ -388,7 +388,7 @@ public class Index extends AbstractApiBean {
         try {
             contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
             permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
- } catch (SearchException ex) {
+        } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
         }
 

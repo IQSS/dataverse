@@ -531,7 +531,7 @@ public class SolrIndexServiceBean {
      * 
      *
      * @return A list of dvobject ids that should have their permissions
-     * re-indexed Solr was down when a permission was added. The permission
+     * re-indexed because Solr was down when a permission was added. The permission
      * should be added to Solr. The id of the permission contains the type of
      * DvObject and the primary key of the dvObject.
      * DvObjects of type DataFile are currently skipped because their index
