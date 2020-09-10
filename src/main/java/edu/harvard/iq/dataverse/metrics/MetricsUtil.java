@@ -103,7 +103,7 @@ public class MetricsUtil {
         // Create an entry for each date
         for (String date : dates) {
             JsonObjectBuilder job = Json.createObjectBuilder();
-            job.add(MetricsUtil.DATE, date);
+            
             // If there's a result for this date, add it's count to the total
             // and find the date of the next entry
             if (date.equals(curDate)) {
@@ -117,9 +117,19 @@ public class MetricsUtil {
                     curDate = (String) results.get(i)[0];
                 }
             }
-            // Then add the aggregate count
-            job.add(MetricsUtil.COUNT, total);
-            jab.add(job);
+            /*Don't report dates prior to the first count
+             * Probably generally useful but added specifically because some installations
+             * with MDC did not get unique view info to start, so there are MDC downloads
+             * starting from the first logging date but unique views/downloads only start
+             * later and it is odd to see no unique counts for the prior months
+             */
+
+            if (total != 0) {
+                job.add(MetricsUtil.DATE, date);
+                // Then add the aggregate count
+                job.add(MetricsUtil.COUNT, total);
+                jab.add(job);
+            }
         }
         return jab.build();
     }
