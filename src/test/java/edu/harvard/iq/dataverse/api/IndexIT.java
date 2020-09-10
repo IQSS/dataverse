@@ -97,18 +97,13 @@ public class IndexIT {
 
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
-        deleteDatasetResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
+     
         Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
         deleteDataverseResponse.prettyPrint();
-        deleteDataverseResponse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
+      
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
-
+      
     }
    
     @After
