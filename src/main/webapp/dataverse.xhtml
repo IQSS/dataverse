@@ -19,7 +19,7 @@
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
             </ui:define>
             <ui:define name="body">
-                <f:loadBundle basename="propertyFiles.ValidationMessages" var="valMsg"/>
+                <f:loadBundle basename="ValidationMessages" var="valMsg"/>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.id}"/>
                     <f:viewParam name="alias" value="#{DataversePage.alias}"/>
@@ -199,8 +199,8 @@
                                                 <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                                     <div class="row col-xs-12 form-group">
                                                         <div class="col-xs-9 form-col-container">
-                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="true"
-                                                                         requiredMessage="#{valMsg['dataverse.contact']}">
+                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="#{param['DO_VALIDATION']}"
+                                                                         >
                                                                 <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                             </p:inputText>
                                                             <p:message for="contactEmail" display="text"/>
