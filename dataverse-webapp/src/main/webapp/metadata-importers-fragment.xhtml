@@ -181,7 +181,7 @@
                                                                     <div class="col-xs-6" jsf:rendered="#{childItem.processingType ne Processing.UNPROCESSABLE}">
                                                                             <p:selectBooleanCheckbox value="#{childItem.shouldProcess}"
                                                                                                     itemLabel="#{childItem.localizedName}: " escape="false"/>
-                                                                            <h:outputText value="#{childItem.value}" escape="true" />
+                                                                            <h:outputText value="#{childItem.value}" escape="true" style="word-break: break-all;"/>
                                                                         <ui:repeat value="#{childItem.children}" var="cvItem" varStatus="cvStatus"
                                                                                    rendered="#{childItem.itemType eq ItemType.VOCABULARY}">
                                                                             <span class="glyphicon glyphicon-warning-sign"
