@@ -123,7 +123,7 @@ public class ExternalToolsIT {
         getExternalToolsForFileInvalidType.prettyPrint();
         getExternalToolsForFileInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
 
         Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
         getExternalToolsForTabularFiles.prettyPrint();
