@@ -71,7 +71,9 @@ public class OptionalFileParams {
     private String checkSum;
     public static final String CHECKSUM_ATTR_NAME = "md5Hash";
 
-     
+    public OptionalFileParams() {
+    }
+    
     public OptionalFileParams(String jsonData) throws DataFileTagException{
         
         if (jsonData != null){
