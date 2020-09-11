@@ -1,17 +1,10 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
@@ -24,13 +17,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -49,8 +37,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  *
@@ -80,7 +68,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
     
-    @Expose
     @NotBlank
     @Column( nullable = false )
     @Pattern(regexp = "^.*/.*$", message = "{contenttype.slash}")
@@ -151,7 +138,6 @@ public class DataFile extends DvObject implements Comparable {
     
     // For the initial version of a file, this will be equivalent to the ID
     // Default is -1 until the intial id is generated
-    @Expose
     @Column(nullable=false)
     private Long rootDataFileId;
 
@@ -161,21 +147,17 @@ public class DataFile extends DvObject implements Comparable {
      */
     // null for initial version; subsequent versions will point to the previous file
     //
-    @Expose
     @Column(nullable=true)
     private Long previousDataFileId;
     /* endt: FILE REPLACE ATTRIBUTES */
     
     
     
-    @Expose
     @Column(nullable=true)
     private Long filesize;      // Number of bytes in file.  Allows 0 and null, negative numbers not permitted
-
-    @Expose
+    
     private boolean restricted;
     
-    @Expose
     @Column(columnDefinition = "TEXT", nullable = true, name="prov_entityname")
     private String provEntityName;
     
@@ -920,116 +902,6 @@ public class DataFile extends DvObject implements Comparable {
      */
     public Long getPreviousDataFileId(){
         return this.previousDataFileId;
-    }
-
-    public String toPrettyJSON(){
-        
-        return serializeAsJSON(true);
-    }
-
-    public String toJSON(){
-        
-        return serializeAsJSON(false);
-    }
-    
-    
-    
-    public JsonObject asGsonObject(boolean prettyPrint){
-        
-        String overarchingKey = "data";
-        
-        GsonBuilder builder;
-        if (prettyPrint){  // Add pretty printing
-            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
-        }else{
-            builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();                        
-        }
-        
-        builder.serializeNulls();   // correctly capture nulls
-        Gson gson = builder.create();
-
-        // ----------------------------------
-        // serialize this object + add the id
-        // ----------------------------------
-        JsonElement jsonObj = gson.toJsonTree(this);
-        jsonObj.getAsJsonObject().addProperty("id", this.getId());
-
-        // ----------------------------------
-        //  get the FileMetadata object
-        // ----------------------------------
-        FileMetadata thisFileMetadata = this.getFileMetadata();
-
-        // ----------------------------------
-        //  Add dataset info
-        // ----------------------------------
-
-        Map<String, Object> datasetMap = new HashMap<>();
-        // expensive call.......bleh!!! 
-        // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
-        //
-        datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
-        datasetMap.put("persistentId", getOwner().getGlobalIdString());
-        datasetMap.put("url", getOwner().getPersistentURL());
-        datasetMap.put("version", thisFileMetadata.getDatasetVersion().getSemanticVersion());
-        datasetMap.put("id", getOwner().getId());
-        datasetMap.put("isPublished", thisFileMetadata.getDatasetVersion().isReleased());
-        
-        jsonObj.getAsJsonObject().add("dataset",  gson.toJsonTree(datasetMap));
-       
-        // ----------------------------------
-        //  Add dataverse info
-        // ----------------------------------
-        Map<String, Object> dataverseMap = new HashMap<>();
-        Dataverse dv = this.getOwner().getOwner();
-        
-        dataverseMap.put("name", dv.getName());
-        dataverseMap.put("alias", dv.getAlias());
-        dataverseMap.put("id", dv.getId()); 
-
-        jsonObj.getAsJsonObject().add("dataverse",  gson.toJsonTree(dataverseMap));
-        
-        // ----------------------------------
-        //  Add label (filename), description, and categories from the FileMetadata object
-        // ----------------------------------
-
-        jsonObj.getAsJsonObject().addProperty("filename", thisFileMetadata.getLabel());
-        jsonObj.getAsJsonObject().addProperty("description", thisFileMetadata.getDescription());
-        jsonObj.getAsJsonObject().add("categories", 
-                            gson.toJsonTree(thisFileMetadata.getCategoriesByName())
-                    );
-
-        // ----------------------------------        
-        // Tags
-        // ----------------------------------               
-        jsonObj.getAsJsonObject().add("tags", gson.toJsonTree(getTagLabels()));
-
-        // ----------------------------------        
-        // Checksum
-        // ----------------------------------
-        Map<String, String> checkSumMap = new HashMap<>();
-        checkSumMap.put("type", getChecksumType().toString());
-        checkSumMap.put("value", getChecksumValue());
-        
-        JsonElement checkSumJSONMap = gson.toJsonTree(checkSumMap);
-        
-        jsonObj.getAsJsonObject().add("checksum", checkSumJSONMap);
-        
-        return jsonObj.getAsJsonObject();
-        
-    }
-    
-    /**
-     * 
-     * @param prettyPrint
-     * @return 
-     */
-    private String serializeAsJSON(boolean prettyPrint){
-        
-        JsonObject fullFileJSON = asGsonObject(prettyPrint);
-              
-        //return fullFileJSON.
-        return fullFileJSON.toString();
-        
     }
     
     public String getPublicationDateFormattedYYYYMMDD() {
