@@ -147,12 +147,23 @@
             <artifactId>passay</artifactId>
             <version>1.1.0</version>
         </dependency>
+        
+        <!-- JSON-P -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
+            <artifactId>jakarta.json</artifactId>
+            <!-- required during testing & runtime, version provided by Payara BOM -->
             <scope>test</scope>
         </dependency>
+        <!-- JSON-B API -->
+        <!-- No need to include Yasson implementation, too, as already delivered as transitive dep from Payara BOM -->
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+            <!-- required during testing & runtime, version provided by Payara BOM -->
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -224,18 +235,6 @@
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
             <scope>compile</scope>
-        </dependency>
-        <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- Should be refactored and moved to transitive section above once on Java EE 8 (makes WAR smaller) -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
