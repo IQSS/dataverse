@@ -1,57 +1,43 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
+import javax.json.*;
 import javax.json.stream.JsonGenerator;
 
 public class JsonUtil {
 
     private static final Logger logger = Logger.getLogger(JsonUtil.class.getCanonicalName());
+    private static JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(Collections.singletonMap(JsonGenerator.PRETTY_PRINTING, true));
 
     /**
      * Make an attempt at pretty printing a String but will return the original
      * string if it isn't JSON or if there is any exception.
+     * Null- and empty-safe.
      */
     public static String prettyPrint(String jsonString) {
+        if (jsonString == null || "".equals(jsonString)) return jsonString;
         try {
-            com.google.gson.JsonParser jsonParser = new com.google.gson.JsonParser();
-            JsonObject jsonObject = jsonParser.parse(jsonString).getAsJsonObject();
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String prettyJson = gson.toJson(jsonObject);
-            return prettyJson;
+            JsonReader reader = Json.createReader(new StringReader(jsonString));
+            JsonStructure struct = reader.read();
+            return prettyPrint(struct);
         } catch (Exception ex) {
             logger.info("Returning original string due to exception: " + ex);
             return jsonString;
         }
     }
-
-    public static String prettyPrint(JsonArray jsonArray) {
-        Map<String, Boolean> config = new HashMap<>();
-        config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
+    
+    /**
+     * Prettyprint any Jakarta EE JSON-P structure (object, array, value, ...).
+     * @param jsonStructure
+     * @return Pretty JSON string
+     */
+    public static String prettyPrint(JsonStructure jsonStructure) {
         StringWriter stringWriter = new StringWriter();
         try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
-            jsonWriter.writeArray(jsonArray);
-        }
-        return stringWriter.toString();
-    }
-
-    public static String prettyPrint(javax.json.JsonObject jsonObject) {
-        Map<String, Boolean> config = new HashMap<>();
-        config.put(JsonGenerator.PRETTY_PRINTING, true);
-        JsonWriterFactory jsonWriterFactory = Json.createWriterFactory(config);
-        StringWriter stringWriter = new StringWriter();
-        try (JsonWriter jsonWriter = jsonWriterFactory.createWriter(stringWriter)) {
-            jsonWriter.writeObject(jsonObject);
+            jsonWriter.write(jsonStructure);
         }
         return stringWriter.toString();
     }
