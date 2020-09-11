@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.api.batchjob;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 
@@ -9,6 +8,8 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.ejb.Stateless;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -26,7 +27,7 @@ public class BatchJobResource extends AbstractApiBean {
 
     private static String EMPTY_JSON_LIST = "[]";
     private static String EMPTY_JSON_OBJ = "{}";
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static Jsonb mapper = JsonbBuilder.create();
 
     @GET
     @Path("/jobs")
@@ -46,7 +47,7 @@ public class BatchJobResource extends AbstractApiBean {
                     }
                 }
             }
-            return Response.ok("{ \"jobs\": \n" + mapper.writeValueAsString(executionEntities) + "\n}").build();
+            return Response.ok("{ \"jobs\": \n" + mapper.toJson(executionEntities) + "\n}").build();
         } catch (Exception e) {
             return Response.ok(EMPTY_JSON_LIST).build();
         }
@@ -67,7 +68,7 @@ public class BatchJobResource extends AbstractApiBean {
                     executionEntities.add(JobExecutionEntity.create(execution));
                 }
             }
-            return Response.ok("{ \"jobs\": \n" + mapper.writeValueAsString(executionEntities) + "\n}").build();
+            return Response.ok("{ \"jobs\": \n" + mapper.toJson(executionEntities) + "\n}").build();
         } catch (Exception e) {
             return Response.ok(EMPTY_JSON_LIST).build();
         }
@@ -80,7 +81,7 @@ public class BatchJobResource extends AbstractApiBean {
     public Response listBatchJobById(@PathParam("jobId") String jobId) {
         try {
             JobExecution execution = BatchRuntime.getJobOperator().getJobExecution(Long.valueOf(jobId));
-            return Response.ok(mapper.writeValueAsString(JobExecutionEntity.create(execution))).build();
+            return Response.ok(mapper.toJson(JobExecutionEntity.create(execution))).build();
         } catch (Exception e) {
             return Response.ok(EMPTY_JSON_OBJ).build();
         }

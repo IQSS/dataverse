@@ -19,7 +19,6 @@ package edu.harvard.iq.dataverse.api.filesystem;
    Developed at the Institute for Quantitative Social Science, Harvard University.
 */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
@@ -54,6 +53,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbException;
 
 import static com.jayway.restassured.RestAssured.given;
 import static junit.framework.Assert.assertEquals;
@@ -72,7 +74,7 @@ import static org.hamcrest.Matchers.equalTo;
  */
 public class FileRecordJobIT {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static Jsonb mapper = JsonbBuilder.create();
     private static ClassLoader classLoader = FileRecordJobIT.class.getClassLoader();
     private static final String SEP = File.separator;
 
@@ -1281,9 +1283,9 @@ public class FileRecordJobIT {
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
                     Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
-            return mapper.readValue(jobResult, JobExecutionEntity.class);
-        } catch (IOException ioe) {
-            System.out.println("Error getting job execution entity: " + ioe.getMessage());
+            return mapper.fromJson(jobResult, JobExecutionEntity.class);
+        } catch (JsonbException e) {
+            System.out.println("Error getting job execution entity: " + e.getMessage());
             return null;
         }
     }
@@ -1305,9 +1307,9 @@ public class FileRecordJobIT {
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
                     Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
-            return mapper.readValue(jobResult, JobExecutionEntity.class);
-        } catch (IOException ioe) {
-            System.out.println("Error getting job execution entity: " + ioe.getMessage());
+            return mapper.fromJson(jobResult, JobExecutionEntity.class);
+        } catch (JsonbException e) {
+            System.out.println("Error getting job execution entity: " + e.getMessage());
             return null;
         }
     }
@@ -1328,9 +1330,9 @@ public class FileRecordJobIT {
             String jobResult = pollJobStatus(jobId, token, Integer.valueOf(props.getProperty("polling.retries")),
                     Integer.valueOf(props.getProperty("polling.wait")));
             System.out.println("JOB JSON: " + jobResult);
-            return mapper.readValue(jobResult, JobExecutionEntity.class);
-        } catch (IOException ioe) {
-            System.out.println("Error getting job execution entity: " + ioe.getMessage());
+            return mapper.fromJson(jobResult, JobExecutionEntity.class);
+        } catch (JsonbException e) {
+            System.out.println("Error getting job execution entity: " + e.getMessage());
             return null;
         }
     }
