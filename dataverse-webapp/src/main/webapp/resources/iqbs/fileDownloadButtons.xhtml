@@ -22,7 +22,6 @@
 
 
 <composite:implementation>
-    <c:set var="downloadsDisabled" value="#{cc.attrs.fileMetadata.dataFile.ingestInProgress or cc.attrs.lockedFromDownload}"/>
     <c:set var="canDownloadFile" value="#{fileDownloadHelper.canUserDownloadFile(cc.attrs.fileMetadata)}" />
     
     <ui:fragment rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
@@ -75,7 +74,6 @@
                 <li>
                     <p:commandLink id="externalToolDownloadPopupButton"
                                    pt:role="menuitem"
-                                   disabled="#{downloadsDisabled}"
                                    process="@this"
                                    actionListener="#{RequestedDownloadType.initDownloadTypeForTool(cc.attrs.fileMetadata, tool)}"
                                    action="#{cc.attrs.downloadRequestFunction}"
@@ -87,7 +85,6 @@
             <!--WorldMap Explore-->
             <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(cc.attrs.fileMetadata)}">
                 <p:commandLink id="worldmapDownloadPopupButton"
-                               disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForWorldMap(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
                                update="#{cc.attrs.updateOnDownloadRequest}">
@@ -104,7 +101,6 @@
     <p:commandLink id="packageDownloadPopupButton"
                    styleClass="btn btn-default btn-download"
                    process="@this"
-                   disabled="#{downloadsDisabled}"
                    actionListener="#{RequestedDownloadType.initDownloadTypeForPackage(cc.attrs.fileMetadata)}"
                    action="#{cc.attrs.downloadRequestFunction}"
                    update="#{cc.attrs.updateOnDownloadRequest}">
@@ -120,7 +116,6 @@
     <p:commandLink id="standardFileDownloadButton"
                    styleClass="btn btn-default btn-download"
                    process="@this"
-                   disabled="#{downloadsDisabled}"
                    actionListener="#{RequestedDownloadType.initDownloadType(cc.attrs.fileMetadata)}"
                    action="#{cc.attrs.downloadRequestFunction}"
                    update="#{cc.attrs.updateOnDownloadRequest}">
@@ -140,7 +135,6 @@
             <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
                 <p:commandLink id="tabularOriginalDownloadPopupButton"
                                pt:role="menuitem"
-                               disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForOriginal(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
                                update="#{cc.attrs.updateOnDownloadRequest}">
@@ -152,7 +146,6 @@
             <li>
                 <p:commandLink id="tabularTabDownloadPopupButton"
                                pt:role="menuitem"
-                               disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForTab(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
                                update="#{cc.attrs.updateOnDownloadRequest}">
@@ -164,7 +157,6 @@
                     <p:commandLink id="tabularRdataDownloadPopupButton"
                                    pt:role="menuitem"
                                    process="@this"
-                                   disabled="#{downloadsDisabled}"
                                    actionListener="#{RequestedDownloadType.initDownloadTypeForRdata(cc.attrs.fileMetadata)}"
                                    action="#{cc.attrs.downloadRequestFunction}"
                                    update="#{cc.attrs.updateOnDownloadRequest}">
@@ -175,7 +167,6 @@
             <li>
                 <p:commandLink pt:role="menuitem"
                                process="@this"
-                               disabled="#{downloadsDisabled}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForVar(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
                                update="#{cc.attrs.updateOnDownloadRequest}">
@@ -186,7 +177,6 @@
                 <p:commandLink id="tabularSubsetDownloadPopupButton" rendered="#{systemConfig.rserveConfigured}"
                                pt:role="menuitem"
                                process="@this"
-                               disabled="#{downloadsDisabled}"
                                value="#{bundle['file.downloadBtn.format.datasubset']}"
                                actionListener="#{RequestedDownloadType.initDownloadTypeForSubset(cc.attrs.fileMetadata)}"
                                action="#{cc.attrs.downloadRequestFunction}"
