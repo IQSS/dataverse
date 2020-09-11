@@ -61,6 +61,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -84,6 +86,7 @@ import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -99,6 +102,7 @@ import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -385,6 +389,58 @@ public class Dataverses extends AbstractApiBean {
                 PublishDatasetResult res = execCommand(new PublishDatasetCommand(managedDs, request, false, shouldRelease));
                 responseBld.add("releaseCompleted", res.isCompleted());
             }
+
+            return created("/datasets/" + managedDs.getId(), responseBld);
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/datasets/:startmigration")
+    @Consumes("application/json-ld")
+    public Response recreateDataset(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            
+            Dataset ds = new Dataset();
+
+
+            ds = JSONLDUtil.updateDatasetFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc);; 
+          //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
+            if(!
+            (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
+            ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
+            ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
+            	throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+            }
+            if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
+            	throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
+            }
+
+            ds.setOwner(owner);
+
+            if (ds.getVersions().isEmpty()) {
+                return badRequest("Supplied json must contain a single dataset version.");
+            }
+
+            DatasetVersion version = ds.getVersions().get(0);
+            if (!version.isPublished()) {
+            	throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
+            }
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+            DataverseRequest request = createDataverseRequest(u);
+
+            Dataset managedDs = execCommand(new ImportDatasetCommand(ds, request));
+            JsonObjectBuilder responseBld = Json.createObjectBuilder()
+                    .add("id", managedDs.getId())
+                    .add("persistentId", managedDs.getGlobalId().toString());
 
             return created("/datasets/" + managedDs.getId(), responseBld);
 

@@ -194,9 +194,6 @@ public class Datasets extends AbstractApiBean {
     DDIExportServiceBean ddiExportService;
     
     @EJB
-    DatasetFieldServiceBean datasetfieldService;
-
-    @EJB
     MetadataBlockServiceBean metadataBlockService;
     
     @EJB
@@ -621,254 +618,37 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-    @PUT
-    @Path("{id}/versions/{versionId}/metadata")
-    @Consumes("application/json-ld")
-    public Response updateVersionMetadata( String jsonLDBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
-        
-        if ( ! ":draft".equals(versionId) ) {
-            return error( Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
-        }
-        
-        try ( StringReader rdr = new StringReader(jsonLDBody) ) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            Dataset ds = findDatasetOrDie(id);
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion dsv = ds.getEditVersion();
-            //JsonObject json = Json.createReader(rdr).readObject();
-            //Map<String, String> context = JSONLDUtil.populateContext(json.get("@context"));
-            
-            //ToDo - check that the context and localContext align w.r.t. keys mapping to URIs (prefixes and terms) - can translate otherwise
+	@PUT
+	@Path("{id}/versions/{versionId}/metadata")
+	@Consumes("application/json-ld")
+	public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id,
+			@PathParam("versionId") String versionId) {
 
-            
-            Map<String, String> localContext = new TreeMap<String,String>();
-            //Add namespaces corresponding to core terms
-            localContext.put(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
-            localContext.put(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
-            localContext.put(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
-            
-            Map<String, MetadataBlock> mdbMap = new TreeMap<String,MetadataBlock>();
-            Map<String, DatasetFieldType> dsftMap = new TreeMap<String,DatasetFieldType>();
-            
-            List<MetadataBlock> mdbList = metadataBlockService.listMetadataBlocks();
-            for(MetadataBlock mdb: mdbList) {
-            	if(mdb.getNamespaceUri() !=null) {
-            		localContext.putIfAbsent(mdb.getName(), mdb.getNamespaceUri());
-            		mdbMap.put(mdb.getName(), mdb);
-            		for(DatasetFieldType dsft: mdb.getDatasetFieldTypes()) {
-            			dsftMap.put(mdb.getName() + ":" + dsft.getName(), dsft);
-            		}
-            	} else {
-            		for(DatasetFieldType dftp: mdb.getDatasetFieldTypes()) {
-            			if(dftp.getUri()!=null) {
-            				localContext.putIfAbsent(dftp.getName(), dftp.getUri());
-            				
-            			}
-            		}
-            	}
-            }
-            
-//          Use JsonLd to expand/compact to localContext?
-//     	  Or just use expanded form against URIs?
-            
-            JsonObject jsonld = Json.createReader(rdr).readObject();
-            JsonDocument doc = JsonDocument.of(jsonld);
-            JsonArray array = null;
-            try {
-                array = JsonLd.expand(doc).get();
+		if (!":draft".equals(versionId)) {
+			return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+		}
+		try {
+			Dataset ds = findDatasetOrDie(id);
+			DataverseRequest req = createDataverseRequest(findUserOrDie());
+			DatasetVersion dsv = ds.getEditVersion();
+			boolean updateDraft = ds.getLatestVersion().isDraft();
+			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+			
+			DatasetVersion managedVersion;
+			if (updateDraft) {
+				Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+				managedVersion = managedDataset.getEditVersion();
+			} else {
+				managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+			}
+			String info = updateDraft ? "Version Updated" : "Version Created";
+			return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
-                jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext))).get();
-            } catch (JsonLdError e) {
-                System.out.println(e.getMessage());
-            }
-            
-            
-            //get existing ones?
-            List<DatasetField> dsfl = dsv.getDatasetFields();
-            Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
-            for(DatasetField dsf: dsfl) {
-            	fieldByTypeMap.put(dsf.getDatasetFieldType(),dsf);
-            }
-            for(String key: json.keySet()) {
-            	if(!key.equals("@context")) {
-            		if(dsftMap.containsKey(key)) {
-            			DatasetFieldType dsft = dsftMap.get(key);
-            			
-            			DatasetField dsf = null;
-            			if(fieldByTypeMap.containsKey(dsft)) {
-            				dsf = fieldByTypeMap.get(dsft);
-            			} else {
-            				dsf = new DatasetField();
-            				dsfl.add(dsf);
-            			}
-  						dsf.setDatasetFieldType(dsft);
-            			//Todo - normalize object vs. array
-            			JsonValue val = json.get(key);
-            			JsonArray valArray = null;
-            			if (val instanceof JsonArray) {
-            				if(!dsft.isAllowMultiples()) {
-            					error(Response.Status.BAD_REQUEST, "Array for single value notsupported: " + dsft.getName());
-            				} else {
-            					valArray = (JsonArray)val;
-            				}
-            			} 	else {
-            				valArray = Json.createArrayBuilder().add(val).build();
-            			}
+		} catch (WrappedResponse ex) {
+			return ex.getResponse();
 
-            			if (dsft.isCompound()) {
-            				/*                    List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json, testType);
-                    for (DatasetFieldCompoundValue dsfcv : vals) {
-                        dsfcv.setParentDatasetField(ret);
-                    }
-                    dsf.setDatasetFieldCompoundValues(vals);
-            				 */
-            			} else if (dsft.isControlledVocabulary()) {
-
-            				List<ControlledVocabularyValue> vals = new LinkedList<>();
-            				for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-            					String strValue = strVal.getString();
-            					ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, strValue, true);
-            					if (cvv == null) {
-            						return error(Response.Status.BAD_REQUEST, "Unknown value for Controlled Vocab Field: " + dsft.getName() + " : " + strValue);
-            					}
-            					// Only add value to the list if it is not a duplicate 
-            					if (strValue.equals("Other")) {
-            						System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
-            					}
-            					if (!vals.contains(cvv)) {
-            						vals.add(cvv);
-            						cvv.setDatasetFieldType(dsft);
-            					}
-            				}
-            				dsf.setControlledVocabularyValues(vals);
-
-            			} else {
-            				List<DatasetFieldValue> vals = new LinkedList<>();
-
-            				for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-            					String strValue = strVal.getString();
-
-            					DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-            					if(valArray.size()>1) {
-            						datasetFieldValue.setDisplayOrder(vals.size() - 1);
-            					}
-            					datasetFieldValue.setValue(strValue.trim());
-            					vals.add(datasetFieldValue);
-            				}
-            				dsf.setDatasetFieldValues(vals);
-
-            			}
-
-            			//assemble new terms, add to existing
-            			//multivalue?
-            			//compound?
-            			//merge with existing dv metadata
-            			//dsfl.add(dsf);
-            		} else {
-            			//Internal/non-metadatablock terms
-            			// Add metadata related to the Dataset/DatasetVersion
-
-            			//("@id", id) - check is equal to existing globalID?
-            			//Add to 'md on original' ?
-            			//(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-            			//Citation metadata?
-            			//(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
-            			//(JsonLDTerm.schemaOrg("name").getLabel())
-            			//(JsonLDTerm.schemaOrg("dateModified").getLabel())
-
-            			//Todo - handle non-CC0 licenses, without terms as an alternate field.
-            			TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            			if(json.containsKey(JsonLDTerm.schemaOrg("license").getLabel())) {
-            				if(json.get(JsonLDTerm.schemaOrg("license").getLabel()).toString().equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
-            					terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-            				} else {
-            					terms.setLicense(TermsOfUseAndAccess.License.NONE);
-            				}
-            			} else {
-            				if(json.containsKey(JsonLDTerm.termsOfUse.getLabel())) {
-            					terms.setTermsOfUse(json.get(JsonLDTerm.termsOfUse.getLabel()).toString());
-            				}
-            			}
-            			if(json.containsKey(JsonLDTerm.confidentialityDeclaration.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.specialPermissions.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.specialPermissions.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.restrictions.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.restrictions.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.citationRequirements.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.citationRequirements.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.depositorRequirements.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.depositorRequirements.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.conditions.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.conditions.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.disclaimer.getLabel())) {
-            				terms.setConfidentialityDeclaration(json.getString(JsonLDTerm.disclaimer.getLabel()));
-            			}
-            			if(json.containsKey(JsonLDTerm.fileTermsOfAccess.getLabel())) {
-            				JsonObject fAccessObject = json.getJsonObject(JsonLDTerm.fileTermsOfAccess.getLabel());
-            				if(fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getLabel())) {
-            					terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getLabel())) {
-            					terms.setFileAccessRequest(fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getLabel())) {
-            					terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.originalArchive.getLabel())) {
-            					terms.setOriginalArchive(fAccessObject.getString(JsonLDTerm.originalArchive.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getLabel())) {
-            					terms.setAvailabilityStatus(fAccessObject.getString(JsonLDTerm.availabilityStatus.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.contactForAccess.getLabel())) {
-            					terms.setContactForAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getLabel())) {
-            					terms.setSizeOfCollection(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getLabel()));
-            				}
-            				if(fAccessObject.containsKey(JsonLDTerm.studyCompletion.getLabel())) {
-            					terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getLabel()));
-            				}
-            			}
-            			dsv.setTermsOfUseAndAccess(terms);
-            			//move to new dataverse?
-            			//aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-            			//        dataset.getDataverseContext().getDisplayName());
-
-            		}
-
-            	}
-            }
-            
-            dsv.setDatasetFields(dsfl);
-
-
-            DatasetVersion managedVersion;
-            if ( updateDraft ) {
-            	Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
-            	managedVersion = managedDataset.getEditVersion();
-            } else {
-            	managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
-            String info = updateDraft ? "Version Updated" : "Version Created";
-            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
-
-        } catch (JsonParsingException ex) {
-        	logger.log(Level.SEVERE, "Semantic error parsing dataset version Json: " + ex.getMessage(), ex);
-        	return error( Response.Status.BAD_REQUEST, "Error parsing dataset version: " + ex.getMessage() );
-        } catch (WrappedResponse ex) {
-        	return ex.getResponse();
-
-        }
-    }
-    
+		}
+	}
     
     @PUT
     @Path("{id}/deleteMetadata")
@@ -1038,133 +818,137 @@ public class Datasets extends AbstractApiBean {
     }
     
     
-    private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData){
-        try (StringReader rdr = new StringReader(jsonBody)) {
-           
-            Dataset ds = findDatasetOrDie(id);
-            JsonObject json = Json.createReader(rdr).readObject();
-            DatasetVersion dsv = ds.getEditVersion();
-            
-            List<DatasetField> fields = new LinkedList<>();
-            DatasetField singleField = null; 
-            
-            JsonArray fieldsJson = json.getJsonArray("fields");
-            if( fieldsJson == null ){
-                singleField  = jsonParser().parseField(json, Boolean.FALSE);
-                fields.add(singleField);
-            } else{
-                fields = jsonParser().parseMultipleFields(json);
-            }
-            
+	private Response processDatasetUpdate(String jsonBody, String id, DataverseRequest req, Boolean replaceData) {
+		try (StringReader rdr = new StringReader(jsonBody)) {
 
-            String valdationErrors = validateDatasetFieldValues(fields);
+			Dataset ds = findDatasetOrDie(id);
+			JsonObject json = Json.createReader(rdr).readObject();
+			DatasetVersion dsv = ds.getEditVersion();
 
-            if (!valdationErrors.isEmpty()) {
-                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
-                return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
-            }
+			List<DatasetField> fields = new LinkedList<>();
+			DatasetField singleField = null;
 
-            dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
+			JsonArray fieldsJson = json.getJsonArray("fields");
+			if (fieldsJson == null) {
+				singleField = jsonParser().parseField(json, Boolean.FALSE);
+				fields.add(singleField);
+			} else {
+				fields = jsonParser().parseMultipleFields(json);
+			}
 
-            //loop through the update fields     
-            // and compare to the version fields  
-            //if exist add/replace values
-            //if not add entire dsf
-            for (DatasetField updateField : fields) {
-                boolean found = false;
-                for (DatasetField dsf : dsv.getDatasetFields()) {
-                    if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
-                        found = true;
-                        if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
-                            List priorCVV = new ArrayList<>();
-                            String cvvDisplay = "";
+			String valdationErrors = validateDatasetFieldValues(fields);
 
-                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
-                                cvvDisplay = dsf.getDisplayValue();
-                                for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
-                                    priorCVV.add(cvvOld);
-                                }
-                            }
+			if (!valdationErrors.isEmpty()) {
+				logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors,
+						valdationErrors);
+				return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
+			}
 
-                            if (replaceData) {
-                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                    dsf.setDatasetFieldCompoundValues(new ArrayList<>());
-                                    dsf.setDatasetFieldValues(new ArrayList<>());
-                                    dsf.setControlledVocabularyValues(new ArrayList<>());
-                                    priorCVV.clear();
-                                    dsf.getControlledVocabularyValues().clear();
-                                } else {
-                                    dsf.setSingleValue("");
-                                    dsf.setSingleControlledVocabularyValue(null);
-                                }
-                            }
-                            if (updateField.getDatasetFieldType().isControlledVocabulary()) {
-                                if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                    for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
-                                        if (!cvvDisplay.contains(cvv.getStrValue())) {
-                                            priorCVV.add(cvv);
-                                        }
-                                    }
-                                    dsf.setControlledVocabularyValues(priorCVV);
-                                } else {
-                                    dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
-                                }
-                            } else {
-                                if (!updateField.getDatasetFieldType().isCompound()) {
-                                    if (dsf.getDatasetFieldType().isAllowMultiples()) {
-                                        for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
-                                            if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
-                                                dfv.setDatasetField(dsf);
-                                                dsf.getDatasetFieldValues().add(dfv);
-                                            }
-                                        }
-                                    } else {
-                                        dsf.setSingleValue(updateField.getValue());
-                                    }
-                                } else {
-                                    for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
-                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
-                                            dfcv.setParentDatasetField(dsf);
-                                            dsf.setDatasetVersion(dsv);
-                                            dsf.getDatasetFieldCompoundValues().add(dfcv);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")");
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!found) {
-                    updateField.setDatasetVersion(dsv);
-                    dsv.getDatasetFields().add(updateField);
-                }
-            }
-            boolean updateDraft = ds.getLatestVersion().isDraft();
-            DatasetVersion managedVersion;
+			dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
 
-            if (updateDraft) {
-                managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
-            } else {
-                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
-            }
+			// loop through the update fields
+			// and compare to the version fields
+			// if exist add/replace values
+			// if not add entire dsf
+			for (DatasetField updateField : fields) {
+				boolean found = false;
+				for (DatasetField dsf : dsv.getDatasetFields()) {
+					if (dsf.getDatasetFieldType().equals(updateField.getDatasetFieldType())) {
+						found = true;
+						if (dsf.isEmpty() || dsf.getDatasetFieldType().isAllowMultiples() || replaceData) {
+							List priorCVV = new ArrayList<>();
+							String cvvDisplay = "";
 
-            return ok(json(managedVersion));
+							if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+								cvvDisplay = dsf.getDisplayValue();
+								for (ControlledVocabularyValue cvvOld : dsf.getControlledVocabularyValues()) {
+									priorCVV.add(cvvOld);
+								}
+							}
 
-        } catch (JsonParseException ex) {
-            logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
-            return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
+							if (replaceData) {
+								if (dsf.getDatasetFieldType().isAllowMultiples()) {
+									dsf.setDatasetFieldCompoundValues(new ArrayList<>());
+									dsf.setDatasetFieldValues(new ArrayList<>());
+									dsf.setControlledVocabularyValues(new ArrayList<>());
+									priorCVV.clear();
+									dsf.getControlledVocabularyValues().clear();
+								} else {
+									dsf.setSingleValue("");
+									dsf.setSingleControlledVocabularyValue(null);
+								}
+							}
+							if (updateField.getDatasetFieldType().isControlledVocabulary()) {
+								if (dsf.getDatasetFieldType().isAllowMultiples()) {
+									for (ControlledVocabularyValue cvv : updateField.getControlledVocabularyValues()) {
+										if (!cvvDisplay.contains(cvv.getStrValue())) {
+											priorCVV.add(cvv);
+										}
+									}
+									dsf.setControlledVocabularyValues(priorCVV);
+								} else {
+									dsf.setSingleControlledVocabularyValue(
+											updateField.getSingleControlledVocabularyValue());
+								}
+							} else {
+								if (!updateField.getDatasetFieldType().isCompound()) {
+									if (dsf.getDatasetFieldType().isAllowMultiples()) {
+										for (DatasetFieldValue dfv : updateField.getDatasetFieldValues()) {
+											if (!dsf.getDisplayValue().contains(dfv.getDisplayValue())) {
+												dfv.setDatasetField(dsf);
+												dsf.getDatasetFieldValues().add(dfv);
+											}
+										}
+									} else {
+										dsf.setSingleValue(updateField.getValue());
+									}
+								} else {
+									for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
+										if (!dsf.getCompoundDisplayValue()
+												.contains(updateField.getCompoundDisplayValue())) {
+											dfcv.setParentDatasetField(dsf);
+											dsf.setDatasetVersion(dsv);
+											dsf.getDatasetFieldCompoundValues().add(dfcv);
+										}
+									}
+								}
+							}
+						} else {
+							if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
+								return error(Response.Status.BAD_REQUEST,
+										"You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data ("
+												+ dsf.getDatasetFieldType().getDisplayName() + ")");
+							}
+						}
+						break;
+					}
+				}
+				if (!found) {
+					updateField.setDatasetVersion(dsv);
+					dsv.getDatasetFields().add(updateField);
+				}
+			}
+			boolean updateDraft = ds.getLatestVersion().isDraft();
+			DatasetVersion managedVersion;
 
-        } catch (WrappedResponse ex) {
-            logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
-            return ex.getResponse();
+			if (updateDraft) {
+				managedVersion = execCommand(new UpdateDatasetVersionCommand(ds, req)).getEditVersion();
+			} else {
+				managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+			}
 
-        }
-    }
+			return ok(json(managedVersion));
+
+		} catch (JsonParseException ex) {
+			logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + ex.getMessage(), ex);
+			return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + ex.getMessage());
+
+		} catch (WrappedResponse ex) {
+			logger.log(Level.SEVERE, "Update metdata error: " + ex.getMessage(), ex);
+			return ex.getResponse();
+
+		}
+	}
     
     private String validateDatasetFieldValues(List<DatasetField> fields) {
         StringBuilder error = new StringBuilder();
