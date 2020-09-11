@@ -503,6 +503,17 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
+        //Update params to match existing file (except checksum, which should match the new file)
+        if(fileToReplace != null) {
+            String checksum = optionalFileParams.getCheckSum();
+            try {
+                optionalFileParams = new OptionalFileParams(fileToReplace);
+                optionalFileParams.setCheckSum(checksum);
+            } catch (DataFileTagException e) {
+                // Shouldn't happen since fileToReplace should have valid tags
+                e.printStackTrace();
+            }
+        }
 
         return this.runAddReplacePhase1(fileToReplace.getOwner(), 
                 newFileName, 
@@ -1468,11 +1479,7 @@ public class AddReplaceFileHelper{
         // --------------------------------------------
         for (DataFile df : finalFileList){
             try {
-                if(fileToReplace!=null) {
-                  optionalFileParams.addOptionalParams(fileToReplace);
-                } else {
-                  optionalFileParams.addOptionalParams(df);
-                }
+                optionalFileParams.addOptionalParams(df);
                 
                 // call restriction command here
                 boolean restrict = optionalFileParams.getRestriction();

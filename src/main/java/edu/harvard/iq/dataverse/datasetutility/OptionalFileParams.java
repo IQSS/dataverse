@@ -102,6 +102,20 @@ public class OptionalFileParams {
         this.restrict = restrict;
     }
 
+    //For use in replace operations - load the file metadata from the file being replaced so it can be applied to the new file
+    //checksum and mimetype aren't needed
+    public OptionalFileParams(DataFile df) throws DataFileTagException {
+        FileMetadata fm = df.getFileMetadata();
+
+        this.description = fm.getDescription();
+        setCategories(fm.getCategoriesByName());
+        this.addFileDataTags(df.getTagLabels());
+        this.restrict = fm.isRestricted();
+        this.label = fm.getLabel();
+        this.directoryLabel = fm.getDirectoryLabel();
+        this.provFreeForm = fm.getProvFreeForm();
+    }
+
 
     /**
      *  Set description
