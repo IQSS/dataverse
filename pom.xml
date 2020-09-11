@@ -152,16 +152,22 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <!-- required during testing & runtime, version provided by Payara BOM -->
+            <!-- Required during testing & at runtime. Version & scope provided by Payara BOM -->
             <scope>test</scope>
         </dependency>
         <!-- JSON-B API -->
-        <!-- No need to include Yasson implementation, too, as already delivered as transitive dep from Payara BOM -->
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
-            <!-- required during testing & runtime, version provided by Payara BOM -->
+            <!-- Required during testing & at runtime. Version & scope provided by Payara BOM -->
             <scope>test</scope>
+        </dependency>
+        <!-- Yasson (JSON-B implementation) -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <!-- Version & scope provided by Payara BOM -->
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
