@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>4.20</version>
+    <version>5.0</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -26,11 +26,8 @@
         <skipUnitTests>false</skipUnitTests>
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <!-- Make this correspond to the version used in Payara: 5.201 uses (patched) 2.3.14 -->
-        <mojarra.version>2.3.14</mojarra.version>
+        <payara.version>5.2020.2</payara.version>
         <aws.version>1.11.762</aws.version>
-        <!-- Should always correspond with Payara bundled version: 5.201 uses 2.10.2 -->
-        <jackson.version>2.10.2</jackson.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
         <junit.version>4.12</junit.version>
@@ -64,6 +61,17 @@
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
         <repository>
+            <id>payara-patched-externals</id>
+            <name>Payara Patched Externals</name>
+            <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>central-repo</id>
             <name>Central Repository</name>
             <url>https://repo1.maven.org/maven2</url>
@@ -96,18 +104,18 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>fish.payara.api</groupId>
+                <artifactId>payara-bom</artifactId>
+                <version>${payara.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-bom</artifactId>
                 <version>${aws.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
@@ -256,7 +264,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>16.0.1</version>
+            <version>29.0-jre</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -268,7 +276,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-            <version>${mojarra.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -287,9 +294,13 @@
             <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>5.0.3.Final</version>
+        </dependency>
+      <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

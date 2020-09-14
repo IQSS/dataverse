@@ -199,6 +199,10 @@ public class FileReplacePageHelper {
         
     }
     
+    public AddReplaceFileHelper getAddReplaceFileHelper(){
+        return replaceFileHelper;
+    }
+    
     /** 
      * 
      * Show file upload component if Phase 1 hasn't happened yet
