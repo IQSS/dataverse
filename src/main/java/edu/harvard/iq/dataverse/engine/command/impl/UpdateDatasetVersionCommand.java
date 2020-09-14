@@ -197,8 +197,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
 
           // Register file PIDs if needed
-            String protocol = getDataset().getProtocol();
-            String authority = getDataset().getAuthority();
+            String protocol = theDataset.getProtocol();
+            String authority = theDataset.getAuthority();
             GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
             String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
             String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
@@ -209,7 +209,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)                 // (which can't have new files) 
                     &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
                             || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
-            
+            logger.fine("Should register: " + shouldRegister);
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (shouldRegister && !dataFile.isIdentifierRegistered()) {
                     // pre-register a persistent id
