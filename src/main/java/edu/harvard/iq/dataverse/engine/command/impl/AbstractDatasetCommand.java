@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     private static final Logger logger = Logger.getLogger(AbstractDatasetCommand.class.getName());
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
+    protected static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
 
@@ -179,7 +179,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         }
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
-                            throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
+                            throw new CommandExecutionException("This dataset may not be registered because its identifier is already in use by another dataset; "
                                 + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
                     }

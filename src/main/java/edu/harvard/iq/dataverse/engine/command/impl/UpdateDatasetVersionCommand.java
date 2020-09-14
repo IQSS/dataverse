@@ -8,7 +8,12 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,11 +135,28 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-
+            //Set creator and create date for files if needed, and register a PID if needed
+            String protocol = getDataset().getProtocol();
+            String authority = getDataset().getAuthority();
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
+                    && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
+                    && theDataset.getLatestVersion().getMinorVersionNumber() != null                          // We're not updating a minor version
+                    && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)                 // (which can't have new files) 
+                    &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
+                            || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
+            
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
+                    if (shouldRegister && !dataFile.isIdentifierRegistered()) {
+                        // pre-register a persistent id
+                        registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
+                    }
                 }
                 dataFile.setModificationTime(getTimestamp());
             }
@@ -217,6 +239,55 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
         }
         return savedDataset; 
+    }
+
+    private void registerFileExternalIdentifier(DataFile dataFile, GlobalIdServiceBean globalIdServiceBean, CommandContext ctxt, boolean retry) throws CommandException {
+
+        if (!dataFile.isIdentifierRegistered()) {
+            if (globalIdServiceBean != null) {
+                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
+                    retry = false; // No reason to allow a retry with the FakeProvider (even if it allows
+                                   // pre-registration someday), so set false for efficiency
+                }
+                try {
+                    if (globalIdServiceBean.alreadyExists(dataFile)) {
+                        int attempts = 0;
+                        if (retry) {
+                            do {
+                                dataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(dataFile, globalIdServiceBean));
+                                logger.log(Level.INFO, "Attempting to register external identifier for datafile {0} (trying: {1}).",
+                                        new Object[] { dataFile.getId(), dataFile.getIdentifier() });
+                                attempts++;
+                            } while (globalIdServiceBean.alreadyExists(dataFile) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                        }
+                        if (!retry) {
+                            logger.warning("Reserving PID for: " + getDataset().getId() + " during publication failed.");
+                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                        }
+                        if (attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            // Didn't work - we existed the loop with too many tries
+                            throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
+                                    + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + dataFile.getIdentifier(), this);
+                        }
+                    }
+                    // Invariant: DataFile identifier does not exist in the remote registry
+                    try {
+                        globalIdServiceBean.createIdentifier(dataFile);
+                        dataFile.setGlobalIdCreateTime(getTimestamp());
+                        dataFile.setIdentifierRegistered(true);
+                    } catch (Throwable ex) {
+                        logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
+                    }
+
+                } catch (Throwable e) {
+                    throw new CommandException(BundleUtil.getStringFromBundle("file.register.error", globalIdServiceBean.getProviderInformation()), this);
+                }
+            } else {
+                throw new IllegalCommandException("This datafile may not have a PID because its id registry service is not supported.", this);
+            }
+
+        }
+
     }
 
     @Override
