@@ -26,6 +26,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 import static edu.harvard.iq.dataverse.externaltools.ExternalTool.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Stateless
 @Named
@@ -72,13 +74,15 @@ public class ExternalToolServiceBean {
     }
     
     /**
-     * @param type explore or configure
+     * @param type explore or configure (preview is always checked)
      * @param contentType file content type (MIME type)
      * @return A list of tools or an empty list.
      */
     public List<ExternalTool> findFileToolsByTypeContentTypeAndAvailablePreview(Type type, String contentType) {
         String previewAvailable = "true";
-        return findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, previewAvailable);
+        List<ExternalTool> exploreOrConfigureToolsWithPreview = findByScopeTypeAndContentType(ExternalTool.Scope.FILE, type, contentType, previewAvailable);
+        List<ExternalTool> previewTools = findByScopeTypeAndContentType(ExternalTool.Scope.FILE, Type.PREVIEW, contentType, null);
+        return Stream.concat(exploreOrConfigureToolsWithPreview.stream(), previewTools.stream()).collect(Collectors.toList());
     }
 
     /**
