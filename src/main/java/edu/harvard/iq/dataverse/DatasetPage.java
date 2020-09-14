@@ -2094,6 +2094,7 @@ public class DatasetPage implements java.io.Serializable {
         
         configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
@@ -5420,7 +5421,18 @@ public class DatasetPage implements java.io.Serializable {
        
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
-    
+
+    // TODO: What if there's a guestbook? Show the preview button?
+    public boolean isShowPreviewButton(Long fileId) {
+        List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
+        for (ExternalTool externalTool : getExploreToolsForDataFile(fileId)) {
+            if (externalTool.getHasPreviewMode()) {
+                previewTools.add(externalTool);
+            }
+        }
+        return previewTools.size() > 0;
+    }
+
     public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
     }
