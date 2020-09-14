@@ -583,6 +583,13 @@ public class AddReplaceFileHelper{
             return false;            
         }
         
+        //Reuse any file PID during a replace operation (if File PIDs are in use, if the fileToReplace hasn't been released)
+        if(fileToReplace !=null && !fileToReplace.isReleased() && systemConfig.isFilePIDsEnabled()) {
+          DataFile df = finalFileList.get(0); //step_055 uses a loop and assumes only one file
+          df.setGlobalId(fileToReplace.getGlobalId());
+          df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
+        }
+        
         return true;
     }
     
