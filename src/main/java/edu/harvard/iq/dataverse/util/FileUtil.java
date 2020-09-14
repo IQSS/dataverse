@@ -695,21 +695,27 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String generateOriginalExtension(String fileType) {
-
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
-            return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".por";    
+        // in addition to "application/x-stata" we want to support 
+        // "application/x-stata-13" ... etc.:
+        } else if (fileType.toLowerCase().startsWith("application/x-stata")) {
             return ".dta";
-        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+        } else if (fileType.equalsIgnoreCase("application/x-dvn-csvspss-zip")) {
+            return ".zip";
+        } else if (fileType.equalsIgnoreCase("application/x-dvn-tabddi-zip")) {
+            return ".zip";
+        } else if (fileType.equalsIgnoreCase("application/x-rlang-transport")) {
             return ".RData";
-        } else if (fileType.equalsIgnoreCase("text/csv")) {
+        } else if (fileType.equalsIgnoreCase("text/csv") || fileType.equalsIgnoreCase("text/comma-separated-values")) {
             return ".csv";
-        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+        } else if (fileType.equalsIgnoreCase("text/tsv") || fileType.equalsIgnoreCase("text/tab-separated-values")) {
+            return ".tsv";
+        } else if (fileType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return ".xlsx";
         }
-
         return "";
     }
     
