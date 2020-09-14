@@ -440,7 +440,20 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets
+        ChronologicalDateFacets,
+
+        /**
+         * BasicGlobusToken for Globus Application
+         */
+        BasicGlobusToken,
+        /**
+         * GlobusEndpoint is Glopus endpoint for Globus application
+         */
+        GlobusEndpoint,
+        /**Client id for Globus application
+         *
+         */
+        GlobusClientId
         ;
 
         @Override

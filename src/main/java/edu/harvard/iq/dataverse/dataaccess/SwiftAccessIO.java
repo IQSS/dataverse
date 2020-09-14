@@ -32,6 +32,7 @@ import org.javaswift.joss.model.Account;
 import org.javaswift.joss.model.Container;
 import org.javaswift.joss.model.StoredObject;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 /**
  *
  * @author leonid andreev
@@ -874,6 +875,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         return null;
      }
+
+    @Override
+    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
+        return null;
+    }
      
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {

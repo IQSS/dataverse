@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+
 /**
  *
  * @author Leonid Andreev
@@ -147,6 +149,11 @@ public class InputStreamIO extends StorageIO<DataFile> {
     @Override  
     public OutputStream getOutputStream() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
+    }
+
+    @Override
+    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
+        return null;
     }
 
     @Override

@@ -671,6 +671,10 @@ public class DataFile extends DvObject implements Comparable {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
 
+    public boolean isFileGlobus() {
+        return DataFileServiceBean.MIME_TYPE_GLOBUS_FILE.equalsIgnoreCase(contentType);
+    }
+
     public void setIngestStatus(char ingestStatus) {
         this.ingestStatus = ingestStatus; 
     }    

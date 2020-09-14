@@ -137,6 +137,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * the page URL above.
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
+
+    public static final String MIME_TYPE_GLOBUS_FILE = "application/vnd.dataverse.file-globus";
     
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -1354,6 +1356,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         String contentType = file.getContentType();
        
         return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
+    }
+
+    public boolean isFileClassGlobus (DataFile file) {
+        if (file == null) {
+            return false;
+        }
+
+        String contentType = file.getContentType();
+
+        return MIME_TYPE_GLOBUS_FILE.equalsIgnoreCase(contentType);
     }
     
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {

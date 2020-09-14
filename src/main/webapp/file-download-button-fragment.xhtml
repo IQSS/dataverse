@@ -60,6 +60,28 @@
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     #{bundle.download}
                 </p:commandLink>
+                <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired)
+                              and fileMetadata.dataFile.fileGlobus and systemConfig.globusUpload}"
+                               styleClass="btn btn-default btn-download" process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               action="#{fileDownloadHelper.goGlobusDownload(fileMetadata)}">
+                    <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" />
+                    <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 'Download')}" />
+                    <!-- package data file: -->
+                    <!-- no guest book/terms of use/etc. - straight package popup -->
+                    <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.downloadFromGlobus']}
+                </p:commandLink>
+
+                <p:commandLink rendered="#{ fileDownloadHelper.canDownloadFile(fileMetadata) and !(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired)
+                                and fileMetadata.dataFile.fileGlobus and systemConfig.HTTPDownload}"
+                               styleClass="btn btn-default btn-download"
+                               process="@this"
+                               disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
+                    <!-- non-tabular data file: -->
+                    <!-- no guest book/terms of use/etc. - straight to the download API url: -->
+                    <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                </p:commandLink>
             </li>
             <!-- SUBMENU LINK -->
             <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">

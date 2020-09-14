@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
@@ -103,6 +105,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         minPartSize = getMinPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
     }
+
+    public static String S3_IDENTIFIER_PREFIX = "s3";
     
 	//Used for tests only
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client, String driverId) {
@@ -635,6 +639,46 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
+    public List<S3ObjectSummary> listAuxObjects(String s ) throws IOException {
+        if (!this.canWrite()) {
+            open();
+        }
+        String prefix = getDestinationKey("");
+
+        List<S3ObjectSummary> ret = new ArrayList<>();
+
+        System.out.println("======= bucketname ===== "+ bucketName);
+        System.out.println("======= prefix ===== "+ prefix);
+
+        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
+        ObjectListing storedAuxFilesList = null;
+        try {
+            storedAuxFilesList = s3.listObjects(req);
+        } catch (SdkClientException sce) {
+            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+prefix);
+        }
+        if (storedAuxFilesList == null) {
+            return ret;
+        }
+        List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
+        try {
+            while (storedAuxFilesList.isTruncated()) {
+                logger.fine("S3 listAuxObjects: going to next page of list");
+                storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
+                if (storedAuxFilesList != null) {
+                    storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
+                }
+            }
+        } catch (AmazonClientException ase) {
+            //logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
+            throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
+        }
+
+
+        return storedAuxFilesSummary;
+    }
+
+    @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);
@@ -1056,7 +1100,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     		// if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
     		if (!s3CEUrl.isEmpty()) {
-    			s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+    			//s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+                BasicAWSCredentials creds = new BasicAWSCredentials("14e4f8b986874272894d527a16c06473", "f7b28fbec4984588b0da7d0288ce67f6");
+                s3CB.withCredentials(new AWSStaticCredentialsProvider(creds));
+                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl.trim(), s3CERegion.trim()));
     		}
     		/**
     		 * Pass in a boolean value if path style access should be used within the S3 client.

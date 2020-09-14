@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -36,6 +38,8 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import java.net.MalformedURLException;
+import java.text.ParseException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,6 +59,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
@@ -73,9 +78,9 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.event.FacesEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -120,6 +125,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     DataverseLinkingServiceBean dvLinkingService;
     @EJB
     IndexServiceBean indexService;
+    @EJB
+    GlobusServiceBean globusServiceBean;
+    @EJB
+    protected SettingsServiceBean settingsSvc;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject PermissionsWrapper permissionsWrapper;
@@ -1424,7 +1433,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     public boolean showFileUploadFragment(){
         return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.SINGLE_REPLACE;
     }
-    
     
     public boolean showFileUploadComponent(){
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
@@ -3135,5 +3143,31 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
         }       
-    }    
+    }
+
+    public String getClientId() {
+        logger.info(settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusClientId));
+        return "'" + settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusClientId) + "'";
+    }
+
+    public void startTaskList() throws MalformedURLException {
+
+        AuthenticatedUser user = (AuthenticatedUser) session.getUser();
+        globusServiceBean.globusFinishTransfer(dataset,  user);
+        HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        String serverName = origRequest.getServerName();
+
+        String httpString = "window.location.replace('" + "https://" + serverName + "/dataset.xhtml?persistentId=" + dataset.getGlobalId();
+        Dataset ds = datasetService.find(dataset.getId());
+        if (ds.getLatestVersion().isWorkingCopy()) {
+            httpString = httpString + "&version=DRAFT" + "'" + ")";
+        }
+        else {
+            httpString = httpString + "'" +")";
+        }
+
+        logger.info(httpString);
+        PrimeFaces.current().executeScript(httpString);
+    }
 }

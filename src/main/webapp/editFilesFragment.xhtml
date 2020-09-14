@@ -276,7 +276,55 @@
                                 </ui:fragment>
                             </div>
                         </div>
-                    </div>               
+                    </div>
+                    <div>Globus ++++</div>
+                    <div jsf:id="globusPanel" jsf:rendered="#{settingsWrapper.globusUpload and !EditDatafilesPage.fileReplaceOperation}" class="panel panel-default">
+                        <div>Globus</div>
+                        <!-- NOTE: conditional logic for 'glyphicon-chevron-up' icon in rsync header if HTTP is off, but isn't scalable when a third upload mode is added -->
+                        <div role="tab" id="headingGlobus" data-toggle="collapse" data-target="#panelCollapseGlobus" class="panel-heading text-info" aria-expanded="true" aria-controls="panelCollapseGlobus">
+                            #{bundle['file.fromGlobus']} &#160;<span class="glyphicon #{!settingsWrapper.HTTPUpload ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+
+                        </div>
+                        <div id="panelCollapseGlobus" class="panel-collapse collapse #{!settingsWrapper.HTTPUpload ? 'in' : ''}" role="tabpanel" aria-labelledby="headingGlobus">
+                            <div class="panel-body">
+                                <ui:fragment rendered="#{createDataset}">
+                                    <ui:fragment rendered="#{empty EditDatafilesPage.fileMetadatas}">
+                                        <p class="help-block">
+                                            #{bundle['file.createGlobusUploadDisabled']}
+                                        </p>
+                                    </ui:fragment>
+                                </ui:fragment>
+                                <ui:fragment rendered="#{!createDataset}">
+
+                                    <p class="help-block">
+
+                                        <b>BEFORE YOU START:</b>  You will need to set up a free account with <a href="https://www.globus.org/">Globus</a> and
+                                        have <a href="https://www.globus.org/globus-connect">Globus Connect Personal</a> running on your computer to transfer files to and from the service.
+                                        <br/>
+                                        <p:commandButton id="dropBoxUserButtonG" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.fromGlobus']}"
+                                                         onclick="openGlobus( #{EditDatafilesPage.dataset.id}   , #{EditDatafilesPage.getClientId()});" icon="dropin-btn-status"
+                                        />
+
+                                        <br/>
+                                        <br/>
+                                        Once Globus transfer has finished, you will get an email notification. Please come back here and press the following button:
+                                        <br/>
+                                        <p:commandButton id="globusFinishedButton" disabled="#{!(datasetPage || EditDatafilesPage.showFileUploadComponent())}" value="#{bundle['file.finishGlobus']}"
+                                                         action="#{EditDatafilesPage.startTaskList()}"
+                                        />
+
+                                        <br/>
+                                        <br/>
+
+                                    </p>
+
+                                    <div>
+                                        Click here to view the dataset page: <a href="/dataset.xhtml?persistentId=#{EditDatafilesPage.dataset.globalId}&amp;faces-redirect=true" title="#{EditDatafilesPage.dataset.displayName}">#{EditDatafilesPage.dataset.displayName}</a> .
+                                    </div>
+                                </ui:fragment>
+                            </div>
+                        </div>
+                    </div>
                     
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
                     
@@ -961,6 +1009,18 @@
                 multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
             Dropbox.choose(options);
+        }
+        function openGlobus(datasetId, client_id) {
+            var res =  location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+
+            var scope = encodeURI("openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all", "UTF-8");
+
+            var new_url =  "https://auth.globus.org/v2/oauth2/authorize?client_id=" + client_id + "&response_type=code&" +
+                "scope=" + scope + "&state=" + datasetId;
+            new_url = new_url + "&redirect_uri=" + res + "%2Fglobus.xhtml" ;
+
+
+            var myWindows = window.open(new_url);
         }
         //]]>
     </script>

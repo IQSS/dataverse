@@ -1,5 +1,11 @@
 package edu.harvard.iq.dataverse;
 
+
+import edu.harvard.iq.dataverse.globus.AccessToken;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.globus.UserInfo;
+
+
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -55,10 +61,9 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
+import java.net.MalformedURLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -236,6 +241,8 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
+    @Inject
+    protected GlobusServiceBean globusService;
 
     private Dataset dataset = new Dataset();
     
@@ -2114,6 +2121,10 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
                 lockedDueToDcmUpload = true;
             }
+            if (dataset.isLockedFor(DatasetLock.Reason.GlobusUpload)) {
+                JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.summary"),
+                        BundleUtil.getStringFromBundle("file.rsyncUpload.inProgressMessage.details"));
+            }
             //This is a hack to remove dataset locks for File PID registration if 
             //the dataset is released
             //in testing we had cases where datasets with 1000 files were remaining locked after being published successfully
@@ -2657,10 +2668,22 @@ public class DatasetPage implements java.io.Serializable {
                 // has been published. If a publishing workflow is configured, this may have sent the 
                 // dataset into a workflow limbo, potentially waiting for a third party system to complete 
                 // the process. So it may be premature to show the "success" message at this point. 
-                
+
+                boolean globus = checkForGlobus();
                 if ( result.isCompleted() ) {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                    if (globus) {
+                        if (!globusService.giveGlobusPublicPermissions(dataset.getId().toString())) {
+                            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.publishGlobusFailure.details"));
+                        } else {
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                        }
+                    } else {
+                        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
+                    }
                 } else {
+                    if (globus) {
+                        globusService.giveGlobusPublicPermissions(dataset.getId().toString());
+                    }
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
                 }
                 
@@ -2673,12 +2696,28 @@ public class DatasetPage implements java.io.Serializable {
                     JsfHelper.addErrorMessage(ex.getLocalizedMessage());
                 }
                 logger.severe(ex.getMessage());
+            }  catch (UnsupportedEncodingException ex) {
+                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                logger.severe(ex.getMessage());
+            } catch (MalformedURLException ex) {
+                JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                logger.severe(ex.getMessage());
             }
             
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDraftVersion();
+    }
+
+    private boolean checkForGlobus() {
+        List<FileMetadata> fml = dataset.getLatestVersion().getFileMetadatas();
+        for (FileMetadata fm : fml) {
+            if (fm.getDataFile().isFileGlobus()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Deprecated
