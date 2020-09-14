@@ -135,28 +135,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             		throw e;
             	}
             }
-            //Set creator and create date for files if needed, and register a PID if needed
-            String protocol = getDataset().getProtocol();
-            String authority = getDataset().getAuthority();
-            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
-            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-            String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-            boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
-                    && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
-                    && theDataset.getLatestVersion().getMinorVersionNumber() != null                          // We're not updating a minor version
-                    && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)                 // (which can't have new files) 
-                    &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
-                            || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
-            
+            //Set creator and create date for files if needed
             for (DataFile dataFile : theDataset.getFiles()) {
                 if (dataFile.getCreateDate() == null) {
                     dataFile.setCreateDate(getTimestamp());
                     dataFile.setCreator((AuthenticatedUser) getUser());
-                    if (shouldRegister && !dataFile.isIdentifierRegistered()) {
-                        // pre-register a persistent id
-                        registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
-                    }
                 }
                 dataFile.setModificationTime(getTimestamp());
             }
@@ -213,6 +196,27 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 }
             }
 
+          // Register file PIDs if needed
+            String protocol = getDataset().getProtocol();
+            String authority = getDataset().getAuthority();
+            GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+            String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+            String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
+            String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
+                    && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
+                    && theDataset.getLatestVersion().getMinorVersionNumber() != null                          // We're not updating a minor version
+                    && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)                 // (which can't have new files) 
+                    &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
+                            || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
+            
+            for (DataFile dataFile : theDataset.getFiles()) {
+                if (shouldRegister && !dataFile.isIdentifierRegistered()) {
+                    // pre-register a persistent id
+                    registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
+                }
+            }
+            
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
             }
