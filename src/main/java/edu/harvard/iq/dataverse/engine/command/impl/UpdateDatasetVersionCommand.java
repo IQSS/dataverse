@@ -205,13 +205,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
             boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
                     && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
-                    && theDataset.getLatestVersion().getMinorVersionNumber() != null                          // We're not updating a minor version
-                    && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)                 // (which can't have new files) 
                     &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
                             || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
             logger.fine("IsFilePIDsEnabled: " + ctxt.systemConfig().isFilePIDsEnabled());
             logger.fine("RegWhenPub: " +  !idServiceBean.registerWhenPublished());
-            logger.fine("Minor v: " +  theDataset.getLatestVersion().getMinorVersionNumber());
             logger.fine("OK provider: " + ((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
                             || dataFilePIDFormat.equals("INDEPENDENT")));  
             logger.fine("Should register: " + shouldRegister);
