@@ -588,6 +588,8 @@ public class AddReplaceFileHelper{
           DataFile df = finalFileList.get(0); //step_055 uses a loop and assumes only one file
           df.setGlobalId(fileToReplace.getGlobalId());
           df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
+        //Should be true or fileToReplace wouldn't have an identifier (since it's not yet released in this if statement)
+          df.setIdentifierRegistered(fileToReplace.isIdentifierRegistered()); 
           fileToReplace.setGlobalId(null);
         }
         
