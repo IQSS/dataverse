@@ -87,6 +87,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -153,6 +154,7 @@ public class FileUtil implements java.io.Serializable  {
     
     public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
+    //Todo - this is the same as MIME_TYPE_TSV_ALT
     public static final String MIME_TYPE_INGESTED_FILE = "text/tab-separated-values";
 
     // File type "thumbnail classes" tags:
@@ -693,21 +695,27 @@ public class FileUtil implements java.io.Serializable  {
     }
 
     public static String generateOriginalExtension(String fileType) {
-
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
             return ".sav";
         } else if (fileType.equalsIgnoreCase("application/x-spss-por")) {
-            return ".por";
-        } else if (fileType.equalsIgnoreCase("application/x-stata")) {
+            return ".por";    
+        // in addition to "application/x-stata" we want to support 
+        // "application/x-stata-13" ... etc.:
+        } else if (fileType.toLowerCase().startsWith("application/x-stata")) {
             return ".dta";
-        } else if (fileType.equalsIgnoreCase( "application/x-rlang-transport")) {
+        } else if (fileType.equalsIgnoreCase("application/x-dvn-csvspss-zip")) {
+            return ".zip";
+        } else if (fileType.equalsIgnoreCase("application/x-dvn-tabddi-zip")) {
+            return ".zip";
+        } else if (fileType.equalsIgnoreCase("application/x-rlang-transport")) {
             return ".RData";
-        } else if (fileType.equalsIgnoreCase("text/csv")) {
+        } else if (fileType.equalsIgnoreCase("text/csv") || fileType.equalsIgnoreCase("text/comma-separated-values")) {
             return ".csv";
-        } else if (fileType.equalsIgnoreCase( "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+        } else if (fileType.equalsIgnoreCase("text/tsv") || fileType.equalsIgnoreCase("text/tab-separated-values")) {
+            return ".tsv";
+        } else if (fileType.equalsIgnoreCase("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return ".xlsx";
         }
-
         return "";
     }
     
@@ -758,39 +766,8 @@ public class FileUtil implements java.io.Serializable  {
 				recognizedType = determineFileType(tempFile.toFile(), fileName);
 				logger.fine("File utility recognized the file as " + recognizedType);
 				if (recognizedType != null && !recognizedType.equals("")) {
-					// is it any better than the type that was supplied to us,
-					// if any?
-					// This is not as trivial a task as one might expect...
-					// We may need a list of "good" mime types, that should always
-					// be chosen over other choices available. Maybe it should
-					// even be a weighed list... as in, "application/foo" should
-					// be chosen over "application/foo-with-bells-and-whistles".
-
-					// For now the logic will be as follows:
-					//
-					// 1. If the contentType supplied (by the browser, most likely)
-					// is some form of "unknown", we always discard it in favor of
-					// whatever our own utilities have determined;
-					// 2. We should NEVER trust the browser when it comes to the
-					// following "ingestable" types: Stata, SPSS, R;
-					// 2a. We are willing to TRUST the browser when it comes to
-					// the CSV and XSLX ingestable types.
-					// 3. We should ALWAYS trust our utilities when it comes to
-					// ingestable types.
-
-					if (suppliedContentType == null
-                        || suppliedContentType.equals("")
-						|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
-						|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
-						|| (canIngestAsTabular(suppliedContentType)
-								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
-								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
-								&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
-                        || canIngestAsTabular(recognizedType)
-                        || recognizedType.equals("application/fits-gzipped")
-						|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
-						|| recognizedType.equals(MIME_TYPE_ZIP)) {
-						finalType = recognizedType;
+					if(useRecognizedType(suppliedContentType, recognizedType)) {
+						finalType=recognizedType;
 					}
 				}
 
@@ -1091,8 +1068,16 @@ public class FileUtil implements java.io.Serializable  {
 
 			} 
 		} else {
-			//Remote file, trust supplier
-			finalType = suppliedContentType;
+			// Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
+			finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+			String type = determineFileTypeByExtension(fileName);
+			if (!StringUtils.isBlank(type)) {
+				//Use rules for deciding when to trust browser supplied type
+				if (useRecognizedType(finalType, type)) {
+					finalType = type;
+				}
+				logger.fine("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+			}
 		}
         // Finally, if none of the special cases above were applicable (or 
         // if we were unable to unpack an uploaded file, etc.), we'll just 
@@ -1126,7 +1111,42 @@ public class FileUtil implements java.io.Serializable  {
     }   // end createDataFiles
     
 
-    private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
+	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+		// is it any better than the type that was supplied to us,
+		// if any?
+		// This is not as trivial a task as one might expect...
+		// We may need a list of "good" mime types, that should always
+		// be chosen over other choices available. Maybe it should
+		// even be a weighed list... as in, "application/foo" should
+		// be chosen over "application/foo-with-bells-and-whistles".
+
+		// For now the logic will be as follows:
+		//
+		// 1. If the contentType supplied (by the browser, most likely)
+		// is some form of "unknown", we always discard it in favor of
+		// whatever our own utilities have determined;
+		// 2. We should NEVER trust the browser when it comes to the
+		// following "ingestable" types: Stata, SPSS, R;
+		// 2a. We are willing to TRUST the browser when it comes to
+		// the CSV and XSLX ingestable types.
+		// 3. We should ALWAYS trust our utilities when it comes to
+		// ingestable types.
+		if (suppliedContentType == null || suppliedContentType.equals("")
+				|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_DEFAULT)
+				|| suppliedContentType.equalsIgnoreCase(MIME_TYPE_UNDETERMINED_BINARY)
+				|| (canIngestAsTabular(suppliedContentType) 
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV)
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_CSV_ALT)
+						&& !suppliedContentType.equalsIgnoreCase(MIME_TYPE_XLSX))
+				|| canIngestAsTabular(recognizedType) || recognizedType.equals("application/fits-gzipped")
+				|| recognizedType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)
+				|| recognizedType.equals(MIME_TYPE_ZIP)) {
+			return true;
+		}
+		return false;
+	}
+
+	private static File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
             throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
         

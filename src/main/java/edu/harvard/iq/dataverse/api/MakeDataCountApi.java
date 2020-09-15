@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitationsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -43,6 +45,8 @@ public class MakeDataCountApi extends AbstractApiBean {
     DatasetExternalCitationsServiceBean datasetExternalCitationsService;
     @EJB
     DatasetServiceBean datasetService;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * TODO: For each dataset, send the following:
@@ -136,13 +140,8 @@ public class MakeDataCountApi extends AbstractApiBean {
             String persistentId = dataset.getGlobalId().toString();
             // DataCite wants "doi=", not "doi:".
             String authorityPlusIdentifier = persistentId.replaceFirst("doi:", "");
-            String baseUrl = System.getProperty("doi.mdcbaseurlstring");
-            if (null == baseUrl) {
-                // Backward compatible default to the production server
-                baseUrl = "https://api.datacite.org";
-            }
             // Request max page size and then loop to handle multiple pages
-            URL url = new URL(baseUrl + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
+            URL url = new URL(systemConfig.getDataCiteRestApiUrlString() + "/events?doi=" + authorityPlusIdentifier + "&source=crossref&page[size]=1000");
             logger.fine("Retrieving Citations from " + url.toString());
             boolean nextPage = true;
             JsonArrayBuilder dataBuilder = Json.createArrayBuilder();

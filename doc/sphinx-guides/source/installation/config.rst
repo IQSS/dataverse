@@ -175,7 +175,7 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
-- :ref:`doi.mdcbaseurlstring`
+- :ref:`doi.dataciterestapiurlstring`
 
 **Database Settings:**
 
@@ -371,7 +371,7 @@ Amazon S3 Storage (or Compatible)
 
 Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse.
 
-The Dataverse S3 driver supports multipart upload for files over 4 GB.
+The Dataverse S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
@@ -526,21 +526,22 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-===========================================  ==================  ==================================================================  =============
-JVM Option                                   Value               Description                                                         Default value
-===========================================  ==================  ==================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-===========================================  ==================  ==================================================================  =============
+===========================================  ==================  =========================================================================  =============
+JVM Option                                   Value               Description                                                                Default value
+===========================================  ==================  =========================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                 ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                         ``false``
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.         ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                 (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.            60
+dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
+===========================================  ==================  =========================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -765,7 +766,7 @@ Tracking Button Clicks
 
 The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
 
-Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
+Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
@@ -1068,38 +1069,24 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.baseurlstringnext:
+.. _doi.dataciterestapiurlstring:
 
-doi.baseurlstringnext
-+++++++++++++++++++++
+doi.dataciterestapiurlstring
+++++++++++++++++++++++++++++
 
-Dataverse uses multiple APIs from DataCite:
-
-- The DataCite MDS API is older, XML-based, and configured using :ref:`doi.baseurlstring`.
-- The DataCite REST API is newer, JSON-based, and configured using ``doi.baseurlstringnext``.
-
-In production, ``doi.baseurlstringnext`` should be set to ``https://api.datacite.org``
-
-While testing, ``doi.baseurlstringnext`` should be set to ``https://api.test.datacite.org``
-
-.. _doi.mdcbaseurlstring:
-
-doi.mdcbaseurlstring
-++++++++++++++++++++
-
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
 
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
-Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
+Out of the box, Dataverse is configured to use a test DataCite REST API base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
+``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
 
 Then, to switch to production DataCite, you can issue the following command:
 
-``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
 
-For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
+For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
 
 See also these related database settings below:
 
@@ -1635,7 +1622,7 @@ You can override this global setting on a per-format basis for the following for
 - CSV
 - XLSX
 
-For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger that 1 MB, use this setting:
+For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
 

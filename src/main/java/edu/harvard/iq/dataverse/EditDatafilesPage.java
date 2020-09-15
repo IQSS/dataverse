@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -58,6 +59,7 @@ import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
 import org.apache.commons.httpclient.HttpClient;
@@ -1126,7 +1128,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
                                 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, false);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1721,6 +1723,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return rsyncScriptFilename;
     }
 
+    @Deprecated
     public void requestDirectUploadUrl() {
         
 
@@ -1742,6 +1745,38 @@ public class EditDatafilesPage implements java.io.Serializable {
     	PrimeFaces.current().executeScript("uploadFileDirectly('" + url + "','" + storageIdentifier + "')");
     }
     
+	public void requestDirectUploadUrls() {
+
+		Map<String, String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+
+		String sizeString = paramMap.get("fileSize");
+		long fileSize = Long.parseLong(sizeString);
+
+		S3AccessIO<?> s3io = FileUtil.getS3AccessForDirectUpload(dataset);
+		if (s3io == null) {
+			FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+					new FacesMessage(FacesMessage.SEVERITY_ERROR,
+							BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+							"Direct upload not supported for this dataset"));
+		}
+		JsonObjectBuilder urls = null;
+		String storageIdentifier = null;
+		try {
+			storageIdentifier = FileUtil.getStorageIdentifierFromLocation(s3io.getStorageLocation());
+			urls = s3io.generateTemporaryS3UploadUrls(dataset.getGlobalId().asString(), storageIdentifier, fileSize);
+
+		} catch (IOException io) {
+			logger.warning(io.getMessage());
+			FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+					new FacesMessage(FacesMessage.SEVERITY_ERROR,
+							BundleUtil.getStringFromBundle("dataset.file.uploadWarning"),
+							"Issue in connecting to S3 store for direct upload"));
+		}
+
+		PrimeFaces.current().executeScript(
+				"uploadFileDirectly('" + urls.build().toString() + "','" + storageIdentifier + "','" + fileSize + "')");
+	}
+
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
         // attribute. 
@@ -3080,9 +3115,10 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public boolean rsyncUploadSupported() {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
-    	// When those restrictions are lifted/rsync can be configured per store, this test should check that setting
-    	// instead of testing for the 's3" store.
-    	return settingsWrapper.isRsyncUpload() && dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+    	// When those restrictions are lifted/rsync can be configured per store, the test in the 
+        // Dataset Util method should be updated
+
+    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     

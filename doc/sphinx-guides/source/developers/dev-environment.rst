@@ -27,7 +27,7 @@ Install Java
 
 Dataverse requires Java 8.
 
-On Mac, we recommend Oracle's version of the JDK, which can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
+We suggest downloading OpenJDK from https://adoptopenjdk.net
 
 On Linux, you are welcome to use the OpenJDK available from package managers.
 
@@ -53,15 +53,14 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 Build the Dataverse War File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To build the Dataverse war file using versions of Netbeans newer than 8.2 requires some setup because Jakarta EE support is not enabled by default. An alternative is to build the war file with Maven, which is explained below.
+If you installed Netbeans, follow these steps:
 
-Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+- If you see "resolve project problems," go ahead and let Netbeans try to resolve them. This will probably including downloading dependencies, which can take a while.
+- Allow Netbeans to install nb-javac (required for Java 8 and below).
+- Select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". Check back for "BUILD SUCCESS" at the end.
 
-If you are using Netbeans 8.2, Jakarta EE support should "just work" but if you are using a newer version of Netbeans, you will see "dataverse (broken)". If you see "broken", click "Tools", "Plugins", and "Installed". Check the box next to "Java Web and EE" and click "Activate". Let Netbeans install all the dependencies. You will observe that the green "Active" checkmark does not appear next to "Java Web and EE". Restart Netbeans.
-
-In Netbeans, select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". The first time you build the war file, it will take a few minutes while dependencies are downloaded from Maven Central. Feel free to move on to other steps but check back for "BUILD SUCCESS" at the end.
-
-If you installed Maven instead of Netbeans, run ``mvn package``.
+If you installed Maven instead of Netbeans, run ``mvn package``. Check for "BUILD SUCCESS" at the end.
 
 NOTE: Do you use a locale different than ``en_US.UTF-8`` on your development machine? Are you in a different timezone
 than Harvard (Eastern Time)? You might experience issues while running tests that were written with these settings
@@ -86,31 +85,18 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip``
+``sudo curl -O -L https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip``
 
-``sudo unzip payara-5.201.zip``
+``sudo unzip payara-5.2020.2.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
-
-Test Payara Startup Time on Mac
-+++++++++++++++++++++++++++++++
-
-``cd /usr/local/payara5/glassfish/bin``
-
-``./asadmin start-domain``
-
-``grep "startup time" /usr/local/payara5/glassfish/domains/domain1/logs/server.log``
-
-If you are seeing startup times in the 30 second range (31,584ms for "Felix" for example) please be aware that startup time can be greatly reduced (to less than 1.5 seconds in our testing) if you make a small edit to your ``/etc/hosts`` file as described at https://stackoverflow.com/questions/39636792/jvm-takes-a-long-time-to-resolve-ip-address-for-localhost/39698914#39698914 and https://thoeni.io/post/macos-sierra-java/
-
-Look for a line that says ``127.0.0.1 localhost`` and add a space followed by the output of ``hostname`` which should be something like ``foobar.local`` depending on the name of your Mac. For example, the line would say ``127.0.0.1 localhost foobar.local`` if your Mac's name is "foobar".
 
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
 PostgreSQL 9.6 is recommended to match the version in the Installation Guide.
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EnterpriseDB" option. We've tested version 9.6.9. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. We've tested version 9.6.19. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
@@ -120,11 +106,11 @@ Then edit ``pg_hba.conf`` with an editor such as vi:
 
 ``sudo vi /Library/PostgreSQL/9.6/data/pg_hba.conf``
 
-In the "METHOD" column, change all instances of "md5" to "trust".
+In the "METHOD" column, change all instances of "md5" to "trust". This will make it so PostgreSQL doesn't require a password.
 
 In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload Configuration" app. Click "OK" after you see "server signaled".
 
-Next, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
+Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
 On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
@@ -176,7 +162,19 @@ Navigate to the directory where you cloned the Dataverse git repo change directo
 
 ``cd scripts/installer``
 
-Follow the instructions in :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` which can be found in the directory above.
+Create a Python virtual environment, activate it, then install dependencies:
+
+``python3 -m venv venv``
+
+``source venv/bin/activate``
+
+``pip install psycopg2-binary``
+
+The installer will try to connect to the SMTP server you tell it to use. If you don't have a mail server handy you can run ``nc -l 25`` in another terminal and choose "localhost" (the default) to get past this check.
+
+Finally, run the installer (see also :download:`README_python.txt <../../../../scripts/installer/README_python.txt>` if necessary):
+
+``python3 install.py``
 
 Verify Dataverse is Running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
