@@ -2207,7 +2207,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     @GET
-    @Path("{identifier}/filestore")
+    @Path("{identifier}/storageDriver")
     public Response getFileStore(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         
@@ -2217,9 +2217,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     @PUT
-    @Path("{identifier}/filestore")
+    @Path("{identifier}/storageDriver")
     public Response setFileStore(@PathParam("identifier") String dvIdtf,
-            @PathParam("storeId") String fileStoreId,
+            @PathParam("label") String storageDriverLabel,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
@@ -2232,17 +2232,17 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         
         // We don't want to allow setting this to a store id that does not exist: 
         for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-            if(store.getKey().equals(fileStoreId)) {
+            if(store.getKey().equals(storageDriverLabel)) {
     		dataset.setStorageDriverId(store.getValue());
                     return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
     		}
     	}
     	return error(Response.Status.BAD_REQUEST,
-            "No Storage Driver found for : " + fileStoreId);
+            "No Storage Driver found for : " + storageDriverLabel);
     }
     
     @DELETE
-    @Path("{identifier}/filestore")
+    @Path("{identifier}/storageDriver")
     public Response resetFileStore(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
     
