@@ -279,7 +279,7 @@ public class JSONLDUtil {
 	}
 
 	private static JsonObject recontextualizeJsonLD(String jsonLDString, MetadataBlockServiceBean metadataBlockSvc) {
-		try (StringReader rdr = new StringReader(jsonLDString)) {
+		try (StringReader rdr = new StringReader(jsonLDString.replaceAll("\r?\n", ""))) {
 
 			Map<String, String> localContext = new TreeMap<String, String>();
 			// Add namespaces corresponding to core terms
