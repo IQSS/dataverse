@@ -279,6 +279,7 @@ public class JSONLDUtil {
 	}
 
 	private static JsonObject recontextualizeJsonLD(String jsonLDString, MetadataBlockServiceBean metadataBlockSvc) {
+		logger.fine(jsonLDString.replaceAll("\r?\n", ""));
 		try (StringReader rdr = new StringReader(jsonLDString.replaceAll("\r?\n", ""))) {
 
 			Map<String, String> localContext = new TreeMap<String, String>();
