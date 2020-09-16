@@ -2211,7 +2211,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     public Response getFileStore(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         
-        Dataset dataset = findDatasetOrDie(dvIdtf);
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
             
         return response(req -> ok(dataset.getEffectiveStorageDriverId()));
     }
