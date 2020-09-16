@@ -2219,24 +2219,36 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @PUT
     @Path("{identifier}/storageDriver")
     public Response setFileStore(@PathParam("identifier") String dvIdtf,
-            @PathParam("label") String storageDriverLabel,
+            String storageDriverLabel,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
-        AuthenticatedUser user = findAuthenticatedUserOrDie();
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
     	}
         
-        Dataset dataset = findDatasetOrDie(dvIdtf);
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
         
         // We don't want to allow setting this to a store id that does not exist: 
-        for (Entry<String, String> store: DataAccess.getStorageDriverLabels().entrySet()) {
-            if(store.getKey().equals(storageDriverLabel)) {
-    		dataset.setStorageDriverId(store.getValue());
-                    return ok("Storage set to: " + store.getKey() + "/" + store.getValue());
-    		}
-    	}
+        for (Entry<String, String> store : DataAccess.getStorageDriverLabels().entrySet()) {
+            if (store.getKey().equals(storageDriverLabel)) {
+                dataset.setStorageDriverId(store.getValue());
+                datasetService.merge(dataset);
+                return ok("Storage driver set to: " + store.getKey() + "/" + store.getValue());
+            }
+        }
     	return error(Response.Status.BAD_REQUEST,
             "No Storage Driver found for : " + storageDriverLabel);
     }
@@ -2247,14 +2259,26 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
     
         // Superuser-only:
-        AuthenticatedUser user = findAuthenticatedUserOrDie();
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
     	}
         
-        Dataset dataset = findDatasetOrDie(dvIdtf);
-
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        
         dataset.setStorageDriverId(null);
+        datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 }
