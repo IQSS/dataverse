@@ -727,7 +727,7 @@ public class FileUtil implements java.io.Serializable  {
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
         
-        Long fileSizeLimit = systemConfig.getMaxFileUploadSizeForStore(version.getDataset().getOwner().getEffectiveStorageDriverId());
+        Long fileSizeLimit = systemConfig.getMaxFileUploadSizeForStore(version.getDataset().getEffectiveStorageDriverId());
         String finalType = null; 
 		if (newStorageIdentifier == null) {
 			if (getFilesTempDirectory() != null) {
@@ -1337,7 +1337,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
-    	String driverId = dataFile.getDataverseContext().getEffectiveStorageDriverId();
+    	String driverId = dataFile.getOwner().getEffectiveStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
         String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
@@ -1672,7 +1672,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static S3AccessIO getS3AccessForDirectUpload(Dataset dataset) {
-    	String driverId = dataset.getDataverseContext().getEffectiveStorageDriverId();
+    	String driverId = dataset.getEffectiveStorageDriverId();
     	boolean directEnabled = Boolean.getBoolean("dataverse.files." + driverId + ".upload-redirect");
     	//Should only be requested when it is allowed, but we'll log a warning otherwise
     	if(!directEnabled) {

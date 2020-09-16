@@ -151,7 +151,7 @@ public class Dataverse extends DvObjectContainer {
 
     private String affiliation;
     
-    private String storageDriver=null;
+    ///private String storageDriver=null;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -761,32 +761,4 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
-
-	public String getEffectiveStorageDriverId() {
-		String id = storageDriver;
-		if(StringUtils.isBlank(id)) {
-			if(this.getOwner() != null) {
-				id = this.getOwner().getEffectiveStorageDriverId(); 
-			} else {
-				id= DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER;
-			}
-		}
-		return id;
-	}
-	
-	
-	public String getStorageDriverId() {
-		if(storageDriver==null) {
-			return DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER;
-		}
-		return storageDriver;
-	}
-
-	public void setStorageDriverId(String storageDriver) {
-		if(storageDriver!=null&&storageDriver.equals(DataAccess.UNDEFINED_STORAGE_DRIVER_IDENTIFIER)) {
-			this.storageDriver=null;
-		} else {
-		  this.storageDriver = storageDriver;
-		}
-	}
 }
