@@ -78,7 +78,7 @@ public class JSONLDUtil {
 		versions.add(dsv);
 
 		ds.setVersions(versions);
-		return null;
+		return ds;
 	}
 
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, String jsonLDBody,
@@ -318,6 +318,7 @@ public class JSONLDUtil {
 
 				jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
 						.get();
+				logger.fine("Compacted: " + jsonld);
 				return jsonld;
 			} catch (JsonLdError e) {
 				System.out.println(e.getMessage());
