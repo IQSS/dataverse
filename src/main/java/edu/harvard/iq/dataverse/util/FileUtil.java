@@ -721,7 +721,7 @@ public class FileUtil implements java.io.Serializable  {
         // save the file, in the temporary location for now: 
         Path tempFile = null; 
         
-        Long fileSizeLimit = systemConfig.getMaxFileUploadSizeForStore(version.getDataset().getOwner().getEffectiveStorageDriverId());
+        Long fileSizeLimit = systemConfig.getMaxFileUploadSizeForStore(version.getDataset().getEffectiveStorageDriverId());
         String finalType = null; 
 		if (newStorageIdentifier == null) {
 			if (getFilesTempDirectory() != null) {
@@ -1331,7 +1331,7 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void generateS3PackageStorageIdentifier(DataFile dataFile) {
-    	String driverId = dataFile.getDataverseContext().getEffectiveStorageDriverId();
+    	String driverId = dataFile.getOwner().getEffectiveStorageDriverId();
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
         String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
