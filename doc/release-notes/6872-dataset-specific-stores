@@ -1,0 +1,8 @@
+
+## Major Use Cases
+
+- Administrators will now be able to specify a store at the dataset level in addition to the Dataverse level (Issue #6872, PR #7272) 
+
+## Notes for Administrators
+
+- New API available for setting a dataset store
