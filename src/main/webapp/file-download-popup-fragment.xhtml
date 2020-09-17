@@ -9,7 +9,7 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <p:focus context="downloadPopup"/>
+        <!--<p:focus context="downloadPopup"/>--><!-- This is only commented out to avoid an error. -->
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
@@ -47,19 +47,19 @@
             <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
                 <p:fragment>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label" for="guestbookuser_nameText">
+                        <label class="col-sm-3 control-label" for="guestbookuser_nameText_#{formDisplayType}">
                             #{bundle.name}
                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
                         </label>
                         <div class="col-sm-6">
-                            <p:inputText id="guestbookuser_nameText" 
+                            <p:inputText id="guestbookuser_nameText_#{formDisplayType}"
                                          required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
                                          styleClass="form-control" value="#{guestbookResponse.name}"
                                          requiredMessage="#{bundle['requiredField']}"                                       
                                          binding="#{fileDownloadHelper.nameField}">
                                 <p:ajax listener="#{fileDownloadHelper.nameValueChangeListener}" />
                               </p:inputText>  
-                            <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
+                            <!--<p:message id="nameMessages" for="guestbookuser_nameText_#{formDisplayType}" display="text"/>-->
                         </div>
                     </div>
                 </p:fragment>
@@ -75,7 +75,7 @@
                                      binding="#{fileDownloadHelper.emailField}">
                         <p:ajax listener="#{fileDownloadHelper.emailValueChangeListener}" />
                         </p:inputText>  
-                        <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
+                        <!--<p:message id="emailMessages" for="guestbookuser_email" display="text"/>-->
                     </div>
                 </div>
                 <div class="form-group">
@@ -90,7 +90,7 @@
                                      binding="#{fileDownloadHelper.institutionField}">
                         <p:ajax listener="#{fileDownloadHelper.institutionValueChangeListener}" />
                         </p:inputText>
-                        <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
+                        <!--<p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>-->
                     </div>
                 </div>
                 <div class="form-group">
@@ -105,7 +105,7 @@
                                      binding="#{fileDownloadHelper.positionField}">
                         <p:ajax listener="#{fileDownloadHelper.positionValueChangeListener}" />
                         </p:inputText>
-                        <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
+                        <!--<p:message id="positionMessages" for="guestbookuser_position" display="text"/>-->
                     </div>
                 </div>
                 <div class="form-group" jsf:rendered="#{!empty workingVersion.dataset.guestbook.customQuestions}">
@@ -126,7 +126,7 @@
                                              requiredMessage="#{bundle['requiredField']}">
                                     <p:ajax listener="#{fileDownloadHelper.customQuestionValueChangeListener}"/>
                                 </p:inputText>
-                                <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
+                                <!--<p:message id="cqMessages" for="customQuestionResponse" display="text"/>-->
                                 <p:selectOneMenu id="customQuestionResponseSelect"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"

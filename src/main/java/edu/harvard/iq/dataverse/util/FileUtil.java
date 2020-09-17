@@ -1445,7 +1445,52 @@ public class FileUtil implements java.io.Serializable  {
         logger.fine("Download popup is not required.");
         return false;
     }
-    
+
+    /**
+     * Whether or not to hide the Preview tab. This method is heavily based on
+     * isDownloadPopupRequired but with different rules.
+     *
+     * TODO Consider returning not only the boolean but the human readable
+     * reason why the preview is hidden, which could be used in the GUI to
+     * elaborate on the text "This file cannot be previewed."
+     */
+    public static boolean hidePreview(DatasetVersion datasetVersion) {
+        // Each of these conditions is sufficient reason to have to
+        // hide the preview tab:
+        if (datasetVersion == null) {
+            logger.info("Preview tab hidden required because datasetVersion is null.");
+            return false;
+        }
+        //0. if version is draft then Popup "not required"
+        if (!datasetVersion.isReleased()) {
+            logger.info("Preview tab hidden because datasetVersion has not been released.");
+            return false;
+        }
+        // 1. License and Terms of Use:
+        if (datasetVersion.getTermsOfUseAndAccess() != null) {
+//            if (!TermsOfUseAndAccess.License.CC0.equals(datasetVersion.getTermsOfUseAndAccess().getLicense())
+//                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+//                    || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
+//                logger.info("Preview tab hidden because of license or terms of use.");
+//                return true;
+//            }
+
+            // 2. Terms of Access:
+            if (!(datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess() == null) && !datasetVersion.getTermsOfUseAndAccess().getTermsOfAccess().equals("")) {
+                logger.info("Preview tab hidden because of terms of access.");
+                return true;
+            }
+        }
+
+        // 3. Guest Book:
+//        if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
+//            logger.info("Preview tab hidden because of guestbook.");
+//            return true;
+//        }
+        logger.info("Preview tab can be shown.");
+        return false;
+    }
+
     public static boolean isRequestAccessPopupRequired(DatasetVersion datasetVersion){
         // Each of these conditions is sufficient reason to have to 
         // present the user with the popup: 
@@ -1493,6 +1538,49 @@ public class FileUtil implements java.io.Serializable  {
         }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
+            /**
+             * @todo The user clicking publish may have a bad "Dude, where did
+             * the file Download URL go" experience in the following scenario:
+             *
+             * - The user creates a dataset and uploads a file.
+             *
+             * - The user sets Terms of Use, which means a Download URL should
+             * not be displayed.
+             *
+             * - While the dataset is in draft, the Download URL is displayed
+             * due to the rule "Download popup required because datasetVersion
+             * has not been released."
+             *
+             * - Once the dataset is published the Download URL disappears due
+             * to the rule "Download popup required because of license or terms
+             * of use."
+             *
+             * In short, the Download URL disappears on publish in the scenario
+             * above, which is weird. We should probably attempt to see into the
+             * future to when the dataset is published to see if the file will
+             * be publicly downloadable or not.
+             */
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Show preview in many cases, but not when restricted.
+     *
+     * This method is heavily based on isPubliclyDownloadable.
+     */
+    public static boolean isPreviewAllowed(FileMetadata fileMetadata) {
+        if (fileMetadata == null) {
+            return false;
+        }
+        if (fileMetadata.isRestricted()) {
+            String msg = "No preview allowed because the file is restricted.";
+            logger.info(msg);
+            return false;
+        }
+        boolean hidden = hidePreview(fileMetadata.getDatasetVersion());
+        if (hidden == true) {
             /**
              * @todo The user clicking publish may have a bad "Dude, where did
              * the file Download URL go" experience in the following scenario:

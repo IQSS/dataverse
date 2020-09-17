@@ -407,8 +407,9 @@
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired}">
                                     
                                     <!-- TO-DO ... WIRE UP TERMS + GUESTBOOK LOGIC ... COPIED DOWNLOAD POPUP CONTENTS BELOW ... -->
-                                    
+
                                     <ui:include src="file-download-popup-fragment.xhtml">
+                                        <ui:param name="formDisplayType" value="filePreviewTab"/>
                                         <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                         <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
                                         <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
@@ -717,6 +718,7 @@
                     </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                          <ui:include src="file-download-popup-fragment.xhtml">
+                            <ui:param name="formDisplayType" value="fileDownloadPopup"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>

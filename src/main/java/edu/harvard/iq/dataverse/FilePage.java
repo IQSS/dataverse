@@ -875,7 +875,7 @@ public class FilePage implements java.io.Serializable {
             // Always allow preview for PrivateUrlUser
             return true;
         } else {
-            return isPubliclyDownloadable();
+            return FileUtil.isPreviewAllowed(fileMetadata);
         }
     }
 
