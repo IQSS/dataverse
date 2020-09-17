@@ -212,21 +212,21 @@ public class JSONLDUtil {
 					if(key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
 						dsv.setVersionState(VersionState.RELEASED);
                     } else if(key.equals(JsonLDTerm.schemaOrg("version").getLabel())) {
-                    	String friendlyVersion = jsonld.get(JsonLDTerm.schemaOrg("version").getLabel()).toString();
+                    	String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getLabel());
                     	int index = friendlyVersion.indexOf(".");
                     	if(index>0) {
                           dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
                           dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index+1)));
                     	}
                     } else if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
-						if (jsonld.get(JsonLDTerm.schemaOrg("license").getLabel()).toString()
+						if (jsonld.getString(JsonLDTerm.schemaOrg("license").getLabel())
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
 						} else {
 							terms.setLicense(TermsOfUseAndAccess.License.NONE);
 						}
 					} else if(key.equals(JsonLDTerm.termsOfUse.getLabel())) {
-							terms.setTermsOfUse(jsonld.get(JsonLDTerm.termsOfUse.getLabel()).toString());
+							terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getLabel()));
 					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getLabel())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
