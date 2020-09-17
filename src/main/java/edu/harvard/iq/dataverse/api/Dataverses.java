@@ -433,6 +433,7 @@ public class Dataverses extends AbstractApiBean {
             if (!version.isPublished()) {
             	throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
             }
+            //While the datasetversion whose metadata we're importing has been published, we consider it in draft until the API caller adds files and then completes the migration
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
 
             DataverseRequest request = createDataverseRequest(u);

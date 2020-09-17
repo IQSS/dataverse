@@ -33,6 +33,10 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
+import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
 
 public class JSONLDUtil {
 
@@ -62,6 +66,7 @@ public class JSONLDUtil {
 			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
 
 		DatasetVersion dsv = new DatasetVersion();
+		
 		JsonObject jsonld = recontextualizeJsonLD(jsonLDBody, metadataBlockSvc);
 		Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
         if (maybePid.isPresent()) {
@@ -274,7 +279,12 @@ public class JSONLDUtil {
 		}
 
 		dsv.setDatasetFields(dsfl);
-
+		try {
+			logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return dsv;
 	}
 
