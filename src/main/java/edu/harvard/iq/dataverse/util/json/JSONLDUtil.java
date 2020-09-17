@@ -107,6 +107,10 @@ public class JSONLDUtil {
 		for (MetadataBlock mdb : mdbList) {
 			if (mdb.getNamespaceUri() != null) {
 				for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+					if(dsft.getUri()!=null) {
+						dsftMap.put(dsft.getUri(), dsft);
+					}
+					//Can allow both, so don't put this in an else?
 					dsftMap.put(mdb.getName() + ":" + dsft.getName(), dsft);
 				}
 			}
