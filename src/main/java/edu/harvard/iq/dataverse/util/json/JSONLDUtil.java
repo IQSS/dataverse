@@ -211,9 +211,14 @@ public class JSONLDUtil {
 					// Todo - handle non-CC0 licenses, without terms as an alternate field.
 					if(key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
 						dsv.setVersionState(VersionState.RELEASED);
-                    } 
-					
-					if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
+                    } else if(key.equals(JsonLDTerm.schemaOrg("version").getLabel())) {
+                    	String friendlyVersion = jsonld.get(JsonLDTerm.schemaOrg("version").getLabel()).toString();
+                    	int index = friendlyVersion.indexOf(".");
+                    	if(index>0) {
+                          dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
+                          dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index+1)));
+                    	}
+                    } else if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
 						if (jsonld.get(JsonLDTerm.schemaOrg("license").getLabel()).toString()
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
