@@ -83,6 +83,12 @@ public class JSONLDUtil {
 		versions.add(dsv);
 
 		ds.setVersions(versions);
+		try {
+			logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return ds;
 	}
 
@@ -279,12 +285,7 @@ public class JSONLDUtil {
 		}
 
 		dsv.setDatasetFields(dsfl);
-		try {
-			logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		return dsv;
 	}
 

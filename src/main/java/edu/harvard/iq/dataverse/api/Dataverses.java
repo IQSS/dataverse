@@ -410,7 +410,7 @@ public class Dataverses extends AbstractApiBean {
             
             Dataset ds = new Dataset();
 
-
+            ds.setOwner(owner);
             ds = JSONLDUtil.updateDatasetFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc);; 
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
             if(!
@@ -423,7 +423,7 @@ public class Dataverses extends AbstractApiBean {
             	throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
 
-            ds.setOwner(owner);
+            
 
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Supplied json must contain a single dataset version.");
