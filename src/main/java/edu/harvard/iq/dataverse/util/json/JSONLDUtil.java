@@ -117,6 +117,7 @@ public class JSONLDUtil {
 		for (DatasetField dsf : dsfl) {
 			fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
 		}
+		TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
 		for (String key : jsonld.keySet()) {
 			if (!key.equals("@context")) {
 				if (dsftMap.containsKey(key)) {
@@ -208,44 +209,37 @@ public class JSONLDUtil {
 					// (JsonLDTerm.schemaOrg("dateModified").getLabel())
 
 					// Todo - handle non-CC0 licenses, without terms as an alternate field.
-					TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-					if (jsonld.containsKey(JsonLDTerm.schemaOrg("license").getLabel())) {
+					if(key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
+						dsv.setVersionState(VersionState.RELEASED);
+                    } 
+					
+					if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
 						if (jsonld.get(JsonLDTerm.schemaOrg("license").getLabel()).toString()
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
 						} else {
 							terms.setLicense(TermsOfUseAndAccess.License.NONE);
 						}
-					} else {
-						if (jsonld.containsKey(JsonLDTerm.termsOfUse.getLabel())) {
+					} else if(key.equals(JsonLDTerm.termsOfUse.getLabel())) {
 							terms.setTermsOfUse(jsonld.get(JsonLDTerm.termsOfUse.getLabel()).toString());
-						}
-					}
-					if (jsonld.containsKey(JsonLDTerm.confidentialityDeclaration.getLabel())) {
+					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getLabel())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.specialPermissions.getLabel())) {
+					} else if (key.equals(JsonLDTerm.specialPermissions.getLabel())) {
 						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.specialPermissions.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.restrictions.getLabel())) {
+					} else if (key.equals(JsonLDTerm.restrictions.getLabel())) {
 						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.restrictions.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.citationRequirements.getLabel())) {
+					} else if (key.equals(JsonLDTerm.citationRequirements.getLabel())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.citationRequirements.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.depositorRequirements.getLabel())) {
+					} else if (key.equals(JsonLDTerm.depositorRequirements.getLabel())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.depositorRequirements.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.conditions.getLabel())) {
+					} else if (key.equals(JsonLDTerm.conditions.getLabel())) {
 						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.conditions.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.disclaimer.getLabel())) {
+					} else if (key.equals(JsonLDTerm.disclaimer.getLabel())) {
 						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.disclaimer.getLabel()));
-					}
-					if (jsonld.containsKey(JsonLDTerm.fileTermsOfAccess.getLabel())) {
+					} else if (key.equals(JsonLDTerm.fileTermsOfAccess.getLabel())) {
 						JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getLabel());
 						if (fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getLabel())) {
 							terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getLabel()));
