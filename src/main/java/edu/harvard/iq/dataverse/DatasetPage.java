@@ -1661,8 +1661,16 @@ public class DatasetPage implements java.io.Serializable {
             Use the DatasetFieldType id's which are the Map's keys
          --------------------------------------------------------- */
         List<Long> idList = new ArrayList<>(mapDatasetFields.keySet());
-        List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
+        List<String> idStringList = new ArrayList<String>();
+        for(Long id: idList) {
+        	idStringList.add(id.toString());
+        }
+        logger.fine(String.join(",",idStringList));
         
+        List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
+        if(dsFieldTypeInputLevels == null) {
+        	logger.fine("dsFieldTypeInputLevels is null for ds: " + this.getId());
+        } else {
         /* ---------------------------------------------------------
             Iterate through List of DataverseFieldTypeInputLevel objects
             Call "setInclude" on its related DatasetField object
@@ -1678,8 +1686,11 @@ public class DatasetPage implements java.io.Serializable {
                     // remove from hash                
                     mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());    
                 }
+            } else {
+            	logger.fine("oneDSFieldTypeInputLevel is null");
             }
         }  // end: updateDatasetFieldInputLevels
+        }
         
         /* ---------------------------------------------------------
             Iterate through any DatasetField objects remaining in the hash
