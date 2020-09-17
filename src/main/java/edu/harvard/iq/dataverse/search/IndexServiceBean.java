@@ -1657,46 +1657,28 @@ public class IndexServiceBean {
     /**
      * @return Dataverses that should be reindexed either because they have
      * never been indexed or their index time is before their modification time.
+     * (Exclude root because it is never indexed)
      */
-    public List<Dataverse> findStaleOrMissingDataverses() {
-        List<Dataverse> staleDataverses = new ArrayList<>();
-        for (Dataverse dataverse : dataverseService.findAll()) {
-            if (dataverse.equals(dataverseService.findRootDataverse())) {
-                continue;
-            }
-            if (stale(dataverse)) {
-                staleDataverses.add(dataverse);
-            }
-        }
-        return staleDataverses;
+    public List<Long> findStaleOrMissingDataverses() {
+        List<Long> staleDataverseIds = dataverseService.findIdStale();
+        Long rootId = dataverseService.findRootDataverse().getId();
+        List<Long> ids = new ArrayList<>();
+        staleDataverseIds.stream().filter(id -> (!id.equals(rootId))).forEachOrdered(id -> {
+            ids.add(id);
+        });
+        return ids;
     }
 
     /**
      * @return Datasets that should be reindexed either because they have never
      * been indexed or their index time is before their modification time.
      */
-    public List<Dataset> findStaleOrMissingDatasets() {
-        List<Dataset> staleDatasets = new ArrayList<>();
-        for (Dataset dataset : datasetService.findAll()) {
-            if (stale(dataset)) {
-                staleDatasets.add(dataset);
-            }
-        }
-        return staleDatasets;
+    public List<Long> findStaleOrMissingDatasets() {
+        return datasetService.findIdStale();
     }
 
-    private boolean stale(DvObject dvObject) {
-        Timestamp indexTime = dvObject.getIndexTime();
-        Timestamp modificationTime = dvObject.getModificationTime();
-        if (indexTime == null) {
-            return true;
-        } else if (indexTime.before(modificationTime)) {
-            return true;
-        }
-        return false;
-    }
-
-    public List<Long> findDataversesInSolrOnly() throws SearchException {
+  
+    public List<String> findDataversesInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1707,7 +1689,7 @@ public class IndexServiceBean {
         }
     }
 
-    public List<Long> findDatasetsInSolrOnly() throws SearchException {
+    public List<String> findDatasetsInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1718,7 +1700,7 @@ public class IndexServiceBean {
         }
     }
 
-    public List<Long> findFilesInSolrOnly() throws SearchException {
+    public List<String> findFilesInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1748,8 +1730,7 @@ public class IndexServiceBean {
                 SolrDocumentList list = rsp.getResults();
                 for (SolrDocument doc: list) {
                     long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
-                    DvObject dvobject = dvObjectService.findDvObject(id);
-                    if (dvobject == null) {
+                    if(!dvObjectService.checkExists(id)) {
                         permissionInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
                     }
                 }
@@ -1765,47 +1746,46 @@ public class IndexServiceBean {
         return permissionInSolrOnly;
     }
     
-    private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
+    private List<String> findDvObjectInSolrOnly(String type) throws SearchException {
         SolrQuery solrQuery = new SolrQuery();
         int rows = 100;
      
         solrQuery.setQuery("*").setRows(rows).setSort(SortClause.asc(SearchFields.ID));
         solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
-        List<Long> dvObjectInSolrOnly = new ArrayList<>();
-        
+        List<String> dvObjectInSolrOnly = new ArrayList<>();
+       
         String cursorMark = CursorMarkParams.CURSOR_MARK_START;
         boolean done = false;
         while (!done) {
             solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
             QueryResponse rsp = null;
             try {
-                 rsp = solrServer.query(solrQuery);
-            } catch (SolrServerException |IOException ex) {
+                rsp = solrServer.query(solrQuery);
+             } catch (SolrServerException | IOException ex) {
                 throw new SearchException("Error searching Solr type: " + type, ex);
-               
+
             }
             String nextCursorMark = rsp.getNextCursorMark();
             SolrDocumentList list = rsp.getResults();
             for (SolrDocument doc: list) {
-                    Object idObject = doc.getFieldValue(SearchFields.ENTITY_ID);
-            if (idObject != null) {
-                try {
-                    long id = (Long) idObject;
-                    DvObject dvobject = dvObjectService.findDvObject(id);
-                    if (dvobject == null) {
-                        dvObjectInSolrOnly.add(id);
+                Object idObject = doc.getFieldValue(SearchFields.ENTITY_ID);
+                if (idObject != null) {
+                    try {
+                        long id = (Long) idObject;
+                        if (!dvObjectService.checkExists(id)) {
+                            dvObjectInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
+                        }
+                    } catch (ClassCastException ex) {
+                        throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
                     }
-                } catch (ClassCastException ex) {
-                    throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
                 }
             }
-                }
-                if (cursorMark.equals(nextCursorMark)) {
-                    done = true;
-                }
-                cursorMark = nextCursorMark;
+            if (cursorMark.equals(nextCursorMark)) {
+                done = true;
             }
-       
+            cursorMark = nextCursorMark;
+        }
+
         return dvObjectInSolrOnly;
     }
 

@@ -541,25 +541,14 @@ public class SolrIndexServiceBean {
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
         long rootDvId = dataverseService.findRootDataverse().getId();
-        for (DvObject dvObject : dvObjectService.findAll()) {
-//            logger.info("examining dvObjectId " + dvObject.getId() + "...");
-            Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
-            Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
-            if (permissionIndexTime == null) {
-                if (dvObject.getId() != rootDvId && !dvObject.isInstanceofDataFile()) {
-                    // we don't index the rootDv
-                    indexingRequired.add(dvObject.getId());
-                }
-            } else if (permissionModificationTime == null) {
-                /**
-                 * @todo What should we do here? Permissions should always be
-                 * there. They are assigned at create time.
-                 */
-                logger.info("no permission modification time for dvobject id " + dvObject.getId());
-            } else if (permissionIndexTime.before(permissionModificationTime)) {
-                indexingRequired.add(dvObject.getId());
+        List<Long> missingDataversePermissionIds = dataverseService.findIdStalePermission();
+        List<Long> missingDatasetPermissionIds = datasetService.findIdStalePermission();
+        for (Long id : missingDataversePermissionIds) {          
+            if (!id.equals(rootDvId)) {
+            indexingRequired.add(id);
             }
         }
+        indexingRequired.addAll(missingDatasetPermissionIds);
         return indexingRequired;
     }
 
