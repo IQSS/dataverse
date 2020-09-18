@@ -1340,8 +1340,6 @@ public class DatasetPage implements java.io.Serializable {
      * that changes of content should be initiated by user.  
      */
     public void showDatasetUnlockedInfo() {
-    	if (dataset.getLatestVersion().isDraft() && !permissionsWrapper.canIssuePublishDatasetCommand(dataset)) {
-    		JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
-    	}
+   		JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
     }
 }
