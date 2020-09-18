@@ -1,7 +1,11 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import java.io.StringReader;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,6 +86,10 @@ public class JSONLDUtil {
 		versions.add(dsv);
 
 		ds.setVersions(versions);
+		if(jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
+			LocalDateTime dateTime = LocalDateTime.parse(jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl()));
+			ds.setModificationTime(Timestamp.valueOf(dateTime));
+		}
 		try {
 			logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
 		} catch (Exception e) {
