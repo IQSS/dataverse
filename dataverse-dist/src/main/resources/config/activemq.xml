@@ -19,6 +19,14 @@
             xsi:schemaLocation="http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.14.5.xsd"
             useJmx="true" useShutdownHook="false">
 
+        <destinationPolicy>
+            <policyMap>
+                <policyEntries>
+                    <policyEntry queue=">" prioritizedMessages="true" />
+                </policyEntries>
+            </policyMap>
+        </destinationPolicy>
+        
         <managementContext>
             <!--
             use appserver provided context instead of creating one;
