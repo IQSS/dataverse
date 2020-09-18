@@ -29,6 +29,7 @@ import com.apicatalog.jsonld.document.JsonDocument;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -147,11 +148,13 @@ public class JSONLDUtil {
 						logger.fine("Compound: " + dsft.getName());
 						logger.fine("val: " + jsonld.get(key).toString());
 						
-						/*
-						 * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json,
-						 * testType); for (DatasetFieldCompoundValue dsfcv : vals) {
-						 * dsfcv.setParentDatasetField(ret); } dsf.setDatasetFieldCompoundValues(vals);
-						 */
+						/*List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, jsonld.get(key),testType);
+						for (DatasetFieldCompoundValue dsfcv : vals) {
+						   dsfcv.setParentDatasetField(ret); 
+						 } 
+						dsf.setDatasetFieldCompoundValues(vals);
+						*/
+						 
 					} else if (dsft.isControlledVocabulary()) {
 
 						List<ControlledVocabularyValue> vals = new LinkedList<>();
@@ -349,9 +352,10 @@ public class JSONLDUtil {
 			JsonArray array = null;
 			try {
 				array = JsonLd.expand(doc).get();
-
-				jsonld = array.getJsonObject(0);
-				logger.fine("Expanded object: " + jsonld);
+				jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
+						.get();
+				//jsonld = array.getJsonObject(0);
+				logger.fine("Decontextualized object: " + jsonld);
 				return jsonld;
 			} catch (JsonLdError e) {
 				System.out.println(e.getMessage());
