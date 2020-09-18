@@ -632,7 +632,7 @@ public class Datasets extends AbstractApiBean {
 			DataverseRequest req = createDataverseRequest(findUserOrDie());
 			DatasetVersion dsv = ds.getEditVersion();
 			boolean updateDraft = ds.getLatestVersion().isDraft();
-			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, true);
 			
 			DatasetVersion managedVersion;
 			if (updateDraft) {

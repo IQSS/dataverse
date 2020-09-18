@@ -67,7 +67,7 @@ public class JSONLDUtil {
 	}
 
 	public static Dataset updateDatasetFromJsonLD(Dataset ds, String jsonLDBody,
-			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append) {
 
 		DatasetVersion dsv = new DatasetVersion();
 		
@@ -80,7 +80,7 @@ public class JSONLDUtil {
             throw new BadRequestException ("Cannot parse the @id '" + jsonld.getString("@id") + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
         }
         
-		dsv = updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc);
+		dsv = updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append);
 		dsv.setDataset(ds);
 
 		List<DatasetVersion> versions = new ArrayList<>(1);
@@ -101,13 +101,22 @@ public class JSONLDUtil {
 	}
 
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, String jsonLDBody,
-			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append) {
 		JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-		return updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc);
+		return updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append);
 	}
 
+	/**
+	 * 
+	 * @param dsv
+	 * @param jsonld
+	 * @param metadataBlockSvc
+	 * @param datasetFieldSvc
+	 * @param append - if append, will add new top level field values for multi-valued fields, if true and field type isn't multiple, will fail. if false will replace all value(s) for fields found in the json-ld.
+	 * @return
+	 */
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
-			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append) {
 
 		populateFieldTypeMap(metadataBlockSvc);
 
@@ -115,84 +124,37 @@ public class JSONLDUtil {
 		List<DatasetField> dsfl = dsv.getDatasetFields();
 		Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
 		for (DatasetField dsf : dsfl) {
+			if (fieldByTypeMap.containsKey(dsf.getDatasetFieldType())) {
+				// May have multiple values per field, but not multiple fields of one type?
+				logger.warning("Multiple fields of type " + dsf.getDatasetFieldType().getName());
+			}
 			fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
 		}
 		TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+		
 		for (String key : jsonld.keySet()) {
 			if (!key.equals("@context")) {
 				if (dsftMap.containsKey(key)) {
-					DatasetFieldType dsft = dsftMap.get(key);
 
+					DatasetFieldType dsft = dsftMap.get(key);
 					DatasetField dsf = null;
 					if (fieldByTypeMap.containsKey(dsft)) {
 						dsf = fieldByTypeMap.get(dsft);
-					} else {
+						// If there's an existing field, we use it with append and remove it for !append
+						if (!append) {
+							dsfl.remove(dsf);
+						}
+					}
+					if (dsf == null) {
 						dsf = new DatasetField();
 						dsfl.add(dsf);
+						dsf.setDatasetFieldType(dsft);
 					}
-					dsf.setDatasetFieldType(dsft);
+
 					// Todo - normalize object vs. array
-					JsonValue val = jsonld.get(key);
-					JsonArray valArray = null;
-					if (val instanceof JsonArray ) {
-						if((((JsonArray) val).size()> 1) && !dsft.isAllowMultiples()) {
-							throw new BadRequestException("Array for single value notsupported: " + dsft.getName());
-						} else {
-							valArray = (JsonArray) val;
-						}
-					} else {
-						valArray = Json.createArrayBuilder().add(val).build();
-					}
-
-					if (dsft.isCompound()) {
-						logger.fine("Compound: " + dsft.getName());
-						logger.fine("val: " + jsonld.get(key).toString());
-						
-						/*List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, jsonld.get(key),testType);
-						for (DatasetFieldCompoundValue dsfcv : vals) {
-						   dsfcv.setParentDatasetField(ret); 
-						 } 
-						dsf.setDatasetFieldCompoundValues(vals);
-						*/
-						 
-					} else if (dsft.isControlledVocabulary()) {
-
-						List<ControlledVocabularyValue> vals = new LinkedList<>();
-						for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-							String strValue = strVal.getString();
-							ControlledVocabularyValue cvv = datasetFieldSvc
-									.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, strValue, true);
-							if (cvv == null) {
-								throw new BadRequestException("Unknown value for Controlled Vocab Field: "
-										+ dsft.getName() + " : " + strValue);
-							}
-							// Only add value to the list if it is not a duplicate
-							if (strValue.equals("Other")) {
-								System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
-							}
-							if (!vals.contains(cvv)) {
-								vals.add(cvv);
-								cvv.setDatasetFieldType(dsft);
-							}
-						}
-						dsf.setControlledVocabularyValues(vals);
-
-					} else {
-						List<DatasetFieldValue> vals = new LinkedList<>();
-
-						for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
-							String strValue = strVal.getString();
-
-							DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-							if (valArray.size() > 1) {
-								datasetFieldValue.setDisplayOrder(vals.size() - 1);
-							}
-							datasetFieldValue.setValue(strValue.trim());
-							vals.add(datasetFieldValue);
-						}
-						dsf.setDatasetFieldValues(vals);
-
-					}
+					JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
+					
+					addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
 					// assemble new terms, add to existing
 					// multivalue?
@@ -214,24 +176,24 @@ public class JSONLDUtil {
 					// (JsonLDTerm.schemaOrg("dateModified").getLabel())
 
 					// Todo - handle non-CC0 licenses, without terms as an alternate field.
-					if(key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
+					if (key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
 						dsv.setVersionState(VersionState.RELEASED);
-                    } else if(key.equals(JsonLDTerm.schemaOrg("version").getLabel())) {
-                    	String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getLabel());
-                    	int index = friendlyVersion.indexOf(".");
-                    	if(index>0) {
-                          dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
-                          dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index+1)));
-                    	}
-                    } else if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
+					} else if (key.equals(JsonLDTerm.schemaOrg("version").getLabel())) {
+						String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getLabel());
+						int index = friendlyVersion.indexOf(".");
+						if (index > 0) {
+							dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
+							dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
+						}
+					} else if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
 						if (jsonld.getString(JsonLDTerm.schemaOrg("license").getLabel())
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
 						} else {
 							terms.setLicense(TermsOfUseAndAccess.License.NONE);
 						}
-					} else if(key.equals(JsonLDTerm.termsOfUse.getLabel())) {
-							terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getLabel()));
+					} else if (key.equals(JsonLDTerm.termsOfUse.getLabel())) {
+						terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getLabel()));
 					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getLabel())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
@@ -291,6 +253,134 @@ public class JSONLDUtil {
 		dsv.setDatasetFields(dsfl);
 
 		return dsv;
+	}
+
+	private static void addField(DatasetField dsf, JsonArray valArray, DatasetFieldType dsft,
+			DatasetFieldServiceBean datasetFieldSvc, boolean append) {
+
+		if (append && !dsft.isAllowMultiples()) {
+			if ((dsft.isCompound() && !dsf.getDatasetFieldCompoundValues().isEmpty())
+					|| (dsft.isAllowControlledVocabulary()
+							&& !dsf.getControlledVocabularyValues().isEmpty())
+					|| !dsf.getDatasetFieldValues().isEmpty()) {
+				throw new BadRequestException(
+						"Can't append to a single-value field that already has a value: " + dsft.getName());
+			}
+		}
+
+		if (dsft.isCompound()) {
+			logger.fine("Compound: " + dsft.getName());
+			logger.fine("val: " + valArray.toString());
+
+			/*
+			 * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
+			 * jsonld.get(key),testType); for (DatasetFieldCompoundValue dsfcv : vals) {
+			 * dsfcv.setParentDatasetField(ret); } dsf.setDatasetFieldCompoundValues(vals);
+			 */
+
+			List<DatasetFieldCompoundValue> vals = new LinkedList<>();
+			for (JsonValue val : valArray) {
+				if (!(val instanceof JsonObject)) {
+					throw new BadRequestException(
+							"Compound field values must be JSON objects, field: " + dsft.getName());
+				}
+				DatasetFieldCompoundValue cv = null;
+				List<DatasetFieldCompoundValue> cvList = dsf.getDatasetFieldCompoundValues();
+				if (!cvList.isEmpty()) {
+					if (!append) {
+						cvList.clear();
+					} else if (!dsft.isAllowMultiples() && cvList.size() == 1) {
+						// Trying to append but only a single value is allowed (and there already is
+						// one)
+						// (and we don't currently support appending new fields within a compound value)
+						throw new BadRequestException("Append with compound field with single value not yet supported: "
+								+ dsft.getDisplayName());
+					} else {
+						cv = cvList.get(0);
+					}
+				}
+				if (cv == null) {
+					cv = new DatasetFieldCompoundValue();
+					cv.setDisplayOrder(cvList.size());
+					cvList.add(cv);
+					cv.setParentDatasetField(dsf);
+				}
+
+				JsonObject obj = (JsonObject) val;
+				for (String childKey : obj.keySet()) {
+					if (dsftMap.containsKey(childKey)) {
+						DatasetFieldType childft = dsftMap.get(childKey);
+						if (!dsft.getChildDatasetFieldTypes().contains(childft)) {
+							throw new BadRequestException(
+									"Compound field " + dsft.getName() + "can't include term " + childKey);
+						}
+						DatasetField childDsf = new DatasetField();
+						cv.getChildDatasetFields().add(childDsf);
+						childDsf.setDatasetFieldType(childft);
+						childDsf.setParentDatasetFieldCompoundValue(cv);
+
+						JsonArray childValArray = getValues(obj.get(childKey), childft.isAllowMultiples(),
+								childft.getName());
+						addField(childDsf, childValArray, childft, datasetFieldSvc, append);
+					}
+				}
+			}
+
+		} else if (dsft.isControlledVocabulary()) {
+
+			List<ControlledVocabularyValue> vals = dsf.getControlledVocabularyValues();
+			for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
+				String strValue = strVal.getString();
+				ControlledVocabularyValue cvv = datasetFieldSvc
+						.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsft, strValue, true);
+				if (cvv == null) {
+					throw new BadRequestException(
+							"Unknown value for Controlled Vocab Field: " + dsft.getName() + " : " + strValue);
+				}
+				// Only add value to the list if it is not a duplicate
+				if (strValue.equals("Other")) {
+					System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+				}
+				if (!vals.contains(cvv)) {
+					if (vals.size() > 0) {
+						cvv.setDisplayOrder(vals.size());
+					}
+					vals.add(cvv);
+					cvv.setDatasetFieldType(dsft);
+				}
+			}
+			dsf.setControlledVocabularyValues(vals);
+
+		} else {
+			List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
+
+			for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
+				String strValue = strVal.getString();
+
+				DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
+				if (vals.size() > 0) {
+					datasetFieldValue.setDisplayOrder(vals.size());
+				}
+				datasetFieldValue.setValue(strValue.trim());
+				vals.add(datasetFieldValue);
+			}
+			dsf.setDatasetFieldValues(vals);
+
+		}
+	}
+
+	private static JsonArray getValues(JsonValue val, boolean allowMultiples, String name) {
+		JsonArray valArray = null;
+		if (val instanceof JsonArray ) {
+			if((((JsonArray) val).size()> 1) && !allowMultiples) {
+				throw new BadRequestException("Array for single value notsupported: " + name);
+			} else {
+				valArray = (JsonArray) val;
+			}
+		} else {
+			valArray = Json.createArrayBuilder().add(val).build();
+		}
+		return valArray;
 	}
 
 	static Map<String, String> localContext = new TreeMap<String, String>();

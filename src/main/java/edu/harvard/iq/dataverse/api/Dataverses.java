@@ -411,7 +411,7 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = new Dataset();
 
             ds.setOwner(owner);
-            ds = JSONLDUtil.updateDatasetFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc);; 
+            ds = JSONLDUtil.updateDatasetFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false); 
           //ToDo - verify PID is one Dataverse can manage (protocol/authority/shoulder match)
             if(!
             (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
