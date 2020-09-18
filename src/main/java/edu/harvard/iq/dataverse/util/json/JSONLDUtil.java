@@ -144,6 +144,9 @@ public class JSONLDUtil {
 					}
 
 					if (dsft.isCompound()) {
+						logger.fine("Compound: " + dsft.getName());
+						logger.fine("val: " + jsonld.get(key).toString());
+						
 						/*
 						 * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json,
 						 * testType); for (DatasetFieldCompoundValue dsfcv : vals) {
