@@ -133,8 +133,8 @@ public class JSONLDUtil {
 					// Todo - normalize object vs. array
 					JsonValue val = jsonld.get(key);
 					JsonArray valArray = null;
-					if (val instanceof JsonArray) {
-						if (!dsft.isAllowMultiples()) {
+					if (val instanceof JsonArray ) {
+						if((((JsonArray) val).size()> 1) && !dsft.isAllowMultiples()) {
 							throw new BadRequestException("Array for single value notsupported: " + dsft.getName());
 						} else {
 							valArray = (JsonArray) val;
