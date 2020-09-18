@@ -34,15 +34,13 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 
 public class JSONLDUtil {
 
 	private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
 
-	public static Map<String, String> populateContext(JsonValue json) {
+/*	private static Map<String, String> populateContext(JsonValue json) {
 		Map<String, String> context = new TreeMap<String, String>();
 		if (json instanceof JsonArray) {
 			logger.warning("Array @context not yet supported");
@@ -53,6 +51,7 @@ public class JSONLDUtil {
 		}
 		return context;
 	}
+	*/
 
 	public static JsonObject getContext(Map<String, String> contextMap) {
 		JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
@@ -67,7 +66,7 @@ public class JSONLDUtil {
 
 		DatasetVersion dsv = new DatasetVersion();
 		
-		JsonObject jsonld = recontextualizeJsonLD(jsonLDBody, metadataBlockSvc);
+		JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
 		Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
         if (maybePid.isPresent()) {
             ds.setGlobalId(maybePid.get());
@@ -94,27 +93,15 @@ public class JSONLDUtil {
 
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, String jsonLDBody,
 			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
-		JsonObject jsonld = recontextualizeJsonLD(jsonLDBody, metadataBlockSvc);
+		JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
 		return updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc);
 	}
 
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
 			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
 
-		Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
+		populateFieldTypeMap(metadataBlockSvc);
 
-		List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
-		for (MetadataBlock mdb : mdbList) {
-			if (mdb.getNamespaceUri() != null) {
-				for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-					if(dsft.getUri()!=null) {
-						dsftMap.put(dsft.getUri(), dsft);
-					}
-					//Can allow both, so don't put this in an else?
-					dsftMap.put(mdb.getName() + ":" + dsft.getName(), dsft);
-				}
-			}
-		}
 		// get existing ones?
 		List<DatasetField> dsfl = dsv.getDatasetFields();
 		Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
@@ -292,36 +279,81 @@ public class JSONLDUtil {
 		return dsv;
 	}
 
-	private static JsonObject recontextualizeJsonLD(String jsonLDString, MetadataBlockServiceBean metadataBlockSvc) {
-		logger.fine(jsonLDString.replaceAll("\r?\n", ""));
-		try (StringReader rdr = new StringReader(jsonLDString.replaceAll("\r?\n", ""))) {
+	static Map<String, String> localContext = new TreeMap<String, String>();
+	static Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
 
-			Map<String, String> localContext = new TreeMap<String, String>();
+	private static void populateFieldTypeMap(MetadataBlockServiceBean metadataBlockSvc) {
+		if (dsftMap.isEmpty()) { 
+			
+			List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
+
+			for (MetadataBlock mdb : mdbList) {
+				boolean blockHasUri = mdb.getNamespaceUri() != null;
+				for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+					if (dsft.getUri() != null) {
+						dsftMap.put(dsft.getUri(), dsft);
+					}
+					if (blockHasUri) {
+						dsftMap.put(mdb.getNamespaceUri() + dsft.getName(), dsft);
+					}
+				}
+			}
+			logger.fine("DSFT Map: " + String.join(", ",dsftMap.keySet()));
+		}
+	}
+	
+	private static void populateContext(MetadataBlockServiceBean metadataBlockSvc) {
+		if (localContext.isEmpty()) { 
+			
 			// Add namespaces corresponding to core terms
 			localContext.put(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
 			localContext.put(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
 			localContext.put(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
-
-			Map<String, MetadataBlock> mdbMap = new TreeMap<String, MetadataBlock>();
-			Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
-
+			
 			List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
-			for (MetadataBlock mdb : mdbList) {
-				if (mdb.getNamespaceUri() != null) {
-					localContext.putIfAbsent(mdb.getName(), mdb.getNamespaceUri());
-					mdbMap.put(mdb.getName(), mdb);
-					for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-						dsftMap.put(mdb.getName() + ":" + dsft.getName(), dsft);
-					}
-				} else {
-					for (DatasetFieldType dftp : mdb.getDatasetFieldTypes()) {
-						if (dftp.getUri() != null) {
-							localContext.putIfAbsent(dftp.getName(), dftp.getUri());
 
-						}
+			for (MetadataBlock mdb : mdbList) {
+				boolean blockHasUri = mdb.getNamespaceUri() != null;
+				if (blockHasUri) {
+					localContext.putIfAbsent(mdb.getName(), mdb.getNamespaceUri());
+
+				}
+				for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
+					if (dsft.getUri() != null) {
+						localContext.putIfAbsent(dsft.getName(), dsft.getUri());
 					}
 				}
 			}
+			logger.fine("LocalContext keys: " + String.join(", ", localContext.keySet()));
+		}
+	}
+	
+	private static JsonObject decontextualizeJsonLD(String jsonLDString) {
+		logger.fine(jsonLDString);
+		try (StringReader rdr = new StringReader(jsonLDString)) {
+
+			// Use JsonLd to expand/compact to localContext
+			JsonObject jsonld = Json.createReader(rdr).readObject();
+			JsonDocument doc = JsonDocument.of(jsonld);
+			JsonArray array = null;
+			try {
+				array = JsonLd.expand(doc).get();
+
+				jsonld = array.getJsonObject(0);
+				logger.fine("Expanded object: " + jsonld);
+				return jsonld;
+			} catch (JsonLdError e) {
+				System.out.println(e.getMessage());
+				return null;
+			}
+		}
+	}
+	
+	private static JsonObject recontextualizeJsonLD(String jsonLDString, MetadataBlockServiceBean metadataBlockSvc) {
+		logger.fine(jsonLDString);
+		try (StringReader rdr = new StringReader(jsonLDString)) {
+
+			populateContext(metadataBlockSvc);
 
 			// Use JsonLd to expand/compact to localContext
 			JsonObject jsonld = Json.createReader(rdr).readObject();
@@ -340,4 +372,5 @@ public class JSONLDUtil {
 			}
 		}
 	}
+
 }
