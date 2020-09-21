@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -49,12 +50,12 @@ public class IndexBatchServiceBean {
     public Future<JsonObjectBuilder> indexStatus() {
         JsonObjectBuilder response = Json.createObjectBuilder();
         logger.info("Beginning indexStatus()");
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
-        JsonObjectBuilder contentInSolrButNotDatabase = null;
-        JsonObjectBuilder permissionsInSolrButNotDatabase = null;
+        JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
+        JsonObject contentInSolrButNotDatabase = null;
+        JsonObject permissionsInSolrButNotDatabase = null;
         try {
-            contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
-            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
+            contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
+            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
           
         } catch (SearchException ex) {
             String msg = "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage();
@@ -63,14 +64,19 @@ public class IndexBatchServiceBean {
             return new AsyncResult<>(response);
         }
            
-        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
+        JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
     
         JsonObjectBuilder data = Json.createObjectBuilder()
                 .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
                 .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
                 .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
                 .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
-        logger.info("indexStatus() result:" + data.build().toString());
+
+        logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
+        logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
+        logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
+        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);    
+      
         return new AsyncResult<>(data);
     }
     @Asynchronous

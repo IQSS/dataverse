@@ -43,7 +43,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -377,19 +380,57 @@ public class Index extends AbstractApiBean {
             return ok(indexResponse.getMessage());
         }
     }
-
+    /**
+     * Checks whether there are inconsistencies between the Solr index and 
+     * the database, and reports back the status by content type
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the status in server.log
+     * @return status report
+     */
     @GET
     @Path("status")
-    public Response indexStatus() {
-        indexBatchService.indexStatus();
-        return ok("Index Status Batch Job initiated, check log for job status.");
+    public Response indexStatus(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Index Status Batch Job initiated, check log for job status.");
+        }
     }
-    
+     /**
+     * Deletes "orphan" Solr documents (that don't match anything in the database).
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the results in server.log
+     * @return what documents, if anything, was deleted
+     */
     @GET
     @Path("clear-orphans")
+      /**
+     * Checks whether there are inconsistencies between the Solr index and 
+     * the database, and reports back the status by content type
+     * @param sync - optional parameter, if !=null, then run the command 
+     * synchronously. Else, return immediately, and report the status in server.log
+     * @return 
+     */
     public Response clearOrphans() {   
             indexBatchService.clearOrphans();
             return ok("Clear Orphans Batch Job initiated, check log for job status.");   
+     Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Index Status Batch Job initiated, check log for job status.");
+        }        
     }
   
     /**

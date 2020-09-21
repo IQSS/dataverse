@@ -7,7 +7,6 @@ import com.jayway.restassured.response.Response;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -68,11 +67,10 @@ public class IndexIT {
    
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .queryParam("sync","true")
                 .get("/api/admin/index/status");
         response.prettyPrint();
         ArrayList emptyList = new ArrayList<>();
-        HashMap data = response.getBody().jsonPath().get("data.contentInDatabaseButStaleInOrMissingFromIndex");
-        System.out.println(data + " " + data.getClass());
         response.then().assertThat().statusCode(OK.getStatusCode())
                 .body("data.contentInDatabaseButStaleInOrMissingFromIndex.dataverses", CoreMatchers.equalTo(emptyList))
                 .body("data.contentInDatabaseButStaleInOrMissingFromIndex.datasets", CoreMatchers.equalTo(emptyList))

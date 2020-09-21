@@ -115,6 +115,9 @@ public class IndexServiceBean {
 
     @EJB
     VariableServiceBean variableService;
+    
+    @EJB
+    IndexBatchServiceBean indexBatchService;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -157,7 +160,7 @@ public class IndexServiceBean {
             solrServer = null;
         }
     }
-    
+   
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
         return indexDataverse(dataverse, false);
