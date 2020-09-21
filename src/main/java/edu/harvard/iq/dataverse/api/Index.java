@@ -410,17 +410,17 @@ public class Index extends AbstractApiBean {
      */
     @GET
     @Path("clear-orphans")
-      /**
-     * Checks whether there are inconsistencies between the Solr index and 
-     * the database, and reports back the status by content type
-     * @param sync - optional parameter, if !=null, then run the command 
-     * synchronously. Else, return immediately, and report the status in server.log
-     * @return 
+    /**
+     * Checks whether there are inconsistencies between the Solr index and the
+     * database, and reports back the status by content type
+     *
+     * @param sync - optional parameter, if !=null, then run the command
+     * synchronously. Else, return immediately, and report the status in
+     * server.log
+     * @return
      */
-    public Response clearOrphans() {   
-            indexBatchService.clearOrphans();
-            return ok("Clear Orphans Batch Job initiated, check log for job status.");   
-     Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
+    public Response clearOrphans(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.clearOrphans();
         if (sync != null) {
             try {
                 JsonObjectBuilder status = result.get();
@@ -429,8 +429,8 @@ public class Index extends AbstractApiBean {
                 return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
             }
         } else {
-            return ok("Index Status Batch Job initiated, check log for job status.");
-        }        
+            return ok("Clear Orphans Batch Job initiated, check log for job status.");
+        }
     }
   
     /**
