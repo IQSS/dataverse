@@ -281,10 +281,14 @@ public class ShapefileHandler{
         return new File(fileName).getParent(); 
     }
     /*
-        Unzip the files to the directory, FLATTENING the directory structure
-        
-        Any colliding names will result  in overwrites
-    
+        We used to unzip the files to the directory, FLATTENING the directory structure
+        Any colliding names would result  in overwrites
+        HOWEVER, starting with v5.1, we are now preserving the folder structure
+        inside the uploaded zip file (issue #6873). To achieve this, we recreate 
+        all the folders as they appear in the original zip archive, and as we 
+        rezip any found shape file sets. The FileUtil then preserve any such
+        subfolders in the FileMetadata of the newly created DataFiles. 
+        (-- L.A. 09/2020) 
     */
     private boolean unzipFilesToDirectory(FileInputStream zipfile_input_stream, File target_directory){
         logger.fine("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
