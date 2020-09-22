@@ -367,6 +367,8 @@ public class JSONLDUtil {
 				}
 				datasetFieldValue.setValue(strValue.trim());
 				vals.add(datasetFieldValue);
+				datasetFieldValue.setDatasetField(dsf);
+
 			}
 			dsf.setDatasetFieldValues(vals);
 
