@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,6 +58,8 @@ public class JSONLDUtil {
 		return context;
 	}
 	*/
+	
+	private static DateTimeFormatter dateToMillis = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss. SSS");
 
 	public static JsonObject getContext(Map<String, String> contextMap) {
 		JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
@@ -88,7 +91,8 @@ public class JSONLDUtil {
 
 		ds.setVersions(versions);
 		if(jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
-			LocalDateTime dateTime = LocalDateTime.parse(jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl()));
+			
+			LocalDateTime dateTime = LocalDateTime.parse(jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl()), dateToMillis);
 			ds.setModificationTime(Timestamp.valueOf(dateTime));
 		}
 		try {
