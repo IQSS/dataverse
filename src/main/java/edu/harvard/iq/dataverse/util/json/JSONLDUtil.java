@@ -59,7 +59,7 @@ public class JSONLDUtil {
 	}
 	*/
 	
-	private static DateTimeFormatter dateToMillis = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss. SSS");
+	private static DateTimeFormatter dateToMillis = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
 	public static JsonObject getContext(Map<String, String> contextMap) {
 		JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
