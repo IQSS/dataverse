@@ -180,68 +180,68 @@ public class JSONLDUtil {
 					// (JsonLDTerm.schemaOrg("dateModified").getLabel())
 
 					// Todo - handle non-CC0 licenses, without terms as an alternate field.
-					if (key.equals(JsonLDTerm.schemaOrg("datePublished").getLabel())) {
+					if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())) {
 						dsv.setVersionState(VersionState.RELEASED);
-					} else if (key.equals(JsonLDTerm.schemaOrg("version").getLabel())) {
-						String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getLabel());
+					} else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())) {
+						String friendlyVersion = jsonld.getString(JsonLDTerm.schemaOrg("version").getUrl());
 						int index = friendlyVersion.indexOf(".");
 						if (index > 0) {
 							dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
 							dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
 						}
-					} else if (key.equals(JsonLDTerm.schemaOrg("license").getLabel())) {
-						if (jsonld.getString(JsonLDTerm.schemaOrg("license").getLabel())
+					} else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+						if (jsonld.getString(JsonLDTerm.schemaOrg("license").getUrl())
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
 						} else {
 							terms.setLicense(TermsOfUseAndAccess.License.NONE);
 						}
-					} else if (key.equals(JsonLDTerm.termsOfUse.getLabel())) {
-						terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getLabel()));
-					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getLabel())) {
+					} else if (key.equals(JsonLDTerm.termsOfUse.getUrl())) {
+						terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getUrl()));
+					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getUrl())) {
 						terms.setConfidentialityDeclaration(
-								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getLabel()));
-					} else if (key.equals(JsonLDTerm.specialPermissions.getLabel())) {
-						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.specialPermissions.getLabel()));
-					} else if (key.equals(JsonLDTerm.restrictions.getLabel())) {
-						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.restrictions.getLabel()));
-					} else if (key.equals(JsonLDTerm.citationRequirements.getLabel())) {
+								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getUrl()));
+					} else if (key.equals(JsonLDTerm.specialPermissions.getUrl())) {
+						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.specialPermissions.getUrl()));
+					} else if (key.equals(JsonLDTerm.restrictions.getUrl())) {
+						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.restrictions.getUrl()));
+					} else if (key.equals(JsonLDTerm.citationRequirements.getUrl())) {
 						terms.setConfidentialityDeclaration(
-								jsonld.getString(JsonLDTerm.citationRequirements.getLabel()));
-					} else if (key.equals(JsonLDTerm.depositorRequirements.getLabel())) {
+								jsonld.getString(JsonLDTerm.citationRequirements.getUrl()));
+					} else if (key.equals(JsonLDTerm.depositorRequirements.getUrl())) {
 						terms.setConfidentialityDeclaration(
-								jsonld.getString(JsonLDTerm.depositorRequirements.getLabel()));
-					} else if (key.equals(JsonLDTerm.conditions.getLabel())) {
-						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.conditions.getLabel()));
-					} else if (key.equals(JsonLDTerm.disclaimer.getLabel())) {
-						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.disclaimer.getLabel()));
-					} else if (key.equals(JsonLDTerm.fileTermsOfAccess.getLabel())) {
-						JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getLabel());
-						if (fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getLabel())) {
-							terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getLabel()));
+								jsonld.getString(JsonLDTerm.depositorRequirements.getUrl()));
+					} else if (key.equals(JsonLDTerm.conditions.getUrl())) {
+						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.conditions.getUrl()));
+					} else if (key.equals(JsonLDTerm.disclaimer.getUrl())) {
+						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.disclaimer.getUrl()));
+					} else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
+						JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
+						if (fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getUrl())) {
+							terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getLabel())) {
+						if (fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getUrl())) {
 							terms.setFileAccessRequest(
-									fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getLabel()));
+									fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getLabel())) {
-							terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getLabel()));
+						if (fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getUrl())) {
+							terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.originalArchive.getLabel())) {
-							terms.setOriginalArchive(fAccessObject.getString(JsonLDTerm.originalArchive.getLabel()));
+						if (fAccessObject.containsKey(JsonLDTerm.originalArchive.getUrl())) {
+							terms.setOriginalArchive(fAccessObject.getString(JsonLDTerm.originalArchive.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getLabel())) {
+						if (fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getUrl())) {
 							terms.setAvailabilityStatus(
-									fAccessObject.getString(JsonLDTerm.availabilityStatus.getLabel()));
+									fAccessObject.getString(JsonLDTerm.availabilityStatus.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.contactForAccess.getLabel())) {
-							terms.setContactForAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getLabel()));
+						if (fAccessObject.containsKey(JsonLDTerm.contactForAccess.getUrl())) {
+							terms.setContactForAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getLabel())) {
-							terms.setSizeOfCollection(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getLabel()));
+						if (fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getUrl())) {
+							terms.setSizeOfCollection(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.studyCompletion.getLabel())) {
-							terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getLabel()));
+						if (fAccessObject.containsKey(JsonLDTerm.studyCompletion.getUrl())) {
+							terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getUrl()));
 						}
 					}
 					dsv.setTermsOfUseAndAccess(terms);
