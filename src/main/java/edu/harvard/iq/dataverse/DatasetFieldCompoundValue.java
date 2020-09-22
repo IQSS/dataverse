@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -96,10 +95,9 @@ public class DatasetFieldCompoundValue implements Serializable {
     public List<DatasetField> getChildDatasetFields() {
         return childDatasetFields;
     }
-    
+
     public void setChildDatasetFields(List<DatasetField> childDatasetFields) {
         this.childDatasetFields = childDatasetFields;
-        this.childDatasetFields.sort(DatasetField.DisplayOrder);
     }
 
     @Override
