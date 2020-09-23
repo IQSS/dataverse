@@ -283,6 +283,18 @@ public class JSONLDUtil {
 			 * jsonld.get(key),testType); for (DatasetFieldCompoundValue dsfcv : vals) {
 			 * dsfcv.setParentDatasetField(ret); } dsf.setDatasetFieldCompoundValues(vals);
 			 */
+			List<DatasetFieldCompoundValue> cvList = dsf.getDatasetFieldCompoundValues();
+			if (!cvList.isEmpty()) {
+				if (!append) {
+					cvList.clear();
+				} else if (!dsft.isAllowMultiples() && cvList.size() == 1) {
+					// Trying to append but only a single value is allowed (and there already is
+					// one)
+					// (and we don't currently support appending new fields within a compound value)
+					throw new BadRequestException("Append with compound field with single value not yet supported: "
+							+ dsft.getDisplayName());
+				}
+			}
 
 			List<DatasetFieldCompoundValue> vals = new LinkedList<>();
 			for (JsonValue val : valArray) {
@@ -291,26 +303,11 @@ public class JSONLDUtil {
 							"Compound field values must be JSON objects, field: " + dsft.getName());
 				}
 				DatasetFieldCompoundValue cv = null;
-				List<DatasetFieldCompoundValue> cvList = dsf.getDatasetFieldCompoundValues();
-				if (!cvList.isEmpty()) {
-					if (!append) {
-						cvList.clear();
-					} else if (!dsft.isAllowMultiples() && cvList.size() == 1) {
-						// Trying to append but only a single value is allowed (and there already is
-						// one)
-						// (and we don't currently support appending new fields within a compound value)
-						throw new BadRequestException("Append with compound field with single value not yet supported: "
-								+ dsft.getDisplayName());
-					} else {
-						cv = cvList.get(0);
-					}
-				}
-				if (cv == null) {
-					cv = new DatasetFieldCompoundValue();
-					cv.setDisplayOrder(cvList.size());
-					cvList.add(cv);
-					cv.setParentDatasetField(dsf);
-				}
+
+				cv = new DatasetFieldCompoundValue();
+				cv.setDisplayOrder(cvList.size());
+				cvList.add(cv);
+				cv.setParentDatasetField(dsf);
 
 				JsonObject obj = (JsonObject) val;
 				for (String childKey : obj.keySet()) {
