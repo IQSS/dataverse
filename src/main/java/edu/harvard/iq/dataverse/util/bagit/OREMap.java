@@ -134,7 +134,9 @@ public class OREMap {
         //Allow oremap for non-published versions (not yet implemented)
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
         //Just for debugging - should always be set for real/persisted datasetversions
-        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("dateModified"), version.getLastUpdateTime().toString());
+        if(version.getLastUpdateTime() != null) {
+          aggBuilder.add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+        }
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
