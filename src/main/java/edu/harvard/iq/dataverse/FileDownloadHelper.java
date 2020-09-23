@@ -57,15 +57,15 @@ public class FileDownloadHelper implements java.io.Serializable {
     @EJB
     DataFileServiceBean datafileService;
     
-    UIInput nameField;
-
-    public UIInput getNameField() {
-        return nameField;
-    }
-
-    public void setNameField(UIInput nameField) {
-        this.nameField = nameField;
-    }
+//    UIInput nameField;
+//
+//    public UIInput getNameField() {
+//        return nameField;
+//    }
+//
+//    public void setNameField(UIInput nameField) {
+//        this.nameField = nameField;
+//    }
 
     public UIInput getEmailField() {
         return emailField;
@@ -99,11 +99,12 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-     public void nameValueChangeListener(AjaxBehaviorEvent e) {
-         String name= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setName(name);
-     }
-     
+//     public void nameValueChangeListener(AjaxBehaviorEvent e) {
+//         String name= (String) ((UIOutput) e.getSource()).getValue();
+//         this.guestbookResponse.setName(name);
+//     }
+
+    
     public void emailValueChangeListener(AjaxBehaviorEvent e) {
          String email= (String) ((UIOutput) e.getSource()).getValue();
          this.guestbookResponse.setEmail(email);
@@ -134,23 +135,25 @@ public class FileDownloadHelper implements java.io.Serializable {
      }
      
      private boolean validateGuestbookResponse(GuestbookResponse guestbookResponse){
+         logger.info("validateGuestbookResponse...");
                 Dataset dataset = guestbookResponse.getDataset();
                 boolean valid = true;
          if (dataset.getGuestbook() != null) {
+             logger.info("guestbookResponse.getName():" + guestbookResponse.getName());
              if (dataset.getGuestbook().isNameRequired()) {
                  boolean nameValid = (guestbookResponse.getName() != null && !guestbookResponse.getName().isEmpty());
                  if (!nameValid) {
-                     nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
+//                     nameField.setValid(false);
+//                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
+//                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
                  }
                  valid &= nameValid;
              }
                 valid &= testResponseLength(guestbookResponse.getName());
                  if (! testResponseLength(guestbookResponse.getName())){
-                    nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
+//                    nameField.setValid(false);
+//                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
+//                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
                  }
              if (dataset.getGuestbook().isEmailRequired()) {
                  boolean emailValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
@@ -225,12 +228,17 @@ public class FileDownloadHelper implements java.io.Serializable {
      // downloadServiceBean directly, in order to differentiate between single
      // file downloads and multiple (batch) downloads - sice both use the same 
      // terms/etc. popup. 
-     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+//     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+     public void writeGuestbookAndStartDownload() {
+         logger.info("guestbookResponse name: " + guestbookResponse.getName()); // null pointer when commenting out line on DatasetPage
+         logger.info("this.guestbookResponse name: " + this.guestbookResponse.getName()); // null pointer on file but not dataset.
          //RequestContext requestContext = RequestContext.getCurrentInstance();
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+//             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+             logger.info("FIXME1");
+             JH.addMessage(FacesMessage.SEVERITY_ERROR, "FIXME1");
          } else {
              //requestContext.execute("PF('downloadPopup').hide()");
              PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
@@ -319,7 +327,9 @@ public class FileDownloadHelper implements java.io.Serializable {
         boolean valid = validateGuestbookResponse(guestbookResponse);
 
         if (!valid) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+//            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
+            logger.info("FIXME2");
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, "FIXME2");
         } else {
             //requestContext.execute("PF('downloadPopup').hide()");
             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");

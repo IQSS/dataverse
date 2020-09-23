@@ -9,7 +9,7 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <p:focus context="downloadPopup"/>
+        <!--<p:focus context="downloadPopup"/>-->
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
@@ -53,11 +53,13 @@
                         </label>
                         <div class="col-sm-6">
                             <p:inputText id="guestbookuser_nameText" 
-                                         required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
+                                         required="#{true or param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
                                          styleClass="form-control" value="#{guestbookResponse.name}"
                                          requiredMessage="#{bundle['requiredField']}"                                       
-                                         binding="#{fileDownloadHelper.nameField}">
-                                <p:ajax listener="#{fileDownloadHelper.nameValueChangeListener}" />
+                                         >
+                                <!--binding="# {fileDownloadHelper.nameField}"-->
+                                <!--validator="# {guestbookResponseService.guestbookResponseValidator}"-->
+                                <!--<p:ajax listener="# {fileDownloadHelper.nameValueChangeListener}" />-->
                               </p:inputText>  
                             <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                         </div>
@@ -147,11 +149,13 @@
         </div>
         <div class="button-block">
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
+            <p:commandButton styleClass="btn btn-default"  value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
                                                                                                                             and guestbookResponse.fileFormat != 'package'}"
-                           actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
+                           actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload()}"
                            update="guestbookUIFragment">
+                           <!--actionListener="# {fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"-->
+                           <!--process="@this"--> <!-- maybe be too targeted, may only work when binding enabled -->
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandButton>
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
