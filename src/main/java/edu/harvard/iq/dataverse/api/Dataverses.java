@@ -305,6 +305,7 @@ public class Dataverses extends AbstractApiBean {
                     latestVersion.setCreateTime(new Date());
                 }
                 if (latestVersion.getLastUpdateTime() != null) {
+                	//ToDo - using Date instead of Timestamp means datasets created this way don't have times with as much precision as when datasets are published, etc.
                     latestVersion.setLastUpdateTime(new Date());
                 }
             }
