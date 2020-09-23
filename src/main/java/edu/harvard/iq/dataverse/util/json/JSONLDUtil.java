@@ -511,6 +511,8 @@ public class JSONLDUtil {
 			put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy HH:mm:ss");
 			put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
 			put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$", "yyyy-MM-dd HH:mm:ss.SSS");
+			put("^[a-z,A-Z]{3}\\s[a-z,A-Z]{3}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\s[a-z,A-Z]{3}\\s\\d{4}$", "EEE MMM dd HH:mm:ss zzz yyyy"); //Wed Sep 23 19:33:46 UTC 2020
+			
 		}
 	};
 
