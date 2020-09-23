@@ -271,11 +271,13 @@ public class JSONLDUtil {
 						"Can't append to a single-value field that already has a value: " + dsft.getName());
 			}
 		}
-
+		logger.fine("Name: " + dsft.getName());
+		logger.fine("val: " + valArray.toString());
+		logger.fine("Compound: " + dsft.isCompound());
+		logger.fine("CV: " + dsft.isAllowControlledVocabulary());
+		
+		
 		if (dsft.isCompound()) {
-			logger.fine("Compound: " + dsft.getName());
-			logger.fine("val: " + valArray.toString());
-
 			/*
 			 * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
 			 * jsonld.get(key),testType); for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -360,18 +362,15 @@ public class JSONLDUtil {
 
 			for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
 				String strValue = strVal.getString();
-
 				DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-				if (vals.size() > 0) {
-					datasetFieldValue.setDisplayOrder(vals.size());
-				}
+				
+				datasetFieldValue.setDisplayOrder(vals.size());
 				datasetFieldValue.setValue(strValue.trim());
 				vals.add(datasetFieldValue);
 				datasetFieldValue.setDatasetField(dsf);
-
+				
 			}
 			dsf.setDatasetFieldValues(vals);
-
 		}
 	}
 
