@@ -403,8 +403,9 @@ public class JSONLDUtil {
 						if(dsft.getParentDatasetFieldType()!=null) {
 							//ToDo - why not getName for child type? Would have to fix in ORE generation code and handle legacy bags
 							dsftMap.put(mdb.getNamespaceUri() + dsft.getParentDatasetFieldType().getName() + "#" + dsft.getTitle(), dsft);
+						} else {
+						    dsftMap.put(mdb.getNamespaceUri() + dsft.getTitle(), dsft);
 						}
-						dsftMap.put(mdb.getNamespaceUri() + dsft.getName(), dsft);
 					}
 				}
 			}
