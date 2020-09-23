@@ -130,10 +130,11 @@ public class OREMap {
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
-                .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle());
         //Allow oremap for non-published versions (not yet implemented)
         addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
+        //Just for debugging - should always be set for real/persisted datasetversions
+        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("dateModified"), version.getLastUpdateTime().toString());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
