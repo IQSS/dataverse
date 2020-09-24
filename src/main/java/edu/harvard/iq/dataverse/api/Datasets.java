@@ -52,6 +52,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -1108,9 +1109,10 @@ public class Datasets extends AbstractApiBean {
 			String errorMsg = null;
 			String successMsg = null;
 			try {
-				CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(ds,
-						createDataverseRequest(user));
+				FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
+						createDataverseRequest(user), true);
 				ds = commandEngine.submit(cmd);
+				//Todo - update messages
 				successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
 
 				// If configured, update archive copy as well
