@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -22,6 +23,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 import javax.ws.rs.BadRequestException;
 import com.apicatalog.jsonld.JsonLd;
 import com.apicatalog.jsonld.api.JsonLdError;
@@ -41,6 +45,7 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class JSONLDUtil {
 
@@ -240,6 +245,44 @@ public class JSONLDUtil {
 						}
 						if (fAccessObject.containsKey(JsonLDTerm.studyCompletion.getUrl())) {
 							terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getUrl()));
+						}
+					} else {
+						if (dsftMap.containsKey(JsonLDTerm.metadataOnOrig.getUrl())) {
+							DatasetFieldType dsft = dsftMap.get(JsonLDTerm.metadataOnOrig.getUrl());
+
+							DatasetField dsf = null;
+							if (fieldByTypeMap.containsKey(dsft)) {
+								dsf = fieldByTypeMap.get(dsft);
+								// If there's an existing field, we use it with append and remove it for !append
+								if (!append) {
+									dsfl.remove(dsf);
+								}
+							}
+							if (dsf == null) {
+								dsf = new DatasetField();
+								dsfl.add(dsf);
+								dsf.setDatasetFieldType(dsft);
+							}
+
+							List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
+
+							JsonObject currentValue = null;
+							DatasetFieldValue datasetFieldValue = null;
+							if (vals.isEmpty()) {
+								datasetFieldValue = new DatasetFieldValue();
+								vals.add(datasetFieldValue);
+								datasetFieldValue.setDatasetField(dsf);
+								dsf.setDatasetFieldValues(vals);
+
+								currentValue = Json.createObjectBuilder().build();
+							} else {
+								datasetFieldValue = vals.get(0);
+								JsonObject currentVal = decontextualizeJsonLD(datasetFieldValue.getValueForEdit());
+
+							}
+							currentValue.put(key, jsonld.get(key));
+							JsonObject newValue = recontextualizeJsonLD(currentValue, metadataBlockSvc);
+							datasetFieldValue.setValue(prettyPrint(newValue));
 						}
 					}
 					dsv.setTermsOfUseAndAccess(terms);
@@ -459,29 +502,36 @@ public class JSONLDUtil {
 		}
 	}
 	
-	private static JsonObject recontextualizeJsonLD(String jsonLDString, MetadataBlockServiceBean metadataBlockSvc) {
-		logger.fine(jsonLDString);
-		try (StringReader rdr = new StringReader(jsonLDString)) {
+	private static JsonObject recontextualizeJsonLD(JsonObject jsonldObj, MetadataBlockServiceBean metadataBlockSvc) {
 
 			populateContext(metadataBlockSvc);
 
 			// Use JsonLd to expand/compact to localContext
-			JsonObject jsonld = Json.createReader(rdr).readObject();
-			JsonDocument doc = JsonDocument.of(jsonld);
+			JsonDocument doc = JsonDocument.of(jsonldObj);
 			JsonArray array = null;
 			try {
 				array = JsonLd.expand(doc).get();
 
-				jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
+				jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
 						.get();
-				logger.fine("Compacted: " + jsonld);
-				return jsonld;
+				logger.fine("Compacted: " + jsonldObj.toString());
+				return jsonldObj;
 			} catch (JsonLdError e) {
 				System.out.println(e.getMessage());
 				return null;
 			}
 		}
-	}
+
+		public static String prettyPrint(JsonValue val) {
+			StringWriter sw = new StringWriter();
+			Map<String, Object> properties = new HashMap<>(1);
+			properties.put(JsonGenerator.PRETTY_PRINTING, true);
+			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+			JsonWriter jsonWriter = writerFactory.createWriter(sw);
+			jsonWriter.write(val);
+			jsonWriter.close();
+			return sw.toString();
+		}
 
 //Modified from https://stackoverflow.com/questions/3389348/parse-any-date-in-java
 
