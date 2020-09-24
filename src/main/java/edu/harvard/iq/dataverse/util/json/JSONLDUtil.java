@@ -437,7 +437,7 @@ public class JSONLDUtil {
 		}
 	}
 	
-	private static JsonObject decontextualizeJsonLD(String jsonLDString) {
+	public static JsonObject decontextualizeJsonLD(String jsonLDString) {
 		logger.fine(jsonLDString);
 		try (StringReader rdr = new StringReader(jsonLDString)) {
 

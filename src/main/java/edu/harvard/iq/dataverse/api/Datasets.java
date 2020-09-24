@@ -115,6 +115,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -142,6 +143,7 @@ import javax.json.JsonReader;
 import javax.json.stream.JsonParsingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -1075,6 +1077,90 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+    
+	@POST
+	@Path("{id}/actions/:releasemigrated")
+	@Consumes("application/json-ld")
+	public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id) {
+		try {
+			AuthenticatedUser user = findAuthenticatedUserOrDie();
+			if (!user.isSuperuser()) {
+				return error(Response.Status.FORBIDDEN, "Only superusers can release migrated datasets");
+			}
+
+			Dataset ds = findDatasetOrDie(id);
+			try {
+				JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
+				String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
+				LocalDateTime dateTime = LocalDateTime.parse(pubDate, JSONLDUtil.determineDateFormat(pubDate));
+				// dataset.getPublicationDateFormattedYYYYMMDD())
+				ds.setPublicationDate(Timestamp.valueOf(dateTime));
+			} catch (Exception e) {
+				throw new BadRequestException("Unable to set publication date ("
+						+ JsonLDTerm.schemaOrg("datePublished").getUrl() + "): " + e.getMessage());
+			}
+			/*
+			 * Note: The code here mirrors that in the
+			 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+			 * to the core logic (i.e. beyond updating the messaging about results) should
+			 * be applied to the code there as well.
+			 */
+			String errorMsg = null;
+			String successMsg = null;
+			try {
+				CuratePublishedDatasetVersionCommand cmd = new CuratePublishedDatasetVersionCommand(ds,
+						createDataverseRequest(user));
+				ds = commandEngine.submit(cmd);
+				successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+
+				// If configured, update archive copy as well
+				String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
+				DatasetVersion updateVersion = ds.getLatestVersion();
+				AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className,
+						createDataverseRequest(user), updateVersion);
+				if (archiveCommand != null) {
+					// Delete the record of any existing copy since it is now out of date/incorrect
+					updateVersion.setArchivalCopyLocation(null);
+					/*
+					 * Then try to generate and submit an archival copy. Note that running this
+					 * command within the CuratePublishedDatasetVersionCommand was causing an error:
+					 * "The attribute [id] of class
+					 * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
+					 * key column in the database. Updates are not allowed." To avoid that, and to
+					 * simplify reporting back to the GUI whether this optional step succeeded, I've
+					 * pulled this out as a separate submit().
+					 */
+					try {
+						updateVersion = commandEngine.submit(archiveCommand);
+						if (updateVersion.getArchivalCopyLocation() != null) {
+							successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
+						} else {
+							successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
+						}
+					} catch (CommandException ex) {
+						successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - "
+								+ ex.toString();
+						logger.severe(ex.getMessage());
+					}
+				}
+			} catch (CommandException ex) {
+				errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+				logger.severe(ex.getMessage());
+			}
+			if (errorMsg != null) {
+				return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
+			} else {
+				JsonObjectBuilder responseBld = Json.createObjectBuilder()
+	                    .add("id", ds.getId())
+	                    .add("persistentId", ds.getGlobalId().toString());
+				return Response.ok(Json.createObjectBuilder().add("status", STATUS_OK).add("status_details", successMsg)
+						.add("data", responseBld).build()).type(MediaType.APPLICATION_JSON).build();
+			}
+
+		} catch (WrappedResponse ex) {
+			return ex.getResponse();
+		}
+	}
     
     @POST
     @Path("{id}/move/{targetDataverseAlias}")
