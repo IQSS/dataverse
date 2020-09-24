@@ -47,6 +47,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file"));
                 } else {
                     jrb.message("Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                    jrb.details(ex.getMessage());
                     jrb.request(request);
                 }
                 break;
