@@ -1094,7 +1094,7 @@ public class Datasets extends AbstractApiBean {
 				JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
 				String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
 				logger.fine("Submitted date: " + pubDate);
-				LocalDateTime dateTime = LocalDateTime.parse(pubDate, JSONLDUtil.determineDateFormat(pubDate));
+				LocalDateTime dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
 				// dataset.getPublicationDateFormattedYYYYMMDD())
 				ds.setPublicationDate(Timestamp.valueOf(dateTime));
 			} catch (Exception e) {

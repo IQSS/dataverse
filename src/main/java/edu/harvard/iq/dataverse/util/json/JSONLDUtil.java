@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -51,19 +52,15 @@ public class JSONLDUtil {
 
 	private static final Logger logger = Logger.getLogger(JSONLDUtil.class.getCanonicalName());
 
-/*	private static Map<String, String> populateContext(JsonValue json) {
-		Map<String, String> context = new TreeMap<String, String>();
-		if (json instanceof JsonArray) {
-			logger.warning("Array @context not yet supported");
-		} else {
-			for (String key : ((JsonObject) json).keySet()) {
-				context.putIfAbsent(key, ((JsonObject) json).getString(key));
-			}
-		}
-		return context;
-	}
-	*/
-	
+	/*
+	 * private static Map<String, String> populateContext(JsonValue json) {
+	 * Map<String, String> context = new TreeMap<String, String>(); if (json
+	 * instanceof JsonArray) { logger.warning("Array @context not yet supported"); }
+	 * else { for (String key : ((JsonObject) json).keySet()) {
+	 * context.putIfAbsent(key, ((JsonObject) json).getString(key)); } } return
+	 * context; }
+	 */
+
 	public static JsonObject getContext(Map<String, String> contextMap) {
 		JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
 		for (Entry<String, String> e : contextMap.entrySet()) {
@@ -76,16 +73,17 @@ public class JSONLDUtil {
 			MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append) {
 
 		DatasetVersion dsv = new DatasetVersion();
-		
+
 		JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
 		Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
-        if (maybePid.isPresent()) {
-            ds.setGlobalId(maybePid.get());
-        } else {
-            // unparsable PID passed. Terminate.
-            throw new BadRequestException ("Cannot parse the @id '" + jsonld.getString("@id") + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
-        }
-        
+		if (maybePid.isPresent()) {
+			ds.setGlobalId(maybePid.get());
+		} else {
+			// unparsable PID passed. Terminate.
+			throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
+					+ "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+		}
+
 		dsv = updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append);
 		dsv.setDataset(ds);
 
@@ -93,9 +91,9 @@ public class JSONLDUtil {
 		versions.add(dsv);
 
 		ds.setVersions(versions);
-		if(jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
+		if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
 			String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
-			LocalDateTime dateTime = LocalDateTime.parse(dateString, determineDateFormat(dateString));
+			LocalDateTime dateTime = getDateTimeFrom(dateString);
 			ds.setModificationTime(Timestamp.valueOf(dateTime));
 		}
 		try {
@@ -119,7 +117,10 @@ public class JSONLDUtil {
 	 * @param jsonld
 	 * @param metadataBlockSvc
 	 * @param datasetFieldSvc
-	 * @param append - if append, will add new top level field values for multi-valued fields, if true and field type isn't multiple, will fail. if false will replace all value(s) for fields found in the json-ld.
+	 * @param append           - if append, will add new top level field values for
+	 *                         multi-valued fields, if true and field type isn't
+	 *                         multiple, will fail. if false will replace all
+	 *                         value(s) for fields found in the json-ld.
 	 * @return
 	 */
 	public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
@@ -138,7 +139,7 @@ public class JSONLDUtil {
 			fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
 		}
 		TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-		
+
 		for (String key : jsonld.keySet()) {
 			if (!key.equals("@context")) {
 				if (dsftMap.containsKey(key)) {
@@ -160,7 +161,7 @@ public class JSONLDUtil {
 
 					// Todo - normalize object vs. array
 					JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
-					
+
 					addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
 					// assemble new terms, add to existing
@@ -209,8 +210,7 @@ public class JSONLDUtil {
 					} else if (key.equals(JsonLDTerm.restrictions.getUrl())) {
 						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.restrictions.getUrl()));
 					} else if (key.equals(JsonLDTerm.citationRequirements.getUrl())) {
-						terms.setConfidentialityDeclaration(
-								jsonld.getString(JsonLDTerm.citationRequirements.getUrl()));
+						terms.setConfidentialityDeclaration(jsonld.getString(JsonLDTerm.citationRequirements.getUrl()));
 					} else if (key.equals(JsonLDTerm.depositorRequirements.getUrl())) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.depositorRequirements.getUrl()));
@@ -224,8 +224,7 @@ public class JSONLDUtil {
 							terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getUrl()));
 						}
 						if (fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getUrl())) {
-							terms.setFileAccessRequest(
-									fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getUrl()));
+							terms.setFileAccessRequest(fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getUrl()));
 						}
 						if (fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getUrl())) {
 							terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getUrl()));
@@ -305,8 +304,7 @@ public class JSONLDUtil {
 
 		if (append && !dsft.isAllowMultiples()) {
 			if ((dsft.isCompound() && !dsf.getDatasetFieldCompoundValues().isEmpty())
-					|| (dsft.isAllowControlledVocabulary()
-							&& !dsf.getControlledVocabularyValues().isEmpty())
+					|| (dsft.isAllowControlledVocabulary() && !dsf.getControlledVocabularyValues().isEmpty())
 					|| !dsf.getDatasetFieldValues().isEmpty()) {
 				throw new BadRequestException(
 						"Can't append to a single-value field that already has a value: " + dsft.getName());
@@ -316,8 +314,7 @@ public class JSONLDUtil {
 		logger.fine("val: " + valArray.toString());
 		logger.fine("Compound: " + dsft.isCompound());
 		logger.fine("CV: " + dsft.isAllowControlledVocabulary());
-		
-		
+
 		if (dsft.isCompound()) {
 			/*
 			 * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
@@ -332,8 +329,8 @@ public class JSONLDUtil {
 					// Trying to append but only a single value is allowed (and there already is
 					// one)
 					// (and we don't currently support appending new fields within a compound value)
-					throw new BadRequestException("Append with compound field with single value not yet supported: "
-							+ dsft.getDisplayName());
+					throw new BadRequestException(
+							"Append with compound field with single value not yet supported: " + dsft.getDisplayName());
 				}
 			}
 
@@ -401,12 +398,12 @@ public class JSONLDUtil {
 			for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
 				String strValue = strVal.getString();
 				DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-				
+
 				datasetFieldValue.setDisplayOrder(vals.size());
 				datasetFieldValue.setValue(strValue.trim());
 				vals.add(datasetFieldValue);
 				datasetFieldValue.setDatasetField(dsf);
-				
+
 			}
 			dsf.setDatasetFieldValues(vals);
 		}
@@ -414,8 +411,8 @@ public class JSONLDUtil {
 
 	private static JsonArray getValues(JsonValue val, boolean allowMultiples, String name) {
 		JsonArray valArray = null;
-		if (val instanceof JsonArray ) {
-			if((((JsonArray) val).size()> 1) && !allowMultiples) {
+		if (val instanceof JsonArray) {
+			if ((((JsonArray) val).size() > 1) && !allowMultiples) {
 				throw new BadRequestException("Array for single value notsupported: " + name);
 			} else {
 				valArray = (JsonArray) val;
@@ -430,8 +427,8 @@ public class JSONLDUtil {
 	static Map<String, DatasetFieldType> dsftMap = new TreeMap<String, DatasetFieldType>();
 
 	private static void populateFieldTypeMap(MetadataBlockServiceBean metadataBlockSvc) {
-		if (dsftMap.isEmpty()) { 
-			
+		if (dsftMap.isEmpty()) {
+
 			List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
 
 			for (MetadataBlock mdb : mdbList) {
@@ -441,27 +438,29 @@ public class JSONLDUtil {
 						dsftMap.put(dsft.getUri(), dsft);
 					}
 					if (blockHasUri) {
-						if(dsft.getParentDatasetFieldType()!=null) {
-							//ToDo - why not getName for child type? Would have to fix in ORE generation code and handle legacy bags
-							dsftMap.put(mdb.getNamespaceUri() + dsft.getParentDatasetFieldType().getName() + "#" + dsft.getTitle(), dsft);
+						if (dsft.getParentDatasetFieldType() != null) {
+							// ToDo - why not getName for child type? Would have to fix in ORE generation
+							// code and handle legacy bags
+							dsftMap.put(mdb.getNamespaceUri() + dsft.getParentDatasetFieldType().getName() + "#"
+									+ dsft.getTitle(), dsft);
 						} else {
-						    dsftMap.put(mdb.getNamespaceUri() + dsft.getTitle(), dsft);
+							dsftMap.put(mdb.getNamespaceUri() + dsft.getTitle(), dsft);
 						}
 					}
 				}
 			}
-			logger.fine("DSFT Map: " + String.join(", ",dsftMap.keySet()));
+			logger.fine("DSFT Map: " + String.join(", ", dsftMap.keySet()));
 		}
 	}
-	
+
 	private static void populateContext(MetadataBlockServiceBean metadataBlockSvc) {
-		if (localContext.isEmpty()) { 
-			
+		if (localContext.isEmpty()) {
+
 			// Add namespaces corresponding to core terms
 			localContext.put(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
 			localContext.put(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
 			localContext.put(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
-			
+
 			List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
 
 			for (MetadataBlock mdb : mdbList) {
@@ -479,7 +478,7 @@ public class JSONLDUtil {
 			logger.fine("LocalContext keys: " + String.join(", ", localContext.keySet()));
 		}
 	}
-	
+
 	public static JsonObject decontextualizeJsonLD(String jsonLDString) {
 		logger.fine(jsonLDString);
 		try (StringReader rdr = new StringReader(jsonLDString)) {
@@ -492,7 +491,7 @@ public class JSONLDUtil {
 				array = JsonLd.expand(doc).get();
 				jsonld = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(Json.createObjectBuilder().build()))
 						.get();
-				//jsonld = array.getJsonObject(0);
+				// jsonld = array.getJsonObject(0);
 				logger.fine("Decontextualized object: " + jsonld);
 				return jsonld;
 			} catch (JsonLdError e) {
@@ -501,41 +500,53 @@ public class JSONLDUtil {
 			}
 		}
 	}
-	
+
 	private static JsonObject recontextualizeJsonLD(JsonObject jsonldObj, MetadataBlockServiceBean metadataBlockSvc) {
 
-			populateContext(metadataBlockSvc);
+		populateContext(metadataBlockSvc);
 
-			// Use JsonLd to expand/compact to localContext
-			JsonDocument doc = JsonDocument.of(jsonldObj);
-			JsonArray array = null;
-			try {
-				array = JsonLd.expand(doc).get();
+		// Use JsonLd to expand/compact to localContext
+		JsonDocument doc = JsonDocument.of(jsonldObj);
+		JsonArray array = null;
+		try {
+			array = JsonLd.expand(doc).get();
 
-				jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
-						.get();
-				logger.fine("Compacted: " + jsonldObj.toString());
-				return jsonldObj;
-			} catch (JsonLdError e) {
-				System.out.println(e.getMessage());
-				return null;
-			}
+			jsonldObj = JsonLd.compact(JsonDocument.of(array), JsonDocument.of(JSONLDUtil.getContext(localContext)))
+					.get();
+			logger.fine("Compacted: " + jsonldObj.toString());
+			return jsonldObj;
+		} catch (JsonLdError e) {
+			System.out.println(e.getMessage());
+			return null;
 		}
+	}
 
-		public static String prettyPrint(JsonValue val) {
-			StringWriter sw = new StringWriter();
-			Map<String, Object> properties = new HashMap<>(1);
-			properties.put(JsonGenerator.PRETTY_PRINTING, true);
-			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
-			JsonWriter jsonWriter = writerFactory.createWriter(sw);
-			jsonWriter.write(val);
-			jsonWriter.close();
-			return sw.toString();
-		}
+	public static String prettyPrint(JsonValue val) {
+		StringWriter sw = new StringWriter();
+		Map<String, Object> properties = new HashMap<>(1);
+		properties.put(JsonGenerator.PRETTY_PRINTING, true);
+		JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+		JsonWriter jsonWriter = writerFactory.createWriter(sw);
+		jsonWriter.write(val);
+		jsonWriter.close();
+		return sw.toString();
+	}
 
 //Modified from https://stackoverflow.com/questions/3389348/parse-any-date-in-java
 
 	private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>() {
+		{
+			put("^\\d{8}$", "yyyyMMdd");
+			put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
+			put("^\\d{4}-\\d{1,2}-\\d{1,2}$", "yyyy-MM-dd");
+			put("^\\d{1,2}/\\d{1,2}/\\d{4}$", "MM/dd/yyyy");
+			put("^\\d{4}/\\d{1,2}/\\d{1,2}$", "yyyy/MM/dd");
+			put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$", "dd MMM yyyy");
+			put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$", "dd MMMM yyyy");
+		}
+	};
+
+	private static final Map<String, String> DATETIME_FORMAT_REGEXPS = new HashMap<String, String>() {
 		{
 			put("^\\d{8}$", "yyyyMMdd");
 			put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
@@ -561,8 +572,9 @@ public class JSONLDUtil {
 			put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMM yyyy HH:mm:ss");
 			put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$", "dd MMMM yyyy HH:mm:ss");
 			put("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$", "yyyy-MM-dd HH:mm:ss.SSS");
-			put("^[a-z,A-Z]{3}\\s[a-z,A-Z]{3}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\s[a-z,A-Z]{3}\\s\\d{4}$", "EEE MMM dd HH:mm:ss zzz yyyy"); //Wed Sep 23 19:33:46 UTC 2020
-			
+			put("^[a-z,A-Z]{3}\\s[a-z,A-Z]{3}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\s[a-z,A-Z]{3}\\s\\d{4}$",
+					"EEE MMM dd HH:mm:ss zzz yyyy"); // Wed Sep 23 19:33:46 UTC 2020
+
 		}
 	};
 
@@ -576,6 +588,16 @@ public class JSONLDUtil {
 	 * @return The matching SimpleDateFormat pattern, or null if format is unknown.
 	 * @see SimpleDateFormat
 	 */
+	public static DateTimeFormatter determineDateTimeFormat(String dateString) {
+		for (String regexp : DATETIME_FORMAT_REGEXPS.keySet()) {
+			if (dateString.toLowerCase().matches(regexp)) {
+				return DateTimeFormatter.ofPattern(DATE_FORMAT_REGEXPS.get(regexp));
+			}
+		}
+		logger.warning("Unknown datetime format: " + dateString);
+		return null; // Unknown format.
+	}
+
 	public static DateTimeFormatter determineDateFormat(String dateString) {
 		for (String regexp : DATE_FORMAT_REGEXPS.keySet()) {
 			if (dateString.toLowerCase().matches(regexp)) {
@@ -586,4 +608,17 @@ public class JSONLDUtil {
 		return null; // Unknown format.
 	}
 
+	public static LocalDateTime getDateTimeFrom(String dateString) {
+		DateTimeFormatter dtf = determineDateTimeFormat(dateString);
+		if (dtf != null) {
+			return LocalDateTime.parse(dateString, dtf);
+		} else {
+			dtf = determineDateFormat(dateString);
+			if (dtf != null) {
+				return LocalDate.parse(dateString, dtf).atStartOfDay();
+			}
+		}
+
+		return null;
+	}
 }
