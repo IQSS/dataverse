@@ -548,13 +548,6 @@ public class JSONLDUtil {
 
 	private static final Map<String, String> DATETIME_FORMAT_REGEXPS = new HashMap<String, String>() {
 		{
-			put("^\\d{8}$", "yyyyMMdd");
-			put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
-			put("^\\d{4}-\\d{1,2}-\\d{1,2}$", "yyyy-MM-dd");
-			put("^\\d{1,2}/\\d{1,2}/\\d{4}$", "MM/dd/yyyy");
-			put("^\\d{4}/\\d{1,2}/\\d{1,2}$", "yyyy/MM/dd");
-			put("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$", "dd MMM yyyy");
-			put("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$", "dd MMMM yyyy");
 			put("^\\d{12}$", "yyyyMMddHHmm");
 			put("^\\d{8}\\s\\d{4}$", "yyyyMMdd HHmm");
 			put("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$", "dd-MM-yyyy HH:mm");
@@ -591,7 +584,7 @@ public class JSONLDUtil {
 	public static DateTimeFormatter determineDateTimeFormat(String dateString) {
 		for (String regexp : DATETIME_FORMAT_REGEXPS.keySet()) {
 			if (dateString.toLowerCase().matches(regexp)) {
-				return DateTimeFormatter.ofPattern(DATE_FORMAT_REGEXPS.get(regexp));
+				return DateTimeFormatter.ofPattern(DATETIME_FORMAT_REGEXPS.get(regexp));
 			}
 		}
 		logger.warning("Unknown datetime format: " + dateString);
