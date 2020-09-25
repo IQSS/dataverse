@@ -18,10 +18,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIInput;
-import javax.faces.component.UIOutput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -56,149 +52,56 @@ public class FileDownloadHelper implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
-    
-    UIInput nameField;
-
-    public UIInput getNameField() {
-        return nameField;
-    }
-
-    public void setNameField(UIInput nameField) {
-        this.nameField = nameField;
-    }
-
-    public UIInput getEmailField() {
-        return emailField;
-    }
-
-    public void setEmailField(UIInput emailField) {
-        this.emailField = emailField;
-    }
-
-    public UIInput getInstitutionField() {
-        return institutionField;
-    }
-
-    public void setInstitutionField(UIInput institutionField) {
-        this.institutionField = institutionField;
-    }
-
-    public UIInput getPositionField() {
-        return positionField;
-    }
-
-    public void setPositionField(UIInput positionField) {
-        this.positionField = positionField;
-    }
-    UIInput emailField;
-    UIInput institutionField;
-    UIInput positionField;
-   
-    
-
 
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { FileMetadata.id : Boolean } 
 
-     public void nameValueChangeListener(AjaxBehaviorEvent e) {
-         String name= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setName(name);
-     }
-     
-    public void emailValueChangeListener(AjaxBehaviorEvent e) {
-         String email= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setEmail(email);
-     }
-    
-    public void institutionValueChangeListener(AjaxBehaviorEvent e) {        
-         String institution= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setInstitution(institution);
-     }
-    
-    public void positionValueChangeListener(AjaxBehaviorEvent e) {
-         String position= (String) ((UIOutput) e.getSource()).getValue();
-         this.guestbookResponse.setPosition(position);
-     }
-    
-    public void customQuestionValueChangeListener(AjaxBehaviorEvent e) {
-        String questionNo = (String) ((UIOutput) e.getSource()).getId();
-         String position= (String) ((UIOutput) e.getSource()).getValue();
-     }
-    
     public FileDownloadHelper() {
         this.filesForRequestAccess = new ArrayList<>();
     }
 
-    
+    // See also @Size(max = 255) in GuestbookResponse
      private boolean testResponseLength(String value) {
         return !(value != null && value.length() > 255);
      }
-     
+
+    /**
+     * By the time we reach this method, validation has already been done on
+     * the front end (at least when calling from
+     * writeGuestbookAndStartDownload). Do we need to do it again here? Do we
+     * still need this method? Before some refactoring, one of its main jobs
+     * was to add messages to custom UIInput fields.
+     */
      private boolean validateGuestbookResponse(GuestbookResponse guestbookResponse){
                 Dataset dataset = guestbookResponse.getDataset();
                 boolean valid = true;
          if (dataset.getGuestbook() != null) {
              if (dataset.getGuestbook().isNameRequired()) {
                  boolean nameValid = (guestbookResponse.getName() != null && !guestbookResponse.getName().isEmpty());
-                 if (!nameValid) {
-                     nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
                  valid &= nameValid;
              }
                 valid &= testResponseLength(guestbookResponse.getName());
-                 if (! testResponseLength(guestbookResponse.getName())){
-                    nameField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(nameField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
              if (dataset.getGuestbook().isEmailRequired()) {
                  boolean emailValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
-                 if (!emailValid) {
-                     emailField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
                  valid &= emailValid;
              }
                 valid &= testResponseLength(guestbookResponse.getEmail());
-                 if (! testResponseLength(guestbookResponse.getEmail())){
-                    emailField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(emailField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
             if (dataset.getGuestbook().isInstitutionRequired()) {
                  boolean institutionValid = (guestbookResponse.getInstitution()!= null && !guestbookResponse.getInstitution().isEmpty());
-                 if (!institutionValid) {
-                     institutionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
                 valid &= institutionValid;
             }
                 valid &= testResponseLength(guestbookResponse.getInstitution());
-                 if (! testResponseLength(guestbookResponse.getInstitution())){
-                    institutionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(institutionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
             if (dataset.getGuestbook().isPositionRequired()) {
                  boolean positionValid = (guestbookResponse.getPosition()!= null && !guestbookResponse.getPosition().isEmpty());
-                 if (!positionValid) {
-                     positionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("requiredField"), null));
-                 }
                 valid &= positionValid;
             }
                 valid &= testResponseLength(guestbookResponse.getPosition());
-                 if (! testResponseLength(guestbookResponse.getPosition())){
-                    positionField.setValid(false);
-                     FacesContext.getCurrentInstance().addMessage(positionField.getClientId(),
-                             new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-                 }
         }
 
+         /**
+          * cqr.setValidationMessage was commented out because the setter and
+          * field were deleted along with a ui-message-error div on the front
+          * end. We switched to a standard p:message tag instead.
+          */
         if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
             for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
                 if (cq.isRequired()) {
@@ -206,9 +109,9 @@ public class FileDownloadHelper implements java.io.Serializable {
                         if (cqr.getCustomQuestion().equals(cq)) {
                             valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
                             if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
-                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));                               
+//                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));
                             } else{
-                                cqr.setValidationMessage(""); 
+//                                cqr.setValidationMessage("");
                             }                          
                         }
                     }
@@ -230,6 +133,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          boolean valid = validateGuestbookResponse(guestbookResponse);
 
          if (!valid) {
+             // FIXME: This never validation error shows in the UI (even if you add a bundle entry).
              JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
          } else {
              //requestContext.execute("PF('downloadPopup').hide()");
@@ -529,17 +433,7 @@ public class FileDownloadHelper implements java.io.Serializable {
          }
          return false;
      } 
-     
-    private GuestbookResponse guestbookResponse;
 
-    public GuestbookResponse getGuestbookResponse() {
-        return guestbookResponse;
-    }
-
-    public void setGuestbookResponse(GuestbookResponse guestbookResponse) {
-        this.guestbookResponse = guestbookResponse;
-    }    
-    
     public GuestbookResponseServiceBean getGuestbookResponseService(){
         return this.guestbookResponseService;
     }

@@ -834,17 +834,7 @@ public class GuestbookResponseServiceBean {
         setUserDefaultResponses(guestbookResponse, session, user);
         return guestbookResponse;
     }
-    
-    public boolean guestbookResponseValidator( UIInput toValidate, String value) {
-        if (value != null && value.length() > 255) {
-            (toValidate).setValid(false);
-            FacesContext.getCurrentInstance().addMessage((toValidate).getClientId(),
-                           new FacesMessage( FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.guestbook.responseTooLong"), null));
-            return false;
-        }
-        return true;
-    }
-    
+
     public GuestbookResponse modifyDatafile(GuestbookResponse in, FileMetadata fm) {
         if (in != null && fm.getDataFile() != null) {
             in.setDataFile(fm.getDataFile());
