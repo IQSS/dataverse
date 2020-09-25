@@ -113,7 +113,8 @@ public class OptionalFileParams {
         setCategories(fm.getCategoriesByName());
         this.addFileDataTags(df.getTagLabels());
         this.restrict = fm.isRestricted();
-        this.label = fm.getLabel();
+        //Explicitly do not replace the file name - replaces with -force may change the mimetype and extension
+        //this.label = fm.getLabel(); 
         this.directoryLabel = fm.getDirectoryLabel();
         this.provFreeForm = fm.getProvFreeForm();
     }
