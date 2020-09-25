@@ -470,7 +470,7 @@
         <!-- DATASET PG -->
         <div class="btn-group" jsf:rendered="#{!isFilePg}">
              <ui:fragment rendered="#{(exploreTools.size()==1 and !worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
-                <button type="button" class="btn btn-default  btn-explore"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
+                <button type="button" class="btn btn-default  btn-explore btn-qdr-explore"  onclick="$(this).parent().find( 'li > a' ).trigger( 'click' );">
                     <span class="glyphicon #{bundle.exploreIcon}"/> #{exploreTools[0].displayName}
                 </button>
             </ui:fragment>

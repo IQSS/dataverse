@@ -268,7 +268,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 /*QDR*/
-#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #4B74FF;padding:0.5em;background:#E8E8ED; color:black;}
+#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #4B74FF;padding:1.0em;background:#E8E8ED; color:black;}
 
 
 /* -------- FOOTER -------- */
@@ -402,7 +402,7 @@ table.ui-selectmanycheckbox.metadata-blocks-select label.ui-state-disabled {back
 div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5px;}
 
 /* Buttons */
-#actionButtonBlock {/*margin-bottom:1em; margin-top:0;z-index:1;*/}
+#actionButtonBlock {margin-bottom:1em; margin-top:0;z-index:1;}
 #dataverse-info-dropdown {padding:.5em 1em .25em 1em; overflow:hidden; width:400px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon {width:40px; float:left; margin-right:12px;}
 #dataverse-info-dropdown .dataverse-info-logo-icon .icon-dataverse {font-size:40px; line-height:40px;}
@@ -1231,6 +1231,8 @@ th {background: none !important;}
 
 .panel-heading {display: none;}
 #rolesPermissionsForm  .panel-heading {display: block;}
+#rolesPermissionsForm th span {color:white;text-shadow:none;}
+
 
 .panel-body > * {
   border-top: 2px solid rgba(0, 0, 0, 0.1);
@@ -1248,6 +1250,16 @@ th {background: none !important;}
   font-family: inherit !important;
   position: relative;
 }
+
+.btn-qdr-explore {
+  margin-top: 6px;
+  max-height: 37px;
+}
+
+.btn-primary {
+  background-image: linear-gradient(to bottom,#184af3 0,#819eff 100%);
+}
+
 
 .ui-buttonset { background: #f7f7f9 !important;}
 
