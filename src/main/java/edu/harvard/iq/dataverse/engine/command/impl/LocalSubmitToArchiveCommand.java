@@ -42,8 +42,8 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
 
     private static final Logger logger = Logger.getLogger(LocalSubmitToArchiveCommand.class.getName());
 
-    public LocalSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
-        super(aRequest, version);
+    public LocalSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version, String type) {
+        super(aRequest, version, type);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
 
 
                 FileUtils.writeStringToFile(new File(localPath+"/"+spaceName + "-datacite.v" + dv.getFriendlyVersionNumber()+".xml"), dataciteXml);
-                BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
+                BagGenerator bagger = new BagGenerator(new OREMap(dv, false, getType()), dataciteXml, getType());
                 bagger.setAuthenticationKey(token.getTokenString());
                 bagger.generateBag(new FileOutputStream(localPath+"/"+spaceName + "v" + dv.getFriendlyVersionNumber() + ".zip"));
 

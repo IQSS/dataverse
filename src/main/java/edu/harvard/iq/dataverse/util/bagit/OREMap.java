@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -33,13 +34,18 @@ import javax.json.JsonValue;
 public class OREMap {
 
     public static final String NAME = "OREMap";
+    public static final String TRANSFER = "transfer";
+    public static final String ARCHIVE = "archive";
+    
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
+    private String type;
     private boolean excludeEmail = false;
     
-    public OREMap(DatasetVersion version, boolean excludeEmail) {
+    public OREMap(DatasetVersion version, boolean excludeEmail, String type) {
         this.version = version;
         this.excludeEmail = excludeEmail;
+        this.type=type;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -207,31 +213,45 @@ public class OREMap {
             if (df.getGlobalId().asString().length() != 0) {
                 fileId = df.getGlobalId().asString();
                 fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                        + "/api/access/datafile/:persistentId?persistentId=" + fileId;
+                        + "/api/access/datafile/:persistentId?persistentId=" + fileId + (type.equals(TRANSFER) ? "&format=original" : "");
             } else {
                 fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
+                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (type.equals(TRANSFER) ? "?format=original" : "");
             }
             aggRes.add("@id", fileId);
             aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
             fileArray.add(fileId);
 
             aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-            addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
-            addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-            addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-            addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
-            addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-            addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-            JsonObject checksum = null;
-            // Add checksum. RDA recommends SHA-512
-            if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
-                        .add("@value", df.getChecksumValue()).build();
-                aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
-            }
+			switch (type) {
+			case TRANSFER:
+				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getOriginalFileFormat());
+				addIfNotNull(aggRes, JsonLDTerm.filesize, df.getOriginalFileSize());
+				addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+				addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+				addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+				addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+				//Checksum not available - will be generated in Bag
+
+				break;
+			case ARCHIVE:
+			default:
+				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
+				addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+				addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+				addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
+				addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+				addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+				addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+				addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+				JsonObject checksum = null;
+				// Add checksum. RDA recommends SHA-512
+				if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+					checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+							.add("@value", df.getChecksumValue()).build();
+					aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+				}
+			}
             JsonArray tabTags = null;
             JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
             if (jab != null) {

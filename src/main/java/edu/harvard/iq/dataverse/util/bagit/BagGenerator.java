@@ -136,11 +136,12 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
+     * @param type 
      * @throws Exception 
      * @throws JsonSyntaxException 
      */
 
-    public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
+    public BagGenerator(OREMap oreMap, String dataciteXml, String type) throws JsonSyntaxException, Exception {
         this.oremap = oreMap;
         this.oremapObject = oreMap.getOREMap();
                 //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
@@ -178,7 +179,11 @@ public class BagGenerator {
     public void setIgnoreHashes(boolean val) {
         ignorehashes = val;
     }
-
+    
+    public void setDefaultCheckSumType(ChecksumType type) {
+    	hashtype=type;
+    }
+    
     public static void println(String s) {
         System.out.println(s);
         System.out.flush();
@@ -532,18 +537,22 @@ public class BagGenerator {
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
                     ChecksumType childHashType = ChecksumType.fromString(
                             child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
-                    if (hashtype != null && !hashtype.equals(childHashType)) {
-                        logger.warning("Multiple hash values in use - not supported");
-                    }
-                    if (hashtype == null)
+                    if (hashtype == null) {
+                    	//If one wasn't set as a default, pick up what the first child with one uses
                         hashtype = childHashType;
-                    childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
-                    if (checksumMap.containsValue(childHash)) {
-                        // Something else has this hash
-                        logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash);
-                    }
-                    checksumMap.put(childPath, childHash);
+					}
+					if (hashtype != null && !hashtype.equals(childHashType)) {
+						logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
+								+ " hashes for " + childTitle);
+					} else {
+						childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
+						if (checksumMap.containsValue(childHash)) {
+							// Something else has this hash
+							logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
+									+ childHash);
+						}
+						checksumMap.put(childPath, childHash);
+					}
                 }
                 if ((hashtype == null) | ignorehashes) {
                     // Pick sha512 when ignoring hashes or none exist

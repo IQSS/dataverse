@@ -22,12 +22,14 @@ import java.util.logging.Logger;
 public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<DatasetVersion> {
 
     private final DatasetVersion version;
+    private final String type;
     private final Map<String, String> requestedSettings = new HashMap<String, String>();
     private static final Logger logger = Logger.getLogger(AbstractSubmitToArchiveCommand.class.getName());
     
-    public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+    public AbstractSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version, String type) {
         super(aRequest, version.getDataset());
         this.version = version;
+        this.type = type;
     }
 
     @Override
@@ -72,5 +74,9 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         return super.describe() + "DatasetVersion: [" + version.getId() + " (v"
                 + version.getFriendlyVersionNumber()+")]";
     }
+
+	public String getType() {
+		return type;
+	}
 
 }

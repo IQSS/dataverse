@@ -1671,7 +1671,7 @@ public class Admin extends AbstractApiBean {
 
     @GET
     @Path("/submitDataVersionToArchive/{id}/{version}")
-    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber) {
+    public Response submitDatasetVersionToArchive(@PathParam("id") String dsid, @PathParam("version") String versionNumber, @QueryParam(value = "type") String type) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
@@ -1685,7 +1685,7 @@ public class Admin extends AbstractApiBean {
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
             if (dv.getArchivalCopyLocation() == null) {
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
-                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
+                AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, type, dvRequestService.getDataverseRequest(), dv);
                 if (cmd != null) {
                     new Thread(new Runnable() {
                         public void run() {
