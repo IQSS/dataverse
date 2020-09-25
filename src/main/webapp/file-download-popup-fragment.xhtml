@@ -56,8 +56,7 @@
                                          required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
                                          styleClass="form-control" value="#{guestbookResponse.name}"
                                          requiredMessage="#{bundle['requiredField']}"                                       
-                                         binding="#{fileDownloadHelper.nameField}">
-                                <p:ajax listener="#{fileDownloadHelper.nameValueChangeListener}" />
+                                         >
                               </p:inputText>  
                             <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                         </div>
@@ -72,8 +71,7 @@
                         <p:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.emailRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.email}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     binding="#{fileDownloadHelper.emailField}">
-                        <p:ajax listener="#{fileDownloadHelper.emailValueChangeListener}" />
+                                     >
                         </p:inputText>  
                         <p:message id="emailMessages" for="guestbookuser_email" display="text"/>
                     </div>
@@ -87,8 +85,7 @@
                         <p:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.institutionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.institution}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     binding="#{fileDownloadHelper.institutionField}">
-                        <p:ajax listener="#{fileDownloadHelper.institutionValueChangeListener}" />
+                                     >
                         </p:inputText>
                         <p:message id="institutionMessages" for="guestbookuser_institution" display="text"/>
                     </div>
@@ -102,8 +99,7 @@
                         <p:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.positionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.position}"
                                      requiredMessage="#{bundle['requiredField']}"
-                                     binding="#{fileDownloadHelper.positionField}">
-                        <p:ajax listener="#{fileDownloadHelper.positionValueChangeListener}" />
+                                     >
                         </p:inputText>
                         <p:message id="positionMessages" for="guestbookuser_position" display="text"/>
                     </div>
@@ -124,7 +120,6 @@
                                              required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                              requiredMessage="#{bundle['requiredField']}">
-                                    <p:ajax listener="#{fileDownloadHelper.customQuestionValueChangeListener}"/>
                                 </p:inputText>
                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
                                 <p:selectOneMenu id="customQuestionResponseSelect"
@@ -134,12 +129,9 @@
                                                  requiredMessage="#{bundle['requiredField']}">
                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
                                     <f:selectItems value="#{customQuestionResponse.responseSelectItems}" />
-                                    <p:ajax listener="#{fileDownloadHelper.customQuestionValueChangeListener}"/>
                                 </p:selectOneMenu>
+                                <p:message id="cqrsMessages" for="customQuestionResponseSelect" display="text"/>
                             </div>
-                                <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty customQuestionResponse.validationMessage}">
-                                    <span class="ui-message-error-detail">#{customQuestionResponse.validationMessage}</span>
-                                </div>
                         </ui:repeat>
                     </div>
                 </div>
@@ -147,7 +139,7 @@
         </div>
         <div class="button-block">
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
                                                                                                                             and guestbookResponse.fileFormat != 'package'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
@@ -160,11 +152,12 @@
                 <f:param name="DO_GB_VALIDATION" value="true"/> 
             </p:commandButton>
             <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
                            action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}"
                            update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION" value="true"/>
             </p:commandButton>
+            <!--TODO: consider removing process=@this for this package popup.-->
             <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'package'}"
                            update="guestbookUIFragment @form @widgetVar(downloadPackagePopup)">
                 <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}"/>

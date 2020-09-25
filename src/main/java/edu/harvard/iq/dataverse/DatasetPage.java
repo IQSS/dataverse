@@ -1966,7 +1966,6 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
-                this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                         && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
