@@ -467,7 +467,7 @@ div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 /* -------- SEARCH -------- */
 div.panelSearchForm {margin-bottom: 15px;}
 div.panelSearchForm .input-group {margin-right:1em;}
-div.panelSearchForm .form-inline .input-group input.search-input {
+div.panelSearchForm input.search-input {
   margin: auto;
   padding: 4px;
   vertical-align: middle;
@@ -1132,8 +1132,8 @@ div.container {
 .glyphicon-search {font-size:18px;}
 .searchbutton {
   position: absolute;
-  top: 13px;
-  right: 28%;
+  top: 9px;
+  right: 27%;
 }
 @media(max-width: 1200px){
   .searchbutton {
