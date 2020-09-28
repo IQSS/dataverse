@@ -389,7 +389,7 @@ public class ImportGenericServiceBean {
         if (!otherIds.isEmpty()) {
             // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
             for (String otherId : otherIds) {
-                if (otherId.contains(GlobalId.DOI_PROTOCOL) || otherId.contains(GlobalId.HDL_PROTOCOL)) {
+                if (otherId.toLowerCase().contains(GlobalId.DOI_PROTOCOL) || otherId.toLowerCase().contains(GlobalId.HDL_PROTOCOL)) {
                     return otherId;
                 }
             }
