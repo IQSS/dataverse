@@ -822,7 +822,7 @@
                         <p class="help-block">
                             <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
                             <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
+                                <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.getShibLoginPath())}"/>
                                 <f:param value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user/register"/>
                             </h:outputFormat>
                         </p>
