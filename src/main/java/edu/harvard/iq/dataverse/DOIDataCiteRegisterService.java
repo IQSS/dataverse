@@ -118,20 +118,17 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+        
+        //try {
+            DataCiteRESTfullClient client = getClient();
+            retString = client.postMetadata(xmlMetadata);
+        /*
+            See the comment about checking for this exception in the registerIdentifier()
+            method below 
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
         return retString;
     }
 
@@ -149,21 +146,30 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
+            //try {
                 DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+            /* 
+               Why are we specifically catching the UnsupportedEncoding exception here, 
+               but not any others? Note that we are logging and ignoring the exception here... 
+               so then the publicizeIdentifier() method in DOIDataCiteServiceBean
+               mistakenly assumes that the registration was a success!
+                
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
         } else {
-            try {
+            //try {
                 DataCiteRESTfullClient client = getClient();
                 retString = client.postMetadata(xmlMetadata);
                 client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+            /*
+               See the comment above, about checking for UnsupportedEncodingException ...
+                
             } catch (UnsupportedEncodingException ex) {
                 Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
         }
         return retString;
     }
