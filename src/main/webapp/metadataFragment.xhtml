@@ -166,7 +166,7 @@
                                                                 </p:outputPanel>
                                                                 -->
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
-                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true" #{(dsf.controlledVocabularyValues.size() <10) ? 'showHeader="false"':''}
+                                                                                      filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true" showHeader="#{(dsf.controlledVocabularyValues.size() lt 10) ? 'false':'true'}" 
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
