@@ -9,7 +9,13 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
-        <p:focus context="downloadPopup"/>
+        <!--
+        FIXME: This p:focus was commented out because while it still works on
+        the dataset page, it doesn't work on the file page now that we are
+        including this fragment twice (once on the Preview tab and once on
+        the download popup).
+        -->
+        <!--<p:focus context="downloadPopup"/>-->
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
         </p>
@@ -52,8 +58,16 @@
                             <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
                         </label>
                         <div class="col-sm-6">
+                            <!--
+                            Only validate the active context. For example, the user might be filling out
+                            the guestbook on the Preview tab rather than after clicking the "download file"
+                            button, even though the form is the same and on the same page. Without this boolean
+                            in place, invalid fields on the other form (the non-active form) are checked, leading
+                            to a validation failure.
+                            -->
+                            <ui:param name="validateThisContext" value="DO_GB_VALIDATION_#{popupContext}"/>
                             <p:inputText id="guestbookuser_nameText" 
-                                         required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.nameRequired}"
+                                         required="#{param[validateThisContext] and workingVersion.dataset.guestbook.nameRequired}"
                                          styleClass="form-control" value="#{guestbookResponse.name}"
                                          requiredMessage="#{bundle['requiredField']}"                                       
                                          >
@@ -68,7 +82,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.emailRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <p:inputText id="guestbookuser_email" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.emailRequired}"
+                        <p:inputText id="guestbookuser_email" required="#{param[validateThisContext] and workingVersion.dataset.guestbook.emailRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.email}"
                                      requiredMessage="#{bundle['requiredField']}"
                                      >
@@ -82,7 +96,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.institutionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <p:inputText id="guestbookuser_institution" required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.institutionRequired}"
+                        <p:inputText id="guestbookuser_institution" required="#{param[validateThisContext] and workingVersion.dataset.guestbook.institutionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.institution}"
                                      requiredMessage="#{bundle['requiredField']}"
                                      >
@@ -96,7 +110,7 @@
                         <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.positionRequired}" />
                     </label>
                     <div class="col-sm-6">
-                        <p:inputText id="guestbookuser_position"  required="#{param['DO_GB_VALIDATION'] and workingVersion.dataset.guestbook.positionRequired}"
+                        <p:inputText id="guestbookuser_position"  required="#{param[validateThisContext] and workingVersion.dataset.guestbook.positionRequired}"
                                      styleClass="form-control" value="#{guestbookResponse.position}"
                                      requiredMessage="#{bundle['requiredField']}"
                                      >
@@ -117,14 +131,14 @@
                                 </label>
                                 <p:inputText id="customQuestionResponse"
                                              styleClass="form-control" value="#{customQuestionResponse.response}"
-                                             required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                             required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"
                                              rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                              requiredMessage="#{bundle['requiredField']}">
                                 </p:inputText>
                                 <p:message id="cqMessages" for="customQuestionResponse" display="text"/>
                                 <p:selectOneMenu id="customQuestionResponseSelect"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
-                                                 required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                 required="#{param[validateThisContext] and customQuestionResponse.customQuestion.required}"
                                                  rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
                                                  requiredMessage="#{bundle['requiredField']}">
                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
@@ -138,32 +152,45 @@
             </p:fragment>
         </div>
         <div class="button-block">
+            <!--REGULAR DOWNLOAD BUTTON, NO EXTERNAL TOOL, NOT THE PREVIEW TAB-->
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
                                                                                                                             and guestbookResponse.fileFormat != 'worldMap'
-                                                                                                                            and guestbookResponse.fileFormat != 'package'}"
+                                                                                                                            and guestbookResponse.fileFormat != 'package'
+                                                                                                                            and popupContext != 'previewTab'}"
                            actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
                            update="guestbookUIFragment">
-                <f:param name="DO_GB_VALIDATION" value="true"/>
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
+            <!--PREVIEW TAB BUTTON-->
+            <!--TODO: Can we be more precise than @form below?-->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
+                             rendered="#{popupContext == 'previewTab'}"
+                             actionListener="#{FilePage.showPreview(guestbookResponse)}"
+                             update="@form">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
+            </p:commandButton>
+            <!--WORLDMAP BUTTON-->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
                             actionListener="#{fileDownloadHelper.startWorldMapDownloadLink(guestbookResponse, null)}" 
                             update="guestbookUIFragment">
-                <f:param name="DO_GB_VALIDATION" value="true"/> 
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
+            <!--EXTERNAL TOOL BUTTON-->
             <!--On the dataset page (but not the file page), "tool" is null so we get the tool from the guestbookResponse.-->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'externalTool'}"
                            action="#{fileDownloadHelper.writeGuestbookAndLaunchExploreTool(guestbookResponse, fileMetadata, tool)}"
                            update="guestbookUIFragment">
-                <f:param name="DO_GB_VALIDATION" value="true"/>
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <!--TODO: consider removing process=@this for this package popup.-->
-            <p:commandButton styleClass="btn btn-default" process="@this" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'package'}"
-                           update="guestbookUIFragment @form @widgetVar(downloadPackagePopup)">
-                <f:actionListener binding="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}"/>
-                <f:param name="DO_GB_VALIDATION" value="true"/>
+            <!--PACKAGE FILE BUTTON-->
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'package'}"
+                             actionListener="#{fileDownloadHelper.writeGuestbookAndLaunchPackagePopup(guestbookResponse)}"
+                             update="guestbookUIFragment">
+                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
-            <button class="btn btn-link" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" type="button">
+            <!--CANCEL BUTTON We don't render the Cancel button on the Preview tab because there is no popup to close.-->
+            <button class="btn btn-link" onclick="PF('downloadPopup').hide();PF('blockDatasetForm').hide();" type="button" jsf:rendered="#{popupContext != 'previewTab'}">
                 #{bundle.cancel}
             </button>
         </div>

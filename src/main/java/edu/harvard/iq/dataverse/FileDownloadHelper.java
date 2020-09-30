@@ -251,7 +251,22 @@ public class FileDownloadHelper implements java.io.Serializable {
         return retVal;
     }
 
-        
+     /**
+      * Writes a guestbook entry for either popup scenario: guestbook or terms.
+      */
+     public boolean writeGuestbookAndShowPreview(GuestbookResponse guestbookResponse) {
+         // We've already validated guestbooks on the front end but we validate again
+         // on the backend (that's what older methods do).
+         boolean valid = validateGuestbookResponse(guestbookResponse);
+         if (!valid) {
+             return false;
+         } else {
+             guestbookResponse.setDownloadtype("Explore");
+             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+             return true;
+         }
+     }
+
     private List<DataFile> filesForRequestAccess;
 
     public List<DataFile> getFilesForRequestAccess() {
