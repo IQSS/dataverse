@@ -30,7 +30,7 @@ public class ArchiverUtil {
                 Class<?> clazz = Class.forName(className);
                 if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(clazz)) {
                     Constructor<?> ctor;
-                    ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class);
+                    ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class, String.class);
                     return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[] { dvr, version, type });
                 }
             } catch (Exception e) {
