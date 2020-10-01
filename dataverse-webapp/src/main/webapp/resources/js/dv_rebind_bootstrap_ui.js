@@ -365,7 +365,7 @@ function reinitializePrimefacesComponentsJS() {
                         PrimeFaces.ajax.Response.handle(data.result, data.textStatus, data.jqXHR, null);
                     },
                     always: function(e, data) {
-                        if($this.cfg.oncomplete) {
+                        if($this.cfg.oncomplete && data.jqXHR) {
                             $this.cfg.oncomplete.call($this, data.jqXHR.pfArgs, data);
                         }
                     }
