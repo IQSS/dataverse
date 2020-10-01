@@ -147,7 +147,7 @@ public class GuestbookResponseServiceBean {
         List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
 
         // the CSV header:
-        out.write("Guestbook, Dataset, Date, Type, File Name, File Id, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        out.write("\"Guestbook\",\"Dataset\",\"Date\",\"Type\",\"File Name\",\"File Id\",\"User Name\",\"Email\",\"Institution\",\"Position\",\"Custom Questions\"\n".getBytes());
 
         for (Object[] result : guestbookResults) {
             Integer guestbookResponseId = (Integer) result[0];
@@ -159,47 +159,67 @@ public class GuestbookResponseServiceBean {
             // string fields, or the structure of the file will be broken. -- L.A.
 
             // Guestbook name: 
-            sb.append(((String) result[1]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(((String) result[1]).replace("\"", "\"\""));
+            sb.append("\"");
             sb.append(SEPARATOR);
 
 
             // Dataset name: 
-            sb.append(((String) result[2]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(((String) result[2]).replace("\"", "\"\""));
+            sb.append("\"");
             sb.append(SEPARATOR);
 
+            sb.append("\"");
             if (result[3] != null) {
                 sb.append(DATE_FORMAT.format((Date) result[3]));
             } else {
                 sb.append("N/A");
             }
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // type: (download, etc.)
+            sb.append("\"");
             sb.append(result[4]);
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // file name: 
-            sb.append(((String) result[5]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(((String) result[5]).replace("\"", "\"\""));
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // file id (numeric):
+            sb.append("\"");
             sb.append(result[6] == null ? "" : result[6]);
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // name supplied in the guestbook response: 
-            sb.append(result[7] == null ? "" : ((String) result[7]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(result[7] == null ? "" : ((String) result[7]).replace("\"", "\"\""));
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // email: 
+            sb.append("\"");
             sb.append(result[8] == null ? "" : result[8]);
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // institution:
-            sb.append(result[9] == null ? "" : ((String) result[9]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(result[9] == null ? "" : ((String) result[9]).replace("\"", "\"\""));
+            sb.append("\"");
             sb.append(SEPARATOR);
 
             // position: 
-            sb.append(result[10] == null ? "" : ((String) result[10]).replace(',', ' '));
+            sb.append("\"");
+            sb.append(result[10] == null ? "" : ((String) result[10]).replace("\"", "\"\""));
+            sb.append("\"");
 
             // Finally, custom questions and answers, if present:
 
@@ -369,7 +389,7 @@ public class GuestbookResponseServiceBean {
                 if (asString) {
                     // as combined strings of comma-separated question and answer values
 
-                    String qa = SEPARATOR + ((String) response[0]).replace(',', ' ') + SEPARATOR + (response[1] == null ? "" : ((String) response[1]).replace(',', ' '));
+                    String qa = SEPARATOR + "\"" + ((String) response[0]).replace("\"", "\"\"") + SEPARATOR + (response[1] == null ? "" : ((String) response[1]).replace("\"", "\"\"")) + "\"";
 
                     if (ret.containsKey(responseId)) {
                         ret.put(responseId, ret.get(responseId) + qa);
