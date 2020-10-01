@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,16 +68,12 @@ public class OREMap {
         Dataset dataset = version.getDataset();
         String id = dataset.getGlobalId().asString();
         JsonArrayBuilder fileArray = Json.createArrayBuilder();
+        JsonArrayBuilder authorsArrayBuilder = Json.createArrayBuilder();
         // The map describes an aggregation
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
 
-        // This sorting is a workaround for exporter exporting only one author,
-        // until fixed, we want this one author to be the first one rather than the last one.
-        // Adding new author replaces the old one, so we want the first one to be parsed as last (hence reversed sorting).
-        fields.sort(Comparator.comparing(DatasetField::getDisplayOrder).reversed());
-
-
+        Map<String, JsonArrayBuilder> fieldsMap = new HashMap<String, JsonArrayBuilder>();
         // That has it's own metadata
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
@@ -134,10 +131,21 @@ public class OREMap {
                 }
                 // Add metadata value to aggregation, suppress array when only one value
                 JsonArray valArray = vals.build();
-                aggBuilder.add(fieldName.getLabel(), (valArray.size() != 1) ? valArray : valArray.get(0));
+                
+                if (!fieldsMap.containsKey(fieldName.getLabel())) {
+                    fieldsMap.put(fieldName.getLabel(), Json.createArrayBuilder());
+                }
+                fieldsMap.get(fieldName.getLabel()).add((valArray.size() != 1) ? valArray : valArray.get(0));
+                
             }
         }
 
+        for (String label:fieldsMap.keySet()) {
+            JsonArray valArray = fieldsMap.get(label).build();
+            aggBuilder.add(label, (valArray.size() != 1) ? valArray : valArray.get(0));
+        }
+
+        
         // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",

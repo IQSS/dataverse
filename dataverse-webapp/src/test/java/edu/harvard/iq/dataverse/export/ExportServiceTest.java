@@ -161,7 +161,7 @@ public class ExportServiceTest {
     @DisplayName("export DatasetVersion as string for Oai Ore")
     public void exportDatasetVersionAsString_forOaiOre() throws IOException, JsonParseException, URISyntaxException {
         //given
-        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
+        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDatasetMultipleAuthors.json");
         prepareDataForExport(datasetVersion);
 
         //when
@@ -169,7 +169,7 @@ public class ExportServiceTest {
                 exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.OAIORE);
 
         //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/oai_ore.json"), exportedDataset.get());
+        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/oai_ore_authors.json"), exportedDataset.get());
     }
 
     @Test
@@ -341,41 +341,25 @@ public class ExportServiceTest {
     }
 
     private void setupAuthorData(List<DatasetField> datasetFields) {
-        DatasetField authorField = datasetFields.stream()
+        datasetFields.stream()
                 .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.author))
-                .findFirst().get();
-
-        DatasetFieldType authorFieldType = authorField.getDatasetFieldType();
-        authorFieldType.setTitle("Author");
-        authorFieldType.setDisplayOrder(2);
-        authorFieldType.setUri("http://purl.org/dc/terms/creator");
-
-        authorField.setDatasetFieldsChildren(Lists.newArrayList(setupNameOfAuthor(), setupAffiliationOfAuthor()));
-
+                .forEach(authorField -> {
+                    DatasetFieldType authorFieldType = authorField.getDatasetFieldType();
+                    authorFieldType.setTitle("Author");
+                    authorFieldType.setDisplayOrder(2);
+                    authorFieldType.setUri("http://purl.org/dc/terms/creator");
+                    authorField.getDatasetFieldsChildren().stream().forEach(childField -> setupChildField(childField));
+                });
     }
 
-    private DatasetField setupAffiliationOfAuthor() {
-        DatasetFieldType authorAffiliation = new DatasetFieldType(DatasetFieldConstant.authorAffiliation, FieldType.TEXT, false);
-        authorAffiliation.setTitle("Affiliation");
-
-        DatasetField authorAffiliationDf = new DatasetField();
-        authorAffiliationDf.setDatasetFieldType(authorAffiliation);
-        authorAffiliationDf.setFieldValue("Dataverse.org");
-
-        return authorAffiliationDf;
+    private void setupChildField(DatasetField datasetField) {
+        if (datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
+            datasetField.getDatasetFieldType().setTitle("Affiliation");
+        } else if (datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorName)) {
+            datasetField.getDatasetFieldType().setTitle("Name");
+        }
     }
-
-    private DatasetField setupNameOfAuthor() {
-        DatasetFieldType authorName = new DatasetFieldType(DatasetFieldConstant.authorName, FieldType.TEXT, false);
-        authorName.setTitle("Name");
-
-        DatasetField authorNameDF = new DatasetField();
-        authorNameDF.setFieldValue("Admin, Dataverse");
-        authorNameDF.setDatasetFieldType(authorName);
-
-        return authorNameDF;
-    }
-
+    
     private void setupDescriptionData(List<DatasetField> datasetFields) {
 
         DatasetField descriptionField = datasetFields.stream()
