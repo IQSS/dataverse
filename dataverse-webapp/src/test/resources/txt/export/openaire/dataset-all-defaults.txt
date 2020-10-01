@@ -334,6 +334,12 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://RelatedPublicationURL1.org"
+                },
+                "publicationRelationType": {
+                  "typeName": "publicationRelationType",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "IsCitedBy"
                 }
               },
               {
@@ -360,6 +366,12 @@
                   "multiple": false,
                   "typeClass": "primitive",
                   "value": "http://RelatedPublicationURL2.org"
+                },
+                "publicationRelationType": {
+                  "typeName": "publicationRelationType",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "IsCitedBy"
                 }
               }
             ]
@@ -764,17 +776,77 @@
             "multiple": true,
             "typeClass": "primitive",
             "value": [
-              "RelatedMaterial1",
-              "RelatedMaterial2"
+              {
+                "relatedMaterialCitation": {
+                  "typeName": "relatedMaterialCitation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "RelatedMaterialCitation1"
+                },
+                "relatedMaterialIDType": {
+                  "typeName": "relatedMaterialIDType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ark"
+                },
+                "relatedMaterialIDNumber": {
+                  "typeName": "relatedMaterialIDNumber",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "RelatedMaterialIDNumber1"
+                },
+                "relatedMaterialURL": {
+                  "typeName": "relatedMaterialURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://RelatedMaterialURL1.org"
+                },
+                "relatedMaterialRelationType": {
+                  "typeName": "relatedMaterialRelationType",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "IsCitedBy"
+                }
+              }
             ]
           },
           {
-            "typeName": "relatedDatasets",
+            "typeName": "relatedDataset",
             "multiple": true,
             "typeClass": "primitive",
             "value": [
-              "RelatedDatasets1",
-              "RelatedDatasets2"
+              {
+                "relatedDatasetCitation": {
+                  "typeName": "relatedDatasetCitation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "RelatedDatasetCitation1"
+                },
+                "relatedDatasetIDType": {
+                  "typeName": "relatedDatasetIDType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ark"
+                },
+                "relatedDatasetIDNumber": {
+                  "typeName": "relatedDatasetIDNumber",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "RelatedDatasetIDNumber1"
+                },
+                "relatedDatasetURL": {
+                  "typeName": "relatedDatasetURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://RelatedDatasetURL1.org"
+                },
+                "relatedDatasetRelationType": {
+                  "typeName": "relatedDatasetRelationType",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "IsCitedBy"
+                }
+              }
             ]
           },
           {

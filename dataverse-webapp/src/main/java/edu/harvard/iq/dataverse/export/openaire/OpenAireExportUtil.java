@@ -1072,22 +1072,36 @@ public class OpenAireExportUtil {
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
+                    if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())
+                        || DatasetFieldConstant.relatedDataset.equals(fieldDTO.getTypeName())
+                        || DatasetFieldConstant.relatedMaterial.equals(fieldDTO.getTypeName())) {
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String relatedIdentifierType = null;
                             String relatedIdentifier = null; // is used when relatedIdentifierType variable is not URL
                             String relatedURL = null; // is used when relatedIdentifierType variable is URL
+                            String relationType = null;
 
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())) {
+                                if (DatasetFieldConstant.publicationIDType.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedDatasetIDType.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedMaterialIDType.equals(next.getTypeName())) {
                                     relatedIdentifierType = next.getSinglePrimitive();
                                 }
-                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())) {
+                                if (DatasetFieldConstant.publicationIDNumber.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedDatasetIDNumber.equals(next.getTypeName())    
+                                    || DatasetFieldConstant.relatedMaterialIDNumber.equals(next.getTypeName())) {
                                     relatedIdentifier = next.getSinglePrimitive();
                                 }
-                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())) {
+                                if (DatasetFieldConstant.publicationURL.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedDatasetURL.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedMaterialURL.equals(next.getTypeName())) {
                                     relatedURL = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.publicationRelationType.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedDatasetRelationType.equals(next.getTypeName())
+                                    || DatasetFieldConstant.relatedMaterialRelationType.equals(next.getTypeName())) {
+                                    relationType = next.getSinglePrimitive();
                                 }
                             }
 
@@ -1103,7 +1117,7 @@ public class OpenAireExportUtil {
                                 }
 
                                 relatedIdentifier_map.put("relatedIdentifierType", relatedIdentifierType);
-                                relatedIdentifier_map.put("relationType", "IsCitedBy");
+                                relatedIdentifier_map.put("relationType", relationType);
 
                                 if (StringUtils.containsIgnoreCase(relatedIdentifierType, "url")) {
                                     writeFullElement(xmlw,

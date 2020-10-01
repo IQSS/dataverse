@@ -44,6 +44,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String publicationIDNumber = "publicationIDNumber";
     public final static String publicationURL = "publicationURL";
     public final static String publicationReplicationData = "publicationReplicationData";
+    public final static String publicationRelationType = "publicationRelationType";
 
 
     public final static String title = "title";
@@ -162,7 +163,16 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String depositorRequirements = "depositorRequirements";
     public final static String conditions = "conditions";
     public final static String disclaimer = "disclaimer";
+    public final static String relatedDataset = "relatedDataset";
+    public final static Object relatedDatasetIDType = "relatedDatasetIDType";
+    public final static Object relatedDatasetIDNumber = "relatedDatasetIDNumber";
+    public final static Object relatedDatasetURL = "relatedDatasetURL";
+    public final static Object relatedDatasetRelationType = "relatedDatasetRelationType";
     public final static String relatedMaterial = "relatedMaterial";
+    public final static Object relatedMaterialIDType = "relatedMaterialIDType";
+    public final static Object relatedMaterialIDNumber = "relatedMaterialIDNumber";
+    public final static Object relatedMaterialURL = "relatedMaterialURL";
+    public final static Object relatedMaterialRelationType = "relatedMaterialRelationType";
     //public final static String replicationFor="replicationFor";
     //public final static String relatedPublications="relatedPublications";
     public final static String relatedDatasets = "relatedDataset";

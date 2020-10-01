@@ -593,6 +593,8 @@ public class OpenAireExportUtilTest {
                                     + "RelatedPublicationIDNumber1</relatedIdentifier>"
                                     + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                                     + "RelatedPublicationIDNumber2</relatedIdentifier>"
+                                    + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">RelatedMaterialIDNumber1</relatedIdentifier>"
+                                    + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">RelatedDatasetIDNumber1</relatedIdentifier>"
                                     + "</relatedIdentifiers>",
                             writer.toString());
     }
