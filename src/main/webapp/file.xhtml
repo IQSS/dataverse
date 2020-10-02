@@ -399,6 +399,7 @@
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
                                    rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
+                                <!-- PREVIEW TERMS/GUESTBOOK FORM -->
                                 <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
                                     <ui:include src="file-download-popup-fragment.xhtml">
                                         <ui:param name="popupContext" value="previewTab"/>
@@ -410,6 +411,8 @@
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                     </ui:include>
                                 </ui:fragment>
+                                
+                                <!-- PREVIEW EXTERNAL TOOL -->
                                 <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
@@ -440,9 +443,9 @@
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'eye-open' : 'equalizer'}"></span> 
                                             <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle.preview : bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
@@ -454,9 +457,9 @@
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'eye-open' : 'equalizer'}"></span> 
                                             <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
+                                                <f:param value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle.preview : bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
@@ -488,7 +491,7 @@
                                         <!-- END WorldMap Explore -->
                                     </div>
                                 </div>
-                                <!-- FRAME -->
+                                <!-- FRAME EXTERNAL TOOL EMBED -->
                                 <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
