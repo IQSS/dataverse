@@ -827,7 +827,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
 
@@ -836,7 +836,7 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 Google Cloud Configuration
 ++++++++++++++++++++++++++
 
-The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's could, including those in the 'Coldline' Storage class (cheaper, with slower access) 
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' Storage class (cheaper, with slower access) 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
@@ -852,7 +852,7 @@ The Google Cloud archiver defines two custom settings, both are required:
 
 ``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
 
-In addition, the Google Cloud Archiver requires that the googlecloudkey.json file for the project be placed in the 'dataverse.files.directory' directory. This file can be created in the Google Could Console.
+In addition, the Google Cloud Archiver requires that the googlecloudkey.json file for the project be placed in the 'dataverse.files.directory' directory. This file can be created in the Google Cloud Console.
 
 .. _Local Path Configuration:
 
