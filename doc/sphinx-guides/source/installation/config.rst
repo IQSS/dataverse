@@ -2152,7 +2152,7 @@ To enable redirects to the zipper on a different server:
 :ArchiverClassName
 ++++++++++++++++++
 
-Dataverse can export archival "Bag' files to an extensible set of storage systems (see the :ref:`BagIt Export <BagIt Export>` above for details about this and for further explanation of the other archiving related settings below).
+Dataverse can export archival "Bag' files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
 This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
 
 ``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
@@ -2172,16 +2172,16 @@ For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setti
 :DuraCloudContext
 +++++++++++++++++
 
-These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration <Duracloud Configuration>` section above.
+These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration` section above.
 
 :BagItLocalPath
 +++++++++++++++
 
-This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration <Local Path Configuration>` section above.
+This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
 
 :GoogleCloudBucket
 ++++++++++++++++++ 
 :GoogleCloudProject
 +++++++++++++++++++
 
-These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration <Google Cloud Configuration>` section above.
+These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
