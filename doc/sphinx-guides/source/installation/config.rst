@@ -772,6 +772,8 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
+.. _BagIt Export:
+
 BagIt Export
 ------------
 
@@ -2146,3 +2148,34 @@ To enable redirects to the zipper installed on the same server as the main Datav
 To enable redirects to the zipper on a different server: 
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+
+:ArchiverClassName
+++++++++++++++++++
+
+Dataverse can export archival "Bag' files to an extensible set of storage systems (see the :ref:`BagIt Export <BagIt Export>` above for details about this and for further explanation of the other archiving related settings below).
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+
+``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+ 
+
+:ArchiverSettings
+
+Each Archiver class may have it's own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-spearate list of setting names. 
+For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
+
+``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+
+:DuraCloudHost
+:DuraCloudPort
+:DuraCloudContext
+
+These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration <Duracloud Configuration>` section above.
+
+:BagItLocalPath
+
+This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration <Local Path Configuration>` section above.
+
+:GoogleCloudBucket 
+:GoogleCloudProject
+
+These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration <Google Cloud Configuration>` section above.
