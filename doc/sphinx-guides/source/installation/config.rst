@@ -2157,8 +2157,8 @@ This setting specifies which storage system to use by identifying the particular
 
 ``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
  
-
 :ArchiverSettings
++++++++++++++++++
 
 Each Archiver class may have it's own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-spearate list of setting names. 
 For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
@@ -2166,16 +2166,22 @@ For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setti
 ``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
 
 :DuraCloudHost
+++++++++++++++
 :DuraCloudPort
+++++++++++++++
 :DuraCloudContext
++++++++++++++++++
 
 These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration <Duracloud Configuration>` section above.
 
 :BagItLocalPath
++++++++++++++++
 
 This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration <Local Path Configuration>` section above.
 
-:GoogleCloudBucket 
+:GoogleCloudBucket
+++++++++++++++++++ 
 :GoogleCloudProject
++++++++++++++++++++
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration <Google Cloud Configuration>` section above.
