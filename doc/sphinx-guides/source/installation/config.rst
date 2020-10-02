@@ -844,11 +844,11 @@ The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud,
 
 The Google Cloud Archiver defines two custom settings, both are required:
 
-\:GoogleCloudBucket - the name of the bucket to use:
+\:GoogleCloudBucket - the name of the bucket to use. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:GoogleCloudBucket -X PUT -d "qdr-archive"``
 
-\:GoogleCloudProject - the name of the project managing the bucket:
+\:GoogleCloudProject - the name of the project managing the bucket. For example:
 
 ``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
 
