@@ -836,13 +836,13 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 Google Cloud Configuration
 ++++++++++++++++++++++++++
 
-The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' Storage class (cheaper, with slower access) 
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":":GoogleCloudBucket, :GoogleCloudProject"``
 
-The Google Cloud archiver defines two custom settings, both are required:
+The Google Cloud Archiver defines two custom settings, both are required:
 
 \:GoogleCloudBucket - the name of the bucket to use:
 
