@@ -779,7 +779,7 @@ Dataverse may be configured to submit a copy of published Datasets, packaged as 
 
 Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
 .. _Duracloud Configuration:
 
@@ -830,6 +830,32 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+.. _Google Cloud Configuration:
+
+Google Cloud Configuration
+++++++++++++++++++++++++++
+
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's could, including those in the 'Coldline' Storage class (cheaper, with slower access) 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":":GoogleCloudBucket, :GoogleCloudProject"``
+
+The Google Cloud archiver defines two custom settings, both are required:
+
+\:GoogleCloudBucket - the name of the bucket to use:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudBucket -X PUT -d "qdr-archive"``
+
+\:GoogleCloudProject - the name of the project managing the bucket:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
+
+In addition, the Google Cloud Archiver requires that the googlecloudkey.json file for the project be placed in the 'dataverse.files.directory' directory. This file can be created in the Google Could Console.
+
+.. _Local Path Configuration:
+
 
 API Call
 ++++++++
