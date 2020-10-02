@@ -35,7 +35,7 @@ import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     private static final Logger logger = Logger.getLogger(AbstractDatasetCommand.class.getName());
-    private static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
+    protected static final int FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT = 2 ^ 8;
     private Dataset dataset;
     private final Timestamp timestamp = new Timestamp(new Date().getTime());
 
