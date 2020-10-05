@@ -411,7 +411,6 @@
                                         <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                     </ui:include>
                                 </ui:fragment>
-                                
                                 <!-- PREVIEW EXTERNAL TOOL -->
                                 <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
@@ -432,20 +431,15 @@
                                     </div>
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
-                                        
-                                        
-                                        <!-- TO-DO ... CHANGE BTN TEXT TO CONDITIONAL OPEN VS EXPLORE DEPENDING ON TOOL TYPE -->
-                                        
-                                        
                                         <!-- Modular/Configured Explore Tool -->
                                         <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'eye-open' : 'equalizer'}"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle.preview : bundle.explore}"/>
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'new-window' : 'equalizer'}"></span> 
+                                            <h:outputFormat value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle['file.previewTab.openBtn'] : bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
@@ -457,9 +451,9 @@
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'eye-open' : 'equalizer'}"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle.preview : bundle.explore}"/>
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'new-window' : 'equalizer'}"></span> 
+                                            <h:outputFormat value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle['file.previewTab.openBtn'] : bundle['file.previewTab.exploreBtn']}">
+                                                <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
@@ -496,7 +490,6 @@
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                                 </ui:fragment>
-                                
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
