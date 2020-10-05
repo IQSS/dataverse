@@ -19,6 +19,7 @@
             <meta name="description" content="#{MarkupChecker:stripAllTags(DataversePage.dataverse.description)}"/>
             </ui:define>
             <ui:define name="body">
+                <f:loadBundle basename="ValidationMessages" var="valMsg"/>
                 <f:metadata>
                     <f:viewParam name="id" value="#{DataversePage.id}"/>
                     <f:viewParam name="alias" value="#{DataversePage.alias}"/>
@@ -95,7 +96,7 @@
                                     <p:commandButton id="updateOwnerDataverse"
                                                      style="display:none"
                                                      process="@this :dataverseForm:selectHostDataverse"
-                                                     update="@form,:breadCrumbPanel"
+                                                     update=":dataverseForm,:breadCrumbPanel"
                                                      action="#{DataversePage.updateOwnerDataverse()}"
                                                      oncomplete="bind_bsui_components();">
                                     </p:commandButton>
@@ -110,7 +111,10 @@
                                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.name.title']}"></span>
                                 </h:outputLabel>
                                 <div class="form-col-container">
-                                    <p:inputText id="name" styleClass="form-control" value="#{DataversePage.dataverse.name}" required="true"/>
+                                    <p:inputText id="name" styleClass="form-control" 
+                                                 value="#{DataversePage.dataverse.name}" required="true" 
+                                                 requiredMessage="#{valMsg['dataverse.name']}"/>
+                                    <p:message for="name" display="text"/>
                                 </div>
                             </div>
                             <div class="col-md-6 form-group">
@@ -135,7 +139,10 @@
                                 <div class="form-col-container">
                                     <div class="input-group">
                                         <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
-                                        <p:inputText id="identifier" styleClass="form-control" validator="#{DataversePage.validateAlias}" value="#{DataversePage.dataverse.alias}" required="true"/>
+                                        <p:inputText id="identifier" styleClass="form-control" 
+                                                     validator="#{DataversePage.validateAlias}" 
+                                                     value="#{DataversePage.dataverse.alias}" 
+                                                    required ="true" requiredMessage="#{valMsg['dataverse.alias']}"/>
                                     </div>
                                     <p:message for="identifier" display="text"/>
                                 </div>
@@ -164,7 +171,8 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.category.title']}"></span>
                                         </h:outputLabel>
                                         <div class="form-col-container">
-                                            <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}" required="true">
+                                            <h:selectOneMenu id="dataverseCategory" styleClass="form-control" value="#{DataversePage.dataverse.dataverseType}" required="true"
+                                                             requiredMessage="#{valMsg['dataverse.category']}">
                                                 <f:selectItem id="dvSelect" itemLabel="#{bundle['dataverse.type.selectTab.top']}" itemValue="" />
                                                 <f:selectItem id="dvDepartment" itemLabel="#{bundle['dataverse.type.selectTab.department']}" itemValue="DEPARTMENT" />
                                                 <f:selectItem id="dvJournals" itemLabel="#{bundle['dataverse.type.selectTab.journals']}" itemValue="JOURNALS" />
@@ -191,7 +199,8 @@
                                                 <ui:repeat value="#{DataversePage.dataverse.dataverseContacts}" var="contacts" varStatus="valCount">
                                                     <div class="row col-xs-12 form-group">
                                                         <div class="col-xs-9 form-col-container">
-                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="true">
+                                                            <p:inputText id="contactEmail" styleClass="form-control" value="#{contacts.contactEmail}" required="#{param['DO_VALIDATION']}"
+                                                                         >
                                                                 <f:validateBean disabled="#{param['SKIP_VALIDATION']}"/>
                                                             </p:inputText>
                                                             <p:message for="contactEmail" display="text"/>
@@ -385,7 +394,7 @@
                         </p:panel>
                         <!-- Save / Cancel Button Panel -->
                         <div class="button-block">
-                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update="@form :messagePanel">
+                            <p:commandButton id="save" styleClass="btn btn-default" value="#{DataversePage.dataverse.id == null ? bundle.createDataverse : bundle.saveChanges}" action="#{DataversePage.save}" update=":dataverseForm, :messagePanel">
                                 <f:ajax onerror="window.scrollTo(0, 0)" />
                             </p:commandButton>
                             <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DataversePage.cancel}" rendered="#{DataversePage.dataverse.id != null}"/>
@@ -494,7 +503,7 @@
                                                     </li>
                                                     <li class="divider" role="presentation"></li>
                                                     <li>
-                                                        <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update="@form,:dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:bind_bsui_components();">
+                                                        <p:commandLink id="editInfo" actionListener="#{DataversePage.edit('INFO')}" update=":dataverseForm,:searchResults,:messagePanel" oncomplete="javascript:bind_bsui_components();">
                                                             <h:outputText value="#{bundle['dataverse.option.generalInfo']}" />
                                                         </p:commandLink>
                                                     </li>
