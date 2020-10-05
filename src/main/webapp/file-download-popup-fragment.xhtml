@@ -45,31 +45,29 @@
                 </div>
             </div>
             <p:fragment rendered="#{workingVersion.dataset.guestbook != null and workingVersion.dataset.guestbook.enabled and downloadPopupRequired}" id="guestbookUIFragment">
-                <p:fragment>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label" for="guestbookuser_nameText">
+                <!--
+                Only validate the active context. For example, the user might be filling out
+                the guestbook on the Preview tab rather than after clicking the "download file"
+                button, even though the form is the same and on the same page. Without this boolean
+                in place, invalid fields on the other form (the non-active form) are checked, leading
+                to a validation failure.
+                -->
+                <ui:param name="validateThisContext" value="DO_GB_VALIDATION_#{popupContext}"/>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label" for="guestbookuser_nameText">
                             #{bundle.name}
-                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
-                        </label>
-                        <div class="col-sm-6">
-                            <!--
-                            Only validate the active context. For example, the user might be filling out
-                            the guestbook on the Preview tab rather than after clicking the "download file"
-                            button, even though the form is the same and on the same page. Without this boolean
-                            in place, invalid fields on the other form (the non-active form) are checked, leading
-                            to a validation failure.
-                            -->
-                            <ui:param name="validateThisContext" value="DO_GB_VALIDATION_#{popupContext}"/>
-                            <p:inputText id="guestbookuser_nameText" 
-                                         required="#{param[validateThisContext] and workingVersion.dataset.guestbook.nameRequired}"
-                                         styleClass="form-control" value="#{guestbookResponse.name}"
-                                         requiredMessage="#{bundle['requiredField']}"                                       
-                                         >
-                              </p:inputText>  
-                            <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
-                        </div>
+                        <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{workingVersion.dataset.guestbook.nameRequired}" />
+                    </label>
+                    <div class="col-sm-6">
+                        <p:inputText id="guestbookuser_nameText"
+                                     required="#{param[validateThisContext] and workingVersion.dataset.guestbook.nameRequired}"
+                                     styleClass="form-control" value="#{guestbookResponse.name}"
+                                     requiredMessage="#{bundle['requiredField']}"
+                                     >
+                        </p:inputText>
+                        <p:message id="nameMessages" for="guestbookuser_nameText" display="text"/>
                     </div>
-                </p:fragment>
+                </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label" for="guestbookuser_email">
                         #{bundle.email}
