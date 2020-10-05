@@ -146,6 +146,22 @@
             </p:fragment>
         </div>
         <div class="button-block">
+            <!--
+            The "process" directive below is very important. Without it, the
+            setters on the GuestbookResponse object can be called twice leading
+            to form values (name, email, etc) to be overwritten by the object in
+            the other context. For example, "name" in the Preview tab could get
+            overwritten by "name" in the download popup with either a blank
+            value or a prefilled value, leading to a botched guestbook entry.
+            
+            Experimentation was done with adding process="downloadPopup" to the
+            non-Preview tab buttons but this caused a ComponentNotFoundException
+            and didn't solve any problems. If you add logging to print out
+            setName from Guestbook response, you can see that the setters are
+            called on the GuestbookResponse object from the Preview tab but they
+            are later overwritten by the setters on the GuestbookResponse object
+            from the Download popup.
+            -->
             <!--REGULAR DOWNLOAD BUTTON, NO EXTERNAL TOOL, NOT THE PREVIEW TAB-->
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat != 'externalTool'
@@ -161,6 +177,7 @@
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{popupContext == 'previewTab'}"
                              actionListener="#{FilePage.showPreview(guestbookResponse)}"
+                             process="previewTab"
                              update="@form">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
