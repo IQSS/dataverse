@@ -12,7 +12,7 @@ Iterating on Code and Redeploying
 
 When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
-It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse installation script uses and the steps are documented below), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
+It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
 
 Undeploy the war File from the Dataverse Installation Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

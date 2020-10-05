@@ -33,11 +33,9 @@ To list just that Mail Domain Group, you can include the alias in the curl comma
 Creating a Mail Domain Group
 ----------------------------
 
-Mail Domain Groups can be created with a simple JSON file:
+Mail Domain Groups can be created with a simple JSON file such as domainGroup1.json:
 
 .. code-block:: json
-   :caption: domainGroup1.json
-   :name: domainGroup1.json
 
     {
       "name": "Users from @example.org",
@@ -60,7 +58,7 @@ To load it into your Dataverse installation, either use a ``POST`` or ``PUT`` re
 Updating a Mail Domain Group
 ----------------------------
 
-Editing a group is done by replacing it. Grab your group definition like the :ref:`above example <domainGroup1.json>`,
+Editing a group is done by replacing it. Grab your group definition like the domainGroup1.json example above,
 change it as you like and ``PUT`` it into your installation:
 
 ``curl -X PUT -H 'Content-type: application/json' http://localhost:8080/api/admin/groups/domain/domainGroup1 --upload-file domainGroup1.json``
