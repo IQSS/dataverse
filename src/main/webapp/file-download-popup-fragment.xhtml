@@ -171,12 +171,11 @@
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
             <!--PREVIEW TAB BUTTON-->
-            <!--TODO: Can we be more precise than @form below?-->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{popupContext == 'previewTab'}"
                              actionListener="#{FilePage.showPreview(guestbookResponse)}"
                              process="previewTab"
-                             update="@form">
+                             update="previewTab">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
             <!--WORLDMAP BUTTON-->
