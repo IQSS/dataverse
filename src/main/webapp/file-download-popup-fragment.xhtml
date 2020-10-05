@@ -175,7 +175,7 @@
                              rendered="#{popupContext == 'previewTab'}"
                              actionListener="#{FilePage.showPreview(guestbookResponse)}"
                              process="previewTab"
-                             update="previewTab">
+                             update="fileForm:tabView">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
             <!--WORLDMAP BUTTON-->
