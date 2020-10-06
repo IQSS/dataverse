@@ -624,11 +624,6 @@
                         <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                     </ui:include>
                 </ui:fragment>
-                
-                
-                <!-- TO-DO ... WIRE UP EXTERNAL TOOL PREVIEW TYPE, HASPREVIEWMODE LOGIC -->
-                
-                
                 <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id)}">
                     <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
                         href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">

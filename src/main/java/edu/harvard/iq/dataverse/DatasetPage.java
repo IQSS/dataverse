@@ -5421,7 +5421,6 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    // TODO: What if there's a guestbook? Show the preview button?
     public boolean isShowPreviewButton(Long fileId) {
         List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
         for (ExternalTool externalTool : getExploreToolsForDataFile(fileId)) {

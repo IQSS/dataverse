@@ -333,8 +333,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "View Code");
         job.add("description", "");
-        // TODO: Change the type to preview.
-        job.add("type", "explore");
+        job.add("type", "preview");
         job.add("scope", "file");
         job.add("hasPreviewMode", "true");
         job.add("contentType", "application/x-sh");
