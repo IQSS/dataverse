@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -563,6 +564,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             } else {
                 fileName = dataFile.getFileMetadata().getLabel();
             }
+        }
+        
+        if (StringUtil.nonEmpty(dataFile.getFileMetadata().getDirectoryLabel())) {
+            fileName = dataFile.getFileMetadata().getDirectoryLabel() + "/" + fileName;
         }
                 
         if (location != null && fileName != null) {

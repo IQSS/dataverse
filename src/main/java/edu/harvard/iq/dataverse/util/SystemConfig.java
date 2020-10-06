@@ -4,6 +4,7 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
@@ -1072,8 +1073,8 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FileValidationOnPublishEnabled, safeDefaultIfKeyNotFound);
     }
 
-	public boolean directUploadEnabled(Dataset dataset) {
-    	return Boolean.getBoolean("dataverse.files." + dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
+	public boolean directUploadEnabled(DvObjectContainer container) {
+    	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
 	}
 	
 	public String getDataCiteRestApiUrlString() {

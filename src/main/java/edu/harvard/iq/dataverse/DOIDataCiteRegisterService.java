@@ -129,20 +129,11 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+
         return retString;
     }
 
@@ -160,22 +151,12 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+        
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+        client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+
         return retString;
     }
     

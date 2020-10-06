@@ -1413,6 +1413,62 @@ public class FilesIT {
 
     }
     
+    /*
+        A very simple test for shape file package processing. 
+    */    
+    @Test
+    public void test_ProcessShapeFilePackage() {
+        msgt("test_ProcessShapeFilePackage");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+       
+        // This archive contains 4 files that constitute a valid 
+        // shape file. We want to check that these files were properly 
+        // recognized and re-zipped as a shape package, preserving the 
+        // folder structure found in the uploaded zip. 
+        String pathToFile = "scripts/search/data/shape/shapefile.zip";
+        
+        String suppliedDescription = "file extracted from a shape bundle";
+        String extractedFolderName = "subfolder";
+        String extractedShapeName = "boston_public_schools_2012_z1l.zip"; 
+        String extractedShapeType = "application/zipped-shapefile";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", suppliedDescription);
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+
+        msgt("Server response: " + addResponse.prettyPrint());
+      
+        // We are checking the following: 
+        // - that the upload succeeded;
+        // - that a shape file with the name specified above has been repackaged and added
+        //   to the dataset as a single file;
+        // - that the mime type has been properly identified;
+        // - that the description supplied via the API has been added; 
+        // - that the subfolder found inside the uploaded zip file has been properly
+        //   preserved in the FileMetadata. 
+        // 
+        // Feel free to expand the checks further - we can also verify the 
+        // checksum, the size of the resulting file, add more files to the uploaded
+        // zip archive etc. etc. - but this should be a good start. 
+        // -- L.A. 2020/09
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].dataFile.contentType", equalTo(extractedShapeType))
+                .body("data.files[0].label", equalTo(extractedShapeName))
+                .body("data.files[0].directoryLabel", equalTo(extractedFolderName))
+                .body("data.files[0].description", equalTo(suppliedDescription))
+                .statusCode(OK.getStatusCode());
+    }
+    
+    
     private void msg(String m){
         System.out.println(m);
     }
