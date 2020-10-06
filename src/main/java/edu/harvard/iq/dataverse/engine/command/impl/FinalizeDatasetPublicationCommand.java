@@ -66,6 +66,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
+        logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
+        
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
         if (theDataset.getLatestVersion().getVersionState() != RELEASED
@@ -91,6 +93,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
             	registerExternalIdentifier(theDataset, ctxt, false);
             } catch (CommandException comEx) {
+                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 // Remove the dataset lock: 
@@ -198,6 +201,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
         }
+        
+        logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
+
         
         return readyDataset;
     }
@@ -361,6 +367,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 }
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
+                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
+
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 
