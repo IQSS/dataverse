@@ -348,10 +348,14 @@
                                     <ul class="dropdown-menu pull-right text-left" role="menu">
                                         <ui:fragment rendered="#{DataverseUserPage.passwordEditable or DataverseUserPage.accountDetailsEditable}">
                                             <li>
+                                                <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/user">
                                                     <h:outputText value="#{bundle['account.info']}" />
+                                                </h:outputLink>
                                             </li>
                                             <li>
+                                                    <h:outputLink value="#{settingsWrapper.get(':QDRDrupalSiteURL')}/me/edit">
                                                     <h:outputText value="#{bundle.passwd}" />
+                                                    </h:outputLink>
                                             </li>
                                         </ui:fragment>
                                     </ul>
