@@ -447,7 +447,7 @@ public class DatasetUtil {
         // instead of testing for the 's3" store,
         //This method is used by both the dataset and edit files page so one change here
         //will fix both
-       return dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+       return dataset.getEffectiveStorageDriverId().equals("s3");
     }
     
     /**

@@ -172,8 +172,15 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
-    
-    
+      
+    public List<Long> findIdStale() {
+        return em.createNamedQuery("Dataset.findIdStale").getResultList();
+    }
+ 
+     public List<Long> findIdStalePermission() {
+        return em.createNamedQuery("Dataset.findIdStalePermission").getResultList();
+    }
+  
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }

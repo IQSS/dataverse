@@ -133,9 +133,13 @@
     <field name="studyAssayOtherMeasurmentType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayOtherOrganism" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyAssayOtherPlatform" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyAssayTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyAssayOtherTechnologyType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyOtherDesignType" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="studyFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="studyOtherFactorType" type="text_en" multiValued="true" stored="true" indexed="true"/>	    
     <field name="subject" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="subtitle" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="targetSampleActualSize" type="text_en" multiValued="false" stored="true" indexed="true"/>
