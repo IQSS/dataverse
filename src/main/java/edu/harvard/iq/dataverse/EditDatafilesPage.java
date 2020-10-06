@@ -444,7 +444,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadedFiles = uploadedFilesList;
         selectedFiles = selectedFileMetadatasList;
         
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -481,7 +481,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
 
 
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
                        
         workingVersion = dataset.getEditVersion();

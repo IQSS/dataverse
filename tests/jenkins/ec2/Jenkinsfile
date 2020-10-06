@@ -41,6 +41,13 @@ pipeline {
 	  sourcePattern: 'src/main/java',
 	  exclusionPattern: 'src/test*']
 	)
+        script {
+          if (fileExists('./ansible_complete')) {
+            sh '/bin/rm ./ansible_complete'
+          } else {
+            error('Ansible run terminated abnormally, failing build.')
+          }
+        }
       }
     }
   }
