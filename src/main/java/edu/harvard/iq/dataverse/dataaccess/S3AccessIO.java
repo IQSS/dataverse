@@ -581,15 +581,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
         File targetFile = new File(path.toUri()); //File needs a name
-        OutputStream outStream = new FileOutputStream(targetFile);
+		try (OutputStream outStream = new FileOutputStream(targetFile);) {
 
-        byte[] buffer = new byte[8 * 1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
-        }
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(outStream);
+			byte[] buffer = new byte[8 * 1024];
+			int bytesRead;
+			while ((bytesRead = inputStream.read(buffer)) != -1) {
+				outStream.write(buffer, 0, bytesRead);
+			}
+
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+		}
         return targetFile;
     } 
     
