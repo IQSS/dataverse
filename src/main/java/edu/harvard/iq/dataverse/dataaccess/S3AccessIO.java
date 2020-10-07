@@ -1044,10 +1044,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
 
     		ClientConfiguration cc = new ClientConfiguration();
-    		Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size");
-    		if(poolSize==null) {
-    		    poolSize = 256;
-    		}
+    		Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
     		cc.setMaxConnections(poolSize);
     		s3CB.setClientConfiguration(cc);
     		
