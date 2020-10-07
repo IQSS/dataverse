@@ -578,20 +578,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     //Helper method for supporting saving streams with unknown length to S3
     //We save those streams to a file and then upload the file
-    private File createTempFile(Path path, InputStream inputStream) throws IOException {
+	private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
-        File targetFile = new File(path.toUri()); //File needs a name
-		try (OutputStream outStream = new FileOutputStream(targetFile);) {
+        File targetFile = new File(path.toUri()); // File needs a name
+        try (OutputStream outStream = new FileOutputStream(targetFile);) {
 
-			byte[] buffer = new byte[8 * 1024];
-			int bytesRead;
-			while ((bytesRead = inputStream.read(buffer)) != -1) {
-				outStream.write(buffer, 0, bytesRead);
-			}
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
 
-		} finally {
-			IOUtils.closeQuietly(inputStream);
-		}
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+        }
         return targetFile;
     } 
     
