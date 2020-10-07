@@ -43,6 +43,7 @@
                             </label>
                             <div class="col-sm-10">
                                 <ui:include src="file-info-fragment.xhtml">
+                                    <ui:param name="editDatafilesPage" value="true"/>
                                     <c:if test="#{EditDatafilesPage.getFileToReplace().fileMetadata != null}">
                                         <ui:param name="fileMetadata" value="#{EditDatafilesPage.getFileToReplace().fileMetadata}" />
                                     </c:if>
