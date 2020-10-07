@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data file previews and exploration.
+External tools can provide additional features that are not part of Dataverse itself, such as data file previews, visualization, and curation.
 
 .. contents:: |toctitle|
   :local:
@@ -12,7 +12,7 @@ Inventory of External Tools
 ---------------------------
 
 .. csv-table:: 
-   :header: "Tool", "Type", "Scope", "Description"
+   :header-rows: 1
    :widths: 20, 10, 5, 65
    :delim: tab
    :file: ../_static/admin/dataverse-external-tools.tsv
@@ -25,19 +25,17 @@ Managing External Tools
 Adding External Tools to Dataverse
 +++++++++++++++++++++++++++++++++++
 
-To add an external tool to your Dataverse installation, configure the JSON manifest file for that tool. Here is an example manifest for a sample explore tool:
+To add an external tool to your installation of Dataverse you must first download a JSON file for that tool, which we refer to as a "manifest". It should look something like this:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
-Download the JSON manifest file from :ref:`inventory-of-external-tools` for the tools you wish to install.
+Go to :ref:`inventory-of-external-tools` and download a JSON manifest for one of the tools by following links in the description to installation instructions.
 
 Configure the tool with the curl command below, making sure to replace the ``fabulousFileTool.json`` placeholder for name of the JSON manifest file you downloaded.
 
 .. code-block:: bash
 
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json 
-
-Note that some tools will provide a preview mode, which provides an embedded, simplified view of the tool on the file pages of your installation. This is controlled by the ``hasPreviewMode`` parameter. 
 
 Listing All External Tools in Dataverse
 +++++++++++++++++++++++++++++++++++++++
@@ -75,15 +73,28 @@ Testing External Tools
 
 Once you have added an external tool to your installation of Dataverse, you will probably want to test it to make sure it is functioning properly.
 
+File Level vs. Dataset Level
+++++++++++++++++++++++++++++
+
+File level tools are specific to the file type (content type or MIME type). For example, a tool may work with PDFs, which have a content type of "application/pdf". 
+
+In contrast, dataset level tools are always available no matter what file types are within the dataset.
+
 File Level Explore Tools
 ++++++++++++++++++++++++
 
-File level explore tools are specific to the file type (content type or MIME type). For example, the Data Explorer tool can be configured to explore tabular data files.
+File level explore tools provide a variety of features from data visualization to statistical analysis.
+
+For each supported file type, file level explore tools appear in the file listing of the dataset page as well as under the "Access" button on each file page.
 
 File Level Preview Tools
 ++++++++++++++++++++++++
 
-File level preview tools allow the user to see a preview of the file contents without having to download it. Explore tools can also use the ``hasPreviewMode`` parameter to display a preview, which is a simplified view of an explore tool designed specifically for embedding in the file page.
+File level preview tools allow the user to see a preview of the file contents without having to download it.
+
+When a file has a preview available, a preview icon will appear next to that file in the file listing on the dataset page. On the file page itself, the preview will appear in a Preview tab either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
+
+File level explore tools can also show previews if they have been designed to show a simplified view for embedding in the file page and if the ``hasPreviewMode`` parameter is set to ``true``.
 
 File Level Configure Tools
 ++++++++++++++++++++++++++

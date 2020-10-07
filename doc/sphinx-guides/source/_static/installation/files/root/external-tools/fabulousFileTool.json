@@ -4,7 +4,6 @@
   "toolName": "fabulous",
   "scope": "file",
   "type": "explore",
-  "hasPreviewMode": "false",
   "toolUrl": "https://fabulousfiletool.com",
   "contentType": "text/tab-separated-values",
   "toolParameters": {

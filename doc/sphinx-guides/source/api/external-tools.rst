@@ -9,11 +9,19 @@ External tools can provide additional features that are not part of Dataverse it
 Introduction
 ------------
 
-External tools are additional applications the user can open from Dataverse to preview or explore data files. The term "external" is used to indicate that the user has left the Dataverse web interface. For example, the user looking at a dataset on ``demo.dataverse.org`` can open an explore tool hosted on the domain ``fabulousfiletool.com``.
+External tools are additional applications the user can access or open from Dataverse to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse application.
 
-The "other website" (fabulousfiletool.com in the example above) is probably part of the same ecosystem of scholarly publishing that Dataverse itself participates in. Sometimes the other website runs entirely in the browser. Sometimes the other website is a full blown server side web application like Dataverse itself.
+Once you have created the external tool itself (which is most of the work!), you need to teach Dataverse how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
 
-The possibilities for external tools are endless. Let's look at some examples to get your creative juices flowing.
+In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse web interfaces, etc. 
+
+The possibilities for external tools are endless. Let's look at some examples to get your creative juices flowing. Then we'll look at a complete list of parameters you can use when creating the manifest file for your tool.
+
+If you're still looking for more information on external tools, you can also watch a video introduction called `Background on the External Tool Framework`_ (slides_) from the 2020 Dataverse Community Meeting.
+
+.. _Background on the External Tool Framework: https://youtu.be/YH4I_kldmGI?t=159
+
+.. _slides: https://osf.io/xjdfw/
 
 Examples of External Tools
 --------------------------
@@ -21,7 +29,7 @@ Examples of External Tools
 Note: This is the same list that appears in the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. csv-table:: 
-   :header: "Tool", "Type", "Scope", "Description"
+   :header-rows: 1
    :widths: 20, 10, 5, 65
    :delim: tab
    :file: ../_static/admin/dataverse-external-tools.tsv
@@ -29,10 +37,10 @@ Note: This is the same list that appears in the :doc:`/admin/external-tools` sec
 How External Tools Are Presented to Users
 -----------------------------------------
 
-An external tool can appear in Dataverse in one of three ways:
+An external tool can appear in Dataverse in a variety of ways:
 
-- as an "Explore" or "Preview" option for a file or dataset
-- as an "Configure" option for a file
+- as an explore, preview, or configure option for a file
+- as an explore option for a dataset
 - as an embedded preview on the file landing page
 
 See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how installations of Dataverse will expect to test your tool before announcing it to their users.

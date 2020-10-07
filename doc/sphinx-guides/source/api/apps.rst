@@ -68,7 +68,7 @@ https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
 Geoconnect
 ~~~~~~~~~~
 
-Geoconnect configures Dataverse files to be visualized and explored on `WorldMap <http://worldmap.harvard.edu>`_. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+Geoconnect allows Dataverse files to be visualized and explored on `WorldMap <http://worldmap.harvard.edu>`_. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
 
 https://github.com/IQSS/geoconnect
 
