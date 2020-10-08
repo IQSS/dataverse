@@ -252,17 +252,17 @@
                                             <div class="btn-group">
                                                 <!-- Publish BTN -->
                                                 <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
-                                                    <c:if test="#{!(showSubmitForReviewLink or showReturnToAuthorLink)}">
+                                                    <c:if test="#{!((showSubmitForReviewLink and !showPublishLink) or showReturnToAuthorLink)}">
                                                         <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
                                                         <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                     </c:if>
-                                                    <c:if test="#{showSubmitForReviewLink or showReturnToAuthorLink}">
+                                                    <c:if test="#{(showSubmitForReviewLink and !showPublishLink) or showReturnToAuthorLink}">
                                                         <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
                                                         <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                         <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                         <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                     </c:if>
-                                                    #{bundle['dataset.publishBtn']} <span jsf:rendered="#{showSubmitForReviewLink or showReturnToAuthorLink}" class="caret"></span>
+                                                    #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink and!showPublishLink) or showReturnToAuthorLink}" class="caret"></span>
                                                 </h:outputLink>
                                                 <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                 <ul class="dropdown-menu pull-right text-left">
@@ -274,20 +274,20 @@
                                                             #{bundle['dataset.publish.btn']}
                                                         </p:commandLink>
                                                     </li>
+                                                    <li jsf:rendered="#{showSubmitForReviewLink and !showPublishLink} " class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
+                                                        <!-- Submit for Review LINK -->
+                                                        <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
+                                                                       disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
+                                                                       onclick="PF('inreview').show()">
+                                                            #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                                        </p:commandLink>
+                                                    </li>
                                                     <li jsf:rendered="#{showReturnToAuthorLink}" class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
                                                         <!-- Return to Author LINK -->
                                                         <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
                                                                        disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
                                                                        onclick="PF('sendBackToContributor').show()">
                                                             #{bundle['dataset.rejectBtn']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
-                                                        <!-- Submit for Review LINK -->
-                                                        <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                                       disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
-                                                                       onclick="PF('inreview').show()">
-                                                            #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
                                                         </p:commandLink>
                                                     </li>
                                                 </ul>
