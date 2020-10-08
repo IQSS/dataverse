@@ -274,7 +274,7 @@
                                                             #{bundle['dataset.publish.btn']}
                                                         </p:commandLink>
                                                     </li>
-                                                    <li jsf:rendered="#{showSubmitForReviewLink} " class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
+                                                    <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
                                                         <!-- Submit for Review LINK -->
                                                         <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
                                                                        disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
