@@ -262,7 +262,7 @@
                                                         <f:passThroughAttribute name="aria-haspopup" value="true"/>
                                                         <f:passThroughAttribute name="aria-expanded" value="false"/>
                                                     </c:if>
-                                                    #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink and!showPublishLink) or showReturnToAuthorLink}" class="caret"></span>
+                                                    #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink}" class="caret"></span>
                                                 </h:outputLink>
                                                 <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
                                                 <ul class="dropdown-menu pull-right text-left">
@@ -274,7 +274,7 @@
                                                             #{bundle['dataset.publish.btn']}
                                                         </p:commandLink>
                                                     </li>
-                                                    <li jsf:rendered="#{showSubmitForReviewLink and !showPublishLink} " class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
+                                                    <li jsf:rendered="#{showSubmitForReviewLink} " class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
                                                         <!-- Submit for Review LINK -->
                                                         <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
                                                                        disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
