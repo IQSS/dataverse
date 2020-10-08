@@ -688,7 +688,7 @@ div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; 
 }
 div.citation-block div.citation span.citation-select a {word-break: break-all;}
 div.citation-block div.citation-download.margin-bottom {margin-bottom:10px;}
-div.citation-block div.citation-download btn-link {color:#4b75ff}
+div.citation-block div.citation-download .btn-link {color:#4b75ff}
 div.citation-block div.citation-standards.margin-bottom {margin-bottom:10px;padding-top:1px;padding-bottom:1px;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
