@@ -848,7 +848,9 @@ The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud,
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
 
-The Google Cloud Archiver defines two custom settings, both are required:
+The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+
+In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
 
 \:GoogleCloudBucket - the name of the bucket to use. For example:
 
@@ -858,7 +860,11 @@ The Google Cloud Archiver defines two custom settings, both are required:
 
 ``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
 
-In addition, the Google Cloud Archiver requires that the googlecloudkey.json file for the project be placed in the 'dataverse.files.directory' directory. This file can be created in the Google Cloud Console.
+The Google Cloud Archiver also requires a key file that must be renamed to 'googlecloudkey.json' file and placed in the directory identified by your 'dataverse.files.directory' jvm option. This file can be created in the Google Cloud Console. (One method: Navigate to your Project 'Settings'/'Service Accounts', create an account, give this account the 'Cloud Storage'/'Storage Admin' role, and once it's created, use the 'Actions' menu to 'Create Key', selecting the 'JSON' format option. Use this as the 'googlecloudkey.json' file.)
+
+For example:
+
+``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
 
 .. _Local Path Configuration:
 
