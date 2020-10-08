@@ -516,6 +516,9 @@ By default, your store will use the [default] profile in you .aws configuration 
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.profile=<profilename>"``
 
+Larger installations may want to increase the number of open S3 connections allowed (default is 256): For example, 
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
@@ -541,6 +544,7 @@ dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when 
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
 dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
 dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
+dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                    ``256``
 ===========================================  ==================  =========================================================================  =============
 
 Reported Working S3-Compatible Storage
