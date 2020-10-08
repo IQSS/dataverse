@@ -434,12 +434,12 @@
                     <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
                     <p:commandLink rendered="#{downloadPopupRequired}"
                                    action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'externalTool', tool)}"
-                                   styleClass="btn-explore #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                   styleClass="btn-explore btn-qdr-explore #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                    disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload)}"
                                    process="@this"
                                    update="@widgetVar(downloadPopup)"
                                    oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                        #{tool.getDisplayNameLang()}
+                        <span class="glyphicon #{bundle.exploreIcon}"/> #{tool.getDisplayNameLang()}
                     </p:commandLink>
                 </li>
             </ui:repeat>
@@ -491,10 +491,10 @@
                 <ui:repeat var="tool" value="#{exploreTools}">
                     <li>
                         <p:commandLink rendered="#{!downloadPopupRequired}"
-                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
+                                       styleClass="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : 'btn btn-default  btn-explore btn-qdr-explore'}"
                                        disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                        action="#{fileDownloadService.explore(guestbookResponse, fileMetadata, tool )}">
-                            #{tool.getDisplayNameLang()}
+                            <span class="glyphicon #{bundle.exploreIcon}"/> #{tool.getDisplayNameLang()}
                         </p:commandLink>
                         <!--The modifyDatafileAndFormat method below was added because on the dataset page, "tool" is null in the popup so we store it in the guestbookResponse because we know we'll need it later in the popup.-->
                         <p:commandLink rendered="#{downloadPopupRequired}"
