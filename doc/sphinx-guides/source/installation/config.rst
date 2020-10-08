@@ -846,7 +846,7 @@ The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud,
 
 ``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":":GoogleCloudBucket, :GoogleCloudProject"``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
 
 The Google Cloud Archiver defines two custom settings, both are required:
 
