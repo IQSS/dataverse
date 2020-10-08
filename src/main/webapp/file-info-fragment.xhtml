@@ -14,8 +14,8 @@
         <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
             <div class="pull-left col-file-thumb">
                 <div class="thumbnail-block text-center">  
-                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
-                    <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
+                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"/>
+                    <span class="file-thumbnail-preview-img" jsf:rendered="#{dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
                           data-toggle="popover" data-placement="bottom" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"
                           data-template='&lt;div class="popover thumb-preview" role="tooltip"&gt;&lt;div class="arrow"&gt;&lt;/div&gt;&lt;h3 class="popover-title"&gt;&lt;/h3&gt;&lt;div class="popover-content"&gt;&lt;/div&gt;&lt;/div&gt;'>
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
@@ -24,7 +24,7 @@
                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
                         <span class="glyphicon glyphicon-lock text-danger"/>
                     </div>
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <span class="icon-unlock text-success"/>
                     </div>
                 </div>
@@ -48,16 +48,13 @@
                     </div>
                     <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                    <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}"/>
+                    <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}"/>
 
                     <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
 
-               <!-- TO-DO FIX DOWNLOAD COUNT
-                    javax.el.ELException: /file-info-fragment.xhtml @56,98 value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}": java.lang.NullPointerException
-               
                     <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(settingsWrapper.rsyncOnly)}">
-                        <f:param value="#{DatasetPage.getGuestbookResponseCount(fileMetadata)}"/>
-                    </h:outputFormat>-->
+                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
+                    </h:outputFormat>
 
                     <div class="checksum-block" style="word-break: break-all;" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
                         <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/> <!--  and (!DatasetPage.isDuplicate(fileMetadata)) -->
