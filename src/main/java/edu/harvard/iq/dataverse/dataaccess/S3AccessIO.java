@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -88,7 +89,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         	minPartSize = getMinPartSize(driverId);
             s3=getClient(driverId);
             tm=getTransferManager(driverId);
-
+            //Not sure this is needed but moving it from the open method for now since it definitely doesn't need to run every time an object is opened.
+            try {
+                if (bucketName == null || !s3.doesBucketExistV2(bucketName)) {
+                    throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
+                }
+            } catch (SdkClientException sce) {
+                throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
+            }
         } catch (Exception e) {
             throw new AmazonClientException(
                         "Cannot instantiate a S3 client; check your AWS credentials and region",
@@ -122,14 +130,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public void open(DataAccessOption... options) throws IOException {
         if (s3 == null) {
             throw new IOException("ERROR: s3 not initialised. ");
-        }
-
-        try {
-            if (bucketName == null || !s3.doesBucketExist(bucketName)) {
-                throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
-            }
-        } catch (SdkClientException sce) {
-            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
         }
 
         DataAccessRequest req = this.getRequest();
@@ -578,18 +578,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     
     //Helper method for supporting saving streams with unknown length to S3
     //We save those streams to a file and then upload the file
-    private File createTempFile(Path path, InputStream inputStream) throws IOException {
+	private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
-        File targetFile = new File(path.toUri()); //File needs a name
-        OutputStream outStream = new FileOutputStream(targetFile);
+        File targetFile = new File(path.toUri()); // File needs a name
+        try (OutputStream outStream = new FileOutputStream(targetFile);) {
 
-        byte[] buffer = new byte[8 * 1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
+
+        } finally {
+            IOUtils.closeQuietly(inputStream);
         }
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(outStream);
         return targetFile;
     } 
     
@@ -1043,6 +1045,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		// get a standard client, using the standard way of configuration the credentials, etc.
     		AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
 
+    		ClientConfiguration cc = new ClientConfiguration();
+    		Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
+    		cc.setMaxConnections(poolSize);
+    		s3CB.setClientConfiguration(cc);
+    		
     		/**
     		 * Pass in a URL pointing to your S3 compatible storage.
     		 * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
