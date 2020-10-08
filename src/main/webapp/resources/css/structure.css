@@ -157,7 +157,7 @@ hr {border-color: #ddd;}
 
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
-span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
+span.glyphicon-question-sign.tooltip-icon:hover {color: #4b75ff !important;}
 a.tooltip-icon {color: #99bcdb !important;}
 a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none; color: #337AB7 !important;}
 
@@ -681,13 +681,14 @@ div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#
 div.citation-block div.alert {padding:10px 10px 0px 10px;}
 div.citation-block div.preview-icon-block {padding-right:10px;padding-bottom:10px; min-height:140px;} /* min-height needed for colorder bootstrap layout hack */
 div.citation-block div.preview-icon-block img {max-width:140px; max-height:140px;}
-div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#428BCA;}
+div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#4b75ff;}
 @media(max-width:767px){
     div.citation-block div.preview-icon-block img {max-width:100px; max-height:100px;}
     div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em;}
 }
 div.citation-block div.citation span.citation-select a {word-break: break-all;}
 div.citation-block div.citation-download.margin-bottom {margin-bottom:10px;}
+div.citation-block div.citation-download btn-link {color:#4b75ff}
 div.citation-block div.citation-standards.margin-bottom {margin-bottom:10px;padding-top:1px;padding-bottom:1px;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
@@ -963,7 +964,7 @@ div.ui-selectcheckboxmenu-panel, div.ui-selectonemenu-panel, div.ui-autocomplete
 .ui-selectonemenu-list, .ui-selectcheckboxmenu-list, div.tooltip, div.popover {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
-.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #0088CC; border-bottom: 3px solid;}
+.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #4b75ff; border-bottom: 3px solid;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 button.btn-default span.ui-button-text {line-height:inherit !important;}
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
