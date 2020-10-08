@@ -1257,10 +1257,9 @@ th {background: none !important;}
   max-height: 37px;
 }
 
-.btn-primary {
-  background-image: linear-gradient(to bottom,#184af3 0,#819eff 100%);
+.btn-explore + ul li {
+        margin: 0px 10px;
 }
-
 
 .ui-buttonset { background: #f7f7f9 !important;}
 
