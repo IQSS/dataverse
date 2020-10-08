@@ -43,7 +43,7 @@
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
-                 rendered="#{DatasetPage.fileDisplayTable and empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
+                 rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
@@ -118,13 +118,9 @@
                 </div>
                 <div class="col-xs-7 text-right">
                     <p:outputPanel id="filesButtons">
-                        <!-- 4.2.1: replaced permissionsWrapper.canIssueUpdateDatasetCommand(DatasetPage.dataset) with DatasetPage.canUpdateDataset() -->
-                        <!-- tab-header pull-right -->
                         <div jsf:id="uploadComputeBlock" class="button-block pull-right no-margin-top"
-                              jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
-                                             and (DatasetPage.canUpdateDataset()
+                              jsf:rendered="#{(DatasetPage.canUpdateDataset()
                                              or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-
                             <!-- DOWNLOAD DCM SCRIPT BUTTON -->
                             <h:commandLink id="rsyncDLFF" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
                                            rendered="#{DatasetPage.sessionUserAuthenticated
@@ -132,7 +128,6 @@
                                                                                         and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
                                 <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                             </h:commandLink>
-
                             <!-- UPLOAD FILES BUTTON -->
                             <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                           type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
@@ -372,7 +367,7 @@
             </ui:include>
         </p:column>
 
-        <p:column class="col-file-action button-block text-right" ariaHeaderText="#{bundle['file.actionsBlock']}" rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')}">
+        <p:column class="col-file-action button-block text-right" ariaHeaderText="#{bundle['file.actionsBlock']}">
             <f:facet name="header">
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
@@ -629,29 +624,17 @@
             widgetVar="filesTree"
             value="#{DatasetPage.filesTreeRoot}"
             var="node">
-        
         <p:treeNode expandedIcon="ui-icon ui-icon-folder-open" collapsedIcon="ui-icon ui-icon-folder-collapsed">
             <!-- For a folder, the node payload is just its name as a String object, that we display here: -->
-            <h:outputText value="#{node}" />
+            <h:outputText value="#{node}"/>
         </p:treeNode>
-
         <p:treeNode type="customFileNode">
             <!-- For a file, the payload data ("node") is the corresponding FileMetadata object: -->
-            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted" />
-            
-            <!-- same approach to rendering file page links, as in the file table above: -->
-            <!-- if the file has the global id, we use that; if not, we use the database id in the url. -->
-            <ui:fragment rendered="#{!empty node.dataFile.globalIdString}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(node.dataFile.globalIdString).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
-                    #{node.label}
-                </a>
-            </ui:fragment>
-            <ui:fragment rendered="#{empty node.dataFile.globalIdString}">
-                <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
-                    #{node.label}
-                </a>
-            </ui:fragment>
-            
+            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(node.dataFile)} text-muted"/>
+            <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
+            <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty node.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty node.dataFile.globalIdString ? node.dataFile.globalIdString : node.dataFile.id).concat('&amp;version=').concat(DatasetPage.workingVersion.friendlyVersionNumber))}">
+                #{node.label}
+            </a>
             <span class="text-muted">(#{node.dataFile.friendlySize})</span>
         </p:treeNode>
     </p:tree>
