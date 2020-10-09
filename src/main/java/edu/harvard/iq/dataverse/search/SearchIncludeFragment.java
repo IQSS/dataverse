@@ -130,7 +130,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
     private Map<String, Integer> numberOfFacets = new HashMap<>();
-    private boolean debug = false;
+    private Boolean debug;
 //    private boolean showUnpublished;
     List<String> filterQueriesDebug = new ArrayList<>();
 //    private Map<String, String> friendlyName = new HashMap<>();
@@ -1017,13 +1017,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.rootDv = rootDv;
     }
 
-    public boolean isDebug() {
-        return (debug && session.getUser().isSuperuser())
+    public Boolean getDebug() {
+        return (session.isDebug() && session.getUser().isSuperuser())
                 || settingsWrapper.isTrueForKey(":Debug", false);
     }
 
-    public void setDebug(boolean debug) {
-        this.debug = debug;
+    public void setDebug(Boolean debug) {
+        if (debug != null) {
+            session.setDebug(debug);
+        }
     }
 
     public List<String> getFilterQueriesDebug() {

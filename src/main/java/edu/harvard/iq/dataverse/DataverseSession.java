@@ -49,6 +49,14 @@ public class DataverseSession implements Serializable{
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
+
+    /**
+     * If debug is set to true, some pages show extra debugging information.
+     *
+     * The way to set the boolean to true is to pass debug=true as a query
+     * parameter. The boolean will remain true until debug=false is passed.
+     */
+    private boolean debug;
     
     public User getUser() {
         if ( user == null ) {
@@ -82,7 +90,15 @@ public class DataverseSession implements Serializable{
     public void setStatusDismissed(boolean status) {
         statusDismissed = status; //MAD: Set to true to enable code!
     }
-    
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
     public StaticPermissionQuery on( Dataverse d ) {
             return permissionsService.userOn(user, d);
     }
