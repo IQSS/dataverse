@@ -13,7 +13,7 @@
     <p:outputPanel>
         <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
             <div class="pull-left col-file-thumb">
-                <div class="thumbnail-block text-center">  
+                <div class="thumbnail-block text-center">
                     <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"/>
                     <span class="file-thumbnail-preview-img" jsf:rendered="#{dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
                           data-toggle="popover" data-placement="bottom" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"
@@ -21,7 +21,7 @@
                         <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
                     </span>
                     <!-- Restricted File Icon -->
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
+                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">
                         <span class="glyphicon glyphicon-lock text-danger"/>
                     </div>
                     <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata)}">
@@ -44,44 +44,34 @@
                 <!-- HIERARCHY + TYPE + SIZE + DATE + CHECKSUM -->
                 <div class="text-muted small">
                     <!-- id:#{fileMetadata.dataFile.id} -->
-                    <div jsf:rendered="#{!empty fileMetadata.directoryLabel}">
-                        <h:outputText id="fileHierarchy" value="#{fileMetadata.directoryLabel}/"/>
-                    </div>
-                    <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
-                    <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                    <h:outputText id="fileHierarchy" styleClass="show" value="#{fileMetadata.directoryLabel}/" rendered="#{!empty fileMetadata.directoryLabel}"/>
+                    <h:outputText id="fileType" value="#{fileMetadata.dataFile.tabularData ? bundle['file.type.tabularData'] : fileMetadata.dataFile.friendlyType}"/>
                     <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}"/>
-
                     <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
-
                     <h:outputFormat id="fileDownloadCount" value=" - {0} #{bundle['metrics.downloads']}" rendered="#{!(settingsWrapper.rsyncOnly)}">
                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
                     </h:outputFormat>
-
+                    <!-- CHECKSUM -->
                     <div class="checksum-block" style="word-break: break-all;" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
                         <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
                     </div>
                     <!-- UNF + Variables, Obsersvations -->
                     <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
-                        <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                        <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                        <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
+                        <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}"/>
                         <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
                     </div>
                 </div>
                 <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
                     <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}"/>
                 </div>
-
                 <div class="file-tags-block" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
-                    <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
-                        <ui:repeat value="#{fileMetadata.categories}" var="cat">
-                            <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                        </ui:repeat> 
-                    </ui:fragment>
-                    <ui:fragment>
-                        <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
-                            <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                        </ui:repeat>
-                    </ui:fragment>
+                    <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                        <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                    </ui:repeat>
+                    <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                        <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                    </ui:repeat>
                 </div>
             </div>
         </div>
