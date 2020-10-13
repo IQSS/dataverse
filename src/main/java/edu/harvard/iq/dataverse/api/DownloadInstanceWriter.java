@@ -228,7 +228,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
                     }
                 } else {
-                    if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
+                    if (!(dataFile.isTabularData()) && storageIO.downloadRedirectEnabled()) {
                         // definitely close the (still open) S3 input stream, 
                         // since we are not going to use it. The S3 documentation
                         // emphasizes that it is very important not to leave these
@@ -238,7 +238,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // [attempt to] redirect: 
                         String redirect_url_str; 
                         try {
-                            redirect_url_str = ((S3AccessIO)storageIO).generateTemporaryS3Url();
+                            redirect_url_str = storageIO.generateTemporaryDownloadUrl();
                         } catch (IOException ioex) {
                             redirect_url_str = null; 
                         }

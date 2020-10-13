@@ -817,16 +817,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     	}
     	return key;
     }
-
-    public boolean downloadRedirectEnabled() {
-    	String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
-        if ("true".equalsIgnoreCase(optionValue)) {
-            return true;
-        }
-        return false;
-    }
     
-    public String generateTemporaryS3Url() throws IOException {
+    @Override
+	public boolean downloadRedirectEnabled() {
+		String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+	    if ("true".equalsIgnoreCase(optionValue)) {
+	        return true;
+	    }
+	    return false;
+	}
+
+    public String generateTemporaryDownloadUrl() throws IOException {
         //Questions:
         // Q. Should this work for private and public?
         // A. Yes! Since the URL has a limited, short life span. -- L.A. 

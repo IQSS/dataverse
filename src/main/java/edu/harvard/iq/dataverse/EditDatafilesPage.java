@@ -1995,7 +1995,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
-    	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
+    	String storageIdentifier = DataAccess.getStorageIdFromLocation(fullStorageLocation);
     	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
     		saveEnabled = true;
 
@@ -2131,8 +2131,20 @@ public class EditDatafilesPage implements java.io.Serializable {
         String checksumType = paramMap.get("checksumType");
         String checksumValue = paramMap.get("checksumValue");
         
+        //ToDo - move this to StorageIO subclasses
+        
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        String storageLocation=null;
+        //Should check storage type, not parse name
+        //This works except with s3 stores with ids starting with 'http'
+        if(fullStorageIdentifier.startsWith("http")) {
+          //HTTP external URL case
+        	//ToDo - check for valid URL
+        	storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier() + "//" +fullStorageIdentifier.substring(lastColon+1);
+        } else {
+          //S3 direct upload case	
+          storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        }
     	if (uploadInProgress.isFalse()) {
     		uploadInProgress.setValue(true);
     	}
