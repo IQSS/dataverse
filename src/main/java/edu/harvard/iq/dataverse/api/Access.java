@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -43,14 +44,12 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.dataaccess.StoredOriginalFile;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestAccessibleDatasetVersionCommand;
@@ -62,13 +61,11 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.logging.Logger;
@@ -88,16 +85,9 @@ import java.util.Properties;
 import java.util.logging.Level;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonObjectBuilder;
-import java.math.BigDecimal;
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
-import javax.faces.context.FacesContext;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.TypedQuery;
-import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -110,7 +100,6 @@ import javax.ws.rs.core.UriInfo;
 
 
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -125,10 +114,13 @@ import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
 import javax.ws.rs.RedirectionException;
+import javax.ws.rs.core.MediaType;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -184,6 +176,8 @@ public class Access extends AbstractApiBean {
     UserNotificationServiceBean userNotificationService;
     @EJB
     FileDownloadServiceBean fileDownloadService; 
+    @EJB
+    AuxiliaryFileServiceBean auxiliaryFileService;
     @Inject
     PermissionsWrapper permissionsWrapper;
     @Inject
@@ -1085,6 +1079,65 @@ public class Access extends AbstractApiBean {
     */
     
     /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+
+    public Response saveAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
+            @PathParam("formatTag") String formatTag,
+            @PathParam("formatVersion") String formatVersion,
+            @FormDataParam("origin") String origin,
+            @FormDataParam("isPublic") boolean isPublic,
+            @FormDataParam("file") InputStream fileInputStream,
+            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+            @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+    ) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+        
+         if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        if (!dataFile.isTabularData()) {
+            return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
+        }
+         
+
+        boolean saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
+      
+        if (saved) {
+            return ok("Auxiliary file has been saved.");
+        } else {
+            return error(BAD_REQUEST, "Error saving Auxiliary file.");
+        }
+    }
+  
+    
+
+  
+    
+    /**
      * Allow (or disallow) access requests to Dataset
      *
      * @author sekmiller
@@ -1835,5 +1888,5 @@ public class Access extends AbstractApiBean {
             throw new BadRequestException(); 
         }
         return redirectUri;
-    }           
+    }   
 }
