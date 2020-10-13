@@ -116,7 +116,7 @@ public class UrlSignerUtil {
 				logger.fine("Hash doesn't match");
 				valid = false;
 			}
-			if (LocalDateTime.parse(dateString).isAfter(LocalDateTime.now())) {
+			if (dateString != null && LocalDateTime.parse(dateString).isAfter(LocalDateTime.now())) {
 				logger.fine("Url is expired");
 				valid = false;
 			}
