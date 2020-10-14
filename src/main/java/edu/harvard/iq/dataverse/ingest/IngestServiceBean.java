@@ -67,6 +67,8 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.sav.SAVFileReade
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReader;
 import edu.harvard.iq.dataverse.ingest.tabulardata.impl.plugins.por.PORFileReaderSpi;
 import edu.harvard.iq.dataverse.util.*;
+
+import org.apache.commons.io.IOUtils;
 //import edu.harvard.iq.dvn.unf.*;
 import org.dataverse.unf.*;
 import java.io.BufferedInputStream;
@@ -823,12 +825,13 @@ public class IngestServiceBean {
                 localFile = storageIO.getFileSystemPath().toFile();
                 inputStream = new BufferedInputStream(storageIO.getInputStream());
             } else {
-                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-                FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();
-
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
                 
+                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+				try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+						FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();) {
+
+					tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+				}
                 inputStream = new BufferedInputStream(new FileInputStream(localFile));
                 logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
             }
@@ -895,6 +898,8 @@ public class IngestServiceBean {
             logger.warning("Ingest failure (Exception " + unknownEx.getClass() + "): "+unknownEx.getMessage()+".");
             return false;
             
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
         }
 
         String originalContentType = dataFile.getContentType();
@@ -1056,12 +1061,11 @@ public class IngestServiceBean {
         if (storageIO.isLocalFile()) {
             inputStream = new BufferedInputStream(storageIO.getInputStream());
         } else {
-            ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-            File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-            FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
-            
-            tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-            
+        	File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
+			try (ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
+					FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();) {
+				tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
+			}
             inputStream = new BufferedInputStream(new FileInputStream(tempFile));
             logger.fine("Saved "+storageIO.getSize()+" bytes in a local temp file.");
         }
@@ -1801,10 +1805,14 @@ public class IngestServiceBean {
                     if (savedOriginalFile == null) {
                         tempFileRequired = true;
 
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
-                        FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0, storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+						savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
+						try (ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO
+								.openAuxChannel(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+								FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile)
+										.getChannel();) {
+							tempSavedOriginalChannel.transferFrom(savedOriginalChannel, 0,
+									storageIO.getAuxObjectSize(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION));
+						}
 
                     }
                 } catch (Exception ex) {
