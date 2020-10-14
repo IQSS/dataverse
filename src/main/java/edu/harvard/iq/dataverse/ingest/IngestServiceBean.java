@@ -298,6 +298,7 @@ public class IngestServiceBean {
 						//Populate metadata
 						dataAccess.open(DataAccessOption.READ_ACCESS);
 						//set file size
+						logger.fine("Setting file size: " + dataAccess.getSize());
 						dataFile.setFilesize(dataAccess.getSize());
 						if(dataAccess instanceof S3AccessIO) {
 							  ((S3AccessIO<DvObject>)dataAccess).removeTempTag();
