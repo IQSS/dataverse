@@ -51,7 +51,8 @@ public class DataverseSession implements Serializable{
     private boolean statusDismissed = false;
 
     /**
-     * If debug is set to true, some pages show extra debugging information.
+     * If debug is set to true, some pages show extra debugging information to
+     * superusers.
      *
      * The way to set the boolean to true is to pass debug=true as a query
      * parameter. The boolean will remain true until debug=false is passed.
@@ -92,6 +93,10 @@ public class DataverseSession implements Serializable{
     }
 
     public boolean isDebug() {
+        // Only superusers get extra debugging information.
+        if (!getUser().isSuperuser()) {
+            return false;
+        }
         return debug;
     }
 

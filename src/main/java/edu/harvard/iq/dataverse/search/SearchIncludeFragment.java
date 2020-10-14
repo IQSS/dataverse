@@ -1018,8 +1018,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public Boolean getDebug() {
-        return (session.isDebug() && session.getUser().isSuperuser())
-                || settingsWrapper.isTrueForKey(":Debug", false);
+        return session.isDebug();
     }
 
     public void setDebug(Boolean debug) {
