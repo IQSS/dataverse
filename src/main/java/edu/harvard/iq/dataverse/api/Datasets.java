@@ -1788,8 +1788,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 				if(driverType.equals("http")) {
 					//Add a generated identifier for the aux files
 					logger.fine("in: " + newStorageIdentifier);
-					int lastColon = newStorageIdentifier.lastIndexOf(':');
-					newStorageIdentifier= newStorageIdentifier.substring(0,lastColon) + "/" + FileUtil.generateStorageIdentifier() + "//" +newStorageIdentifier.substring(lastColon+1);
+					int lastColon = newStorageIdentifier.lastIndexOf("://");
+					newStorageIdentifier= newStorageIdentifier.substring(0,lastColon +3) + FileUtil.generateStorageIdentifier() + "//" +newStorageIdentifier.substring(lastColon+3);
 					logger.fine("out: " + newStorageIdentifier);
 				}
 				// ToDo - check that storageIdentifier is valid
