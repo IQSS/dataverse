@@ -95,7 +95,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		this.setIsLocalFile(false);
 		configureStores(req, driverId, null);
 		// TODO: validate the storage location supplied
-		urlPath = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//" + 2));
+		urlPath = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
 		logger.fine("Base URL: " + urlPath);
 	}
 
@@ -105,7 +105,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		configureStores(null, driverId, storageLocation);
 
 		// TODO: validate the storage location supplied
-		urlPath = storageLocation.substring(storageLocation.lastIndexOf("//" + 2));
+		urlPath = storageLocation.substring(storageLocation.lastIndexOf("//") + 2);
 		logger.fine("Base URL: " + urlPath);
 	}
 
@@ -345,6 +345,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 	@Override
 	public String getStorageLocation() throws IOException {
 		String fullStorageLocation = dvObject.getStorageIdentifier();
+		logger.fine("storageidentifier: " + fullStorageLocation);
 		fullStorageLocation = fullStorageLocation.substring(fullStorageLocation.lastIndexOf("://") + 3);
 		fullStorageLocation = fullStorageLocation.substring(0, fullStorageLocation.indexOf("//") + 2);
 		if (this.getDvObject() instanceof Dataset) {
