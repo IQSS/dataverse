@@ -54,10 +54,15 @@ public class DataverseSession implements Serializable{
      * If debug is set to true, some pages show extra debugging information to
      * superusers.
      *
-     * The way to set the boolean to true is to pass debug=true as a query
-     * parameter. The boolean will remain true until debug=false is passed.
+     * The way to set the Boolean to true is to pass debug=true as a query
+     * parameter. The Boolean will remain true (even if nothing is passed to it)
+     * until debug=false is passed.
+     *
+     * Because a boolean is false by default when it comes from a viewParam we
+     * use a Boolean instead. That way, if the debug viewParam is null, we can
+     * leave the state alone (see setDebug()).
      */
-    private boolean debug;
+    private Boolean debug;
     
     public User getUser() {
         if ( user == null ) {
@@ -92,7 +97,7 @@ public class DataverseSession implements Serializable{
         statusDismissed = status; //MAD: Set to true to enable code!
     }
 
-    public boolean isDebug() {
+    public Boolean getDebug() {
         // Only superusers get extra debugging information.
         if (!getUser().isSuperuser()) {
             return false;
@@ -100,8 +105,11 @@ public class DataverseSession implements Serializable{
         return debug;
     }
 
-    public void setDebug(boolean debug) {
-        this.debug = debug;
+    public void setDebug(Boolean debug) {
+        // Leave the debug state alone if nothing is passed.
+        if (debug != null) {
+            this.debug = debug;
+        }
     }
 
     public StaticPermissionQuery on( Dataverse d ) {
