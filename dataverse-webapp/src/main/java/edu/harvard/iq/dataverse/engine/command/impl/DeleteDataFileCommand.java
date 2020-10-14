@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
@@ -212,6 +213,9 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
+        }
+        for (FileMetadata fileMetadata : doomed.getFileMetadatas()) {
+            fileMetadata.setVersion(new Long(0));
         }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
