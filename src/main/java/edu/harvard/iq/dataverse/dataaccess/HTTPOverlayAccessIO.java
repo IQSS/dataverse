@@ -94,6 +94,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		super(dvObject, req, driverId);
 		this.setIsLocalFile(false);
 		configureStores(req, driverId, null);
+		logger.fine("Parsing storageidentifier: " + dvObject.getStorageIdentifier());
 		// TODO: validate the storage location supplied
 		urlPath = dvObject.getStorageIdentifier().substring(dvObject.getStorageIdentifier().lastIndexOf("//") + 2);
 		logger.fine("Base URL: " + urlPath);
