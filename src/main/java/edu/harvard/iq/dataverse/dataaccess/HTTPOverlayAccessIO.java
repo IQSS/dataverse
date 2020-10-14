@@ -37,7 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
+
+
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -54,6 +57,7 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
@@ -148,6 +152,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 				if (dataFile.getFilesize() >= 0) {
 					this.setSize(dataFile.getFilesize());
 				} else {
+					logger.fine("Setting size");
 					this.setSize(getSizeFromHttpHeader());
 				}
 				if (dataFile.getContentType() != null && dataFile.getContentType().equals("text/tab-separated-values")
@@ -182,13 +187,18 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		long size = -1;
 		HttpHead head = new HttpHead(baseUrl + "/" + urlPath);
 		try {
-			CloseableHttpResponse response = httpclient.execute(head, localContext);
+			CloseableHttpResponse response = getSharedHttpClient().execute(head, localContext);
 
 			try {
 				int code = response.getStatusLine().getStatusCode();
+				logger.fine("Response for HEAD: " + code);
 				switch (code) {
 				case 200:
-					size = Long.parseLong(response.getHeaders("Content-Length")[0].getValue());
+					Header[] headers =response.getHeaders(HTTP.CONTENT_LEN); 
+					logger.fine("Num headers: " + headers.length);
+					String sizeString = response.getHeaders(HTTP.CONTENT_LEN )[0].getValue();
+					logger.fine("Content-Length: " + sizeString);
+					size = Long.parseLong(response.getHeaders(HTTP.CONTENT_LEN )[0].getValue());
 					logger.fine("Found file size: " + size);
 					break;
 				default:
@@ -208,7 +218,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		if (super.getInputStream() == null) {
 			try {
 				HttpGet get = new HttpGet(baseUrl + "/" + urlPath);
-				CloseableHttpResponse response = httpclient.execute(get, localContext);
+				CloseableHttpResponse response = getSharedHttpClient().execute(get, localContext);
 
 				int code = response.getStatusLine().getStatusCode();
 				switch (code) {
@@ -217,11 +227,12 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 					break;
 				default:
 					logger.warning("Response from " + get.getURI().toString() + " was " + code);
-					throw new IOException("Cannot retrieve: " + baseUrl + "/" + urlPath);
+					throw new IOException("Cannot retrieve: " + baseUrl + "/" + urlPath + " code: " + code);
 				}
 			} catch (Exception e) {
 				logger.warning(e.getMessage());
-				throw new IOException("Error retrieving: " + baseUrl + "/" + urlPath);
+				e.printStackTrace();
+				throw new IOException("Error retrieving: " + baseUrl + "/" + urlPath + " " + e.getMessage());
 
 			}
 			setChannel(Channels.newChannel(super.getInputStream()));
@@ -253,7 +264,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 		}
 		try {
 			HttpDelete del = new HttpDelete(baseUrl + "/" + urlPath);
-			CloseableHttpResponse response = httpclient.execute(del, localContext);
+			CloseableHttpResponse response = getSharedHttpClient().execute(del, localContext);
 			try {
 				int code = response.getStatusLine().getStatusCode();
 				switch (code) {
@@ -267,7 +278,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 			}
 		} catch (Exception e) {
 			logger.warning(e.getMessage());
-			throw new IOException("Error retrieving: " + baseUrl + "/" + urlPath);
+			throw new IOException("Error deleting: " + baseUrl + "/" + urlPath);
 
 		}
 
@@ -369,6 +380,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 
 	@Override
 	public boolean exists() {
+		logger.fine("Exists called");
 		return (getSizeFromHttpHeader() != -1);
 	}
 
