@@ -224,6 +224,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
+        	
+        	//ToDo - skip this for overlay case
+        	
         	// Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
         	// With small files, it looks like we may call before S3 says it exists, so try some retries before failing
         	if(key!=null) {
