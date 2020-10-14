@@ -1782,6 +1782,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 		if (null == contentDispositionHeader) {
 			if (optionalFileParams.hasStorageIdentifier()) {
 				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+				String driverType = DataAccess.getDriverType(newStorageIdentifier.substring(0, newStorageIdentifier.indexOf(":")));
+				if(driverType.equals("http")) {
+					//Add a generated identifier for the aux files
+					int lastColon = newStorageIdentifier.lastIndexOf(':');
+					newStorageIdentifier= newStorageIdentifier.substring(0,lastColon) + "/" + FileUtil.generateStorageIdentifier() + "//" +newStorageIdentifier.substring(lastColon+1);
+				}
 				// ToDo - check that storageIdentifier is valid
 				if (optionalFileParams.hasFileName()) {
 					newFilename = optionalFileParams.getFileName();
