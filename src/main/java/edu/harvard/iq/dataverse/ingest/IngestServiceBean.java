@@ -290,10 +290,6 @@ public class IngestServiceBean {
 							}
 						}
 					}
-
-					if (unattached) {
-						dataFile.setOwner(null);
-					}
 					// Any necessary post-processing:
 					// performPostProcessingTasks(dataFile);
 				} else {
@@ -311,18 +307,20 @@ public class IngestServiceBean {
 								+ ioex.getMessage() + ")");
 					}
 					savedSuccess = true;
-					dataFile.setOwner(null);
 				}
 
 				logger.fine("Done! Finished saving new files in permanent storage and adding them to the dataset.");
 				boolean belowLimit = false;
 
 				try {
+					//getting StorageIO may require knowing the owner (so this must come before owner is potentially set back to null
 					belowLimit = dataFile.getStorageIO().isBelowIngestSizeLimit();
 				} catch (IOException e) {
 					logger.warning("Error getting ingest limit for file: " + dataFile.getIdentifier() + " : " + e.getMessage());
 				} 
-
+				if (unattached) {
+					dataFile.setOwner(null);
+				}
 				if (savedSuccess && belowLimit) {
 					// These are all brand new files, so they should all have
 					// one filemetadata total. -- L.A.
