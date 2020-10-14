@@ -1707,6 +1707,8 @@ public class FileUtil implements java.io.Serializable  {
     
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
         DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+
+        logger.info(checksumType.toString());
         if (checksumType == null) {
             String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
             logger.log(Level.INFO, info);
@@ -1720,6 +1722,7 @@ public class FileUtil implements java.io.Serializable  {
             storage.open(DataAccessOption.READ_ACCESS);
             
             if (!dataFile.isTabularData()) {
+                logger.info("It is not tabular");
                 in = storage.getInputStream();
             } else {
                 // if this is a tabular file, read the preserved original "auxiliary file"
@@ -1738,7 +1741,9 @@ public class FileUtil implements java.io.Serializable  {
 
         String recalculatedChecksum = null;
         try {
+            logger.info("Before calculating checksum");
             recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+            logger.info("Checksum:" + recalculatedChecksum);
         } catch (RuntimeException rte) {
             recalculatedChecksum = null;
         } finally {
@@ -1757,6 +1762,9 @@ public class FileUtil implements java.io.Serializable  {
         if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
             // There's one possible condition that is 100% recoverable and can
             // be automatically fixed (issue #6660):
+            logger.info(dataFile.getChecksumValue());
+            logger.info(recalculatedChecksum);
+            logger.info("Checksums are not equal");
             boolean fixed = false;
             if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
                 // try again, see if the .orig file happens to be there:
@@ -1786,6 +1794,7 @@ public class FileUtil implements java.io.Serializable  {
             }
             
             if (!fixed) {
+                logger.info("checksum cannot be fixed");
                 String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);
                 throw new IOException(info);
