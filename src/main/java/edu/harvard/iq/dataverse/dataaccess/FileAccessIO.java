@@ -32,7 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
+import java.util.logging.Logger;
 
 // Dataverse imports:
 import edu.harvard.iq.dataverse.DataFile;
@@ -48,6 +48,9 @@ import java.util.ArrayList;
 
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
+	
+	private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.FileAccessIO");	
+
 
 	public FileAccessIO() {
 		//Constructor only for testing
@@ -169,7 +172,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             dataverse = this.getDataverse();
         } else {
-            throw new IOException("Data Access: Invalid DvObject type");
+        	logger.fine("Overlay case: FileAccessIO open for : " + physicalPath.toString());
+            //throw new IOException("Data Access: Invalid DvObject type");
         }
         // This "status" is a leftover from 3.6; we don't have a use for it 
         // in 4.0 yet; and we may not need it at all. 
