@@ -21,6 +21,8 @@
 package edu.harvard.iq.dataverse.util;
 
 import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
+
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -1706,102 +1708,113 @@ public class FileUtil implements java.io.Serializable  {
     }
     
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
-        DataFile.ChecksumType checksumType = dataFile.getChecksumType();
-
-        logger.info(checksumType.toString());
-        if (checksumType == null) {
-            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
-            logger.log(Level.INFO, info);
-            throw new IOException(info);
-        }
-
-        StorageIO<DataFile> storage = dataFile.getStorageIO();
-        InputStream in = null;
-        
-        try {
-            storage.open(DataAccessOption.READ_ACCESS);
-            
-            if (!dataFile.isTabularData()) {
-                logger.info("It is not tabular");
-                in = storage.getInputStream();
-            } else {
-                // if this is a tabular file, read the preserved original "auxiliary file"
-                // instead:
-                in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-            }
-        } catch (IOException ioex) {
-            in = null;
-        }
-
-        if (in == null) {
-            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
-            logger.log(Level.INFO, info);
-            throw new IOException(info);
-        }
-
         String recalculatedChecksum = null;
-        try {
-            logger.info("Before calculating checksum");
-            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-            logger.info("Checksum:" + recalculatedChecksum);
-        } catch (RuntimeException rte) {
-            recalculatedChecksum = null;
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
-
-        if (recalculatedChecksum == null) {
-            String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
-            logger.log(Level.INFO, info);
-            throw new IOException(info);
-        }
-
-        // TODO? What should we do if the datafile does not have a non-null checksum?
-        // Should we fail, or should we assume that the recalculated checksum
-        // is correct, and populate the checksumValue field with it?
-        if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
-            // There's one possible condition that is 100% recoverable and can
-            // be automatically fixed (issue #6660):
-            logger.info(dataFile.getChecksumValue());
-            logger.info(recalculatedChecksum);
-            logger.info("Checksums are not equal");
-            boolean fixed = false;
-            if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
-                // try again, see if the .orig file happens to be there:
-                try {
-                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                } catch (IOException ioex) {
-                    in = null;
-                }
-                if (in != null) {
-                    try {
-                        recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
-                    } catch (RuntimeException rte) {
-                        recalculatedChecksum = null;
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                    }
-                    // try again: 
-                    if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
-                        fixed = true;
-                        try {
-                            storage.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        } catch (IOException ioex) {
-                            fixed = false;
-                        }
-                    }
+        if (dataFile.getContentType().equals(DataFileServiceBean.MIME_TYPE_GLOBUS_FILE)) {
+            for (S3ObjectSummary s3ObjectSummary : dataFile.getStorageIO().listAuxObjects("")) {
+                recalculatedChecksum = s3ObjectSummary.getETag();
+                if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info);
+                    throw new IOException(info);
                 }
             }
-            
-            if (!fixed) {
-                logger.info("checksum cannot be fixed");
-                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+        } else {
+            DataFile.ChecksumType checksumType = dataFile.getChecksumType();
+
+            logger.info(checksumType.toString());
+            if (checksumType == null) {
+                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.noChecksumType", Arrays.asList(dataFile.getId().toString()));
                 logger.log(Level.INFO, info);
                 throw new IOException(info);
             }
-        }
 
+            StorageIO<DataFile> storage = dataFile.getStorageIO();
+            InputStream in = null;
+
+            try {
+                storage.open(DataAccessOption.READ_ACCESS);
+
+                if (!dataFile.isTabularData()) {
+                    logger.info("It is not tabular");
+                    in = storage.getInputStream();
+                } else {
+                    // if this is a tabular file, read the preserved original "auxiliary file"
+                    // instead:
+                    in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                }
+            } catch (IOException ioex) {
+                in = null;
+            }
+
+            if (in == null) {
+                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failRead", Arrays.asList(dataFile.getId().toString()));
+                logger.log(Level.INFO, info);
+                throw new IOException(info);
+            }
+
+            try {
+                logger.info("Before calculating checksum");
+                recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                logger.info("Checksum:" + recalculatedChecksum);
+            } catch (RuntimeException rte) {
+                recalculatedChecksum = null;
+            } finally {
+                IOUtils.closeQuietly(in);
+            }
+
+            if (recalculatedChecksum == null) {
+                String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.failCalculateChecksum", Arrays.asList(dataFile.getId().toString()));
+                logger.log(Level.INFO, info);
+                throw new IOException(info);
+            }
+
+            // TODO? What should we do if the datafile does not have a non-null checksum?
+            // Should we fail, or should we assume that the recalculated checksum
+            // is correct, and populate the checksumValue field with it?
+            if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                // There's one possible condition that is 100% recoverable and can
+                // be automatically fixed (issue #6660):
+                logger.info(dataFile.getChecksumValue());
+                logger.info(recalculatedChecksum);
+                logger.info("Checksums are not equal");
+                boolean fixed = false;
+                if (!dataFile.isTabularData() && dataFile.getIngestReport() != null) {
+                    // try again, see if the .orig file happens to be there:
+                    try {
+                        in = storage.getAuxFileAsInputStream(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                    } catch (IOException ioex) {
+                        in = null;
+                    }
+                    if (in != null) {
+                        try {
+                            recalculatedChecksum = FileUtil.calculateChecksum(in, checksumType);
+                        } catch (RuntimeException rte) {
+                            recalculatedChecksum = null;
+                        } finally {
+                            IOUtils.closeQuietly(in);
+                        }
+                        // try again:
+                        if (recalculatedChecksum.equals(dataFile.getChecksumValue())) {
+                            fixed = true;
+                            try {
+                                storage.revertBackupAsAux(FileUtil.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                            } catch (IOException ioex) {
+                                fixed = false;
+                            }
+                        }
+                    }
+                }
+
+                if (!fixed) {
+                    logger.info("checksum cannot be fixed");
+                    String info = BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.wrongChecksumValue", Arrays.asList(dataFile.getId().toString()));
+                    logger.log(Level.INFO, info);
+                    throw new IOException(info);
+                }
+            }
+        }
         logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
+
     }
     
     public static String getStorageIdentifierFromLocation(String location) {
