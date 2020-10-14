@@ -45,14 +45,18 @@ public class UrlSignerUtil {
 			validTime = validTime.plusMinutes(timeout);
 			validTime.toString();
 			signedUrl.append(firstParam ? "?" : "&").append("until=").append(validTime);
+			firstParam=false;
 		}
 		if (user != null) {
 			signedUrl.append(firstParam ? "?" : "&").append("user=").append(user);
+			firstParam=false;
 		}
 		if (method != null) {
 			signedUrl.append(firstParam ? "?" : "&").append("method=").append(method);
 		}
-		signedUrl.append("&token=").append(DigestUtils.sha512Hex(signedUrl.toString() + key));
+		signedUrl.append("&token=");
+		logger.fine("String to sign: " + signedUrl.toString() + "<key>");
+		signedUrl.append(DigestUtils.sha512Hex(signedUrl.toString() + key));
 		logger.fine("Generated Signed URL: " + signedUrl.toString());
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine(
@@ -94,15 +98,19 @@ public class UrlSignerUtil {
 			for (NameValuePair nvp : params) {
 				if (nvp.getName().equals("token")) {
 					hash = nvp.getValue();
+					logger.fine("Hash: " + hash);
 				}
 				if (nvp.getName().equals("until")) {
 					dateString = nvp.getValue();
+					logger.fine("Until: " + dateString);
 				}
 				if (nvp.getName().equals("method")) {
 					allowedMethod = nvp.getValue();
+					logger.fine("Method: " + allowedMethod);
 				}
 				if (nvp.getName().equals("user")) {
 					allowedUser = nvp.getValue();
+					logger.fine("User: " + allowedUser);
 				}
 			}
 
@@ -110,13 +118,15 @@ public class UrlSignerUtil {
 			// Assuming the token is last - doesn't have to be, but no reason for the URL
 			// params to be rearranged either, and this should only cause false negatives if
 			// it does happen
-			String urlToHash = signedUrl.substring(0, index);
+			String urlToHash = signedUrl.substring(0, index + 7);
+			logger.fine("String to hash: " + urlToHash + "<key>");
 			String newHash = DigestUtils.sha512Hex(urlToHash + key);
-			if (!hash.contentEquals(newHash)) {
+			logger.fine("Calculated Hash: " + newHash);
+			if (!hash.equals(newHash)) {
 				logger.fine("Hash doesn't match");
 				valid = false;
 			}
-			if (dateString != null && LocalDateTime.parse(dateString).isAfter(LocalDateTime.now())) {
+			if (dateString != null && LocalDateTime.parse(dateString).isBefore(LocalDateTime.now())) {
 				logger.fine("Url is expired");
 				valid = false;
 			}
