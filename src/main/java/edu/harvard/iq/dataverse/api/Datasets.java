@@ -1782,7 +1782,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 		if (null == contentDispositionHeader) {
 			if (optionalFileParams.hasStorageIdentifier()) {
 				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+				logger.fine("found: " + newStorageIdentifier);
 				String driverType = DataAccess.getDriverType(newStorageIdentifier.substring(0, newStorageIdentifier.indexOf(":")));
+				logger.fine("drivertype: " + driverType);
 				if(driverType.equals("http")) {
 					//Add a generated identifier for the aux files
 					logger.fine("in: " + newStorageIdentifier);
