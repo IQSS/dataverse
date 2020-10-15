@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -23,6 +24,7 @@ import static java.util.stream.Collectors.joining;
 import javax.validation.ConstraintViolation;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
  *
@@ -220,5 +222,80 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    protected void registerFilePidsIfNeeded(Dataset theDataset, CommandContext ctxt, boolean b) throws CommandException {
+     // Register file PIDs if needed
+        String protocol = theDataset.getProtocol();
+        String authority = theDataset.getAuthority();
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+        String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
+        String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
+                && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
+                &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
+                        || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
+        logger.fine("IsFilePIDsEnabled: " + ctxt.systemConfig().isFilePIDsEnabled());
+        logger.fine("RegWhenPub: " +  !idServiceBean.registerWhenPublished());
+        logger.fine("OK provider: " + ((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
+                        || dataFilePIDFormat.equals("INDEPENDENT")));  
+        logger.fine("Should register: " + shouldRegister);
+        for (DataFile dataFile : theDataset.getFiles()) {
+            logger.fine(dataFile.getId() + " is registered?: " + dataFile.isIdentifierRegistered());
+            if (shouldRegister && !dataFile.isIdentifierRegistered()) {
+                // pre-register a persistent id
+                registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
+            }
+        }
+    }
+
+    private void registerFileExternalIdentifier(DataFile dataFile, GlobalIdServiceBean globalIdServiceBean, CommandContext ctxt, boolean retry) throws CommandException {
+    
+        if (!dataFile.isIdentifierRegistered()) {
+            if (globalIdServiceBean != null) {
+                if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
+                    retry = false; // No reason to allow a retry with the FakeProvider (even if it allows
+                                   // pre-registration someday), so set false for efficiency
+                }
+                try {
+                    if (globalIdServiceBean.alreadyExists(dataFile)) {
+                        int attempts = 0;
+                        if (retry) {
+                            do {
+                                dataFile.setIdentifier(ctxt.files().generateDataFileIdentifier(dataFile, globalIdServiceBean));
+                                logger.log(Level.INFO, "Attempting to register external identifier for datafile {0} (trying: {1}).",
+                                        new Object[] { dataFile.getId(), dataFile.getIdentifier() });
+                                attempts++;
+                            } while (globalIdServiceBean.alreadyExists(dataFile) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
+                        }
+                        if (!retry) {
+                            logger.warning("Reserving File PID for: " + getDataset().getId() + ", fileId: " + dataFile.getId() + ", during publication failed.");
+                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.filePidNotReserved"), this);
+                        }
+                        if (attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            // Didn't work - we existed the loop with too many tries
+                            throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
+                                    + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + dataFile.getIdentifier(), this);
+                        }
+                    }
+                    // Invariant: DataFile identifier does not exist in the remote registry
+                    try {
+                        globalIdServiceBean.createIdentifier(dataFile);
+                        dataFile.setGlobalIdCreateTime(getTimestamp());
+                        dataFile.setIdentifierRegistered(true);
+                    } catch (Throwable ex) {
+                        logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
+                    }
+    
+                } catch (Throwable e) {
+                    throw new CommandException(BundleUtil.getStringFromBundle("file.register.error", globalIdServiceBean.getProviderInformation()), this);
+                }
+            } else {
+                throw new IllegalCommandException("This datafile may not have a PID because its id registry service is not supported.", this);
+            }
+    
+        }
+    
     }
 }
