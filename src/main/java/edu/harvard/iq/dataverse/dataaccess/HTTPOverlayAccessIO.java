@@ -449,7 +449,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 				switch (baseDriverType) {
 				case "s3":
 					fullStorageLocation = baseDriverId + "://"
-							+ System.getProperty("dataverse.files." + baseDriverId + ".bucketName") + "/"
+							+ System.getProperty("dataverse.files." + baseDriverId + ".bucketName") + ":"
 							+ fullStorageLocation;
 					break;
 				case "file":
@@ -471,7 +471,7 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
 				switch (baseDriverType) {
 				case "s3":
 					fullStorageLocation = baseDriverId + "://"
-							+ System.getProperty("dataverse.files." + baseDriverId + ".bucketName") + "/"
+							+ System.getProperty("dataverse.files." + baseDriverId + ".bucketName") + ":"
 							+ fullStorageLocation;
 					break;
 				case "file":
