@@ -76,6 +76,8 @@ import javax.validation.constraints.NotNull;
 public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
+    
+    private boolean mainDriver = true;
 
     private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String,AmazonS3>();
     private static HashMap<String, TransferManager> driverTMMap = new HashMap<String,TransferManager>();
@@ -225,38 +227,41 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
         	
-        	//ToDo - skip this for overlay case
-        	
-        	// Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
-        	// With small files, it looks like we may call before S3 says it exists, so try some retries before failing
-        	if(key!=null) {
-        		 ObjectMetadata objectMetadata = null; 
-        		 int retries = 20;
-        		 while(retries > 0) {
-        			 try {
-        				 objectMetadata = s3.getObjectMetadata(bucketName, key);
-        				 if(retries != 20) {
-        				   logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
-        				 }
-        				 retries = 0;
-        			 } catch (SdkClientException sce) {
-        				 if(retries > 1) {
-        					 retries--;
-        					 try {
-        						 Thread.sleep(3000);
-        					 } catch (InterruptedException e) {
-        						 e.printStackTrace();
-        					 }
-        					 logger.warning("Retrying after: " + sce.getMessage());
-        				 } else {
-        					 throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-        				 }
-        			 }
-        		 }
-                 this.setSize(objectMetadata.getContentLength());
-        	}else {
-            throw new IOException("Data Access: Invalid DvObject type");
-        	}
+        	if (isMainDriver()) {
+				// Direct access, e.g. for external upload - no associated DVobject yet, but we
+				// want to be able to get the size
+				// With small files, it looks like we may call before S3 says it exists, so try
+				// some retries before failing
+				if (key != null) {
+					ObjectMetadata objectMetadata = null;
+					int retries = 20;
+					while (retries > 0) {
+						try {
+							objectMetadata = s3.getObjectMetadata(bucketName, key);
+							if (retries != 20) {
+								logger.warning(
+										"Success for key: " + key + " after " + ((20 - retries) * 3) + " seconds");
+							}
+							retries = 0;
+						} catch (SdkClientException sce) {
+							if (retries > 1) {
+								retries--;
+								try {
+									Thread.sleep(3000);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								logger.warning("Retrying after: " + sce.getMessage());
+							} else {
+								throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+							}
+						}
+					}
+					this.setSize(objectMetadata.getContentLength());
+				} else {
+					throw new IOException("Data Access: Invalid DvObject type");
+				}
+			}
         }
     }
 
@@ -425,6 +430,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public Channel openAuxChannel(String auxItemTag, DataAccessOption... options) throws IOException {
         if (isWriteAccessRequested(options)) {
+        	//Need size to write to S3
             throw new UnsupportedDataAccessOperationException("S3AccessIO: write mode openAuxChannel() not yet implemented in this storage driver.");
         }
 
@@ -1169,6 +1175,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 		String key = getMainFileKey(baseKey, storageIdentifier, driverId);
 		CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
 		s3Client.completeMultipartUpload(req);
+	}
+
+	public boolean isMainDriver() {
+		return mainDriver;
+	}
+
+	public void setMainDriver(boolean mainDriver) {
+		this.mainDriver = mainDriver;
 	}
 
 }
