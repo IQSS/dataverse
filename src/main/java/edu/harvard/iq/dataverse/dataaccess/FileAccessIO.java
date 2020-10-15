@@ -69,6 +69,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     public FileAccessIO(String storageLocation, String driverId) {
     	super(storageLocation, driverId);
     	this.setIsLocalFile(true);
+    	logger.fine("Storage path: " + storageLocation);
         physicalPath = Paths.get(storageLocation);
     }
     
@@ -297,7 +298,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         if (auxItemTag == null || "".equals(auxItemTag)) {
             throw new IOException("Null or invalid Auxiliary Object Tag.");
         }
-
+        if(isDirectAccess()) {
+        	//Overlay case
+        	return Paths.get(physicalPath.toString() + "." + auxItemTag);
+        }
         String datasetDirectory = getDatasetDirectory();
         
         if (dvObject.getStorageIdentifier() == null || "".equals(dvObject.getStorageIdentifier())) {
@@ -549,7 +553,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     private String getDatasetDirectory() throws IOException {
-        if (dvObject == null) {
+        if (isDirectAccess()) {
             throw new IOException("No DvObject defined in the Data Access Object");
         }
 
