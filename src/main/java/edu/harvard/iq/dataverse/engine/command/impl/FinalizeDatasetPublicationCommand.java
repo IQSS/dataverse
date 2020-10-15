@@ -90,8 +90,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 // This can potentially throw a CommandException, so let's make 
                 // sure we exit cleanly:
-
-            	registerExternalIdentifier(theDataset, ctxt, false);
+                registerExternalIdentifier(theDataset, ctxt, false);
+                registerFilePidsIfNeeded(theDataset, ctxt, false);
             } catch (CommandException comEx) {
                 logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
