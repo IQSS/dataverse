@@ -174,6 +174,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             dataverse = this.getDataverse();
         } else {
         	logger.fine("Overlay case: FileAccessIO open for : " + physicalPath.toString());
+        	Path datasetPath= physicalPath.getParent();
+        	if (datasetPath != null && !Files.exists(datasetPath)) {
+        		Files.createDirectories(datasetPath);
+        	}
             //throw new IOException("Data Access: Invalid DvObject type");
         }
         // This "status" is a leftover from 3.6; we don't have a use for it 
@@ -237,7 +241,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         Path auxPath = getAuxObjectAsPath(auxItemTag);
 
         if (isWriteAccessRequested(options)) {
-            if (dvObject instanceof Dataset && !this.canWrite()) {
+            if (((dvObject instanceof Dataset) || isDirectAccess()) && !this.canWrite()) {
                 // If this is a dataset-level auxilary file (a cached metadata export,
                 // dataset logo, etc.) there's a chance that no "real" files 
                 // have been saved for this dataset yet, and thus the filesystem 
