@@ -29,6 +29,45 @@ function bind_bsui_components(){
     // Disabled pagination links
     disabledLinks();
     
+    // Truncate checksums
+    // TO-DO DETERMINE IF THIS IS PLACE IS OVERKILL, ON EVERY PG, EVERY REBIND ACTION ... 
+    // PROBABLY NEEDED LIKE ALL THE OTHER FUNCTIONS FOR DYNAMIC AJAX UPDATES ON PG
+    checksumTruncate();
+    
+    /*
+    * Truncate file checksums
+    */
+    function checksumTruncate(){
+        
+        // TO-DO MOVE THIS CHUNK OUT OF BIND_BSUI, TO BOTTOM OF THIS FILE
+        
+        $('span.checksum-truncate').each(function () {
+            
+            var checksumText = $(this).text();
+            
+            console.log("Total Checksums..." + checksumText);
+            
+            $(this).css('color', 'red');
+            
+            console.log("Characters..." + checksumText.length);
+            
+            if (checksumText.length > 35) {
+                $(this).text( checksumText.substr(0, 8) + '...' + checksumText.substr(checksumText.length-3, checksumText.length) );
+            }
+            
+            // TO-DO WIRE UP CLICK TO COPY W/ CLIPBOARD.JS ... SEE JIM'S PR 5211
+            // var clipboard = new Clipboard('button.checksum');
+            // clipboard.on('success', function(e) {
+            //     console.log(e);
+            // });
+            // clipboard.on('error', function(e) {
+            //     console.log(e);
+            // });
+            
+        });
+        
+    }
+    
     // Sharrre
     sharrre();
     

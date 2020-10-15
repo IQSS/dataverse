@@ -53,7 +53,10 @@
                     </h:outputFormat>
                     <!-- CHECKSUM -->
                     <div class="checksum-block" style="word-break: break-all;" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
-                        <h:outputText id="file-checksum" value="#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
+                        <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                                      jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"
+                                      title="Click to copy: #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
+                        <span class="glyphicon glyphicon-copy"></span>
                     </div>
                     <!-- UNF + Variables, Obsersvations -->
                     <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
