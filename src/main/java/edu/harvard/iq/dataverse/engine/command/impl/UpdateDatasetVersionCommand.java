@@ -170,6 +170,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
             //Merge is required to avoid problems with file deletion
+            //See #5847 for info about why it was removed and see below for a fix for that
             theDataset = ctxt.em().merge(theDataset);
 
             for (FileMetadata fmd : filesToDelete) {
@@ -179,19 +180,22 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     theDataset.getFiles().remove(fmd.getDataFile());
                     theDataset.getEditVersion().getFileMetadatas().remove(fmd);
-                    // added this check to handle issue where you could not delete a file that
-                    // shared a category with a new file
-                    // the relation ship does not seem to cascade, yet somehow it was trying to
-                    // merge the filemetadata
-                    // todo: clean this up some when we clean the create / update dataset methods
-                    for (DataFileCategory cat : theDataset.getCategories()) {
-                        cat.getFileMetadatas().remove(fmd);
-                    }
                 } else {
                     FileMetadata mergedFmd = ctxt.em().merge(fmd);
                     ctxt.em().remove(mergedFmd);
                     fmd.getDataFile().getFileMetadatas().remove(mergedFmd);
                     theDataset.getEditVersion().getFileMetadatas().remove(mergedFmd);
+                }
+                
+                // Moved check to also handle published files - see #5847
+                // added this check to handle issue where you could not delete a file that
+                // shared a category with a new file
+                // the relation ship does not seem to cascade, yet somehow it was trying to
+                // merge the filemetadata
+                // todo: clean this up some when we clean the create / update dataset methods
+
+                for (DataFileCategory cat : theDataset.getCategories()) {
+                    cat.getFileMetadatas().remove(fmd);
                 }
             }
 
