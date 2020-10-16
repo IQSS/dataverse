@@ -63,10 +63,7 @@ public class IngestUtil {
 
         // Step 1: create list of existing path names from all FileMetadata in the DatasetVersion
         // unique path name: directoryLabel + file separator + fileLabel
-        Set<String> pathNamesExisting = existingPathNamesAsSet(version);
-        if(fileToReplace!=null) {
-            pathNamesExisting.removeAll(existingPathNamesAsSet(version, fileToReplace.getFileMetadata()));
-        }
+        Set<String> pathNamesExisting = existingPathNamesAsSet(version, fileToReplace.getFileMetadata());
         // Step 2: check each new DataFile against the list of path names, if a duplicate create a new unique file name
         for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext();) {
 
