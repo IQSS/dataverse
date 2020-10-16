@@ -82,7 +82,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
 
 		/*
-		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
+		 * Try to register the dataset identifier, and file pids if enabled and needed. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
 		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
 		 * For registerWhenPublished == true providers, if a PID conflict is found, the call will retry with new PIDs. 
 		 */
