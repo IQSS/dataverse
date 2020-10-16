@@ -13,17 +13,7 @@
         
         <!-- Configure Options -->
         <li class="dropdown-header">#{bundle['file.optionsBtn.header.configure']} <span class="glyphicon glyphicon-cog"/></li>
-        <!-- Worldmap unpublished -->
-        <li jsf:rendered="#{worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata)}">
-            <p:commandLink onclick="PF('mapDataDialog').show()">
-                #{bundle['file.map']}
-            </p:commandLink>
-        </li>
-        <!-- Worldmap published -->
-        <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata)}">
-            <a href="#{fileMetadata.dataFile.getMapItURL(dataverseSession.user.id)}">#{bundle['file.map']}</a>
-        </li>
-        <ui:repeat value="#{configureTools}" var="tool" rendered="#{dataverseSession.user.authenticated and canUpdateDataset and (fileMetadata.dataFile.tabularData or worldMapPermissionHelper.canUserSeeMapDataButtonFromPage(fileMetadata) or worldMapPermissionHelper.canSeeMapButtonReminderToPublishFromPage(fileMetadata))}">
+        <ui:repeat value="#{configureTools}" var="tool">
             <li>
                 <p:commandLink update="@([id$=configureToolPopup])"
                                 action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
