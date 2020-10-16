@@ -165,14 +165,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
-            // Dataset tempDataset = ctxt.em().merge(theDataset);
-            //SEK 5/30/2019
-            // This interim merge is causing:
-            // java.lang.IllegalArgumentException: Cannot merge an entity that has been removed: edu.harvard.iq.dvn.core.study.FileMetadata
-            // at the merge at line 177
-            //Is this merge needed to add the lock?  - seems to be 'no' so what is it needed for?
-            
-        //    theDataset = ctxt.em().merge(theDataset);
+            //Merge is required to avoid problems with file deletion
+            //See #5847 for info about why it was removed and see below for a fix for that
+            theDataset = ctxt.em().merge(theDataset);
 
             for (FileMetadata fmd : filesToDelete) {
                 if (!fmd.getDataFile().isReleased()) {
@@ -181,19 +176,22 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     theDataset.getFiles().remove(fmd.getDataFile());
                     theDataset.getEditVersion().getFileMetadatas().remove(fmd);
-                    // added this check to handle issue where you could not deleter a file that
-                    // shared a category with a new file
-                    // the relation ship does not seem to cascade, yet somehow it was trying to
-                    // merge the filemetadata
-                    // todo: clean this up some when we clean the create / update dataset methods
-                    for (DataFileCategory cat : theDataset.getCategories()) {
-                        cat.getFileMetadatas().remove(fmd);
-                    }
                 } else {
                     FileMetadata mergedFmd = ctxt.em().merge(fmd);
                     ctxt.em().remove(mergedFmd);
                     fmd.getDataFile().getFileMetadatas().remove(mergedFmd);
                     theDataset.getEditVersion().getFileMetadatas().remove(mergedFmd);
+                    
+                }
+                //Moved check to also handle published files - see #5847
+                // added this check to handle issue where you could not delete a file that
+                // shared a category with a new file
+                // the relation ship does not seem to cascade, yet somehow it was trying to
+                // merge the filemetadata
+                // todo: clean this up some when we clean the create / update dataset methods
+
+                for (DataFileCategory cat : theDataset.getCategories()) {
+                    cat.getFileMetadatas().remove(fmd);
                 }
             }
 
