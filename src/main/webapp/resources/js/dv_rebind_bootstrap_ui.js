@@ -45,12 +45,6 @@ function bind_bsui_components(){
             
             var checksumText = $(this).text();
             
-            console.log("Total Checksums..." + checksumText);
-            
-            $(this).css('color', 'red');
-            
-            console.log("Characters..." + checksumText.length);
-            
             if (checksumText.length > 35) {
                 $(this).text( checksumText.substr(0, 8) + '...' + checksumText.substr(checksumText.length-3, checksumText.length) );
             }

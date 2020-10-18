@@ -1,0 +1,115 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui">
+
+    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['file.restrictions']}" widgetVar="accessPopup" modal="true">
+        <p:focus context="accessPopup"/>
+        <p class="help-block">
+            #{bundle['file.restrictions.description']}
+        </p>
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="termsAccessInput" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:inputTextarea id="termsAccessInput" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="requestAccess" class="col-sm-3 control-label">
+                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess']}
+                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
+                </label>
+                <div class="col-sm-9">
+                    <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
+                                             value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
+                </div>
+            </div>
+        </div>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}1" onclick="PF('accessPopup').hide();" update=":messagePanel" 
+                             rendered="#{fileMetadataForAction != null}" action="#{bean[restrictFileAction](true)}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}2" onclick="PF('accessPopup').hide();" update=":messagePanel" 
+                             rendered="#{fileMetadataForAction == null}"  action="#{bean[restrictSelectedFileAction](true)}"/>
+            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
+                #{bundle.cancel}
+            </button>
+        </div>
+    </p:dialog>  
+
+    <p:dialog id="deleteFileConfirm" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.immediate']}</p>
+        <ui:fragment rendered="#{datasetVersion.dataset.released}">
+            <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
+        </ui:fragment>
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}1" onclick="PF('deleteFileConfirmation').hide()" 
+                             rendered="#{fileMetadataForAction != null}" action="#{bean[deleteFileAction]}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}2" onclick="PF('deleteFileConfirmation').hide()" 
+                             rendered="#{fileMetadataForAction == null}"  action="#{bean[deleteSelectedFileAction]}"/>
+            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
+                #{bundle.cancel}
+            </button>
+        </div>
+    </p:dialog>
+
+    <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true">
+        <ui:include src="file-configure-popup-fragment.xhtml" />
+    </p:dialog>
+
+   
+
+    <!-- Simple Popups For Select Files-->
+    <p:dialog id="selectFilesForRestrict" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFilesForRestrict').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
+    <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFilesForUnRestrict').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>    
+    <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFilesForDelete').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
+    <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>
+    <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>    
+
+</ui:composition>
