@@ -9,6 +9,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -64,6 +65,9 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
             auxFile.setDataFile(dataFile);
+            // TODO: mime type!
+            //auxFile.setContentType(mimeType);
+            auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             save(auxFile);
         } catch (IOException ioex) {
             logger.info("IO Exception trying to save auxiliary file: " + ioex.getMessage());
@@ -78,6 +82,23 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             }
         }
         return true;
+    }
+    
+    // Looks up an auxiliary file by its parent DataFile, the formatTag and version
+    // TODO: improve as needed. 
+    public AuxiliaryFile lookupAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
+        
+        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag = :formatTag and o.formatVersion = :formatVersion");
+                
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("formatTag", formatTag);
+        query.setParameter("formatVersion", formatVersion);
+        try {
+            AuxiliaryFile retVal = (AuxiliaryFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
     }
 
 }

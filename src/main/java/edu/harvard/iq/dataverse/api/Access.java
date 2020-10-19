@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.AuxiliaryFileServiceBean;
 import edu.harvard.iq.dataverse.DataCitation;
 import edu.harvard.iq.dataverse.DataFile;
@@ -499,16 +500,20 @@ public class Access extends AbstractApiBean {
     }
     
     /*
-     * "Preprocessed data" metadata format:
-     * (this was previously provided as a "format conversion" option of the 
-     * file download form of the access API call)
+     * GET method for retrieving various auxiliary files associated with 
+     * a tabular datafile.
      */
     
-    @Path("datafile/{fileId}/metadata/preprocessed")
+    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
     @GET
-    @Produces({"text/xml"})
     
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws ServiceUnavailableException {
+    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId,
+            @PathParam("formatTag") String formatTag,
+            @PathParam("formatVersion") String formatVersion,
+            @QueryParam("key") String apiToken, 
+            @Context UriInfo uriInfo, 
+            @Context HttpHeaders headers, 
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
     
         DataFile df = findDataFileOrDieWrapper(fileId);
         
@@ -516,18 +521,48 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
         
-        // This will throw a ForbiddenException if access isn't authorized: 
-        checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
+        boolean publiclyAvailable = false; 
 
-        if (df.isTabularData()) {
-            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
-        } else {
+        if (!df.isTabularData()) {
             throw new BadRequestException("tabular data required");
+        } 
+        
+        DownloadInstance downloadInstance;
+        AuxiliaryFile auxFile = null;
+        
+        // formatTag=preprocessed is handled as a special case. 
+        // This is (as of now) the only aux. tabular metadata format that Dataverse
+        // can generate (and cache) itself. (All the other formats served have 
+        // to be deposited first, by the @POST version of this API).
+        
+        if ("preprocessed".equals(formatTag)) {
+            dInfo.addServiceAvailable(new OptionalAccessService("preprocessed", "application/json", "format=prep", "Preprocessed data in JSON"));
+            downloadInstance = new DownloadInstance(dInfo);
+            if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
+                logger.fine("Preprocessed data for tabular file "+fileId);
+            }
+        } else {
+            // All other (deposited) formats:
+            auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
+            
+            if (auxFile == null) {
+                throw new NotFoundException("Auxiliary metadata format "+formatTag+" is not available for datafile "+fileId);
+            }
+            
+            if (auxFile.getIsPublic()) {
+                publiclyAvailable = true;
+            }
+            downloadInstance = new DownloadInstance(dInfo);
+            downloadInstance.setAuxiliaryFile(auxFile);
         }
-        DownloadInstance downloadInstance = new DownloadInstance(dInfo);
-        if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
-            logger.fine("Preprocessed data for tabular file "+fileId);
+        
+        // Unless this format is explicitly authorized to be publicly available, 
+        // the following will check access authorization (based on the access rules
+        // as defined for the DataFile itself), and will throw a ForbiddenException 
+        // if access is denied:
+        if (!publiclyAvailable) {
+            checkAuthorization(df, apiToken);
         }
         
         return downloadInstance;

@@ -37,6 +37,10 @@ public class AuxiliaryFile implements Serializable {
     private String origin;
     
     private boolean isPublic;
+    
+    private String contentType; 
+    
+    private Long fileSize; 
 
     public Long getId() {
         return id;
@@ -86,5 +90,21 @@ public class AuxiliaryFile implements Serializable {
         this.isPublic = isPublic;
     }
     
+    public String getContentType() {
+        // TODO: hard-coded for testing: 
+        return "application/json";
+        //return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
     
+    public Long getFileSize() {
+            return fileSize; 
+    }
+    
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
 }

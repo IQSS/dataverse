@@ -227,6 +227,18 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // (similarly to what the Access API returns when a thumbnail is requested on a text file, etc.)
                         throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
                     }
+                } else if (di.getAuxiliaryFile() != null) {
+                    String auxTag = di.getAuxiliaryFile().getFormatTag(); 
+                    String auxVersion = di.getAuxiliaryFile().getFormatVersion();
+                    if (auxVersion != null) {
+                        auxTag = auxTag + "_" + auxVersion;
+                    }
+                    long auxFileSize = di.getAuxiliaryFile().getFileSize();
+                    InputStreamIO auxStreamIO = new InputStreamIO(storageIO.getAuxFileAsInputStream(auxTag), auxFileSize);
+                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag);
+                    auxStreamIO.setMimeType(di.getAuxiliaryFile().getContentType());
+                    storageIO = auxStreamIO;
+                    
                 } else {
                     if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
                         // definitely close the (still open) S3 input stream, 
