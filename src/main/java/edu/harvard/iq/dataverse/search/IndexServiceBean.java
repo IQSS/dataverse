@@ -23,11 +23,9 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
-import edu.harvard.iq.dataverse.harvest.server.OaiSetException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -35,15 +33,12 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,13 +55,13 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -74,6 +69,7 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CursorMarkParams;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.io.IOUtils;
 import org.apache.tika.metadata.Metadata;
@@ -119,6 +115,9 @@ public class IndexServiceBean {
 
     @EJB
     VariableServiceBean variableService;
+    
+    @EJB
+    IndexBatchServiceBean indexBatchService;
 
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
@@ -161,7 +160,7 @@ public class IndexServiceBean {
             solrServer = null;
         }
     }
-    
+   
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) throws SolrServerException, IOException{
         return indexDataverse(dataverse, false);
@@ -1661,46 +1660,28 @@ public class IndexServiceBean {
     /**
      * @return Dataverses that should be reindexed either because they have
      * never been indexed or their index time is before their modification time.
+     * (Exclude root because it is never indexed)
      */
-    public List<Dataverse> findStaleOrMissingDataverses() {
-        List<Dataverse> staleDataverses = new ArrayList<>();
-        for (Dataverse dataverse : dataverseService.findAll()) {
-            if (dataverse.equals(dataverseService.findRootDataverse())) {
-                continue;
-            }
-            if (stale(dataverse)) {
-                staleDataverses.add(dataverse);
-            }
-        }
-        return staleDataverses;
+    public List<Long> findStaleOrMissingDataverses() {
+        List<Long> staleDataverseIds = dataverseService.findIdStale();
+        Long rootId = dataverseService.findRootDataverse().getId();
+        List<Long> ids = new ArrayList<>();
+        staleDataverseIds.stream().filter(id -> (!id.equals(rootId))).forEachOrdered(id -> {
+            ids.add(id);
+        });
+        return ids;
     }
 
     /**
      * @return Datasets that should be reindexed either because they have never
      * been indexed or their index time is before their modification time.
      */
-    public List<Dataset> findStaleOrMissingDatasets() {
-        List<Dataset> staleDatasets = new ArrayList<>();
-        for (Dataset dataset : datasetService.findAll()) {
-            if (stale(dataset)) {
-                staleDatasets.add(dataset);
-            }
-        }
-        return staleDatasets;
+    public List<Long> findStaleOrMissingDatasets() {
+        return datasetService.findIdStale();
     }
 
-    private boolean stale(DvObject dvObject) {
-        Timestamp indexTime = dvObject.getIndexTime();
-        Timestamp modificationTime = dvObject.getModificationTime();
-        if (indexTime == null) {
-            return true;
-        } else if (indexTime.before(modificationTime)) {
-            return true;
-        }
-        return false;
-    }
-
-    public List<Long> findDataversesInSolrOnly() throws SearchException {
+  
+    public List<String> findDataversesInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1711,7 +1692,7 @@ public class IndexServiceBean {
         }
     }
 
-    public List<Long> findDatasetsInSolrOnly() throws SearchException {
+    public List<String> findDatasetsInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1722,7 +1703,7 @@ public class IndexServiceBean {
         }
     }
 
-    public List<Long> findFilesInSolrOnly() throws SearchException {
+    public List<String> findFilesInSolrOnly() throws SearchException {
         try {
             /**
              * @todo define this centrally and statically
@@ -1732,34 +1713,82 @@ public class IndexServiceBean {
             throw ex;
         }
     }
-
-    private List<Long> findDvObjectInSolrOnly(String type) throws SearchException {
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("*");
-        solrQuery.setRows(Integer.MAX_VALUE);
-        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
-        List<Long> dvObjectInSolrOnly = new ArrayList<>();
-        QueryResponse queryResponse = null;
+    /**
+     * Finds permissions documents in Solr that don't have corresponding dvObjects
+     * in the database, and returns a list of their Solr "id" field.
+     * @return list of "id" field vales for the orphaned Solr permission documents
+     * @throws SearchException 
+     */
+    public List<String> findPermissionsInSolrOnly() throws SearchException {
+        List<String> permissionInSolrOnly = new ArrayList<>();
         try {
-            queryResponse = solrClientService.getSolrClient().query(solrQuery);
-        } catch (SolrServerException | IOException ex) {
-            throw new SearchException("Error searching Solr for " + type, ex);
-        }
-        SolrDocumentList results = queryResponse.getResults();
-        for (SolrDocument solrDocument : results) {
-            Object idObject = solrDocument.getFieldValue(SearchFields.ENTITY_ID);
-            if (idObject != null) {
-                try {
-                    long id = (Long) idObject;
-                    DvObject dvobject = dvObjectService.findDvObject(id);
-                    if (dvobject == null) {
-                        dvObjectInSolrOnly.add(id);
+            int rows = 100;
+            SolrQuery q = (new SolrQuery(SearchFields.DEFINITION_POINT_DVOBJECT_ID+":*")).setRows(rows).setSort(SortClause.asc(SearchFields.ID));
+            String cursorMark = CursorMarkParams.CURSOR_MARK_START;
+            boolean done = false;
+            while (!done) {
+                q.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+                QueryResponse rsp = solrServer.query(q);
+                String nextCursorMark = rsp.getNextCursorMark();
+                SolrDocumentList list = rsp.getResults();
+                for (SolrDocument doc: list) {
+                    long id = Long.parseLong((String) doc.getFieldValue(SearchFields.DEFINITION_POINT_DVOBJECT_ID));
+                    if(!dvObjectService.checkExists(id)) {
+                        permissionInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
                     }
-                } catch (ClassCastException ex) {
-                    throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
+                }
+                if (cursorMark.equals(nextCursorMark)) {
+                    done = true;
+                }
+                cursorMark = nextCursorMark;
+            }
+        } catch (SolrServerException | IOException ex) {
+           throw new SearchException("Error searching Solr for permissions" , ex);
+ 
+        }
+        return permissionInSolrOnly;
+    }
+    
+    private List<String> findDvObjectInSolrOnly(String type) throws SearchException {
+        SolrQuery solrQuery = new SolrQuery();
+        int rows = 100;
+     
+        solrQuery.setQuery("*").setRows(rows).setSort(SortClause.asc(SearchFields.ID));
+        solrQuery.addFilterQuery(SearchFields.TYPE + ":" + type);
+        List<String> dvObjectInSolrOnly = new ArrayList<>();
+       
+        String cursorMark = CursorMarkParams.CURSOR_MARK_START;
+        boolean done = false;
+        while (!done) {
+            solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, cursorMark);
+            QueryResponse rsp = null;
+            try {
+                rsp = solrServer.query(solrQuery);
+             } catch (SolrServerException | IOException ex) {
+                throw new SearchException("Error searching Solr type: " + type, ex);
+
+            }
+            String nextCursorMark = rsp.getNextCursorMark();
+            SolrDocumentList list = rsp.getResults();
+            for (SolrDocument doc: list) {
+                Object idObject = doc.getFieldValue(SearchFields.ENTITY_ID);
+                if (idObject != null) {
+                    try {
+                        long id = (Long) idObject;
+                        if (!dvObjectService.checkExists(id)) {
+                            dvObjectInSolrOnly.add((String)doc.getFieldValue(SearchFields.ID));
+                        }
+                    } catch (ClassCastException ex) {
+                        throw new SearchException("Found " + SearchFields.ENTITY_ID + " but error casting " + idObject + " to long", ex);
+                    }
                 }
             }
+            if (cursorMark.equals(nextCursorMark)) {
+                done = true;
+            }
+            cursorMark = nextCursorMark;
         }
+
         return dvObjectInSolrOnly;
     }
 

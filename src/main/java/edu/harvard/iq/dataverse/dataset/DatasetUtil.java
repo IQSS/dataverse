@@ -273,7 +273,7 @@ public class DatasetUtil {
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
-            logger.severe(ex.getMessage());
+        	logger.severe(ex.getMessage());
         }
 
         StorageIO<Dataset> dataAccess = null;
@@ -298,11 +298,13 @@ public class DatasetUtil {
         try {
             fullSizeImage = ImageIO.read(tmpFile);
         } catch (IOException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
         if (fullSizeImage == null) {
             logger.fine("fullSizeImage was null!");
+            IOUtils.closeQuietly(inputStream);
             return null;
         }
         int width = fullSizeImage.getWidth();
@@ -311,6 +313,7 @@ public class DatasetUtil {
         try {
             src = new FileInputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
@@ -318,6 +321,7 @@ public class DatasetUtil {
         try {
             dest = new FileOutputStream(tmpFile).getChannel();
         } catch (FileNotFoundException ex) {
+        	IOUtils.closeQuietly(inputStream);
             logger.severe(ex.getMessage());
             return null;
         }
@@ -329,10 +333,13 @@ public class DatasetUtil {
         }
         File tmpFileForResize = null;
         try {
+        	//The stream was used around line 274 above, so this creates an empty file (OK since all it is used for is getting a path, but not reusing it here would make it easier to close it above.)
             tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
         } catch (IOException ex) {
             logger.severe(ex.getMessage());
             return null;
+        } finally {
+        	IOUtils.closeQuietly(inputStream);
         }
         // We'll try to pre-generate the rescaled versions in both the 
         // DEFAULT_DATASET_LOGO (currently 140) and DEFAULT_CARDIMAGE_SIZE (48)
@@ -447,7 +454,7 @@ public class DatasetUtil {
         // instead of testing for the 's3" store,
         //This method is used by both the dataset and edit files page so one change here
         //will fix both
-       return dataset.getDataverseContext().getEffectiveStorageDriverId().equals("s3");
+       return dataset.getEffectiveStorageDriverId().equals("s3");
     }
     
     /**

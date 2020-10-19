@@ -156,6 +156,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
+import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -2204,6 +2205,87 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return wr.getResponse();
         }
     }
-
+    
+    @GET
+    @Path("{identifier}/storageDriver")
+    public Response getFileStore(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+            
+        return response(req -> ok(dataset.getEffectiveStorageDriverId()));
+    }
+    
+    @PUT
+    @Path("{identifier}/storageDriver")
+    public Response setFileStore(@PathParam("identifier") String dvIdtf,
+            String storageDriverLabel,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+    	}
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        
+        // We don't want to allow setting this to a store id that does not exist: 
+        for (Entry<String, String> store : DataAccess.getStorageDriverLabels().entrySet()) {
+            if (store.getKey().equals(storageDriverLabel)) {
+                dataset.setStorageDriverId(store.getValue());
+                datasetService.merge(dataset);
+                return ok("Storage driver set to: " + store.getKey() + "/" + store.getValue());
+            }
+        }
+    	return error(Response.Status.BAD_REQUEST,
+            "No Storage Driver found for : " + storageDriverLabel);
+    }
+    
+    @DELETE
+    @Path("{identifier}/storageDriver")
+    public Response resetFileStore(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+    	}
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        
+        dataset.setStorageDriverId(null);
+        datasetService.merge(dataset);
+    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
 }
 

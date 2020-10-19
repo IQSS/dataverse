@@ -127,6 +127,7 @@ public class ZipDownloadService {
         }
         
         Set<String> zippedFolders = new HashSet<>();
+        Set<String> fileNamesList = new HashSet<>();
        
         for (String [] fileEntry : jobFiles) {
             String storageLocation = fileEntry[0];
@@ -144,13 +145,15 @@ public class ZipDownloadService {
             
             InputStream inputStream = this.directAccessUtil.openDirectAccess(storageLocation);
                 
-            // (potential?) TODO: String zipEntryName = checkZipEntryName(fileName);
+            String zipEntryName = checkZipEntryName(fileName, fileNamesList);
             // this may not be needed anymore - some extra sanitizing of the file 
             // name we used to have to do - since all the values in a current Dataverse 
-            // database may already be santized enough.
+            // database may already be santized enough. 
+	    // (Edit: Yes, we still need this - there are still datasets with multiple 
+	    // files with duplicate names; this method takes care of that)
             if (inputStream != null && this.zipOutputStream != null) {
                 
-                ZipEntry entry = new ZipEntry(fileName);
+                ZipEntry entry = new ZipEntry(zipEntryName);
 
                 byte[] bytes = new byte[2 * 8192];
                 int read = 0;
@@ -158,8 +161,8 @@ public class ZipDownloadService {
 
                 try {
                     // Does this file have a folder name? 
-                    if (hasFolder(fileName)) {
-                        addFolderToZipStream(getFolderName(fileName), zippedFolders);
+                    if (hasFolder(zipEntryName)) {
+                        addFolderToZipStream(getFolderName(zipEntryName), zippedFolders);
                     }
 
                     this.zipOutputStream.putNextEntry(entry);
@@ -168,7 +171,6 @@ public class ZipDownloadService {
                         this.zipOutputStream.write(bytes, 0, read);
                         readSize += read;
                     }
-                    inputStream.close();
                     this.zipOutputStream.closeEntry();
 
                     /*if (fileSize == readSize) {
@@ -178,6 +180,12 @@ public class ZipDownloadService {
                     }*/
                 } catch (IOException ioex) {
                     System.err.println("Failed to compress "+storageLocation);
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ioexIgnore) {
+                        System.err.println("Warning: IO exception trying to close input stream - "+storageLocation);
+                    }
                 }
             } else {
                 System.err.println("Failed to access "+storageLocation);
@@ -236,5 +244,22 @@ public class ZipDownloadService {
                 zippedFolders.add(folderName);
             }
         }
+    }
+    
+    // check for and process duplicates:
+    private String checkZipEntryName(String originalName, Set<String> fileNames) {
+        String name = originalName;
+        int fileSuffix = 1;
+        int extensionIndex = originalName.lastIndexOf(".");
+
+        while (fileNames.contains(name)) {
+            if (extensionIndex != -1) {
+                name = originalName.substring(0, extensionIndex) + "_" + fileSuffix++ + originalName.substring(extensionIndex);
+            } else {
+                name = originalName + "_" + fileSuffix++;
+            }
+        }
+        fileNames.add(name);
+        return name;
     }
 }

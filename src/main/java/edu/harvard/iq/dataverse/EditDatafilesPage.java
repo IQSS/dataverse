@@ -453,7 +453,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadedFiles = uploadedFilesList;
         selectedFiles = selectedFileMetadatasList;
         
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
         
         logger.fine("done");
@@ -490,7 +490,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         
 
 
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
                        
         workingVersion = dataset.getEditVersion();
@@ -1137,7 +1137,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
                                 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, false);
             
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
