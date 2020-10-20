@@ -1773,7 +1773,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return error( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
         catch (ClassCastException | com.google.gson.JsonParseException ex) {
-            return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
         }
         
         // -------------------------------------

@@ -240,16 +240,12 @@ public class FilesIT {
 
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, junkJson, apiToken);
 
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
+        
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.files[0].categories", nullValue())
-                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].dataFile.description", equalTo(""))
-                .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
-                // not sure why description appears in two places
-                .body("data.files[0].description", equalTo(""))
-                .statusCode(OK.getStatusCode());
+        .statusCode(BAD_REQUEST.getStatusCode())
+        .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+        .body("message", equalTo(parseError));
     }
     
     @Test
@@ -899,10 +895,11 @@ public class FilesIT {
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, jsonAsString, apiToken);
 
         msgt("replace resp: " + replaceResp.prettyPrint());
-
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
         replaceResp.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_OK));
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("message", equalTo(parseError));
 
     }
 
