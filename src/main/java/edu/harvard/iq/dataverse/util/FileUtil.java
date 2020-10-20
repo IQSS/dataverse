@@ -1735,7 +1735,7 @@ public class FileUtil implements java.io.Serializable  {
     
     public static void validateDataFileChecksum(DataFile dataFile) throws IOException {
         String recalculatedChecksum = null;
-        if (dataFile.getContentType().equals(DataFileServiceBean.MIME_TYPE_GLOBUS_FILE)) {
+       /* if (dataFile.getContentType().equals(DataFileServiceBean.MIME_TYPE_GLOBUS_FILE)) {
             for (S3ObjectSummary s3ObjectSummary : dataFile.getStorageIO().listAuxObjects("")) {
                 recalculatedChecksum = s3ObjectSummary.getETag();
                 if (!recalculatedChecksum.equals(dataFile.getChecksumValue())) {
@@ -1744,7 +1744,7 @@ public class FileUtil implements java.io.Serializable  {
                     throw new IOException(info);
                 }
             }
-        } else {
+        } else {*/
             DataFile.ChecksumType checksumType = dataFile.getChecksumType();
 
             logger.info(checksumType.toString());
@@ -1838,7 +1838,7 @@ public class FileUtil implements java.io.Serializable  {
                     throw new IOException(info);
                 }
             }
-        }
+        //}
         logger.log(Level.INFO, "successfully validated DataFile {0}; checksum {1}", new Object[]{dataFile.getId(), recalculatedChecksum});
 
     }

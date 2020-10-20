@@ -755,7 +755,8 @@ public class GlobusServiceBean implements java.io.Serializable{
 
                             try {
                                 // We persist "SHA1" rather than "SHA-1".
-                                datafile.setChecksumType(DataFile.ChecksumType.SHA1);
+                                //datafile.setChecksumType(DataFile.ChecksumType.SHA1);
+                                datafile.setChecksumType(DataFile.ChecksumType.MD5);
                                 datafile.setChecksumValue(checksumVal);
                             } catch (Exception cksumEx) {
                                 logger.info("====  datasetId :" + dataset.getId() + "======Could not calculate  checksumType signature for the new file ");
