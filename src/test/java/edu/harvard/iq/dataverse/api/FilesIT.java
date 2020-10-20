@@ -732,14 +732,11 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgUnpublished = BundleUtil.getStringFromBundle("file.addreplace.error.unpublished_file_cannot_be_replaced");
-        
         replaceResp.then().assertThat()
-               .statusCode(BAD_REQUEST.getStatusCode())
-               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-               .body("message", Matchers.startsWith(errMsgUnpublished))
-               ;
-       
+        .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+        .body("data.files[0].label", equalTo("cc0.png"))
+        .statusCode(OK.getStatusCode());
+        
         // -------------------------
         // Publish dataset
         // -------------------------

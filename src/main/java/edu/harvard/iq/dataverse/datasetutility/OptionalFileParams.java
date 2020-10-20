@@ -295,12 +295,7 @@ public class OptionalFileParams {
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
         JsonObject jsonObj;
-        try {
-            jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        } catch (ClassCastException ex) {
-            logger.info("Exception parsing string '" + jsonData + "': " + ex);
-            return;
-        }
+        jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
 
         // -------------------------------
         // get description as string
