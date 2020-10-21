@@ -31,7 +31,7 @@ public class SiteMapUtilTest {
     @Test
     public void testUpdateSiteMap() throws IOException, ParseException {
 
-   /*     List<Dataverse> dataverses = new ArrayList<>();
+        List<Dataverse> dataverses = new ArrayList<>();
         String publishedDvString = "publishedDv1";
         Dataverse publishedDataverse = new Dataverse();
         publishedDataverse.setAlias(publishedDvString);
@@ -115,7 +115,7 @@ public class SiteMapUtilTest {
         assertFalse(sitemapString.contains(deaccessionedPid));
 
         System.clearProperty("com.sun.aas.instanceRoot");
-*/
+
     }
 
 }
