@@ -225,13 +225,12 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <ui:include src="file-edit-button-fragment.xhtml">
-                                                            <ui:param name="isFilePg" value="true"/>
                                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                                             <ui:param name="hasPackageFile" value="#{FilePage.fileMetadata.dataFile.filePackage}"/>                                                            
                                                             <ui:param name="isDraftReplacementFile" value="#{FilePage.draftReplacementFile}"/>
                                                             <ui:param name="configureTools" value="#{FilePage.configureTools}"/>
                                                             <ui:param name="bean" value="#{FilePage}"/>
-                                                            <ui:param name="restrictFileAction" value="restrictFile"/>
+                                                            <ui:param name="unrestrictFileAction" value="restrictFile"/>
                                                         </ui:include>
                                                     </ul>
                                                 </div>

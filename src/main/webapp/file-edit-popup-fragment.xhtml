@@ -3,6 +3,17 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui">
+    
+    <ui:remove>
+    <!--       
+    Parameters:
+    dataserVersion
+    fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected files)
+    bean - the named value of the backing bean for the below method(s)
+    restrictFileAction - name of the method on the above bean to call for restrict (method must take a boolean)    
+    deleteFileAction - name of method on the above bean to delete files
+    -->            
+    </ui:remove>    
 
     <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['file.restrictions']}" widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
@@ -33,10 +44,8 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}1" onclick="PF('accessPopup').hide();" update=":messagePanel" 
-                             rendered="#{fileMetadataForAction != null}" action="#{bean[restrictFileAction](true)}"/>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}2" onclick="PF('accessPopup').hide();" update=":messagePanel" 
-                             rendered="#{fileMetadataForAction == null}"  action="#{bean[restrictSelectedFileAction](true)}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('accessPopup').hide();" update=":messagePanel" 
+                             action="#{bean[restrictFileAction](true)}"/>
             <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
                 #{bundle.cancel}
             </button>
@@ -49,10 +58,8 @@
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}1" onclick="PF('deleteFileConfirmation').hide()" 
-                             rendered="#{fileMetadataForAction != null}" action="#{bean[deleteFileAction]}"/>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}2" onclick="PF('deleteFileConfirmation').hide()" 
-                             rendered="#{fileMetadataForAction == null}"  action="#{bean[deleteSelectedFileAction]}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
+                             action="#{bean[deleteFileAction]}"/>
             <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
                 #{bundle.cancel}
             </button>

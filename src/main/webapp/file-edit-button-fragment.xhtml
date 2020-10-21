@@ -9,7 +9,30 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
+    xmlns:of="http://omnifaces.org/functions"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    
+    <ui:remove>
+    <!--
+    If you include this fragment, you must also include file-edit-popup-fragment.xhtml
+    
+    This can be used for a single, specific file (passing "fileMetadata") or a group of selected files.
+    
+    Parameters:        
+    fileMetadata - for single file, the fileMetadata object of that file
+    fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected file)
+    hasPackageFile - whether the file or group of files is / has a package file (for SBGrid use case)
+    isDraftReplacementFile - for single file, if the file is a draft and already replacing a past file 
+    configureTools - for single file, list of configureTools for the file
+    bean - the named value of the backing bean for the below method(s), also used by isFilePg param
+    unrestrictFileAction - name of the method on the above bean to call for unrestrict (method must take a boolean)    
+    editFileAction - for selected files, name of method on the above bean to send for edit metadata
+    refreshTagsPopoupAction - for selected files, name of method on the above bean to refresh tags popup
+    -->            
+    </ui:remove>
+    
+    <ui:param name="isFilePg" value="#{of:isInstance('edu.harvard.iq.dataverse.FilePage', bean)}"/>
+
 
     <!-- Edit Options -->
     <li>
@@ -90,7 +113,7 @@
     </ui:fragment>     
 
 
-    <ui:fragment rendered="#{!fileMetadata.dataFile.released or hasPackageFile}"> 
+    <ui:fragment rendered="#{!fileMetadata.dataFile.released or !hasPackageFile}"> 
         <li>
             <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
                            onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForDelete()))

@@ -3293,6 +3293,13 @@ public class DatasetPage implements java.io.Serializable {
         }        
     }
     
+    public String restrictFiles(boolean restricted) throws CommandException{
+        if (fileMetadataForAction != null) {
+            return restrictFile(restricted);
+        }
+        return restrictSelectedFiles(restricted);
+    }
+    
         
     public String restrictSelectedFiles(boolean restricted) throws CommandException{
         
@@ -3371,6 +3378,13 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
+
+    public String deleteFiles() throws CommandException{
+        if (fileMetadataForAction != null) {
+            return deleteFile();
+        }
+        return deleteSelectedFiles();
+    }
     
     public String  deleteSelectedFiles(){
         bulkFileDeleteInProgress = true;

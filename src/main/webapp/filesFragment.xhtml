@@ -468,11 +468,10 @@
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <ui:include src="file-edit-button-fragment.xhtml">
-                            <ui:param name="isFilePg" value="false"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="hasPackageFile" value="#{DatasetPage.workingVersion.hasPackageFile and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"/>  
                             <ui:param name="bean" value="#{DatasetPage}"/>
-                            <ui:param name="restrictFileAction" value="restrictSelectedFiles"/>
+                            <ui:param name="unrestrictFileAction" value="restrictFiles"/>
                             <ui:param name="editFileAction" value="editFileMetadata"/>
                             <ui:param name="refreshTagsPopoupAction" value="refreshTagsPopUp"/>                          
                         </ui:include>  
@@ -645,14 +644,13 @@
                             <!-- TO-DO NEW FILE-LEVEL EDIT OPTIONS... RENDER LOGIC, LINKS, DISABLED LOGIC -->
                             <!-- Edit Options -->
                             <ui:include src="file-edit-button-fragment.xhtml">
-                                <ui:param name="isFilePg" value="false"/>
                                 <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                 <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                                 <ui:param name="isDraftReplacementFile" value="#{false}"/>
                                 <ui:param name="hasPackageFile" value="#{fileMetadata.dataFile.filePackage}"/>                                
                                 <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
                                 <ui:param name="bean" value="#{DatasetPage}"/>
-                                <ui:param name="restrictFileAction" value="restrictFile"/>
+                                <ui:param name="unrestrictFileAction" value="restrictFiles"/>
                             </ui:include>
                         </ul>
                     </div>
