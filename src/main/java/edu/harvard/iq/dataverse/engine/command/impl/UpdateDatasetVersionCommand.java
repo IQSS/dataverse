@@ -177,8 +177,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     theDataset.getFiles().remove(fmd.getDataFile());
                     
                 } else {
-                    //just need to remove latest metadata
-                    fmd.getDataFile().getFileMetadatas().remove(fmd);
+                    //just need to remove latest metadata if the file is in a draft dataset
+                    if(theDataset.getEditVersion().getFileMetadatas().contains(fmd)) {
+                        logger.fine("datafile : " + fmd.getDataFile().getId() + " found in draft dataset");
+                        fmd.getDataFile().getFileMetadatas().remove(fmd);
+                    }
                 }
                 //and in both cases, remove from the dataset and categories lists
                 theDataset.getEditVersion().getFileMetadatas().remove(fmd);
