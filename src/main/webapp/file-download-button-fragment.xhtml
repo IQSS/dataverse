@@ -60,7 +60,7 @@
                     <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                     #{bundle.download}
                 </p:commandLink>
-                <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired)
+                <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData)
                               and fileMetadata.dataFile.fileGlobus and systemConfig.globusUpload}"
                                styleClass="btn btn-default btn-download" process="@this"
                                disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
