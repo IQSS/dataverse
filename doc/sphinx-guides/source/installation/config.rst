@@ -776,6 +776,8 @@ For Google Analytics, the example script at :download:`analytics-code.html </_st
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
 
+.. _BagIt Export:
+
 BagIt Export
 ------------
 
@@ -783,7 +785,7 @@ Dataverse may be configured to submit a copy of published Datasets, packaged as 
 
 Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
 .. _Duracloud Configuration:
 
@@ -831,9 +833,40 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+.. _Google Cloud Configuration:
+
+Google Cloud Configuration
+++++++++++++++++++++++++++
+
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+
+The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+
+In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
+
+\:GoogleCloudBucket - the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudBucket -X PUT -d "qdr-archive"``
+
+\:GoogleCloudProject - the name of the project managing the bucket. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
+
+The Google Cloud Archiver also requires a key file that must be renamed to 'googlecloudkey.json' and placed in the directory identified by your 'dataverse.files.directory' jvm option. This file can be created in the Google Cloud Console. (One method: Navigate to your Project 'Settings'/'Service Accounts', create an account, give this account the 'Cloud Storage'/'Storage Admin' role, and once it's created, use the 'Actions' menu to 'Create Key', selecting the 'JSON' format option. Use this as the 'googlecloudkey.json' file.)
+
+For example:
+
+``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
+
+.. _Archiving API Call:
 
 API Call
 ++++++++
@@ -2124,3 +2157,40 @@ To enable redirects to the zipper installed on the same server as the main Datav
 To enable redirects to the zipper on a different server: 
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+
+:ArchiverClassName
+++++++++++++++++++
+
+Dataverse can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+
+``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+ 
+:ArchiverSettings
++++++++++++++++++
+
+Each Archiver class may have its own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-separated list of setting names.
+For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
+
+``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+
+:DuraCloudHost
+++++++++++++++
+:DuraCloudPort
+++++++++++++++
+:DuraCloudContext
++++++++++++++++++
+
+These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration` section above.
+
+:BagItLocalPath
++++++++++++++++
+
+This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
+
+:GoogleCloudBucket
+++++++++++++++++++ 
+:GoogleCloudProject
++++++++++++++++++++
+
+These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
