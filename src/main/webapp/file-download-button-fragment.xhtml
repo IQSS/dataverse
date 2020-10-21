@@ -223,7 +223,7 @@
             <!-- no guest book/terms of use/etc. - straight to the download API url: -->
             <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
         </p:commandLink>
-            <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired)
+            <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData)
                               and fileMetadata.dataFile.fileGlobus and systemConfig.globusUpload}"
                            styleClass="btn btn-default btn-download" process="@this"
                            disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
