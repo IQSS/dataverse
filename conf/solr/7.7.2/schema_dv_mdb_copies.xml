@@ -133,9 +133,13 @@
     <copyField source="studyAssayOtherMeasurmentType" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayOtherOrganism" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayPlatform" dest="_text_" maxChars="3000"/>
+    <copyField source="studyAssayOtherPlatform" dest="_text_" maxChars="3000"/>
     <copyField source="studyAssayTechnologyType" dest="_text_" maxChars="3000"/>
+    <copyField source="studyAssayOtherTechnologyType" dest="_text_" maxChars="3000"/>
     <copyField source="studyDesignType" dest="_text_" maxChars="3000"/>
+    <copyField source="studyOtherDesignType" dest="_text_" maxChars="3000"/>
     <copyField source="studyFactorType" dest="_text_" maxChars="3000"/>
+    <copyField source="studyOtherFactorType" dest="_text_" maxChars="3000"/>
     <copyField source="subject" dest="_text_" maxChars="3000"/>
     <copyField source="subtitle" dest="_text_" maxChars="3000"/>
     <copyField source="targetSampleActualSize" dest="_text_" maxChars="3000"/>
