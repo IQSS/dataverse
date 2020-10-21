@@ -1178,6 +1178,12 @@ public class UtilIT {
                 .get("/api/admin/authenticatedUsers/" + userIdentifier);
         return response;
     }
+    
+    static Response getAuthenticatedUserByToken(String apiToken) {
+        Response response = given()
+                .get("/api/admin/authenticatedUsers/token/" + apiToken);
+        return response;
+    }
 
     /**
      * Used to the test the filter Authenticated Users API endpoint
