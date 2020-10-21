@@ -169,7 +169,13 @@ public class MakeDataCountApi extends AbstractApiBean {
             } while (nextPage == true);
             JsonArray allData = dataBuilder.build();
             List<DatasetExternalCitations> datasetExternalCitations = datasetExternalCitationsService.parseCitations(allData);
-
+            /*
+             * ToDo: If this is the only source of citations, we should remove all the existing ones for the dataset and repopuate them.
+             * As is, this call doesn't remove old citations if there are now none (legacy issue if we decide to stop counting certain types of citation
+             * as we've done for 'hasPart').
+             * If there are some, this call individually checks each one and if a matching item exists, it removes it and adds it back. Faster and better to delete all and
+             * add the new ones.
+             */
             if (!datasetExternalCitations.isEmpty()) {
                 for (DatasetExternalCitations dm : datasetExternalCitations) {
                     datasetExternalCitationsService.save(dm);
