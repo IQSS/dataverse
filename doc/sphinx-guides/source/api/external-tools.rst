@@ -58,7 +58,7 @@ Let's look at two examples of external tool manifests (one at the file level and
 External Tools for Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level explore tool that operates on tabular files:
+:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
@@ -86,12 +86,10 @@ Terminology
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-    type                         Whether the external tool is an **explore** tool, a **preview** tool or a **configure** tool. Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level.
+    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
     
-    hasPreviewMode               A boolean that indicates whether tool has a preview mode which can be embedded in the File Page. Since this view is designed for embedding within Dataverse, the preview mode for a tool will typically be a view without headers or other options that may be included with a tool that is designed to be launched in a new window. 
-
     contentType                  File level tools operate on a specific **file type** (content type or MIME type such as "application/pdf") and this must be specified. Dataset level tools do not use contentType.
 
     toolParameters               **Query parameters** are supported and described below.

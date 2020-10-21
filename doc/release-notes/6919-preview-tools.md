@@ -21,7 +21,9 @@ Newly-supported use cases in this release include:
 
 ### Converting Explore External Tools to Preview Only
 
-Optionally, you can convert existing tools in the `externaltool` database table from type "explore" to "preview". The only known preview tools are the [dataverse-previewers][]. Tools of type "explore" that have `hasPreviewMode` set to true will continue to be displayed in the Preview tab.
+When the war file is deployed, a SQL migration script will convert [dataverse-previewers][] to have both "explore" and "preview" types so that they will continue to be displayed in the Preview tab.
+
+If you would prefer that these tools be preview only, you can delete the tools, adjust the JSON manifests (changing "explore" to "preview"), and re-add them.
 
 [dataverse-previewers]: https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers
 
@@ -29,4 +31,8 @@ Optionally, you can convert existing tools in the `externaltool` database table 
 
 ### Preview Only External Tools
 
-A new external tool type called "preview" has been added that prevents the tool from being displayed under "Explore Options" under the "Access File" button on the file landing page (#6919).
+A new external tool type called "preview" has been added that prevents the tool from being displayed under "Explore Options" under the "Access File" button on the file landing page (#6919). This "preview" type replaces "hasPreviewMode", which has been removed.
+
+### Multiple Types for External Tools
+
+External tools now support multiple types. In practice, the types "explore" and "preview" are the only combination that makes a difference in the UI as opposed to only having only one or the other type (see "preview only" above). Multiple types are specified in the JSON manifest with an array in "types". The older, single "type" is still supported but should be considered deprecated.

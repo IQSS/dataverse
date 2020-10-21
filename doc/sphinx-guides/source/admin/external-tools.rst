@@ -94,8 +94,6 @@ File level preview tools allow the user to see a preview of the file contents wi
 
 When a file has a preview available, a preview icon will appear next to that file in the file listing on the dataset page. On the file page itself, the preview will appear in a Preview tab either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
 
-File level explore tools can also show previews if they have been designed to show a simplified view for embedding in the file page and if the ``hasPreviewMode`` parameter is set to ``true``.
-
 File Level Configure Tools
 ++++++++++++++++++++++++++
 

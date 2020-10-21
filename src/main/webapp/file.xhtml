@@ -437,8 +437,8 @@
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'new-window' : 'equalizer'}"></span> 
-                                            <h:outputFormat value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle['file.previewTab.openBtn'] : bundle['file.previewTab.exploreBtn']}">
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
+                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
@@ -451,8 +451,8 @@
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.getType() == 'PREVIEW' ? 'new-window' : 'equalizer'}"></span> 
-                                            <h:outputFormat value="#{FilePage.selectedTool.getType() == 'PREVIEW' ? bundle['file.previewTab.openBtn'] : bundle['file.previewTab.exploreBtn']}">
+                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
+                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>

@@ -260,7 +260,8 @@ public class FilePage implements java.io.Serializable {
     }
     
     private List<ExternalTool> addMapLayerAndSortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+
         if(!retList.isEmpty()){
             retList.forEach((et) -> {
                 et.setWorldMapTool(false);

@@ -5423,11 +5423,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean isShowPreviewButton(Long fileId) {
         List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
-        for (ExternalTool externalTool : getExploreToolsForDataFile(fileId)) {
-            if (externalTool.getHasPreviewMode()) {
-                previewTools.add(externalTool);
-            }
-        }
         return previewTools.size() > 0;
     }
 

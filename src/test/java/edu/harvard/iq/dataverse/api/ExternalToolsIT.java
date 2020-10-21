@@ -92,7 +92,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "http://awesometool.com");
@@ -109,8 +109,8 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"));
 
         long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
@@ -197,7 +197,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "DatasetTool1");
         job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "dataset");
         job.add("toolUrl", "http://datasettool1.com");
         job.add("toolParameters", Json.createObjectBuilder()
@@ -213,14 +213,14 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"));
 
         Response getExternalToolsByDatasetIdInvalidType = UtilIT.getExternalToolsForDataset(datasetId.toString(), "invalidType", apiToken);
         getExternalToolsByDatasetIdInvalidType.prettyPrint();
         getExternalToolsByDatasetIdInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();
@@ -333,7 +333,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "View Code");
         job.add("description", "");
-        job.add("type", "preview");
+        job.add("types", Json.createArrayBuilder().add("preview"));
         job.add("scope", "file");
         job.add("hasPreviewMode", "true");
         job.add("contentType", "application/x-sh");
@@ -373,7 +373,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "Data Explorer");
         job.add("description", "");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "https://scholarsportal.github.io/Dataverse-Data-Explorer/");
@@ -406,7 +406,10 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "View Data");
         job.add("description", "");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder()
+                .add("preview")
+                .add("explore")
+        );
         job.add("scope", "file");
         job.add("hasPreviewMode", "true");
         job.add("contentType", "text/tab-separated-values");
