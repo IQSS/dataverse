@@ -805,22 +805,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
-    public InputStream getFileAsInputStream(String destinationKey) throws IOException {
-
-        try {
-            GetObjectRequest o = new GetObjectRequest(bucketName, destinationKey);
-            logger.info("Bucket name " + o.getBucketName());
-            S3Object s3object = s3.getObject(o);
-            logger.info("Key " + s3object.getKey());
-            if (s3object != null) {
-                return s3object.getObjectContent();
-            }
-            return null;
-        } catch (AmazonClientException ase) {
-            logger.fine("Caught an AmazonClientException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
-            return null;
-        }
-    }
 
     String getDestinationKey(String auxItemTag) throws IOException {
         if (isDirectAccess() || dvObject instanceof DataFile) {
