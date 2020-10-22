@@ -792,6 +792,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException {
         String destinationKey = getDestinationKey(auxItemTag);
+        logger.info("Destination key " + destinationKey);
         try {
             S3Object s3object = s3.getObject(new GetObjectRequest(bucketName, destinationKey));
             if (s3object != null) {

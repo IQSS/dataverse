@@ -733,7 +733,7 @@ public class GlobusServiceBean implements java.io.Serializable{
                     String fullPath = datasetSIO.getStorageLocation() + "/" + fileName;
                     logger.info("File Path " + fullPath);
                     logger.info("Get storage class " + s3ObjectSummary.getStorageClass());
-                    InputStream in = datasetSIO.getAuxFileAsInputStream(s3ObjectSummary.getETag());
+                    InputStream in = datasetSIO.getAuxFileAsInputStream(filePath);
 
                     String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
                     //String checksumVal = s3ObjectSummary.getETag();
