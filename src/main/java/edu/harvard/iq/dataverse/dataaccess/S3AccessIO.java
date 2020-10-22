@@ -808,7 +808,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public InputStream getFileAsInputStream(String destinationKey) throws IOException {
 
         try {
-            GetObjectRequest o = new GetObjectRequest(bucketName, destinationKey;
+            GetObjectRequest o = new GetObjectRequest(bucketName, destinationKey);
             logger.info("Bucket name " + o.getBucketName());
             S3Object s3object = s3.getObject(o);
             logger.info("Key " + s3object.getKey());
