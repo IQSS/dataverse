@@ -726,7 +726,7 @@ public class GlobusServiceBean implements java.io.Serializable{
                     long totalSize = s3ObjectSummary.getSize();
                     String filePath = s3ObjectKey;
                     logger.info("Storage location " + datasetSIO.getStorageLocation());
-                    String fileName = s3ObjectKey.substring(s3ObjectKey.lastIndexOf("/"));
+                    String fileName = filePath.split("/")[filePath.split("/").length - 1];
                     logger.info("fileName " + fileName);
                     String fullPath = datasetSIO.getStorageLocation() + "/" + fileName;
                     logger.info("File Path " + fullPath);
@@ -749,7 +749,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
                             FileMetadata fmd = new FileMetadata();
 
-                            String fileName = filePath.split("/")[filePath.split("/").length - 1];
+
                             fmd.setLabel(fileName);
                             fmd.setDirectoryLabel(filePath.replace(directory, "").replace(File.separator + fileName, ""));
 
