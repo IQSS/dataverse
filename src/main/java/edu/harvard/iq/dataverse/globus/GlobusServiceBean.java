@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.globus;
 
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
@@ -720,6 +721,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
                 String s3ObjectKey = s3ObjectSummary.getKey();
 
+
                 String t = s3ObjectKey.replace(directory, "");
 
                 if (t.indexOf(".") > 0) {
@@ -730,7 +732,10 @@ public class GlobusServiceBean implements java.io.Serializable{
                     logger.info("fileName " + fileName);
                     String fullPath = datasetSIO.getStorageLocation() + "/" + fileName;
                     logger.info("File Path " + fullPath);
-                    String checksumVal = FileUtil.calculateChecksum(fullPath, DataFile.ChecksumType.MD5);
+                    logger.info("Get storage class " + s3ObjectSummary.getStorageClass());
+                    InputStream in = datasetSIO.getAuxFileAsInputStream(s3ObjectSummary.getETag());
+
+                    String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
                     //String checksumVal = s3ObjectSummary.getETag();
 
                     if ((checksumMapOld.get(checksumVal) != null)) {
