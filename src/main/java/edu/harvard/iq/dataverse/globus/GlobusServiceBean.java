@@ -689,6 +689,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
 
+
             DatasetVersion workingVersion = dataset.getEditVersion();
 
             if (workingVersion.getCreateTime() != null) {
@@ -724,8 +725,9 @@ public class GlobusServiceBean implements java.io.Serializable{
                 if (t.indexOf(".") > 0) {
                     long totalSize = s3ObjectSummary.getSize();
                     String filePath = s3ObjectKey;
-                    logger.info("File Path " + filePath);
-                    String checksumVal = FileUtil.calculateChecksum(filePath, DataFile.ChecksumType.MD5);
+                    String fullPath = dataset.getStorageIdentifier() + filePath;
+                    logger.info("File Path " + fullPath);
+                    String checksumVal = FileUtil.calculateChecksum(fullPath, DataFile.ChecksumType.MD5);
                     //String checksumVal = s3ObjectSummary.getETag();
 
                     if ((checksumMapOld.get(checksumVal) != null)) {
