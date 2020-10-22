@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 
 import edu.harvard.iq.dataverse.authorization.groups.impl.PersistedGlobalGroup;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Transient;
+import javax.validation.constraints.NotEmpty;
 ;
 
 /**
