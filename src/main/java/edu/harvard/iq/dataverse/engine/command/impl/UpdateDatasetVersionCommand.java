@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -165,31 +167,69 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
-            //Merge is required to avoid problems with file deletion
-            //See #5847 for info about why it was removed and see below for a fix for that
-            //theDataset = ctxt.em().merge(theDataset);
+            // Dataset tempDataset = ctxt.em().merge(theDataset);
+            //SEK 5/30/2019
+            // This interim merge is causing:
+            // java.lang.IllegalArgumentException: Cannot merge an entity that has been removed: edu.harvard.iq.dvn.core.study.FileMetadata
+            // at the merge at line 177
+            //Is this merge needed to add the lock?  - seems to be 'no' so what is it needed for?
+            
+            theDataset = ctxt.em().merge(theDataset);
 
             for (FileMetadata fmd : filesToDelete) {
+                logger.fine("Deleting fmd: " + fmd.getId() + " for file: " + fmd.getDataFile().getId());
                 if (!fmd.getDataFile().isReleased()) {
                     // if file is draft (ie. new to this version, delete; otherwise just remove
                     // filemetadata object)
                     ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
                     theDataset.getFiles().remove(fmd.getDataFile());
-                    
+                    theDataset.getEditVersion().getFileMetadatas().remove(fmd);
+                    // added this check to handle issue where you could not delete a file that
+                    // shared a category with a new file
+                    // the relation ship does not seem to cascade, yet somehow it was trying to
+                    // merge the filemetadata
+                    // todo: clean this up some when we clean the create / update dataset methods
+                    for (DataFileCategory cat : theDataset.getCategories()) {
+                        cat.getFileMetadatas().remove(fmd);
+                    }
                 } else {
-                    //just need to remove latest metadata if the file is in a draft dataset
-                    if(theDataset.getEditVersion().getFileMetadatas().contains(fmd)) {
-                        logger.fine("datafile : " + fmd.getDataFile().getId() + " found in draft dataset");
-                        fmd.getDataFile().getFileMetadatas().remove(fmd);
+                    if (fmd.getId() != null) {
+                        if (theDataset.getEditVersion() != fmd.getDatasetVersion()) {
+                            fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getEditVersion());
+                            logger.fine("Now Deleting fmd: " + fmd.getId() + "for file: " + fmd.getDataFile().getId());
+                            logger.fine("Num fmd on file: " + fmd.getDataFile().getFileMetadatas().size());
+                            
+                            ctxt.em().remove(fmd);
+                            FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
+                            logger.fine("2 Num fmd on file: " + fmd.getDataFile().getFileMetadatas().size());
+                            FileMetadataUtil.removeFileMetadataFromList(theDataset.getEditVersion().getFileMetadatas(), fmd);
+                            
+                            for (DataFileCategory cat : theDataset.getCategories()) {
+                                FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
+                            }
+                        } else {
+                            FileMetadata mergedFmd = ctxt.em().merge(fmd);
+                            ctxt.em().remove(mergedFmd);
+                            fmd.getDataFile().getFileMetadatas().remove(mergedFmd);
+                            theDataset.getEditVersion().getFileMetadatas().remove(mergedFmd);
+                            for (DataFileCategory cat : theDataset.getCategories()) {
+                                cat.getFileMetadatas().remove(mergedFmd);
+                            }
+                        }
+                    } else {
+                        ctxt.em().remove(fmd);
+                        FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
+                        FileMetadataUtil.removeFileMetadataFromList(theDataset.getEditVersion().getFileMetadatas(), fmd);
+                        for (DataFileCategory cat : theDataset.getCategories()) {
+                            FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
+                        }
                     }
                 }
-                //and in both cases, remove from the dataset and categories lists
-                theDataset.getEditVersion().getFileMetadatas().remove(fmd);
-                for (DataFileCategory cat : theDataset.getCategories()) {
-                    cat.getFileMetadatas().remove(fmd);
-                }
             }
-
+            for(FileMetadata fmd: theDataset.getEditVersion().getFileMetadatas()) {
+                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
+            }
+            
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
             }

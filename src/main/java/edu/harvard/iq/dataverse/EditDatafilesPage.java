@@ -35,6 +35,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -948,9 +950,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // fileMetadatas list. (but doing both just adds a no-op and won't cause an
                 // error)
                 // 1. delete the filemetadata from the local display list: 
-                removeFileMetadataFromList(fileMetadatas, markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
