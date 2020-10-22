@@ -32,6 +32,8 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     @NotEmpty
     private String emailDomains;
     
+    private boolean isRegEx = false;
+    
     @Transient
     private MailDomainGroupProvider provider;
     
@@ -52,6 +54,13 @@ public class MailDomainGroup extends PersistedGlobalGroup {
     }
     public List<String> getEmailDomainsAsList() {
         return Arrays.asList(this.emailDomains.split(";"));
+    }
+    
+    public boolean isRegEx() {
+        return isRegEx;
+    }
+    public void setIsRegEx(boolean isRegEx) {
+        this.isRegEx = isRegEx;
     }
     
     @Override

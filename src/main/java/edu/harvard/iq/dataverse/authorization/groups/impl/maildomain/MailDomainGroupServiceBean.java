@@ -6,18 +6,21 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import org.ocpsoft.rewrite.config.Not;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.Startup;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.TimerService;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -28,7 +31,8 @@ import javax.ws.rs.NotFoundException;
  * Also containing the business logic to decide about matching groups.
  */
 @Named
-@Stateless
+@Singleton
+@Startup
 public class MailDomainGroupServiceBean {
     
     private static final Logger logger = Logger.getLogger(edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean.class.getName());
@@ -40,12 +44,35 @@ public class MailDomainGroupServiceBean {
     ConfirmEmailServiceBean confirmEmailSvc;
     @Inject
     ActionLogServiceBean actionLogSvc;
+    @Resource
+    TimerService timerSvc;
 	
     MailDomainGroupProvider provider;
+    List<MailDomainGroup> groups = Collections.EMPTY_LIST;
+    Map<MailDomainGroup, Pattern> groupRegexes = new HashMap<>();
     
     @PostConstruct
     void setup() {
         provider = new MailDomainGroupProvider(this);
+        // execute timer every 60 secs, waiting an initial 10 msecs.
+        timerSvc.createTimer(10, 60000, null);
+    }
+    
+    /**
+     * Update the groups from the database (triggered every 60 seconds).
+     * This is done because regex compilation is an expensive operation and should be cached.
+     * Regex compilation happens in the model {@link MailDomainGroup} during deserialization from the DB.
+     */
+    @Timeout
+    public void updateGroups() {
+        this.groups = findAll();
+        
+        this.groupRegexes = this.groups.stream()
+            .filter(MailDomainGroup::isRegEx)
+            .collect(Collectors.toMap(
+                mg -> mg,
+                mg -> Pattern.compile(mg.getEmailDomains().replace(";","|"))
+            ));
     }
     
     public MailDomainGroupProvider getProvider() {
@@ -69,12 +96,15 @@ public class MailDomainGroupServiceBean {
             // transform to lowercase, in case someone uses uppercase letters. (we store the comparison values in lowercase)
             String domain = oDomain.get().toLowerCase();
             
-            // get all groups and filter
-            List<MailDomainGroup> rs = em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
-    
-            return rs.stream()
-                .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
-                .collect(Collectors.toSet());
+            Set<MailDomainGroup> result = this.groups.stream()
+                                                     .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
+                                                     .collect(Collectors.toSet());
+            result.addAll(this.groups.stream()
+                                     .filter(MailDomainGroup::isRegEx)
+                                     .filter(mg -> groupRegexes.get(mg).matcher(domain).matches())
+                                     .collect(Collectors.toSet()));
+            return result;
+            
         }
         return Collections.emptySet();
     }

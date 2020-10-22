@@ -44,7 +44,7 @@ class MailDomainGroupServiceBeanTest {
         MailDomainGroup test = MailDomainGroupTest.genGroup();
         test.setEmailDomains("foobar.com");
         db.add(test);
-        mockQuery("MailDomainGroup.findAll", db);
+        svc.groups = db;
         
         AuthenticatedUser u = new AuthenticatedUser();
         u.setEmail("test@foobar.com");
