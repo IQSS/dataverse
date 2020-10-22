@@ -21,6 +21,7 @@ import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
 import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.collection.IsMapContaining;
@@ -171,7 +172,7 @@ public class AccessIT {
     
 
     @Test
-    public void testSaveAuxiliaryFileWithVersion() {
+    public void testSaveAuxiliaryFileWithVersion() throws IOException {
         System.out.println("Add aux file with update");
         String mimeType = null;
         String pathToFile = "scripts/search/data/tabular/1char";
@@ -181,6 +182,14 @@ public class AccessIT {
                 .post("/api/access/datafile/" + tabFile1Id + "/metadata/dpJSON/v1");
         response.prettyPrint();
         assertEquals(200, response.getStatusCode());
+        System.out.println("Downloading Aux file that was just added");
+        response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + tabFile1Id + "/metadata/dpJSON/v1");
+        
+        String dataStr = response.prettyPrint();
+        assertEquals(dataStr,"a\n");
+        assertEquals(200, response.getStatusCode());       
       }
     
     //This test does a lot of testing of non-original downloads as well

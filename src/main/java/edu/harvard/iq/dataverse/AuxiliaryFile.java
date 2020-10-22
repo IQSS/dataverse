@@ -41,6 +41,8 @@ public class AuxiliaryFile implements Serializable {
     private String contentType; 
     
     private Long fileSize; 
+    
+    private String checksum;
 
     public Long getId() {
         return id;
@@ -91,9 +93,7 @@ public class AuxiliaryFile implements Serializable {
     }
     
     public String getContentType() {
-        // TODO: hard-coded for testing: 
-        return "application/json";
-        //return contentType;
+        return this.contentType;
     }
 
     public void setContentType(String contentType) {
@@ -107,4 +107,14 @@ public class AuxiliaryFile implements Serializable {
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+    
+    
 }

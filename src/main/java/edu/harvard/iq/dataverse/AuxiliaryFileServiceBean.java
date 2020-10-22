@@ -2,14 +2,18 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.apache.tika.Tika;
 
 /**
  *
@@ -23,6 +27,10 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    @EJB
+    private SystemConfig systemConfig;
+    
 
     public AuxiliaryFile find(Object pk) {
         return em.find(AuxiliaryFile.class, pk);
@@ -58,15 +66,17 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
             AuxiliaryFile auxFile = new AuxiliaryFile();
+            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
+            auxFile.setChecksum(FileUtil.calculateChecksum(storageIO.getAuxFileAsInputStream(auxExtension), systemConfig.getFileFixityChecksumAlgorithm()));
+
+            Tika tika = new Tika();
+            auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
             auxFile.setFormatTag(formatTag);
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
-            auxFile.setDataFile(dataFile);
-            // TODO: mime type!
-            //auxFile.setContentType(mimeType);
+            auxFile.setDataFile(dataFile);         
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             save(auxFile);
         } catch (IOException ioex) {
