@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
@@ -235,13 +236,13 @@ public class MailMessageCreatorTest {
     }
 
     private String getAssignRoleMessage(String role, String dvObjectType) {
-        return "Hello, \n" +
+        return "Hello, \n\n" +
                 "You are now " + role + " for the " + dvObjectType +
                 " \"" + testDataverse.getDisplayName() + "\" (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias() + ").";
     }
 
     private String getCreateDataverseMessage() {
-        return "Hello, \n" +
+        return "Hello, \n\n" +
                 "Your new dataverse named " + testDataverse.getDisplayName() + " (view at " + SITEURL + "/dataverse/" + testDataverse.getAlias()
                 + ") was created in  (view at )." +
                 " To learn more about what you can do with your dataverse, check out the Dataverse Management" +
@@ -249,7 +250,7 @@ public class MailMessageCreatorTest {
     }
 
     private String getPolishCreateDataverseMessage() {
-        return  "Witaj, \n" +
+        return  "Witaj, \n\n" +
                 "Twoja nowa kolekcja o nazwie " + testDataverse.getDisplayName() + " (zobacz na stronie " + SITEURL +"/dataverse/"+ testDataverse.getAlias()+ ") została utworzona" +
                 " w  (zobacz na stronie ). Aby dowiedzieć się więcej, co można zrobić z kolekcją, zapoznaj się z" +
                 " rozdziałem Zarządzanie kolekcją w Poradniku użytkownika" +
@@ -257,15 +258,15 @@ public class MailMessageCreatorTest {
     }
 
     private String getReturnToAuthorMessage() {
-        return "Hello, \n"
-                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was returned by the curator "
+        return "Hello, \n\n"
+                + "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was returned by the curator "
                 + "of rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse).\n\n"
                 + "Additional information:\n\nDataset returned to author message";
     }
 
     private String getSubmitForReviewMessage() {
-        return "Hello, \n"
-                + " (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in "
+        return "Hello, \n\n"
+                + "TheTitle (view at http://localhost:8080/dataset.xhtml?persistentId=&version=DRAFT) was submitted for review to be published in "
                 + "rootDataverseName (view at http://localhost:8080/dataverse/nicedataverse). "
                 + "Don't forget to publish it or send it back to the contributor, Notifcation Requester (Notifcation.Requester@someU.edu)!\n\n"
                 + "Additional information:\n\nContributors message for curator";
@@ -376,13 +377,14 @@ public class MailMessageCreatorTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
 
         DatasetFieldType datasetFieldType = new DatasetFieldType();
-        datasetFieldType.setTitle("TheTitle");
-        datasetFieldType.setChildDatasetFieldTypes(Collections.EMPTY_LIST);
+        datasetFieldType.setName(DatasetFieldConstant.title);
+        datasetFieldType.setChildDatasetFieldTypes(Collections.emptyList());
 
 
         DatasetField datasetField = DatasetField.createNewEmptyDatasetField(datasetFieldType, datasetVersion);
+        datasetField.setValue("TheTitle");
 
-        datasetVersion.setDatasetFields(Lists.newArrayList());
+        datasetVersion.setDatasetFields(Lists.newArrayList(datasetField));
         datasetVersion.setDataset(dataset);
         dataset.setVersions(Lists.newArrayList(datasetVersion));
 

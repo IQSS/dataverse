@@ -254,7 +254,7 @@ public class ConfirmEmailServiceBean {
         String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires), user.getNotificationsLanguage());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
 
-        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundle("notification.email.welcomeConfirmEmailAddOn", user.getNotificationsLanguage(), confirmEmailUrl, expTime);
+        String optionalConfirmEmailMsg = BundleUtil.getStringFromBundleWithLocale("notification.email.welcomeConfirmEmailAddOn", user.getNotificationsLanguage(), confirmEmailUrl, expTime);
         return optionalConfirmEmailMsg;
     }
 
