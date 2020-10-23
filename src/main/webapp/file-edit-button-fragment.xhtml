@@ -21,7 +21,6 @@
     Parameters:        
     fileMetadata - for single file, the fileMetadata object of that file
     fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected file)
-    hasPackageFile - whether the file or group of files is / has a package file (for SBGrid use case)
     isDraftReplacementFile - for single file, if the file is a draft and already replacing a past file 
     configureTools - for single file, list of configureTools for the file
     bean - the named value of the backing bean for the below method(s), also used by isFilePg param
@@ -44,7 +43,7 @@
         </p:commandLink>
     </li>
 
-    <ui:fragment rendered="#{!settingsWrapper.publicInstall or !hasPackageFile}">
+    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
                 <p:commandLink  update="@([id$=accessPopup])" 
@@ -69,8 +68,8 @@
         </ui:fragment>   
     </ui:fragment>
 
-    <!-- TO-DO ADD REPLACE FOR SINGLE FILE-->      
-    <ui:fragment rendered="#{isFilePg and !hasPackageFile}">
+    <!-- TO-DO #7342 - ADD REPLACE FOR SINGLE FILE-->      
+    <ui:fragment rendered="#{isFilePg}">
         <ui:fragment rendered="#{fileMetadata.dataFile.released and !isDraftReplacementFile}">                                        
             <li><!-- start: replace file link -->
                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
@@ -87,7 +86,7 @@
         </ui:fragment>
     </ui:fragment>
 
-    <!-- TO-DO #3488 ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
+    <!-- TO-DO #3488 - ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
     <ui:fragment rendered="#{fileMetadata==null}">    
         <li>
             <p:commandLink      update="@([id$=fileTagsPopup])" 
@@ -100,7 +99,7 @@
         </li>  
     </ui:fragment> 
 
-    <!-- TO-DO ADD PROVENANCE FOR SINGLE FILE-->    
+    <!-- TO-DO #7342 - ADD PROVENANCE FOR SINGLE FILE-->    
     <ui:fragment rendered="#{isFilePg and systemConfig.provCollectionEnabled}">
         <li>
             <p:commandLink
@@ -112,18 +111,15 @@
         </li> 
     </ui:fragment>     
 
-
-    <ui:fragment rendered="#{!fileMetadata.dataFile.released or !hasPackageFile}"> 
-        <li>
-            <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
-                           onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForDelete()))
-                                       return false;" 
-                           oncomplete="PF('deleteFileConfirmation').show();">
-                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />                
-                <h:outputText value= "#{bundle['file.delete']}"/>
-            </p:commandLink>
-        </li>
-    </ui:fragment>
+    <li>
+        <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
+                       onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForDelete()))
+                                   return false;" 
+                       oncomplete="PF('deleteFileConfirmation').show();">
+            <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />                
+            <h:outputText value= "#{bundle['file.delete']}"/>
+        </p:commandLink>
+    </li>
 
 
     <!---Modular configure-->

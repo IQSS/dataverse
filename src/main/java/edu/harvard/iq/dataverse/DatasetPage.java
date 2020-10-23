@@ -3300,10 +3300,13 @@ public class DatasetPage implements java.io.Serializable {
         return restrictSelectedFiles(restricted);
     }
     
-        
-    public String restrictSelectedFiles(boolean restricted) throws CommandException{
-        
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
+    private String restrictFile(boolean restricted) throws CommandException {
+        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
+        save();        
+        return  returnToDraftVersion(); 
+    };    
+       
+    private String restrictSelectedFiles(boolean restricted) throws CommandException{        
         if (selectedFiles.isEmpty()) {
             if (restricted) {
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
@@ -3338,17 +3341,9 @@ public class DatasetPage implements java.io.Serializable {
         }
         
         save();
-        
         return  returnToDraftVersion();
     }
     
-    public String restrictFile(boolean restricted) throws CommandException {
-        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
-        save();        
-        return  returnToDraftVersion(); 
-    };    
-
-
     private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
         Command<Void> cmd;
         previouslyRestrictedFiles = new ArrayList<>();
@@ -3386,19 +3381,19 @@ public class DatasetPage implements java.io.Serializable {
         return deleteSelectedFiles();
     }
     
-    public String  deleteSelectedFiles(){
+    private String  deleteFile(){
+        deleteFiles(Collections.singletonList(fileMetadataForAction));
+        return save();       
+    }     
+    
+    private String  deleteSelectedFiles(){
         bulkFileDeleteInProgress = true;
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
         }
         deleteFiles(selectedFiles);
         return save();       
-    }
-    
-    public String  deleteFile(){
-        deleteFiles(Collections.singletonList(fileMetadataForAction));
-        return save();       
-    }    
+    }   
     
     private void deleteFiles(List<FileMetadata> filesToDelete) {
 

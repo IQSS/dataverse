@@ -469,7 +469,6 @@
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <ui:include src="file-edit-button-fragment.xhtml">
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                            <ui:param name="hasPackageFile" value="#{DatasetPage.workingVersion.hasPackageFile and !DatasetPage.workingVersion.getDataset().getStorageIdentifier().startsWith('s3://')}"/>  
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
                             <ui:param name="editFileAction" value="editFileMetadata"/>
