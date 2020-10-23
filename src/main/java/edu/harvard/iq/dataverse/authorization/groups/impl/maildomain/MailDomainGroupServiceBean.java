@@ -25,6 +25,7 @@ import javax.ws.rs.NotFoundException;
 @Named
 @Singleton
 @Startup
+@DependsOn("StartupFlywayMigrator")
 public class MailDomainGroupServiceBean {
     
     private static final Logger logger = Logger.getLogger(edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean.class.getName());
