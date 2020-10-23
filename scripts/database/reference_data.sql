@@ -26,19 +26,6 @@ INSERT INTO guestbook(
     VALUES (  false, true, false, now(),
             'Default', false, false, null);
 
--- TODO: Remove if http://stackoverflow.com/questions/25743191/how-to-add-a-case-insensitive-jpa-unique-constraint
--- gets an answer. See also https://github.com/IQSS/dataverse/issues/2598#issuecomment-158219334
-CREATE UNIQUE INDEX dataverse_alias_unique_idx on dataverse (LOWER(alias));
-CREATE UNIQUE INDEX index_authenticateduser_lower_email ON authenticateduser (lower(email));
--- CREATE UNIQUE INDEX index_authenticateduser_lower_useridentifier ON authenticateduser (lower(useridentifier));
--- this field has been removed from builtinuser; CREATE UNIQUE INDEX index_builtinuser_lower_email ON builtinuser (lower(email));
-
---Edit Dataset: Investigate and correct multiple draft issue: https://github.com/IQSS/dataverse/issues/2132
---This unique index will prevent the multiple draft issue
-CREATE UNIQUE INDEX one_draft_version_per_dataset ON datasetversion
-(dataset_id) WHERE versionstate='DRAFT';
-
-
 INSERT INTO worldmapauth_tokentype
 (   name,
     created,
