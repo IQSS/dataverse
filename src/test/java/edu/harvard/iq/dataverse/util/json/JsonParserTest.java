@@ -548,6 +548,20 @@ public class JsonParserTest {
         assertEquals(test.hashCode(), parsed.hashCode());
     }
     
+    @Test
+    public void testValidRegexMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genRegexGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
     @Test(expected = JsonParseException.class)
     public void testMailDomainGroupMissingName() throws JsonParseException {
         // given
@@ -562,6 +576,15 @@ public class JsonParserTest {
         // given
         String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
         JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupNotEnabledRegexDomains() throws JsonParseException {
+        // given
+        String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
+        JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
         // when && then
         MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
     }
