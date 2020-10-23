@@ -728,18 +728,16 @@ public class GlobusServiceBean implements java.io.Serializable{
                 if (t.indexOf(".") > 0) {
                     long totalSize = s3ObjectSummary.getSize();
                     String filePath = s3ObjectKey;
-                    logger.info("Storage location " + datasetSIO.getStorageLocation());
                     String fileName = filePath.split("/")[filePath.split("/").length - 1];
-                    logger.info("fileName " + fileName);
                     String fullPath = datasetSIO.getStorageLocation() + "/" + fileName;
 
-                    logger.info("Key " + s3ObjectKey);
+                    logger.info("Full path " + fullPath);
                     StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
                     InputStream in = dataFileStorageIO.getInputStream();
 
                     String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
                     //String checksumVal = s3ObjectSummary.getETag();
-
+                    logger.info("The checksum is " + checksumVal);
                     if ((checksumMapOld.get(checksumVal) != null)) {
                         logger.info("datasetId :" + dataset.getId() + "======= filename ==== " + filePath + " == file already exists ");
                     } else if (filePath.contains("cached") || filePath.contains(".thumb")) {

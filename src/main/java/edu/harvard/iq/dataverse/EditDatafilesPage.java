@@ -3168,6 +3168,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         logger.info(httpString);
+        logger.info("Moving to Dataset page");
         PrimeFaces.current().executeScript(httpString);
     }
 }
