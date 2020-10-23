@@ -14,10 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.Startup;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.TimerService;
+import javax.ejb.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -44,8 +41,6 @@ public class MailDomainGroupServiceBean {
     ConfirmEmailServiceBean confirmEmailSvc;
     @Inject
     ActionLogServiceBean actionLogSvc;
-    @Resource
-    TimerService timerSvc;
 	
     MailDomainGroupProvider provider;
     List<MailDomainGroup> simpleGroups = Collections.EMPTY_LIST;
@@ -61,6 +56,7 @@ public class MailDomainGroupServiceBean {
      * Update the groups from the database.
      * This is done because regex compilation is an expensive operation and should be cached.
      */
+    @Lock(LockType.WRITE)
     public void updateGroups() {
         List<MailDomainGroup> all = findAll();
         this.simpleGroups = all.stream().filter(mg -> !mg.isRegEx()).collect(Collectors.toList());
@@ -72,6 +68,7 @@ public class MailDomainGroupServiceBean {
             ));
     }
     
+    @Lock(LockType.READ)
     public MailDomainGroupProvider getProvider() {
         return provider;
     }
@@ -81,6 +78,7 @@ public class MailDomainGroupServiceBean {
      * @param user
      * @return A collection of groups with matching email domains
      */
+    @Lock(LockType.READ)
     public Set<MailDomainGroup> findAllWithDomain(AuthenticatedUser user) {
         
         // if the mail address is not verified, escape...
@@ -112,6 +110,7 @@ public class MailDomainGroupServiceBean {
      * Get all mail domain groups from the database.
      * @return A result list from the database. May be null if no results found.
      */
+    @Lock(LockType.READ)
     public List<MailDomainGroup> findAll() {
         return em.createNamedQuery("MailDomainGroup.findAll", MailDomainGroup.class).getResultList();
     }
@@ -121,6 +120,7 @@ public class MailDomainGroupServiceBean {
      * @param groupAlias
      * @return
      */
+    @Lock(LockType.READ)
     Optional<MailDomainGroup> findByAlias(String groupAlias) {
         try  {
             return Optional.of(
@@ -141,6 +141,7 @@ public class MailDomainGroupServiceBean {
      * @return The saved entity, including updated group provider attribute
      * @throws NotFoundException if groupName does not match both a group in database and the alias of the provided group
      */
+    @Lock(LockType.WRITE)
     public MailDomainGroup saveOrUpdate(Optional<String> groupAlias, MailDomainGroup grp ) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainCreate");
         alr.setInfo(grp.getIdentifier());
@@ -178,6 +179,7 @@ public class MailDomainGroupServiceBean {
      * @param groupAlias
      * @throws NotFoundException if no group with given groupAlias exists.
      */
+    @Lock(LockType.WRITE)
     public void delete(String groupAlias) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "mailDomainDelete");
         alr.setInfo(groupAlias);
