@@ -371,7 +371,7 @@ Amazon S3 Storage (or Compatible)
 
 Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse.
 
-The Dataverse S3 driver supports multipart upload for files over 4 GB.
+The Dataverse S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
@@ -516,6 +516,9 @@ By default, your store will use the [default] profile in you .aws configuration 
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.profile=<profilename>"``
 
+Larger installations may want to increase the number of open S3 connections allowed (default is 256): For example, 
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
@@ -526,21 +529,23 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-===========================================  ==================  ==================================================================  =============
-JVM Option                                   Value               Description                                                         Default value
-===========================================  ==================  ==================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-===========================================  ==================  ==================================================================  =============
+===========================================  ==================  =========================================================================  =============
+JVM Option                                   Value               Description                                                                Default value
+===========================================  ==================  =========================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                 ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                         ``false``
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.         ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                 (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.            60
+dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
+dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                    ``256``
+===========================================  ==================  =========================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -765,11 +770,13 @@ Tracking Button Clicks
 
 The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
 
-Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
+Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+.. _BagIt Export:
 
 BagIt Export
 ------------
@@ -778,7 +785,7 @@ Dataverse may be configured to submit a copy of published Datasets, packaged as 
 
 Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
 .. _Duracloud Configuration:
 
@@ -826,9 +833,40 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+.. _Google Cloud Configuration:
+
+Google Cloud Configuration
+++++++++++++++++++++++++++
+
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+
+The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+
+In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
+
+\:GoogleCloudBucket - the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudBucket -X PUT -d "qdr-archive"``
+
+\:GoogleCloudProject - the name of the project managing the bucket. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
+
+The Google Cloud Archiver also requires a key file that must be renamed to 'googlecloudkey.json' and placed in the directory identified by your 'dataverse.files.directory' jvm option. This file can be created in the Google Cloud Console. (One method: Navigate to your Project 'Settings'/'Service Accounts', create an account, give this account the 'Cloud Storage'/'Storage Admin' role, and once it's created, use the 'Actions' menu to 'Create Key', selecting the 'JSON' format option. Use this as the 'googlecloudkey.json' file.)
+
+For example:
+
+``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
+
+.. _Archiving API Call:
 
 API Call
 ++++++++
@@ -1621,7 +1659,7 @@ You can override this global setting on a per-format basis for the following for
 - CSV
 - XLSX
 
-For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger that 1 MB, use this setting:
+For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
 
@@ -2119,3 +2157,40 @@ To enable redirects to the zipper installed on the same server as the main Datav
 To enable redirects to the zipper on a different server: 
 
 ``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+
+:ArchiverClassName
+++++++++++++++++++
+
+Dataverse can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+
+``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+ 
+:ArchiverSettings
++++++++++++++++++
+
+Each Archiver class may have its own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-separated list of setting names.
+For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
+
+``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+
+:DuraCloudHost
+++++++++++++++
+:DuraCloudPort
+++++++++++++++
+:DuraCloudContext
++++++++++++++++++
+
+These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration` section above.
+
+:BagItLocalPath
++++++++++++++++
+
+This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
+
+:GoogleCloudBucket
+++++++++++++++++++ 
+:GoogleCloudProject
++++++++++++++++++++
+
+These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.

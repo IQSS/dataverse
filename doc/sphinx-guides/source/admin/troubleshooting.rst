@@ -43,6 +43,26 @@ A User Needs Their Account to Be Converted From Institutional (Shibboleth), ORCI
 
 See :ref:`converting-shibboleth-users-to-local` and :ref:`converting-oauth-users-to-local`.
 
+.. _troubleshooting-ingest:
+
+Ingest
+------
+
+Long-Running Ingest Jobs Have Exhausted System Resources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ingest is both CPU- and memory-intensive, and depending on your system resources and the size and format of tabular data files uploaded, may render Dataverse unresponsive or nearly inoperable. It is possible to cancel these jobs by purging the ingest queue.
+
+``/usr/local/payara5/mq/bin/imqcmd -u admin query dst -t q -n DataverseIngest`` will query the DataverseIngest destination. The password, unless you have changed it, matches the username.
+
+``/usr/local/payara5/mq/bin/imqcmd -u admin purge dst -t q -n DataverseIngest`` will purge the DataverseIngest queue, and prompt for your confirmation.
+
+Finally, list destinations to verify that the purge was successful::
+
+``/usr/local/payara5/mq/bin/imqcmd -u admin list dst``
+
+If you are still running Glassfish, substitute glassfish4 for payara5 above. If you have installed Dataverse in some other location, adjust the above paths accordingly.
+
 .. _troubleshooting-payara:
 
 Payara
