@@ -28,7 +28,7 @@ def runAsadminScript(config):
    os.environ['DOI_BASEURL'] = config.get('doi','DOI_BASEURL')
    os.environ['DOI_USERNAME'] = config.get('doi','DOI_USERNAME')
    os.environ['DOI_PASSWORD'] = config.get('doi','DOI_PASSWORD')
-   os.environ['DOI_MDCBASEURL'] = config.get('doi','DOI_MDCBASEURL')
+   os.environ['DOI_DATACITERESTAPIURL'] = config.get('doi','DOI_DATACITERESTAPIURL')
 
    mailServerEntry = config.get('system','MAIL_SERVER')
 

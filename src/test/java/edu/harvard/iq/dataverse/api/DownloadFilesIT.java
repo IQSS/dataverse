@@ -93,8 +93,7 @@ public class DownloadFilesIT {
         downloadFiles2.prettyPrint();
         downloadFiles2.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo("User :guest is not permitted to perform requested action."));
+                .body("status", equalTo("ERROR"));
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
                 .then().assertThat().statusCode(OK.getStatusCode());
@@ -200,16 +199,14 @@ public class DownloadFilesIT {
         downloadFiles10.prettyPrint();
         downloadFiles10.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo("User :guest is not permitted to perform requested action."));
+                .body("status", equalTo("ERROR"));
 
         // Users are told about bad API tokens.
         Response downloadFiles11 = UtilIT.downloadFiles(datasetPid, "junkToken");
         downloadFiles11.prettyPrint();
         downloadFiles11.then().assertThat()
                 .statusCode(UNAUTHORIZED.getStatusCode())
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo("Bad api key "));
+                .body("status", equalTo("ERROR"));
 
     }
 
@@ -283,8 +280,7 @@ public class DownloadFilesIT {
         downloadFiles3.prettyPrint();
         downloadFiles3.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("status", equalTo("ERROR"))
-                .body("message", equalTo("'/api/v1/access/dataset/%3ApersistentId' you are not authorized to access this object via this api endpoint. Please check your code for typos, or consult our API guide at http://guides.dataverse.org."));
+                .body("status", equalTo("ERROR"));
 
         // The creator uploads a README that will be public.
         Path pathToReadme = Paths.get(Files.createTempDirectory(null) + File.separator + "README.md");
@@ -354,7 +350,7 @@ public class DownloadFilesIT {
                 .body("data.files[0].label", equalTo("50by1000.dta"));
 
         // UtilIT.MAXIMUM_INGEST_LOCK_DURATION is 3 but not long enough.
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 4));
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION + 3));
 
         Response downloadFiles1 = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles1.then().assertThat()

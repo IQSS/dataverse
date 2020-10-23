@@ -59,6 +59,8 @@ The available drivers can be listed with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
     
+(Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
+
 
 Datasets
 --------
@@ -129,4 +131,24 @@ Diagnose Constraint Violations Issues in Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To identify invalid data values in specific datasets (if, for example, an attempt to edit a dataset results in a ConstraintViolationException in the server log), or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
+
+Configure a Dataset to store all new files in a specific file store
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
+    
+The current driver can be seen using::
+
+    curl http://$SERVER/api/datasets/$dataset-id/storageDriver
+
+It can be reset to the default store as follows (only a superuser can do this) ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
+    
+The available drivers can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
+    
 

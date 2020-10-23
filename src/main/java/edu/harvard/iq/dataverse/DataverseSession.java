@@ -49,6 +49,20 @@ public class DataverseSession implements Serializable{
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
+
+    /**
+     * If debug is set to true, some pages show extra debugging information to
+     * superusers.
+     *
+     * The way to set the Boolean to true is to pass debug=true as a query
+     * parameter. The Boolean will remain true (even if nothing is passed to it)
+     * until debug=false is passed.
+     *
+     * Because a boolean is false by default when it comes from a viewParam we
+     * use a Boolean instead. That way, if the debug viewParam is null, we can
+     * leave the state alone (see setDebug()).
+     */
+    private Boolean debug;
     
     public User getUser() {
         if ( user == null ) {
@@ -59,11 +73,19 @@ public class DataverseSession implements Serializable{
     }
 
     public void setUser(User aUser) {
-        logSvc.log( 
-                new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
-                    .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
-        //#3254 - change session id when user changes
-        SessionUtil.changeSessionId((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+        
+        FacesContext context = FacesContext.getCurrentInstance();
+		// Log the login/logout and Change the session id if we're using the UI and have
+		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
+		// which sets the user in the session to pass it through to the underlying command)
+		if(context != null) {
+          logSvc.log( 
+                      new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
+                          .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
+
+          //#3254 - change session id when user changes
+          SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
+        }
         this.user = aUser;
     }
 
@@ -74,7 +96,22 @@ public class DataverseSession implements Serializable{
     public void setStatusDismissed(boolean status) {
         statusDismissed = status; //MAD: Set to true to enable code!
     }
-    
+
+    public Boolean getDebug() {
+        // Only superusers get extra debugging information.
+        if (!getUser().isSuperuser()) {
+            return false;
+        }
+        return debug;
+    }
+
+    public void setDebug(Boolean debug) {
+        // Leave the debug state alone if nothing is passed.
+        if (debug != null) {
+            this.debug = debug;
+        }
+    }
+
     public StaticPermissionQuery on( Dataverse d ) {
             return permissionsService.userOn(user, d);
     }

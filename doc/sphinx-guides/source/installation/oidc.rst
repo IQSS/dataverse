@@ -60,19 +60,18 @@ Finding the issuer URL is best done by searching for terms like "discovery" in t
 The discovery document is always located at ``<issuer url>/.well-known/openid-configuration`` (standardized).
 To be sure, you can always lookup the ``issuer`` value inside the live JSON-based discovery document.
 
-Please create a file like this, replacing every ``<...>`` with your values:
+Please create a my-oidc-provider.json file like this, replacing every ``<...>`` with your values:
 
 .. code-block:: json
-   :caption: my-oidc-provider.json
 
-   {
-     "id":"<a unique id>",
-     "factoryAlias":"oidc",
-     "title":"<a title - shown in UI>",
-     "subtitle":"<a subtitle - currently unused in UI>",
-     "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret>",
-     "enabled":true
-   }
+    {
+        "id":"<a unique id>",
+        "factoryAlias":"oidc",
+        "title":"<a title - shown in UI>",
+        "subtitle":"<a subtitle - currently unused in UI>",
+        "factoryData":"type: oidc | issuer: <issuer url> | clientId: <client id> | clientSecret: <client secret>",
+        "enabled":true
+    }
 
 Now load the configuration into Dataverse using the same API as with :doc:`oauth2`:
 

@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -222,7 +219,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
     private void deleteDraftIdentifier(DvObject dvObject) throws IOException {
     	
     	//ToDo - incorporate into DataCiteRESTfulClient
-        String baseUrl = System.getProperty("doi.baseurlstringnext");
+        String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
         GlobalId doi = dvObject.getGlobalId();

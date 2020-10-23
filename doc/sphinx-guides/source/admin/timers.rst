@@ -46,6 +46,52 @@ This daily job will also update all the harvestable OAI sets configured on your 
 
 This job is automatically scheduled to run at 2AM local time every night. If really necessary, it is possible (for an advanced user) to change that time by directly editing the EJB timer application table in the database.  
 
+.. _saved-search-timer:
+
+Saved Searches Links Timer
+--------------------------
+
+This timer is created automatically from an @Schedule annotation on the makeLinksForAllSavedSearchesTimer method of the SavedSearchServiceBean when the bean is deployed. 
+
+This timer runs a weekly job to create links for any saved searches that haven't been linked yet.
+
+This job is automatically scheduled to run once a week at 12:30AM local time on Sunday. If really necessary, it is possible to change that time by deploying the application war file with an ejb-jar.xml file in the WEB-INF directory of the war file. A :download:`sample file <../_static/admin/ejb-jar.xml>` would run the job every Tuesday at 2:30PM. The schedule can be modified to your choice by editing the fields in the session section. If other EJBs require some form of configuration using an ejb-jar file, there should be one ejb-jar file for the entire application, which can have different sections for each EJB. Below are instructions for the simple case of adding the ejb-jar.xml for the first time and making a custom schedule for the saved search timer.
+
+* Create or edit dataverse/src/main/webapp/WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+
+* Edit the parameters in the <schedule> section of the ejb-jar file in the WEB-INF directory to suit your preferred schedule
+
+  * The provided parameters in the sample file are <minute>, <hour>, and <dayOfWeek>; additional parameters are available
+
+    * For a complete reference for calendar expressions that can be used to schedule Timer services see: https://docs.oracle.com/javaee/7/tutorial/ejb-basicexamples004.htm
+
+* Build and deploy the application
+
+* Alternatively, you can insert an ejb-jar.xml file into a provided dataverse war file without building the application.
+
+  * Check if there is already an ejb-jar.xml file in the war file 
+
+    * jar tvf $DATAVERSE-WAR-FILENAME | grep ejb-jar.xml
+
+      * if the response includes " WEB-INF/ejb-jar.xml", you will need to extract the ejb-jar.xml file for editing
+
+        * jar xvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml 
+
+          * edit the extracted WEB-INF/ejb-jar.xml, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+
+        * if the response is empty, create a WEB-INF directory and create en ejb-jar.xml file in it, following the :download:`sample file <../_static/admin/ejb-jar.xml>` provided.
+
+          * edit the parameters in the <schedule> section of the WEB-INF/ejb-jar.xml to suit your preferred schedule
+
+  * Insert the edited WEB-INF/ejb-jar.xml into the dataverse war file
+
+    * jar uvf $DATAVERSE-WAR-FILENAME WEB-INF/ejb-jar.xml
+
+  * Deploy the war file
+
+
+See also :ref:`saved-search` in the API Guide.
+
 Known Issues
 ------------
  
