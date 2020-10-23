@@ -3152,6 +3152,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void startTaskList() throws MalformedURLException {
 
+        JH.addMessage(FacesMessage.SEVERITY_WARN, "Registering files in Dataset",
+                "In progress");
         AuthenticatedUser user = (AuthenticatedUser) session.getUser();
         globusServiceBean.globusFinishTransfer(dataset,  user);
         HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
