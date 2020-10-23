@@ -60,7 +60,7 @@
                 <p:commandLink  
                     onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForUnRestriction()))
                                 return false;" 
-                    action="#{bean[restrictFileAction](false)}">
+                    action="#{bean[unrestrictFileAction](false)}">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                 </p:commandLink>
