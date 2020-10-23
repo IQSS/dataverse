@@ -54,15 +54,13 @@ public class MailDomainGroupServiceBean {
     @PostConstruct
     void setup() {
         provider = new MailDomainGroupProvider(this);
-        // execute timer every 60 secs, waiting an initial 10 msecs.
-        timerSvc.createTimer(10, 60000, null);
+        this.updateGroups();
     }
     
     /**
-     * Update the groups from the database (triggered every 60 seconds).
+     * Update the groups from the database.
      * This is done because regex compilation is an expensive operation and should be cached.
      */
-    @Timeout
     public void updateGroups() {
         List<MailDomainGroup> all = findAll();
         this.simpleGroups = all.stream().filter(mg -> !mg.isRegEx()).collect(Collectors.toList());
