@@ -2671,7 +2671,7 @@ public class DatasetPage implements java.io.Serializable {
 
                 boolean globus = checkForGlobus();
                 if ( result.isCompleted() ) {
-                    if (globus) {
+                    if (!minor && globus) {
                         if (!globusService.giveGlobusPublicPermissions(dataset.getId().toString())) {
                             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.publishGlobusFailure.details"));
                         } else {
@@ -2681,7 +2681,7 @@ public class DatasetPage implements java.io.Serializable {
                         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.publishSuccess"));
                     }
                 } else {
-                    if (globus) {
+                    if (!minor && globus) {
                         globusService.giveGlobusPublicPermissions(dataset.getId().toString());
                     }
                     JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
