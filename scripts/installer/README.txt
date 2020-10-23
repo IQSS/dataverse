@@ -32,10 +32,6 @@ setup-identity-providers.sh
 setup-users.sh
 data (the entire directory with all its contents)
 
-from scripts/database:
-
-reference_data.sql
-
 from conf/jhove:
 
 jhove.conf
