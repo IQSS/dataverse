@@ -48,8 +48,8 @@ public class MailDomainGroupServiceBean {
     TimerService timerSvc;
 	
     MailDomainGroupProvider provider;
-    List<MailDomainGroup> groups = Collections.EMPTY_LIST;
-    Map<MailDomainGroup, Pattern> groupRegexes = new HashMap<>();
+    List<MailDomainGroup> simpleGroups = Collections.EMPTY_LIST;
+    Map<MailDomainGroup, Pattern> regexGroups = new HashMap<>();
     
     @PostConstruct
     void setup() {
@@ -61,13 +61,12 @@ public class MailDomainGroupServiceBean {
     /**
      * Update the groups from the database (triggered every 60 seconds).
      * This is done because regex compilation is an expensive operation and should be cached.
-     * Regex compilation happens in the model {@link MailDomainGroup} during deserialization from the DB.
      */
     @Timeout
     public void updateGroups() {
-        this.groups = findAll();
-        
-        this.groupRegexes = this.groups.stream()
+        List<MailDomainGroup> all = findAll();
+        this.simpleGroups = all.stream().filter(mg -> !mg.isRegEx()).collect(Collectors.toList());
+        this.regexGroups = all.stream()
             .filter(MailDomainGroup::isRegEx)
             .collect(Collectors.toMap(
                 mg -> mg,
@@ -96,13 +95,15 @@ public class MailDomainGroupServiceBean {
             // transform to lowercase, in case someone uses uppercase letters. (we store the comparison values in lowercase)
             String domain = oDomain.get().toLowerCase();
             
-            Set<MailDomainGroup> result = this.groups.stream()
-                                                     .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
-                                                     .collect(Collectors.toSet());
-            result.addAll(this.groups.stream()
-                                     .filter(MailDomainGroup::isRegEx)
-                                     .filter(mg -> groupRegexes.get(mg).matcher(domain).matches())
-                                     .collect(Collectors.toSet()));
+            // scan simple groups (containing an exact match of the domain)
+            Set<MailDomainGroup> result = this.simpleGroups.stream()
+                                                           .filter(mg -> mg.getEmailDomainsAsList().contains(domain))
+                                                           .collect(Collectors.toSet());
+            // scan regex based groups (domain matching a regular expression)
+            result.addAll(this.regexGroups.keySet().stream()
+                                                   .filter(MailDomainGroup::isRegEx)
+                                                   .filter(mg -> regexGroups.get(mg).matcher(domain).matches())
+                                                   .collect(Collectors.toSet()));
             return result;
             
         }
