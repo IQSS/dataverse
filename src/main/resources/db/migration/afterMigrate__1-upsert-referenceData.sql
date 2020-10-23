@@ -1,0 +1,42 @@
+-- using http://dublincore.org/schemas/xmls/qdc/dcterms.xsd because at http://dublincore.org/schemas/xmls/ it's the
+-- schema location for http://purl.org/dc/terms/ which is referenced in http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
+INSERT INTO foreignmetadataformatmapping (id, name, startelement, displayName, schemalocation)
+       VALUES
+              (1, 'http://purl.org/dc/terms/', 'entry', 'dcterms: DCMI Metadata Terms', 'http://dublincore.org/schemas/xmls/qdc/dcterms.xsd')
+       ON CONFLICT DO NOTHING;
+
+INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname, isattribute, parentfieldmapping_id, foreignmetadataformatmapping_id)
+       VALUES
+              (1, ':title', 'title', FALSE, NULL, 1 ),
+              (2, ':identifier', 'otherIdValue', FALSE, NULL, 1 ),
+              (3, ':creator', 'authorName', FALSE, NULL, 1 ),
+              (4, ':date', 'productionDate', FALSE, NULL, 1 ),
+              (5, ':subject', 'keywordValue', FALSE, NULL, 1 ),
+              (6, ':description', 'dsDescriptionValue', FALSE, NULL, 1 ),
+              (7, ':relation', 'relatedMaterial', FALSE, NULL, 1 ),
+              (8, ':isReferencedBy', 'publicationCitation', FALSE, NULL, 1 ),
+              (9, 'holdingsURI', 'publicationURL', TRUE, 8, 1 ),
+              (10, 'agency', 'publicationIDType', TRUE, 8, 1 ),
+              (11, 'IDNo', 'publicationIDNumber', TRUE, 8, 1 ),
+              (12, ':coverage', 'otherGeographicCoverage', FALSE, NULL, 1 ),
+              (13, ':type', 'kindOfData', FALSE, NULL, 1 ),
+              (14, ':source', 'dataSources', FALSE, NULL, 1 ),
+              (15, 'affiliation', 'authorAffiliation', TRUE, 3, 1 ),
+              (16, ':contributor', 'contributorName', FALSE, NULL, 1 ),
+              (17, 'type', 'contributorType', TRUE, 16, 1 ),
+              (18, ':publisher', 'producerName', FALSE, NULL, 1 ),
+              (19, ':language', 'language', FALSE, NULL, 1 )
+       ON CONFLICT DO NOTHING;
+
+INSERT INTO guestbook (emailrequired, enabled, institutionrequired, createtime, name, namerequired, positionrequired, dataverse_id)
+       SELECT false, true, false, now(), 'Default', false, false, null
+       WHERE NOT EXISTS (SELECT id FROM guestbook);
+
+INSERT INTO worldmapauth_tokentype
+              (name, created, contactemail, hostname,
+               ipaddress, mapitlink,
+               md5, modified, timelimitminutes)
+       SELECT 'GEOCONNECT', current_timestamp, 'support@dataverse.org',  'geoconnect.datascience.iq.harvard.edu',
+               '140.247.115.127', 'http://geoconnect.datascience.iq.harvard.edu/shapefile/map-it',
+               '38c0a931b2d582a5c43fc79405b30c22', current_timestamp, 30
+       WHERE NOT EXISTS (SELECT id from worldmapauth_tokentype);
