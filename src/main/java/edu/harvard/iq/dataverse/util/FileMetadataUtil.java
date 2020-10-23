@@ -32,31 +32,51 @@ import java.util.logging.Logger;
 public class FileMetadataUtil implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(FileMetadataUtil.class.getCanonicalName());
 
+    //Delete the filemetadata from the list if and only if it is in the list
     public static void removeFileMetadataFromList(Collection<FileMetadata> collection, FileMetadata fmToDelete) {
-        Iterator<FileMetadata> fmit = collection.iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = fmit.next();
-            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                if (fmToDelete.getDatasetVersion().getId() == null) {
-                    if (fmd.getDatasetVersion().getId() == null) {
+        // With an id, the standard remove will work
+        if (fmToDelete.getId() != null) {
+            collection.remove(fmToDelete);
+        } else {
+            Iterator<FileMetadata> fmit = collection.iterator();
+            while (fmit.hasNext()) {
+                FileMetadata fmd = fmit.next();
+                // If not, we can remove based on a match based on the id of the related
+                // datafile
+                if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
+                    // and a match on the datasetversion
+                    if (fmToDelete.getDatasetVersion().getId() == null) {
+                        // If the fmd to delete is for a datasetversion with no id, we assume match to
+                        // any other fmd with a datasetversion with no id (since there should be only
+                        // one)
+                        // Otherwise, we don't delete anything (this fmd hasn't been persisted and isn't
+                        // in the list.
+                        if (fmd.getDatasetVersion().getId() == null) {
+                            fmit.remove();
+                            break;
+                        }
+                    } else if (fmToDelete.getDatasetVersion().getId().equals(fmd.getDatasetVersion().getId())) {
                         fmit.remove();
                         break;
                     }
-                } else if (fmToDelete.getDatasetVersion().getId().equals(fmd.getDatasetVersion().getId())) {
-                    fmit.remove();
-                    break;
                 }
             }
         }
     }
 
-    public static void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
-        Iterator<DataFile> dfit = dfs.iterator();
-        while (dfit.hasNext()) {
-            DataFile df = dfit.next();
-            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
-                dfit.remove();
-                break;
+    //Delete datafile from the list even if it's id is null (hasn't yet been persisted)
+    public static void removeDataFileFromList(List<DataFile> dfList, DataFile dfToDelete) {
+        // With an id, the standard remove will work
+        if (dfToDelete.getId() != null) {
+            dfList.remove(dfToDelete);
+        } else {
+            Iterator<DataFile> dfit = dfList.iterator();
+            while (dfit.hasNext()) {
+                DataFile df = dfit.next();
+                if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
+                    dfit.remove();
+                    break;
+                }
             }
         }
     }

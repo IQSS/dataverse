@@ -368,13 +368,24 @@ public class FilesIT {
                         .add("Data")
                 );
         
+        /*
+         * ToDo: When the dataset is still locked, the replaceFile call below returns an
+         * 'OK' status with an empty 'data' array The sleepForLock avoids that so this
+         * test tests the normal replace functionality directly, but a new test to check
+         * that, when the dataset is locked, the call fails instead of returning OK
+         * would be useful (along with making the replace call do that)
+         */
+        /*
+         * ToDo: make sleep time shorter for this? Add sleepForLock before subsequent
+         * calls as well? (Or is it only needed here because it is still locked from the
+         * publish call above?)
+         */
+
         UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
         
         msgt(replaceResp.prettyPrint());
         
-        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
-
         replaceResp.then().assertThat()
                 /**
                  * @todo We have a need to show human readable success messages

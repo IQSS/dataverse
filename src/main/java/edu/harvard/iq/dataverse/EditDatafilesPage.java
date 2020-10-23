@@ -936,8 +936,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // and let the delete be handled in the command (by adding it to the
                 // filesToBeDeleted list):
 
+                // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
+                // removes so they could be put after this if clause and the else clause could
+                // be removed.
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
+
                 filesToBeDeleted.add(markedForDelete);
             } else {
                 logger.fine("this is a brand-new (unsaved) filemetadata");
@@ -961,8 +965,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
-                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
-                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
                 FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
@@ -990,28 +994,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-
-    private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
-        Iterator<FileMetadata> fmit = fmds.iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = fmit.next();
-            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                fmit.remove();
-                break;
-                    }
-                }
-                }                
-                
-    private void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
-        Iterator<DataFile> dfit = dfs.iterator();
-        while (dfit.hasNext()) {
-            DataFile df = dfit.next();
-            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
-                dfit.remove();
-                break;
-            }
-        }
-    }
 
     public String saveWithTermsOfUse() {
         logger.fine("saving terms of use, and the dataset version");
