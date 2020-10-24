@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
@@ -40,6 +39,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.json.*;
 import javax.json.JsonValue.ValueType;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 
 /**
  * Parses JSON objects into domain objects.
@@ -527,8 +528,7 @@ public class JsonParser {
         FieldDTO geoCoverageDTO = FieldDTO.createMultipleCompoundFieldDTO(DatasetFieldConstant.geographicCoverage, geoCoverageList);
 
         // convert DTO to datasetField so we can back valid values.
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(geoCoverageDTO);
+        String jsonString = JsonbBuilder.create().toJson(geoCoverageDTO);
         JsonReader jsonReader = Json.createReader(new StringReader(jsonString));
         JsonObject obj = jsonReader.readObject();
         DatasetField geoCoverageField = parseField(obj);
