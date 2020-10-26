@@ -329,23 +329,9 @@ public class Admin extends AbstractApiBean {
     public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
         AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
         if (authenticatedUser != null) {
-            return getAuthenticatedUser(authenticatedUser);
+            return ok(json(authenticatedUser));
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-    }
-
-    @GET
-    @Path("authenticatedUsers/token/{token}/")
-    public Response getAuthenticatedUserByToken(@PathParam("token") String token) {
-        AuthenticatedUser authenticatedUser = authSvc.lookupUser(token);
-        if (authenticatedUser != null) {
-            return getAuthenticatedUser(authenticatedUser);
-        }
-        return error(Response.Status.BAD_REQUEST, "User with token " + token + " not found.");
-    }
-
-    private Response getAuthenticatedUser(AuthenticatedUser authenticatedUser) {
-        return ok(json(authenticatedUser));
     }
 
     @DELETE
