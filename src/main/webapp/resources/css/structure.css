@@ -1226,6 +1226,10 @@ ul > li {
   font-weight: bold;
 }
 
+#dsDescription ul > li {
+        font-weight: normal;
+}
+
 th {background: none !important;}
 
 .ui-tabs.ui-tabs-top {border-width: 0;}
