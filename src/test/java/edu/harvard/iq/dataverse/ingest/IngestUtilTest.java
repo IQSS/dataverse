@@ -497,6 +497,7 @@ public class IngestUtilTest {
         datafile1.setIngestDone();
         datafile1.setChecksumType(DataFile.ChecksumType.SHA1);
         datafile1.setChecksumValue("Unknown");
+        datafile1.setId(1L);
 
         // set metadata and add verson
         FileMetadata fmd1 = new FileMetadata();
@@ -520,6 +521,7 @@ public class IngestUtilTest {
         datafile2.setIngestDone();
         datafile2.setChecksumType(DataFile.ChecksumType.SHA1);
         datafile2.setChecksumValue("Unknown");
+        datafile2.setId(2L);
 
         // set metadata and add version
         FileMetadata fmd2 = new FileMetadata();
