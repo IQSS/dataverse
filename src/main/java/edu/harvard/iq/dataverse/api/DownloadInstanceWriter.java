@@ -228,6 +228,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
                     }
                 } else if (di.getAuxiliaryFile() != null) {
+                    // Make sure to close the InputStream for the main datafile: 
+                    try {storageIO.getInputStream().close();} catch (IOException ioex) {}
                     String auxTag = di.getAuxiliaryFile().getFormatTag(); 
                     String auxVersion = di.getAuxiliaryFile().getFormatVersion();
                     if (auxVersion != null) {
