@@ -583,16 +583,26 @@ public class AddReplaceFileHelper{
             return false;            
         }
         
-        //Reuse any file PID during a replace operation (if File PIDs are in use, if the fileToReplace hasn't been released)
-        if(fileToReplace !=null && !fileToReplace.isReleased() && systemConfig.isFilePIDsEnabled()) {
-          DataFile df = finalFileList.get(0); //step_055 uses a loop and assumes only one file
-          df.setGlobalId(fileToReplace.getGlobalId());
-          df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
-        //Should be true or fileToReplace wouldn't have an identifier (since it's not yet released in this if statement)
-          df.setIdentifierRegistered(fileToReplace.isIdentifierRegistered()); 
-          fileToReplace.setGlobalId(null);
+        // if the fileToReplace hasn't been released,
+        if (fileToReplace != null && !fileToReplace.isReleased()) {
+            DataFile df = finalFileList.get(0); // step_055 uses a loop and assumes only one file
+            // set the replacement file's previous and root datafileIds to match (unless
+            // they are the defaults)
+            if (fileToReplace.getPreviousDataFileId() != null) {
+                df.setPreviousDataFileId(fileToReplace.getPreviousDataFileId());
+                df.setRootDataFileId(fileToReplace.getRootDataFileId());
+            }
+            // Reuse any file PID during a replace operation (if File PIDs are in use)
+            if (systemConfig.isFilePIDsEnabled()) {
+                df.setGlobalId(fileToReplace.getGlobalId());
+                df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
+                // Should be true or fileToReplace wouldn't have an identifier (since it's not
+                // yet released in this if statement)
+                df.setIdentifierRegistered(fileToReplace.isIdentifierRegistered());
+                fileToReplace.setGlobalId(null);
+            }
         }
-        
+
         return true;
     }
     
@@ -1081,15 +1091,6 @@ public class AddReplaceFileHelper{
             return false;
         };
 
-        
-        
-        // Is the file published?
-        //
-//        if (!existingFile.isReleased()){
-//            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
-//            return false;            
-//        }
-        
         // Is the file in the latest dataset version?
         //
         if (!step_007_auto_isReplacementInLatestVersion(existingFile)){
@@ -1605,7 +1606,6 @@ public class AddReplaceFileHelper{
         }
         return true;
     }
-
     
 
     private boolean runMajorCleanup(){

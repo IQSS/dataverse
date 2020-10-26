@@ -1795,6 +1795,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (DataFileTagException ex) {
             return error(Response.Status.BAD_REQUEST, ex.getMessage());
         }
+        catch (ClassCastException | com.google.gson.JsonParseException ex) {
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+        }
         
         // -------------------------------------
         // (3) Get the file name and content type
