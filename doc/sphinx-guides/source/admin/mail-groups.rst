@@ -65,11 +65,8 @@ You can also use one or multiple regular expressions instead of simple domains f
 Some hints:
 
 - Due to their excessive CPU usage, regular expressions should be used rarely.
-- All domain groups are cached. The cache updates when groups change via API. This caching is implemented because of the aforementioned excessive CPU usage.
-- Remember to properly escape "\" in your regular expression. Both Java and JSON are a bit picky about this.
-  E.g. a character class "\d" would have to be escaped as "\\d". Plenty of tutorials on the web explain this in more detail.
-- There is no way Dataverse can detect a wrong regular expression for you.
-  Be sure to do extensive testing, as a misconfigured group could result in privilege escalation or an unexpected influx of support contacts.
+- Remember to properly escape "\" in your regular expression. Both Java and JSON are a bit picky about this. E.g. a character class "\d" would have to be escaped as "\\d". Plenty of tutorials on the web explain this in more detail.
+- There is no way Dataverse can detect a wrong regular expression for you. Be sure to do extensive testing, as a misconfigured group could result in privilege escalation or an unexpected influx of support contacts.
 - Remember to enable the regular expression support for a group by adding ``"regex": true``!
 
 A short example for a group using regular expressions:
