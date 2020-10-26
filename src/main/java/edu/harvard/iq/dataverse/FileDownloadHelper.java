@@ -122,42 +122,31 @@ public class FileDownloadHelper implements java.io.Serializable {
         return valid;
          
      }
-    
-     // This helper method is called from the Download terms/guestbook/etc. popup, 
-     // when the user clicks the "ok" button. We use it, instead of calling 
-     // downloadServiceBean directly, in order to differentiate between single
-     // file downloads and multiple (batch) downloads - sice both use the same 
-     // terms/etc. popup. 
-     public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
-         //RequestContext requestContext = RequestContext.getCurrentInstance();
-         boolean valid = validateGuestbookResponse(guestbookResponse);
 
-         if (!valid) {
-             // FIXME: This never validation error shows in the UI (even if you add a bundle entry).
-             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-         } else {
-             //requestContext.execute("PF('downloadPopup').hide()");
-             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-             guestbookResponse.setDownloadtype("Download");
-
-             // Note that this method is only ever called from the file-download-popup - 
-             // meaning we know for the fact that we DO want to save this 
-             // guestbookResponse permanently in the database.
-             if (guestbookResponse.getSelectedFileIds() != null) {
-                 // this is a batch (multiple file) download.
-                 // Although here's a chance that this is not really a batch download - i.e., 
-                 // there may only be one file on the file list. But the fileDownloadService 
-                 // method below will check for that, and will redirect to the single download, if
-                 // that's the case. -- L.A.
-                 fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
-             } else if (guestbookResponse.getDataFile() != null) {
-                 // this a single file download: 
-                 fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
-             }
-         }
-
+    // This helper method is called from the Download terms/guestbook/etc. popup,
+    // when the user clicks the "ok" button. We use it, instead of calling
+    // downloadServiceBean directly, in order to differentiate between single
+    // file downloads and multiple (batch) downloads - sice both use the same
+    // terms/etc. popup.
+    public void writeGuestbookAndStartDownload(GuestbookResponse guestbookResponse) {
+        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
+        guestbookResponse.setDownloadtype("Download");
+         // Note that this method is only ever called from the file-download-popup -
+         // meaning we know for the fact that we DO want to save this
+         // guestbookResponse permanently in the database.
+        if (guestbookResponse.getSelectedFileIds() != null) {
+            // this is a batch (multiple file) download.
+            // Although here's a chance that this is not really a batch download - i.e.,
+            // there may only be one file on the file list. But the fileDownloadService
+            // method below will check for that, and will redirect to the single download, if
+            // that's the case. -- L.A.
+            fileDownloadService.writeGuestbookAndStartBatchDownload(guestbookResponse);
+        } else if (guestbookResponse.getDataFile() != null) {
+            // this a single file download:
+            fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse);
+        }
      }
-     
+
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
         //RequestContext requestContext = RequestContext.getCurrentInstance();
         boolean valid = validateGuestbookResponse(guestbookResponse);
@@ -255,16 +244,9 @@ public class FileDownloadHelper implements java.io.Serializable {
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
      public boolean writeGuestbookAndShowPreview(GuestbookResponse guestbookResponse) {
-         // We've already validated guestbooks on the front end but we validate again
-         // on the backend (that's what older methods do).
-         boolean valid = validateGuestbookResponse(guestbookResponse);
-         if (!valid) {
-             return false;
-         } else {
-             guestbookResponse.setDownloadtype("Explore");
-             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-             return true;
-         }
+         guestbookResponse.setDownloadtype("Explore");
+         fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
+         return true;
      }
 
     private List<DataFile> filesForRequestAccess;
