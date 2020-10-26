@@ -2875,10 +2875,6 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "superuser": true,
       "affiliation": "Dataverse.org"
     }
-    
-Alternatively you may pass a user's api ``token`` to retrieve the same output::
-   
-    GET http://$SERVER/api/admin/authenticatedUsers/token/$token
 
 Create an Authenticated User
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
