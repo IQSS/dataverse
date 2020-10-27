@@ -64,65 +64,6 @@ public class FileDownloadHelper implements java.io.Serializable {
         return !(value != null && value.length() > 255);
      }
 
-    /**
-     * By the time we reach this method, validation has already been done on
-     * the front end (at least when calling from
-     * writeGuestbookAndStartDownload). Do we need to do it again here? Do we
-     * still need this method? Before some refactoring, one of its main jobs
-     * was to add messages to custom UIInput fields.
-     */
-     private boolean validateGuestbookResponse(GuestbookResponse guestbookResponse){
-                Dataset dataset = guestbookResponse.getDataset();
-                boolean valid = true;
-         if (dataset.getGuestbook() != null) {
-             if (dataset.getGuestbook().isNameRequired()) {
-                 boolean nameValid = (guestbookResponse.getName() != null && !guestbookResponse.getName().isEmpty());
-                 valid &= nameValid;
-             }
-                valid &= testResponseLength(guestbookResponse.getName());
-             if (dataset.getGuestbook().isEmailRequired()) {
-                 boolean emailValid = (guestbookResponse.getEmail() != null && !guestbookResponse.getEmail().isEmpty());
-                 valid &= emailValid;
-             }
-                valid &= testResponseLength(guestbookResponse.getEmail());
-            if (dataset.getGuestbook().isInstitutionRequired()) {
-                 boolean institutionValid = (guestbookResponse.getInstitution()!= null && !guestbookResponse.getInstitution().isEmpty());
-                valid &= institutionValid;
-            }
-                valid &= testResponseLength(guestbookResponse.getInstitution());
-            if (dataset.getGuestbook().isPositionRequired()) {
-                 boolean positionValid = (guestbookResponse.getPosition()!= null && !guestbookResponse.getPosition().isEmpty());
-                valid &= positionValid;
-            }
-                valid &= testResponseLength(guestbookResponse.getPosition());
-        }
-
-         /**
-          * cqr.setValidationMessage was commented out because the setter and
-          * field were deleted along with a ui-message-error div on the front
-          * end. We switched to a standard p:message tag instead.
-          */
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
-                        if (cqr.getCustomQuestion().equals(cq)) {
-                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                            if (cqr.getResponse() == null ||  cqr.getResponse().isEmpty()){
-//                                cqr.setValidationMessage(BundleUtil.getStringFromBundle("requiredField"));
-                            } else{
-//                                cqr.setValidationMessage("");
-                            }                          
-                        }
-                    }
-                }
-            }
-        }       
-
-        return valid;
-         
-     }
-
     // This helper method is called from the Download terms/guestbook/etc. popup,
     // when the user clicks the "ok" button. We use it, instead of calling
     // downloadServiceBean directly, in order to differentiate between single
@@ -148,19 +89,11 @@ public class FileDownloadHelper implements java.io.Serializable {
      }
 
      public void writeGuestbookAndOpenSubset(GuestbookResponse guestbookResponse) {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
 
-         if (!valid) {
-
-         } else {
-             //requestContext.execute("PF('downloadPopup').hide()");
              PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-             //requestContext.execute("PF('downloadDataSubsetPopup').show()");
              PrimeFaces.current().executeScript("PF('downloadDataSubsetPopup').show()");
              guestbookResponse.setDownloadtype("Subset");
              fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-         }
 
      }
 
@@ -196,46 +129,23 @@ public class FileDownloadHelper implements java.io.Serializable {
              }
          }
 
-         //RequestContext requestContext = RequestContext.getCurrentInstance();
-         boolean valid = validateGuestbookResponse(guestbookResponse);
-
-         if (!valid) {
-             return;
-         }
          fileDownloadService.explore(guestbookResponse, fmd, externalTool);
          //requestContext.execute("PF('downloadPopup').hide()");
          PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
     }
      
     public void writeGuestbookAndLaunchPackagePopup(GuestbookResponse guestbookResponse) {
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
 
-        if (!valid) {
-            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.message.validationError"));
-        } else {
-            //requestContext.execute("PF('downloadPopup').hide()");
             PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-            //requestContext.execute("PF('downloadPackagePopup').show()");
             PrimeFaces.current().executeScript("PF('downloadPackagePopup').show()");
-            //requestContext.execute("handleResizeDialog('downloadPackagePopup')");
             PrimeFaces.current().executeScript("handleResizeDialog('downloadPackagePopup')");
-
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
-        }
     }
 
     public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-        
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        boolean valid = validateGuestbookResponse(guestbookResponse);
-                  
-         if (!valid) {
-             return "";
-         } 
+         
         guestbookResponse.setDownloadtype("WorldMap");
         String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        //requestContext.execute("PF('downloadPopup').hide()");
         PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
         return retVal;
     }

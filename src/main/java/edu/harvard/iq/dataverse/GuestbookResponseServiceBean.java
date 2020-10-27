@@ -872,56 +872,6 @@ public class GuestbookResponseServiceBean {
         }
         return modifyDatafileAndFormat(in, fm, format);
     }
-
-    public Boolean validateGuestbookResponse(GuestbookResponse guestbookResponse, String type) {
-
-        boolean valid = true;
-        Dataset dataset = guestbookResponse.getDataset();
-        if (dataset.getGuestbook() != null) {
-            if (dataset.getGuestbook().isNameRequired()) {
-                if (guestbookResponse.getName() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getName().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isEmailRequired()) {
-                if (guestbookResponse.getEmail() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getEmail().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isInstitutionRequired()) {
-                if (guestbookResponse.getInstitution() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getInstitution().isEmpty();
-                }
-            }
-            if (dataset.getGuestbook().isPositionRequired()) {
-                if (guestbookResponse.getPosition() == null) {
-                    valid = false;
-                } else {
-                    valid &= !guestbookResponse.getPosition().isEmpty();
-                }
-            }
-        }
-
-        if (dataset.getGuestbook() != null && !dataset.getGuestbook().getCustomQuestions().isEmpty()) {
-            for (CustomQuestion cq : dataset.getGuestbook().getCustomQuestions()) {
-                if (cq.isRequired()) {
-                    for (CustomQuestionResponse cqr : guestbookResponse.getCustomQuestionResponses()) {
-                        if (cqr.getCustomQuestion().equals(cq)) {
-                            valid &= (cqr.getResponse() != null && !cqr.getResponse().isEmpty());
-                        }
-                    }
-                }
-            }
-        }
-  
-        return valid;
-    }
     
     private List<SelectItem> setResponseUISelectItems(CustomQuestion cq) {
         List<SelectItem> retList = new ArrayList<>();
