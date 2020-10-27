@@ -61,7 +61,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(updateVersion);
 
-        // Merge the new version into out JPA context
+        // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);
 
 
@@ -158,11 +158,15 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 cat.getFileMetadatas().remove(draftFmd);
             }
         }
-
+        if(logger.isLoggable(Level.FINE)) {
+            for(FileMetadata fmd: updateVersion.getFileMetadatas()) {
+                logger.fine("Id: " + fmd.getId() + " label: " + fmd.getLabel());
+            }
+        }
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-
+        ctxt.em().merge(updateVersion);
         Dataset savedDataset = ctxt.em().merge(tempDataset);
 
         // Flush before calling DeleteDatasetVersion which calls
