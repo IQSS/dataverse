@@ -1788,7 +1788,9 @@ Here is an example of setting the default auth provider back to ``builtin``:
 :AllowSignUp
 ++++++++++++
 
-Set to false to disallow local accounts to be created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
+Set to false to disallow local accounts from being created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowSignUp``
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
