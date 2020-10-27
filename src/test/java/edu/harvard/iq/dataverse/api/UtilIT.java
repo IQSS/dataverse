@@ -1180,12 +1180,6 @@ public class UtilIT {
     }
     
     static Response getAuthenticatedUserByToken(String apiToken) {
-        /*
-                return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .urlEncodingEnabled(false)
-                .post("/api/dataverses/" + dataverseAlias + "/actions/:publish");
-        */
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .urlEncodingEnabled(false)
