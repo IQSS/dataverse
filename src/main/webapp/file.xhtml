@@ -274,9 +274,9 @@
                                                             </h:outputLink>
                                                         <!-- end replace file link --></li>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and ((FilePage.fileMetadata.dataFile.released and FilePage.draftReplacementFile == true) or (!FilePage.fileMetadata.dataFile.released and FilePage.fileMetadata.datasetVersion.dataset.released)) }">                                        
+                                                        <ui:fragment rendered="#{ !FilePage.fileMetadata.dataFile.filePackage and (FilePage.draftReplacementFile == true) }">                                        
                                                         <li><!-- start: already replaced replace file link -->
-                                                            <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
+                                                            <p:commandLink title="#{bundle['file.replace']}" onclick="PF('fileAlreadyReplacedDraft').show();">
                                                                 <h:outputText value="#{bundle['file.replace']}"/>
                                                             </p:commandLink>
                                                         <!-- end replace file link --></li>
