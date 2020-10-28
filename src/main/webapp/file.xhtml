@@ -399,20 +399,6 @@
                             </p:tab>
                             <p:tab id="previewTab" title="#{bundle['file.previewTab.header']}" 
                                    rendered="#{FilePage.toolsWithPreviews.size() > 0 and FilePage.previewAllowed}">
-                                <!-- PREVIEW TERMS/GUESTBOOK FORM -->
-                                <ui:fragment rendered="#{FilePage.downloadPopupRequired and !FilePage.termsMet}">
-                                    <ui:include src="file-download-popup-fragment.xhtml">
-                                        <ui:param name="popupContext" value="previewTab"/>
-                                        <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                                        <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
-                                        <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>
-                                        <ui:param name="guestbookResponseService" value="#{FilePage.guestbookResponseService}"/>
-                                        <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
-                                        <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
-                                    </ui:include>
-                                </ui:fragment>
-                                <!-- PREVIEW EXTERNAL TOOL -->
-                                <ui:fragment rendered="#{(!FilePage.downloadPopupRequired) or (FilePage.downloadPopupRequired and FilePage.termsMet)}">
                                 <div class="btn-toolbar margin-bottom" role="toolbar" aria-label="#{bundle['file.previewTab.button.label']}">
                                     <!-- Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 1 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
@@ -437,8 +423,8 @@
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
                                                          action="#{FilePage.fileDownloadService.explore(FilePage.guestbookResponse, FilePage.fileMetadata, FilePage.selectedTool)}">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
-                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
@@ -451,8 +437,8 @@
                                                          process="@this"
                                                          update="@widgetVar(downloadPopup)"
                                                          oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-#{FilePage.selectedTool.exploreTool ? 'equalizer' : 'new-window'}"></span>
-                                            <h:outputFormat value="#{FilePage.selectedTool.exploreTool ? bundle['file.previewTab.exploreBtn'] : bundle['file.previewTab.openBtn']}">
+                                            <span class="glyphicon glyphicon-equalizer"></span> 
+                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
                                                 <f:param value="#{bundle.explore}"/>
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
@@ -485,11 +471,10 @@
                                         <!-- END WorldMap Explore -->
                                     </div>
                                 </div>
-                                <!-- FRAME EXTERNAL TOOL EMBED -->
+                                <!-- FRAME -->
                                 <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
                                     <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
-                                </ui:fragment>
                             </p:tab>
                             <p:tab id="metadataMapTab" class="padding-none" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                    rendered="#{(!FilePage.fileMetadata.datasetVersion.deaccessioned or 
@@ -700,7 +685,6 @@
                     </p:dialog>
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                          <ui:include src="file-download-popup-fragment.xhtml">
-                            <ui:param name="popupContext" value="downloadFile"/>
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{FilePage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{FilePage.guestbookResponse}"/>

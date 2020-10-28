@@ -345,10 +345,6 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
-    // TODO: Consider renaming "previewToolsByFileId" to "file:PreviewToolsByFileId".
-    Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
-    // TODO: Consider renaming "previewTools" to "filePreviewTools".
-    List<ExternalTool> previewTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
     
     public Boolean isHasRsyncScript() {
@@ -1970,6 +1966,7 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
+                this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                         && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
@@ -2093,7 +2090,6 @@ public class DatasetPage implements java.io.Serializable {
         
         configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
-        previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
@@ -5421,16 +5417,6 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
-    public boolean isShowPreviewButton(Long fileId) {
-        List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
-        return previewTools.size() > 0;
-    }
-
-    public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
-        return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
-    }
-    
-
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
     }
@@ -5450,10 +5436,6 @@ public class DatasetPage implements java.io.Serializable {
             case CONFIGURE:
                 cachedToolsByFileId = configureToolsByFileId;
                 externalTools = configureTools;
-                break;
-            case PREVIEW:
-                cachedToolsByFileId = previewToolsByFileId;
-                externalTools = previewTools;
                 break;
             default:
                 break;

@@ -104,6 +104,8 @@ If you'd like to download a single file or some subset of the dataset's files, y
 
 You may also download a file from its file page by clicking the Download button in the upper right corner of the page, or by :ref:`url_download` under the Metadata tab on the lower half of the page.
 
+Tabular data files offer additional options: You can explore using any data exploration or visualization :doc:`/admin/external-tools` (if they have been enabled) by clicking the Explore button, or choose from a number of tabular-data-specific download options available as a dropdown under the Download button.
+
 Tabular Data
 ^^^^^^^^^^^^
 
@@ -113,7 +115,7 @@ Ingested files can be downloaded in several different ways.
 
 - The original file, which may be in a proprietary format which requires special software
 
-- RData format if the installation has configured this
+- Rdata format if the instalation has configured this
 
 - The variable metadata for the file in DDI format
 
@@ -149,7 +151,7 @@ After you've downloaded the Dataverse Package, you may want to double-check that
 Explore Data
 ------------
 
-Some file types and datasets offer data exploration options if external tools have been installed. The tools are described in the :doc:`/admin/external-tools` section of the Admin Guide.
+Please see the :doc:`/user/data-exploration/index` to get started.
 
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive
