@@ -3,13 +3,20 @@
 -- that was used to indicate that an explore tool had a preview mode. We are
 -- also moving the "type" column to a new dedicated table called
 -- "externaltooltype".
--- 
--- For each explore tool that has preview, make an EXPLORE row.
-insert into externaltooltype(externaltool_id,type) select id,'EXPLORE' from externaltool where haspreviewmode = true and type = 'EXPLORE';
--- For each explore tool that has preview, make a PREVIEW row.
-insert into externaltooltype(externaltool_id,type) select id,'PREVIEW' from externaltool where haspreviewmode = true and type = 'EXPLORE';
--- For all the other tools, make a row.
-insert into externaltooltype(externaltool_id,type) select id,type from externaltool where haspreviewmode = false or type != 'EXPLORE';
--- Drop "type" and "haspreviewmode" from externaltool.
-alter table externaltool drop column if exists type;
-alter table externaltool drop column if exists haspreviewmode;
+DO $$
+BEGIN
+-- Only run these statements if "type" (and "haspreviewmode") still exist on the
+-- externaltool table.
+IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='externaltool' AND column_name='type') THEN
+  -- For each explore tool that has preview, make an EXPLORE row.
+  insert into externaltooltype(externaltool_id,type) select id,'EXPLORE' from externaltool where haspreviewmode = true and type = 'EXPLORE';
+  -- For each explore tool that has preview, make a PREVIEW row.
+  insert into externaltooltype(externaltool_id,type) select id,'PREVIEW' from externaltool where haspreviewmode = true and type = 'EXPLORE';
+  -- For all the other tools, make a row.
+  insert into externaltooltype(externaltool_id,type) select id,type from externaltool where haspreviewmode = false or type != 'EXPLORE';
+  -- Drop "type" and "haspreviewmode" from externaltool.
+  alter table externaltool drop column if exists type;
+  alter table externaltool drop column if exists haspreviewmode;
+END IF;
+END
+$$
