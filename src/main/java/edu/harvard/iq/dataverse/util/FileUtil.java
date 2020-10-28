@@ -1903,7 +1903,22 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
 
-    public static String jsonToCSV(JsonArray jsonArray, String... headers) {
+    /**
+     * This method takes a JsonArray of JsonObjects and extracts the fields of those
+     * objects corresponding to the supplied list of headers to create a rectangular
+     * CSV file (with headers) that lists the values from each object in rows. It
+     * was developed for use with the metrics API but could be useful in other calls
+     * that require the same transformation.
+     * 
+     * @param jsonArray
+     *            - the array of JsonObjects containing key/value pairs with keys
+     *            matching the headers. Keys that don't match a header are
+     *            ignored/not included.
+     * @param headers
+     *            - strings to use as CSV headers
+     * @return - the CSV file as a string, rows separated by '\n'
+     */
+    public static String jsonArrayOfObjectsToCSV(JsonArray jsonArray, String... headers) {
         StringBuilder csvSB = new StringBuilder(String.join(",", headers));
         jsonArray.forEach((jv) -> {
             JsonObject jo = (JsonObject) jv;
