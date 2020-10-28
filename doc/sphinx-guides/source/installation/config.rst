@@ -1718,14 +1718,14 @@ The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-two
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++
 
-Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect Maps. This boolean effects whether the user sees the map button on the dataset page and if the ingest will create a shape file.
+Set ``GeoconnectCreateEditMaps`` to true to allow the user to create maps using Geoconnect. This boolean enables the map configure tool option for a data file and the ingest to create a shape file.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
 
 :GeoconnectViewMaps
 +++++++++++++++++++
 
-Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
+Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean enables the map explore tool option for a data file.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
