@@ -3,10 +3,7 @@
   "description": "Fabulous Fun for Files!",
   "toolName": "fabulous",
   "scope": "file",
-  "types": [
-    "explore",
-    "preview"
-  ],
+  "type": "explore",
   "toolUrl": "https://fabulousfiletool.com",
   "contentType": "text/tab-separated-values",
   "toolParameters": {
