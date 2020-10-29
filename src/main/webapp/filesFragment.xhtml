@@ -624,7 +624,7 @@
                         <ui:param name="canUpdateDataset" value="#{DatasetPage.canUpdateDataset()}"/>
                     </ui:include>
                 </ui:fragment>
-                <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id)}">
+                <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
                     <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
                         href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                         <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
