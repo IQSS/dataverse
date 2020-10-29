@@ -22,7 +22,7 @@ echo "Deleting ALL DATA FILES uploaded to Dataverse..."
 # TODO: Make this configurable.
 rm -rf $PAYARA_DIR/glassfish/domains/domain1/files
 
-echo "Terminating database settings so we can drop the database..."
+echo "Terminating database sessions so we can drop the database..."
 psql -U postgres -c "
 SELECT pg_terminate_backend(pg_stat_activity.pid)
 FROM pg_stat_activity
