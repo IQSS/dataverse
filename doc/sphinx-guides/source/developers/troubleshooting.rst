@@ -93,7 +93,7 @@ A script called :download:`dev-rebuild.sh <../../../../scripts/dev/dev-rebuild.s
 
 - Drops the database.
 - Clears our Solr.
-- Deletes all data files uploaded by users.
+- Deletes all data files uploaded by users (assuming you are using the default directory).
 - Deploys the war file located in the ``target`` directory.
 - Runs ``setup-all.sh`` in insecure mode so tests will pass.
 - Runs post-install SQL statements.

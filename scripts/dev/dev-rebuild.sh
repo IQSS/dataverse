@@ -19,6 +19,7 @@ echo "Deleting \"generated\" directory..."
 rm -rf $PAYARA_DIR/glassfish/domains/domain1/generated
 
 echo "Deleting ALL DATA FILES uploaded to Dataverse..." 
+# TODO: Make this configurable.
 rm -rf $PAYARA_DIR/glassfish/domains/domain1/files
 
 echo "Terminating database settings so we can drop the database..."
