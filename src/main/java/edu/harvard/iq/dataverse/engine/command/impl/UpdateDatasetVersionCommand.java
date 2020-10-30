@@ -208,13 +208,11 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     if (!theDataset.getEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getEditVersion());
                     }
-                } else {
-                    // Not sure if this is needed now that there is a dataset merge above, but we
-                    // need to assure it is on the context
-                    fmd = ctxt.em().merge(fmd);
-                }
+                } 
+                fmd = ctxt.em().merge(fmd);
+
                 // There are two datafile cases as well - the file has been released, so we're
-                // jsut removing it from the current draft version or it is only in the draft
+                // just removing it from the current draft version or it is only in the draft
                 // version and we completely remove the file.
                 if (!fmd.getDataFile().isReleased()) {
                     // remove the file
