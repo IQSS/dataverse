@@ -32,6 +32,8 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -328,7 +330,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
                 String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
@@ -340,7 +342,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // Additionaly in 4.9.3 we have added a system variable to disable 
                 // registering file PIDs on the installation level.
                 if (((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority))
-                        || dataFilePIDFormat.equals("INDEPENDENT"))
+                        || dataFilePIDFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString()))
                         && isFilePIDsEnabled
                         && dataset.getLatestVersion().getMinorVersionNumber() != null
                         && dataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)) {

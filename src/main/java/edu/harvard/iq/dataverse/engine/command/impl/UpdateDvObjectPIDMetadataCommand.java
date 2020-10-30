@@ -13,6 +13,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
@@ -56,7 +58,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                 // When updating, we want to traverse through files even if the dataset itself
                 // didn't need updating.
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
-                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to update the global identifiers for datafiles if they
                 // aren't being used.
@@ -68,7 +70,7 @@ public class UpdateDvObjectPIDMetadataCommand extends AbstractVoidCommand {
                     if (isFilePIDsEnabled && // using file PIDs and
                             (!(df.getIdentifier() == null || df.getIdentifier().isEmpty()) || // identifier exists, or
                                     currentGlobalIdProtocol.equals(protocol) || // right protocol to create dependent DOIs, or
-                                    dataFilePIDFormat.equals("INDEPENDENT"))// or independent. TODO(pm) - check authority too
+                                    dataFilePIDFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString()))// or independent. TODO(pm) - check authority too
                     ) {
                         doiRetString = idServiceBean.publicizeIdentifier(df);
                         if (doiRetString) {

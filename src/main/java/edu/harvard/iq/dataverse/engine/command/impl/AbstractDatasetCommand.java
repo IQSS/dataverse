@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
@@ -231,21 +233,23 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
         String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
         String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
-        String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, SystemConfig.DataFilePIDFormat.DEPENDENT.toString());
         boolean shouldRegister = ctxt.systemConfig().isFilePIDsEnabled()                                  // We use file PIDs
                 && !idServiceBean.registerWhenPublished()                                                 // The provider can pre-register
                 &&((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
-                        || dataFilePIDFormat.equals("INDEPENDENT"));                                      // or the files can use a different protocol/authority
+                        || dataFilePIDFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString()));                                      // or the files can use a different protocol/authority
         logger.fine("IsFilePIDsEnabled: " + ctxt.systemConfig().isFilePIDsEnabled());
         logger.fine("RegWhenPub: " +  !idServiceBean.registerWhenPublished());
         logger.fine("OK provider: " + ((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority)) // the dataset PID is a protocol/authority Dataverse can create new PIDs in
-                        || dataFilePIDFormat.equals("INDEPENDENT")));  
+                        || dataFilePIDFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())));  
         logger.fine("Should register: " + shouldRegister);
-        for (DataFile dataFile : theDataset.getFiles()) {
-            logger.fine(dataFile.getId() + " is registered?: " + dataFile.isIdentifierRegistered());
-            if (shouldRegister && !dataFile.isIdentifierRegistered()) {
-                // pre-register a persistent id
-                registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
+        if (shouldRegister) {
+            for (DataFile dataFile : theDataset.getFiles()) {
+                logger.fine(dataFile.getId() + " is registered?: " + dataFile.isIdentifierRegistered());
+                if (!dataFile.isIdentifierRegistered()) {
+                    // pre-register a persistent id
+                    registerFileExternalIdentifier(dataFile, idServiceBean, ctxt, true);
+                }
             }
         }
     }

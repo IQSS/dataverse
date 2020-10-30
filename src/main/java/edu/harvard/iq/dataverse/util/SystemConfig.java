@@ -1014,8 +1014,8 @@ public class SystemConfig {
     }
     public boolean isDataFilePIDSequentialDependent(){
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, DataFilePIDFormat.DEPENDENT.toString());
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals(DataFilePIDFormat.DEPENDENT.toString())){
             return true;
         }
         return false;
