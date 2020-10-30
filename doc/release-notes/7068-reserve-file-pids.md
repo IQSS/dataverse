@@ -16,7 +16,7 @@ For installations that are using DataCite, this version introduces a change in t
 
 New APIs have been provided for finding any unreserved DataCite-issued file DOIs in your Dataverse, and for reserving them (see below). While not required - the user can still attempt to publish a dataset with an unreserved DOI - having all the identifiers reserved ahead of time is recommended. If you are upgrading an installation that uses DataCite, we specifically recommend that you reserve the file DOIs for all your pre-existing unpublished drafts as soon as this version of Dataverse is deployed, since none of the files were registered at create time. This can be done using the following API calls:  
 
-- `/api/pids/unreserved`  will report the ids of the files that have unreserved PIDs
+- `/api/pids/unreserved`  will report the ids of the files and datasets that have unreserved PIDs
 - `/api/pids/:persistentId/reserve` reserves the assigned file DOI with DataCite (will need to be run on every id reported by the the first API).
 
 See the [Native API Guide](http://guides.dataverse.org/en/5.2/api/native-api.html) for more information.
