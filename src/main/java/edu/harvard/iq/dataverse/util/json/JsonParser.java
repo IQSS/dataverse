@@ -247,6 +247,7 @@ public class JsonParser {
         grp.setDisplayName(getMandatoryString(obj, "name"));
         grp.setDescription(obj.getString("description", null));
         grp.setPersistedGroupAlias(getMandatoryString(obj, "alias"));
+        grp.setIsRegEx(obj.getBoolean("regex", false));
         if ( obj.containsKey("domains") ) {
             List<String> domains =
                 Optional.ofNullable(obj.getJsonArray("domains"))
@@ -254,10 +255,11 @@ public class JsonParser {
                     .getValuesAs(JsonString.class)
                     .stream()
                     .map(JsonString::getString)
-                    .filter(d -> DomainValidator.getInstance().isValid(d))
+                    // only validate if this group hasn't regex support enabled
+                    .filter(d -> (grp.isRegEx() || DomainValidator.getInstance().isValid(d)))
                     .collect(Collectors.toList());
             if (domains.isEmpty())
-                throw new JsonParseException("Field domains may not be an empty array or contain invalid domains.");
+                throw new JsonParseException("Field domains may not be an empty array or contain invalid domains. Enabled regex support?");
             grp.setEmailDomains(domains);
         } else {
             throw new JsonParseException("Field domains is mandatory.");

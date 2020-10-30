@@ -366,7 +366,7 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
-        String saneDefault = "http://guides.dataverse.org";
+        String saneDefault = "https://guides.dataverse.org";
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
         return guidesBaseUrl + "/" + getGuidesLanguage();
     }
