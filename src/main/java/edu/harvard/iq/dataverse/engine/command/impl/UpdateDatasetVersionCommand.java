@@ -208,7 +208,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // it here
                     logger.fine("Edit ver: " + theDataset.getEditVersion().getId());
                     logger.fine("fmd ver: " + fmd.getDatasetVersion().getId());
-                    if (theDataset.getEditVersion() != fmd.getDatasetVersion()) {
+                    if (!theDataset.getEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getEditVersion());
                     }
                 } else {
