@@ -203,7 +203,9 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     // If the datasetversion doesn't match, we have the fmd from a published version
                     // and we need to remove the one for the newly created draft instead, so we find
                     // it here
-                    if (theDataset.getEditVersion() != fmd.getDatasetVersion()) {
+                    logger.fine("Edit ver: " + theDataset.getEditVersion().getId());
+                    logger.fine("fmd ver: " + fmd.getDatasetVersion().getId());
+                    if (!theDataset.getEditVersion().equals(fmd.getDatasetVersion())) {
                         fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getEditVersion());
                     }
                 } else {
