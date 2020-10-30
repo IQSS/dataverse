@@ -45,7 +45,10 @@ public class FileMetadataUtil implements java.io.Serializable {
                 // datafile
                 if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
                     // and a match on the datasetversion
-                    if (fmToDelete.getDatasetVersion().getId() == null) {
+                    if(fmToDelete.getDatasetVersion() == null) {
+                        //not yet associated with a version (i.e. deleting from the upload screen), so the match on datafile is good enough 
+                        fmit.remove();
+                    } else if (fmToDelete.getDatasetVersion().getId() == null) {
                         // If the fmd to delete is for a datasetversion with no id, we assume match to
                         // any other fmd with a datasetversion with no id (since there should be only
                         // one)
