@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -67,8 +69,12 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
             AuxiliaryFile auxFile = new AuxiliaryFile();
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
-            auxFile.setChecksum(FileUtil.calculateChecksum(storageIO.getAuxFileAsInputStream(auxExtension), systemConfig.getFileFixityChecksumAlgorithm()));
+            MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
+            DigestInputStream di 
+                = new DigestInputStream(fileInputStream, md); 
+  
+            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);          
+            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest())    );
 
             Tika tika = new Tika();
             auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
