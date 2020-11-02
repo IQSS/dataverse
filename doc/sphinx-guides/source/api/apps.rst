@@ -65,10 +65,10 @@ OSF allows you to view, download, and upload files to and from a Dataverse datas
 
 https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
 
-GeoConnect
+Geoconnect
 ~~~~~~~~~~
 
-GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.edu with the "Explore" button. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+Geoconnect allows Dataverse files to be visualized and explored on `WorldMap <http://worldmap.harvard.edu>`_. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
 
 https://github.com/IQSS/geoconnect
 
