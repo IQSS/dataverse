@@ -361,7 +361,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
-                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
+                logger.warning("Failed to publicize the identifier "+dataset.getGlobalId().asString()+", or to publicize a file in the dataset; notifying the user(s), unlocking the dataset");
 
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
