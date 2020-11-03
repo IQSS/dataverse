@@ -89,16 +89,18 @@ As another example, here is how to create a Mail Host via command line for Amazo
 Rebuilding Your Dev Environment
 -------------------------------
 
-If you have an old copy of the database and old Solr data and want to start fresh, here are the recommended steps:
+A script called :download:`dev-rebuild.sh <../../../../scripts/dev/dev-rebuild.sh>` is available that does the following:
 
-- drop your old database
-- clear out your existing Solr index: ``scripts/search/clear``
-- run the installer script above - it will create the db, deploy the app, populate the db with reference data and run all the scripts that create the domain metadata fields. You no longer need to perform these steps separately.
-- confirm you are using the latest Dataverse-specific Solr schema.xml and included XML files (schema_dv_cmb_[copies|fields].xml)
-- confirm http://localhost:8080 is up
-- If you want to set some dataset-specific facets, go to the root dataverse (or any dataverse; the selections can be inherited) and click "General Information" and make choices under "Select Facets". There is a ticket to automate this: https://github.com/IQSS/dataverse/issues/619
+- Drops the database.
+- Clears our Solr.
+- Deletes all data files uploaded by users (assuming you are using the default directory).
+- Deploys the war file located in the ``target`` directory.
+- Runs ``setup-all.sh`` in insecure mode so tests will pass.
+- Runs post-install SQL statements.
+- Publishes the root dataverse.
+- Adjusts permissions on on the root dataverse so tests will pass.
 
-You may also find https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy and related scripts interesting because they demonstrate how we have at least partially automated the process of tearing down a Dataverse installation and having it rise again, hence the name "phoenix." See :ref:`fresh-reinstall` section of the Installation Guide.
+To execute the script, make sure you have built a war file already and then ``cd`` to the root of the source tree and run ``scripts/dev/dev-rebuild.sh``. Feedback on this script is welcome!
 
 DataCite
 --------
