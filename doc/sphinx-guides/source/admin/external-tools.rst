@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data exploration.
+External tools can provide additional features that are not part of Dataverse itself, such as data file previews, visualization, and curation.
 
 .. contents:: |toctitle|
   :local:
@@ -12,7 +12,7 @@ Inventory of External Tools
 ---------------------------
 
 .. csv-table:: 
-   :header: "Tool", "Type", "Scope", "Description"
+   :header-rows: 1
    :widths: 20, 10, 5, 65
    :delim: tab
    :file: ../_static/admin/dataverse-external-tools.tsv
@@ -31,13 +31,11 @@ To add an external tool to your installation of Dataverse you must first downloa
 
 Go to :ref:`inventory-of-external-tools` and download a JSON manifest for one of the tools by following links in the description to installation instructions.
 
-In the curl command below, replace the placeholder "fabulousFileTool.json" placeholder for the actual name of the JSON file you downloaded.
+Configure the tool with the curl command below, making sure to replace the ``fabulousFileTool.json`` placeholder for name of the JSON manifest file you downloaded.
 
 .. code-block:: bash
 
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json 
-
-Note that some tools will provide a preview mode, which provides an embedded, simplified view of the tool on the file pages of your installation. This is controlled by the `hasPreviewMode` parameter. 
 
 Listing All External Tools in Dataverse
 +++++++++++++++++++++++++++++++++++++++
@@ -75,17 +73,26 @@ Testing External Tools
 
 Once you have added an external tool to your installation of Dataverse, you will probably want to test it to make sure it is functioning properly.
 
+File Level vs. Dataset Level
+++++++++++++++++++++++++++++
+
+File level tools are specific to the file type (content type or MIME type). For example, a tool may work with PDFs, which have a content type of "application/pdf". 
+
+In contrast, dataset level tools are always available no matter what file types are within the dataset.
+
 File Level Explore Tools
 ++++++++++++++++++++++++
 
-File level explore tools are specific to the file type (content type or MIME type) of the file. For example, Data Explorer is tool for exploring tabular data files.
+File level explore tools provide a variety of features from data visualization to statistical analysis.
 
-An "Explore" button will appear (on both the dataset page and the file landing page) for files that match the type that the tool has been built for. When there are multiple explore tools for a filetype, the button becomes a dropdown.
+For each supported file type, file level explore tools appear in the file listing of the dataset page as well as under the "Access" button on each file page.
 
 File Level Preview Tools
 ++++++++++++++++++++++++
 
-File level explore tools can be set up to display in preview mode, which is a simplified view of an explore tool designed specifically for embedding in the file page. 
+File level preview tools allow the user to see a preview of the file contents without having to download it.
+
+When a file has a preview available, a preview icon will appear next to that file in the file listing on the dataset page. On the file page itself, the preview will appear in a Preview tab either immediately or once a guestbook has been filled in or terms, if any, have been agreed to.
 
 File Level Configure Tools
 ++++++++++++++++++++++++++
@@ -95,12 +102,12 @@ File level configure tools are only available when you log in and have write acc
 Dataset Level Explore Tools
 +++++++++++++++++++++++++++
 
-When a dataset level explore tool is added, an "Explore" button on the dataset page will appear. This button becomes a drop down when there are multiple tools.
+Dataset level explore tools allow the user to explore all the files in a dataset.
 
 Dataset Level Configure Tools
 +++++++++++++++++++++++++++++
 
-Configure tools at the dataset level are not currently supported. No button appears in the GUI if you add this type of tool.
+Configure tools at the dataset level are not currently supported.
 
 Writing Your Own External Tool
 ------------------------------
