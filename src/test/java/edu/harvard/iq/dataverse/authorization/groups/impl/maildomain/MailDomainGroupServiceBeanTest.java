@@ -38,24 +38,78 @@ class MailDomainGroupServiceBeanTest {
     }
     
     @Test
-    void testFindWithVerifiedEmail() {
+    void testUpdateGroup() {
         // given
-        List<MailDomainGroup> db = new ArrayList<>(Arrays.asList(MailDomainGroupTest.genGroup(),MailDomainGroupTest.genGroup(),MailDomainGroupTest.genGroup()));
-        MailDomainGroup test = MailDomainGroupTest.genGroup();
-        test.setEmailDomains("foobar.com");
-        db.add(test);
+        List<MailDomainGroup> db = new ArrayList<>(Arrays.asList(MailDomainGroupTest.genGroup(), MailDomainGroupTest.genGroup(), MailDomainGroupTest.genRegexGroup()));
         mockQuery("MailDomainGroup.findAll", db);
         
-        AuthenticatedUser u = new AuthenticatedUser();
-        u.setEmail("test@foobar.com");
-        when(confirmEmailSvc.hasVerifiedEmail(u)).thenReturn(true);
+        // when
+        svc.updateGroups();
+        
+        // then
+        assertEquals(2, svc.simpleGroups.size());
+        assertEquals(1, svc.regexGroups.size());
+    }
     
+    @Test
+    void testUpdateGroupMultiRegex() {
+        // given
+        List<MailDomainGroup> db = new ArrayList<>(Arrays.asList(MailDomainGroupTest.genGroup(), MailDomainGroupTest.genRegexGroup()));
+        MailDomainGroup longRegex = MailDomainGroupTest.genRegexGroup();
+        longRegex.setEmailDomains(Arrays.asList("example\\.org", ".+\\.example\\.org"));
+        db.add(longRegex);
+        mockQuery("MailDomainGroup.findAll", db);
+        
+        // when
+        svc.updateGroups();
+        
+        // then
+        assertEquals(1, svc.simpleGroups.size());
+        assertEquals(2, svc.regexGroups.size());
+        assertEquals("example\\.org|.+\\.example\\.org", svc.regexGroups.get(longRegex).pattern());
+    }
+    
+    private static Stream<Arguments> mailTestExamples() {
+        return Stream.of(
+            Arguments.of("simpleGroupOnly@foobar.com", Arrays.asList("foobar.com"), false, false),
+            Arguments.of("regexButNotActive@example.org", Arrays.asList("^example\\.org$"), false, true),
+            Arguments.of("singleRegexMatch@example.org", Arrays.asList("^example\\.org$"), true, false),
+            Arguments.of("singleRegexFail-1@hello.example.org", Arrays.asList("^example\\.org$"), true, true),
+            Arguments.of("singleRegexFail-2@foobar.com", Arrays.asList("^example\\.org$"), true, true),
+            Arguments.of("multiRegexMatch-1@example.org", Arrays.asList("^example\\.org$", "^.+\\.example\\.org$"), true, false),
+            Arguments.of("multiRegexMatch-2@hello.example.org", Arrays.asList("^example\\.org$", "^.+\\.example\\.org$"), true, false),
+            Arguments.of("multiRegexFail@hfoobar.com", Arrays.asList("^example\\.org$", "^.+\\.example\\.org$"), true, true),
+            Arguments.of("invalidRegex@hfoobar.com", Arrays.asList("$foobar.com$"), true, true),
+            Arguments.of("noOvermatchingRegex@hfoobar.com.eu", Arrays.asList("bar\\.com"), true, true)
+        );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("mailTestExamples")
+    void testFindWithVerifiedEmail(String email, List<String> domains, boolean isRegex, boolean shouldBeEmpty) {
+        // given
+        List<MailDomainGroup> db = new ArrayList<>(Arrays.asList(MailDomainGroupTest.genGroup()));
+        MailDomainGroup test = MailDomainGroupTest.genGroup();
+        test.setEmailDomains(domains);
+        test.setIsRegEx(isRegex);
+        db.add(test);
+        mockQuery("MailDomainGroup.findAll", db);
+        svc.updateGroups();
+        
+        AuthenticatedUser u = new AuthenticatedUser();
+        u.setEmail(email);
+        when(confirmEmailSvc.hasVerifiedEmail(u)).thenReturn(true);
+        
         // when
         Set<MailDomainGroup> result = svc.findAllWithDomain(u);
         
         // then
-        Set<MailDomainGroup> expected = new HashSet<>(Arrays.asList(test));
-        assertEquals(expected, result);
+        if (shouldBeEmpty) {
+            assertTrue(result.isEmpty());
+        } else {
+            Set<MailDomainGroup> expected = new HashSet<>(Arrays.asList(test));
+            assertTrue(result.containsAll(expected));
+        }
     }
     
     @Test
