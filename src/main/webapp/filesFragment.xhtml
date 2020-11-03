@@ -398,17 +398,9 @@
                 </div>
 
                 <div class="file-metadata-block">
-                    <ui:fragment rendered="#{!empty fileMetadata.dataFile.globalIdString}">
-                        <!-- rendered="# {!(fileMetadata.datasetVersion.released or fileMetadata.datasetVersion.deaccessioned)}" -->
-                        <a href="#{widgetWrapper.wrapURL('/file.xhtml?persistentId='.concat(fileMetadata.dataFile.globalIdString).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            #{fileMetadata.label}
-                        </a>
-                    </ui:fragment>
-                    <ui:fragment rendered="#{empty fileMetadata.dataFile.globalIdString}">
-                        <a href="#{widgetWrapper.wrapURL('/file.xhtml?fileId='.concat(fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            #{fileMetadata.label}
-                        </a>
-                    </ui:fragment>
+                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                        #{fileMetadata.label}
+                    </a>
 
                     <!-- HIERARCHY + TYPE + SIZE + DATE + CHECKSUM -->
                     <div class="text-muted small">
@@ -591,7 +583,12 @@
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
 
-
+                <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
+                    <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                        href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                        <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+                    </a>
+                </ui:fragment>
                     <a type="button" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                        title="#{bundle['file.accessBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>

@@ -115,7 +115,7 @@ Ingested files can be downloaded in several different ways.
 
 - The original file, which may be in a proprietary format which requires special software
 
-- Rdata format if the instalation has configured this
+- RData format if the installation has configured this
 
 - The variable metadata for the file in DDI format
 
@@ -151,7 +151,7 @@ After you've downloaded the Dataverse Package, you may want to double-check that
 Explore Data
 ------------
 
-Please see the :doc:`/user/data-exploration/index` to get started.
+Some file types and datasets offer data exploration options if external tools have been installed. The tools are described in the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. |image-file-tree-view| image:: ./img/file-tree-view.png
    :class: img-responsive
