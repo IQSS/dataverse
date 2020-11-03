@@ -52,11 +52,12 @@ Required Components
 When planning your installation you should be aware of the following components of the Dataverse architecture:
 
 - Linux: RHEL/CentOS is highly recommended since all development and QA happens on this distribution.
-- App server: Payara is the recommended Jakarta EE application server
+- App server: Payara is the recommended Jakarta EE application server.
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse-specific schema is provided.
 - SMTP server: for sending mail for password resets and other notifications.
 - Persistent identifier service: DOI and Handle support are provided. Production use requires a registered DOI or Handle.net authority.
+- Rserve: runs as a daemon to execute R code.
 
 Optional Components
 +++++++++++++++++++
@@ -64,7 +65,6 @@ Optional Components
 There are a number of optional components you may choose to install or configure, including:
 
 - External Tools: Third party tools for data exploration can be added to Dataverse by following the instructions in the :doc:`/admin/external-tools` section of the Admin Guide.
-- R, rApache, Zelig, and TwoRavens: :doc:`/user/data-exploration/tworavens` describes the feature and :doc:`r-rapache-tworavens` describes how to install these components. :doc:`/admin/external-tools` explains how third-party tools like TwoRavens can be added to Dataverse.
 - Dropbox integration :ref:`dataverse.dropbox.key`: for uploading files from the Dropbox API.
 - Apache: a web server that can "reverse proxy" Jakarta EE applications (like Dataverse) and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
