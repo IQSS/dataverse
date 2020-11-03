@@ -2578,7 +2578,7 @@ The fully expanded example above (without environment variables) looks like this
 Reserve a PID
 ~~~~~~~~~~~~~
 
-Reserved a PID for a dataset or file. A superuser API token is required.
+Reserved a PID for a dataset. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
