@@ -1038,6 +1038,7 @@ dataverse.db.user
 The PostgreSQL user name to connect with.
 
 Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_USER``.
+Defaults to ``dataverse`` (via ``microprofile-config.properties``).
 
 dataverse.db.password
 +++++++++++++++++++++
@@ -1056,9 +1057,18 @@ Preferrably use a JVM alias, as passwords in environment variables aren't safe!
 dataverse.db.host
 +++++++++++++++++
 
-The PostgreSQL server to connect to. May contain a port by adding ``:1234``.
+The PostgreSQL server to connect to.
 
 Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_HOST``.
+Defaults to ``localhost`` (via ``microprofile-config.properties``).
+
+dataverse.db.port
++++++++++++++++++
+
+The PostgreSQL servers port to connect to.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_PORT``.
+Defaults to ``5432`` (via ``microprofile-config.properties``), the default PostgreSQL port.
 
 dataverse.db.name
 +++++++++++++++++
@@ -1066,6 +1076,7 @@ dataverse.db.name
 The PostgreSQL database name to use for Dataverse.
 
 Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_NAME``.
+Defaults to ``dataverse`` (via ``microprofile-config.properties``).
 
 dataverse.rserve.host
 +++++++++++++++++++++
