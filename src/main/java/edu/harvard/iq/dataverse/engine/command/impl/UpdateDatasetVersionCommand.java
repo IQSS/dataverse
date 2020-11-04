@@ -200,7 +200,8 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                     theDataset.getEditVersion().getFileMetadatas().remove(mergedFmd);
                 }
             }
-
+            //Temporary -needed until ##7337 is merged.
+            savedDataset = ctxt.em().merge(theDataset);
             registerFilePidsIfNeeded(theDataset, ctxt, true);
             
             if (recalculateUNF) {
