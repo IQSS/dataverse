@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el8 (RHEL/CentOS 8) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
 
 Java
 ----
@@ -322,26 +322,34 @@ components and libraries. Please consult the instructions in the
 Installing R
 ============
 
-Can be installed with :fixedwidthplain:`yum`::
-
-       yum install R-core R-core-devel
-
-EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+For RHEL/CentOS, the EPEL distribution is strongly recommended::
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+RHEL/CentOS 8 users can install the epel-release RPM::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+RHEL/CentOS 7 users can install the epel-release RPM::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+RHEL 8 users will need to enable the CodeReady-Builder repository::
 
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+       subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
-RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+CentOS 8 users will need to enable the PowerTools repository::
+
+       dnf config-manager --enable PowerTools
+
+RHEL 7 users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
+
+Finally, install R with :fixedwidthplain:`yum`::
+
+       yum install R-core R-core-devel
 
 Installing the required R libraries
 ===================================
