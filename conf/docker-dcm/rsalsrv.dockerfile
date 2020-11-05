@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos:8
 ARG RPMFILE=rsal-0.1-0.noarch.rpm
 RUN yum update; yum install -y epel-release 
 COPY ${RPMFILE} /tmp/

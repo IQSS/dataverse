@@ -39,7 +39,7 @@ services:
   client:
     build:
       context: .
-      dockerfile: c6client.dockerfile
+      dockerfile: c8client.dockerfile
     command: sleep infinity
     container_name: dcm_client
     volumes:

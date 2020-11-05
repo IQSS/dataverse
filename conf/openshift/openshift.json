@@ -150,10 +150,10 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "centos-postgresql-94-centos7"
+        "name": "centos-postgresql-10-centos8"
       },
       "spec": {
-        "dockerImageRepository": "centos/postgresql-94-centos7"
+        "dockerImageRepository": "centos/postgresql-10-centos8"
       }
     },
     {
@@ -397,8 +397,8 @@
           "spec": {
             "containers": [
               {
-                "name": "centos-postgresql-94-centos7",
-                "image": "centos/postgresql-94-centos7",
+                "name": "centos-postgresql-10-centos8",
+                "image": "centos/postgresql-10-centos8",
                 "command": [
                   "sh",
                   "-c",
@@ -506,11 +506,11 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "centos-postgresql-94-centos7"
+                "centos-postgresql-10-centos8"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "centos/postgresql-94-centos7:latest"
+                "name": "centos/postgresql-10-centos8:latest"
               }
             }
           },
