@@ -32,6 +32,6 @@ If you are using a PostgreSQL server on `localhost:5432`, you can omit `datavers
 
 You are safe to delete the old alias and DB pool afterwards:
 ```
-asadmin delete-jdbc-connection-pool dvnDBpool
+asadmin delete-jdbc-connection-pool --cascade=true dvnDBpool
 asadmin delete-password-alias db_password_alias
 ```
