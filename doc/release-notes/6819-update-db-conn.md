@@ -24,9 +24,11 @@ asadmin create-system-properties "dataverse.db.name=${DB_NAME}"
 echo "AS_ADMIN_ALIASPASSWORD=${DB_PASS}" > /tmp/password.txt
 asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
 rm /tmp/password.txt
+
+asadmin set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=java:global/jdbc/dataverse
 ```
 
-If you are using a PostgreSQL server on `localhost:5432`, you can omit these props.
+If you are using a PostgreSQL server on `localhost:5432`, you can omit `dataverse.db.host` and `dataverse.db.port`.
 
 You are safe to delete the old alias and DB pool afterwards:
 ```
