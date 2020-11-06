@@ -1,3 +1,10 @@
+-- #5361 and #7256 is about faster deployments, especially during development, sitting on an empty database.
+--
+-- This script has been part of  scripts/database/reference_data.sql that had to be executed manually on every new
+-- deployment (manually in the sense of Flyway didn't, the outside installer or an admin took care of it).
+--
+-- This script will load some initial, common data if not present (so only once, when booting for the first time).
+
 -- using http://dublincore.org/schemas/xmls/qdc/dcterms.xsd because at http://dublincore.org/schemas/xmls/ it's the
 -- schema location for http://purl.org/dc/terms/ which is referenced in http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
 INSERT INTO foreignmetadataformatmapping (id, name, startelement, displayName, schemalocation)
@@ -28,10 +35,12 @@ INSERT INTO foreignmetadatafieldmapping (id, foreignfieldxpath, datasetfieldname
               (19, ':language', 'language', FALSE, NULL, 1 )
        ON CONFLICT DO NOTHING;
 
+-- Simple trick: WHERE NOT EXISTS (SELECT id FROM table) is only true if the table is empty.
 INSERT INTO guestbook (emailrequired, enabled, institutionrequired, createtime, name, namerequired, positionrequired, dataverse_id)
        SELECT false, true, false, now(), 'Default', false, false, null
        WHERE NOT EXISTS (SELECT id FROM guestbook);
 
+-- Simple trick: WHERE NOT EXISTS (SELECT id FROM table) is only true if the table is empty.
 INSERT INTO worldmapauth_tokentype
               (name, created, contactemail, hostname,
                ipaddress, mapitlink,
