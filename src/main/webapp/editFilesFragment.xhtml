@@ -405,9 +405,6 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </div>
-                                        <div jsf:rendered="#{!(empty fileMetadata.dataFile.duplicateFilename)}" class="alert alert-warning no-margin-bottom padding-6" role="alert">
-                                            #{fileMetadata.dataFile.duplicateFilename}
-                                        </div>
                                     </div>
                                 </div>
                             </p:column>
@@ -444,12 +441,22 @@
                                         </ul>
                                     </div>
                                 </f:facet>
+                                
+                                <!-- FILE LEVEL MSGs -->
+                                <div class="bg-warning text-warning text-center margin-bottom-half" jsf:rendered="#{!(empty fileMetadata.dataFile.duplicateFilename)}">
+                                    <!-- Duplicate file name -->
+                                    <span class="glyphicon glyphicon-warning-sign"/> #{fileMetadata.dataFile.duplicateFilename}
+                                </div>
+                                <!-- END: FILE LEVEL MSGs -->
+                                
                                 <div style="margin-right:14px;" class="btn-group">
-                                    <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
+                                    <button class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle" title="#{bundle['file.optionsBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                        <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFile']} <span class="caret"></span>
+                                        <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                        <!-- Edit Options -->
+                                        <li class="dropdown-header">#{bundle['file.optionsBtn.header.edit']} <span class="glyphicon glyphicon-pencil"/></li>
                                         <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink id="fileProvenanceButton"
