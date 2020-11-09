@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Set;
@@ -178,13 +179,12 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                             } while (globalIdServiceBean.alreadyExists(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
                         if(!retry) {
-                            logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
-                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                            logger.warning("Reserving PID for: "  + getDataset().getId() + " failed.");
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidNotReserved", Arrays.asList(theDataset.getIdentifier())), this);
                         }
                         if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             //Didn't work - we existed the loop with too many tries
-                            throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
-                                + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.pidReservationRetryExceeded", Arrays.asList(Integer.toString(attempts), theDataset.getIdentifier())), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
@@ -197,6 +197,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
 
                 } catch (Throwable e) {
+                    if (e instanceof CommandException) {
+                        throw (CommandException) e;
+                    }
                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);
                 }
             } else {
@@ -275,7 +278,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         }
                         if (!retry) {
                             logger.warning("Reserving File PID for: " + getDataset().getId() + ", fileId: " + dataFile.getId() + ", during publication failed.");
-                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.filePidNotReserved"), this);
+                            throw new CommandExecutionException(BundleUtil.getStringFromBundle("abstractDatasetCommand.filePidNotReserved", Arrays.asList(getDataset().getIdentifier())), this);
                         }
                         if (attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
                             // Didn't work - we existed the loop with too many tries
@@ -293,6 +296,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                     }
     
                 } catch (Throwable e) {
+                    if (e instanceof CommandException) {
+                        throw (CommandException) e;
+                    }
                     throw new CommandException(BundleUtil.getStringFromBundle("file.register.error", globalIdServiceBean.getProviderInformation()), this);
                 }
             } else {
