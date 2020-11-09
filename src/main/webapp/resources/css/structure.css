@@ -521,7 +521,7 @@ div.panelSearchForm .button-block {
 #resultsCountPaginatorBlock div.results-sort-pagination div.btn-group {margin-right: 22px;}
 #resultsCountPaginatorBlock .pagination {margin:0;}
 
-span.search-term-match {font-weight: bold;}
+span.search-term-match {font-weight: bold;margin-left:0px;}
 [id$='resultsTable'] {width:100%;}
 [id$='resultsTable'] div[class*='Result'] {
     font-size: 90%;
