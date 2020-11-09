@@ -685,6 +685,7 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>
