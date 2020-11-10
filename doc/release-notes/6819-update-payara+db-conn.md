@@ -11,7 +11,25 @@ Using MicroProfile Config API, you can much more easily deposit configuration
 details. For an overview of supported options, please see the
 [installation guide](https://guides.dataverse.org/en/5.2/installation/config.html#jvm-options).
 
-### Upgrading from earlier releases
+## Update to Payara Platform 5.2020.5
+
+In contrast to good old Glassfish 4, the Payara application server
+is a maintained product, receiving both feature and - more important -
+security and dependent technology updates. You should update the
+application server platform on a regular basis, as it is a key component
+of a running Dataverse deployment.
+
+🚨 THIS VERSION OF DATAVERSE **REQUIRES** UPGRADING TO PAYARA 5.2020.5. 🚨
+
+Some bugs related to the new database connection configuration via MicroProfile Config
+have been fixed. You will run into troubles when not upgrading.
+
+Instructions how to update can be found in the
+[Payara documentation](https://docs.payara.fish/community/docs/5.2020.5/documentation/user-guides/upgrade-payara.html)
+
+## Upgrading from earlier releases
+
+ℹ️ You need to update the Payara Application Server before continuing here. See above.
 
 1. Undeploy the previous version.
 ```
@@ -62,5 +80,3 @@ service payara start
 service payara stop
 service payara start
 ```
-
-
