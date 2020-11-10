@@ -5544,18 +5544,23 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isTagPresort() {
+        logger.fine("Tag presort is: " + this.tagPresort);
        return this.tagPresort;
     }
 
     public void setTagPresort(boolean tagPresort) {
+        logger.fine("Setting tag presort:  " + (tagPresort && (null != getSortOrder())));
+        
         this.tagPresort = tagPresort && (null != getSortOrder());
     }
     
     public boolean isFolderPresort() {
+        logger.fine("Folder presort is: " + this.folderPresort);
         return this.folderPresort;
      }
 
      public void setFolderPresort(boolean folderPresort) {
+         logger.fine("Setting Folder presort:  " + folderPresort);
          this.folderPresort = folderPresort;
      }
 
