@@ -344,7 +344,7 @@ public class EjbDataverseEngine {
                 @Override
                 public void addCommand (Command command){
 
-					if (logger.isLoggable(Level.FINE)) {
+					if (logger.isLoggable(Level.FINE) && !commandsCalled.isEmpty()) {
 						int instance = (int) (100 * Math.random());
 						try {
 							logger.fine("Current Command Stack (" + instance + "): ");
