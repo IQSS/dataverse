@@ -32,7 +32,7 @@
    </script>
    <!-- Retrieve version differences after the page load -->
    <p:remoteCommand  name="postLoadVersionTabList"
-           process="@this, fps, tps"
+           process="@this"
            update=":#{p:resolveClientId('datasetForm:tabView:versionsTable', view)}"
            actionListener="#{DatasetPage.postLoadSetVersionTabList()}" />
     <div class="text-right margin-bottom">

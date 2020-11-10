@@ -5561,6 +5561,11 @@ public class DatasetPage implements java.io.Serializable {
 
      public void setFolderPresort(boolean folderPresort) {
          logger.fine("Setting Folder presort:  " + folderPresort);
+         try {
+             throw new Exception("setting folderPresort"); 
+         } catch (Exception e) {
+             e.printStackTrace();
+         }
          this.folderPresort = folderPresort;
      }
 
