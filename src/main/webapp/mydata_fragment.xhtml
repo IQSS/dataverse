@@ -21,26 +21,6 @@
             <input type="text" size="40" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all search-input" name="mydata_search_term" id="mydata_search_term" placeholder="#{bundle['mydataFragment.search']}" />
             &#160; <a id="btn_find_my_data" class="btn btn-default"><span class="glyphicon glyphicon-search"></span>#{bundle['find']}</a>
         </div>
-        <div class="col-xs-5 text-right col-manage-action">
-            <div class="btn-group">
-                <a href="#" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
-                    <span class="glyphicon glyphicon-plus"></span>
-                    #{bundle['dataverse.results.btn.addData']} <b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu pull-right text-left">
-                    <li>
-                        <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                            <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
-                        </h:outputLink>
-                    </li>
-                    <li>
-                        <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
-                            <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
-                        </h:outputLink>
-                    </li>
-                </ul>
-            </div>
-        </div>
     </div>
 <!-- start: panel --><div class="panel panel-default">
 <!-- start: panel body --><div class="panel-body clearfix">
