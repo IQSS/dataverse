@@ -2056,7 +2056,8 @@ public class DatasetPage implements java.io.Serializable {
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
-        
+        this.setFolderPresort(true);
+        this.setTagPresort(true);
         
         return null;
     }
