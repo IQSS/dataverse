@@ -2056,6 +2056,9 @@ public class DatasetPage implements java.io.Serializable {
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
       
+        // As of v5.x (PF8?), having the variables initially set to true in their
+        // declarations doesn't result in them being true when a page is first viewed -
+        // need to set them here.
         this.setFolderPresort(true);
         this.setTagPresort(true);
         
@@ -5545,28 +5548,18 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isTagPresort() {
-        logger.fine("Tag presort is: " + this.tagPresort);
        return this.tagPresort;
     }
 
     public void setTagPresort(boolean tagPresort) {
-        logger.fine("Setting tag presort:  " + (tagPresort && (null != getSortOrder())));
-        
         this.tagPresort = tagPresort && (null != getSortOrder());
     }
     
     public boolean isFolderPresort() {
-        logger.fine("Folder presort is: " + this.folderPresort);
         return this.folderPresort;
      }
 
      public void setFolderPresort(boolean folderPresort) {
-         logger.fine("Setting Folder presort:  " + folderPresort);
-         try {
-             throw new Exception("setting folderPresort"); 
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
          this.folderPresort = folderPresort;
      }
 
