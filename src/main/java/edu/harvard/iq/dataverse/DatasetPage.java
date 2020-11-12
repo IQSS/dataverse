@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -3299,10 +3298,20 @@ public class DatasetPage implements java.io.Serializable {
         }        
     }
     
-        
-    public String restrictSelectedFiles(boolean restricted) throws CommandException{
-        
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
+    public String restrictFiles(boolean restricted) throws CommandException{
+        if (fileMetadataForAction != null) {
+            return restrictFile(restricted);
+        }
+        return restrictSelectedFiles(restricted);
+    }
+    
+    private String restrictFile(boolean restricted) throws CommandException {
+        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
+        save();        
+        return  returnToDraftVersion(); 
+    };    
+       
+    private String restrictSelectedFiles(boolean restricted) throws CommandException{        
         if (selectedFiles.isEmpty()) {
             if (restricted) {
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
@@ -3333,18 +3342,17 @@ public class DatasetPage implements java.io.Serializable {
             if (bulkUpdateCheckVersion()) {
                 refreshSelectedFiles();
             }
-            restrictFiles(restricted);
+            restrictFiles(this.getSelectedFiles(), restricted);
         }
         
         save();
-        
         return  returnToDraftVersion();
     }
-
-    private void restrictFiles(boolean restricted) throws CommandException {
+    
+    private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
         Command<Void> cmd;
         previouslyRestrictedFiles = new ArrayList<>();
-        for (FileMetadata fmd : this.getSelectedFiles()) {
+        for (FileMetadata fmd : filesToRestrict) {
             if(fmd.isRestricted()) {
                 previouslyRestrictedFiles.add(fmd);
             }
@@ -3370,19 +3378,31 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
+
+    public String deleteFiles() throws CommandException{
+        if (fileMetadataForAction != null) {
+            return deleteFile();
+        }
+        return deleteSelectedFiles();
+    }
     
-    public String  deleteFilesAndSave(){
+    private String  deleteFile(){
+        deleteFiles(Collections.singletonList(fileMetadataForAction));
+        return save();       
+    }     
+    
+    private String  deleteSelectedFiles(){
         bulkFileDeleteInProgress = true;
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
         }
-        deleteFiles();
+        deleteFiles(selectedFiles);
         return save();       
-    }
+    }   
     
-    public void deleteFiles() {
+    private void deleteFiles(List<FileMetadata> filesToDelete) {
 
-        for (FileMetadata markedForDelete : selectedFiles) {
+        for (FileMetadata markedForDelete : filesToDelete) {
             
             if (markedForDelete.getId() != null) {
                 // This FileMetadata has an id, i.e., it exists in the database. 
@@ -5637,6 +5657,16 @@ public class DatasetPage implements java.io.Serializable {
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
         PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+    }
+           
+    private FileMetadata fileMetadataForAction;
+
+    public FileMetadata getFileMetadataForAction() {
+        return fileMetadataForAction;
+    }
+
+    public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
+        this.fileMetadataForAction = fileMetadataForAction;
     }
 
 }

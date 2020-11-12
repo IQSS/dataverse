@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.1.1</version>
+    <version>5.2</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -298,7 +298,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>1.7</version> <!-- Or 1.8-SNAPSHOT -->
+            <version>3.8</version> <!-- Or 1.8-SNAPSHOT -->
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
