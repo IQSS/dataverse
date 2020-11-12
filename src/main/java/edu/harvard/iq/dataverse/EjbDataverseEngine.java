@@ -365,7 +365,6 @@ public class EjbDataverseEngine {
                         } catch (Exception e) {
                             logger.fine("Exception logging command stack(" + instance + "): " + e.getMessage());
                         }
-                        ;
                     }
 					commandsCalled.push(command);
                 }
