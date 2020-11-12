@@ -8,6 +8,7 @@ import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -686,7 +687,7 @@ public class DatasetsIT {
         String contributorUsername = UtilIT.getUsernameFromResponse(createContributorResponse);
         String contributorApiToken = UtilIT.getApiTokenFromResponse(createContributorResponse);
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();
-        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "doesNotExist", apiToken);
+        Response grantRoleShouldFail = UtilIT.grantRoleOnDataverse(dataverseAlias, BuiltInRole.EDITOR.getAlias(), "doesNotExist", apiToken);
         grantRoleShouldFail.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("Assignee not found"));
@@ -695,7 +696,7 @@ public class DatasetsIT {
          * "EditDataset", "DownloadFile", and "DeleteDatasetDraft" per
          * scripts/api/data/role-editor.json
          */
-        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.EDITOR, "@" + contributorUsername, apiToken);
+        Response grantRole = UtilIT.grantRoleOnDataverse(dataverseAlias, BuiltInRole.EDITOR.getAlias(), "@" + contributorUsername, apiToken);
         grantRole.prettyPrint();
         assertEquals(OK.getStatusCode(), grantRole.getStatusCode());
         UtilIT.getRoleAssignmentsOnDataverse(dataverseAlias, apiToken).prettyPrint();

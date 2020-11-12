@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -90,7 +91,7 @@ public class FilePermissionsService {
         Dataset dataset = files.get(0).getOwner();
         
         List<RoleAssignment> roleAssignments = Lists.newArrayList();
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(BuiltInRole.FILE_DOWNLOADER);
         
         for (Tuple2<RoleAssignee, DataFile> roleAssigneeAndFile: prepareRoleAssigneeAndFileTuples(roleAssignees, files)) {
             RoleAssignment roleAssignment = assignRole(roleAssigneeAndFile._1, roleAssigneeAndFile._2, fileDownloaderRole);
@@ -110,7 +111,7 @@ public class FilePermissionsService {
      * Removes download permission for users/groups to files passed as argument
      */
     public List<RoleAssignment> revokeFileDownloadRole(List<RoleAssignee> roleAssignees, List<DataFile> files) {
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(BuiltInRole.FILE_DOWNLOADER);
         
         Set<RoleAssignment> roleAssignments = Sets.newHashSet();
         

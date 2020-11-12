@@ -14,7 +14,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -188,7 +188,7 @@ public class MailMessageCreator {
                                                     dataverse.getDisplayName(),
                                                     getDataverseLink(dataverse));
 
-                if (joinedRoleNames.contains(DataverseRole.FILE_DOWNLOADER)) {
+                if (joinedRoleNames.contains(BuiltInRole.FILE_DOWNLOADER.getAlias())) {
                     pattern = BundleUtil.getStringFromBundleWithLocale(
                             "notification.access.granted.fileDownloader.additionalDataverse",
                             notificationsEmailLanguage);
@@ -246,7 +246,7 @@ public class MailMessageCreator {
                                                     dataset.getDisplayName(),
                                                     getDatasetLink(dataset));
 
-                if (joinedRoleNames.contains(DataverseRole.FILE_DOWNLOADER)) {
+                if (joinedRoleNames.contains(BuiltInRole.FILE_DOWNLOADER.getAlias())) {
                     pattern = BundleUtil.getStringFromBundleWithLocale(
                             "notification.access.granted.fileDownloader.additionalDataverse",
                             notificationsEmailLanguage);

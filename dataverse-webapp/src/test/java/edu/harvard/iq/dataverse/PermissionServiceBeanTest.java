@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -34,7 +35,7 @@ public class PermissionServiceBeanTest {
 
         //when
         when(dataverseRoleServiceBean.directRoleAssignments(user, dataverse))
-                .thenReturn(assignRoleForUserInDataverse(user, DataverseRole.ADMIN));
+                .thenReturn(assignRoleForUserInDataverse(user, BuiltInRole.ADMIN.getAlias()));
         boolean isUserAdminForDataverse = permissionServiceBean.isUserAdminForDataverse(user, dataverse);
         //then
         assertTrue(isUserAdminForDataverse);
@@ -48,17 +49,17 @@ public class PermissionServiceBeanTest {
 
         //when
         when(dataverseRoleServiceBean.directRoleAssignments(user, dataverse))
-                .thenReturn(assignRoleForUserInDataverse(user, DataverseRole.MEMBER));
+                .thenReturn(assignRoleForUserInDataverse(user, BuiltInRole.MEMBER.getAlias()));
         boolean isUserAdminForDataverse = permissionServiceBean.isUserAdminForDataverse(user, dataverse);
         //then
         assertTrue(!isUserAdminForDataverse);
     }
 
-    private List<RoleAssignment> assignRoleForUserInDataverse(User user, String dataverseRole) {
+    private List<RoleAssignment> assignRoleForUserInDataverse(User user, String roleAlias) {
         RoleAssignment roleAssignment = new RoleAssignment();
 
         DataverseRole adminRole = new DataverseRole();
-        adminRole.setAlias(dataverseRole);
+        adminRole.setAlias(roleAlias);
 
         roleAssignment.setRole(adminRole);
         roleAssignment.setAssigneeIdentifier(user.getIdentifier());

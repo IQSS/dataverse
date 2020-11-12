@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
@@ -74,7 +75,7 @@ public class ManagePermissionsService implements Serializable {
      * @return false if role is FILE_DOWNLOADER and dataverse is unpublished
      */
     private boolean shouldUserBeNotified(DataverseRole role, DvObject object) {
-        return !(role.getAlias().equals(DataverseRole.FILE_DOWNLOADER) && !object.isReleased());
+        return !(role.getAlias().equals(BuiltInRole.FILE_DOWNLOADER.getAlias()) && !object.isReleased());
     }
 
 

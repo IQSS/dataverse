@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -63,7 +64,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         dataverseSession.setUser(authenticationService.findByID(1L));
         String userEmail = dataverseSession.getUser().getDisplayInfo().getEmailAddress();
         Dataverse dataverse = dataverseDao.find(1L);
-        DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias("editor");
+        DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR);
 
         // when
         managePermissionsService.assignRoleWithNotification(roleToBeAssigned, dataverseSession.getUser(), dataverse);
@@ -94,7 +95,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     public void shouldAssignRoleWithNotification_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(1L);
-        DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias("editor");
+        DataverseRole roleToBeAssigned = roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR);
         dataverseSession.setUser(GuestUser.get());
 
         // when&then
@@ -107,7 +108,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         // given
         Dataverse dataverse = dataverseDao.find(1L);
         String userEmail = dataverseSession.getUser().getDisplayInfo().getEmailAddress();
-        RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias("editor"), dataverseSession.getUser(), dataverse, null);
+        RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR), dataverseSession.getUser(), dataverse, null);
         em.persist(toBeRemoved);
         em.flush();
 
@@ -120,7 +121,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
                 RoleAssignment.class);
         query.setParameter("assigneeIdentifier", dataverseSession.getUser().getIdentifier());
         query.setParameter("definitionPointId", dataverse.getId());
-        query.setParameter("roleId", roleService.findBuiltinRoleByAlias("editor").getId());
+        query.setParameter("roleId", roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR).getId());
         List<RoleAssignment> roles = query.getResultList();
         assertEquals(0, roles.size());
 
@@ -134,7 +135,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     public void removeRoleAssignmentWithNotification_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(1L);
-        RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias("editor"), dataverseSession.getUser(), dataverse, null);
+        RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR), dataverseSession.getUser(), dataverse, null);
         em.persist(toBeRemoved);
         em.flush();
 
@@ -159,7 +160,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         managePermissionsService.saveOrUpdateRole(toBeSaved);
 
         // then
-        DataverseRole dbRole = roleService.findCustomRoleByAliasAndOwner("newRoleAlias", dataverse.getId());
+        DataverseRole dbRole = roleService.findRoleByAliasAssignableInDataverse("newRoleAlias", dataverse.getId());
         assertTrue(dataverse.getRoles()
                 .stream()
                 .map(DataverseRole::getId)

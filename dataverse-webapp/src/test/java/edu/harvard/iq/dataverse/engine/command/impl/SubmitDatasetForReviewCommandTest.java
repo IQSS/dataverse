@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
@@ -116,7 +117,7 @@ public class SubmitDatasetForReviewCommandTest {
                 return new DataverseRoleServiceBean() {
 
                     @Override
-                    public DataverseRole findBuiltinRoleByAlias(String alias) {
+                    public DataverseRole findBuiltinRoleByAlias(BuiltInRole builtInRole) {
                         return new DataverseRole();
                     }
 

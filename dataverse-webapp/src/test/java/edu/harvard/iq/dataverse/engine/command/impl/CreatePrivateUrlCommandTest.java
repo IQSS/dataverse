@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
@@ -62,7 +63,7 @@ public class CreatePrivateUrlCommandTest {
                 return new DataverseRoleServiceBean() {
 
                     @Override
-                    public DataverseRole findBuiltinRoleByAlias(String alias) {
+                    public DataverseRole findBuiltinRoleByAlias(BuiltInRole builtInRole) {
                         return new DataverseRole();
                     }
 

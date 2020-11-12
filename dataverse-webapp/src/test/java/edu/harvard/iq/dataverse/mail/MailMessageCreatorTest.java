@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple2;
@@ -359,7 +360,7 @@ public class MailMessageCreatorTest {
     private RoleAssignment createRoleAssignment() {
         RoleAssignment roleAssignment = new RoleAssignment();
         DataverseRole dataverseRole = new DataverseRole();
-        dataverseRole.setAlias(DataverseRole.ADMIN);
+        dataverseRole.setAlias(BuiltInRole.ADMIN.getAlias());
         roleAssignment.setRole(dataverseRole);
         return roleAssignment;
     }

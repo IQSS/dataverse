@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssigneeDisplayInfo;
@@ -26,23 +27,24 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static java.util.stream.Collectors.toList;
+
 
 /**
  * @author gdurand
@@ -51,7 +53,7 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 @Named
 public class ManagePermissionsPage implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(ManagePermissionsPage.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(ManagePermissionsPage.class);
 
     @EJB
     DvObjectServiceBean dvObjectService;
@@ -74,9 +76,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     @Inject
     DataverseSession session;
-
-    private DataverseRolePermissionHelper dataverseRolePermissionHelper;
-    private List<DataverseRole> roleList;
 
     private DvObject dvObject;
     private Long id;
@@ -136,9 +135,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (dvObject instanceof Dataverse) {
             initAccessSettings();
         }
-        roleList = roleService.findAll();
         roleAssignments = initRoleAssignments();
-        dataverseRolePermissionHelper = new DataverseRolePermissionHelper(roleList);
         return "";
     }
 
@@ -243,7 +240,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
      */
 
     private String authenticatedUsersContributorRoleAlias = null;
-    private String defaultContributorRoleAlias = DataverseRole.EDITOR;
+    private String defaultContributorRoleAlias = BuiltInRole.EDITOR.getAlias();
 
     public String getAuthenticatedUsersContributorRoleAlias() {
         return authenticatedUsersContributorRoleAlias;
@@ -261,14 +258,14 @@ public class ManagePermissionsPage implements java.io.Serializable {
         if (defaultContributorRoleAlias == null) {
             initAccessSettings();
         }
-        return !(defaultContributorRoleAlias.equals(DataverseRole.EDITOR) ||
-                defaultContributorRoleAlias.equals(DataverseRole.CURATOR) ||
-                defaultContributorRoleAlias.equals(DataverseRole.DEPOSITOR));
+        return !(defaultContributorRoleAlias.equals(BuiltInRole.EDITOR.getAlias()) ||
+                defaultContributorRoleAlias.equals(BuiltInRole.CURATOR.getAlias()) ||
+                defaultContributorRoleAlias.equals(BuiltInRole.DEPOSITOR.getAlias()));
     }
 
     public String getCustomDefaultContributorRoleName() {
         if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getName();
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.name") : roleService.findRoleByAliasAssignableInDataverse(defaultContributorRoleAlias, dvObject.getId()).getName();
         } else {
             return "";
         }
@@ -276,7 +273,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public String getCustomDefaultContributorRoleAlias() {
         if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? DataverseRole.NONE : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getAlias();
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? DataverseRole.NONE : roleService.findRoleByAliasAssignableInDataverse(defaultContributorRoleAlias, dvObject.getId()).getAlias();
         } else {
             return "";
         }
@@ -292,7 +289,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
 
     public String getCustomDefaultContributorRoleDescription() {
         if (dvObject instanceof Dataverse && isCustomDefaultContributorRole()) {
-            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.decription") : roleService.findCustomRoleByAliasAndOwner(defaultContributorRoleAlias, dvObject.getId()).getDescription();
+            return defaultContributorRoleAlias.equals(DataverseRole.NONE) ? BundleUtil.getStringFromBundle("permission.default.contributor.role.none.decription") : roleService.findRoleByAliasAssignableInDataverse(defaultContributorRoleAlias, dvObject.getId()).getDescription();
         } else {
             return "";
         }
@@ -326,10 +323,12 @@ public class ManagePermissionsPage implements java.io.Serializable {
     public void saveConfiguration(ActionEvent e) {
         // Set role (if any) for authenticatedUsers
         DataverseRole roleToAssign = null;
-        List<String> contributorRoles = Arrays.asList(DataverseRole.FULL_CONTRIBUTOR, DataverseRole.DV_CONTRIBUTOR, DataverseRole.DS_CONTRIBUTOR);
+        List<String> contributorRoles = Arrays.asList(BuiltInRole.FULL_CONTRIBUTOR, BuiltInRole.DV_CONTRIBUTOR, BuiltInRole.DS_CONTRIBUTOR).stream()
+                .map(builtInRole -> builtInRole.getAlias())
+                .collect(toList());
 
         if (!StringUtil.isEmpty(authenticatedUsersContributorRoleAlias)) {
-            roleToAssign = roleService.findBuiltinRoleByAlias(authenticatedUsersContributorRoleAlias);
+            roleToAssign = roleService.findBuiltinRoleByAlias(BuiltInRole.fromAlias(authenticatedUsersContributorRoleAlias));
         }
 
         // then, check current contributor role
@@ -352,7 +351,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         // set dataverse default contributor role
         if (dvObject instanceof Dataverse) {
             Dataverse dv = (Dataverse) dvObject;
-            DataverseRole defaultRole = roleService.findBuiltinRoleByAlias(defaultContributorRoleAlias);
+            DataverseRole defaultRole = roleService.findBuiltinRoleByAlias(BuiltInRole.fromAlias(defaultContributorRoleAlias));
             if (!defaultRole.equals(dv.getDefaultContributorRole())) {
                 Try.of(() -> managePermissionsService.setDataverseDefaultContributorRole(defaultRole, dv))
                         .onSuccess(dataverse -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("permission.defaultPermissionDataverseUpdated")))
@@ -421,7 +420,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                 }
 
             } else if (dvObject instanceof DataFile) {
-                roles.add(roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER));
+                roles.add(roleService.findBuiltinRoleByAlias(BuiltInRole.FILE_DOWNLOADER));
             }
 
             Collections.sort(roles, DataverseRole.CMP_BY_NAME);
@@ -645,7 +644,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                             ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotAbleToBeRemoved"), "");
-            logger.log(Level.SEVERE, "Error removing role assignment: " + throwable.getMessage(), throwable);
+            logger.error("Error removing role assignment: " + throwable.getMessage(), throwable);
         }
     }
 
@@ -657,7 +656,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                             ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.roleNotSaved"), "");
-            logger.log(Level.SEVERE, "Error saving role: " + throwable.getMessage(), throwable);
+            logger.error("Error saving role: " + throwable.getMessage(), throwable);
         }
     }
 
@@ -671,7 +670,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         } else if (throwable instanceof CommandException) {
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", messageDetails);
             JsfHelper.addErrorMessage(message);
-            logger.log(Level.SEVERE, "Error assiging role: " + throwable.getMessage(), throwable);
+            logger.error("Error assiging role: " + throwable.getMessage(), throwable);
         }
     }
 
@@ -682,7 +681,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
                             ((PermissionException) throwable).getMissingPermissions().toString()));
         } else if (throwable instanceof CommandException) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("permission.CannotAssigntDefaultPermissions"));
-            logger.log(Level.SEVERE, "Error assigning default permissions: " + throwable.getMessage(), throwable);
+            logger.error("Error assigning default permissions: " + throwable.getMessage(), throwable);
         }
     }
 }

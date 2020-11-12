@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLev
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
@@ -86,18 +87,18 @@ public class CreateDataverseCommandTest {
 
         List<RoleAssignment> assignments = new LinkedList<>();
 
-        Map<String, DataverseRole> builtInRoles;
+        Map<BuiltInRole, DataverseRole> builtInRoles;
 
         {
             builtInRoles = new HashMap<>();
-            builtInRoles.put(DataverseRole.EDITOR, makeRole("default-editor"));
-            builtInRoles.put(DataverseRole.ADMIN, makeRole("default-admin"));
-            builtInRoles.put(DataverseRole.MANAGER, makeRole("default-manager"));
+            builtInRoles.put(BuiltInRole.EDITOR, makeRole("default-editor"));
+            builtInRoles.put(BuiltInRole.ADMIN, makeRole("default-admin"));
+            builtInRoles.put(BuiltInRole.CURATOR, makeRole("default-curator"));
         }
 
         @Override
-        public DataverseRole findBuiltinRoleByAlias(String alias) {
-            return builtInRoles.get(alias);
+        public DataverseRole findBuiltinRoleByAlias(BuiltInRole builtInRole) {
+            return builtInRoles.get(builtInRole);
         }
 
         @Override
@@ -217,11 +218,11 @@ public class CreateDataverseCommandTest {
 
         assertEquals(result.getCreator(), request.getUser());
         assertEquals(Dataverse.DataverseType.UNCATEGORIZED, result.getDataverseType());
-        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.EDITOR), result.getDefaultContributorRole());
+        assertEquals(roles.findBuiltinRoleByAlias(BuiltInRole.EDITOR), result.getDefaultContributorRole());
 
         // Assert that the creator is admin.
         final RoleAssignment roleAssignment = roles.directRoleAssignments(dv).get(0);
-        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole());
+        assertEquals(roles.findBuiltinRoleByAlias(BuiltInRole.ADMIN), roleAssignment.getRole());
         assertEquals(dv, roleAssignment.getDefinitionPoint());
         assertEquals(roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier());
 
@@ -249,7 +250,7 @@ public class CreateDataverseCommandTest {
         dv.setDefaultContributorRole(null);
         dv.setOwner(makeDataverse());
         dv.setDataverseType(Dataverse.DataverseType.JOURNALS);
-        dv.setDefaultContributorRole(roles.findBuiltinRoleByAlias(DataverseRole.MANAGER));
+        dv.setDefaultContributorRole(roles.findBuiltinRoleByAlias(BuiltInRole.CURATOR));
 
         final DataverseRequest request = makeRequest();
         List<DatasetFieldType> expectedFacets = Arrays.asList(makeDatasetFieldType(), makeDatasetFieldType(), makeDatasetFieldType());
@@ -257,7 +258,7 @@ public class CreateDataverseCommandTest {
                                                                   makeDataverseFieldTypeInputLevel(makeDatasetFieldType()),
                                                                   makeDataverseFieldTypeInputLevel(makeDatasetFieldType()));
 
-        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList(expectedFacets), new LinkedList(dftils));
+        CreateDataverseCommand sut = new CreateDataverseCommand(dv, request, new LinkedList<>(expectedFacets), new LinkedList<>(dftils));
         Dataverse result = engine.submit(sut);
 
         assertEquals(creation, result.getCreateDate());
@@ -265,11 +266,11 @@ public class CreateDataverseCommandTest {
 
         assertEquals(creator, result.getCreator());
         assertEquals(Dataverse.DataverseType.JOURNALS, result.getDataverseType());
-        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.MANAGER), result.getDefaultContributorRole());
+        assertEquals(roles.findBuiltinRoleByAlias(BuiltInRole.CURATOR), result.getDefaultContributorRole());
 
         // Assert that the creator is admin.
         final RoleAssignment roleAssignment = roles.directRoleAssignments(dv).get(0);
-        assertEquals(roles.findBuiltinRoleByAlias(DataverseRole.ADMIN), roleAssignment.getRole());
+        assertEquals(roles.findBuiltinRoleByAlias(BuiltInRole.ADMIN), roleAssignment.getRole());
         assertEquals(dv, roleAssignment.getDefinitionPoint());
         assertEquals(roleAssignment.getAssigneeIdentifier(), request.getUser().getIdentifier());
 

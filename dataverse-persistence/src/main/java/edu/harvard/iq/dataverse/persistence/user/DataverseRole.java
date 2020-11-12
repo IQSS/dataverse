@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.persistence.user;
 import edu.harvard.iq.dataverse.common.BitSet;
 import edu.harvard.iq.dataverse.common.RoleTranslationUtil;
 import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 
 import javax.persistence.Column;
@@ -13,12 +14,11 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
@@ -31,42 +31,46 @@ import java.util.Set;
  *
  * @author michael
  */
-@NamedQueries({
-        @NamedQuery(name = "DataverseRole.findByOwnerId",
-                query = "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
-        @NamedQuery(name = "DataverseRole.findBuiltinRoles",
-                query = "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
-        @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
-                query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
-        @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
-                query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
-        @NamedQuery(name = "DataverseRole.listAll",
-                query = "SELECT r FROM DataverseRole r"),
-        @NamedQuery(name = "DataverseRole.deleteById",
-                query = "DELETE FROM DataverseRole r WHERE r.id=:id")
-})
 @Entity
 @Table(indexes = {@Index(columnList = "owner_id")
         , @Index(columnList = "name")
         , @Index(columnList = "alias")})
-public class DataverseRole implements Serializable {
+public class DataverseRole implements Serializable, JpaEntity<Long> {
 
     //constants for the built in roles references in the code
-    public static final String ADMIN = "admin";
-    public static final String FILE_DOWNLOADER = "fileDownloader";
-    public static final String FULL_CONTRIBUTOR = "fullContributor";
-    public static final String DV_CONTRIBUTOR = "dvContributor";
-    public static final String DS_CONTRIBUTOR = "dsContributor";
-    /**
-     * Heads up that this says "editor" which comes from
-     * scripts/api/data/role-editor.json but the name is "Contributor". The
-     * *alias* is "editor". Don't be fooled!
-     */
-    public static final String EDITOR = "editor";
-    public static final String MANAGER = "manager";
-    public static final String CURATOR = "curator";
-    public static final String MEMBER = "member";
-    public static final String DEPOSITOR = "depositor";
+    public enum BuiltInRole {
+        ADMIN("admin"),
+        FILE_DOWNLOADER("fileDownloader"),
+        FULL_CONTRIBUTOR("fullContributor"),
+        DV_CONTRIBUTOR("dvContributor"),
+        DS_CONTRIBUTOR("dsContributor"),
+        /**
+         * Heads up that this says "editor" which comes from
+         * scripts/api/data/role-editor.json but the name is "Contributor". The
+         * *alias* is "editor". Don't be fooled!
+         */
+        EDITOR("editor"),
+        CURATOR("curator"),
+        MEMBER("member"),
+        DEPOSITOR("depositor");
+        
+        private String alias;
+        
+        BuiltInRole(String alias) {
+            this.alias = alias;
+        }
+        
+        public String getAlias() {
+            return alias;
+        }
+        
+        public static BuiltInRole fromAlias(String alias) {
+            return Arrays.asList(BuiltInRole.values()).stream()
+                .filter(builtInRole -> builtInRole.getAlias().equals(alias))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        }
+    }
 
     public static final String NONE = "none";
 

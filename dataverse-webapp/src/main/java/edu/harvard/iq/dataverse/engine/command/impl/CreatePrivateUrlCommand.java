@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
@@ -48,7 +49,7 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
             throw new IllegalCommandException(message, this);
         }
         PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId());
-        DataverseRole memberRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.MEMBER);
+        DataverseRole memberRole = ctxt.roles().findBuiltinRoleByAlias(BuiltInRole.MEMBER);
         final String privateUrlToken = UUID.randomUUID().toString();
         RoleAssignment roleAssignment = ctxt.engine().submit(new AssignRoleCommand(privateUrlUser, memberRole, dataset, getRequest(), privateUrlToken));
         PrivateUrl privateUrl = new PrivateUrl(roleAssignment, dataset, ctxt.systemConfig().getDataverseSiteUrl());

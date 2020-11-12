@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,7 +54,7 @@ public class MoveIT {
                 .statusCode(UNAUTHORIZED.getStatusCode())
                 .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."));
 
-        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR, "@" + authorUsername, curatorApiToken);
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, BuiltInRole.DS_CONTRIBUTOR.getAlias(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
                 .statusCode(OK.getStatusCode())

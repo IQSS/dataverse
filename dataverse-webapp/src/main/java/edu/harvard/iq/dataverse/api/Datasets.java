@@ -81,6 +81,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -1152,7 +1153,7 @@ public class Datasets extends AbstractApiBean {
             if (assignee == null) {
                 return error(Response.Status.BAD_REQUEST, "Assignee not found");
             }
-            DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias("admin");
+            DataverseRole theRole = rolesSvc.findBuiltinRoleByAlias(BuiltInRole.ADMIN);
             String privateUrlToken = null;
             return ok(
                     json(execCommand(new AssignRoleCommand(assignee,

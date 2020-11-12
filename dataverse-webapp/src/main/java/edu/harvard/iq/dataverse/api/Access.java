@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -1091,7 +1092,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", identifier));
         }
 
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(BuiltInRole.FILE_DOWNLOADER);
 
         try {
             engineSvc.submit(new AssignRoleCommand(ra, fileDownloaderRole, dataFile, dataverseRequest, null));
@@ -1153,7 +1154,7 @@ public class Access extends AbstractApiBean {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.grantAccess.noAssigneeFound", identifier));
         }
 
-        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(DataverseRole.FILE_DOWNLOADER);
+        DataverseRole fileDownloaderRole = roleService.findBuiltinRoleByAlias(BuiltInRole.FILE_DOWNLOADER);
         TypedQuery<RoleAssignment> query = em.createNamedQuery(
                 "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
                 RoleAssignment.class);

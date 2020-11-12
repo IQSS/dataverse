@@ -5,28 +5,28 @@ import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRoleRepository;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignmentRepository;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.search.index.IndexAsync;
-import edu.harvard.iq.dataverse.search.index.IndexResponse;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
+import edu.harvard.iq.dataverse.search.index.PermissionReindexEvent;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.persistence.EntityNotFoundException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -35,37 +35,27 @@ import java.util.stream.Collectors;
 @Stateless
 public class DataverseRoleServiceBean implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(DataverseRoleServiceBean.class.getCanonicalName());
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     @EJB
-    RoleAssigneeServiceBean roleAssigneeService;
-    @EJB
-    IndexServiceBean indexService;
-    @EJB
-    SolrIndexServiceBean solrIndexService;
-    @EJB
-    IndexAsync indexAsync;
+    private RoleAssigneeServiceBean roleAssigneeService;
+    @Inject
+    private Event<PermissionReindexEvent> permissionReindexEvent;
+    @Inject
+    private DataverseRoleRepository dataverseRoleRepository;
+    @Inject
+    private RoleAssignmentRepository roleAssignmentRepository;
+    @Inject
+    private DataverseRepository dataverseRepository;
 
     public DataverseRole save(DataverseRole aRole) {
-        if (aRole.getId() == null) {
-            em.persist(aRole);
-            /**
-             * @todo Why would getId be null? Should we call
-             * indexDefinitionPoint here too? A: it's null for new roles.
-             */
-            return aRole;
-        } else {
-            DataverseRole merged = em.merge(aRole);
-            /**
-             * @todo update permissionModificationTime here.
-             */
-            IndexResponse indexDefinitionPountResult = indexDefinitionPoint(merged.getOwner());
-            logger.info("aRole getId was not null. Indexing result: " + indexDefinitionPountResult);
-            return merged;
+        boolean shouldIndexPermissions = !aRole.isNew();
+        
+        aRole = dataverseRoleRepository.save(aRole);
+        
+        if (shouldIndexPermissions) {
+            permissionReindexEvent.fire(new PermissionReindexEvent(aRole.getOwner()));
         }
+        
+        return aRole;
     }
 
     public RoleAssignment save(RoleAssignment assignment) {
@@ -73,88 +63,48 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     public RoleAssignment save(RoleAssignment assignment, boolean createIndex) {
-        if (assignment.getId() == null) {
-            em.persist(assignment);
-        } else {
-            assignment = em.merge(assignment);
-        }
-        /**
-         * @todo update permissionModificationTime here.
-         */
+        roleAssignmentRepository.save(assignment);
+
         if (createIndex) {
-            indexAsync.indexRole(assignment);
+            permissionReindexEvent.fire(new PermissionReindexEvent(assignment.getDefinitionPoint()));
         }
         return assignment;
     }
 
-    private IndexResponse indexDefinitionPoint(DvObject definitionPoint) {
-        /**
-         * @todo Do something with the index response. Was Solr down? Is
-         * everything ok?
-         */
-        IndexResponse indexResponse = solrIndexService.indexPermissionsOnSelfAndChildren(definitionPoint);
-        return indexResponse;
-    }
-
     public DataverseRole find(Long id) {
-        return em.find(DataverseRole.class, id);
+        return dataverseRoleRepository.getById(id);
     }
 
     public List<DataverseRole> findAll() {
-        return em.createNamedQuery("DataverseRole.listAll", DataverseRole.class).getResultList();
+        return dataverseRoleRepository.findAll();
     }
 
     public void delete(Long id) {
-        em.createNamedQuery("DataverseRole.deleteById", DataverseRole.class)
-                .setParameter("id", id)
-                .executeUpdate();
+        dataverseRoleRepository.deleteById(id);
     }
 
     public List<DataverseRole> findByOwnerId(Long ownerId) {
-        return em.createNamedQuery("DataverseRole.findByOwnerId", DataverseRole.class)
-                .setParameter("ownerId", ownerId)
-                .getResultList();
+        return dataverseRoleRepository.findByOwnerId(ownerId);
     }
 
     public List<DataverseRole> findBuiltinRoles() {
-        return em.createNamedQuery("DataverseRole.findBuiltinRoles", DataverseRole.class)
-                .getResultList();
+        return dataverseRoleRepository.findWithoutOwner();
     }
 
-    public DataverseRole findBuiltinRoleByAlias(String alias) {
-        return em.createNamedQuery("DataverseRole.findBuiltinRoleByAlias", DataverseRole.class)
-                .setParameter("alias", alias)
-                .getSingleResult();
+    public DataverseRole findBuiltinRoleByAlias(BuiltInRole builtInRole) {
+        return dataverseRoleRepository.findByAlias(builtInRole.getAlias())
+                .orElseThrow(() -> new IllegalStateException("Builtin role is not present in database: " + builtInRole));
     }
 
-    public DataverseRole findCustomRoleByAliasAndOwner(String alias, Long ownerId) {
-        return em.createNamedQuery("DataverseRole.findCustomRoleByAliasAndOwner", DataverseRole.class)
-                .setParameter("alias", alias)
-                .setParameter("ownerId", ownerId)
-                .getSingleResult();
-    }
-
-    public void revoke(Set<DataverseRole> roles, RoleAssignee assignee, DvObject defPoint) {
-        for (DataverseRole role : roles) {
-            em.createNamedQuery("RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId")
-                    .setParameter("assigneeIdentifier", assignee.getIdentifier())
-                    .setParameter("roleId", role.getId())
-                    .setParameter("definitionPointId", defPoint.getId())
-                    .executeUpdate();
-            em.refresh(role);
-        }
-        em.refresh(assignee);
+    public DataverseRole findRoleByAliasAssignableInDataverse(String alias, Long dataverseId) {
+        return dataverseRoleRepository.findByAlias(alias)
+                .filter(role -> role.getOwner() == null || role.getOwner().getId() == dataverseId)
+                .orElseThrow(() -> new EntityNotFoundException("No such role: " + alias + " that can be assigned in dataverse: " + dataverseId));
     }
 
     public void revoke(RoleAssignment ra) {
-        if (!em.contains(ra)) {
-            ra = em.merge(ra);
-        }
-        em.remove(ra);
-        /**
-         * @todo update permissionModificationTime here.
-         */
-        indexAsync.indexRole(ra);
+        roleAssignmentRepository.mergeAndDelete(ra);
+        permissionReindexEvent.fire(new PermissionReindexEvent(ra.getDefinitionPoint()));
     }
 
     // "nuclear" remove-all roles for a user or group: 
@@ -162,21 +112,17 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     // on which the roles were assigned - need to be reindexed for permissions
     // once the role assignments are removed!
     public void revokeAll(RoleAssignee assignee) {
-        Set<DvObject> reindexSet = new HashSet<>();
+        List<DvObject> reindexSet = new ArrayList<>();
 
         for (RoleAssignment ra : roleAssigneeService.getAssignmentsFor(assignee.getIdentifier())) {
-            if (!em.contains(ra)) {
-                ra = em.merge(ra);
-            }
-            em.remove(ra);
-
+            roleAssignmentRepository.delete(ra);
             reindexSet.add(ra.getDefinitionPoint());
         }
 
-        indexAsync.indexRoles(reindexSet);
+        permissionReindexEvent.fire(new PermissionReindexEvent(reindexSet));
     }
 
-    public RoleAssignmentSet roleAssignments(User user, Dataverse dv) {
+    private RoleAssignmentSet roleAssignments(User user, Dataverse dv) {
         RoleAssignmentSet retVal = new RoleAssignmentSet(user);
         while (dv != null) {
             retVal.add(directRoleAssignments(user, dv));
@@ -189,9 +135,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     public List<RoleAssignment> roleAssignments(Long roleId) {
-        return em.createNamedQuery("RoleAssignment.listByRoleId", RoleAssignment.class)
-                .setParameter("roleId", roleId)
-                .getResultList();
+        return roleAssignmentRepository.findByRoleId(roleId);
     }
 
     public RoleAssignmentSet assignmentsFor(final User u, final DvObject d) {
@@ -221,13 +165,11 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     public Set<RoleAssignment> rolesAssignments(DvObject dv) {
         Set<RoleAssignment> ras = new HashSet<>();
         while (!dv.isEffectivelyPermissionRoot()) {
-            ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-                               .setParameter("definitionPointId", dv.getId()).getResultList());
+            ras.addAll(roleAssignmentRepository.findByDefinitionPointId(dv.getId()));
             dv = dv.getOwner();
         }
 
-        ras.addAll(em.createNamedQuery("RoleAssignment.listByDefinitionPointId", RoleAssignment.class)
-                           .setParameter("definitionPointId", dv.getId()).getResultList());
+        ras.addAll(roleAssignmentRepository.findByDefinitionPointId(dv.getId()));
 
         return ras;
     }
@@ -244,9 +186,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull RoleAssignee roas, @NotNull DvObject dvo) {
     public List<RoleAssignment> directRoleAssignments(RoleAssignee roas, DvObject dvo) {
-        List<RoleAssignment> unfiltered = em.createNamedQuery("RoleAssignment.listByAssigneeIdentifier", RoleAssignment.class).
-                setParameter("assigneeIdentifier", roas.getIdentifier())
-                .getResultList();
+        List<RoleAssignment> unfiltered = roleAssignmentRepository.findByAssigneeIdentifier(roas.getIdentifier());
         return unfiltered.stream()
                 .filter(roleAssignment -> Objects.equals(roleAssignment.getDefinitionPoint().getId(), dvo.getId()))
                 .collect(Collectors.toList());
@@ -271,10 +211,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         List<String> raIds = roleAssignees.stream().map(roas -> roas.getIdentifier()).collect(Collectors.toList());
         List<Long> dvoIds = dvos.stream().filter(dvo -> !(dvo.getId() == null)).map(dvo -> dvo.getId()).collect(Collectors.toList());
 
-        return em.createNamedQuery("RoleAssignment.listByAssigneeIdentifiers", RoleAssignment.class)
-                .setParameter("assigneeIdentifiers", raIds)
-                .setParameter("definitionPointIds", dvoIds)
-                .getResultList();
+        return roleAssignmentRepository.findByAssigneeIdentifiersAndDefinitionPointIds(raIds, dvoIds);
     }
 
     /**
@@ -287,11 +224,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
     public List<RoleAssignment> directRoleAssignments(DvObject dvo) {
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
-                "RoleAssignment.listByDefinitionPointId",
-                RoleAssignment.class);
-        query.setParameter("definitionPointId", dvo.getId());
-        return query.getResultList();
+        return roleAssignmentRepository.findByDefinitionPointId(dvo.getId());
     }
 
     /**
@@ -303,7 +236,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * @return map of available roles.
      */
     public Set<DataverseRole> availableRoles(Long dvId) {
-        Dataverse dv = em.find(Dataverse.class, dvId);
+        Dataverse dv = dataverseRepository.getById(dvId);
         Set<DataverseRole> roles = dv.getRoles();
         roles.addAll(findBuiltinRoles());
 
@@ -313,21 +246,5 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         }
 
         return roles;
-    }
-
-    public List<DataverseRole> getDataverseRolesByPermission(Permission permissionIn, Long ownerId) {
-        /*
-         For a given permission and dataverse Id get all of the roles (built-in or owned by the dataverse)            
-         that contain that permission
-         */
-        List<DataverseRole> rolesToCheck = findBuiltinRoles();
-        List<DataverseRole> retVal = new ArrayList<>();
-        rolesToCheck.addAll(findByOwnerId(ownerId));
-        for (DataverseRole role : rolesToCheck) {
-            if (role.permissions().contains(permissionIn)) {
-                retVal.add(role);
-            }
-        }
-        return retVal;
     }
 }

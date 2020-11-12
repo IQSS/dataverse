@@ -860,7 +860,7 @@ public class Dataverses extends AbstractApiBean {
         } else {
             try {
                 Dataverse dv = findDataverseOrDie(dvIdtf);
-                defaultRole = rolesSvc.findCustomRoleByAliasAndOwner(roleAlias, dv.getId());
+                defaultRole = rolesSvc.findRoleByAliasAssignableInDataverse(roleAlias, dv.getId());
             } catch (Exception nre) {
                 String retStringError = BundleUtil.getStringFromBundle(
                         "dataverses.api.update.default.contributor.role.failure.role.not.found",

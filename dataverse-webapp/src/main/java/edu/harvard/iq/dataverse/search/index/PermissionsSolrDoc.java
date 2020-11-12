@@ -70,4 +70,12 @@ public class PermissionsSolrDoc {
     public SearchPermissions getPermissions() {
         return permissions;
     }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return "PermissionsSolrDoc [dvObjectId=" + dvObjectId + ", solrId=" + solrId + ", datasetVersionId="
+                + datasetVersionId + ", nameOrTitle=" + nameOrTitle + ", permissions=" + permissions + "]";
+    }
 }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
 import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -38,22 +39,16 @@ import java.util.Objects;
                 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.definitionPoint.id=:definitionPointId and r.role.id=:roleId"),
         @NamedQuery(name = "RoleAssignment.listByAssigneeIdentifier",
                 query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier"),
-        @NamedQuery(name = "RoleAssignment.listByAssigneeIdentifiers",
-                query = "SELECT r FROM RoleAssignment r WHERE r.assigneeIdentifier in :assigneeIdentifiers AND r.definitionPoint.id in :definitionPointIds"),
         @NamedQuery(name = "RoleAssignment.listByDefinitionPointId",
                 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId"),
-        @NamedQuery(name = "RoleAssignment.listByRoleId",
-                query = "SELECT r FROM RoleAssignment r WHERE r.role=:roleId"),
         @NamedQuery(name = "RoleAssignment.listByPrivateUrlToken",
                 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken"),
-        @NamedQuery(name = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",
-                query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId AND r.definitionPoint.id=:definitionPointId"),
         @NamedQuery(name = "RoleAssignment.deleteAllByAssigneeIdentifier",
                 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier"),
         @NamedQuery(name = "RoleAssignment.deleteAllByAssigneeIdentifier_Definition_PointId_RoleType",
                 query = "DELETE FROM RoleAssignment r WHERE r.assigneeIdentifier=:assigneeIdentifier AND r.role.id=:roleId and r.definitionPoint.id=:definitionPointId")
 })
-public class RoleAssignment implements java.io.Serializable {
+public class RoleAssignment implements java.io.Serializable, JpaEntity<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

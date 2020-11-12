@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLev
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
@@ -82,7 +83,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         if (created.getDefaultContributorRole() == null) {
-            created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(DataverseRole.EDITOR));
+            created.setDefaultContributorRole(ctxt.roles().findBuiltinRoleByAlias(BuiltInRole.EDITOR));
         }
 
         // @todo for now we are saying all dataverses are permission root
@@ -96,7 +97,7 @@ public class CreateDataverseCommand extends AbstractCommand<Dataverse> {
         Dataverse managedDv = ctxt.dataverses().save(created);
 
         // Find the built in admin role (currently by alias)
-        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.ADMIN);
+        DataverseRole adminRole = ctxt.roles().findBuiltinRoleByAlias(BuiltInRole.ADMIN);
         String privateUrlToken = null;
 
         ctxt.roles().save(new RoleAssignment(adminRole, getRequest().getUser(), managedDv, privateUrlToken));

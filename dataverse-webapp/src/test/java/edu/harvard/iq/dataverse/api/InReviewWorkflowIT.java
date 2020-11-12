@@ -5,6 +5,7 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class InReviewWorkflowIT {
                 .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."))
                 .statusCode(UNAUTHORIZED.getStatusCode());
 
-        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR, "@" + authorUsername, curatorApiToken);
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, BuiltInRole.DS_CONTRIBUTOR.getAlias(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
                 .body("data.assignee", equalTo("@" + authorUsername))

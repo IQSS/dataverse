@@ -99,6 +99,11 @@ public abstract class JpaRepository<ID, T extends JpaEntity<ID>> implements JpaO
         em.remove(entity);
     }
 
+    public void mergeAndDelete(T entity) {
+        entity = em.merge(entity);
+        delete(entity);
+    }
+
     protected static <T> Optional<T> getSingleResult(TypedQuery<T> query) {
         try {
             return Optional.of(query.getSingleResult());

@@ -25,6 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Stateless
 public class SolrIndexServiceBean {
 
@@ -130,8 +132,9 @@ public class SolrIndexServiceBean {
             return;
         }
         logger.fine("persisting to Solr...");
-        List<SolrInputDocument> inputDocs = new ArrayList<>();
-        permissionDocs.forEach(permissionDoc -> inputDocs.add(SearchUtil.createSolrDoc(permissionDoc)));
+        List<SolrInputDocument> inputDocs = permissionDocs.stream()
+                .map(SearchUtil::createSolrDoc)
+                .collect(toList());
         /**
          * @todo Do something with these responses from Solr.
          */

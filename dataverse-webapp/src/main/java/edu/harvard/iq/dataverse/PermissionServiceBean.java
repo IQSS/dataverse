@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -777,7 +778,7 @@ public class PermissionServiceBean {
         List<RoleAssignment> userRolesForDataverse = dataverseRoleServiceBean.directRoleAssignments(user, dataverse);
 
         Optional<RoleAssignment> userAdminRole = userRolesForDataverse.stream()
-                .filter(roleAssignment -> roleAssignment.getRole().getAlias().equals(DataverseRole.ADMIN))
+                .filter(roleAssignment -> roleAssignment.getRole().getAlias().equals(BuiltInRole.ADMIN.getAlias()))
                 .findAny();
 
         return userAdminRole.isPresent();

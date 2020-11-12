@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.entities.StepExecutionEntity;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -330,7 +331,7 @@ public class FileRecordJobIT {
                     .then().assertThat().statusCode(200)
                     .extract().jsonPath().getString("data.apiToken");
 
-            Response grantRole = UtilIT.grantRoleOnDataverse(testName, DataverseRole.EDITOR,
+            Response grantRole = UtilIT.grantRoleOnDataverse(testName, BuiltInRole.EDITOR.getAlias(),
                                                              "@" + contribUser, token);
 
             //grantRole.prettyPrint();

@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
+import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -102,7 +103,7 @@ public class IpGroupsIT {
         addToGroup.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER, groupIdentifier, apiToken);
+        Response grantRoleResponse = UtilIT.grantRoleOnDataverse(dataverseAlias, BuiltInRole.FILE_DOWNLOADER.getAlias(), groupIdentifier, apiToken);
         grantRoleResponse.prettyPrint();
         grantRoleResponse.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -133,7 +134,7 @@ public class IpGroupsIT {
                 .statusCode(CREATED.getStatusCode());
 
         String ipGroupIdentifierString = "&ip/" + uniqueIdentifierForIpGroup;
-        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.FILE_DOWNLOADER, ipGroupIdentifierString, apiToken);
+        Response grantIpAll = UtilIT.grantRoleOnDataverse(dataverseAlias, BuiltInRole.FILE_DOWNLOADER.getAlias(), ipGroupIdentifierString, apiToken);
         grantIpAll.prettyPrint();
         grantIpAll.then().assertThat()
                 .body("data.assignee", equalTo(ipGroupIdentifierString))
