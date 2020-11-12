@@ -92,8 +92,8 @@
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all"/>
-                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="manageGroupsForm"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="manageGroupsForm"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
@@ -171,7 +171,7 @@
                             <p:commandButton id="saveGroup" styleClass="btn btn-default"
                                            actionListener="#{manageGroupsPage.saveExplicitGroup}"
                                            value="#{bundle.saveChanges}"
-                                           update="@all">
+                                           update="manageGroupsForm">
                             </p:commandButton>
                             <button class="btn btn-link" onclick="PF('viewGroup').hide()" type="button">
                                 #{bundle.cancel}
