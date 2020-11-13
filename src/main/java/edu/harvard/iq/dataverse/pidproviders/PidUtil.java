@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -45,7 +46,7 @@ public class PidUtil {
             status = connection.getResponseCode();
         } catch (IOException ex) {
             // Hostname not in DNS, for example.
-            return Json.createObjectBuilder().add("response", ex.getLocalizedMessage());
+            throw new RuntimeException(BundleUtil.getStringFromBundle("pids.datacite.errors.noResponseCode", Arrays.asList(baseUrl)));
         }
         if (status != 200) {
             InputStream errorStream = connection.getErrorStream();

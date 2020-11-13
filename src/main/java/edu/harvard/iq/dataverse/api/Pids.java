@@ -48,8 +48,12 @@ public class Pids extends AbstractApiBean {
         String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
-        JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
-        return ok(result);
+        try {
+            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            return ok(result);
+        } catch (Exception ex) {
+            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        }
     }
 
     @GET
