@@ -32,7 +32,7 @@ public class UserBannerMessage implements Serializable {
     
     @OneToOne
     @JoinColumn(nullable = false)
-    private BannerMessage bannerMessages;
+    private BannerMessage bannerMessage;
     
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column( nullable=false )
@@ -50,12 +50,12 @@ public class UserBannerMessage implements Serializable {
         this.user = user;
     }
 
-    public BannerMessage getBannerMessages() {
-        return bannerMessages;
+    public BannerMessage getBannerMessage() {
+        return bannerMessage;
     }
 
-    public void setBannerMessages(BannerMessage bannerMessages) {
-        this.bannerMessages = bannerMessages;
+    public void setBannerMessage(BannerMessage bannerMessage) {
+        this.bannerMessage = bannerMessage;
     }
 
     public Date getBannerDismissalTime() {

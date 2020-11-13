@@ -210,7 +210,7 @@
                 
             <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.message }">
                 <div class="alert alert-dismissible container text-warning">
-                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="Dismiss"/>
+                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="Dismiss" oncomplete="#{dataverseHeaderFragment.initBannerMessages()}"/>
                     <h:outputText rendered="#{!empty message.message}" value=" #{message.message}" escape="false"/>
                 </div>
             </div>

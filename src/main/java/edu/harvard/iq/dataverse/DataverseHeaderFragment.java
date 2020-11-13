@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,7 +95,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             bannerMessages = bannerMessageService.findBannerMessages();
         } else{
             bannerMessages = bannerMessageService.findBannerMessages(au.getId());
-        }        
+        } 
+        
+        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                Iterator<BannerMessage> itr = bannerMessages.iterator();
+                while (itr.hasNext()) {
+                    BannerMessage test = itr.next();
+                    if (test.equals(dismissed)) {
+                        itr.remove();
+                    }
+                }
+            }            
+        }
     }
 
     public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {

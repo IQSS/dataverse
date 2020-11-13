@@ -5,6 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
@@ -31,9 +34,20 @@ public class BannerMessageServiceBean implements java.io.Serializable {
     
     public List<BannerMessage> findBannerMessages(Long auId) {
         return em.createQuery("select object(o) from BannerMessage as o where  o.dismissibleByUser = 'false'"
-                + " or o.id not in (select ubm.id from UserBannerMessage as ubm where ubm.user.id  =:authenticatedUserId)", BannerMessage.class)
+                + " or (o.dismissibleByUser = 'true' and o.id not in (select ubm.bannerMessage.id from UserBannerMessage as ubm where ubm.user.id  =:authenticatedUserId))", BannerMessage.class)
                 .setParameter("authenticatedUserId", auId)
                 .getResultList();
+    }
+    
+    public void dismissMessageByUser(BannerMessage message, AuthenticatedUser user) {
+
+        UserBannerMessage ubm = new UserBannerMessage();
+        ubm.setUser(user);
+        ubm.setBannerMessage(message);
+        ubm.setBannerDismissalTime(new Timestamp(new Date().getTime()));
+        em.persist(ubm);
+        em.flush();
+
     }
     
 }
