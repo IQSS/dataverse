@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
@@ -54,6 +56,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -68,11 +73,28 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
+    
+    private List<BannerMessage> bannerMessages = new ArrayList<>();
 
     private Long unreadNotificationCount = null;
     
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
+    }
+    
+    public void initBannerMessages(){
+        
+        User user = dataverseSession.getUser();
+        AuthenticatedUser au = null;
+        if (user.isAuthenticated()) {
+            au = (AuthenticatedUser) user;
+        }           
+        
+        if(au == null){
+            bannerMessages = bannerMessageService.findBannerMessages();
+        } else{
+            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+        }        
     }
 
     public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
@@ -275,6 +297,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    
+    public List<BannerMessage> getBannerMessages() {
+        return bannerMessages;
+    }
+
+    public void setBannerMessages(List<BannerMessage> bannerMessages) {
+        this.bannerMessages = bannerMessages;
     }
 
     public String getSignupUrl(String loginRedirect) {

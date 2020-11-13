@@ -203,6 +203,24 @@
                 </div>
             </div>
         </o:form>
+        <!-- Banner Message -->
+        <o:form class="form-inline">
+            <ui:fragment rendered="#{!empty dataverseHeaderFragment.bannerMessages}">
+            <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">
+                
+            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.message }">
+                <div class="alert alert-dismissible container text-warning">
+                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="Dismiss"/>
+                    <h:outputText rendered="#{!empty message.message}" value=" #{message.message}" escape="false"/>
+                </div>
+            </div>
+                        
+
+            </ui:repeat>
+            </ui:fragment>
+
+        </o:form>
+        
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"
