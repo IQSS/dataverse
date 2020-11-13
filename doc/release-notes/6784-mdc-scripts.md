@@ -1,1 +1,0 @@
-In the "Notes for Dataverse Installation Administrators" we should mention the new scripts for MDC.
