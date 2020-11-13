@@ -183,8 +183,8 @@ Saving Join Target Information to Geoconnect Database
 
 The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent JoinTarget Information from the database. (See the `utils code in GitHub <https://github.com/IQSS/geoconnect/blob/master/gc_apps/worldmap_connect/utils.py#L16>`_.)
 
-Setting Up WorldMap Test Data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Setting Up WorldMap Sample Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the explore in WorldMap option should display for tabular files or shapefiles. In the example SQL queries below, substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate ID's.
 
