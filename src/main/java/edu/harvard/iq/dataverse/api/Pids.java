@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
@@ -15,12 +14,12 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -52,7 +51,7 @@ public class Pids extends AbstractApiBean {
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
             return ok(result);
-        } catch (WebApplicationException ex) {
+        } catch (InternalServerErrorException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
         }
     }
