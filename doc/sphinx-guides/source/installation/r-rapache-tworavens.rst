@@ -342,8 +342,8 @@ Compare the two files. **It is important that the two copies are identical**.
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
 
-e. Enable TwoRavens Button in Dataverse
----------------------------------------
+e. Enable TwoRavens in Dataverse
+--------------------------------
 
 Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`/admin/external-tools` section of the Admin Guide.)
 
@@ -353,8 +353,7 @@ Once you have made your edits, make the tool available within Dataverse with the
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file twoRavens.json http://localhost:8080/api/admin/externalTools``
 
-Once enabled, an "Explore" dropdown will appear next to ingested tabular data files a "TwoRavens" button; clicking it will redirect
-the user to the instance of TwoRavens, initialized with the data variables from the selected file. 
+Once enabled, TwoRavens will display as an explore tool option for tabular data files. Clicking it will redirect the user to the instance of TwoRavens, initialized with the data variables from the selected file.
 
 f. Perform a quick test of TwoRavens functionality
 --------------------------------------------------
@@ -373,10 +372,10 @@ change the view to Tabular, it likely means that something went very wrong with 
 tabular ingest. Consult the app server log for any error messages that may 
 explain the failure. 
 
-If the file is showing as Tabular Data, but the ``Explore`` button isn't present, 
+If the file type is tabular data, but TwoRavens is not displayed as an explore tool option, 
 double-check that the steps in ``e.``, above, were correctly performed. 
 
-Otherwise, click on the ``Explore`` button. This will open TwoRavens in a new browser window.
+Selecting the TwoRavens explore tool option will open TwoRavens in a new browser window.
 If the application initializes successfully, you should see the "data pebbles" representing 
 the first 3 variables in the file: 
 

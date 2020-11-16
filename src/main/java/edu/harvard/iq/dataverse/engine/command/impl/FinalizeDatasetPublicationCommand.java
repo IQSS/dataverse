@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -52,6 +53,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
+    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
@@ -65,6 +68,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
+        
+        logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
         
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
@@ -91,6 +96,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
             	registerExternalIdentifier(theDataset, ctxt, false);
             } catch (CommandException comEx) {
+                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 // Remove the dataset lock: 
@@ -197,6 +203,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
         }
         
+        logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
+
+        
         return readyDataset;
     }
     
@@ -217,6 +226,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
+        }
+        
+        //re-indexing dataverses that have additional subjects
+        if (!dataversesToIndex.isEmpty()){
+            for (Dataverse dv : dataversesToIndex) {
+                try {
+                    Future<String> indexString = ctxt.index().indexDataverse(dv);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+                    retVal = false;
+                } 
+            }
         }
 
         exportMetadata(dataset, ctxt.settings());
@@ -249,13 +272,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * add the dataset subjects to all parent dataverses.
      */
     private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) throws  SolrServerException, IOException {
+        
         for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
-                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {
-                    
+                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
                         if (!dv.getDataverseSubjects().contains(cvv)) {
                             logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
                             newSubjectsAdded = true;
@@ -265,10 +288,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         }
                     }
                     if (newSubjectsAdded) {
-                        logger.fine("new dataverse subjects added - saving and reindexing");
+                        logger.fine("new dataverse subjects added - saving and reindexing in OnSuccess");
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
-                        ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
+                        //adding dv to list of those we need to re-index for new subjects
+                        dataversesToIndex.add(dvWithSubjectJustAdded);                       
                     } else {
                         logger.fine("no new subjects added to the dataverse; skipping reindexing");
                     }
@@ -355,6 +379,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
+                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
+
                 // Send failure notification to the user: 
                 notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
                 

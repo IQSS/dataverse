@@ -72,6 +72,8 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Payara configuration tasks performed by the installer are isolated in the shell script ``dvinstall/as-setup.sh`` (as ``asadmin`` commands). 
 
+While Postgres can accomodate usernames and database names containing hyphens, it is strongly recommended to use only alphanumeric characters.
+
 **IMPORTANT:** As a security measure, the ``as-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Payara's ``domain.xml`` file:
 
 - ``db_password_alias``
