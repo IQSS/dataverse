@@ -20,6 +20,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -51,8 +52,8 @@ public class Pids extends AbstractApiBean {
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
             return ok(result);
-        } catch (Exception ex) {
-            return error(Response.Status.BAD_REQUEST, ex.getLocalizedMessage());
+        } catch (WebApplicationException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
         }
     }
 

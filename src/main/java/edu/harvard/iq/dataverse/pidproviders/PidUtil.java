@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 public class PidUtil {
 
@@ -46,7 +48,7 @@ public class PidUtil {
             status = connection.getResponseCode();
         } catch (IOException ex) {
             // Hostname not in DNS, for example.
-            throw new RuntimeException(BundleUtil.getStringFromBundle("pids.datacite.errors.noResponseCode", Arrays.asList(baseUrl)));
+            throw new WebApplicationException(BundleUtil.getStringFromBundle("pids.datacite.errors.noResponseCode", Arrays.asList(baseUrl)), Response.Status.INTERNAL_SERVER_ERROR);
         }
         if (status != 200) {
             InputStream errorStream = connection.getErrorStream();
