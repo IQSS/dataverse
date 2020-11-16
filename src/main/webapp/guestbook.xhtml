@@ -23,6 +23,7 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{GuestbookPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(GuestbookPage.dataverse, (GuestbookPage.editMode == 'CREATE' ? bundle['dataset.manageGuestbooks.createBtn'] : GuestbookPage.guestbook.name))}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
                 </f:metadata>
 
                 <h:form id="guestbookForm">

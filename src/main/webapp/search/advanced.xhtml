@@ -20,6 +20,7 @@
                     <f:viewAction action="#{AdvancedSearchPage.init}"/>
                     <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
+                    <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
                 </f:metadata>
                 <!-- Search Panel -->
                 <div class="panel-group">

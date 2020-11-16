@@ -14,6 +14,7 @@
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageGuestbooksPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageGuestbooksPage.dataverse, bundle['dataset.manageGuestbooks.pageTitle'])}"/>
+            <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.manageGuestbooks.pageTitle']}"/>
