@@ -235,6 +235,7 @@ public class ImageThumbConverter {
                 return false;
             } finally {
                 IOUtils.closeQuietly(tempFileChannel);
+                IOUtils.closeQuietly(pdfFileChannel);
             }
             sourcePdfFile = tempFile;
         }
@@ -272,7 +273,9 @@ public class ImageThumbConverter {
 
         try {
             storageIO.open();
-            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+            try(InputStream inputStream = storageIO.getInputStream()) {
+              return generateImageThumbnailFromInputStream(storageIO, size, inputStream);
+            }
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
@@ -312,6 +315,7 @@ public class ImageThumbConverter {
                 worldMapImageInputStream.close();
                 return false;
             }
+            return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
         } catch (FileNotFoundException fnfe) {
             logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
             return false;
@@ -319,9 +323,10 @@ public class ImageThumbConverter {
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + ioex);
             return false;
+        } finally {
+        	IOUtils.closeQuietly(worldMapImageInputStream);
         }
-
-        return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
+        
     }
 
     /*
@@ -750,15 +755,14 @@ public class ImageThumbConverter {
         g2.drawImage(thumbImage, 0, 0, null);
         g2.dispose();
 
-        try {
-            ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);) {
+            
             writer.setOutput(ios);
 
             // finally, save thumbnail image:
             writer.write(lowRes);
             writer.dispose();
 
-            ios.close();
             thumbImage.flush();
             //fullSizeImage.flush();
             lowRes.flush();

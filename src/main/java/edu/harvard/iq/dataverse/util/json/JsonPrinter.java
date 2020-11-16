@@ -194,7 +194,8 @@ public class JsonPrinter {
             .add("id", grp.getId() )
             .add("name", grp.getDisplayName() )
             .add("description", grp.getDescription() )
-            .add("domains", asJsonArray(grp.getEmailDomainsAsList()) );
+            .add("domains", asJsonArray(grp.getEmailDomainsAsList()) )
+            .add("regex", grp.isRegEx());
         return bld;
     }
 
