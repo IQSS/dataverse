@@ -1,7 +1,8 @@
-FROM centos:7
+FROM centos:8
 # OS dependencies
-RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-RUN yum install -y java-1.8.0-openjdk-devel postgresql96-server sudo epel-release unzip perl curl httpd
+# PG 10 is the default in centos8; keep the repo comment for when we bump to 11+
+#RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+RUN yum install -y java-1.8.0-openjdk-devel postgresql-server sudo epel-release unzip perl curl httpd
 RUN yum install -y jq lsof awscli
 
 # copy and unpack dependencies (solr, payara)
