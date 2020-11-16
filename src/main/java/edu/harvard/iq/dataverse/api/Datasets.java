@@ -51,7 +51,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -102,7 +101,6 @@ import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -113,7 +111,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -137,7 +134,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -832,8 +828,7 @@ public class Datasets extends AbstractApiBean {
 			String valdationErrors = validateDatasetFieldValues(fields);
 
 			if (!valdationErrors.isEmpty()) {
-				logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors,
-						valdationErrors);
+                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
 				return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
 			}
 
@@ -880,8 +875,7 @@ public class Datasets extends AbstractApiBean {
 									}
 									dsf.setControlledVocabularyValues(priorCVV);
 								} else {
-									dsf.setSingleControlledVocabularyValue(
-											updateField.getSingleControlledVocabularyValue());
+                                    dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
 								}
 							} else {
 								if (!updateField.getDatasetFieldType().isCompound()) {
@@ -897,8 +891,7 @@ public class Datasets extends AbstractApiBean {
 									}
 								} else {
 									for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
-										if (!dsf.getCompoundDisplayValue()
-												.contains(updateField.getCompoundDisplayValue())) {
+                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
 											dfcv.setParentDatasetField(dsf);
 											dsf.setDatasetVersion(dsv);
 											dsf.getDatasetFieldCompoundValues().add(dfcv);
@@ -908,9 +901,7 @@ public class Datasets extends AbstractApiBean {
 							}
 						} else {
 							if (!dsf.isEmpty() && !dsf.getDatasetFieldType().isAllowMultiples() || !replaceData) {
-								return error(Response.Status.BAD_REQUEST,
-										"You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data ("
-												+ dsf.getDatasetFieldType().getDisplayName() + ")");
+                                return error(Response.Status.BAD_REQUEST, "You may not add data to a field that already has data and does not allow multiples. Use replace=true to replace existing data (" + dsf.getDatasetFieldType().getDisplayName() + ")");
 							}
 						}
 						break;
@@ -1070,93 +1061,6 @@ public class Datasets extends AbstractApiBean {
     }
     
 	@POST
-	@Path("{id}/actions/:releasemigrated")
-	@Consumes("application/json-ld")
-	public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id) {
-		try {
-			AuthenticatedUser user = findAuthenticatedUserOrDie();
-			if (!user.isSuperuser()) {
-				return error(Response.Status.FORBIDDEN, "Only superusers can release migrated datasets");
-			}
-
-			Dataset ds = findDatasetOrDie(id);
-			try {
-				JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
-				String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
-				logger.fine("Submitted date: " + pubDate);
-				LocalDateTime dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
-				// dataset.getPublicationDateFormattedYYYYMMDD())
-				ds.setPublicationDate(Timestamp.valueOf(dateTime));
-			} catch (Exception e) {
-				logger.fine(e.getMessage());
-				throw new BadRequestException("Unable to set publication date ("
-						+ JsonLDTerm.schemaOrg("datePublished").getUrl() + "): " + e.getMessage());
-			}
-			/*
-			 * Note: The code here mirrors that in the
-			 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
-			 * to the core logic (i.e. beyond updating the messaging about results) should
-			 * be applied to the code there as well.
-			 */
-			String errorMsg = null;
-			String successMsg = null;
-			try {
-				FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-						createDataverseRequest(user), true);
-				ds = commandEngine.submit(cmd);
-				//Todo - update messages
-				successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
-
-				// If configured, update archive copy as well
-				String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
-				DatasetVersion updateVersion = ds.getLatestVersion();
-				AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className,
-						createDataverseRequest(user), updateVersion);
-				if (archiveCommand != null) {
-					// Delete the record of any existing copy since it is now out of date/incorrect
-					updateVersion.setArchivalCopyLocation(null);
-					/*
-					 * Then try to generate and submit an archival copy. Note that running this
-					 * command within the CuratePublishedDatasetVersionCommand was causing an error:
-					 * "The attribute [id] of class
-					 * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
-					 * key column in the database. Updates are not allowed." To avoid that, and to
-					 * simplify reporting back to the GUI whether this optional step succeeded, I've
-					 * pulled this out as a separate submit().
-					 */
-					try {
-						updateVersion = commandEngine.submit(archiveCommand);
-						if (updateVersion.getArchivalCopyLocation() != null) {
-							successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-						} else {
-							successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
-						}
-					} catch (CommandException ex) {
-						successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - "
-								+ ex.toString();
-						logger.severe(ex.getMessage());
-					}
-				}
-			} catch (CommandException ex) {
-				errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
-				logger.severe(ex.getMessage());
-			}
-			if (errorMsg != null) {
-				return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
-			} else {
-				JsonObjectBuilder responseBld = Json.createObjectBuilder()
-	                    .add("id", ds.getId())
-	                    .add("persistentId", ds.getGlobalId().toString());
-				return Response.ok(Json.createObjectBuilder().add("status", STATUS_OK).add("status_details", successMsg)
-						.add("data", responseBld).build()).type(MediaType.APPLICATION_JSON).build();
-			}
-
-		} catch (WrappedResponse ex) {
-			return ex.getResponse();
-		}
-	}
-    
-    @POST
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {

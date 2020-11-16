@@ -80,16 +80,6 @@ public class JsonResponseBuilder {
     }
     
     /**
-     * Add a detailed message to the response
-     * @param message A human readable message
-     * @return The enhanced builder
-     */
-    public JsonResponseBuilder details(String message) {
-        this.entityBuilder.add("details", message);
-        return this;
-    }
-    
-    /**
      * Set an identifier for this (usually included in logs, too).
      * @param id A String containing an (ideally unique) identifier
      * @return The enhanced builder

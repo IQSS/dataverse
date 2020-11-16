@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -21,6 +20,7 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -34,18 +34,13 @@ import javax.json.JsonValue;
 public class OREMap {
 
     public static final String NAME = "OREMap";
-    public static final String TRANSFER = "transfer";
-    public static final String ARCHIVE = "archive";
-    
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
-    private String type;
     private boolean excludeEmail = false;
     
-    public OREMap(DatasetVersion version, boolean excludeEmail, String type) {
+    public OREMap(DatasetVersion version, boolean excludeEmail) {
         this.version = version;
         this.excludeEmail = excludeEmail;
-        this.type=type;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -136,13 +131,9 @@ public class OREMap {
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle());
-        //Allow oremap for non-published versions (not yet implemented)
-        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
-        //Just for debugging - should always be set for real/persisted datasetversions
-        if(version.getLastUpdateTime() != null) {
-          aggBuilder.add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
-        }
+                .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
+                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
+                .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
@@ -213,45 +204,31 @@ public class OREMap {
             if (df.getGlobalId().asString().length() != 0) {
                 fileId = df.getGlobalId().asString();
                 fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                        + "/api/access/datafile/:persistentId?persistentId=" + fileId + (type.equals(TRANSFER) ? "&format=original" : "");
+                        + "/api/access/datafile/:persistentId?persistentId=" + fileId;
             } else {
                 fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId() + (type.equals(TRANSFER) ? "?format=original" : "");
+                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
             }
             aggRes.add("@id", fileId);
             aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
             fileArray.add(fileId);
 
             aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-			switch (type) {
-			case TRANSFER:
-				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getOriginalFileFormat());
-				addIfNotNull(aggRes, JsonLDTerm.filesize, df.getOriginalFileSize());
-				addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-				addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-				addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-				addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-				//Checksum not available - will be generated in Bag
-
-				break;
-			case ARCHIVE:
-			default:
-				addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-				addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
-				addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-				addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-				addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
-				addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-				addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-				addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-				JsonObject checksum = null;
-				// Add checksum. RDA recommends SHA-512
-				if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-					checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
-							.add("@value", df.getChecksumValue()).build();
-					aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
-				}
-			}
+            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
+            addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+            addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+            addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
+            addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+            addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+            addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+            JsonObject checksum = null;
+            // Add checksum. RDA recommends SHA-512
+            if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+                checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                        .add("@value", df.getChecksumValue()).build();
+                aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+            }
             JsonArray tabTags = null;
             JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
             if (jab != null) {

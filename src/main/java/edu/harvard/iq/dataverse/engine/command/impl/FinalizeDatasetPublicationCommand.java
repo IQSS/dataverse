@@ -175,8 +175,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 // above takes proper care to "clean up after itself" in case of
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
-            } else {
-            	updateExternalIdentifier(theDataset, ctxt);
             }
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
@@ -211,7 +209,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         return readyDataset;
     }
     
-	@Override
+    @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
         boolean retVal = true;
         Dataset dataset = null;
@@ -371,18 +369,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         if (!idServiceBean.publicizeIdentifier(df)) {
                             throw new Exception();
                         }
-                        if(df.getGlobalIdCreateTime() == null) {
-                          df.setGlobalIdCreateTime(getTimestamp());
-                        }
+                        df.setGlobalIdCreateTime(getTimestamp());
                         df.setIdentifierRegistered(true);
                     }
                 }
                 if (!idServiceBean.publicizeIdentifier(dataset)) {
                     throw new Exception();
                 }
-                if(dataset.getGlobalIdCreateTime() == null) { 
-                  dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
-                }
+                dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
                 logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
@@ -395,13 +389,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
     }
-    
-    private void updateExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
-    	//A placeholder - for DataCite, and Fake, at least, the publicize method works - with a change to not update the globalId create dates if they already existed
-    	//If that is not true for other providers, or changes , we can add modifications here 
-		publicizeExternalIdentifier(theDataset, ctxt);
-		
-	}
     
     private void updateFiles(Timestamp updateTime, CommandContext ctxt) throws CommandException {
         for (DataFile dataFile : getDataset().getFiles()) {
