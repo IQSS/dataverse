@@ -181,7 +181,7 @@ public class AccessIT {
                 .multiPart("file", new File(pathToFile), mimeType)
                 .post("/api/access/datafile/" + tabFile1Id + "/metadata/dpJSON/v1");
         response.prettyPrint();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(201, response.getStatusCode());
         System.out.println("Downloading Aux file that was just added");
         response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

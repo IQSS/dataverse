@@ -67,6 +67,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.logging.Logger;
@@ -505,9 +506,8 @@ public class Access extends AbstractApiBean {
      */
     
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
-    @GET
-    
-    public DownloadInstance tabularDatafileMetadataPreprocessed(@PathParam("fileId") String fileId,
+    @GET    
+    public DownloadInstance tabularDatafileMetadataAux(@PathParam("fileId") String fileId,
             @PathParam("formatTag") String formatTag,
             @PathParam("formatVersion") String formatVersion,
             @QueryParam("key") String apiToken, 
@@ -1134,9 +1134,8 @@ public class Access extends AbstractApiBean {
             @PathParam("formatVersion") String formatVersion,
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
-            @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-            @FormDataParam("file") final FormDataBodyPart formDataBodyPart
+            @FormDataParam("file") InputStream fileInputStream
+          
     ) {
         AuthenticatedUser authenticatedUser;
         try {
@@ -1159,10 +1158,10 @@ public class Access extends AbstractApiBean {
         }
          
 
-        boolean saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
       
-        if (saved) {
-            return ok("Auxiliary file has been saved.");
+        if (saved!=null) {
+            return created(saved.getId().toString(),JsonPrinter.json(saved));
         } else {
             return error(BAD_REQUEST, "Error saving Auxiliary file.");
         }

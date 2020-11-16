@@ -56,10 +56,10 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param isPublic boolean - is this file available to any user?
      * @return success boolean - returns whether the save was successful
      */
-    public boolean processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic) {
     
         StorageIO<DataFile> storageIO =null;
-      
+        AuxiliaryFile auxFile = new AuxiliaryFile();
         String auxExtension = formatTag + "_" + formatVersion;
         try {
             // Save to storage first.
@@ -68,7 +68,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            AuxiliaryFile auxFile = new AuxiliaryFile();
+            auxFile = new AuxiliaryFile();
             MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
             DigestInputStream di 
                 = new DigestInputStream(fileInputStream, md); 
@@ -84,24 +84,22 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setIsPublic(isPublic);
             auxFile.setDataFile(dataFile);         
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
-            save(auxFile);
+            auxFile = save(auxFile);
         } catch (IOException ioex) {
             logger.info("IO Exception trying to save auxiliary file: " + ioex.getMessage());
-            return false;
+            return null;
         } catch (Exception e) {
             // If anything fails during database insert, remove file from storage
             try {
                 storageIO.deleteAuxObject(auxExtension);
             } catch(IOException ioex) {
                     logger.info("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
-            return false;
+            return null;
             }
         }
-        return true;
+        return auxFile;
     }
     
-    // Looks up an auxiliary file by its parent DataFile, the formatTag and version
-    // TODO: improve as needed. 
     public AuxiliaryFile lookupAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
         
         Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag = :formatTag and o.formatVersion = :formatVersion");

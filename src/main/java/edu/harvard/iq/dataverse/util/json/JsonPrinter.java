@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -561,7 +562,32 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fmd))
                 .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd));
     }
-
+/*
+    
+    private String formatTag;
+    
+    private String formatVersion;
+    
+    private String origin;
+    
+    private boolean isPublic;
+    
+    private String contentType; 
+    
+    private Long fileSize; 
+    
+    private String checksum;
+    */
+      public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
+        return jsonObjectBuilder()
+               .add("formatTag", auxFile.getFormatTag())
+                .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
+                .add("origin", auxFile.getOrigin()) 
+                .add("isPublic", auxFile.getIsPublic())
+                .add("fileSize", auxFile.getFileSize())
+                .add("checksum", auxFile.getChecksum())
+                .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));
+    }
     public static JsonObjectBuilder json(DataFile df) {
         return JsonPrinter.json(df, null);
     }
