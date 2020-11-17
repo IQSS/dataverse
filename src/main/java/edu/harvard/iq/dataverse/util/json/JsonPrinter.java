@@ -563,22 +563,7 @@ public class JsonPrinter {
                 .add("categories", getFileCategories(fmd))
                 .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd));
     }
-/*
-    
-    private String formatTag;
-    
-    private String formatVersion;
-    
-    private String origin;
-    
-    private boolean isPublic;
-    
-    private String contentType; 
-    
-    private Long fileSize; 
-    
-    private String checksum;
-    */
+
       public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
         return jsonObjectBuilder()
                .add("formatTag", auxFile.getFormatTag())
