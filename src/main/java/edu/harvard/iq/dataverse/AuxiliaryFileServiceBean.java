@@ -68,7 +68,6 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            auxFile = new AuxiliaryFile();
             MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
             DigestInputStream di 
                 = new DigestInputStream(fileInputStream, md); 
