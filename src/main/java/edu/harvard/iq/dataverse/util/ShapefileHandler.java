@@ -335,7 +335,14 @@ public class ShapefileHandler{
                 
                 String unzipFilePath = unzipFileName; 
                 if (unzipFolderName != null) {
-                    unzipFilePath = unzipFolderName + "/" + unzipFileName; 
+                    unzipFilePath = unzipFolderName + "/" + unzipFileName;
+                    
+                    // There's a chance we haven't created this folder yet 
+                    // in the destination directory (this happens if the folder 
+                    // is not explicitly listed in the Zip archive directory). 
+                    String dirpath = target_directory.getAbsolutePath() + "/" + unzipFolderName;
+                    // (and if it already exists, it'll be skipped)
+                    createDirectory(dirpath);
                 }
                 
                 if (unzipFileName==null){

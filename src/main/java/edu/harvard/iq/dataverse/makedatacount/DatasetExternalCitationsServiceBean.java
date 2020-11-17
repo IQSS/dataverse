@@ -36,30 +36,48 @@ public class DatasetExternalCitationsServiceBean implements java.io.Serializable
     DatasetServiceBean datasetService;
 
   //Array of relationship types that are considered to be citations
-  static ArrayList<String> relationships = new ArrayList<String>( 
+  static ArrayList<String> inboundRelationships = new ArrayList<String>( 
+          Arrays.asList(
+          "cites",
+          "references",
+          "supplements"));
+  static ArrayList<String> outboundRelationships = new ArrayList<String>( 
           Arrays.asList(
           "is-cited-by",
-          "cites",
           "is-referenced-by",
-          "references"));
-    
+          "is-supplemented-by"));
+  
     public List<DatasetExternalCitations> parseCitations(JsonArray citations) {
         List<DatasetExternalCitations> datasetExternalCitations = new ArrayList<>();
         for (JsonValue citationValue : citations) {
             DatasetExternalCitations exCit = new DatasetExternalCitations();
             JsonObject citation = (JsonObject) citationValue;
-            exCit.setCitedByUrl(citation.getJsonObject("attributes").getString("subj-id"));
-           
-            String localDatasetDOI = citation.getJsonObject("attributes").getString("obj-id");
+            String subjectUri = citation.getJsonObject("attributes").getString("subj-id");
+            
+            String objectUri = citation.getJsonObject("attributes").getString("obj-id");
             String relationship = citation.getJsonObject("attributes").getString("relation-type-id");
-            if (relationships.contains(relationship)) {
+            if (inboundRelationships.contains(relationship)) {
                 Dataset localDs = null;
-                if (localDatasetDOI.contains("doi")) {
-                    String globalId = localDatasetDOI.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
+                if (objectUri.contains("doi")) {
+                    String globalId = objectUri.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
                     localDs = datasetService.findByGlobalId(globalId);
                     exCit.setDataset(localDs);
                 }
-
+                exCit.setCitedByUrl(subjectUri);
+                
+                if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
+                    datasetExternalCitations.add(exCit);
+                }
+            }
+            if (outboundRelationships.contains(relationship)) {
+                Dataset localDs = null;
+                if (subjectUri.contains("doi")) {
+                    String globalId = subjectUri.replace("https://", "").replace("doi.org/", "doi:").toUpperCase().replace("DOI:", "doi:");
+                    localDs = datasetService.findByGlobalId(globalId);
+                    exCit.setDataset(localDs);
+                }
+                exCit.setCitedByUrl(objectUri);
+                
                 if (localDs != null && !exCit.getCitedByUrl().isEmpty()) {
                     datasetExternalCitations.add(exCit);
                 }

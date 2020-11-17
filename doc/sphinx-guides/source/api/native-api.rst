@@ -2525,6 +2525,18 @@ Get All Notifications by User
 Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+    
+.. _User Information:
+
+User Information
+----------------
+
+Get User Information in JSON Format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a dump of their basic information in JSON format by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
 .. _pids-api:
 
@@ -2876,7 +2888,10 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "affiliation": "Dataverse.org"
     }
 
-Create an authenticateUser::
+Create an Authenticated User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an authenticatedUser::
 
     POST http://$SERVER/api/admin/authenticatedUsers
 
