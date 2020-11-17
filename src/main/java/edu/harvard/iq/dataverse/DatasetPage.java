@@ -1909,9 +1909,15 @@ public class DatasetPage implements java.io.Serializable {
                     // we don't have to do so later (possibly, many more times than necessary):
                     datafileService.findFileMetadataOptimizedExperimental(dataset);
                 }
-
+                // As of v5.x (PF8?), having the variables initially set to true in their
+                // declarations doesn't result in them being true when a page is first viewed -
+                // need to set them here.
+                this.setFolderPresort(true);
+                this.setTagPresort(true);
+                
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
+                
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
 
                 ownerId = dataset.getOwner().getId();
@@ -2055,13 +2061,6 @@ public class DatasetPage implements java.io.Serializable {
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-      
-        // As of v5.x (PF8?), having the variables initially set to true in their
-        // declarations doesn't result in them being true when a page is first viewed -
-        // need to set them here.
-        this.setFolderPresort(true);
-        this.setTagPresort(true);
-        
         return null;
     }
     
