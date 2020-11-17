@@ -1,0 +1,49 @@
+Auxiliary File Support
+======================
+
+Auxiliary file support is experimental. Eventually this content will move to the API Guide. Currently
+it is being used to support depositing and downloading differentially private
+metadata, as part of the OpenDP project. 
+
+Adding an Auxiliary File to a Data File: 
+----------------------------------------------------------
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the
+formatTag and formatVersion (if applicable) associated with the Auxiliary File.
+There are two form parameters. "Origin" specifies the application/entity that 
+created the auxiliary file, an "isPublic" controls access to downloading the file.
+If "isPublic" is true, any user can download the file, else, access 
+authorization is based on the access rules as defined for the DataFile itself.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export FILENAME='auxfile.txt'
+  export FILE_ID='12345'
+  export FORMAT_TAG='dpJson'
+  export FORMAT_VERSION='v1'
+  export SERVER_URL=https://demo.dataverse.org
+ 
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION")
+
+.. code-block:: bash
+
+You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
+
+
+
+Downloading an Auxiliary File that belongs to a Data File: 
+----------------------------------------------------------
+To download a file, use the primary key of the datafile, and the
+formatTag and formatVersion (if applicable) associated with the Auxiliary File:
+
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID='12345'
+  export FORMAT_TAG='dpJson'
+  export FORMAT_VERSION='v1'
+   
+
+  curl "$SERVER_URL/api/access/datafile/$FILE_ID/$FORMAT_TAG/$FORMAT_VERSION"
