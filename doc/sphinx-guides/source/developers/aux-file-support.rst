@@ -3,8 +3,8 @@ Auxiliary File Support
 
 Auxiliary file support is experimental. Auxiliary files in Dataverse are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (OpenDP.io). In future versions, this approach may become more broadly used and supported. 
 
-Adding an Auxiliary File to a Datafile: 
----------------------------------------
+Adding an Auxiliary File to a Datafile
+--------------------------------------
 To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are two form parameters. "Origin" specifies the application/entity that created the auxiliary file, an "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file, else, access authorization is based on the access rules as defined for the DataFile itself.
 
 .. code-block:: bash
@@ -20,8 +20,8 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded auxiliary file.
 
-Downloading an Auxiliary File that belongs to a Datafile: 
----------------------------------------------------------
+Downloading an Auxiliary File that belongs to a Datafile 
+--------------------------------------------------------
 To download an auxiliary file, use the primary key of the datafile, and the
 formatTag and formatVersion (if applicable) associated with the auxiliary file:
 
