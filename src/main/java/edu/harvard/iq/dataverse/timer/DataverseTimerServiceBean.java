@@ -32,6 +32,7 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
@@ -97,7 +98,7 @@ public class DataverseTimerServiceBean implements Serializable {
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        timerService.createTimer(initialExpiration, intervalDuration, info);
+        timerService.createIntervalTimer(initialExpiration, intervalDuration, new TimerConfig(info, false));
     }
 
     /**
