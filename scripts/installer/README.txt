@@ -20,7 +20,6 @@ from scripts/installer (this directory):
 
 install
 glassfish-setup.sh
-pgdriver (the entire directory with all its contents)
 
 from scripts/api:
 
