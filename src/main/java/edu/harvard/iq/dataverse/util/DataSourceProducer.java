@@ -11,11 +11,10 @@ import javax.sql.DataSource;
     name = "java:app/jdbc/dataverse",
     // Using PGXADataSource instead of deprecated PGPoolingDataSource
     className = "org.postgresql.xa.PGXADataSource",
-    user = "dataverse",
-    password = "${ALIAS=db_password_alias}",
-    serverName = "postgresql",
-    portNumber = 5432,
-    databaseName = "dataverse",
+    user = "${MPCONFIG=dataverse.db.user}",
+    password = "${MPCONFIG=dataverse.db.password}",
+    serverName = "${MPCONFIG=dataverse.db.host}",
+    url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host}:${MPCONFIG=dataverse.db.port}/${MPCONFIG=dataverse.db.name}",
     minPoolSize = 10,
     maxPoolSize = 200)
 public class DataSourceProducer {
