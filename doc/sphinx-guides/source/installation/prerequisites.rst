@@ -322,7 +322,7 @@ components and libraries. Please consult the instructions in the
 Installing R
 ============
 
-For RHEL/CentOS, the EPEL distribution is strongly recommended::
+For RHEL/CentOS, the EPEL distribution is strongly recommended:
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
