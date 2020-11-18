@@ -1032,6 +1032,50 @@ dataverse.auth.password-reset-timeout-in-minutes
 
 Users have 60 minutes to change their passwords by default. You can adjust this value here.
 
+dataverse.db.user
++++++++++++++++++
+
+The PostgreSQL user name to connect with.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_USER``.
+Defaults to ``dataverse`` (via ``microprofile-config.properties``).
+
+dataverse.db.password
++++++++++++++++++++++
+
+The PostgreSQL users password to connect with.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_PASSWORD``.
+Preferrably use a JVM alias, as passwords in environment variables aren't safe!
+
+.. code-block:: shell
+  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
+  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
+  rm /tmp/password.txt
+dataverse.db.host
++++++++++++++++++
+
+The PostgreSQL server to connect to.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_HOST``.
+Defaults to ``localhost`` (via ``microprofile-config.properties``).
+
+dataverse.db.port
++++++++++++++++++
+
+The PostgreSQL servers port to connect to.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_PORT``.
+Defaults to ``5432`` (via ``microprofile-config.properties``), the default PostgreSQL port.
+
+dataverse.db.name
++++++++++++++++++
+
+The PostgreSQL database name to use for Dataverse.
+
+Can also be set via *MicroProfile Config API* sources, e. g. environment variable ``DATAVERSE_DB_NAME``.
+Defaults to ``dataverse`` (via ``microprofile-config.properties``).
+
 dataverse.rserve.host
 +++++++++++++++++++++
 
@@ -1168,7 +1212,7 @@ This JVM setting is also part of **handles** configuration. The Handle.Net insta
 .. _dataverse.handlenet.index:
 
 dataverse.handlenet.index
-+++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++
 If you want to use different index than the default 300
 
 .. _dataverse.timerServer:
