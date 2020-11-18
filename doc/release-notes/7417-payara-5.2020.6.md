@@ -9,4 +9,4 @@ of a running Dataverse deployment.
 <!-- REQUIREMENT MARKER FOR LATER USE WITH #6819 AS HTML COMMENT. MAY BE OMMITED. -->
 
 Instructions how to update can be found in the
-[Payara documentation](https://docs.payara.fish/community/docs/5.2020.5/documentation/user-guides/upgrade-payara.html)
+[Payara documentation](https://docs.payara.fish/community/docs/5.2020.6/documentation/user-guides/upgrade-payara.html)
