@@ -1,13 +1,17 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
+import java.util.Collection;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.OneToMany;
+
 
 /**
  *
@@ -20,40 +24,29 @@ public class BannerMessage implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String message;
-
-    @Column(columnDefinition = "TEXT")
-    private String lang;
-
     @Column
     private boolean dismissibleByUser;
+
+    @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Collection<BannerMessageText> bannerMessageTexts;
+
+    public Collection<BannerMessageText> getBannerMessageTexts() {
+        return this.bannerMessageTexts;
+    }
+
+    public void setBannerMessageTexts(Collection<BannerMessageText> bannerMessageTexts) {
+        this.bannerMessageTexts = bannerMessageTexts;
+    }
     
-    @Transient
-    private boolean dismissed;
-
-    public boolean isDismissed() {
-        return dismissed;
-    }
-
-    public void setDismissed(boolean dismissed) {
-        this.dismissed= dismissed;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
+    
+    public String getDisplayValue(){        
+        String retVal = "";
+        for (BannerMessageText msgTxt : this.getBannerMessageTexts()) {
+            if (msgTxt.getLang().equals(BundleUtil.getCurrentLocale().getLanguage())) {
+                retVal = msgTxt.getMessage();
+            }
+        }
+        return retVal;               
     }
 
     public boolean isDismissibleByUser() {

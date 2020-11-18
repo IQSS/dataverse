@@ -206,12 +206,11 @@
         <!-- Banner Message -->
         <o:form class="form-inline">
             <ui:fragment rendered="#{!empty dataverseHeaderFragment.bannerMessages}">
-            <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">
-                
-            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.message }">
+            <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">                
+            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.displayValue }">
                 <div class="alert alert-dismissible container text-warning">
                     <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;"/>
-                    <h:outputText rendered="#{!empty message.message}" value=" #{message.message}" escape="false"/>
+                    <h:outputText rendered="#{!empty message.displayValue }" value=" #{message.displayValue }" escape="false"/>
                 </div>
             </div>
                         

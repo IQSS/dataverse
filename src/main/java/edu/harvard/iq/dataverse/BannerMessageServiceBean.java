@@ -39,6 +39,23 @@ public class BannerMessageServiceBean implements java.io.Serializable {
                 .getResultList();
     }
     
+    public List<BannerMessage> findAllBannerMessages() {
+        return em.createQuery("select o from BannerMessage o ")
+                .getResultList();
+    }
+    
+    public void save( BannerMessage message ) {
+        em.persist(message);
+    }
+    
+    public void deleteBannerMessage(Object pk) {
+        BannerMessage message = em.find(BannerMessage.class, pk);
+
+        if (message != null) {        
+            em.remove(message);
+        }
+    }
+    
     public void dismissMessageByUser(BannerMessage message, AuthenticatedUser user) {
 
         UserBannerMessage ubm = new UserBannerMessage();
