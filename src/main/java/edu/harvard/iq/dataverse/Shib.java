@@ -135,9 +135,10 @@ public class Shib implements java.io.Serializable {
         //QDR Custom - manage SSO cookies
         response = (HttpServletResponse)context.getResponse();
         String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+        String QDRDrupalSiteHost = QDRDrupalSiteURL;
         int index = QDRDrupalSiteURL.indexOf("://");
         if (index >=0) {
-            QDRDrupalSiteURL = QDRDrupalSiteURL.substring(index + 3);
+            QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
         }
         String cookieVal = getPrettyFacesHomePageString(false);
         try {
@@ -147,7 +148,7 @@ public class Shib implements java.io.Serializable {
         }
         Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", cookieVal);
         //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
-        passiveSSOCookie.setDomain("." + QDRDrupalSiteURL);
+        passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
         
         ShibUtil.printAttributes(request);
         
