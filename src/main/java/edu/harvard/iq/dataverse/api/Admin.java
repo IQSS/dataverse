@@ -1847,7 +1847,7 @@ public class Admin extends AbstractApiBean {
 		return ok(bld);
     }
     
-    @PUT
+    @POST
     @Path("/bannerMessage")
     public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
 
