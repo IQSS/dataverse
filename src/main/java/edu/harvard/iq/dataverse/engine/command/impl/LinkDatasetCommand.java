@@ -19,9 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -52,11 +50,7 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
         if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"), this);
         }
-        List<Dataverse> existingLinksToDataverses = new ArrayList<>();
-        for (DatasetLinkingDataverse datasetLinkingDataverse : linkedDataset.getDatasetLinkingDataverses()) {
-            existingLinksToDataverses.add(datasetLinkingDataverse.getLinkingDataverse());
-        }
-        if (existingLinksToDataverses.contains(linkingDataverse)) {
+        if (ctxt.dsLinking().alreadyLinked(linkingDataverse, linkedDataset)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.already.linked"), this);
         }
        
