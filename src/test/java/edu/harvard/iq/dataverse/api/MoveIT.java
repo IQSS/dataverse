@@ -254,12 +254,6 @@ public class MoveIT {
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        // A dataset cannot be linked to the same dataverse again.
-        Response tryToLinkAgain = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
-        tryToLinkAgain.prettyPrint();
-        tryToLinkAgain.then().assertThat()
-                .statusCode(FORBIDDEN.getStatusCode());
-
         Response getLinksBefore = UtilIT.getDatasetLinks(datasetPid, superuserApiToken);
         getLinksBefore.prettyPrint();
         getLinksBefore.then().assertThat()
