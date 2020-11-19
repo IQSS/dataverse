@@ -1896,11 +1896,9 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage")
     public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
 
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        bannerMessageService.findAllBannerMessages().forEach((BannerMessage s) -> {
-            bld.add(s.getId().toString(), s.getDisplayValue());
-        });
-        return ok(bld);
+        return ok(bannerMessageService.findAllBannerMessages().stream()
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .collect(toJsonArray()));
 
     }
     
