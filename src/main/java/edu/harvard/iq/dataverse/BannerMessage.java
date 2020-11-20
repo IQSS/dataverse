@@ -29,6 +29,9 @@ public class BannerMessage implements Serializable {
 
     @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<BannerMessageText> bannerMessageTexts;
+    
+    @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Collection<UserBannerMessage> userBannerMessages;
 
     public Collection<BannerMessageText> getBannerMessageTexts() {
         return this.bannerMessageTexts;
