@@ -2664,6 +2664,40 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+  
+Manage Banner Messages
+~~~~~~~~~~~~~~~~~~~~~~
+
+Beginning with Dataverse version 5.3 general notifications to all users will be handled via Banner Messages. These will be of two types. A Banner Message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of Banner Message is intended to replace the Status Message. The second type where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These Banner Messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user that user will never see the message again.
+
+Add a Banner Message::
+
+  curl -H "Content-type:application/json" -X POST http://$SERVER/api/admin/bannerMessage --upload-file messages.json
+  
+Where ``messages.json`` looks like this::
+
+  {
+    "dismissibleByUser": "true",
+    "messageTexts": [
+    {
+      "lang": "en",
+      "message": "Dismissible Banner Message added via API"
+    },
+    {
+      "lang": "fr",
+      "message": "Message de bannière ajouté via l'API"
+    }
+    ]
+  }
+   
+  
+Get a list of active Banner Messages::
+
+  curl  -X GET http://$SERVER/api/admin/bannerMessage
+  
+Delete a Banner Message by its id::
+
+  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id    
 
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
