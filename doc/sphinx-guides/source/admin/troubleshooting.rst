@@ -103,7 +103,7 @@ We don't know what's causing this issue, but here's a known workaround:
 - Start Payara
 
 The shell script below performs the steps above. 
-Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. The configuration values to reflect your environment (the Payara directory) might need to be changed. (See the comments in the script for more information)
+Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. The configuration values might need to be changed to reflect your environment (the Payara directory). See the comments in the script for more information.
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 
@@ -126,7 +126,7 @@ followed by an Exception stack trace with these lines in it:
 
 
 ... you should reach out by opening an issue. In the good old days of running Dataverse 4 running on Glassfish 4, this
-was a hint for an unsupported JDBC driver. In Dataverse 5 this would be a new regression and it's cause would need to be
+was a hint for an unsupported JDBC driver. In Dataverse 5 this would be a new regression and its cause would need to be
 investigated.
 
 
