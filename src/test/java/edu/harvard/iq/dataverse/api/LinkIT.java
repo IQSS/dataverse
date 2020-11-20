@@ -139,4 +139,67 @@ public class LinkIT {
                 .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"));
     }
 
+    @Test
+    public void testDeepLinks() {
+        Response createUser = UtilIT.createRandomUser();
+
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response superuserResponse = UtilIT.makeSuperUser(username);
+
+        Response createLevel1a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1a", null, apiToken, ":root");
+        createLevel1a.prettyPrint();
+        String level1a = UtilIT.getAliasFromResponse(createLevel1a);
+
+        Response createLevel1b = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level1b", null, apiToken, ":root");
+        createLevel1b.prettyPrint();
+        String level1b = UtilIT.getAliasFromResponse(createLevel1b);
+
+        Response linkLevel1toLevel1 = UtilIT.createDataverseLink(level1a, level1b, apiToken);
+        linkLevel1toLevel1.prettyPrint();
+        linkLevel1toLevel1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataverse " + level1a + " linked successfully to " + level1b));
+
+        Response searchLevel1toLevel1 = UtilIT.search("*", apiToken, "&subtree=" + level1b);
+        searchLevel1toLevel1.prettyPrint();
+        searchLevel1toLevel1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", equalTo(1))
+                .body("data.items[0].name", equalTo(level1a));
+
+        /**
+         * Remove this early return when you are ready to work on
+         * https://github.com/IQSS/dataverse/issues/7430 about strange linking
+         * behavior.
+         */
+        if (true) {
+            return;
+        }
+
+        Response createLevel2a = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level2a", null, apiToken, level1a);
+        createLevel2a.prettyPrint();
+        String level2a = UtilIT.getAliasFromResponse(createLevel2a);
+
+        Response createLevel2b = UtilIT.createSubDataverse(UtilIT.getRandomDvAlias() + "-level2b", null, apiToken, level1b);
+        createLevel2b.prettyPrint();
+        String level2b = UtilIT.getAliasFromResponse(createLevel2b);
+
+        Response linkLevel2toLevel2 = UtilIT.createDataverseLink(level2a, level2b, apiToken);
+        linkLevel2toLevel2.prettyPrint();
+        linkLevel2toLevel2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.message", equalTo("Dataverse " + level2a + " linked successfully to " + level2b));
+
+        Response searchLevel2toLevel2 = UtilIT.search("*", apiToken, "&subtree=" + level2b);
+        searchLevel2toLevel2.prettyPrint();
+        searchLevel2toLevel2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.total_count", equalTo(1))
+                .body("data.items[0].name", equalTo(level2a));
+
+    }
+
 }
