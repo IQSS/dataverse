@@ -399,7 +399,15 @@ public class Shib implements java.io.Serializable {
             userNotificationService.sendNotification(au,
                     new Timestamp(new Date().getTime()),
                     UserNotification.Type.CREATEACC, null);
-            return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
+            //QDR - redirect if/as requested
+            ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
+            Map<String, String> params = context.getRequestParameterMap();
+            String paramRedirectPage = params.get("redirectPage");
+            if(paramRedirectPage!=null) {
+                return paramRedirectPage;
+            } else {
+              return "/dataverseuser.xhtml?selectTab=dataRelatedToMe&faces-redirect=true";
+            }
         } else {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
