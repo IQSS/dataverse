@@ -1170,7 +1170,7 @@ In the curl example below, all of the above are specified but they are optional.
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_ID=doi:10.5072/FK2/J8SJZB
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F jsonData='{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=$PERSISTENT_ID"
 
 The fully expanded example above (without environment variables) looks like this:
 
