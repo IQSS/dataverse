@@ -2668,7 +2668,12 @@ Delete the setting under ``name``::
 Manage Banner Messages
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Beginning with Dataverse version 5.3 general notifications to all users will be handled via Banner Messages. These will be of two types. A Banner Message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of Banner Message is intended to replace the Status Message. The second type where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These Banner Messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user that user will never see the message again.
+Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
+
+- A banner message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of banner message is useful for situations such as upcoming maintenance windows and other downtime.
+- A banner message where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These banner messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user, that user will not see the message again. This type of banner message is useful for situations where a message needs to communicated once, such as a minor terms of use update or an update about a new workflow in your Dataverse installation. 
+
+Note that HTML can be included in banner messages.
 
 Add a Banner Message::
 
@@ -2689,8 +2694,7 @@ Where ``messages.json`` looks like this::
     }
     ]
   }
-   
-  
+     
 Get a list of active Banner Messages::
 
   curl  -X GET http://$SERVER/api/admin/bannerMessage
