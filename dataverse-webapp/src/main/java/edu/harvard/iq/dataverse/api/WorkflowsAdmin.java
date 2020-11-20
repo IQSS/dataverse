@@ -1,13 +1,15 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
-import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType.PostPublishDataset;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 import javax.ejb.EJB;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -18,13 +20,25 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
-import java.util.Optional;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
+import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 
 /**
  * API Endpoint for managing workflows.
@@ -38,6 +52,16 @@ public class WorkflowsAdmin extends AbstractApiBean {
 
     @EJB
     WorkflowServiceBean workflows;
+    
+    @Inject
+    private WorkflowExecutionService workflowExecutionService;
+    
+    @Inject
+    private WorkflowExecutionFacade workflowExecutionFacade;
+
+    @Inject
+    private DatasetRepository datasetRepository; 
+
 
     @POST
     public Response addWorkflow(JsonObject jsonWorkflow) {
@@ -189,4 +213,96 @@ public class WorkflowsAdmin extends AbstractApiBean {
         return ok("Restored whitelist to default (127.0.0.1;::1)");
     }
 
+    @POST
+    @Path("rerun")
+    public Response rerunWorkflow(@QueryParam("type") String type) {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Only superusers can run workflow");
+            }
+            if (type == null) {
+                return error(Response.Status.BAD_REQUEST, "Missing processing type - 'type=failedOnly' or 'type=notPerformedOnly' is required");
+            }
+
+            int datasetProcessed = 0;
+            for (Dataset dataset:datasetRepository.findAll()) {
+                DatasetVersion released = dataset.getReleasedVersion();
+                if (released != null) {
+                    Optional<WorkflowExecution> result = workflowExecutionService.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset, 
+                            dataset.getId(), released.getVersionNumber(), released.getMinorVersionNumber());
+                    if (result.isPresent() && type.equals("failedOnly")) {
+                        WorkflowExecution execution = result.get();
+                        if (execution.isFinished() && !execution.getLastStep().getFinishedSuccessfully()) {
+                            Response response = rerun(dataset, released);
+                            if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+                                return response;
+                            }
+                            datasetProcessed++;
+                        }
+                    } else if (!result.isPresent() && type.equals("notPerformedOnly")) {
+                        Response response = rerun(dataset, released);
+                        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+                            return response;
+                        }
+                        datasetProcessed++;
+                    }
+                }
+            }
+            
+            return ok("Processed " + datasetProcessed + " datasets");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    @POST
+    @Path("{id}/rerun")
+    public Response rerunWorkflow(@PathParam("id") String id, @QueryParam("version") String version) {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Only superusers can run workflow");
+            }
+            Dataset ds = findDatasetOrDie(id);
+            if (ds.isLockedFor(DatasetLock.Reason.Workflow)) {
+                return error(Response.Status.CONFLICT, "Previous workflow hasn't finished yet");
+            }
+            DatasetVersion updateVersion = null;
+            if (version != null) {
+                for (DatasetVersion datasetVersion:ds.getVersions()) {
+                    if (version.equals(datasetVersion.getVersionNumber() + "." + datasetVersion.getMinorVersionNumber())) {
+                        updateVersion = datasetVersion;
+                    }
+                }
+                
+                if (updateVersion == null) {
+                    return error(Response.Status.BAD_REQUEST, "Unknown version: " + version);
+                } else if (updateVersion.isDraft()) {
+                    return error(Response.Status.BAD_REQUEST, "Given version: " + version + " is draft.");
+                } else {
+                    return rerun(ds, updateVersion);
+                }
+            } else {
+                return error(Response.Status.BAD_REQUEST, "Missing version number");
+            }
+            
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+
+    }
+    
+    private Response rerun(Dataset dataset, DatasetVersion datasetVersion) throws WrappedResponse {
+        Optional<Workflow> workflow = workflows.getDefaultWorkflow(PostPublishDataset);
+        if (workflow.isPresent()) {
+            if (dataset.isLockedFor(DatasetLock.Reason.Workflow)) {
+                return error(Response.Status.CONFLICT, "Previous workflow hasn't finished yet.");
+            }
+
+            workflowExecutionFacade.start(
+                workflow.get(), new WorkflowContext(PostPublishDataset, dataset.getId(), datasetVersion.getMinorVersionNumber(), datasetVersion.getVersionNumber(), createDataverseRequest(findUserOrDie()), true));
+        }
+        return ok("Datasets processed");
+    }
 }
