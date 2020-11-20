@@ -558,7 +558,19 @@ public class SettingsServiceBean {
          * Setting can be postfixed with language code to
          * obtain translated versions.
          */
-        SiteFullName
+        SiteFullName,
+        
+        /**
+         * Indicates if antivirus scanner is enabled
+         */
+        AntivirusScannerEnabled,
+        
+        /**
+         * Antivirus scanner engine settings
+         */
+        AntivirusScannerSocketAddress,
+        AntivirusScannerSocketPort,
+        AntivirusScannerSocketTimeout
         ;
 
 
