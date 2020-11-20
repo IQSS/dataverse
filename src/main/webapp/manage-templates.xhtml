@@ -13,7 +13,6 @@
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{manageTemplatesPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(manageTemplatesPage.dataverse, bundle['dataset.manageTemplates.pageTitle'])}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
         </f:metadata>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle" value="#{bundle['dataset.manageTemplates.pageTitle']} - #{manageTemplatesPage.dataverse.name}"/>

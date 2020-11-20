@@ -82,33 +82,6 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
     }
-    
-    public void initBannerMessages(){
-        
-        User user = dataverseSession.getUser();
-        AuthenticatedUser au = null;
-        if (user.isAuthenticated()) {
-            au = (AuthenticatedUser) user;
-        }           
-        
-        if(au == null){
-            bannerMessages = bannerMessageService.findBannerMessages();
-        } else{
-            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
-        } 
-        
-        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
-            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
-                Iterator<BannerMessage> itr = bannerMessages.iterator();
-                while (itr.hasNext()) {
-                    BannerMessage test = itr.next();
-                    if (test.equals(dismissed)) {
-                        itr.remove();
-                    }
-                }
-            }            
-        }
-    }
 
     public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
         this.breadcrumbs = breadcrumbs;
@@ -314,6 +287,30 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     
     public List<BannerMessage> getBannerMessages() {
+        User user = dataverseSession.getUser();
+        AuthenticatedUser au = null;
+        if (user.isAuthenticated()) {
+            au = (AuthenticatedUser) user;
+        }           
+        
+        if(au == null){
+            bannerMessages = bannerMessageService.findBannerMessages();
+        } else{
+            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+        } 
+        
+        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                Iterator<BannerMessage> itr = bannerMessages.iterator();
+                while (itr.hasNext()) {
+                    BannerMessage test = itr.next();
+                    if (test.equals(dismissed)) {
+                        itr.remove();
+                    }
+                }
+            }            
+        }
+        
         return bannerMessages;
     }
 

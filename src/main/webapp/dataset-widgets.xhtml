@@ -21,7 +21,6 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetWidgetsPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetWidgetsPage.dataset, bundle['dataset.thumbnailsAndWidget.breadcrumbs.title'])}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
                 </f:metadata>
                 <h:form id="themeWidgetsForm" styleClass="row form-horizontal">
                 <p:tabView rendered="#{themeWidgetFragment.editDv!=null}" id="themeWidgetsTabView" widgetVar="content">

@@ -207,7 +207,7 @@ public class DataverseSession implements Serializable{
             dismissedMessages.add(message);
         }
         
-        headerFragment.initBannerMessages();
+       // headerFragment.initBannerMessages();
     }
     
     public void configureSessionTimeout() {

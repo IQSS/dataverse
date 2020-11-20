@@ -24,7 +24,6 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{TemplatePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
-                    <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
                 </f:metadata>
                 <h:form id="templateForm">
                     <p:focus context="templateForm"/>

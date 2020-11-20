@@ -14,7 +14,6 @@
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
             <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{DashboardUsersPage.init}"/>
-            <f:viewAction action="#{dataverseHeaderFragment.initBannerMessages()}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.users.manage'])}"/>
