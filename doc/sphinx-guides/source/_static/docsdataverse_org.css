@@ -103,6 +103,67 @@ div.code-example .messagePanel .glyphicon {
 div.code-example span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
 div.code-example span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7 !important;}
 
+div.code-example .btn-group .btn-link {font-size:2em !important;}
+div.code-example .btn-group .btn.btn-link.bootstrap-button-tooltip span.caret {margin-left: 6px;}
+
+div.code-example .btn.btn-default.btn-access {background-color: #fff;background-image:none;}
+div.code-example .btn.btn-default.btn-access:focus, div.code-example .btn.btn-default.btn-access:hover, div.code-example .btn.btn-default.btn-access:active {background-color: #e6e6e6;background-image:none;}
+
+/* Dropdown submenu */
+div.code-example .dropdown-submenu {
+    position: relative;
+}
+div.code-example .dropdown-submenu.pull-left {
+    width: 100%;
+}
+div.code-example .dropdown-submenu>.dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+    margin-left: -1px;
+    -webkit-border-radius: 0 6px 6px 6px;
+    -moz-border-radius: 0 6px 6px;
+    border-radius: 0 6px 6px 6px;
+}
+div.code-example .dropdown-submenu.pull-left>.dropdown-menu {
+    float: right;
+    min-width: 100%;
+}
+
+div.code-example .dropdown-submenu:hover>.dropdown-menu {
+    display: block;
+}
+
+div.code-example .dropdown-submenu>a:after {
+    display: block;
+    content: " ";
+    float: right;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #ccc;
+    margin-top: 5px;
+    margin-right: -10px;
+}
+
+div.code-example .dropdown-submenu:hover>a:after {
+    border-left-color: #fff;
+}
+
+div.code-example .dropdown-submenu.pull-left {
+    float: none;
+}
+
+div.code-example .dropdown-submenu.pull-left>.dropdown-menu {
+    left: -100%;
+    margin-left: 10px;
+    -webkit-border-radius: 6px 0 6px 6px;
+    -moz-border-radius: 6px 0 6px 6px;
+    border-radius: 6px 0 6px 6px;
+}
+
 #breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
 #breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}

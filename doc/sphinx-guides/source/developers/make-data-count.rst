@@ -41,7 +41,7 @@ Next you should run Counter Processor to convert the log into a SUSHI report, wh
 - ``log_name_pattern`` You might want something like ``/usr/local/payara5/glassfish/domains/domain1/logs/counter_(yyyy-mm-dd).log``
 - ``year_month`` You should probably set this to the current month.
 - ``output_file`` This needs to be a directory that the "dataverse" Unix user can read but that the "counter" user can write to. In dev, you can probably get away with "/tmp" as the directory.
-- ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but we're not 100% sure if this should be "Dataverse" or a branch for a Dataverse installation like "LibreScholar".
+- ``platform`` Out of the box from Counter Processor this is set to ``Dash`` but this should be changed to match the name of your Dataverse. Examples are "Harvard Dataverse" for Harvard University or "LibraData" for the University of Virginia.
 - ``upload_to_hub`` This should be "False" unless you are testing sending SUSHI reports to the DataCite hub.
 - ``simulate_date`` You should probably set this to tomorrow.
 

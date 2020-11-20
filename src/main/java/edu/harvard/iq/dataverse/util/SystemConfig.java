@@ -4,6 +4,7 @@ import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
@@ -365,7 +366,7 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
-        String saneDefault = "http://guides.dataverse.org";
+        String saneDefault = "https://guides.dataverse.org";
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
         return guidesBaseUrl + "/" + getGuidesLanguage();
     }
@@ -503,14 +504,13 @@ public class SystemConfig {
     public String getApplicationTermsOfUse() {
         String language = BundleUtil.getCurrentLocale().getLanguage();
         String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
-        String appTermsOfUse = "";
-         if(language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage()) )
-        {
-             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
-        }
-        else
-        {
-            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language, saneDefaultForAppTermsOfUse);
+        // Get the value for the defaultLocale. IT will either be used as the return
+        // value, or as a better default than the saneDefaultForAppTermsOfUse if there
+        // is no language-specific value
+        String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
+        //Now get the language-specific value if it exists
+        if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
         }
         return appTermsOfUse;
     }
@@ -684,6 +684,10 @@ public class SystemConfig {
     public boolean isShibPassiveLoginEnabled() {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+    }
+    public boolean isShibAttributeCharacterSetConversionEnabled() {
+        boolean defaultResponse = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAttributeCharacterSetConversionEnabled, defaultResponse);
     }
 
     /**
@@ -1049,7 +1053,13 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FileValidationOnPublishEnabled, safeDefaultIfKeyNotFound);
     }
 
-	public boolean directUploadEnabled(Dataset dataset) {
-    	return Boolean.getBoolean("dataverse.files." + dataset.getDataverseContext().getEffectiveStorageDriverId() + ".upload-redirect");
+	public boolean directUploadEnabled(DvObjectContainer container) {
+    	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
 	}
+	
+	public String getDataCiteRestApiUrlString() {
+		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
+        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
+	}
+
 }

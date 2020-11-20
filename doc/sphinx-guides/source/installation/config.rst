@@ -26,11 +26,11 @@ The default password for the "dataverseAdmin" superuser account is "admin", as m
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoint lets people create a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`. The endpoint "test" is not used but is where testing code maybe be added (see https://github.com/IQSS/dataverse/issues/4137 ).
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The "builtin-users" endpoint lets admins create a local/builtin user account if they know the key defined in :ref:`BuiltinUsers.KEY`.
 
-By default, most APIs can be operated on remotely and a number of endpoints do not require authentication. The endpoints "admin" and "test" are limited to localhost out of the box by the settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy`.
+By default, most APIs can be operated on remotely and a number of endpoints do not require authentication. The endpoints "admin" and "builtin-users" are limited to localhost out of the box by the settings :ref:`:BlockedApiEndpoints` and :ref:`:BlockedApiPolicy`.
 
-It is very important to keep the block in place for the "admin" endpoint (and at least consider blocking "builtin-users"). Please note that documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
+It is very important to keep the block in place for the "admin" endpoint, and to leave the "builtin-users" endpoint blocked unless you need to access it remotely. Documentation for the "admin" endpoint is spread across the :doc:`/api/native-api` section of the API Guide and the :doc:`/admin/index`.
 
 It's also possible to prevent file uploads via API by adjusting the :ref:`:UploadMethods` database setting.
 
@@ -38,6 +38,30 @@ Forcing HTTPS
 +++++++++++++
 
 To avoid having your users send credentials in the clear, it's strongly recommended to force all web traffic to go through HTTPS (port 443) rather than HTTP (port 80). The ease with which one can install a valid SSL cert into Apache compared with the same operation in Payara might be a compelling enough reason to front Payara with Apache. In addition, Apache can be configured to rewrite HTTP to HTTPS with rules such as those found at https://wiki.apache.org/httpd/RewriteHTTPToHTTPS or in the section on :doc:`shibboleth`.
+
+
+.. _user-ip-addresses-proxy-security:
+
+Recording User IP Addresses
++++++++++++++++++++++++++++
+
+By default, Dataverse captures the IP address from which requests originate. This is used for multiple purposes including controlling access to the admin API, IP-based user groups and Make Data Count reporting. When Dataverse is configured behind a proxy such as a load balancer, this default setup may not capture the correct IP address. In this case all the incoming requests will be logged in the access logs, MDC logs etc., as if they are all coming from the IP address(es) of the load balancer itself. Proxies usually save the original address in an added HTTP header, from which it can be extracted. For example, AWS LB records the "true" original address in the standard ``X-Forwarded-For`` header. If your Dataverse is running behind an IP-masking proxy, but you would like to use IP groups, or record the true geographical location of the incoming requests with Make Data Count, you may enable the IP address lookup from the proxy header using the JVM option  ``dataverse.useripaddresssourceheader``, described further below. 
+
+Before doing so however, you must absolutely **consider the security risks involved**! This option must be enabled **only** on a Dataverse that is in fact fully behind a proxy that properly, and consistently, adds the ``X-Forwarded-For`` (or a similar) header to every request it forwards. Consider the implications of activating this option on a Dataverse that is not running behind a proxy, *or running behind one, but still accessible from the insecure locations bypassing the proxy*: Anyone can now add the header above to an incoming reqest, supplying an arbitrary IP address that Dataverse will trust as the true origin of  the call. Thus giving an attacker an easy way to, for example, get in a privileged IP group. The implications could be even more severe if an attacker were able to pretend to be coming from ``localhost``, if Dataverse is configured to trust localhost connections for unrestricted access to the admin API! We have addressed this by making it so that Dataverse should never accept ``localhost``, ``127.0.0.1``, ``0:0:0:0:0:0:0:1`` etc. when supplied in such a header. But if you have reasons to still find this risk unacceptable, you may want to consider turning open localhost access to the API off (See :ref:`Securing Your Installation <securing-your-installation>` for more information.)
+
+This is how to verify that your proxy or load balancer, etc. is handling the originating address headers properly and securely: Make sure access logging is enabled in your application server (Payara) configuration. (``<http-service access-logging-enabled="true">`` in the ``domain.xml``). Add the address header to the access log format. For example, on a system behind AWS ELB, you may want to use something like ``%client.name% %datetime% %request% %status% %response.length% %header.referer% %header.x-forwarded-for%``. Once enabled, access the Dataverse from outside the LB. You should now see the real IP address of your remote client in the access log. For example, something like: 
+``"1.2.3.4" "01/Jun/2020:12:00:00 -0500" "GET /dataverse.xhtml HTTP/1.1" 200 81082  "NULL-REFERER" "128.64.32.16"`` 
+
+In this example, ``128.64.32.16`` is your remote address (that you should verify), and ``1.2.3.4`` is the address of your LB. If you're not seeing your remote address in the log, do not activate the JVM option! Also, verify that all the entries in the log have this header populated. The only entries in the access log that you should be seeing without this header (logged as ``"NULL-HEADER-X-FORWARDED-FOR"``) are local requests, made from localhost, etc. In this case, since the request is not coming through the proxy, the local IP address should be logged as the primary one (as the first value in the log entry, ``%client.name%``). If you see any requests coming in from remote, insecure subnets without this header - do not use the JVM option! 
+
+Once you are ready, enable the :ref:`JVM option <useripaddresssourceheader>`. Verify that the remote locations are properly tracked in your MDC metrics, and/or your IP groups are working. As a final test, if your Dataverse is allowing unrestricted localhost access to the admin API, imitate an attack in which a malicious request is pretending to be coming from ``127.0.0.1``. Try the following from a remote, insecure location:
+
+``curl https://your.dataverse.edu/api/admin/settings --header "X-FORWARDED-FOR: 127.0.0.1"``
+
+First of all, confirm that access is denied! If you are in fact able to access the settings api from a location outside the proxy, **something is seriously wrong**, so please let us know, and stop using the JVM option.  Otherwise check the access log entry for the header value. What you should see is something like ``"127.0.0.1, 128.64.32.16"``. Where the second address should be the real IP of your remote client. The fact that the "fake" ``127.0.0.1`` you sent over is present in the header is perfectly ok. This is the proper proxy behavior - it preserves any incoming values in the ``X-Forwarded-Header``, if supplied, and adds the detected incoming address to it, *on the right*. It is only this rightmost comma-separated value that Dataverse should ever be using. 
+
+Still feel like activating this option in your configuration? - Have fun and be safe!
+
 
 .. _PrivacyConsiderations:
 
@@ -151,7 +175,7 @@ Here are the configuration options for DOIs:
 - :ref:`doi.baseurlstring`
 - :ref:`doi.username`
 - :ref:`doi.password`
-- :ref:`doi.mdcbaseurlstring`
+- :ref:`doi.dataciterestapiurlstring`
 
 **Database Settings:**
 
@@ -162,7 +186,6 @@ Here are the configuration options for DOIs:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:FilePIDsEnabled <:FilePIDsEnabled>` (optional, defaults to true)
-- :ref:`:PIDAsynchRegFileCount <:PIDAsynchRegFileCount>` (optional, defaults to 10)
 
 Configuring Dataverse for Handles
 +++++++++++++++++++++++++++++++++
@@ -202,7 +225,7 @@ Both Local and Remote Auth
 
 The ``authenticationproviderrow`` database table controls which "authentication providers" are available within Dataverse. Out of the box, a single row with an id of "builtin" will be present. For each user in Dataverse, the ``authenticateduserlookup`` table will have a value under ``authenticationproviderid`` that matches this id. For example, the default "dataverseAdmin" user will have the value "builtin" under  ``authenticationproviderid``. Why is this important? Users are tied to a specific authentication provider but conversion mechanisms are available to switch a user from one authentication provider to the other. As explained in the :doc:`/user/account` section of the User Guide, a graphical workflow is provided for end users to convert from the "builtin" authentication provider to a remote provider. Conversion from a remote authentication provider to the builtin provider can be performed by a sysadmin with access to the "admin" API. See the :doc:`/api/native-api` section of the API Guide for how to list users and authentication providers as JSON.
 
-Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created via API, and the way to prevent this is to block the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) or scramble (or remove) the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
+Adding and enabling a second authentication provider (:ref:`native-api-add-auth-provider` and :ref:`api-toggle-auth-provider`) will result in the Log In page showing additional providers for your users to choose from. By default, the Log In page will show the "builtin" provider, but you can adjust this via the :ref:`conf-default-auth-provider` configuration option. Further customization can be achieved by setting :ref:`conf-allow-signup` to "false", thus preventing users from creating local accounts via the web interface. Please note that local accounts can also be created through the API by enabling the ``builtin-users`` endpoint (:ref:`:BlockedApiEndpoints`) and setting the ``BuiltinUsers.KEY`` database setting (:ref:`BuiltinUsers.KEY`).
 
 To configure Shibboleth see the :doc:`shibboleth` section and to configure OAuth see the :doc:`oauth2` section.
 
@@ -226,7 +249,7 @@ Dataverse can alternately store files in a Swift or S3-compatible object store, 
 The following sections describe how to set up various types of stores and how to configure for multiple stores.
 
 Multi-store Basics
-+++++++++++++++++
+++++++++++++++++++
 
 To support multiple stores, Dataverse now requires an id, type, and label for each store (even for a single store configuration). These are configured by defining two required jvm options:
 
@@ -235,18 +258,18 @@ To support multiple stores, Dataverse now requires an id, type, and label for ea
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=<type>"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
 
-Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`dataverses-datasets` section).
+Out of the box, Dataverse is configured to use local file storage in the 'file' store by default. You can add additional stores and, as a superuser, configure specific dataverses to use them (by editing the 'General Information' for the dataverse as described in the :doc:`/admin/dataverses-datasets` section).
 
 Note that the "\-Ddataverse.files.directory", if defined, continues to control where temporary files are stored (in the /temp subdir of that directory), independent of the location of any 'file' store defined above.
 
 If you wish to change which store is used by default, you'll need to delete the existing default storage driver and set a new one using jvm options.
 
-::
+.. code-block:: none
 
-  ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
-  ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
+    ./asadmin $ASADMIN_OPTS delete-jvm-options "-Ddataverse.files.storage-driver-id=file"
+    ./asadmin $ASADMIN_OPTS create-jvm-options "-Ddataverse.files.storage-driver-id=<id>"
 
-  It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
+It is also possible to set maximum file upload size limits per store. See the :ref:`:MaxFileUploadSizeInBytes` setting below.
 
 File Storage
 ++++++++++++
@@ -315,7 +338,7 @@ In this example, you would be setting the expiration length for one hour.
 
 
 Setting up Compute with Swift
-#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you have configured a Swift Object Storage backend, you also have the option of enabling a connection to a computing environment. To do so, you need to configure the database settings for :ref:`:ComputeBaseUrl` and  :ref:`:CloudEnvironmentName`.
 
@@ -325,15 +348,15 @@ Once you have set up ``:ComputeBaseUrl`` properly in both Dataverse and your clo
 - Compute on multiple datasets
 - Compute on a single datafile
 
-The compute buttons on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute button will redirect to:
+The compute tool options on dataset and file pages will link validated users to your computing environment. If a user is computing on one dataset, the compute tool option will redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId``
 
-If a user is computing on multiple datasets, the compute button will redirect to:
+If a user is computing on multiple datasets, the compute tool option will redirect to:
 
 ``:ComputeBaseUrl/multiparty?datasetPersistentId&anotherDatasetPersistentId&anotherDatasetPersistentId&...``
 
-If a user is computing on a single file, depending on the configuration of your installation, the compute button will either redirect to:
+If a user is computing on a single file, depending on the configuration of your installation, the compute tool option will either redirect to:
 
 ``:ComputeBaseUrl?datasetPersistentId=yourObject``
 
@@ -348,7 +371,7 @@ Amazon S3 Storage (or Compatible)
 
 Dataverse supports Amazon S3 storage as well as other S3-compatible stores (like Minio, Ceph RADOS S3 Gateway and many more) for files uploaded to Dataverse.
 
-The Dataverse S3 driver supports multipart upload for files over 4 GB.
+The Dataverse S3 driver supports multi-part upload for large files (over 1 GB by default - see the min-part-size option in the table below to change this).
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
@@ -392,23 +415,23 @@ Please make note of the following details:
 
 - **Endpoint URL** - consult the documentation of your service on how to find it.
 
-    * Example: https://play.minio.io:9000
+  * Example: https://play.minio.io:9000
 
 - **Region:** Optional, but some services might use it. Consult your service documentation.
 
-    * Example: *us-east-1*
+  * Example: *us-east-1*
 
 - **Access key ID and secret access key:** Usually you can generate access keys within the user profile of your service.
 
-    * Example:
+  * Example:
 
-      - ID: *Q3AM3UQ867SPQQA43P2F*
+    - ID: *Q3AM3UQ867SPQQA43P2F*
 
-      - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
+    - Key: *zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG*
 
 - **Bucket name:** Dataverse will fail opening and uploading files on S3 if you don't create one.
 
-    * Example: *dataverse*
+  * Example: *dataverse*
 
 Manually Set Up Credentials File
 ################################
@@ -470,7 +493,8 @@ Second: Configure Dataverse to use S3 Storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To set up an S3 store, you must define the id, type, and label as for any store:
-.. code-block:: none
+
+.. code-block:: bash
 
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.type=s3"
     ./asadmin $ASADMIN_OPTS create-jvm-options "\-Ddataverse.files.<id>.label=<label>"
@@ -492,6 +516,9 @@ By default, your store will use the [default] profile in you .aws configuration 
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.profile=<profilename>"``
 
+Larger installations may want to increase the number of open S3 connections allowed (default is 256): For example, 
+
+``./asadmin create-jvm-options "-Ddataverse.files.<id>.connection-pool-size=4096"``
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
 add the options for the custom URL and region as documented below. Please read above if your desired combination has
@@ -502,21 +529,23 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-=========================================    ==================  ==================================================================  =============
-JVM Option                                   Value               Description                                                         Default value
-=========================================    ==================  ==================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                          ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                         (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.  ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested          (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.     60
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                     ``dataverse``
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.             ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                    ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                  ``true``
-=========================================    ==================  ==================================================================  =============
+===========================================  ==================  =========================================================================  =============
+JVM Option                                   Value               Description                                                                Default value
+===========================================  ==================  =========================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                 ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                         ``false``
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.         ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                 (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.            60
+dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
+dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                    ``256``
+===========================================  ==================  =========================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -538,6 +567,7 @@ Migrating from Local Storage to S3
 ##################################
 
 Is currently documented on the :doc:`/developers/deployment` page.
+
 
 .. _Branding Your Installation:
 
@@ -740,11 +770,13 @@ Tracking Button Clicks
 
 The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
 
-Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, anddownloadCitation) to it's HTML to facilitate it.
+Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
 For Google Analytics, the example script at :download:`analytics-code.html </_static/installation/files/var/www/dataverse/branding/analytics-code.html>` will track both page hits and events within Dataverse. You would use this file in the same way as the shorter example above, putting it somewhere outside your deployment directory, replacing ``YOUR ACCOUNT CODE`` with your actual code and setting :WebAnalyticsCode to reference it.
 
 Once this script is running, you can look in the Google Analytics console (Realtime/Events or Behavior/Events) and view events by type and/or the Dataset or File the event involves.
+
+.. _BagIt Export:
 
 BagIt Export
 ------------
@@ -753,7 +785,7 @@ Dataverse may be configured to submit a copy of published Datasets, packaged as 
 
 Dataverse offers an internal archive workflow which may be configured as a PostPublication workflow via an admin API call to manually submit previously published Datasets and prior versions to a configured archive such as Chronopolis. The workflow creates a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-At present, the DPNSubmitToArchiveCommand and LocalSubmitToArchiveCommand are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, the DPNSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchive are the only implementations extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
 
 .. _Duracloud Configuration:
 
@@ -801,9 +833,40 @@ ArchiverClassName - the fully qualified class to be used for archiving. For exam
 
 \:ArchiverSettings - the archiver class can access required settings including existing Dataverse settings and dynamically defined ones specific to the class. This setting is a comma-separated list of those settings. For example\:
 
-``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath”``
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":BagItLocalPath"``
 
 :BagItLocalPath is the file path that you've set in :ArchiverSettings.
+
+.. _Google Cloud Configuration:
+
+Google Cloud Configuration
+++++++++++++++++++++++++++
+
+The Google Cloud Archiver can send Dataverse Bags to a bucket in Google's cloud, including those in the 'Coldline' storage class (cheaper, with slower access) 
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverClassName -X PUT -d "edu.harvard.iq.dataverse.engine.command.impl.GoogleCloudSubmitToArchiveCommand"``
+
+``curl http://localhost:8080/api/admin/settings/:ArchiverSettings -X PUT -d ":GoogleCloudBucket, :GoogleCloudProject"``
+
+The Google Cloud Archiver defines two custom settings, both are required. The credentials for your account, in the form of a json key file, must also be obtained and stored locally (see below):
+
+In order to use the Google Cloud Archiver, you must have a Google account. You will need to create a project and bucket within that account and provide those values in the settings:
+
+\:GoogleCloudBucket - the name of the bucket to use. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudBucket -X PUT -d "qdr-archive"``
+
+\:GoogleCloudProject - the name of the project managing the bucket. For example:
+
+``curl http://localhost:8080/api/admin/settings/:GoogleCloudProject -X PUT -d "qdr-project"``
+
+The Google Cloud Archiver also requires a key file that must be renamed to 'googlecloudkey.json' and placed in the directory identified by your 'dataverse.files.directory' jvm option. This file can be created in the Google Cloud Console. (One method: Navigate to your Project 'Settings'/'Service Accounts', create an account, give this account the 'Cloud Storage'/'Storage Admin' role, and once it's created, use the 'Actions' menu to 'Create Key', selecting the 'JSON' format option. Use this as the 'googlecloudkey.json' file.)
+
+For example:
+
+``cp <your key file> /usr/local/payara5/glassfish/domains/domain1/files/googlecloudkey.json``
+
+.. _Archiving API Call:
 
 API Call
 ++++++++
@@ -814,9 +877,9 @@ Once this configuration is complete, you, as a user with the *PublishDataset* pe
 
 where:
 
-{id} is the DatasetId (or :persistentId with the ?persistentId="\<DOI\>" parameter), and
+``{id}`` is the DatasetId (or ``:persistentId`` with the ``?persistentId="<DOI>"`` parameter), and
 
-{version} is the friendly version number, e.g. "1.2".
+``{version}`` is the friendly version number, e.g. "1.2".
 
 The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
@@ -826,7 +889,8 @@ PostPublication Workflow
 ++++++++++++++++++++++++
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
-. The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
+
+The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
 
@@ -940,19 +1004,23 @@ If the Dataverse server has multiple DNS names, this option specifies the one to
 
 The password reset feature requires ``dataverse.fqdn`` to be configured.
 
-| Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
-| ``https://{dataverse.fqdn}/``
-| If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
+.. note::
+
+	Do note that whenever the system needs to form a service URL, by default, it will be formed with ``https://`` and port 443. I.e.,
+	``https://{dataverse.fqdn}/``
+	If that does not suit your setup, you can define an additional option, ``dataverse.siteUrl``, explained below.
 
 .. _dataverse.siteUrl:
 
 dataverse.siteUrl
 +++++++++++++++++
 
-| and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
-| For example, configured in domain.xml:
-| ``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
-| ``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
+.. note::
+
+	and specify the protocol and port number you would prefer to be used to advertise the URL for your Dataverse.
+	For example, configured in domain.xml:
+	``<jvm-options>-Ddataverse.fqdn=dataverse.example.edu</jvm-options>``
+	``<jvm-options>-Ddataverse.siteUrl=http://${dataverse.fqdn}:8080</jvm-options>``
 
 dataverse.files.directory
 +++++++++++++++++++++++++
@@ -1038,24 +1106,24 @@ See also these related database settings below:
 - :ref:`:Authority`
 - :ref:`:Shoulder`
 
-.. _doi.mdcbaseurlstring:
+.. _doi.dataciterestapiurlstring:
 
-doi.mdcbaseurlstring
-++++++++++++++++++++
+doi.dataciterestapiurlstring
+++++++++++++++++++++++++++++
 
-This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide.
+This configuration option affects the ``updateCitationsForDataset`` API endpoint documented under :ref:`MDC-updateCitationsForDataset` in the Admin Guide as well as the /pids/* API.
 
 As of this writing, "https://api.datacite.org" (DataCite) and "https://api.test.datacite.org" (DataCite Testing) are the main valid values.
 
-Out of the box, Dataverse is configured to use a test DataCite MDC base URL string. You can delete it like this:
+Out of the box, Dataverse is configured to use a test DataCite REST API base URL string. You can delete it like this:
 
-``./asadmin delete-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.test.datacite.org'``
+``./asadmin delete-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.test.datacite.org'``
 
 Then, to switch to production DataCite, you can issue the following command:
 
-``./asadmin create-jvm-options '-Ddoi.mdcbaseurlstring=https\://api.datacite.org'``
+``./asadmin create-jvm-options '-Ddoi.dataciterestapiurlstring=https\://api.datacite.org'``
 
-For backward compatibility, if this option is not defined, the default used is "https\://api.datacite.org:.
+For backward compatibility, if this option is not defined, the value of '-Ddoi.mdcbaseurlstring' is used if set. If not the default used is "https\://api.datacite.org:.
 
 See also these related database settings below:
 
@@ -1136,6 +1204,48 @@ Please note that there are other reasons why download URLs may not be included f
 
 For more on Schema.org JSON-LD, see the :doc:`/admin/metadataexport` section of the Admin Guide.
 
+.. _useripaddresssourceheader:
+
+dataverse.useripaddresssourceheader
++++++++++++++++++++++++++++++++++++
+
+**Make sure** to read the section about the :ref:`Security Implications 
+<user-ip-addresses-proxy-security>` of using this option earlier in the guide!
+
+If set, specifies an HTTP Header such as X-Forwarded-For to use to retrieve the user's IP address. For example:
+
+``./asadmin create-jvm-options '-Ddataverse.useripaddresssourceheader=X-Forwarded-For'``
+
+This setting is useful in cases such as running Dataverse behind load balancers where the default option of getting the Remote Address from the servlet isn't correct (e.g. it would be the load balancer IP address). Note that unless your installation always sets the header you configure here, this could be used as a way to spoof the user's address. Allowed values are: 
+
+.. code::
+
+	"X-Forwarded-For",
+	"Proxy-Client-IP",
+	"WL-Proxy-Client-IP",
+	"HTTP_X_FORWARDED_FOR",
+	"HTTP_X_FORWARDED",
+	"HTTP_X_CLUSTER_CLIENT_IP",
+	"HTTP_CLIENT_IP",
+	"HTTP_FORWARDED_FOR",
+	"HTTP_FORWARDED",
+	"HTTP_VIA",
+	"REMOTE_ADDR"
+
+.. _:ApplicationServerSettings:
+
+Application Server Settings
+---------------------------
+
+http.request-timeout-seconds
+++++++++++++++++++++++++++++
+
+To facilitate large file upload and download, the Dataverse installer bumps the Payara **server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds** setting from its default 900 seconds (15 minutes) to 1800 (30 minutes). Should you wish to shorten or lengthen this window, issue for example:
+
+``./asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600``
+
+and restart Payara to apply your change.
+
 .. _database-settings:
 
 Database Settings
@@ -1169,7 +1279,7 @@ Below is an example of setting ``localhost-only``.
 :BlockedApiEndpoints
 ++++++++++++++++++++
 
-A comma separated list of API endpoints to be blocked. For a production installation, "admin" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
+A comma-separated list of API endpoints to be blocked. For a standard production installation, the installer blocks both "admin" and "builtin-users" by default per the security section above:
 
 ``curl -X PUT -d "admin,builtin-users" http://localhost:8080/api/admin/settings/:BlockedApiEndpoints``
 
@@ -1359,24 +1469,13 @@ Note that in either case, when using the ``sequentialNumber`` option, datasets a
 :FilePIDsEnabled
 ++++++++++++++++
 
-Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true.
+Toggles publishing of file-based PIDs for the entire installation. By default this setting is absent and Dataverse assumes it to be true. If enabled, the registration will be performed asynchronously (in the background) during publishing of a dataset.
 
 If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in 4.9 and is required until version 4.9.3.
-
-Note: The dataset will be locked, and the registration will be performed asynchronously, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
-
-.. _:PIDAsynchRegFileCount:
-
-:PIDAsynchRegFileCount
-++++++++++++++++++++++
-
-Configures the number of files in the dataset to warrant performing the registration of persistent identifiers (section above) and/or file validation asynchronously during publishing. The setting is optional, and the default value is 10.
-
-``curl -X PUT -d '100' http://localhost:8080/api/admin/settings/:PIDAsynchRegFileCount``
+Note: File-level PID registration was added in 4.9; it could not be disabled until version 4.9.3.
 
 .. _:IndependentHandleService:
 
@@ -1393,13 +1492,11 @@ By default this setting is absent and Dataverse assumes it to be false.
 :FileValidationOnPublishEnabled
 +++++++++++++++++++++++++++++++
 
-Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true.
+Toggles validation of the physical files in the dataset when it's published, by recalculating the checksums and comparing against the values stored in the DataFile table. By default this setting is absent and Dataverse assumes it to be true. If enabled, the validation will be performed asynchronously, similarly to how we handle assigning persistent identifiers to datafiles, with the dataset locked for the duration of the publishing process. 
 
 If you don't want the datafiles to be validated on publish, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FileValidationOnPublishEnabled``
-
-Note: The dataset will be locked, and the validation will be performed asynchronously, similarly to how we handle assigning persistend identifiers to datafiles, when there are more than N files in the dataset, where N is configured by the database setting ``:PIDAsynchRegFileCount`` (default: 10). 
 
 
 :ApplicationTermsOfUse
@@ -1493,7 +1590,7 @@ Note that this will override the default behaviour for the "Support" menu option
 :MetricsUrl
 +++++++++++
 
-Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools` section of the Admin Guide.
+Make the metrics component on the root dataverse a clickable link to a website where you present metrics on your Dataverse installation, perhaps one of the community-supported tools mentioned in the :doc:`/admin/reporting-tools-and-queries` section of the Admin Guide.
 
 ``curl -X PUT -d http://metrics.dataverse.example.edu http://localhost:8080/api/admin/settings/:MetricsUrl``
 
@@ -1512,6 +1609,8 @@ You can make the text clickable and include an additional message in a pop up by
 Alongside the ``:StatusMessageHeader`` you need to add StatusMessageText for the message to show.:
 
 ``curl -X PUT -d "This appears in a popup." http://localhost:8080/api/admin/settings/:StatusMessageText``
+
+.. _:MaxFileUploadSizeInBytes:
 
 :MaxFileUploadSizeInBytes
 +++++++++++++++++++++++++
@@ -1560,7 +1659,7 @@ You can override this global setting on a per-format basis for the following for
 - CSV
 - XLSX
 
-For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger that 1 MB, use this setting:
+For example, if you want your installation of Dataverse to not attempt to ingest Rdata files larger than 1 MB, use this setting:
 
 ``curl -X PUT -d 1000000 http://localhost:8080/api/admin/settings/:TabularIngestSizeLimit:Rdata``
 
@@ -1619,14 +1718,14 @@ The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-two
 :GeoconnectCreateEditMaps
 +++++++++++++++++++++++++
 
-Set ``GeoconnectCreateEditMaps`` to true to allow the user to create GeoConnect Maps. This boolean effects whether the user sees the map button on the dataset page and if the ingest will create a shape file.
+Set ``GeoconnectCreateEditMaps`` to true to allow the user to create maps using Geoconnect. This boolean enables the map configure tool option for a data file and the ingest to create a shape file.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
 
 :GeoconnectViewMaps
 +++++++++++++++++++
 
-Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean effects whether a user will see the "Explore" button.
+Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean enables the map explore tool option for a data file.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
@@ -1689,7 +1788,9 @@ Here is an example of setting the default auth provider back to ``builtin``:
 :AllowSignUp
 ++++++++++++
 
-Set to false to disallow local accounts to be created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
+Set to false to disallow local accounts from being created. See also the sections on :doc:`shibboleth` and :doc:`oauth2`.
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowSignUp``
 
 :FileFixityChecksumAlgorithm
 ++++++++++++++++++++++++++++
@@ -1833,31 +1934,32 @@ The Shibboleth affiliation attribute holds information about the affiliation of 
 
 If the attribute is not yet set for the Shibboleth, please consult the Shibboleth Administrators at your institution. Typically it requires changing of the `/etc/shibboleth/attribute-map.xml` file by adding an attribute request, e.g.
 
-```
+.. code::
+
     <Attribute name="urn:oid:2.5.4.11" id="ou">
         <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
     </Attribute>
-```
+
 
 In order to implement the change, you should restart Shibboleth and Apache2 services:
 
-```
-sudo service shibd restart
-sudo service apache2 restart
-```
+.. code::
+
+	sudo service shibd restart
+	sudo service apache2 restart
 
 To check if the attribute is sent, you should log in again to Dataverse and check Shibboleth's transaction log. You should see something like this:
 
-```
-INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
-INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
-INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
-INFO Shibboleth-TRANSACTION [25]: }
-```
+.. code::
+
+	INFO Shibboleth-TRANSACTION [25]: Cached the following attributes with session (ID: _9d1f34c0733b61c0feb0ca7596ef43b2) for (applicationId: default) {
+	INFO Shibboleth-TRANSACTION [25]: 	givenName (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	ou (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	sn (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	eppn (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	mail (1 values)
+	INFO Shibboleth-TRANSACTION [25]: 	displayName (1 values)
+	INFO Shibboleth-TRANSACTION [25]: }
 
 If you see the attribue you requested in this list, you can set the attribute in Dataverse.
 
@@ -1872,6 +1974,17 @@ To delete ``:ShibAffiliationAttribute``:
 To check the current value of ``:ShibAffiliationAttribute``:
 
 ``curl -X GET http://localhost:8080/api/admin/settings/:ShibAffiliationAttribute``
+
+:ShibAttributeCharacterSetConversionEnabled
++++++++++++++++++++++++++++++++++++++++++++
+
+It seems that the application server (usually Glassfish or Payara) will interpret all Shibboleth attributes that come through AJP as ISO-8859-1, even if they where originally UTF-8.
+To circumvent that, we re-encode all received Shibboleth attributes manually as UTF-8 by default. 
+In the case you get garbled characters in Shibboleth-supplied fields (e.g. given name, surname, affiliation), you can disable this behaviour by setting ShibAttributeCharacterSetConversionEnabled to false:
+
+``curl -X PUT -d false http://localhost:8080/api/admin/settings/:ShibAttributeCharacterSetConversionEnabled``
+
+If you managed to get correct accented characters from shibboleth while this setting is _false_, please contact us with your application server and Shibboleth configuration!
 
 .. _:ComputeBaseUrl:
 
@@ -2010,7 +2123,7 @@ See :ref:`i18n` for a curl example and related settings.
 +++++++++++++++++++++++++++++
 
 ``:InheritParentRoleAssignments`` can be set to a comma-separated list of role aliases or '*' (all) to cause newly created Dataverses to inherit the set of users and/or internal groups who have assignments for those role(s) on the parent Dataverse, i.e. those users/groups will be assigned the same role(s) on the new Dataverse (in addition to the creator of the new Dataverse having an admin role).
-This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``::InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
+This can be helpful in situations where multiple organizations are sharing one Dataverse instance. The default, if ``:InheritParentRoleAssignments`` is not set is for the creator of the new Dataverse to be the only one assigned a role.
 
 ``curl -X PUT -d 'admin, curator' http://localhost:8080/api/admin/settings/:InheritParentRoleAssignments``
 or
@@ -2024,3 +2137,62 @@ Allows Cross-Origin Resource sharing(CORS). By default this setting is absent an
 If you don’t want to allow CORS for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:AllowCors``
+
+:ChronologicalDateFacets
+++++++++++++++++++++++++
+
+Unlike other facets, those indexed by Date/Year are sorted chronologically by default, with the most recent value first. To have them sorted by number of hits, e.g. with the year with the most results first, set this to false 
+
+If you don’t want date facets to be sorted chronologically, set:
+
+``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:ChronologicalDateFacets``
+
+:CustomZipDownloadServiceUrl
+++++++++++++++++++++++++++++
+
+The location of the "Standalone Zipper" service. If this option is specified, Dataverse will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of v5.0).
+
+To enable redirects to the zipper installed on the same server as the main Dataverse application: 
+
+``curl -X PUT -d '/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl``
+
+To enable redirects to the zipper on a different server: 
+
+``curl -X PUT -d 'https://zipper.example.edu/cgi-bin/zipdownload' http://localhost:8080/api/admin/settings/:CustomZipDownloadServiceUrl`` 
+
+:ArchiverClassName
+++++++++++++++++++
+
+Dataverse can export archival "Bag" files to an extensible set of storage systems (see :ref:`BagIt Export` above for details about this and for further explanation of the other archiving related settings below).
+This setting specifies which storage system to use by identifying the particular Java class that should be run. Current options include DuraCloudSubmitToArchiveCommand, LocalSubmitToArchiveCommand, and GoogleCloudSubmitToArchiveCommand.
+
+``curl -X PUT -d 'LocalSubmitToArchiveCommand' http://localhost:8080/api/admin/settings/:ArchiverClassName`` 
+ 
+:ArchiverSettings
++++++++++++++++++
+
+Each Archiver class may have its own custom settings. Along with setting which Archiver class to use, one must use this setting to identify which setting values should be sent to it when it is invoked. The value should be a comma-separated list of setting names.
+For example, the LocalSubmitToArchiveCommand only uses the :BagItLocalPath setting. To allow the class to use that setting, this setting must set as:
+
+``curl -X PUT -d ':BagItLocalPath' http://localhost:8080/api/admin/settings/:ArchiverSettings`` 
+
+:DuraCloudHost
+++++++++++++++
+:DuraCloudPort
+++++++++++++++
+:DuraCloudContext
++++++++++++++++++
+
+These three settings define the host, port, and context used by the DuraCloudSubmitToArchiveCommand. :DuraCloudHost is required. The other settings have default values as noted in the :ref:`Duracloud Configuration` section above.
+
+:BagItLocalPath
++++++++++++++++
+
+This is the local file system path to be used with the LocalSubmitToArchiveCommand class. It is recommended to use an absolute path. See the :ref:`Local Path Configuration` section above.
+
+:GoogleCloudBucket
+++++++++++++++++++ 
+:GoogleCloudProject
++++++++++++++++++++
+
+These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.

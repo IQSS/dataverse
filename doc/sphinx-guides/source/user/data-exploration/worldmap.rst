@@ -16,9 +16,9 @@ Note: WorldMap hosts their own `user guide <http://worldmap.harvard.edu/static/d
 What is Geoconnect?
 ===================
 
-Geoconnect is a platform that integrates Dataverse and WorldMap, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information. Geoconnect is an optional component of Dataverse, so if you are interested in this feature but don't see it in the installation of Dataverse you are using, you should contact the support team for that installation and ask them to enable the Geoconnect feature.
+Geoconnect is a platform that integrates Dataverse and WorldMap, allowing researchers to visualize their geospatial data. Geoconnect can be used to create maps of shapefiles or of tabular files containing geospatial information. Geoconnect is an optional component of Dataverse, so if you are interested in this feature but don't see it in the installation of Dataverse you are using, contact support for that installation to request they enable Geoconnect.
 
-If a data file's owner has created a map of that data using Geoconnect, you can view the map by clicking the "Explore" button. If the data is in the form of a shapefile, the button takes you right to the map. If it's a tabular file, the Explore button will be a dropdown, and you'll need to select "Worldmap".
+Once the map has been created using Geoconnect, can be viewed by choosing the WorldMap explore tool option for that data file.
 
 Mapping shapefiles with Geoconnect
 ==================================
@@ -68,9 +68,7 @@ Next, you'll need to let Dataverse know that your tabular file contains geospati
 
 **3. Publish & Map Data**
 
-At this point, a "Map data" button will appear next to your file. Publish this new version of your dataset to activate this button.
-
-|image3|
+At this point, the configure tool option for the file will be available for your file. Publish this new version of your dataset to map your data.
 
 
 Creating the map
@@ -127,12 +125,12 @@ Now that you have created your map:
 
 The map editor (pictured above) provides a set of options you can use to style your map. Clicking "Apply Changes" saves the current version of your map to Dataverse and Worldmap. The "Return to the Dataverse" button brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
 
-If you'd like to make further changes to your map in the future, you can return to the editor by clicking the "Map Data" button on your file.
+Return to the editor for further changes to your map in the future by choosing the map configure tool option for your data file in Dataverse.
 
 Removing your map
 =================
 
-You can delete your map at any time. If you are on Dataverse, click "Map Data" and click the "Delete Map" button on the upper right. This completely removes the map and underlying data from the WorldMap platform.
+You can delete your map at any time. Select the map configure tool option for the data file in Dataverse, then in Geoconnect select "Delete Map". This completely removes the map and underlying data from the WorldMap platform.
 
 
 .. |image1| image:: ./img/geoconnect-tabular-1.png

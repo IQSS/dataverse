@@ -276,11 +276,16 @@ public class OpenAireExportUtil {
                                     if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
                                         // creatorName=<FamilyName>, <FirstName>
                                         String[] fullName = creatorName.split(", ");
-                                        givenName = fullName[1];
-                                        String familyName = fullName[0];
+                                        if (fullName.length == 2) {
+                                            givenName = fullName[1];
+                                            String familyName = fullName[0];
 
-                                        writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                                        writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                            writeFullElement(xmlw, null, "givenName", null, givenName, language);
+                                            writeFullElement(xmlw, null, "familyName", null, familyName, language);
+                                        } else {
+                                            // It's possible to get here if "Smith," is entered as an author name.
+                                            logger.info("Unable to write givenName and familyName based on creatorName '" + creatorName + "'.");
+                                        }
                                     }
                                 } else {
                                     String givenName = FirstNames.getInstance().getFirstName(creatorName);

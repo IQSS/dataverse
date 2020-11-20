@@ -172,8 +172,15 @@ public class DatasetServiceBean implements java.io.Serializable {
     public List<Dataset> findAll() {
         return em.createQuery("select object(o) from Dataset as o order by o.id", Dataset.class).getResultList();
     }
-    
-    
+      
+    public List<Long> findIdStale() {
+        return em.createNamedQuery("Dataset.findIdStale").getResultList();
+    }
+ 
+     public List<Long> findIdStalePermission() {
+        return em.createNamedQuery("Dataset.findIdStalePermission").getResultList();
+    }
+  
     public List<Long> findAllLocalDatasetIds() {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class).getResultList();
     }
@@ -726,7 +733,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             logger.fine("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
             return null;
         }
-        dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(dataset, inputStream);
+        dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(dataset, inputStream);
         dataset.setThumbnailFile(null);
         return merge(dataset);
     }
@@ -780,21 +787,37 @@ public class DatasetServiceBean implements java.io.Serializable {
         return workflowComment;
     }
     
+    /**
+     * This method used to throw CommandException, which was pretty pointless 
+     * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom 
+     * thrown by the FinalizeDatasetPublicationCommand below will be caught 
+     * and we'll log it as a warning - which is the best we can do at this point.
+     * Any failure notifications to users should be sent from inside the command.
+     */
     @Asynchronous
-    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) throws CommandException {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) {
 
         // Since we are calling the next command asynchronously anyway - sleep here 
         // for a few seconds, just in case, to make sure the database update of 
         // the dataset initiated by the PublishDatasetCommand has finished, 
         // to avoid any concurrency/optimistic lock issues. 
+        // Aug. 2020/v5.0: It MAY be working consistently without any 
+        // sleep here, after the call the method has been moved to the onSuccess()
+        // portion of the PublishDatasetCommand. I'm going to leave the 1 second
+        // sleep below, for just in case reasons: -- L.A.
         try {
-            Thread.sleep(15000);
+            Thread.sleep(1000);
         } catch (Exception ex) {
-            logger.warning("Failed to sleep for 15 seconds.");
+            logger.warning("Failed to sleep for a second.");
         }
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
-        commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
+        try {
+            commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
+        } catch (CommandException cex) {
+            logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
+        }
     }
     
     /*

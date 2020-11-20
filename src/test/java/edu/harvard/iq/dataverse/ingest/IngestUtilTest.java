@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -97,7 +98,7 @@ public class IngestUtilTest {
 
         dataFileList.add(datafile2);
 
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -110,12 +111,12 @@ public class IngestUtilTest {
             }
         }
 
-        // check filenames are unique and unaltered
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
+        // check filenames are unique and altered
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -126,9 +127,9 @@ public class IngestUtilTest {
             }
         }
 
-        // check filenames are unique and unaltered
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
+        // check filenames are unique and altered
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
     }
 
     @Test
@@ -203,7 +204,7 @@ public class IngestUtilTest {
 
         dataFileList.add(datafile2);
 
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -216,12 +217,12 @@ public class IngestUtilTest {
             }
         }
 
-        // check filenames are unique and unaltered
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
+        // check filenames are unique and altered
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -232,9 +233,9 @@ public class IngestUtilTest {
             }
         }
 
-        // check filenames are unique and unaltered
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
+        // check filenames are unique and altered
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
     }
 
     @Test
@@ -328,7 +329,7 @@ public class IngestUtilTest {
 
         dataFileList.add(datafile3);
 
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         boolean file1NameAltered = false;
         boolean file2NameAltered = false;
@@ -346,16 +347,16 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
-        assertEquals(file3NameAltered, false);
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
+        assertEquals(false, file3NameAltered);
 
         // add duplicate file in root
         datasetVersion.getFileMetadatas().add(fmd3);
         fmd3.setDatasetVersion(datasetVersion);
 
         // try to add data files with "-1" duplicates and see if it gets incremented to "-2"
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         for (DataFile df : dataFileList) {
             if (df.getFileMetadata().getLabel().equals("datafile1-2.txt")) {
@@ -370,9 +371,9 @@ public class IngestUtilTest {
         }
 
         // check filenames are unique
-        assertEquals(file1NameAltered, true);
-        assertEquals(file2NameAltered, true);
-        assertEquals(file3NameAltered, true);
+        assertEquals(true, file1NameAltered);
+        assertEquals(true, file2NameAltered);
+        assertEquals(true, file3NameAltered);
     }
 
     @Test
@@ -446,7 +447,7 @@ public class IngestUtilTest {
 
         dataFileList.add(datafile2);
 
-        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList);
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, null);
 
         boolean file2NameAltered = false;
         for (DataFile df : dataFileList) {
@@ -456,9 +457,106 @@ public class IngestUtilTest {
         }
 
         // check filename is altered since tabular and will change to .tab after ingest
-        assertEquals(file2NameAltered, true);
+        assertEquals(true, file2NameAltered);
     }
 
+    
+    @Test
+    /**
+     * Test adding duplicate file name labels to a dataset version with empty
+     * directory labels when replacing a file. This should simulate what happens when replacing a file
+     * via the file upload UI.
+     */
+    public void testCheckForDuplicateFileNamesWhenReplacing() throws Exception {
+
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+
+        // create dataset
+        Dataset dataset = makeDataset();
+
+        // create dataset version
+        DatasetVersion datasetVersion = dataset.getEditVersion();
+        datasetVersion.setCreateTime(dateFmt.parse("20001012"));
+        datasetVersion.setLastUpdateTime(datasetVersion.getLastUpdateTime());
+        datasetVersion.setId(MocksFactory.nextId());
+        datasetVersion.setReleaseTime(dateFmt.parse("20010101"));
+        datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
+        datasetVersion.setMinorVersionNumber(0L);
+        datasetVersion.setVersionNumber(1L);
+        datasetVersion.setFileMetadatas(new ArrayList<>());
+
+        // create datafiles
+        List<DataFile> dataFileList = new ArrayList<>();
+        DataFile datafile1 = new DataFile("application/octet-stream");
+        datafile1.setStorageIdentifier("datafile1.txt");
+        datafile1.setFilesize(200);
+        datafile1.setModificationTime(new Timestamp(new Date().getTime()));
+        datafile1.setCreateDate(new Timestamp(new Date().getTime()));
+        datafile1.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        datafile1.setOwner(dataset);
+        datafile1.setIngestDone();
+        datafile1.setChecksumType(DataFile.ChecksumType.SHA1);
+        datafile1.setChecksumValue("Unknown");
+        datafile1.setId(1L);
+
+        // set metadata and add verson
+        FileMetadata fmd1 = new FileMetadata();
+        fmd1.setId(1L);
+        fmd1.setLabel("datafile1.txt");
+        fmd1.setDirectoryLabel("");
+        fmd1.setDataFile(datafile1);
+        datafile1.getFileMetadatas().add(fmd1);
+        datasetVersion.getFileMetadatas().add(fmd1);
+        fmd1.setDatasetVersion(datasetVersion);
+
+        dataFileList.add(datafile1);
+
+        DataFile datafile2 = new DataFile("application/octet-stream");
+        datafile2.setStorageIdentifier("datafile2.txt");
+        datafile2.setFilesize(200);
+        datafile2.setModificationTime(new Timestamp(new Date().getTime()));
+        datafile2.setCreateDate(new Timestamp(new Date().getTime()));
+        datafile2.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        datafile2.setOwner(dataset);
+        datafile2.setIngestDone();
+        datafile2.setChecksumType(DataFile.ChecksumType.SHA1);
+        datafile2.setChecksumValue("Unknown");
+        datafile2.setId(2L);
+
+        // set metadata and add version
+        FileMetadata fmd2 = new FileMetadata();
+        fmd2.setId(2L);
+        fmd2.setLabel("datafile2.txt");
+        fmd2.setDirectoryLabel("");
+        fmd2.setDataFile(datafile2);
+        datafile2.getFileMetadatas().add(fmd2);
+        datasetVersion.getFileMetadatas().add(fmd2);
+        fmd2.setDatasetVersion(datasetVersion);
+
+        dataFileList.add(datafile2);
+
+        /*In a real replace, there should only be one file in dataFileList. Having both files in dataFileList, we're essentially testing two cases at once:
+         *  - the replacing file name conflicts with some other file's name
+         *  - the replacing file's name only conflicts with the file being replaced (datafile2) and shouldn't be changed
+         */
+        IngestUtil.checkForDuplicateFileNamesFinal(datasetVersion, dataFileList, datafile2);
+
+        boolean file1NameAltered = false;
+        boolean file2NameAltered = false;
+        for (DataFile df : dataFileList) {
+            if (df.getFileMetadata().getLabel().equals("datafile1-1.txt")) {
+                file1NameAltered = true;
+            }
+            if (df.getFileMetadata().getLabel().equals("datafile2-1.txt")) {
+                file2NameAltered = true;
+            }
+        }
+
+        // check filenames are unique and unaltered
+        assertEquals(true, file1NameAltered);
+        assertEquals(false, file2NameAltered);
+    }
+    
     @Test
     public void testDirectoryLabels() {
 
@@ -609,6 +707,27 @@ public class IngestUtilTest {
             Logger.getLogger(IngestUtilTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         assertEquals("UNF:6:FWBO/a1GcxDnM3fNLdzrHw==", datasetUnfValue);
+    }
+
+    @Test
+    public void testPathPlusFilename() {
+        String incomingLabel = "incomingLabel";
+        String incomingDirectoryLabel = "incomingDirectoryLabel";
+        String existingLabel = "existingLabel";
+        String existingDirectoryLabel = "existingDirectoryLabel";
+        String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+        assertEquals("incomingDirectoryLabel/incomingLabel", pathPlusFilename);
+    }
+
+    @Test
+    public void renameFileToSameName() {
+        String pathPlusFilename = "README.md";
+        FileMetadata file1 = new FileMetadata();
+        file1.setLabel("README.md");
+        FileMetadata file2 = new FileMetadata();
+        file2.setLabel("README2.md");
+        List<FileMetadata> fileMetadatas = Arrays.asList(file1, file2);
+        assertTrue(IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fileMetadatas));
     }
 
 }

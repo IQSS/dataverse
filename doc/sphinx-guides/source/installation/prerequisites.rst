@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el8 (RHEL/CentOS 8) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
 
 Java
 ----
@@ -47,17 +47,19 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.201 is recommended. Newer versions might work fine.
+Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose.
+**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
+
+	# useradd dataverse
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget --content-disposition https://search.maven.org/remotecontent?filepath=fish/payara/distributions/payara/5.201/payara-5.201.zip
-	# unzip payara-5.201.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip
+	# unzip payara-5.2020.6.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -101,20 +103,23 @@ Installing PostgreSQL
 
 Version 9.6 is strongly recommended because it is the version developers and QA test with::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
 	# yum install -y postgresql96-server
 	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
 	# /usr/bin/systemctl start postgresql-9.6
 	# /usr/bin/systemctl enable postgresql-9.6
 
-Note that the steps above are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
+The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must install Postgres 10 or higher::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql96-server
-	# service postgresql-9.6 initdb
-	# service postgresql-9.6 start
+	# yum install -y postgresql10-server
+	# /usr/pgsql-10/bin/postgresql-10-setup initdb
+	# systemctl start postgresql-10
+	# systemctl enable postgresql-10
+
+Note that the Dataverse installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer)
 =======================================================================================
@@ -208,7 +213,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 	# yum install lsof
 
-Finally, you need to tell Solr to create the core "collection1" on startup:
+Finally, you need to tell Solr to create the core "collection1" on startup::
 
         echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
 
@@ -234,25 +239,25 @@ For systems using init.d (like CentOS 6), download this :download:`Solr init scr
 Securing Solr
 =============
 
-Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy. 
+Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
 
 It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
-If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es). 
+If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
 
-We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation:
+We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
         # usermod -s /sbin/nologin solr
 
-For Solr upgrades or further configuration you may temporarily re-enable the service account shell:
+For Solr upgrades or further configuration you may temporarily re-enable the service account shell::
 
         # usermod -s /bin/bash solr
 
-or simply prepend each command you would run as the Solr user with "sudo -u solr":
+or simply prepend each command you would run as the Solr user with "sudo -u solr"::
 
         # sudo -u solr command
 
-Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised. 
+Finally, we would like to reiterate that it is simply never a good idea to run Solr as root! Running the process as a non-privileged user would substantially minimize any potential damage even in the event that the instance is compromised.
 
 jq
 --
@@ -317,26 +322,34 @@ components and libraries. Please consult the instructions in the
 Installing R
 ============
 
-Can be installed with :fixedwidthplain:`yum`::
-
-       yum install R-core R-core-devel
-
-EPEL distribution is strongly recommended. The version of R currently available from epel6 and epel7 is 3.5; it has been tested and is known to work on RedHat and CentOS versions 6 and 7.
+For RHEL/CentOS, the EPEL distribution is strongly recommended:
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 7::
+RHEL/CentOS 8 users can install the epel-release RPM::
+
+       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+
+RHEL/CentOS 7 users can install the epel-release RPM::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
-RHEL/CentOS users can install the RPM :fixedwidthplain:`epel-release`. For RHEL/CentOS 6::
+RHEL 8 users will need to enable the CodeReady-Builder repository::
 
-       yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+       subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
-RHEL users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
+CentOS 8 users will need to enable the PowerTools repository::
+
+       dnf config-manager --enable PowerTools
+
+RHEL 7 users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
+
+Finally, install R with :fixedwidthplain:`yum`::
+
+       yum install R-core R-core-devel
 
 Installing the required R libraries
 ===================================
