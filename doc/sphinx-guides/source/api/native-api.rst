@@ -2703,7 +2703,7 @@ Delete a Banner Message by its id::
 
   curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id   
   
-Deactivate a Banner Message by its id (allows you to hide a message while retaining its history)::
+Deactivate a Banner Message by its id (allows you to hide a message while retaining information about which users have dismissed the banner)::
 
   curl  -X PUT http://$SERVER/api/admin/bannerMessage/$id/deactivate    
 
