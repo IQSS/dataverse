@@ -1,6 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,13 +16,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
+import javax.faces.context.FacesContext;
+
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -32,6 +42,9 @@ import org.ocpsoft.common.util.Strings;
 @Named
 public class DvObjectServiceBean implements java.io.Serializable {
 
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
+    
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
     
@@ -107,6 +120,10 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 // (set to .info, this can fill the log file with thousands of
                 // these messages during a large harvest run)
                 logger.fine("no dvObject found: " + globalIdString);
+                HttpServletRequest httpRequest=((javax.servlet.http.HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(gid.getIdentifier(), httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                fprLogService.logEntry(entry);
+
                 // DO nothing, just return null.
                 return null;
             } catch (Exception ex) {

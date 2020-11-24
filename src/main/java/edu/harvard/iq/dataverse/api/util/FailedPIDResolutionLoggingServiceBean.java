@@ -8,11 +8,9 @@ package edu.harvard.iq.dataverse.api.util;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import static edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.LOG_HEADER;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
 
@@ -24,9 +22,12 @@ import javax.inject.Named;
 @Named
 @RequestScoped
 public class FailedPIDResolutionLoggingServiceBean {
+    
+    public static final String LOG_HEADER = "#Fields: pid\trequestURI\tHTTP method\tclient_ip\teventTime\n";
+
 
     public void logEntry(FailedPIDResolutionEntry entry) {
-            LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), "./logs", getLogFileName(), LOG_HEADER);
+            LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), "../logs", getLogFileName(), LOG_HEADER);
     }
 
     public String getLogFileName() {

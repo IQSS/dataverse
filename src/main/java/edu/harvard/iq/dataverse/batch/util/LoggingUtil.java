@@ -61,7 +61,7 @@ public class LoggingUtil {
                 logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
             }
             File logFile = new File(dir.getAbsolutePath() + fileName);
-            FileUtils.writeStringToFile(logFile, fileContent);
+            FileUtils.writeStringToFile(logFile, fileContent, StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving log report: " + fileName + " " + e.getMessage());
         }
