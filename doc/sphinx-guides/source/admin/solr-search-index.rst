@@ -14,6 +14,18 @@ There are two ways to perform a full reindex of the Dataverse search index. Star
 Clear and Reindex
 +++++++++++++++++
 
+
+Index and Database Consistency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get a list of all database objects that are missing in Solr, and Solr documents that are missing in the database:
+
+``curl http://localhost:8080/api/admin/index/status``
+
+Remove all Solr documents that are orphaned (ie not associated with objects in the database):
+
+``curl http://localhost:8080/api/admin/index/clear-orphans``
+
 Clearing Data from Solr
 ~~~~~~~~~~~~~~~~~~~~~~~
 

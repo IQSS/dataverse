@@ -5,6 +5,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:o="http://omnifaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
     <h:head>
     </h:head>
@@ -19,7 +20,7 @@
                 <f:metadata>
                     <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
                     <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
-                    <f:viewParam name="editMode" value="#{TemplatePage.editMode}"/>
+                    <o:viewParam name="editMode" value="#{TemplatePage.editMode}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{TemplatePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(TemplatePage.template.dataverse, (TemplatePage.editMode == 'CREATE' ? bundle['dataset.manageTemplates.createBtn'] : TemplatePage.template.name))}"/>
@@ -110,12 +111,12 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel -->
                     <div class="button-block" jsf:rendered="#{!empty TemplatePage.editMode}">
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update="@all"
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('Terms')}" update=":@form,messagePanel"
                                          value="#{bundle['dataset.create.add.terms']}"
                                          rendered="#{TemplatePage.editMode == 'CREATE'}">  
                              <f:ajax onerror="window.scrollTo(0, 0)"/>
                         </p:commandButton>
-                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update="@all"
+                        <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save('')}" update="@form,messagePanel"
                                          value="#{TemplatePage.editMode == 'LICENSEADD' ? bundle['dataset.manageTemplates.saveNewTerms'] : bundle.saveChanges}"
                                          rendered="#{TemplatePage.editMode == 'METADATA' or TemplatePage.editMode == 'LICENSE' or TemplatePage.editMode == 'LICENSEADD'}">
                             <f:ajax onerror="window.scrollTo(0, 0)"/>

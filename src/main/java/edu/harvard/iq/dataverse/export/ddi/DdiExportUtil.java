@@ -328,7 +328,7 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        writeAttribute(xmlw,"source","DVN"); 
+        writeAttribute(xmlw,"source","archive"); 
         xmlw.writeStartElement("version");
         writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
@@ -1495,6 +1495,28 @@ public class DdiExportUtil {
             xmlw.writeEndElement(); //labl
         }
 
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+                xmlw.writeStartElement("qstn");
+                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                    xmlw.writeStartElement("qstnLit");
+                    xmlw.writeCharacters(vm.getLiteralquestion());
+                    xmlw.writeEndElement(); // qstnLit
+                }
+                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                    xmlw.writeStartElement("ivuInstr");
+                    xmlw.writeCharacters(vm.getInterviewinstruction());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                if (!StringUtilisEmpty(vm.getPostquestion())) {
+                    xmlw.writeStartElement("postQTxt");
+                    xmlw.writeCharacters(vm.getPostquestion());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                xmlw.writeEndElement(); //qstn
+            }
+        }
+
         // invalrng
         boolean invalrngAdded = false;
         for (VariableRange range : dv.getInvalidRanges()) {
@@ -1631,27 +1653,7 @@ public class DdiExportUtil {
             }
         }
 
-        if (vm != null) {
-            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
-                xmlw.writeStartElement("qstn");
-                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
-                    xmlw.writeStartElement("qstnLit");
-                    xmlw.writeCharacters(vm.getLiteralquestion());
-                    xmlw.writeEndElement(); // qstnLit
-                }
-                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
-                    xmlw.writeStartElement("ivuInstr");
-                    xmlw.writeCharacters(vm.getInterviewinstruction());
-                    xmlw.writeEndElement(); //ivuInstr
-                }
-                if (!StringUtilisEmpty(vm.getPostquestion())) {
-                    xmlw.writeStartElement("postQTxt");
-                    xmlw.writeCharacters(vm.getPostquestion());
-                    xmlw.writeEndElement(); //ivuInstr
-                }
-                xmlw.writeEndElement(); //qstn
-            }
-        }
+
 
         xmlw.writeEndElement(); //var
 

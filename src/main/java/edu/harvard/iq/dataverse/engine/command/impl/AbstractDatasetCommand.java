@@ -155,40 +155,42 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param ctxt
      * @throws CommandException
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) throws CommandException {
+    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt, boolean retry) throws CommandException {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if ( globalIdServiceBean != null ) {
                 if (globalIdServiceBean instanceof FakePidProviderServiceBean) {
-                    try {
-                        globalIdServiceBean.createIdentifier(theDataset);
-                    } catch (Throwable ex) {
-                        logger.warning("Problem running createIdentifier for FakePidProvider: " + ex);
-                    }
-                    theDataset.setGlobalIdCreateTime(getTimestamp());
-                    theDataset.setIdentifierRegistered(true);
-                    return;
+                    retry=false; //No reason to allow a retry with the FakeProvider, so set false for efficiency
                 }
                 try {
                     if (globalIdServiceBean.alreadyExists(theDataset)) {
                         int attempts = 0;
-
-                        while (globalIdServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
-                            logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
-                                new Object[]{theDataset.getId(), theDataset.getIdentifier()});
-                            attempts++;
+                        if(retry) {
+                            do  {
+                                theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
+                                logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
+                                    new Object[]{theDataset.getId(), theDataset.getIdentifier()});
+                                attempts++;
+                            } while (globalIdServiceBean.alreadyExists(theDataset) && attempts <= FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT);
                         }
-
-                        if (globalIdServiceBean.alreadyExists(theDataset)) {
+                        if(!retry) {
+                            logger.warning("Reserving PID for: "  + getDataset().getId() + " during publication failed.");
+                            throw new IllegalCommandException(BundleUtil.getStringFromBundle("publishDatasetCommand.pidNotReserved"), this);
+                        }
+                        if(attempts > FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
+                            //Didn't work - we existed the loop with too many tries
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
                                 + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
                         }
                     }
                     // Invariant: Dataset identifier does not exist in the remote registry
-                    globalIdServiceBean.createIdentifier(theDataset);
-                    theDataset.setGlobalIdCreateTime(getTimestamp());
-                    theDataset.setIdentifierRegistered(true);
+                    try {
+                        globalIdServiceBean.createIdentifier(theDataset);
+                        theDataset.setGlobalIdCreateTime(getTimestamp());
+                        theDataset.setIdentifierRegistered(true);
+                    } catch (Throwable ex) {
+                        logger.info("Call to globalIdServiceBean.createIdentifier failed: " + ex);
+                    }
 
                 } catch (Throwable e) {
                     throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation()), this);

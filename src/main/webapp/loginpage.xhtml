@@ -220,7 +220,7 @@
                                 </div>
                             </div>
                             
-                            <div id="signUpLink">
+                            <div id="signUpLink" jsf:rendered="#{dataverseHeaderFragment.signupAllowed}">
                                 <p class="help-block margin-top">
                                     <h:outputFormat value="#{bundle['login.signup.blurb']}" escape="false">
                                         <f:param value="#{dataverseHeaderFragment.getSignupUrl(navigationWrapper.redirectPage)}"/>
