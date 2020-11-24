@@ -3,6 +3,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -12,6 +13,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -24,6 +27,10 @@ import org.ocpsoft.common.util.Strings;
 public class UserServiceBean {
 
     private static final Logger logger = Logger.getLogger(UserServiceBean.class.getCanonicalName());
+    public static final List<String> acceptableSortKeys = Arrays.asList(
+      "id", "useridentifier", "lastname", "firstname", "email", "affiliation",
+      "superuser", "position", "createdtime", "lastlogintime", "lastapiusetime"
+    );
 
     @PersistenceContext
     EntityManager em;
@@ -60,9 +67,11 @@ public class UserServiceBean {
      * @param offset
      * @return 
      */
-    public List<AuthenticatedUser> getAuthenticatedUserList(String searchTerm, String sortKey, Integer resultLimit, Integer offset){
-        
-        if ((offset == null)||(offset < 0)){
+    public List<AuthenticatedUser> getAuthenticatedUserList(String searchTerm,
+                                                            String sortKey,
+                                                            Integer resultLimit,
+                                                            Integer offset) {
+        if ((offset == null) || (offset < 0)) {
             offset = 0;
         }
         
@@ -82,7 +91,7 @@ public class UserServiceBean {
 
         
         HashMap<String, List<String>> roleLookup = retrieveRolesForUsers(userResults);
-        if (roleLookup == null){
+        if (roleLookup == null) {
             roleLookup = new HashMap<>();
         }
         //  1st Loop : 
@@ -371,23 +380,25 @@ public class UserServiceBean {
      * @param resultLimit
      * @return 
      */
-    private List<Object[]> getUserListCore(String searchTerm, String sortKey, Integer resultLimit, Integer offset) {
-
-        if ((sortKey == null) || (sortKey.isEmpty())){
-            sortKey = "u.username";
-        }else{
-            sortKey = "u." + sortKey;
+    private List<Object[]> getUserListCore(String searchTerm,
+                                           String sortKey,
+                                           Integer resultLimit,
+                                           Integer offset) {
+        if (StringUtils.isNotBlank(sortKey) && acceptableSortKeys.contains(sortKey.toLowerCase())) {
+            sortKey = "u." + sortKey.toLowerCase();
+        } else {
+            sortKey = "u.useridentifier";
         }
         
-        if ((resultLimit == null)||(resultLimit < 1)){
+        if ((resultLimit == null) || (resultLimit < 1)) {
             resultLimit = 1;
         }
         
-        if ((searchTerm==null)||(searchTerm.isEmpty())){
+        if ((searchTerm==null) || (searchTerm.isEmpty())) {
             searchTerm = "";
         }
         
-        if ((offset == null)||(offset < 0)){
+        if ((offset == null) || (offset < 0)) {
             offset = 0;
         }
         
@@ -400,8 +411,7 @@ public class UserServiceBean {
         if (!searchTerm.isEmpty()) {
             sharedSearchClause = " AND " + getSharedSearchClause(searchTerm);
         }
-        
-        
+
         String qstr = "SELECT u.id, u.useridentifier,";
         qstr += " u.lastname, u.firstname, u.email,";
         qstr += " u.affiliation, u.superuser,";
@@ -415,7 +425,7 @@ public class UserServiceBean {
         qstr += " u.id = prov_lookup.authenticateduser_id";
         qstr += " AND prov_lookup.authenticationproviderid = prov.id";       
         qstr += sharedSearchClause;
-        qstr += " ORDER BY u.useridentifier";
+        qstr += " ORDER BY " + sortKey; // u.useridentifier
         qstr += " LIMIT " + resultLimit;
         qstr += " OFFSET " + offset;
         qstr += ";";
@@ -425,7 +435,6 @@ public class UserServiceBean {
         Query nativeQuery = em.createNativeQuery(qstr);
        
         return nativeQuery.getResultList();
-
     }
     
     /**
@@ -525,6 +534,7 @@ public class UserServiceBean {
         return save(user);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public AuthenticatedUser updateLastApiUseTime(AuthenticatedUser user) {
         //assumes that AuthenticatedUser user already exists
         user.setLastApiUseTime(new Timestamp(new Date().getTime()));

@@ -27,7 +27,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.Timer;
-import javax.faces.bean.ManagedBean;
 import javax.inject.Named;
 //import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,7 +53,6 @@ import javax.persistence.PersistenceContext;
  */
 @Stateless(name = "harvesterService")
 @Named
-@ManagedBean
 public class HarvesterServiceBean {
     @PersistenceContext(unitName="VDCNet-ejbPU")
     private EntityManager em;
@@ -414,12 +412,12 @@ public class HarvesterServiceBean {
     public void logGetRecordException(Logger hdLogger, OaiHandler oaiHandler, String identifier, Throwable e) {
         String errMessage = "Exception processing getRecord(), oaiUrl=" 
                 +oaiHandler.getBaseOaiUrl() 
-                +",identifier=" 
+                +", identifier="
                 +identifier 
-                +" " 
+                +", "
                 +e.getClass().getName() 
                 //+" (exception message suppressed)";
-                +" " 
+                +", "
                 +e.getMessage();
         
             hdLogger.log(Level.SEVERE, errMessage);

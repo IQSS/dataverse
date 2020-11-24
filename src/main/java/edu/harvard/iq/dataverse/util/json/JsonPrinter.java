@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -184,6 +185,17 @@ public class JsonPrinter {
                 .add("attribute", grp.getAttribute())
                 .add("pattern", grp.getPattern())
                 .add("id", grp.getId());
+    }
+    
+    public static JsonObjectBuilder json(MailDomainGroup grp) {
+        JsonObjectBuilder bld = jsonObjectBuilder()
+            .add("alias", grp.getPersistedGroupAlias() )
+            .add("id", grp.getId() )
+            .add("name", grp.getDisplayName() )
+            .add("description", grp.getDescription() )
+            .add("domains", asJsonArray(grp.getEmailDomainsAsList()) )
+            .add("regex", grp.isRegEx());
+        return bld;
     }
 
     public static JsonArrayBuilder rolesToJson(List<DataverseRole> role) {
@@ -594,6 +606,7 @@ public class JsonPrinter {
                 .add("originalFileFormat", df.getOriginalFileFormat())
                 .add("originalFormatLabel", df.getOriginalFormatLabel())
                 .add ("originalFileSize", df.getOriginalFileSize())
+                .add("originalFileName", df.getOriginalFileName())
                 .add("UNF", df.getUnf())
                 //---------------------------------------------
                 // For file replace: rootDataFileId, previousDataFileId

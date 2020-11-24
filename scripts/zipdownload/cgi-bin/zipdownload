@@ -1,0 +1,11 @@
+#!/bin/sh
+
+CLASSPATH=/var/www/cgi-bin; export CLASSPATH
+
+PGHOST="localhost"; export PGHOST
+PGPORT=5432; 	    export PGPORT
+PGUSER="dvnapp";    export PGUSER
+PGDB="dvndb"; 	    export PGDB
+PGPW="xxxxx"; 	    export PGPW
+
+java -Ddb.serverName=$PGHOST -Ddb.portNumber=$PGPORT -Ddb.user=$PGUSER -Ddb.databaseName=$PGDB -Ddb.password=$PGPW -jar ZipDownloadService-v1.0.0.jar

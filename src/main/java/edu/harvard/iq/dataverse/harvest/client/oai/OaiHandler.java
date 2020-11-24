@@ -66,11 +66,7 @@ public class OaiHandler implements Serializable {
         this.metadataPrefix = harvestingClient.getMetadataPrefix();
         
         if (!StringUtils.isEmpty(harvestingClient.getHarvestingSet())) {
-            try {
-                this.setName = URLEncoder.encode(harvestingClient.getHarvestingSet(), "UTF-8");
-            } catch (UnsupportedEncodingException uee) {
-                throw new OaiHandlerException("Harvesting set: unsupported (non-UTF8) encoding");
-            }
+            this.setName = harvestingClient.getHarvestingSet();
         }
         
         this.fromDate = harvestingClient.getLastNonEmptyHarvestTime();

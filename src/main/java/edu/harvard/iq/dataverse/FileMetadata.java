@@ -449,6 +449,17 @@ public class FileMetadata implements Serializable {
     public void setVersion(Long version) {
         this.version = version;
     }
+    
+    @Transient
+    private boolean inPriorVersion;
+
+    public boolean isInPriorVersion() {
+        return inPriorVersion;
+    }
+
+    public void setInPriorVersion(boolean inPriorVersion) {
+        this.inPriorVersion = inPriorVersion;
+    }
 
     @Transient
     private boolean selected;
@@ -460,6 +471,7 @@ public class FileMetadata implements Serializable {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
+    
     
     @Transient
     private boolean restrictedUI;

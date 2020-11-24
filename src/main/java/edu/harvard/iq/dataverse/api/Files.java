@@ -33,6 +33,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -41,6 +42,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +50,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -368,14 +372,33 @@ public class Files extends AbstractApiBean {
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    if(daf.getChecksumType().equals(df.getChecksumType())
-                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
-                        upFmd = testFmd;
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 
                 if (upFmd == null){
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
+                javax.json.JsonObject jsonObject = jsonReader.readObject();
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
+                    }
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
@@ -384,7 +407,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {

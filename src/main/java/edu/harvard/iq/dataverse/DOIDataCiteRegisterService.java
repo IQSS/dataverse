@@ -58,6 +58,15 @@ public class DOIDataCiteRegisterService {
         return client;
     }
 
+    /**
+     * This method is deprecated and unused. We switched away from this method
+     * when adjusting the code to reserve DOIs from DataCite on dataset create.
+     *
+     * Note that the DOIDataCiteRegisterCache entity/table used in this method
+     * might be a candidate for deprecation as well. Removing it would require
+     * some refactoring as it is used throughout the DataCite code.
+     */
+    @Deprecated
     public String createIdentifierLocal(String identifier, Map<String, String> metadata, DvObject dvObject) {
 
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
@@ -83,6 +92,40 @@ public class DOIDataCiteRegisterService {
         return retString;
     }
 
+    /**
+     * This "reserveIdentifier" method is heavily based on the
+     * "registerIdentifier" method below but doesn't, this one doesn't doesn't
+     * register a URL, which causes the "state" of DOI to transition from
+     * "draft" to "findable". Here are some DataCite docs on the matter:
+     *
+     * "DOIs can exist in three states: draft, registered, and findable. DOIs
+     * are in the draft state when metadata have been registered, and will
+     * transition to the findable state when registering a URL." --
+     * https://support.datacite.org/docs/mds-api-guide#doi-states
+     */
+    public String reserveIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
+        String retString = "";
+        String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
+        DOIDataCiteRegisterCache rc = findByDOI(identifier);
+        String target = metadata.get("_target");
+        if (rc != null) {
+            rc.setDoi(identifier);
+            rc.setXml(xmlMetadata);
+            // DataCite uses the term "draft" instead of "reserved".
+            rc.setStatus("reserved");
+            if (target == null || target.trim().length() == 0) {
+                target = rc.getUrl();
+            } else {
+                rc.setUrl(target);
+            }
+        }
+
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+
+        return retString;
+    }
+
     public String registerIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
         String xmlMetadata = getMetadataFromDvObject(identifier, metadata, dvObject);
@@ -97,26 +140,16 @@ public class DOIDataCiteRegisterService {
             } else {
                 rc.setUrl(target);
             }
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            try {
-                DataCiteRESTfullClient client = getClient();
-                retString = client.postMetadata(xmlMetadata);
-                client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
-            } catch (UnsupportedEncodingException ex) {
-                Logger.getLogger(DOIDataCiteRegisterService.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
+        
+        DataCiteRESTfullClient client = getClient();
+        retString = client.postMetadata(xmlMetadata);
+        client.postUrl(identifier.substring(identifier.indexOf(":") + 1), target);
+
         return retString;
     }
 
-    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) {
+    public String deactivateIdentifier(String identifier, Map<String, String> metadata, DvObject dvObject) throws IOException {
         String retString = "";
 
             String metadataString = getMetadataForDeactivateIdentifier(identifier, metadata, dvObject);
