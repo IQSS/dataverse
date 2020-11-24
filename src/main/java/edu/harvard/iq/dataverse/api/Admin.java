@@ -1887,9 +1887,26 @@ public class Admin extends AbstractApiBean {
     @Path("/bannerMessage/{id}")
     public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
  
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
         bannerMessageService.deleteBannerMessage(id);
         
         return ok("Message id =  " + id + " deleted.");
+
+    }
+    
+    @PUT
+    @Path("/bannerMessage/{id}/deactivate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deactivateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deactivated.");
 
     }
     
