@@ -111,12 +111,6 @@ config=read_config_file(configFile)
 # expected dataverse defaults
 apiUrl = "http://localhost:8080/api"
 
-# there's now a single driver that works for all supported versions:
-# jodbc.postgresql.org recommends 4.2 for Java 8.
-# updated drivers may be obtained from
-#  https://jdbc.postgresql.org/download.html
-pgJdbcDriver = "postgresql-42.2.12.jar"
-
 # 0. A few preliminary checks:                                                                                   
 # 0a. OS flavor:
  
@@ -440,15 +434,6 @@ else:
    gfHeap = int(linux_ram() / 2)
 print("Setting App. Server heap size (Xmx) to "+str(gfHeap)+" Megabytes")
 config.set('glassfish','GLASSFISH_HEAP', str(gfHeap))
-
-# 4b1. PostgresQL driver:
-pg_driver_jarpath = "pgdriver/"+pgJdbcDriver
-
-try:
-   copy2(pg_driver_jarpath, gfJarPath)
-   print("Copied "+pgJdbcDriver+" into "+gfJarPath)
-except:
-   print("Couldn't copy "+pgJdbcDriver+" into "+gfJarPath+". Check its permissions?")
 
 # 4c. create payara admin credentials file
 
