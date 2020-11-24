@@ -122,7 +122,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 logger.fine("no dvObject found: " + globalIdString);
                 try {
                     HttpServletRequest httpRequest = ((javax.servlet.http.HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
-                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(gid.getIdentifier(), httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(gid.asString(), httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
                     fprLogService.logEntry(entry);
                 } catch (NullPointerException npe) {
                     // Do nothing - this is an API call with no FacesContext
