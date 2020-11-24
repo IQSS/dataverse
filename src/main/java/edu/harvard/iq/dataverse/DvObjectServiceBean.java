@@ -120,9 +120,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 // (set to .info, this can fill the log file with thousands of
                 // these messages during a large harvest run)
                 logger.fine("no dvObject found: " + globalIdString);
-                HttpServletRequest httpRequest=((javax.servlet.http.HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest());
-                FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(gid.getIdentifier(), httpRequest.getRequestURI(),httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
-                fprLogService.logEntry(entry);
+                try {
+                    HttpServletRequest httpRequest = ((javax.servlet.http.HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(gid.getIdentifier(), httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                } catch (NullPointerException npe) {
+                    // Do nothing - this is an API call with no FacesContext
+                }
 
                 // DO nothing, just return null.
                 return null;

@@ -60,7 +60,7 @@ public class FailedPIDResolutionLoggingServiceBean {
                     getRequestUrl() + "\t" +
                     getMethod() + "\t" +
                     getClientIp() + "\t" +
-                    getEventTime();
+                    getEventTime() + "\n";
         }
 
         /**
