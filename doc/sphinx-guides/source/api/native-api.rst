@@ -2701,7 +2701,11 @@ Get a list of active Banner Messages::
   
 Delete a Banner Message by its id::
 
-  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id    
+  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id   
+  
+Deactivate a Banner Message by its id (allows you to hide a message while retaining its history)::
+
+  curl  -X PUT http://$SERVER/api/admin/bannerMessage/$id/deactivate    
 
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
