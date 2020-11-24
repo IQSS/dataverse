@@ -18,7 +18,7 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
  
   curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
 
-You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded auxiliary file.
+You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
 
 Downloading an Auxiliary File that belongs to a Datafile 
 --------------------------------------------------------
