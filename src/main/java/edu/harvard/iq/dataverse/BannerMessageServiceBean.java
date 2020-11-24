@@ -28,19 +28,19 @@ public class BannerMessageServiceBean implements java.io.Serializable {
     private EntityManager em;
     
     public List<BannerMessage> findBannerMessages() {
-        return em.createQuery("select object(o) from BannerMessage as o where  o.dismissibleByUser = 'false'", BannerMessage.class)
+        return em.createQuery("select object(o) from BannerMessage as o where o.active = 'true' and o.dismissibleByUser = 'false'", BannerMessage.class)
                 .getResultList();
     }
     
     public List<BannerMessage> findBannerMessages(Long auId) {
-        return em.createQuery("select object(o) from BannerMessage as o where  o.dismissibleByUser = 'false'"
-                + " or (o.dismissibleByUser = 'true' and o.id not in (select ubm.bannerMessage.id from UserBannerMessage as ubm where ubm.user.id  =:authenticatedUserId))", BannerMessage.class)
+        return em.createQuery("select object(o) from BannerMessage as o where (o.active = 'true' and  o.dismissibleByUser = 'false') "
+                + " or (o.active = 'true' and o.dismissibleByUser = 'true' and o.id not in (select ubm.bannerMessage.id from UserBannerMessage as ubm where ubm.user.id  =:authenticatedUserId))", BannerMessage.class)
                 .setParameter("authenticatedUserId", auId)
                 .getResultList();
     }
     
     public List<BannerMessage> findAllBannerMessages() {
-        return em.createQuery("select o from BannerMessage o ")
+        return em.createQuery("select o from BannerMessage o where o.active = 'true' ")
                 .getResultList();
     }
     
@@ -51,8 +51,9 @@ public class BannerMessageServiceBean implements java.io.Serializable {
     public void deleteBannerMessage(Object pk) {
         BannerMessage message = em.find(BannerMessage.class, pk);
 
-        if (message != null) {        
-            em.remove(message);
+        if (message != null) { 
+            message.setActive(false);
+            em.merge(message);
         }
     }
     

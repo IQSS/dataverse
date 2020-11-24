@@ -26,6 +26,9 @@ public class BannerMessage implements Serializable {
 
     @Column
     private boolean dismissibleByUser;
+    
+    @Column
+    private boolean active;
 
     @OneToMany(mappedBy = "bannerMessage", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<BannerMessageText> bannerMessageTexts;
@@ -66,6 +69,14 @@ public class BannerMessage implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
