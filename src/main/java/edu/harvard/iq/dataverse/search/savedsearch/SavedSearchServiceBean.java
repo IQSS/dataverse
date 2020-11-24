@@ -129,7 +129,7 @@ public class SavedSearchServiceBean {
     }
     
     
-    @Schedule(dayOfWeek="0", hour="0",minute="30")
+    @Schedule(dayOfWeek="0", hour="0", minute="30", persistent = false)
     public void makeLinksForAllSavedSearchesTimer() {
         if (systemConfig.isTimerServer()) {
             logger.info("Linking saved searches");
