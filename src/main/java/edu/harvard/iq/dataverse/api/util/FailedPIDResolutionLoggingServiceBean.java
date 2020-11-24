@@ -25,13 +25,8 @@ import javax.inject.Named;
 @RequestScoped
 public class FailedPIDResolutionLoggingServiceBean {
 
-    @EJB
-    SystemConfig systemConfig;
-
     public void logEntry(FailedPIDResolutionEntry entry) {
-        if (systemConfig.getMDCLogPath() != null) {
             LoggingUtil.saveLogFileAppendWithHeader(entry.toString(), "./logs", getLogFileName(), LOG_HEADER);
-        }
     }
 
     public String getLogFileName() {

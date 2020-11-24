@@ -143,6 +143,8 @@ public class LoggingUtil {
 			    {
 			    	logger.log(Level.INFO,"log directory: " + d.getAbsolutePath() + " created");
 			    }
+		    } else {
+		        logger.fine("log dir " + d.getAbsolutePath());
 		    }
 	    }
 	    catch( SecurityException e)
