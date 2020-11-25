@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Ignore;
 
 public class JsonPrinterTest {
 
@@ -143,6 +144,7 @@ public class JsonPrinterTest {
     }
 
     @Test
+    @Ignore("doi is IQSS-specific")
     public void testGetFileCategories() {
         FileMetadata fmd = new FileMetadata();
         DatasetVersion dsVersion = new DatasetVersion();
