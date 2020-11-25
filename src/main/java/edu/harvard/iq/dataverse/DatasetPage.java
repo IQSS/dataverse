@@ -349,6 +349,8 @@ public class DatasetPage implements java.io.Serializable {
     // TODO: Consider renaming "previewTools" to "filePreviewTools".
     List<ExternalTool> previewTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
+    private List<ExternalTool> datasetFileRequestAccessTools;
+    private List<ExternalTool> fileRequestAccessTools;
     
     public Boolean isHasRsyncScript() {
         return hasRsyncScript;
@@ -2095,6 +2097,9 @@ public class DatasetPage implements java.io.Serializable {
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
+        datasetFileRequestAccessTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.REQUESTACCESS);
+        fileRequestAccessTools = externalToolService.findFileToolsByType(ExternalTool.Type.REQUESTACCESS);
+        
         rowsPerPage = 10;
       
         
@@ -5053,20 +5058,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     } 
-    
-    private Boolean downloadButtonAllEnabled = null;
+ 
 
     public boolean isDownloadAllButtonEnabled() {
 
-        if (downloadButtonAllEnabled == null) {
+        boolean downloadButtonAllEnabled = true;
+        
+        if (downloadButtonAllEnabled) { //check to see if it should be false
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
                     downloadButtonAllEnabled = false;
                     break;
                 }
             }
-            downloadButtonAllEnabled = true;
         }
+        
         return downloadButtonAllEnabled;
     }
 
@@ -5492,7 +5498,36 @@ public class DatasetPage implements java.io.Serializable {
     public List<ExternalTool> getDatasetExploreTools() {
         return datasetExploreTools;
     }
+    
+    public List<ExternalTool> getDatasetFileRequestAccessTools(){
+        return datasetFileRequestAccessTools;
+    }
+    
+    public ExternalTool getDatasetFileRequestAccessTool(){
+        ExternalTool datasetFileRequestAccessTool = null;
+        
+        if(!datasetFileRequestAccessTools.isEmpty()){
+            datasetFileRequestAccessTool = datasetFileRequestAccessTools.get(0); //there should be only 1 of these tools
+        }
+       
+        return datasetFileRequestAccessTool;
+    }
 
+    public List<ExternalTool> getFileRequestAccessTools(){
+        return fileRequestAccessTools;
+    }
+    
+    public ExternalTool getFileRequestAccessTool(){
+        ExternalTool fileRequestAccessTool = null;
+        
+        if(!fileRequestAccessTools.isEmpty()){
+            fileRequestAccessTool = fileRequestAccessTools.get(0); //there should be only 1 of these tools
+        }
+       
+        return fileRequestAccessTool;
+    }
+    
+    
     Boolean thisLatestReleasedVersion = null;
     
     public boolean isThisLatestReleasedVersion() {
@@ -5642,7 +5677,7 @@ public class DatasetPage implements java.io.Serializable {
         }
     };
 
-    public void explore(ExternalTool externalTool) {
+    private ApiToken getApiTokenForTool(){
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
@@ -5653,6 +5688,11 @@ public class DatasetPage implements java.io.Serializable {
             apiToken = new ApiToken();
             apiToken.setTokenString(privUrl.getToken());
         }
+        return apiToken;
+    }
+    
+    public void explore(ExternalTool externalTool) {
+        ApiToken apiToken = getApiTokenForTool();
         ExternalToolHandler externalToolHandler = new ExternalToolHandler(externalTool, dataset, apiToken, session.getLocaleCode());
         String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
         logger.fine("Exploring with " + toolUrl);
@@ -5667,6 +5707,26 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
         this.fileMetadataForAction = fileMetadataForAction;
+
+    
+    public void requestAccess(ExternalTool tool){
+        ApiToken apiToken = getApiTokenForTool();
+        
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, dataset, apiToken, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Request Access with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');"); 
     }
 
+    /* request access to dataset datafile */
+    public void requestAccess(ExternalTool tool, FileMetadata fmd){
+        ApiToken apiToken = getApiTokenForTool();
+        
+        ExternalToolHandler externalToolHandler = new ExternalToolHandler(tool, fmd.getDataFile(), apiToken, fmd, session.getLocaleCode());
+        String toolUrl = externalToolHandler.getToolUrlWithQueryParams();
+        logger.fine("Request Access with " + toolUrl);
+        PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
+        
+    }
+    
 }

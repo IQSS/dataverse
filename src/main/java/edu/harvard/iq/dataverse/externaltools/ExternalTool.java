@@ -137,7 +137,8 @@ public class ExternalTool implements Serializable {
         EXPLORE("explore"),
         CONFIGURE("configure"),
         PREVIEW("preview");
-
+        REQUESTACCESS("requestaccess");
+      
         private final String text;
 
         private Type(final String text) {

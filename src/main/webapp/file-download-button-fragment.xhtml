@@ -176,8 +176,29 @@
     
     <!-- Request Access Options -->
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and fileMetadata.dataFile.owner.fileAccessRequest}">
-        <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}">
+                       and (fileMetadata.dataFile.owner.fileAccessRequest or not empty fileRequestAccessTools)}">
+        <!-- FILE PG and fileRequestAccessTool 
+        note: this calls the ExternalTool regardless of whether requestAccessPopupRequired is T or F-->
+        <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
+            jsf:rendered="#{isFilePg and FilePage.fileRequestAccessTool != null}">
+            <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"
+                        process="@this"
+                        actionListener="#{FilePage.requestAccess(FilePage.fileRequestAccessTool)}"
+                        update="@this"
+                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+            </p:commandLink>
+            <p:commandLink styleClass="btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated }"
+                        process="@this"
+                        onclick="PF('accessSignUpLogIn_popup').show()">
+                #{bundle['file.requestAccess']}
+            </p:commandLink>
+        </li>
+        
+        <!-- FILE PG and no fileRequestAccessTool -->
+        <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
+            jsf:rendered="#{isFilePg and FilePage.fileRequestAccessTool == null}">
+          
             <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                     and !requestAccessPopupRequired}"
                         process="@this"
@@ -204,6 +225,58 @@
                 #{bundle['file.requestAccess']}
             </p:commandLink>
         </li>
+        <!-- END: FILE PG -->
+        <ui:fragment rendered="#{!isFilePg and not empty DatasetPage.fileRequestAccessTools}">
+        <!-- DATASET PG -->
+
+        <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"
+                        process="@this"
+                        actionListener="#{DatasetPage.requestAccess(DatasetPage.fileRequestAccessTool,fileMetadata)}"
+                        update="@this"
+                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+               <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
+        </p:commandLink>
+        <p:commandLink styleClass="btn-request" rendered="#{!fileDownloadHelper.session.user.authenticated }"
+                        process="@this"
+                        onclick="PF('accessSignUpLogIn_popup').show()">
+                <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
+        </p:commandLink>
+        <!-- END: DATASET PG -->
+        </ui:fragment>
+        
+        <ui:fragment rendered="#{!isFilePg and empty DatasetPage.fileRequestAccessTools}">
+        <!-- DATASET PG -->
+        
+        <!-- TODO - FIX UX INDICATOR YOUR REQUEST WAS SUBMITTED SINCE BTN LABEL IS NOW HIDDEN IN TITLE TOOLTIP
+                        FIX, WITH CSS POINTER-EVENTS VS JQUERY WORKAROUND, BUT... PRIMEFACES COMMANDLINK DIASABLED EMPTY TITLE BUG ???? -->
+        
+        <p:commandLink styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
+                                                                              and !requestAccessPopupRequired}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       process="@this"
+                       actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
+                       update="@this"
+                       disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
+        </p:commandLink>
+        <p:commandLink styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{fileDownloadHelper.session.user.authenticated 
+                                                                              and requestAccessPopupRequired}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       process="@this"
+                       actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
+                       onclick="PF('requestAccessPopup').show()"
+                       id="requestAccessPopupButton"
+                       disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
+        </p:commandLink>
+        <p:commandLink styleClass="btn-request btn btn-link bootstrap-button-tooltip" rendered="#{!fileDownloadHelper.session.user.authenticated}"
+                       title="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}"
+                       process="@this"
+                       onclick="PF('accessSignUpLogIn_popup').show()">
+            <span class="glyphicon glyphicon-bullhorn"/><span class="sr-only">#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}</span>
+        </p:commandLink>
+        <!-- END: DATASET PG -->
+        </ui:fragment>
     </ui:fragment>
     <!-- END: Request Access Options -->
     

@@ -536,11 +536,20 @@
                         </li>
                     </ul>
                 </div>
-
-                <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                               styleClass="btn btn-default btn-request"                                   
-                               update="@form" action="#{DatasetPage.requestAccessMultipleFiles()}"
-                               disabled="#{DatasetPage.locked}">
+                
+                <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired and DatasetPage.datasetFileRequestAccessTool != null}"
+                                styleClass="btn btn-default btn-request"                                   
+                                update="@form" 
+                                action="#{DatasetPage.requestAccess(DatasetPage.datasetFileRequestAccessTool)}"
+                                disabled="#{DatasetPage.locked}">
+                    <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
+                </p:commandLink>
+                
+                <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired and DatasetPage.datasetFileRequestAccessTool == null}"
+                                styleClass="btn btn-default btn-request"                                   
+                                update="@form" 
+                                action="#{DatasetPage.requestAccessMultipleFiles()}"
+                                disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
                 <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiSignUpButtonRequired}"
