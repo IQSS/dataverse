@@ -9,11 +9,19 @@ External tools can provide additional features that are not part of Dataverse it
 Introduction
 ------------
 
-You can think of a external tool as **a glorified hyperlink** that opens a browser window in a new tab on some other website. The term "external" is used to indicate that the user has left the Dataverse web interface. For example, perhaps the user is looking at a dataset on https://demo.dataverse.org . They click "Explore" and are brought to https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
+External tools are additional applications the user can access or open from Dataverse to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse application.
 
-The "other website" (fabulousfiletool.com in the example above) is probably part of the same ecosystem of scholarly publishing that Dataverse itself participates in. Sometimes the other website runs entirely in the browser. Sometimes the other website is a full blown server side web application like Dataverse itself.
+Once you have created the external tool itself (which is most of the work!), you need to teach Dataverse how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
 
-The possibilities for external tools are endless. Let's look at some examples to get your creative juices flowing.
+In short, you will be creating a manifest in JSON format that describes not only how to construct URLs for your tool, but also what types of files your tool operates on, where it should appear in the Dataverse web interfaces, etc. 
+
+The possibilities for external tools are endless. Let's look at some examples to get your creative juices flowing. Then we'll look at a complete list of parameters you can use when creating the manifest file for your tool.
+
+If you're still looking for more information on external tools, you can also watch a video introduction called `Background on the External Tool Framework`_ (slides_) from the 2020 Dataverse Community Meeting.
+
+.. _Background on the External Tool Framework: https://youtu.be/YH4I_kldmGI?t=159
+
+.. _slides: https://osf.io/xjdfw/
 
 Examples of External Tools
 --------------------------
@@ -21,7 +29,7 @@ Examples of External Tools
 Note: This is the same list that appears in the :doc:`/admin/external-tools` section of the Admin Guide.
 
 .. csv-table:: 
-   :header: "Tool", "Type", "Scope", "Description"
+   :header-rows: 1
    :widths: 20, 10, 5, 65
    :delim: tab
    :file: ../_static/admin/dataverse-external-tools.tsv
@@ -29,10 +37,10 @@ Note: This is the same list that appears in the :doc:`/admin/external-tools` sec
 How External Tools Are Presented to Users
 -----------------------------------------
 
-An external tool can appear in Dataverse in one of three ways:
+An external tool can appear in Dataverse in a variety of ways:
 
-- under an "Explore" or "Configure" button either on a dataset landing page
-- under an "Explore" or "Configure" button on a file landing page
+- as an explore, preview, or configure option for a file
+- as an explore option for a dataset
 - as an embedded preview on the file landing page
 
 See also the :ref:`testing-external-tools` section of the Admin Guide for some perspective on how installations of Dataverse will expect to test your tool before announcing it to their users.
@@ -50,7 +58,7 @@ Let's look at two examples of external tool manifests (one at the file level and
 External Tools for Files
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level explore tool that operates on tabular files:
+:download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` is a file level both an "explore" tool and a "preview" tool that operates on tabular files:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
@@ -70,7 +78,7 @@ Terminology
     ===========================  ==========
     Term                         Definition
     ===========================  ==========
-    external tool manifest       A **JSON file** the defines the URL constructed by Dataverse when users click "Explore" or "Configure" buttons. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` and :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
+    external tool manifest       A **JSON file** the defines the URL constructed by Dataverse when users click explore or configure tool options. External tool makers are asked to host this JSON file on a website (no app store yet, sorry) and explain how to use install and use the tool. Examples include :download:`fabulousFileTool.json <../_static/installation/files/root/external-tools/fabulousFileTool.json>` and :download:`dynamicDatasetTool.json <../_static/installation/files/root/external-tools/dynamicDatasetTool.json>` as well as the real world examples above such as Data Explorer.
 
     displayName                  The **name** of the tool in the Dataverse web interface. For example, "Data Explorer".
 
@@ -78,12 +86,10 @@ Terminology
 
     scope                        Whether the external tool appears and operates at the **file** level or the **dataset** level. Note that a file level tool much also specify the type of file it operates on (see "contentType" below).
 
-    type                         Whether the external tool is an **explore** tool or a **configure** tool. Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level (no "Configure" button appears in the GUI for datasets).
+    types                        Whether the external tool is an **explore** tool, a **preview** tool, a **configure** tool or any combination of these (multiple types are supported for a single tool). Configure tools require an API token because they make changes to data files (files within datasets). Configure tools are currently not supported at the dataset level. The older "type" keyword that allows you to pass a single type as a string is deprecated but still supported.
 
     toolUrl                      The **base URL** of the tool before query parameters are added.
     
-    hasPreviewMode               A boolean that indicates whether tool has a preview mode which can be embedded in the File Page. Since this view is designed for embedding within Dataverse, the preview mode for a tool will typically be a view without headers or other options that may be included with a tool that is designed to be launched in a new window. Sometimes, a tool will exist solely to preview files in Dataverse and the preview mode will be the same as the regular view. 
-
     contentType                  File level tools operate on a specific **file type** (content type or MIME type such as "application/pdf") and this must be specified. Dataset level tools do not use contentType.
 
     toolParameters               **Query parameters** are supported and described below.

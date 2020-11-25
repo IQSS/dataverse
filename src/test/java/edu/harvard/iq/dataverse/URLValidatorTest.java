@@ -7,6 +7,8 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.hibernate.validator.internal.engine.constraintvalidation.ConstraintValidatorContextImpl;
 import org.hibernate.validator.internal.engine.path.PathImpl;
+import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
 import org.junit.Test;
 
 /**
@@ -14,6 +16,8 @@ import org.junit.Test;
  * @author skraffmi
  */
 public class URLValidatorTest {
+    ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+    
 
     @Test
     public void testIsURLValid() {
@@ -35,7 +39,7 @@ public class URLValidatorTest {
     @Test
     public void testIsValidWithContextAndValidURL() {
         String value = "https://twitter.com/";
-        ConstraintValidatorContext context = new ConstraintValidatorContextImpl(null, PathImpl.createPathFromString(""), null);
+        ConstraintValidatorContext context = new ConstraintValidatorContextImpl(validatorFactory.getClockProvider(), PathImpl.createPathFromString(""),null, null);
 
         assertEquals(true, new URLValidator().isValid(value, context));
     }
@@ -43,7 +47,7 @@ public class URLValidatorTest {
     @Test
     public void testIsValidWithContextButInvalidURL() {
         String value = "cnn.com";
-        ConstraintValidatorContext context = new ConstraintValidatorContextImpl(null, PathImpl.createPathFromString(""), null);
+        ConstraintValidatorContext context = new ConstraintValidatorContextImpl(validatorFactory.getClockProvider(), PathImpl.createPathFromString(""),null, null);
 
         assertEquals(false, new URLValidator().isValid(value, context));
     }

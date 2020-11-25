@@ -63,7 +63,7 @@ body .ui-widget {font-size: inherit;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
+#footer {position:absolute; z-index:-1; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -758,7 +758,6 @@ div[id$="filesTable"] div.file-tags-block span.label, div[id$="filesTable"] div.
 div[id$="filesTable"] div.file-tags-block span.label:last-of-type {margin-right:0;}
 div[id$="filesTable"] td.col-file-action {padding-left:0; border-left:0;}
 div[id$="filesTable"] td.col-file-action .btn-group .btn-link {font-size:2em !important;}
-div[id$="filesTable"] td.col-file-access {width:50%;}
 div[id$="filesTable"] div.ui-datatable-header.ui-widget-header {padding:0 10px;}
 div[id$="filesHeaderBlock"] {margin-bottom:10px;}
 div[id$="cloudStorageBlock"] {margin-bottom:12px;}
@@ -831,7 +830,7 @@ div[id$="filesTable"] .ui-paginator .ui-paginator-pages .ui-state-active {
 /* FILES TREE */
 div[id$="filesTree"] span.ui-treenode-label span[class^='icon'] {margin-left: -2px;}
 
-span.ingest-warning {font-size:2em !important; line-height:1; vertical-align: middle;}
+/* span.ingest-warning {font-size:2em !important; line-height:1; vertical-align: middle;} */
 
 /* DOWNLOAD POPUP */
 div.panel-body.read-terms{max-height:220px; overflow-y:scroll; width:100%; background-color:#eeeeee;}
