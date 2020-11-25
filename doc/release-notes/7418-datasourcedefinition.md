@@ -7,7 +7,7 @@ In the past, the configuration of the connection has been quite static
 and not very easy to update. This has been an issue especially for cloud
 and container usage.
 
-Using MicroProfile Config API (#7000, #7418), you can much more easily deposit configuration
+Using MicroProfile Config API (#7000, #7418), you can much more easily specify configuration
 details. For an overview of supported options, please see the
 [installation guide](https://guides.dataverse.org/en/5.3/installation/config.html#jvm-options).
 
