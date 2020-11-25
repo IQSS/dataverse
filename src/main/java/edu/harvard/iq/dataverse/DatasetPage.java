@@ -30,7 +30,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
@@ -345,6 +344,10 @@ public class DatasetPage implements java.io.Serializable {
     Map<Long, List<ExternalTool>> configureToolsByFileId = new HashMap<>();
     // TODO: Consider renaming "exploreToolsByFileId" to "fileExploreToolsByFileId".
     Map<Long, List<ExternalTool>> exploreToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "previewToolsByFileId" to "file:PreviewToolsByFileId".
+    Map<Long, List<ExternalTool>> previewToolsByFileId = new HashMap<>();
+    // TODO: Consider renaming "previewTools" to "filePreviewTools".
+    List<ExternalTool> previewTools = new ArrayList<>();
     private List<ExternalTool> datasetExploreTools;
     private List<ExternalTool> datasetFileRequestAccessTools;
     private List<ExternalTool> fileRequestAccessTools;
@@ -807,6 +810,7 @@ public class DatasetPage implements java.io.Serializable {
             // searching on the file name ("label") and description:
             queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_NAME, pattern + "*"));
             queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_DESCRIPTION, pattern + "*"));
+            queryStrings.add(SearchUtil.constructQuery(SearchFields.FILE_TAG_SEARCHABLE, pattern + "*"));
 
             solrQuery.setQuery(SearchUtil.constructQuery(queryStrings, false));
         } else {
@@ -1881,7 +1885,7 @@ public class DatasetPage implements java.io.Serializable {
                 //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
 
             }
-            this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getOwner().getEffectiveStorageDriverId());
+            this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
 
 
             if (retrieveDatasetVersionResponse == null) {
@@ -1968,7 +1972,6 @@ public class DatasetPage implements java.io.Serializable {
                 // populate MapLayerMetadata
                 this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
-                this.getFileDownloadHelper().setGuestbookResponse(guestbookResponse);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                         && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
@@ -2092,6 +2095,7 @@ public class DatasetPage implements java.io.Serializable {
         
         configureTools = externalToolService.findFileToolsByType(ExternalTool.Type.CONFIGURE);
         exploreTools = externalToolService.findFileToolsByType(ExternalTool.Type.EXPLORE);
+        previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         datasetFileRequestAccessTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.REQUESTACCESS);
         fileRequestAccessTools = externalToolService.findFileToolsByType(ExternalTool.Type.REQUESTACCESS);
@@ -3299,10 +3303,20 @@ public class DatasetPage implements java.io.Serializable {
         }        
     }
     
-        
-    public String restrictSelectedFiles(boolean restricted) throws CommandException{
-        
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
+    public String restrictFiles(boolean restricted) throws CommandException{
+        if (fileMetadataForAction != null) {
+            return restrictFile(restricted);
+        }
+        return restrictSelectedFiles(restricted);
+    }
+    
+    private String restrictFile(boolean restricted) throws CommandException {
+        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
+        save();        
+        return  returnToDraftVersion(); 
+    };    
+       
+    private String restrictSelectedFiles(boolean restricted) throws CommandException{        
         if (selectedFiles.isEmpty()) {
             if (restricted) {
                 PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
@@ -3333,18 +3347,17 @@ public class DatasetPage implements java.io.Serializable {
             if (bulkUpdateCheckVersion()) {
                 refreshSelectedFiles();
             }
-            restrictFiles(restricted);
+            restrictFiles(this.getSelectedFiles(), restricted);
         }
         
         save();
-        
         return  returnToDraftVersion();
     }
-
-    private void restrictFiles(boolean restricted) throws CommandException {
+    
+    private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
         Command<Void> cmd;
         previouslyRestrictedFiles = new ArrayList<>();
-        for (FileMetadata fmd : this.getSelectedFiles()) {
+        for (FileMetadata fmd : filesToRestrict) {
             if(fmd.isRestricted()) {
                 previouslyRestrictedFiles.add(fmd);
             }
@@ -3370,19 +3383,31 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
+
+    public String deleteFiles() throws CommandException{
+        if (fileMetadataForAction != null) {
+            return deleteFile();
+        }
+        return deleteSelectedFiles();
+    }
     
-    public String  deleteFilesAndSave(){
+    private String  deleteFile(){
+        deleteFiles(Collections.singletonList(fileMetadataForAction));
+        return save();       
+    }     
+    
+    private String  deleteSelectedFiles(){
         bulkFileDeleteInProgress = true;
         if (bulkUpdateCheckVersion()){
            refreshSelectedFiles(); 
         }
-        deleteFiles();
+        deleteFiles(selectedFiles);
         return save();       
-    }
+    }   
     
-    public void deleteFiles() {
+    private void deleteFiles(List<FileMetadata> filesToDelete) {
 
-        for (FileMetadata markedForDelete : selectedFiles) {
+        for (FileMetadata markedForDelete : filesToDelete) {
             
             if (markedForDelete.getId() != null) {
                 // This FileMetadata has an id, i.e., it exists in the database. 
@@ -3624,7 +3649,7 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset. 
                     dataset = datasetService.find(dataset.getId());
                     
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, null);
                     newFiles.clear();
                     
                     // and another update command: 
@@ -5423,6 +5448,16 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDatasetSummaryFields(workingVersion, customFields);
     }
 
+    public boolean isShowPreviewButton(Long fileId) {
+        List<ExternalTool> previewTools = getPreviewToolsForDataFile(fileId);
+        return previewTools.size() > 0;
+    }
+
+    public List<ExternalTool> getPreviewToolsForDataFile(Long fileId) {
+        return getCachedToolsForDataFile(fileId, ExternalTool.Type.PREVIEW);
+    }
+    
+
     public List<ExternalTool> getConfigureToolsForDataFile(Long fileId) {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.CONFIGURE);
     }
@@ -5442,6 +5477,10 @@ public class DatasetPage implements java.io.Serializable {
             case CONFIGURE:
                 cachedToolsByFileId = configureToolsByFileId;
                 externalTools = configureTools;
+                break;
+            case PREVIEW:
+                cachedToolsByFileId = previewToolsByFileId;
+                externalTools = previewTools;
                 break;
             default:
                 break;
@@ -5659,6 +5698,16 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("Exploring with " + toolUrl);
         PrimeFaces.current().executeScript("window.open('"+toolUrl + "', target='_blank');");
     }
+           
+    private FileMetadata fileMetadataForAction;
+
+    public FileMetadata getFileMetadataForAction() {
+        return fileMetadataForAction;
+    }
+
+    public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
+        this.fileMetadataForAction = fileMetadataForAction;
+
     
     public void requestAccess(ExternalTool tool){
         ApiToken apiToken = getApiTokenForTool();

@@ -989,16 +989,16 @@ Note that the dataset citation date field type must be a date field.
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=24
-  export DATASET_FIELD_TYPE_NAME=:dateOfDeposit
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export DATASET_FIELD_TYPE_NAME=dateOfDeposit
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/$ID/citationdate --data "$DATASET_FIELD_TYPE_NAME"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/citationdate?persistentId=$PERSISTENT_IDENTIFIER --data "$DATASET_FIELD_TYPE_NAME"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":dateOfDeposit"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/citationdate?persistentId=doi:10.5072/FK2/J8SJZB --data "dateOfDeposit"
 
 Revert Citation Date Field Type to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1009,15 +1009,15 @@ Restores the default citation date field type, ``:publicationDate``, for a given
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=24
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/citationdate
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/:persistentId/citationdate?persistentId=$PERSISTENT_IDENTIFIER
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/citationdate
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/:persistentId/citationdate?persistentId=doi:10.5072/FK2/J8SJZB
 
 .. _list-roles-on-a-dataset-api:
 
@@ -1176,7 +1176,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"} https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB"
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
 
@@ -1653,6 +1653,11 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/destroy
   
 Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
+
+Configure a Dataset to Use a Specific File Store
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/storageDriver`` can be used to check, configure or reset the designated file store (storage driver) for a dataset. Please see the :doc:`/admin/dataverses-datasets` section of the guide for more information on this API.
 
 Files
 -----
@@ -2520,6 +2525,18 @@ Get All Notifications by User
 Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+    
+.. _User Information:
+
+User Information
+----------------
+
+Get User Information in JSON Format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a dump of their basic information in JSON format by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
 .. _pids-api:
 
@@ -2871,7 +2888,10 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "affiliation": "Dataverse.org"
     }
 
-Create an authenticateUser::
+Create an Authenticated User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an authenticatedUser::
 
     POST http://$SERVER/api/admin/authenticatedUsers
 

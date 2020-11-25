@@ -212,6 +212,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
 
         if (dataset != null) {
+            logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
             ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
             return true;
         }

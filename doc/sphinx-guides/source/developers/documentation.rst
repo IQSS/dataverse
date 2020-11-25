@@ -64,6 +64,8 @@ Unless you already have it, install pip (https://pip.pypa.io/en/latest/installin
 
 run ``pip install sphinx`` in a terminal
 
+Building the guides requires the ``dot`` executable from GraphViz and you can find documentation on GraphViz below.
+
 This is all you need. You should now be able to build HTML/pdf documentation from git sources locally.
 
 Using Sphinx
@@ -119,8 +121,7 @@ In some parts of the documentation, graphs are rendered as images via Sphinx Gra
 This requires `GraphViz <http://graphviz.org/>`_ installed and either ``dot`` on the path or
 `adding options to the make call <https://groups.google.com/forum/#!topic/sphinx-users/yXgNey_0M3I>`_.
 
-This has been tested and works on Mac, Linux, and Windows. If you have not properly configured GraphViz, then the worst thing that might happen is a warning and missing images in your local documentation build.
-
+This has been tested and works on Mac, Linux, and Windows.
 
 Versions
 --------
