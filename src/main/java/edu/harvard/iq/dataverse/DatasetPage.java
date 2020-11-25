@@ -5707,7 +5707,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
         this.fileMetadataForAction = fileMetadataForAction;
-
+    }
     
     public void requestAccess(ExternalTool tool){
         ApiToken apiToken = getApiTokenForTool();
