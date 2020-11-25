@@ -1049,9 +1049,11 @@ Can also be set via *MicroProfile Config API* sources, e. g. environment variabl
 Preferrably use a JVM alias, as passwords in environment variables aren't safe!
 
 .. code-block:: shell
+
   echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
   asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
   rm /tmp/password.txt
+
 dataverse.db.host
 +++++++++++++++++
 
