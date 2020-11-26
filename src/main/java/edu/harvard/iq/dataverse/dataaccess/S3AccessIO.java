@@ -1106,12 +1106,22 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		String s3CERegion = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-region", "dataverse");
 
     		// if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
-    		if (!s3CEUrl.isEmpty()) {
-    			//s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
-                BasicAWSCredentials creds = new BasicAWSCredentials("14e4f8b986874272894d527a16c06473", "f7b28fbec4984588b0da7d0288ce67f6");
-                s3CB.withCredentials(new AWSStaticCredentialsProvider(creds));
-                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl.trim(), s3CERegion.trim()));
-    		}
+            if (!s3CEUrl.isEmpty()) {
+                logger.info("s3CEURL ===============  " + s3CEUrl);
+                logger.info("s3CERegion ===============  " + s3CERegion);
+                try {
+                    s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+                    logger.info(" ==================== Successfully connected ================== ");
+                }
+                catch(Exception e) {
+                    logger.info(" ==================== Read the exception ================== ");
+                    e.printStackTrace();
+                    BasicAWSCredentials creds = new BasicAWSCredentials("14e4f8b986874272894d527a16c06473", "f7b28fbec4984588b0da7d0288ce67f6");
+                    s3CB.withCredentials(new AWSStaticCredentialsProvider(creds));
+                    s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl.trim(), s3CERegion.trim()));
+                    logger.info(" ==================== Read the exception ================== ");
+                }
+            }
     		/**
     		 * Pass in a boolean value if path style access should be used within the S3 client.
     		 * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
