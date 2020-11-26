@@ -44,7 +44,7 @@ public class ClientHarvestRun implements Serializable {
     
     private static String RESULT_LABEL_SUCCESS = "SUCCESS";
     private static String RESULT_LABEL_FAILURE = "FAILED";
-    private static String RESULT_LABEL_INPROGRESS = "INPROGRESS";
+    private static String RESULT_LABEL_INPROGRESS = "IN PROGRESS";
     private static String RESULT_DELETE_IN_PROGRESS = "DELETE IN PROGRESS";
     
     @ManyToOne

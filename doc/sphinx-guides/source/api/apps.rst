@@ -1,7 +1,7 @@
 Apps
 ====
 
-The introduction of Dataverse APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools` sections of the Admin Guide.
+The introduction of Dataverse APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
 The apps below are open source and demonstrate how to use Dataverse APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse APIs in Python, Javascript, R, and Java.
 
@@ -65,10 +65,10 @@ OSF allows you to view, download, and upload files to and from a Dataverse datas
 
 https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
 
-GeoConnect
+Geoconnect
 ~~~~~~~~~~
 
-GeoConnect allows Dataverse files to be visualized on http://worldmap.harvard.edu with the "Explore" button. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
+Geoconnect allows Dataverse files to be visualized and explored on `WorldMap <http://worldmap.harvard.edu>`_. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
 
 https://github.com/IQSS/geoconnect
 

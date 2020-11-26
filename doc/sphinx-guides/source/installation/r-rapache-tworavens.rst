@@ -9,6 +9,8 @@ for the future of the Dataverse/TwoRavens collaboration are still being worked o
 such, **support for TwoRavens is somewhat limited at the
 moment (as of Spring of 2017).**
 
+Please note that in the text below, Glassfish was changed to Payara but not tested.
+
 Any questions regarding the features of TwoRavens, bug reports and
 such, should be addressed directly to the developers of the
 application.  The `TwoRavens GitHub repository
@@ -78,7 +80,7 @@ server to download the file **directly from the Dataverse application**. Access
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
 
-If you install all components on a single server and front Glassfish with Apache 
+If you install all components on a single server and front the app server with Apache 
 (see :ref:`network-ports` under the :doc:`config` section), the component and 
 data flow diagram might looks something like this:
 
@@ -291,7 +293,7 @@ Dataverse URL         ``http://{your hostname}:8080``     URL of the Dataverse t
 Please note the default values above. The installer assumes 
 
 - that you are running both the Dataverse and TwoRavens/rApache on the same host; 
-- the default ports for Apache (80) and Glassfish that is serving your Dataverse (8080); 
+- the default ports for Apache (80) and the app server that is serving your Dataverse (8080); 
 - ``http`` (not ``https``!) for both . 
 
 This configuration is recommended if you are simply trying out/testing Dataverse 
@@ -330,7 +332,7 @@ Compare the two files. **It is important that the two copies are identical**.
 
 **If different**: 
 
-- the **TwoRavens version wins**. Meaning, you need to copy the version supplied with this TwoRavens distribution and overwrite the Glassfish version (above); then restart Glassfish. 
+- the **TwoRavens version wins**. Meaning, you need to copy the version supplied with this TwoRavens distribution and overwrite the app server version (above); then restart the app server. 
 
 - unless this is a brand new Dataverse installation, it may have cached summary statistics fragments that were produced with the older version of this R code. You **must remove** all such cached files::
 
@@ -340,8 +342,8 @@ Compare the two files. **It is important that the two copies are identical**.
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
 
-e. Enable TwoRavens Button in Dataverse
----------------------------------------
+e. Enable TwoRavens in Dataverse
+--------------------------------
 
 Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`/admin/external-tools` section of the Admin Guide.)
 
@@ -351,8 +353,7 @@ Once you have made your edits, make the tool available within Dataverse with the
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file twoRavens.json http://localhost:8080/api/admin/externalTools``
 
-Once enabled, an "Explore" dropdown will appear next to ingested tabular data files a "TwoRavens" button; clicking it will redirect
-the user to the instance of TwoRavens, initialized with the data variables from the selected file. 
+Once enabled, TwoRavens will display as an explore tool option for tabular data files. Clicking it will redirect the user to the instance of TwoRavens, initialized with the data variables from the selected file.
 
 f. Perform a quick test of TwoRavens functionality
 --------------------------------------------------
@@ -368,13 +369,13 @@ If the file does NOT appear as Tabular Data - if it is shown as Stata/dta,
 and no tabular attributes - the numbers of Variables and Observations and the UNF - 
 are being displayed, try to refresh the page a couple of times. If that doesn't 
 change the view to Tabular, it likely means that something went very wrong with the 
-tabular ingest. Consult the Glassfish server log for any error messages that may 
+tabular ingest. Consult the app server log for any error messages that may 
 explain the failure. 
 
-If the file is showing as Tabular Data, but the ``Explore`` button isn't present, 
+If the file type is tabular data, but TwoRavens is not displayed as an explore tool option, 
 double-check that the steps in ``e.``, above, were correctly performed. 
 
-Otherwise, click on the ``Explore`` button. This will open TwoRavens in a new browser window.
+Selecting the TwoRavens explore tool option will open TwoRavens in a new browser window.
 If the application initializes successfully, you should see the "data pebbles" representing 
 the first 3 variables in the file: 
 
@@ -418,9 +419,9 @@ You should get the output that looks like this::
         ...
 
 If you are getting an error message instead, this is likely an Rserve connection problem. 
-Consult the Glassfish server log for any Rserve-related "connection refused" messages. 
+Consult the app server log for any Rserve-related "connection refused" messages. 
 See if Rserve is running, and start it with ``service rserve start``, if necessary. 
-Check if the Rserve host name, username and password in the Glassfish configuration match 
+Check if the Rserve host name, username and password in the app server configuration match 
 the actual Rserve configuration. (this is discussed in the section ``2.`` of the guide). 
 Correct this, if necessary, then try again. 
 
@@ -444,7 +445,7 @@ Symptom: the variables view is initialized properly, but no model output appears
 I. Ports configuration discussion
 ---------------------------------
 
-By default, Glassfish will install itself on ports 8080 and 8181 (for
+By default, the app server will install itself on ports 8080 and 8181 (for
 ``HTTP`` and ``HTTPS``, respectively). Apache will install itself on port 80 
 (the default port for ``HTTP``). Under this configuration, your Dataverse will 
 be accessible at ``http://{your host}:8080``, and rApache at 
@@ -458,16 +459,16 @@ defaults, and you should have a working installation in no
 time. However, if you are planning to use this installation to
 actually serve data to real users, you will most likely want to run your Dataverse 
 on a standard port; and to use ``HTTPS``. It is definitely possible to configure 
-Glassfish to serve the application under ``HTTPS`` on port 443. However, we 
-**do not recommend** this setup! For at least 2 reasons: 1. Running Glassfish on 
+the app server to serve the application under ``HTTPS`` on port 443. However, we 
+**do not recommend** this setup! For at least 2 reasons: 1. Running the app server on 
 port 443 will require you to **run it as root** user; which should be avoided, 
 if possible, for reasons of security. Also, 2) installing ``SSL`` certificates under 
-Glassfish is unnecessarily complicated. The alternative configuration that 
-we recommend is to "hide" your Glassfish behind Apache. In this setup Apache 
+the app server is unnecessarily complicated. The alternative configuration that 
+we recommend is to "hide" your app server behind Apache. In this setup Apache 
 serves as the ``HTTPS`` front running on port 443, proxying the traffic to 
-Glassfish using ``mod_proxy_ajp``; and Glassfish is running as 
+the app server using ``mod_proxy_ajp``; and the app server is running as 
 an non-privileged user on a high port that's not accessible from the outside. 
-Unlike Glassfish, Apache has a mechanism for running on a privileged port (in 
+Unlike the app server, Apache has a mechanism for running on a privileged port (in 
 this case, 443) as a non-privileged user. It is possible to use this 
 configuration, and have this Apache instance serve TwoRavens and rApache too, 
 all on the same server. Please see :ref:`network-ports` under the :doc:`config` 
@@ -534,7 +535,7 @@ replacing *every* instance of ``production<-FALSE`` line with ``production<-TRUE
 
 **In** ``dataexplore/rook/rooksource.R`` **the following line:**
 
-``setwd("/usr/local/glassfish4/glassfish/domains/domain1/docroot/dataexplore/rook")``
+``setwd("/usr/local/payara5/glassfish/domains/domain1/docroot/dataexplore/rook")``
 
 needs to be changed to: 
 

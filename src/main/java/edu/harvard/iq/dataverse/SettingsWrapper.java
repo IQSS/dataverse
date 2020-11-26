@@ -125,7 +125,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (true)
 
             if (guidesBaseUrl == null) {
-            String saneDefault = "http://guides.dataverse.org";
+            String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {
@@ -250,10 +250,25 @@ public class SettingsWrapper implements java.io.Serializable {
             return false;
         }
     }
-    
+
+    public boolean isDataCiteInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
+        if ("DataCite".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    
+    }
+    
+    public boolean displayChronologicalDateFacets() {
+        //Defaults to true
+        return isTrueForKey(SettingsServiceBean.Key.ChronologicalDateFacets, true);
     
     }
 

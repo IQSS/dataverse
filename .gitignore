@@ -34,6 +34,7 @@ oauth-credentials.md
 
 /src/main/webapp/oauth2/newAccount.html
 scripts/api/setup-all.sh*
+scripts/api/setup-all.*.log
 
 # ctags generated tag file
 tags
@@ -59,8 +60,9 @@ scripts/installer/default.config
 # ignore UI testing related files
 tests/node_modules
 tests/package-lock.json
-<<<<<<< HEAD
-.factorypath
-=======
 venv
->>>>>>> upstream/develop
+
+# from thumbnail tests in SearchIT
+scripts/search/data/binary/trees.png.thumb140
+src/main/webapp/resources/images/cc0.png.thumb140
+src/main/webapp/resources/images/dataverseproject.png.thumb140

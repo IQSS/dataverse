@@ -85,7 +85,7 @@ else
 	'DOI_USERNAME',
 	'DOI_PASSWORD',
 	'DOI_BASEURL',
-	'DOI_MDCBASEURL'
+	'DOI_DATACITERESTAPIURL'
 
 	);
 }
@@ -105,9 +105,6 @@ my $API_URL = "http://localhost:8080/api";
 # updated drivers may be obtained from
 #  https://jdbc.postgresql.org/download.html
 my $postgres_jdbc = "postgresql-42.2.12.jar";
-# JSF patch for Payara5: 
-# (a temporary measure most likely)
-my $jsf_patch = "jsfpatch/jakarta.faces_dv.jar";
 
 # 0. A few preliminary checks:
 
@@ -883,17 +880,6 @@ sub setup_appserver {
 
     print "done!\n";
 
-    my $jsf_patch_success = copy($jsf_patch, $glassfish_dir . "/glassfish/modules" );
-
-    unless ($jsf_patch_success) 
-    {
-	print "\n*********************\n";
-	print "ERROR! Failed to copy " . $jsf_patch . " to " . $glassfish_dir . "/glassfish/modules - check the directory permissions!\n";
-	exit 1;
-    }
-
-    print "done!\n";
-
     print "\n*********************\n";
     print "PLEASE NOTE, SOME OF THE ASADMIN COMMANDS ARE GOING TO FAIL,\n";
     print "FOR EXAMPLE, IF A CONFIGURATION SETTING THAT WE ARE TRYING\n";
@@ -1071,7 +1057,7 @@ sub run_asadmin_script {
     $ENV{'DOI_BASEURL'} = $CONFIG_DEFAULTS{'DOI_BASEURL'};
     $ENV{'DOI_USERNAME'} = $CONFIG_DEFAULTS{'DOI_USERNAME'};
     $ENV{'DOI_PASSWORD'} = $CONFIG_DEFAULTS{'DOI_PASSWORD'};
-    $ENV{'DOI_MDCBASEURL'} = $CONFIG_DEFAULTS{'DOI_MDCBASEURL'};
+    $ENV{'DOI_DATACITERESTAPIURL'} = $CONFIG_DEFAULTS{'DOI_DATACITERESTAPIURL'};
     
     $ENV{'HOST_ADDRESS'} = $CONFIG_DEFAULTS{'HOST_DNS_ADDRESS'};
 

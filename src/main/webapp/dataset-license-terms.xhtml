@@ -64,7 +64,7 @@
                                <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfUse)}" escape="false" rendered="#{empty editMode}"/>
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
-                                   <p:inputTextarea value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" />
+                                   <p:inputTextarea value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"/>
                                </ui:fragment>
                            </div>
                        </div>

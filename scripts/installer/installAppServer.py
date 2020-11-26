@@ -12,6 +12,7 @@ def runAsadminScript(config):
    os.environ['HOST_ADDRESS'] = config.get('glassfish','HOST_DNS_ADDRESS')
    os.environ['GLASSFISH_ROOT'] = config.get('glassfish','GLASSFISH_DIRECTORY')
    os.environ['MEM_HEAP_SIZE'] = config.get('glassfish','GLASSFISH_HEAP')
+   os.environ['GLASSFISH_REQUEST_TIMEOUT'] = config.get('glassfish','GLASSFISH_REQUEST_TIMEOUT')
 	
    os.environ['DB_PORT'] = config.get('database','POSTGRES_PORT')
    os.environ['DB_HOST'] = config.get('database','POSTGRES_SERVER')
@@ -27,7 +28,7 @@ def runAsadminScript(config):
    os.environ['DOI_BASEURL'] = config.get('doi','DOI_BASEURL')
    os.environ['DOI_USERNAME'] = config.get('doi','DOI_USERNAME')
    os.environ['DOI_PASSWORD'] = config.get('doi','DOI_PASSWORD')
-   os.environ['DOI_MDCBASEURL'] = config.get('doi','DOI_MDCBASEURL')
+   os.environ['DOI_DATACITERESTAPIURL'] = config.get('doi','DOI_DATACITERESTAPIURL')
 
    mailServerEntry = config.get('system','MAIL_SERVER')
 

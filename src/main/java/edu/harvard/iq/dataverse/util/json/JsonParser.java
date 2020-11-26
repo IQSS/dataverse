@@ -24,32 +24,21 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import org.apache.commons.validator.routines.DomainValidator;
+
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
+import java.util.*;
 import java.util.logging.Logger;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
-import javax.json.JsonValue;
+import java.util.stream.Collectors;
+import javax.json.*;
 import javax.json.JsonValue.ValueType;
 
 /**
@@ -248,6 +237,36 @@ public class JsonParser {
 
         return retVal;
     }
+    
+    public MailDomainGroup parseMailDomainGroup(JsonObject obj) throws JsonParseException {
+        MailDomainGroup grp = new MailDomainGroup();
+        
+        if (obj.containsKey("id")) {
+            grp.setId(obj.getJsonNumber("id").longValue());
+        }
+        grp.setDisplayName(getMandatoryString(obj, "name"));
+        grp.setDescription(obj.getString("description", null));
+        grp.setPersistedGroupAlias(getMandatoryString(obj, "alias"));
+        grp.setIsRegEx(obj.getBoolean("regex", false));
+        if ( obj.containsKey("domains") ) {
+            List<String> domains =
+                Optional.ofNullable(obj.getJsonArray("domains"))
+                    .orElse(Json.createArrayBuilder().build())
+                    .getValuesAs(JsonString.class)
+                    .stream()
+                    .map(JsonString::getString)
+                    // only validate if this group hasn't regex support enabled
+                    .filter(d -> (grp.isRegEx() || DomainValidator.getInstance().isValid(d)))
+                    .collect(Collectors.toList());
+            if (domains.isEmpty())
+                throw new JsonParseException("Field domains may not be an empty array or contain invalid domains. Enabled regex support?");
+            grp.setEmailDomains(domains);
+        } else {
+            throw new JsonParseException("Field domains is mandatory.");
+        }
+        
+        return grp;
+    }
 
     public DatasetVersion parseDatasetVersion(JsonObject obj) throws JsonParseException {
         return parseDatasetVersion(obj, new DatasetVersion());
@@ -377,7 +396,10 @@ public class JsonParser {
             List<DatasetField> fields = new LinkedList<>();
             for (JsonObject fieldJson : fieldsArray.getValuesAs(JsonObject.class)) {
                 try {
-                    fields.add(parseField(fieldJson, testType));
+                    DatasetField field = parseField(fieldJson, testType);
+                    if (field != null) {
+                        fields.add(field);
+                    }
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
@@ -549,7 +571,8 @@ public class JsonParser {
     
 
         if (type == null) {
-            throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
+            logger.fine("Can't find type '" + json.getString("typeName", "") + "'");
+            return null;
         }
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
