@@ -1107,7 +1107,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     		// if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
             if (!s3CEUrl.isEmpty()) {
-                logger.info("s3CEURL ===============  " + s3CEUrl);
+                logger.info("test s3CEURL ===============  " + s3CEUrl);
                 logger.info("s3CERegion ===============  " + s3CERegion);
                 try {
                     s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
