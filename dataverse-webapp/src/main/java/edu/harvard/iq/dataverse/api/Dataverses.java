@@ -76,6 +76,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -998,7 +999,9 @@ public class Dataverses extends AbstractApiBean {
 
     @POST
     @Path("{id}/move/{targetDataverseAlias}")
-    public Response moveDataverse(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
+    public Response moveDataverse(@PathParam("id") String id,
+                    @PathParam("targetDataverseAlias") String targetDataverseAlias, 
+                    @QueryParam("forceMove") @DefaultValue("false") boolean force) {
         try {
             User u = findUserOrDie();
             Dataverse dv = findDataverseOrDie(id);

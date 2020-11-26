@@ -305,14 +305,14 @@ public class MoveDataverseCommandTest {
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
 
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childB, childA, null));
+                new MoveDataverseCommand(aRequest, childB, childA, false));
 
         assertEquals(childA, childB.getOwner());
         assertEquals(Arrays.asList(root, childA), childB.getOwners());
 
         // move back
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childB, root, null));
+                new MoveDataverseCommand(aRequest, childB, root, false));
 
         assertEquals(root, childB.getOwner());
         assertEquals(Arrays.asList(root), childB.getOwners());
@@ -326,7 +326,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testInvalidMove");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childA, grandchildAA, null));
+                new MoveDataverseCommand(aRequest, childA, grandchildAA, false));
         fail();
     }
 
@@ -338,7 +338,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testNotSuperUser");
         DataverseRequest aRequest = new DataverseRequest(nobody, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childB, childA, null));
+                new MoveDataverseCommand(aRequest, childB, childA, false));
         fail();
     }
 
@@ -347,7 +347,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testMoveIntoSelf");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childB, childB, null));
+                new MoveDataverseCommand(aRequest, childB, childB, false));
         fail();
     }
 
@@ -356,7 +356,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testMoveIntoParent");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, grandchildAA, childA, null));
+                new MoveDataverseCommand(aRequest, grandchildAA, childA, false));
         fail();
     }
 
@@ -365,12 +365,12 @@ public class MoveDataverseCommandTest {
         System.out.println("testKeepGuestbook");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childC, childB, null));
+                new MoveDataverseCommand(aRequest, childC, childB, false));
         assertNotNull(datasetC.getGuestbook());
 
         // move back
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childC, root, null));
+                new MoveDataverseCommand(aRequest, childC, root, false));
         assertEquals(root, childC.getOwner());
     }
 
@@ -379,7 +379,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testRemoveGuestbookWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, grandchildCC, root, null));
+                new MoveDataverseCommand(aRequest, grandchildCC, root, false));
         fail();
     }
 
@@ -402,12 +402,12 @@ public class MoveDataverseCommandTest {
         System.out.println("testKeepTemplate");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childD, childB, null));
+                new MoveDataverseCommand(aRequest, childD, childB, false));
         assertNotNull(grandchildDD.getDefaultTemplate());
 
         // move back
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childD, root, null));
+                new MoveDataverseCommand(aRequest, childD, root, false));
         assertEquals(root, childD.getOwner());
 
     }
@@ -417,7 +417,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testRemoveTemplateWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, grandchildDD, root, null));
+                new MoveDataverseCommand(aRequest, grandchildDD, root, false));
         fail();
     }
 
@@ -440,12 +440,12 @@ public class MoveDataverseCommandTest {
         System.out.println("testKeepMetadataBlock");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childE, childB, null));
+                new MoveDataverseCommand(aRequest, childE, childB, false));
         assertEquals(Arrays.asList(mbB), childE.getRootMetadataBlocks());
 
         // move back
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, childE, root, null));
+                new MoveDataverseCommand(aRequest, childE, root, false));
         assertEquals(root, childE.getOwner());
     }
 
@@ -454,7 +454,7 @@ public class MoveDataverseCommandTest {
         System.out.println("testRemoveMetadataBlockWithoutForce");
         DataverseRequest aRequest = new DataverseRequest(auth, httpRequest);
         testEngine.submit(
-                new MoveDataverseCommand(aRequest, grandchildEE, root, null));
+                new MoveDataverseCommand(aRequest, grandchildEE, root, false));
         fail();
     }
 

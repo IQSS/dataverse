@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseTheme;
@@ -54,34 +55,31 @@ public class DataverseDao implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DataverseDao.class.getCanonicalName());
     @EJB
-    IndexServiceBean indexService;
+    private IndexServiceBean indexService;
 
     @EJB
-    AuthenticationServiceBean authService;
+    private AuthenticationServiceBean authService;
 
     @EJB
-    DatasetDao datasetDao;
+    private DatasetRepository datasetRepository;
 
     @EJB
-    DataverseLinkingDao dataverseLinkingService;
+    private DataverseLinkingDao dataverseLinkingService;
 
     @EJB
-    DatasetLinkingServiceBean datasetLinkingService;
+    private DatasetLinkingServiceBean datasetLinkingService;
 
     @EJB
-    GroupServiceBean groupService;
+    private GroupServiceBean groupService;
 
     @EJB
-    DataverseRoleServiceBean rolesService;
+    private DataverseRoleServiceBean rolesService;
 
     @EJB
-    PermissionServiceBean permissionService;
+    private PermissionServiceBean permissionService;
 
     @EJB
-    SystemConfig systemConfig;
-
-    @Inject
-    DataverseSession session;
+    private SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -262,73 +260,6 @@ public class DataverseDao implements java.io.Serializable {
         }
         return null;
     }
-    
-    /*
-    public boolean isDataverseLogoThumbnailAvailable(Dataverse dataverse, User user) {    
-        if (dataverse == null) {
-            return false; 
-        }
-                
-        // First, check if the dataverse has a defined logo: 
-        
-        //if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
-            File dataverseLogoFile = getLogo(dataverse);
-            if (dataverseLogoFile != null) {
-                String logoThumbNailPath = null;
-
-                if (dataverseLogoFile.exists()) {
-                    logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
-                    if (logoThumbNailPath != null) {
-                        return true;
-                    }
-                }
-            }
-        //}
-        */
-    // If there's no uploaded logo for this dataverse, go through its
-    // [released] datasets and see if any of them have card images:
-    //
-    // TODO:
-    // Discuss/Decide if we really want to do this - i.e., go through every
-    // file in every dataset below...
-    // -- L.A. 4.0 beta14
-        /*
-        for (Dataset dataset : datasetDao.findPublishedByOwnerId(dataverse.getId())) {
-            if (dataset != null) {
-                DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                
-                if (releasedVersion != null) {
-                    if (datasetDao.isDatasetCardImageAvailable(releasedVersion, user)) {
-                        return true;
-                    }
-                }
-            }
-        }   */     
-        /*
-        return false; 
-    } */
-
-    private File getLogo(Dataverse dataverse) {
-        if (dataverse.getId() == null) {
-            return null;
-        }
-
-        DataverseTheme theme = dataverse.getDataverseTheme();
-        if (theme != null && theme.getLogo() != null && !theme.getLogo().isEmpty()) {
-            Properties p = System.getProperties();
-            String domainRoot = p.getProperty("com.sun.aas.instanceRoot");
-
-            if (domainRoot != null && !"".equals(domainRoot)) {
-                return new File(domainRoot + File.separator +
-                                        "docroot" + File.separator +
-                                        "logos" + File.separator +
-                                        dataverse.getLogoOwnerId() + File.separator +
-                                        theme.getLogo());
-            }
-        }
-
-        return null;
-    }
 
     private File getLogoById(Long id) {
         if (id == null) {
@@ -463,45 +394,6 @@ public class DataverseDao implements java.io.Serializable {
         return countQuery.getSingleResult();
     }
 
-    /**
-     * Used to identify and properly display Harvested objects on the dataverse page.
-     *//*
-    @Deprecated
-    public Map<Long, String> getAllHarvestedDataverseDescriptions(){
-        
-        String qstr = "SELECT dataverse_id, archiveDescription FROM harvestingClient;";
-        List<Object[]> searchResults = null;
-        
-        try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
-        } catch (Exception ex) {
-            searchResults = null;
-        }
-        
-        if (searchResults == null) {
-            return null;
-        }
-        
-        Map<Long, String> ret = new HashMap<>();
-        
-        for (Object[] result : searchResults) {
-            Long dvId = null;
-            if (result[0] != null) {
-                try {
-                    dvId = (Long)result[0];
-                } catch (Exception ex) {
-                    dvId = null;
-                }
-                if (dvId == null) {
-                    continue;
-                }
-                
-                ret.put(dvId, (String)result[1]);
-            }
-        }
-        
-        return ret;        
-    }*/
     public String getParentAliasString(SolrSearchResult solrSearchResult) {
         Long dvId = solrSearchResult.getEntityId();
         String retVal = "";
@@ -603,16 +495,12 @@ public class DataverseDao implements java.io.Serializable {
         // get list of Dataverse children
         List<Long> dataverseChildren = findIdsByOwnerId(dvId);
         // get list of Dataset children
-        List<Long> datasetChildren = datasetDao.findIdsByOwnerId(dvId);
+        List<Long> datasetChildren = datasetRepository.findIdsByOwnerId(dvId);
 
-        if (dataverseChildren == null) {
-            return datasetChildren;
-        } else {
-            for (Long childDvId : dataverseChildren) {
-                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
-            }
-            return datasetChildren;
+        for (Long childDvId : dataverseChildren) {
+            datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
         }
+        return datasetChildren;
     }
 
     public String addRoleAssignmentsToChildren(Dataverse owner, List<String> rolesToInherit,

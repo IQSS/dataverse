@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -30,13 +31,11 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,7 +72,8 @@ public class DatasetDao implements java.io.Serializable {
     @EJB
     EjbDataverseEngine commandEngine;
 
-    private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
+    @EJB
+    private DatasetRepository datasetRepository;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -83,49 +83,7 @@ public class DatasetDao implements java.io.Serializable {
     }
 
     public List<Dataset> findByOwnerId(Long ownerId) {
-        return findByOwnerId(ownerId, false);
-    }
-
-    public List<Dataset> findPublishedByOwnerId(Long ownerId) {
-        return findByOwnerId(ownerId, true);
-    }
-
-    private List<Dataset> findByOwnerId(Long ownerId, boolean onlyPublished) {
-        List<Dataset> retList = new ArrayList<>();
-        TypedQuery<Dataset> query = em.createNamedQuery("Dataset.findByOwnerId", Dataset.class);
-        query.setParameter("ownerId", ownerId);
-        if (!onlyPublished) {
-            return query.getResultList();
-        } else {
-            for (Dataset ds : query.getResultList()) {
-                if (ds.isReleased() && !ds.isDeaccessioned()) {
-                    retList.add(ds);
-                }
-            }
-            return retList;
-        }
-    }
-
-    public List<Long> findIdsByOwnerId(Long ownerId) {
-        return findIdsByOwnerId(ownerId, false);
-    }
-
-    private List<Long> findIdsByOwnerId(Long ownerId, boolean onlyPublished) {
-        List<Long> retList = new ArrayList<>();
-        if (!onlyPublished) {
-            return em.createNamedQuery("Dataset.findIdByOwnerId")
-                    .setParameter("ownerId", ownerId)
-                    .getResultList();
-        } else {
-            List<Dataset> results = em.createNamedQuery("Dataset.findByOwnerId")
-                    .setParameter("ownerId", ownerId).getResultList();
-            for (Dataset ds : results) {
-                if (ds.isReleased() && !ds.isDeaccessioned()) {
-                    retList.add(ds.getId());
-                }
-            }
-            return retList;
-        }
+        return datasetRepository.findByOwnerId(ownerId);
     }
 
     public List<Dataset> findAll() {
@@ -267,35 +225,6 @@ public class DatasetDao implements java.io.Serializable {
                 .setParameter("authority", dataset.getAuthority())
                 .setParameter("protocol", dataset.getProtocol())
                 .getResultList().isEmpty();
-    }
-
-    public Long getMaximumExistingDatafileIdentifier(Dataset dataset) {
-        //Cannot rely on the largest table id having the greatest identifier counter
-        long zeroFiles = new Long(0);
-        Long retVal = zeroFiles;
-        Long testVal;
-        List<Object> idResults;
-        Long dsId = dataset.getId();
-        if (dsId != null) {
-            try {
-                idResults = em.createNamedQuery("Dataset.findIdByOwnerId")
-                        .setParameter("ownerId", dsId).getResultList();
-            } catch (NoResultException ex) {
-                logger.log(Level.FINE, "No files found in dataset id {0}. Returning a count of zero.", dsId);
-                return zeroFiles;
-            }
-            if (idResults != null) {
-                for (Object raw : idResults) {
-                    String identifier = (String) raw;
-                    identifier = identifier.substring(identifier.lastIndexOf("/") + 1);
-                    testVal = new Long(identifier);
-                    if (testVal > retVal) {
-                        retVal = testVal;
-                    }
-                }
-            }
-        }
-        return retVal;
     }
 
     public DatasetVersion storeVersion(DatasetVersion dsv) {
@@ -598,80 +527,6 @@ public class DatasetDao implements java.io.Serializable {
         commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
     }
 
-    /*
-     Experimental asynchronous method for requesting persistent identifiers for 
-     datafiles. We decided not to run this method on upload/create (so files 
-     will not have persistent ids while in draft; when the draft is published, 
-     we will force obtaining persistent ids for all the files in the version. 
-     
-     If we go back to trying to register global ids on create, care will need to 
-     be taken to make sure the asynchronous changes below are not conflicting with 
-     the changes from file ingest (which may be happening in parallel, also 
-     asynchronously). We would also need to lock the dataset (similarly to how 
-     tabular ingest logs the dataset), to prevent the user from publishing the
-     version before all the identifiers get assigned - otherwise more conflicts 
-     are likely. (It sounds like it would make sense to treat these two tasks -
-     persistent identifiers for files and ingest - as one post-upload job, so that 
-     they can be run in sequence). -- L.A. Mar. 2018
-    */
-    @Asynchronous
-    public void obtainPersistentIdentifiersForDatafiles(Dataset dataset) {
-        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(dataset.getProtocol(), commandEngine.getContext());
-
-        //If the Id type is sequential and Dependent then write file idenitifiers outside the command
-        String datasetIdentifier = dataset.getIdentifier();
-        Long maxIdentifier = null;
-
-        if (isDataFilePIDSequentialDependent()) {
-            maxIdentifier = getMaximumExistingDatafileIdentifier(dataset);
-        }
-
-        for (DataFile datafile : dataset.getFiles()) {
-            logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-            if (datafile.getIdentifier() == null || datafile.getIdentifier().isEmpty()) {
-
-                logger.info("Obtaining persistent id for datafile id=" + datafile.getId());
-
-                if (maxIdentifier != null) {
-                    maxIdentifier++;
-                    datafile.setIdentifier(datasetIdentifier + "/" + maxIdentifier.toString());
-                } else {
-                    datafile.setIdentifier(fileService.generateDataFileIdentifier(datafile, idServiceBean));
-                }
-
-                if (datafile.getProtocol() == null) {
-                    datafile.setProtocol(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol));
-                }
-                if (datafile.getAuthority() == null) {
-                    datafile.setAuthority(settingsService.getValueForKey(SettingsServiceBean.Key.Authority));
-                }
-
-                logger.info("identifier: " + datafile.getIdentifier());
-
-                String doiRetString;
-
-                try {
-                    logger.log(Level.FINE, "creating identifier");
-                    doiRetString = idServiceBean.createIdentifier(datafile);
-                } catch (Throwable e) {
-                    logger.log(Level.WARNING, "Exception while creating Identifier: " + e.getMessage(), e);
-                    doiRetString = "";
-                }
-
-                // Check return value to make sure registration succeeded
-                if (!idServiceBean.registerWhenPublished() && doiRetString.contains(datafile.getIdentifier())) {
-                    datafile.setIdentifierRegistered(true);
-                    datafile.setGlobalIdCreateTime(new Date());
-                }
-
-                DataFile merged = em.merge(datafile);
-                merged = null;
-            }
-
-        }
-    }
-
     /**
      * @return true if dataset is In Review locked state
      */
@@ -690,11 +545,5 @@ public class DatasetDao implements java.io.Serializable {
             }
         }
         return false;
-    }
-
-    private boolean isDataFilePIDSequentialDependent() {
-        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
-        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat);
-        return doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT");
     }
 }

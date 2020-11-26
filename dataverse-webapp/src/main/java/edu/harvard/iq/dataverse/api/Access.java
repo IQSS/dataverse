@@ -792,35 +792,6 @@ public class Access extends AbstractApiBean {
             }
         }
 
-        // If there's no uploaded logo for this dataverse, go through its 
-        // [released] datasets and see if any of them have card images:
-
-        // TODO: figure out if we want to be doing this! 
-        // (efficiency considerations...) -- L.A. 4.0 
-        // And we definitely don't want to be doing this for harvested 
-        // dataverses:
-        /*
-        StorageIO thumbnailDataAccess = null; 
-        
-        if (!dataverse.isHarvested()) {
-            for (Dataset dataset : datasetDao.findPublishedByOwnerId(dataverseId)) {
-                logger.info("dvCardImage: checking dataset "+dataset.getGlobalId());
-                if (dataset != null) {
-                    DatasetVersion releasedVersion = dataset.getReleasedVersion();
-                    logger.info("dvCardImage: obtained released version "+releasedVersion.getTitle());
-                    thumbnailDataAccess = getThumbnailForDatasetVersion(releasedVersion); 
-                    if (thumbnailDataAccess != null) {
-                        logger.info("dvCardImage: obtained thumbnail for the version.");
-                        break;
-                    }
-                }
-            }
-        }
-        
-        if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
-            return thumbnailDataAccess.getInputStream();
-        }
-        */
         return null;
     }
 

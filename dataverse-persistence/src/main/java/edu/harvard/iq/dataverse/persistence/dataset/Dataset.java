@@ -53,10 +53,6 @@ import java.util.stream.Stream;
                 query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
         @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
                 query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier AND d.protocol=:protocol AND d.authority=:authority"),
-        @NamedQuery(name = "Dataset.findIdByOwnerId",
-                query = "SELECT o.identifier FROM Dataset o WHERE o.owner.id=:ownerId"),
-        @NamedQuery(name = "Dataset.findByOwnerId",
-                query = "SELECT o FROM Dataset o WHERE o.owner.id=:ownerId"),
 })
 
 /*
