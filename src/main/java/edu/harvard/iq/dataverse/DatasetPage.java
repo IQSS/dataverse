@@ -5059,20 +5059,19 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     } 
  
-
+    private Boolean downloadButtonAllEnabled = null;
+    
     public boolean isDownloadAllButtonEnabled() {
 
-        boolean downloadButtonAllEnabled = true;
-        
-        if (downloadButtonAllEnabled) { //check to see if it should be false
+        if (downloadButtonAllEnabled == null) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 if (!this.fileDownloadHelper.canDownloadFile(fmd)) {
                     downloadButtonAllEnabled = false;
                     break;
                 }
             }
+            downloadButtonAllEnabled = true;
         }
-        
         return downloadButtonAllEnabled;
     }
 
