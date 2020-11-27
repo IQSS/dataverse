@@ -122,26 +122,6 @@ function preliminary_setup()
   # bump the http-listener timeout from 900 to 3600
   ./asadmin $ASADMIN_OPTS set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds="${GLASSFISH_REQUEST_TIMEOUT}"
 
-  ./asadmin $ASADMIN_OPTS delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool 
-
-  # no need to explicitly delete the connector resource for the connection pool deleted in the step 
-  # above - the cascade delete takes care of it.
-  #./asadmin $ASADMIN_OPTS delete-connector-resource jms/__defaultConnectionFactory-Connection-Pool
-
-  # http://docs.oracle.com/cd/E19798-01/821-1751/gioce/index.html
-  ./asadmin $ASADMIN_OPTS create-connector-connection-pool --steadypoolsize 1 --maxpoolsize 250 --poolresize 2 --maxwait 60000 --raname jmsra --connectiondefinition javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/abllx.html#giogt
-  ./asadmin $ASADMIN_OPTS create-connector-resource --poolname jms/IngestQueueConnectionFactoryPool --description "ingest connector resource" jms/IngestQueueConnectionFactory
-
-  # http://docs.oracle.com/cd/E18930_01/html/821-2416/ablmc.html#giolr
-  ./asadmin $ASADMIN_OPTS create-admin-object --restype javax.jms.Queue --raname jmsra --description "sample administered object" --property Name=DataverseIngest jms/DataverseIngest
-
-  # no need to explicitly create the resource reference for the connection factory created above -
-  # the "create-connector-resource" creates the reference automatically.
-  #./asadmin $ASADMIN_OPTS create-resource-ref --target Cluster1 jms/IngestQueueConnectionFactory
-
-
   # so we can front with apache httpd ( ProxyPass / ajp://localhost:8009/ )
   ./asadmin $ASADMIN_OPTS create-network-listener --protocol http-listener-1 --listenerport 8009 --jkenabled true jk-connector
 }
