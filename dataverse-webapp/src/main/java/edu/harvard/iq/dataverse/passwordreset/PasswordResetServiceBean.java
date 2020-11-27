@@ -214,22 +214,22 @@ public class PasswordResetServiceBean {
 
     public PasswordChangeAttemptResponse attemptPasswordReset(BuiltinUser user, String newPassword, String token) {
 
-        final String messageSummarySuccess = "Password Reset Successfully";
+        final String messageSummarySuccess = BundleUtil.getStringFromBundle("notification.passwordResetSuccess");
         final String messageDetailSuccess = "";
 
         // optimistic defaults :)
         String messageSummary = messageSummarySuccess;
         String messageDetail = messageDetailSuccess;
 
-        final String messageSummaryFail = "Password Reset Problem";
+        final String messageSummaryFail = BundleUtil.getStringFromBundle("notification.passwordResetFail");
         if (user == null) {
             messageSummary = messageSummaryFail;
-            messageDetail = "User could not be found.";
+            messageDetail = BundleUtil.getStringFromBundle("notification.passwordResetFail.userNotFound");
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
         if (newPassword == null) {
             messageSummary = messageSummaryFail;
-            messageDetail = "New password not provided.";
+            messageDetail = BundleUtil.getStringFromBundle("notification.passwordResetFail.noPasswordProvided");
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
         if (token == null) {
@@ -260,19 +260,17 @@ public class PasswordResetServiceBean {
             AuthenticatedUser authUser = authService.getAuthenticatedUser(user.getUserName());
 
             String toAddress = authUser.getEmail();
-            String subject = "Dataverse Password Reset Successfully Changed";
+            String subject = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordResetConfirmation.subject", authUser.getNotificationsLanguage());
 
 
-            String messageBody = "Hi " + authUser.getName() + ",\n\n"
-                    + "Your Dataverse account password was successfully changed.\n\n"
-                    + "Please contact us if you did not request this password reset or need further help.\n\n";
+            String messageBody = BundleUtil.getStringFromBundleWithLocale("notification.email.passwordResetConfirmation", authUser.getNotificationsLanguage(), authUser.getName(), user.getUserName());
 
             String footerMailMessage = mailService.getFooterMailMessage(authUser.getNotificationsLanguage());
             mailService.sendMailAsync(toAddress, new EmailContent(subject, messageBody, footerMailMessage));
             return new PasswordChangeAttemptResponse(true, messageSummary, messageDetail);
         } else {
             messageSummary = messageSummaryFail;
-            messageDetail = "Your password was not reset. Please contact support.";
+            messageDetail = BundleUtil.getStringFromBundle("notification.passwordResetFail.otherReason");
             logger.info("Enable to save user " + user.getId());
             return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
         }
