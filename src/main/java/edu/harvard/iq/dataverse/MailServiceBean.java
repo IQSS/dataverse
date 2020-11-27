@@ -481,6 +481,13 @@ public class MailServiceBean implements java.io.Serializable {
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);
                 return messageText;
+            case PUBLISHFAILED_PIDREG:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.publishFailedPidReg");
+                String[] paramArrayPublishFailedDatasetPidReg = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                messageText += MessageFormat.format(pattern, paramArrayPublishFailedDatasetPidReg);
+                return messageText;
             case RETURNEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasReturnedByReviewer");
@@ -597,6 +604,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEDS:
             case SUBMITTEDDS:
             case PUBLISHEDDS:
+            case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:

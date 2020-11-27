@@ -153,6 +153,55 @@ public class AddReplaceFileHelper{
     private boolean contentTypeWarningFound;
     private String contentTypeWarningString;
     
+    private boolean duplicateFileErrorFound;
+
+    private String duplicateFileErrorString;
+
+    private boolean duplicateFileWarningFound;
+    private String duplicateFileWarningString;
+    
+    private String duplicateFileComponentMessage;
+
+    public String getDuplicateFileComponentMessage() {
+        return duplicateFileComponentMessage;
+    }
+
+    public void setDuplicateFileComponentMessage(String duplicateFileComponentMessage) {
+        this.duplicateFileComponentMessage = duplicateFileComponentMessage;
+    }
+    
+    public boolean isDuplicateFileErrorFound() {
+        return duplicateFileErrorFound;
+    }
+
+    public void setDuplicateFileErrorFound(boolean duplicateFileErrorFound) {
+        this.duplicateFileErrorFound = duplicateFileErrorFound;
+    }
+
+    public String getDuplicateFileErrorString() {
+        return duplicateFileErrorString;
+    }
+
+    public void setDuplicateFileErrorString(String duplicateFileErrorString) {
+        this.duplicateFileErrorString = duplicateFileErrorString;
+    }
+    
+    public boolean isDuplicateFileWarningFound() {
+        return duplicateFileWarningFound;
+    }
+
+    public void setDuplicateFileWarningFound(boolean duplicateFileWarningFound) {
+        this.duplicateFileWarningFound = duplicateFileWarningFound;
+    }
+
+    public String getDuplicateFileWarningString() {
+        return duplicateFileWarningString;
+    }
+
+    public void setDuplicateFileWarningString(String duplicateFileWarningString) {
+        this.duplicateFileWarningString = duplicateFileWarningString;
+    }
+    
     public void resetFileHelper(){
         
         initErrorHandling();
@@ -764,6 +813,17 @@ public class AddReplaceFileHelper{
         
     }
     
+    private void addErrorWarning(String errMsg){
+        if (errMsg == null){
+            throw new NullPointerException("errMsg cannot be null");
+        }
+ 
+        logger.severe(errMsg);
+        this.setDuplicateFileWarning(errMsg);
+        this.errorMessages.add(errMsg);
+        
+    }
+    
     
     private void addErrorSevere(String errMsg){
         
@@ -1137,6 +1197,8 @@ public class AddReplaceFileHelper{
      * @return 
      */
     private boolean step_040_auto_checkForDuplicates(){
+        this.duplicateFileErrorString = "";
+        this.duplicateFileErrorFound = false;
         
         msgt("step_040_auto_checkForDuplicates");
         if (this.hasError()){
@@ -1182,20 +1244,24 @@ public class AddReplaceFileHelper{
             
             // -----------------------------------------------------------
             // (2) Check for duplicates
+            // Only a warning now
             // -----------------------------------------------------------     
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
-                this.addErrorSevere(getBundleErr("replace.new_file_same_as_replacement"));                                
+                this.addError(getBundleErr("replace.new_file_same_as_replacement"));                
+                this.duplicateFileErrorFound = true;
+                this.duplicateFileErrorString = getBundleErr("replace.new_file_same_as_replacement");
                 break;
-            } else if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
+            } 
+            
+            if (DuplicateFileChecker.isDuplicateOriginalWay(workingVersion, df.getFileMetadata())){
                 String dupeName = df.getFileMetadata().getLabel();
-                //removeUnSavedFilesFromWorkingVersion();
-                //removeLinkedFileFromDataset(dataset, df);
-                //abandonOperationRemoveAllNewFilesFromDataset();
-                this.addErrorSevere(getBundleErr("duplicate_file") + " " + dupeName);   
-                //return false;
-            } else {
-                finalFileList.add(df);
-            }
+                this.duplicateFileWarningFound = true;
+                this.duplicateFileWarningString = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file", 
+                                Arrays.asList(dupeName));
+                this.addErrorWarning(this.duplicateFileWarningString); 
+
+            }             
+            finalFileList.add(df);
         }
         
         if (this.hasError()){
@@ -1438,7 +1504,7 @@ public class AddReplaceFileHelper{
         }
         
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList);
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, isFileReplaceOperation());
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
@@ -1914,6 +1980,16 @@ public class AddReplaceFileHelper{
             throw new NullPointerException("Don't call this method without checking 'hasContentTypeWarning()'");
         }
         return contentTypeWarningString;
+    }
+    
+    private String duplicateFileWarning;
+
+    public String getDuplicateFileWarning() {
+        return duplicateFileWarning;
+    }
+
+    public void setDuplicateFileWarning(String duplicateFileWarning) {
+        this.duplicateFileWarning = duplicateFileWarning;
     }
     
 } // end class

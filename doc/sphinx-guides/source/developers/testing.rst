@@ -125,7 +125,7 @@ different people. For our purposes, an integration test can have to flavors:
    - Operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
    - Written using REST Assured.
 
-2. Be a `Testcontainers <https://testcontainers.org>`_ Test:
+2. Be a `Testcontainers <https://testcontainers.org>`__ Test:
 
    - Operates any dependencies via the Testcontainers API, using containers.
    - Written as a JUnit test, using all things necessary to test.
@@ -137,10 +137,10 @@ Running the Full API Test Suite Using EC2
 
 To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo<https://github.com/IQSS/dataverse-ansible/>`_:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_:
 
-- `ec2-create-instance.sh<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `main.yml<https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml>`_
+- `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
+- `main.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_
 
 Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
 
@@ -149,7 +149,7 @@ Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the
 - ``dataverse.api.test_suite: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab glassfish, maven and other logs<https://github.com/IQSS/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
 
 Finally, run the script:
 
@@ -157,7 +157,7 @@ Finally, run the script:
 
   $ ./ec2-create-instance.sh -g main.yml -l log_dir
 
-Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh<https://github.com/IQSS/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart glassfish. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
+Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart the app server. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
 
 .. code-block:: bash
 
@@ -168,7 +168,7 @@ Running the full API test suite using Docker
 
 To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
 
-Alternatively, you can run tests against Glassfish running on your laptop by following the "getting set up" steps below.
+Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -191,7 +191,7 @@ Without this "burrito" key in place, REST Assured will not be able to create use
 Root Dataverse Permissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a dataverse account can add sub dataverses" if it isn't set to this already.
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a Dataverse account can add sub dataverses and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
@@ -258,7 +258,7 @@ Writing and Using a Testcontainers Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most scenarios of integration testing involve having dependent services running.
-This is where `Testcontainers <https://www.testcontainers.org>`_ kicks in by
+This is where `Testcontainers <https://www.testcontainers.org>`__ kicks in by
 providing a JUnit interface to drive them before and after executing your tests.
 
 Test scenarios are endless. Some examples are migration scripts, persistance,
@@ -296,33 +296,35 @@ To run these tests, simply call out to Maven:
 Measuring Coverage of Integration Tests
 ---------------------------------------
 
-Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/glassfish4" as the Glassfish directory and "glassfish" as the Glassfish Unix user.
+Measuring the code coverage of integration tests with Jacoco requires several steps. In order to make these steps clear we'll use "/usr/local/payara5" as the Payara directory and "dataverse" as the Payara Unix user.
 
-Add jacocoagent.jar to Glassfish
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Please note that this was tested under Glassfish 4 but it is hoped that the same steps will work with Payara 5.
 
-In order to get code coverage reports out of Glassfish we'll be adding jacocoagent.jar to the Glassfish "lib" directory.
+Add jacocoagent.jar to Payara
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to get code coverage reports out of Payara we'll be adding jacocoagent.jar to the Payara "lib" directory.
 
 First, we need to download Jacoco. Look in pom.xml to determine which version of Jacoco we are using. As of this writing we are using 0.8.1 so in the example below we download the Jacoco zip from https://github.com/jacoco/jacoco/releases/tag/v0.8.1
 
-Note that we are running the following commands as the user "glassfish". In short, we stop Glassfish, add the Jacoco jar file, and start up Glassfish again.
+Note that we are running the following commands as the user "dataverse". In short, we stop Payara, add the Jacoco jar file, and start up Payara again.
 
 .. code-block:: bash
 
-  su - glassfish
-  cd /home/glassfish
+  su - dataverse
+  cd /home/dataverse
   mkdir -p local/jacoco-0.8.1
   cd local/jacoco-0.8.1
   wget https://github.com/jacoco/jacoco/releases/download/v0.8.1/jacoco-0.8.1.zip
   unzip jacoco-0.8.1.zip
-  /usr/local/glassfish4/bin/asadmin stop-domain
-  cp /home/glassfish/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/glassfish4/glassfish/lib
-  /usr/local/glassfish4/bin/asadmin start-domain
+  /usr/local/payara5/bin/asadmin stop-domain
+  cp /home/dataverse/local/jacoco-0.8.1/lib/jacocoagent.jar /usr/local/payara5/glassfish/lib
+  /usr/local/payara5/bin/asadmin start-domain
 
 Add jacococli.jar to the WAR File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As the "glassfish" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
+As the "dataverse" user download :download:`instrument_war_jacoco.bash <../_static/util/instrument_war_jacoco.bash>` (or skip ahead to the "git clone" step to get the script that way) and give it two arguments:
 
 - path to your pristine WAR file
 - path to the new WAR file the script will create with jacococli.jar in it
@@ -336,25 +338,25 @@ Deploy the Instrumented WAR File
 
 Please note that you'll want to undeploy the old WAR file first, if necessary.
 
-Run this as the "glassfish" user.
+Run this as the "dataverse" user.
 
 .. code-block:: bash
 
-  /usr/local/glassfish4/bin/asadmin deploy dataverse-jacoco.war
+  /usr/local/payara5/bin/asadmin deploy dataverse-jacoco.war
 
-Note that after deployment the file "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
+Note that after deployment the file "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" exists and is empty.
 
 Run Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~
 
-Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that Glassfish runs on to the ``run-test-suite.sh`` script.
+Note that even though you see "docker-aio" in the command below, we assume you are not necessarily running the test suite within Docker. (Some day we'll probably move this script to another directory.) For this reason, we pass the URL with the normal port (8080) that app servers run on to the ``run-test-suite.sh`` script.
 
-Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Glassfish. You must stop and start Glassfish before every run of the integration test suite.
+Note that "/usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec" will become non-empty after you stop and start Payara. You must stop and start Payara before every run of the integration test suite.
 
 .. code-block:: bash
 
-  /usr/local/glassfish4/bin/asadmin stop-domain
-  /usr/local/glassfish4/bin/asadmin start-domain
+  /usr/local/payara5/bin/asadmin stop-domain
+  /usr/local/payara5/bin/asadmin start-domain
   git clone https://github.com/IQSS/dataverse.git
   cd dataverse
   conf/docker-aio/run-test-suite.sh http://localhost:8080
@@ -364,12 +366,12 @@ Note that "/usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec" w
 Create Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run these commands as the "glassfish" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
+Run these commands as the "dataverse" user. The ``cd dataverse`` means that you should change to the directory where you cloned the "dataverse" git repo.
 
 .. code-block:: bash
 
   cd dataverse
-  java -jar /home/glassfish/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/glassfish4/glassfish/domains/domain1/config/jacoco.exec
+  java -jar /home/dataverse/local/jacoco-0.8.1/lib/jacococli.jar report --classfiles target/classes --sourcefiles src/main/java --html target/coverage-it/ /usr/local/payara5/glassfish/domains/domain1/config/jacoco.exec
 
 Read Code Coverage Report
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -477,7 +479,7 @@ Future Work on Unit Tests
 
 - Review pull requests from @bencomp for ideas for approaches to testing: https://github.com/IQSS/dataverse/pulls?q=is%3Apr+author%3Abencomp
 - Come up with a way to test commands: http://irclog.iq.harvard.edu/dataverse/2015-11-04#i_26750
-- Test EJBs using Arquillian, embedded Glassfish, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
+- Test EJBs using Arquillian, embedded app servers, or similar. @bmckinney kicked the tires on Arquillian at https://github.com/bmckinney/bio-dataverse/commit/2f243b1db1ca704a42cd0a5de329083763b7c37a
 
 Future Work on Integration Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -500,7 +502,7 @@ Installation Testing
 
 - Run `vagrant up` on a server to test the installer: http://guides.dataverse.org/en/latest/developers/tools.html#vagrant . We haven't been able to get this working in Travis: https://travis-ci.org/IQSS/dataverse/builds/96292683 . Perhaps it would be possible to use AWS as a provider from Vagrant judging from https://circleci.com/gh/critical-alert/circleci-vagrant/6 .
 - Work with @lwo to automate testing of https://github.com/IQSS/dataverse-puppet . Consider using Travis: https://github.com/IQSS/dataverse-puppet/issues/10
-- Work with @donsizemore to automate testing of https://github.com/IQSS/dataverse-ansible with Travis or similar.
+- Work with @donsizemore to automate testing of https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible with Travis or similar.
 
 Future Work on Load/Performance Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -512,7 +514,7 @@ Future Work on Load/Performance Testing
 Future Work on Accessibility Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Using https://github.com/IQSS/dataverse-ansible and hooks available from accessibily testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
+- Using https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible and hooks available from accessibility testing tools, automate the running of accessibility tools on PRs so that developers will receive quicker feedback on proposed code changes that reduce the accessibility of the application.
 
 ----
 

@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.Singleton;
+import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -67,27 +67,20 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 /**
- * The AuthenticationManager is responsible for registering and listing
- * AuthenticationProviders. There's a single instance per application. 
+ * AuthenticationService is for general authentication-related operations.
+ * It's no longer responsible for registering and listing
+ * AuthenticationProviders! A dedicated singleton has been created for that
+ * purpose - AuthenticationProvidersRegistrationServiceBean - and all the 
+ * related code has been moved there. 
  * 
- * Register the providers in the {@link #startup()} method.
  */
 @Named
-@Singleton
+@Stateless
 public class AuthenticationServiceBean {
     private static final Logger logger = Logger.getLogger(AuthenticationServiceBean.class.getName());
     
-    /**
-     * Where all registered authentication providers live.
-     */
-    final Map<String, AuthenticationProvider> authenticationProviders = new HashMap<>();
-    
-    /**
-     * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
-     */
-    final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
-    
-    final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
+    @EJB
+    AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationService;
     
     @EJB
     BuiltinUserServiceBean builtinUserServiceBean;
@@ -130,107 +123,27 @@ public class AuthenticationServiceBean {
         
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
-    
-    @PostConstruct
-    public void startup() {
         
-        // First, set up the factories
-        try {
-            registerProviderFactory( new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this) );
-            registerProviderFactory( new ShibAuthenticationProviderFactory() );
-            registerProviderFactory( new OAuth2AuthenticationProviderFactory() );
-            registerProviderFactory( new OIDCAuthenticationProviderFactory() );
         
-        } catch (AuthorizationSetupException ex) { 
-            logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
-        }
-        
-        // Now, load the providers.
-        em.createNamedQuery("AuthenticationProviderRow.findAllEnabled", AuthenticationProviderRow.class)
-                .getResultList().forEach((row) -> {
-                    try {
-                        registerProvider( loadProvider(row) );
-                        
-                    } catch ( AuthenticationProviderFactoryNotFoundException e ) {
-                        logger.log(Level.SEVERE, "Cannot find authentication provider factory with alias '" + e.getFactoryAlias() + "'",e);
-                        
-                    } catch (AuthorizationSetupException ex) {
-                        logger.log(Level.SEVERE, "Exception setting up the authentication provider '" + row.getId() + "': " + ex.getMessage(), ex);
-                    }
-        });
-    }
-    
-    public void registerProviderFactory(AuthenticationProviderFactory aFactory) 
-            throws AuthorizationSetupException 
-    {
-        if ( providerFactories.containsKey(aFactory.getAlias()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate alias " + aFactory.getAlias() + " for authentication provider factory.");
-        }
-        providerFactories.put( aFactory.getAlias(), aFactory);
-        logger.log( Level.FINE, "Registered Authentication Provider Factory {0} as {1}", 
-                new Object[]{aFactory.getInfo(), aFactory.getAlias()});
-    }
-    
-    /**
-     * Tries to load and {@link AuthenticationProvider} using the passed {@link AuthenticationProviderRow}.
-     * @param aRow The row to load the provider from.
-     * @return The provider, if successful
-     * @throws AuthenticationProviderFactoryNotFoundException If the row specifies a non-existent factory
-     * @throws AuthorizationSetupException If the factory failed to instantiate a provider from the row.
-     */
-    public AuthenticationProvider loadProvider( AuthenticationProviderRow aRow )
-                throws AuthenticationProviderFactoryNotFoundException, AuthorizationSetupException {
-        AuthenticationProviderFactory fact = getProviderFactory(aRow.getFactoryAlias());
-        
-        if ( fact == null ) throw new AuthenticationProviderFactoryNotFoundException(aRow.getFactoryAlias());
-        
-        return fact.buildProvider(aRow);
-    }
-    
-    public void registerProvider(AuthenticationProvider aProvider) throws AuthorizationSetupException {
-        if ( authenticationProviders.containsKey(aProvider.getId()) ) {
-            throw new AuthorizationSetupException(
-                    "Duplicate id " + aProvider.getId() + " for authentication provider.");
-        }
-        authenticationProviders.put( aProvider.getId(), aProvider);
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
-            .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if ( aProvider instanceof AbstractOAuth2AuthenticationProvider ) {
-            oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
-        }
-        
-    }
-    
     public AbstractOAuth2AuthenticationProvider getOAuth2Provider( String id ) {
-        return oAuth2authenticationProviders.get(id);
+        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().get(id);
     }
     
     public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
-        return new HashSet<>(oAuth2authenticationProviders.values());
-    }
-    
-    public void deregisterProvider( String id ) {
-        oAuth2authenticationProviders.remove( id );
-        if ( authenticationProviders.remove(id) != null ) {
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Auth, "deregisterProvider")
-                .setInfo(id));
-            logger.log(Level.INFO,"Deregistered provider {0}", new Object[]{id});
-            logger.log(Level.INFO,"Providers left {0}", new Object[]{getAuthenticationProviderIds()});
-        }
+        return new HashSet<>(authProvidersRegistrationService.getOAuth2AuthProvidersMap().values());
     }
     
     public Set<String> getAuthenticationProviderIds() {
-        return authenticationProviders.keySet();
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().keySet();
     }
 
     public Collection<AuthenticationProvider> getAuthenticationProviders() {
-        return authenticationProviders.values();
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().values();
     }
     
     public <T extends AuthenticationProvider> Set<String> getAuthenticationProviderIdsOfType( Class<T> aClass ) {
         Set<String> retVal = new TreeSet<>();
-        for ( Map.Entry<String, AuthenticationProvider> p : authenticationProviders.entrySet() ) {
+        for ( Map.Entry<String, AuthenticationProvider> p : authProvidersRegistrationService.getAuthenticationProvidersMap().entrySet() ) {
             if ( aClass.isAssignableFrom( p.getValue().getClass() ) ) {
                 retVal.add( p.getKey() );
             }
@@ -239,11 +152,11 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticationProviderFactory getProviderFactory( String alias ) {
-        return providerFactories.get(alias);
+        return authProvidersRegistrationService.getProviderFactoriesMap().get(alias);
     }
     
     public AuthenticationProvider getAuthenticationProvider( String id ) {
-        return authenticationProviders.get( id );
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().get( id );
     }
     
     public AuthenticatedUser findByID(Object pk){
@@ -263,7 +176,7 @@ public class AuthenticationServiceBean {
     }
     
     public boolean isOrcidEnabled() {
-        return oAuth2authenticationProviders.values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
+        return authProvidersRegistrationService.getOAuth2AuthProvidersMap().values().stream().anyMatch( s -> s.getId().toLowerCase().contains("orcid") );
     }
     
     /**
@@ -293,6 +206,7 @@ public class AuthenticationServiceBean {
             if (apiToken != null) {
                 em.remove(apiToken);
             }
+            // @todo: this should be handed down to the service instead of doing it here.
             ConfirmEmailData confirmEmailData = confirmEmailService.findSingleConfirmEmailDataByUser(user);
             if (confirmEmailData != null) {
                 /**
@@ -436,7 +350,7 @@ public class AuthenticationServiceBean {
     }
     
     public AuthenticationProvider lookupProvider( AuthenticatedUser user )  {
-        return authenticationProviders.get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
+        return authProvidersRegistrationService.getAuthenticationProvidersMap().get(user.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
     
     public ApiToken findApiToken(String token) {
@@ -738,7 +652,7 @@ public class AuthenticationServiceBean {
     
     
     public Set<AuthenticationProviderFactory> listProviderFactories() {
-        return new HashSet<>( providerFactories.values() ); 
+        return new HashSet<>( authProvidersRegistrationService.getProviderFactoriesMap().values() ); 
     }
     
     public Timestamp getCurrentTimestamp() {

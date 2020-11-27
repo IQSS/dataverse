@@ -47,18 +47,20 @@ To direct new files (uploaded when datasets are created or edited) for all datas
  
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
-The current driver can be seen using:
+The current driver can be seen using::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
 
-and can be reset to the default store with:
+and can be reset to the default store with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/storageDriver
     
-The available drivers can be listed with:
+The available drivers can be listed with::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/storageDrivers
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
     
+(Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
+
 
 Datasets
 --------
@@ -115,6 +117,11 @@ Forces update to metadata provided to the PID provider of a published dataset. O
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/datasets/$dataset-id/modifyRegistrationMetadata
 
+Check for Unreserved PIDs and Reserve Them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+See :ref:`pids-api` in the API Guide for details.
+
 Make Metadata Updates Without Changing Dataset Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -124,4 +131,24 @@ Diagnose Constraint Violations Issues in Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To identify invalid data values in specific datasets (if, for example, an attempt to edit a dataset results in a ConstraintViolationException in the server log), or to check all the datasets in the Dataverse for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
+
+Configure a Dataset to store all new files in a specific file store
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $storageDriverLabel http://$SERVER/api/datasets/$dataset-id/storageDriver
+    
+The current driver can be seen using::
+
+    curl http://$SERVER/api/datasets/$dataset-id/storageDriver
+
+It can be reset to the default store as follows (only a superuser can do this) ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/storageDriver
+    
+The available drivers can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
+    
 

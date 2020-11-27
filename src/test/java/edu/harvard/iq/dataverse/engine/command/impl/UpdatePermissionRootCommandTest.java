@@ -30,6 +30,11 @@ public class UpdatePermissionRootCommandTest {
                 serviceBeanCalled = true;
                 return dv;
             }
+            @Override
+            public boolean index(Dataverse dataverse, boolean indexPermisions) {
+                    // no-op. The superclass accesses databases which we don't have.
+                    return true;
+            }            
         };
         testCommandContext = new TestCommandContext() {
             @Override

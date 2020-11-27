@@ -73,7 +73,6 @@ You can upload files to a dataset while first creating that dataset. You can als
 
 Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, previews, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
 
-
 HTTP Upload
 -----------
 
@@ -140,6 +139,20 @@ Additional command line arguments are available to make the DVUploader list what
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/IQSS/dataverse-uploader>`_ . 
 
+.. _duplicate-files:
+
+Duplicate Files
+---------------
+
+Beginning with Dataverse 5.0, the way Dataverse handles duplicate files (filename and checksums) is changing to be more flexible. Specifically:
+
+- Files with the same checksum can be included in a dataset, even if the files are in the same directory.
+- Files with the same filename can be included in a dataset as long as the files are in different directories.
+- If a user uploads a file to a directory where a file already exists with that directory/filename combination, Dataverse will adjust the file path and names by adding "-1" or "-2" as applicable. This change will be visible in the list of files being uploaded. 
+- If the directory or name of an existing or newly uploaded file is edited in such a way that would create a directory/filename combination that already exists, Dataverse will display an error.
+- If a user attempts to replace a file with another file that has the same checksum, an error message will be displayed and the file will not be able to be replaced.
+- If a user attempts to replace a file with a file that has the same checksum as a different file in the dataset, a warning will be displayed.
+
 .. _file-handling:
 
 File Handling
@@ -150,12 +163,12 @@ Certain file types in Dataverse are supported by additional functionality, which
 File Previews
 -------------
 
-Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
+Installations of Dataverse can install previewers for common file types uploaded by their research communities. The previews appear on the file page. If a preview tool for a specific file type is available, the preview will be created and will display automatically, after terms have been agreed to or a guestbook entry has been made, if necessary. File previews are not available for restricted files unless they are being accessed using a Private URL. See also :ref:`privateurl`.
 
 Tabular Data Files
 ------------------
 
-Files in certain formats - Stata, SPSS, R, Excel(xlsx) and CSV - may be ingested as tabular data (see :doc:`/user/tabulardataingest/index` section of the User Guide for details). Tabular data files can be further explored and manipulated with `TwoRavens <../user/data-exploration/tworavens.html>`_ - a statistical data exploration application integrated with Dataverse, as well as other :doc:`/admin/external-tools` if they have been enabled in the installation of Dataverse you are using. TwoRavens allows the user to run statistical models, view summary statistics, download subsets of variable vectors and more. To start, click on the "Explore" button, found next to each relevant tabular file (the application will be opened in a new window). Create and download your subset using `TwoRavens <../user/data-exploration/tworavens.html>`_. See the `TwoRavens documentation section <../user/data-exploration/tworavens.html>`_ for more information.
+Files in certain formats - Stata, SPSS, R, Excel (xlsx), CSV and TSV - may be ingested as tabular data (see :doc:`/user/tabulardataingest/index` section of the User Guide for details). Tabular data files can be further explored and manipulated with :doc:`/admin/external-tools` if they have been enabled in the installation of Dataverse you are using.
 
 Additional download options available for tabular data (found in the same drop-down menu under the "Download" button): 
 
@@ -171,7 +184,7 @@ See also :ref:`restricted-tabular-files`.
 Geospatial
 ----------
 
-Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through our integration with `WorldMap <../user/data-exploration/worldmap.html>`_, a geospatial data visualization and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. A shapefile is a set of files, often uploaded/transferred in .zip format.  This set may contain up to 15 files.  A minimum of 3 specific files (.shp, .shx, .dbf) are needed to be a valid shapefile and a 4th file (.prj) is required for WorldMap--or any type of meaningful visualization.
+Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through an optional integration with `WorldMap <../user/data-exploration/worldmap.html>`_, a geospatial data visualization and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. A shapefile is a set of files, often uploaded/transferred in .zip format.  This set may contain up to 15 files.  A minimum of 3 specific files (.shp, .shx, .dbf) are needed to be a valid shapefile and a 4th file (.prj) is required for WorldMap--or any type of meaningful visualization.
 
 For ingest into Dataverse and connecting to WorldMap, these 4 files are the minimum required:
 
@@ -187,14 +200,14 @@ For a zipped shapefile, we require 4 files with these extensions. Other files ma
 * .prj 
 * .dbf 
 
-For example, if these files were included within a .zip, the “Map Data” button would appear: 
+For example, if these files were included within a .zip, the Geoconnect configure tool option is displayed: 
 
 * subway_line.shp 
 * subway_line.shx 
 * subway_line.prj 
 * subway_line.dbf
 
-Once you publish your dataset with your shape files, you will be able to use the "Map Data" button using `GeoConnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to Explore this geospatial data using the `WorldMap <http://worldmap.harvard.edu/>`__ interface. Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
+Once you publish your dataset with your shape files, you will be able to use the configure tool `Geoconnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to explore this geospatial data on `WorldMap <http://worldmap.harvard.edu/>`__. Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
 
 Astronomy (FITS)
 ----------------
@@ -268,7 +281,7 @@ Variable Metadata can be edited directly through an API call (:ref:`API Guide: E
 File Path
 ---------
 
-The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path.
+The File Path metadata field is Dataverse's way of representing a file's location in a folder structure. When a user uploads a .zip file containing a folder structure, Dataverse automatically fills in the File Path information for each file contained in the .zip. If a user downloads the full dataset or a selection of files from it, they will receive a folder structure with each file positioned according to its File Path. Only one file with a given path and name may exist in a dataset. Editing a file to give it the same path and name as another file already existing in the dataset will cause an error.
 
 A file's File Path can be manually added or edited on the Edit Files page. Changing a file's File Path will change its location in the folder structure that is created when a user downloads the full dataset or a selection of files from it.
 

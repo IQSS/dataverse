@@ -328,7 +328,7 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        writeAttribute(xmlw,"source","DVN"); 
+        writeAttribute(xmlw,"source","archive"); 
         xmlw.writeStartElement("version");
         writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 

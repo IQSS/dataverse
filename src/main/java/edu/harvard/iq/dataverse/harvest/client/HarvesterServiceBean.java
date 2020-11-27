@@ -412,12 +412,12 @@ public class HarvesterServiceBean {
     public void logGetRecordException(Logger hdLogger, OaiHandler oaiHandler, String identifier, Throwable e) {
         String errMessage = "Exception processing getRecord(), oaiUrl=" 
                 +oaiHandler.getBaseOaiUrl() 
-                +",identifier=" 
+                +", identifier="
                 +identifier 
-                +" " 
+                +", "
                 +e.getClass().getName() 
                 //+" (exception message suppressed)";
-                +" " 
+                +", "
                 +e.getMessage();
         
             hdLogger.log(Level.SEVERE, errMessage);

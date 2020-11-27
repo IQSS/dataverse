@@ -1,0 +1,9 @@
+#metadataBlock	name	dataverseAlias	displayName												
+	crc990time	crc990	CRC 990 Time Metadata												
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+	crc990time_when	when			none	1		FALSE	FALSE	FALSE	FALSE		TRUE		crc990time
+	crc990time_standardFormat	standardFormat	"The format of the dates used in the dataset:
+Year: YY or YYYY (e.g. 09 or 2009);\nMonth: M or MM (e.g. 3 or 03); Day: D or DD (e.g. 9 or 09); Hour (24h clock): h or hh (e.g. 8 or 08); Minute: m or mm (e.g. 5 or 05); Second: s or ss (e.g. 7 or 07); Separators: [Space] [:] [.] [-] [\] [/]"		text	2		FALSE	FALSE	FALSE	FALSE		TRUE	crc990time_when	crc990time
+	crc990time_startDate	startDate	Start date of the measurements formatted according to above.		date	3		FALSE	FALSE	FALSE	FALSE		TRUE	crc990time_when	crc990time
+	crc990time_endDate	endDate	End date of the measurements formatted according to above.		date	4		FALSE	FALSE	FALSE	FALSE		TRUE	crc990time_when	crc990time
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
