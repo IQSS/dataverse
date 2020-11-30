@@ -1650,7 +1650,9 @@ For example, if you want your installation of Dataverse to not attempt to ingest
 :ZipUploadFilesLimit
 ++++++++++++++++++++
 
-Limit the number of files in a zip that Dataverse will accept.
+Limit the number of files in a zip that Dataverse will accept. In the absence of this setting, Dataverse defaults to a limit of 1,000 files per zipfile.
+
+``curl -X PUT -d 2048 http://localhost:8080/api/admin/settings/:ZipUploadFilesLimit``
 
 :SolrHostColonPort
 ++++++++++++++++++
