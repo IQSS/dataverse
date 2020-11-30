@@ -734,6 +734,32 @@ function reinitializePrimefacesComponentsJS() {
             currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
         }
     }
+
+    if (PrimeFaces.widgrt.BlockUI) {
+        var originalBlockUIRender = PrimeFaces.widget.Paginator.prototype.render;
+        var originalBlockUIShow = PrimeFaces.widget.Paginator.prototype.show;
+        var originalBlockUIHide = PrimeFaces.widget.Paginator.prototype.hide;
+        
+        // change: change position of block element only when overlay is visible 
+        PrimeFaces.widget.BlockUI.prototype.render= function() {
+            this.originalBlockPosition = this.block.css("position");
+            
+            originalBlockUIRender.apply(this);
+            
+            this.block.css('position', this.originalBlockPosition);
+        }
+        PrimeFaces.widget.BlockUI.prototype.show= function() {
+            if (position !== "fixed" && position  !== "absolute") {
+                this.block.css('position', 'relative');
+            }
+            
+            originalBlockUIShow.apply(this);
+        }
+        PrimeFaces.widget.BlockUI.prototype.hide= function() {
+            originalBlockUIHide.apply(this);
+            this.block.css('position', this.originalBlockPosition);
+        }
+    }
 }
 reinitializePrimefacesComponentsJS();
 

@@ -210,7 +210,6 @@
                                 <p:commandButton id="save"
                                                  styleClass="btn btn-default btn-access"
                                                  value="#{bundle.saveChanges}"
-                                                 onclick="PF('blockFileForm').show();"
                                                  action="#{EditSingleFilePage.save()}"
                                                  update="@form,:messagePanel"
                                                  oncomplete="$(document).scrollTop(0);"
@@ -226,6 +225,7 @@
                         </p:outputPanel>
                     </div>
                 </p:fragment>
+                <p:blockUI block="fileForm" trigger="save" widgetVar="blockFileForm"/>
 
                 <!-- END: Create/Save Dataset Button Panel -->
                 <!--Edit file tags window-->
@@ -259,7 +259,7 @@
                                          actionListener="#{EditSingleFilePage.saveAsDesignatedThumbnail()}"/>
                         <p:commandButton id="fileSetThumbnailCancelBtn"
                                          value="#{bundle.cancel}"
-                                         onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();"
+                                         onclick="PF('fileSetThumbnail').hide();"
                         />
                     </div>
                 </p:dialog>
@@ -278,13 +278,12 @@
                                          actionListener="#{EditSingleFilePage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
                         <p:commandButton id="fileThumbnailConfirmCancelBtn"
                                          value="#{bundle.cancel}"
-                                         onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
+                                         onclick="PF('fileThumbnailConfirm').hide();"/>
                     </div>
                 </p:dialog>
 
                 <ui:include rendered="#{settingsWrapper.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>
         </h:form>
-        <p:blockUI block="fileForm" widgetVar="blockFileForm"/>
 
         </ui:define>
     </ui:composition>

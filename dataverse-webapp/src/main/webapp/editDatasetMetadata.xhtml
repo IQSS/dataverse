@@ -63,10 +63,10 @@
 
                     <!-- Top action buttons -->
                     <div class="button-block form-top">
-                        <p:commandButton value="#{bundle.saveChanges}"
+                        <p:commandButton id="save-top"
+                                         value="#{bundle.saveChanges}"
                                          widgetVar="datasetSaveButton"
                                          update=":editMetadataForm"
-                                         onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="$(document).scrollTop(0);"
                                          action="#{editDatasetMetadataPage.save}"
                                          class="btn-access" />
@@ -95,10 +95,10 @@
                     
                     <!-- Bottom action buttons -->
                     <div class="button-block">
-                        <p:commandButton value="#{bundle.saveChanges}"
+                        <p:commandButton id="save"
+                                         value="#{bundle.saveChanges}"
                                          widgetVar="datasetSaveButton"
                                          update=":editMetadataForm"
-                                         onclick="PF('lockEditMetadataForm').show();"
                                          oncomplete="$(document).scrollTop(0);"
                                          action="#{editDatasetMetadataPage.save}"
                                          class="btn-access" />
@@ -106,7 +106,7 @@
 
                     </div>
 
-                    <p:blockUI block="editMetadataForm" widgetVar="lockEditMetadataForm"/>
+                    <p:blockUI block="editMetadataForm" trigger="save,save-top" widgetVar="lockEditMetadataForm"/>
                     
                 </h:form>
                 

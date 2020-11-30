@@ -141,8 +141,7 @@
                         <p:outputPanel id="filesButtons">
                             <div>
                                 <p:commandButton id="save" value="#{bundle.saveChanges}"
-                                                 action="#{ReorderDataFilesPage.saveFileOrder}"
-                                                 onclick="PF('blockFileForm').show();"/>
+                                                 action="#{ReorderDataFilesPage.saveFileOrder}"/>
                                 <p:commandButton id="cancel" value="#{bundle.cancel}"
                                                  styleClass="button-cancel"
                                                  action="#{ReorderDataFilesPage.returnToPreviousPage}" process="@this"
@@ -153,6 +152,8 @@
                         </p:outputPanel>
                     </div>
                 </p:fragment>
+                
+                <p:blockUI block="form" trigger="save" />
                 
             </h:form>
             <script type="text/javascript">

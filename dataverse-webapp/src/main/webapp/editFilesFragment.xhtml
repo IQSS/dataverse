@@ -548,7 +548,7 @@
                                 </ui:fragment>
                             </div>
                         </p:column>
-                        <p:column class="col-file-action text-right files-table-right">
+                        <p:column class="col-file-action text-right">
                             <f:facet name="header" class="col-file-action text-right">
                                 <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group"
                                      jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas and !EditDatafilesPage.workingVersion.hasPackageFile}">
@@ -922,7 +922,7 @@
                              actionListener="#{EditDatafilesPage.saveAdvancedOptions()}"/>
             <p:commandButton id="fileAdvancedOptionsCancelButton"
                              value="#{bundle.cancel}"
-                             onclick="PF('fileAdvancedOptions').hide();PF('blockFileForm').hide();"
+                             onclick="PF('fileAdvancedOptions').hide();"
                              actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForIngestOptionsPopup()}"/>
         </div>
     </p:dialog>
@@ -951,7 +951,7 @@
                              actionListener="#{EditDatafilesPage.saveAsDesignatedThumbnail()}"/>
             <p:commandButton id="fileSetThumbnailCancelBtn"
                              value="#{bundle.cancel}"
-                             onclick="PF('fileSetThumbnail').hide();PF('blockFileForm').hide();"
+                             onclick="PF('fileSetThumbnail').hide();"
                              actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForThumbnailPopup()}"/>
         </div>
     </p:dialog>
@@ -971,7 +971,7 @@
                              actionListener="#{EditDatafilesPage.deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead()}"/>
             <p:commandButton id="fileThumbnailConfirmCancelBtn"
                              value="#{bundle.cancel}"
-                             onclick="PF('fileThumbnailConfirm').hide();PF('blockFileForm').hide();"/>
+                             onclick="PF('fileThumbnailConfirm').hide();"/>
         </div>
     </p:dialog>
     <ui:include rendered="#{settingsWrapper.provCollectionEnabled}" src="provenance-popups-fragment.xhtml"/>

@@ -125,7 +125,7 @@
                     <p:commandButton id="save"
                                      value="#{bundle.saveChanges}"
                                      class="btn btn-default btn-access"
-                                     onclick="checkNewlyRestricted();PF('lockSelectGuestbookForm').show();" />
+                                     onclick="checkNewlyRestricted();" />
                     <p:commandButton id="cancel"
                                      value="#{bundle.cancel}"
                                      class="btn btn-default btn-access"
@@ -138,7 +138,7 @@
                                      action="#{selectGuestbookPage.save}" />
                 </div>
 
-                <p:blockUI block="selectGuestbookForm" widgetVar="lockSelectGuestbookForm"/>
+                <p:blockUI block="selectGuestbookForm" trigger="datasetSave" widgetVar="lockSelectGuestbookForm"/>
             </h:form>
             <script type="text/javascript">
                 function checkNewlyRestricted() {

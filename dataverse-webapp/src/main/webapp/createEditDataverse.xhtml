@@ -508,6 +508,7 @@
                                      action="#{CreateEditDataversePage.cancel()}" immediate="true"/>
                     
                     <p:defaultCommand target="save" />
+                    <p:blockUI block="createEditDataverseForm" trigger="save"/>
                 </div>
                 <p:dialog id="resetModifications" header="#{bundle['dataverse.resetModifications']}"
                           widgetVar="resetModifications" modal="true" closable="false">
@@ -523,7 +524,6 @@
                         <p:commandButton type="button" value="#{bundle.cancel}" onclick="uncheckMetadataRoot();PF('resetModifications').hide()"/>
                     </div>
                 </p:dialog>
-                <p:blockUI block="createEditDataverseForm" trigger="save"/>
             </h:form>
 
             <script type="text/javascript">

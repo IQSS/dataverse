@@ -83,7 +83,6 @@
                             <p:outputPanel id="filesButtons" >
                                 <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
                                     <p:commandButton id="save" value="#{bundle.saveChanges}"
-                                            onclick="PF('blockFileForm').show();"
                                             action="#{EditDatafilesPage.save}"
                                             update="@form,:messagePanel" process="@form"
                                             oncomplete="$(document).scrollTop(0);" />
@@ -101,9 +100,9 @@
 
                     <!-- END: Create/Save Dataset Button Panel -->
 
+                    <p:blockUI block="datasetForm" trigger="save" widgetVar="blockFileForm"/>
                 </h:form>
                 
-                <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
                 
             </ui:define>
         </ui:composition>
