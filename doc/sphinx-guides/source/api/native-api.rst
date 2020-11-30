@@ -2664,6 +2664,48 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+  
+Manage Banner Messages
+~~~~~~~~~~~~~~~~~~~~~~
+
+Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
+
+- A banner message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of banner message is useful for situations such as upcoming maintenance windows and other downtime.
+- A banner message where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These banner messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user, that user will not see the message again. This type of banner message is useful for situations where a message needs to communicated once, such as a minor terms of use update or an update about a new workflow in your Dataverse installation. 
+
+Note that HTML can be included in banner messages.
+
+Add a Banner Message::
+
+  curl -H "Content-type:application/json" -X POST http://$SERVER/api/admin/bannerMessage --upload-file messages.json
+  
+Where ``messages.json`` looks like this::
+
+  {
+    "dismissibleByUser": "true",
+    "messageTexts": [
+    {
+      "lang": "en",
+      "message": "Dismissible Banner Message added via API"
+    },
+    {
+      "lang": "fr",
+      "message": "Message de bannière ajouté via l'API"
+    }
+    ]
+  }
+     
+Get a list of active Banner Messages::
+
+  curl  -X GET http://$SERVER/api/admin/bannerMessage
+  
+Delete a Banner Message by its id::
+
+  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id   
+  
+Deactivate a Banner Message by its id (allows you to hide a message while retaining information about which users have dismissed the banner)::
+
+  curl  -X PUT http://$SERVER/api/admin/bannerMessage/$id/deactivate    
 
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
