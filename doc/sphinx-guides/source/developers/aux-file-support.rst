@@ -16,7 +16,7 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
   export FORMAT_VERSION='v1'
   export SERVER_URL=https://demo.dataverse.org
  
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
 
 You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
 
