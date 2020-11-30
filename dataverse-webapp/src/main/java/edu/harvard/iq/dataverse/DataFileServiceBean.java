@@ -77,6 +77,7 @@ import static edu.harvard.iq.dataverse.util.FileUtil.calculateChecksum;
 import static edu.harvard.iq.dataverse.util.FileUtil.canIngestAsTabular;
 import static edu.harvard.iq.dataverse.util.FileUtil.determineFileType;
 import static edu.harvard.iq.dataverse.util.FileUtil.getFilesTempDirectory;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author Leonid Andreev
@@ -1160,29 +1161,23 @@ public class DataFileServiceBean implements java.io.Serializable {
         // DatasetVersion, that will need to be deleted once the 
         // DeleteDatasetVersionCommand execution has been finalized:
 
-        return getPhysicalFilesToDelete(datasetVersion.getFileMetadatas(), destroy);
+        return getPhysicalFilesToDelete(
+                datasetVersion.getFileMetadatas().stream()
+                    .map(fm -> fm.getDataFile())
+                    .collect(toList()), 
+                destroy);
     }
 
-    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete) {
-        return getPhysicalFilesToDelete(fileMetadatasToDelete, false);
+    public Map<Long, String> getPhysicalFilesToDelete(List<DataFile> filesToDelete) {
+        return getPhysicalFilesToDelete(filesToDelete, false);
     }
 
-    public Map<Long, String> getPhysicalFilesToDelete(List<FileMetadata> fileMetadatasToDelete, boolean destroy) {
+    public Map<Long, String> getPhysicalFilesToDelete(List<DataFile> filesToDelete, boolean destroy) {
         Map<Long, String> deleteStorageLocations = new HashMap<>();
 
-        Iterator<FileMetadata> dfIt = fileMetadatasToDelete.iterator();
-        while (dfIt.hasNext()) {
-            DataFile df = dfIt.next().getDataFile();
-
-            if (destroy || !df.isReleased()) {
-
-                String storageLocation = getPhysicalFileToDelete(df);
-                if (storageLocation != null) {
-                    deleteStorageLocations.put(df.getId(), storageLocation);
-                }
-
-            }
-        }
+        filesToDelete.stream()
+            .filter(file -> !file.isReleased() || destroy)
+            .forEach(file -> deleteStorageLocations.put(file.getId(), getPhysicalFileToDelete(file)));
 
         return deleteStorageLocations;
     }

@@ -100,7 +100,6 @@
                                     </p:outputLabel>
                                     <p:inputText id="fileName" value="#{fileMetadata.label}" style="width:60%; margin-bottom:.5em;" 
                                                     disabled="#{fileMetadata.dataFile.filePackage}">
-                                        <p:ajax event="change" listener="#{EditSingleFilePage.handleNameChange}" update="fileName" />
                                     </p:inputText>
                                     <p:message for="fileName" display="text" />
                                 </ui:fragment>
@@ -125,7 +124,6 @@
                                             #{bundle.description}
                                         </h:outputLabel>
                                         <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40" value="#{fileMetadata.description}" style="width:60%; margin-top:.5em;">
-                                            <p:ajax event="change" listener="#{EditSingleFilePage.handleDescriptionChange}" update="fileDescription" />
                                         </p:inputTextarea>
                                         <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                         <p:message for="fileDescription" display="text" />

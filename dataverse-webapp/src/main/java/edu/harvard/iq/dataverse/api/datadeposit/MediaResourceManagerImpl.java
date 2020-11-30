@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -178,7 +179,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                              * last argument to isUserAllowedOn be changed from
                              * "dataset" to "fileToDelete"?
                              */
-                            UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq, fileToDelete);
+                            UpdateDatasetVersionCommand updateDatasetCommand = new UpdateDatasetVersionCommand(dataset, dvReq, Lists.newArrayList(fileToDelete));
                             if (!permissionService.isUserAllowedOn(user, updateDatasetCommand, dataset)) {
                                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "User " + user.getDisplayInfo().getTitle() + " is not authorized to modify " + dataverseThatOwnsFile.getAlias());
                             }

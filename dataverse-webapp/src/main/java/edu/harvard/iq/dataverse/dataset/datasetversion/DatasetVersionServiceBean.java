@@ -1165,6 +1165,10 @@ w
     }
 
     public Dataset updateDatasetVersion(DatasetVersion editVersion, boolean validateLenient) {
+        return updateDatasetVersion(editVersion, new ArrayList<>(), validateLenient);
+    }
+
+    public Dataset updateDatasetVersion(DatasetVersion editVersion, List<DataFile> filesToDelete, boolean validateLenient) {
         Set<ConstraintViolation> constraintViolations = editVersion.validate();
 
         if (!constraintViolations.isEmpty()) {
@@ -1178,11 +1182,11 @@ w
 
         UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
                                                                               dvRequestService.getDataverseRequest(),
+                                                                              filesToDelete,
                                                                               datasetBeforeChanges);
         command.setValidateLenient(validateLenient);
         return commandEngine.submit(command);
     }
-
 
     private DatasetVersion findLatestVersion(long datasetId) {
         String queryStr = "SELECT dv FROM DatasetVersion dv";

@@ -46,7 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.primefaces.event.data.PageEvent;
 
 import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -69,7 +68,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 @ViewScoped
 @Named("datasetFilesTab")
@@ -121,8 +121,6 @@ public class DatasetFilesTab implements Serializable {
 
     private List<FileMetadata> fileMetadatasSearch;
 
-    private DatasetVersion clone;
-
     private boolean selectAllFiles;
 
     private String fileLabelSearchTerm;
@@ -154,7 +152,7 @@ public class DatasetFilesTab implements Serializable {
 
     private boolean bulkFileDeleteInProgress = false;
 
-    private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
+    private List<DataFile> filesToBeDeleted = new ArrayList<>();
 
     private Boolean lockedFromDownloadVar;
     private Boolean lockedFromEditsVar;
@@ -612,7 +610,7 @@ public class DatasetFilesTab implements Serializable {
         if (bulkUpdateCheckVersion()) {
             refreshSelectedFiles();
         }
-        deleteFiles();
+        filesToBeDeleted = selectedFiles.stream().map(fm -> fm.getDataFile()).collect(toList());
         return save();
     }
 
@@ -756,14 +754,9 @@ public class DatasetFilesTab implements Serializable {
 
     // helper Method
     private String joinDataFileIdsFromFileMetadata() {
-        String joinedIdString = "";
-        for (FileMetadata fmd : this.selectedFiles) {
-            if (!StringUtil.isEmpty(joinedIdString)) {
-                joinedIdString += ",";
-            }
-            joinedIdString += fmd.getDataFile().getId();
-        }
-        return joinedIdString;
+        return selectedFiles.stream()
+                .map(fileMetadata -> fileMetadata.getDataFile().getId().toString())
+                .collect(joining(","));
     }
 
     private void refreshSelectedFiles() {
@@ -827,66 +820,6 @@ public class DatasetFilesTab implements Serializable {
 
     }
 
-    private void deleteFiles() {
-
-        for (FileMetadata markedForDelete : selectedFiles) {
-
-            if (markedForDelete.getId() != null) {
-                // This FileMetadata has an id, i.e., it exists in the database. 
-                // We are going to remove this filemetadata from the version: 
-                dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
-                // But the actual delete will be handled inside the UpdateDatasetCommand
-                // (called later on). The list "filesToBeDeleted" is passed to the 
-                // command as a parameter:
-                filesToBeDeleted.add(markedForDelete);
-            } else {
-                // This FileMetadata does not have an id, meaning it has just been 
-                // created, and not yet saved in the database. This in turn means this is 
-                // a freshly created DRAFT version; specifically created because 
-                // the user is trying to delete a file from an existing published 
-                // version. This means we are not really *deleting* the file - 
-                // we are going to keep it in the published version; we are simply 
-                // going to save a new DRAFT version that does not contain this file. 
-                // So below we are deleting the metadata from the version; we are 
-                // NOT adding the file to the filesToBeDeleted list that will be 
-                // passed to the UpdateDatasetCommand. -- L.A. Aug 2017
-                Iterator<FileMetadata> fmit = dataset.getEditVersion().getFileMetadatas().iterator();
-                while (fmit.hasNext()) {
-                    FileMetadata fmd = fmit.next();
-                    if (markedForDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                        // And if this is an image file that happens to be assigned 
-                        // as the dataset thumbnail, let's null the assignment here:
-
-                        if (fmd.getDataFile().equals(dataset.getThumbnailFile())) {
-                            dataset.setThumbnailFile(null);
-                        }
-                        /* It should not be possible to get here if this file 
-                           is not in fact released! - so the code block below 
-                           is not needed.
-                        //if not published then delete identifier
-                        if (!fmd.getDataFile().isReleased()){
-                            try{
-                                commandEngine.submit(new DeleteDataFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest()));
-                            } catch (CommandException e){
-                                 //this command is here to delete the identifier of unreleased files
-                                 //if it fails then a reserved identifier may still be present on the remote provider
-                            }                           
-                        } */
-                        fmit.remove();
-                        break;
-                    }
-                }
-            }
-        }
-
-        /* 
-           Do note that if we are deleting any files that have UNFs (i.e., 
-           tabular files), we DO NEED TO RECALCULATE the UNF of the version!
-           - but we will do this inside the UpdateDatasetCommand.
-        */
-    }
-
-
     private String save() {
 
         // Validate
@@ -904,7 +837,7 @@ public class DatasetFilesTab implements Serializable {
             if (!filesToBeDeleted.isEmpty()) {
                 deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
             }
-            cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone);
+            cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted);
             cmd.setValidateLenient(true);
 
             dataset = commandEngine.submit(cmd);

@@ -115,11 +115,11 @@ public class ReplaceFileHandler implements Serializable {
 
         updateRootAndPreviousDataFileId(fileToBeReplaced, newFile);
 
-        updateDataset(dataset, dvRequestService.getDataverseRequest(), originalDataset);
+        dataset = updateDataset(dataset, dvRequestService.getDataverseRequest(), originalDataset);
 
         ingestService.startIngestJobsForDataset(dataset, dvRequestService.getDataverseRequest().getAuthenticatedUser());
 
-        return getNewDatafile(editableDatasetDraft, newFile)
+        return getNewDatafile(dataset.getLatestVersion(), newFile)
                 .orElseGet(DataFile::new);
     }
 
@@ -200,9 +200,11 @@ public class ReplaceFileHandler implements Serializable {
     private boolean deleteFileFromEntities(DatasetVersion datasetVersion, DataFile fileToRemove) {
 
         if (datasetVersion.getId() != null) {
-            datafileService.removeFileMetadata(fileToRemove.getFileMetadata());
+            FileMetadata removedFileMetadata = fileToRemove.getLatestFileMetadata();
+            datafileService.removeFileMetadata(removedFileMetadata);
+            fileToRemove.getFileMetadatas().remove(removedFileMetadata);
         }
-
+        
         return datasetVersion.getFileMetadatas().removeIf(fileMetadata -> fileMetadata.getDataFile().equals(fileToRemove));
 
     }

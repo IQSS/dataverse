@@ -40,7 +40,6 @@ import org.primefaces.model.StreamedContent;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -53,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 
 /**

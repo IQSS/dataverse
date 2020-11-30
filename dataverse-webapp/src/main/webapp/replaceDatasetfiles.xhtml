@@ -112,7 +112,7 @@
                                                           label="#{bundle['file.replace.upload.selectToReplaceBtn']}"
                                                           onstart="#{ReplaceDatafilesPage.uploadStarted()};"
                                                           onerror="uploadFailure();"
-                                                          sizeLimit="#{settingsWrapper.getEnumSettingValue(settingEnum.MaxFileUploadSizeInBytes)}"
+                                                          sizeLimit="#{ReplaceDatafilesPage.getMaxFileUploadSizeInBytes()}"
                                                           fileLimit="1"
                                                           invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"
                                                           fileLimitMessage="#{bundle['file.replace.upload.error.onlyOneFile']}"

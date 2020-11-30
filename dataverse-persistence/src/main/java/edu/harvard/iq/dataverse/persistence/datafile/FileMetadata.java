@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import edu.harvard.iq.dataverse.common.DateUtil;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
@@ -50,7 +51,7 @@ import java.util.logging.Logger;
  */
 @Table(indexes = {@Index(columnList = "datafile_id"), @Index(columnList = "datasetversion_id")})
 @Entity
-public class FileMetadata implements Serializable {
+public class FileMetadata implements JpaEntity<Long>, Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(FileMetadata.class.getCanonicalName());
 

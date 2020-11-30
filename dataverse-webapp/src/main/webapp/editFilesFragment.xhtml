@@ -436,8 +436,6 @@
                                 <p:inputText id="fileName" value="#{fileMetadata.label}"
                                              style="width:60%; margin-bottom:.5em;"
                                              disabled="#{fileMetadata.dataFile.filePackage}">
-                                    <p:ajax event="change" listener="#{EditDatafilesPage.handleNameChange}"
-                                            update="fileName"/>
                                 </p:inputText>
                                 <p:message for="fileName"/>
                             </ui:fragment>
@@ -476,8 +474,6 @@
                                     <p:inputTextarea id="fileDescription" immediate="true" rows="2" cols="40"
                                                      value="#{fileMetadata.description}"
                                                      style="width:60%; margin-top:.5em;">
-                                        <p:ajax event="change" listener="#{EditDatafilesPage.handleDescriptionChange}"
-                                                update="fileDescription"/>
                                     </p:inputTextarea>
                                     <p:watermark for="fileDescription" value="#{bundle['file.addDescription']}"/>
                                     <p:message for="fileDescription"/>
@@ -493,8 +489,7 @@
                                                      value="#{fileMetadata.termsOfUseForm.typeWithLicenseId}"
                                                      autoWidth="false">
                                         <f:selectItems value="#{EditDatafilesPage.termsOfUseSelectItems}"/>
-                                        <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}"
-                                                update="filesTable"/>
+                                        <p:ajax update="filesTable"/>
                                     </p:selectOneMenu>
 
                                     <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED'}">
@@ -515,8 +510,7 @@
                                                     itemValue="ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION"/>
                                             <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.CUSTOM']}"
                                                           itemValue="CUSTOM"/>
-                                            <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}"
-                                                    update="filesTable"/>
+                                            <p:ajax update="filesTable"/>
                                         </p:selectOneMenu>
                                     </div>
 
@@ -529,7 +523,6 @@
                                                          required="true"
                                                          requiredMessage="#{bundle['file.editTermsOfUseDialog.accessConditions.custom.required']}"
                                                          style="width: 100%;"/>
-                                        <p:ajax listener="#{EditDatafilesPage.handleTermsOfUseChange}"/>
                                         <p:message for="fileCustomRestrictText" display="text"/>
                                     </div>
 

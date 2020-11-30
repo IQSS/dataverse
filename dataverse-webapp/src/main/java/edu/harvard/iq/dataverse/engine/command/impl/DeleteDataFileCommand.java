@@ -127,83 +127,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
 
             } else {
                 logger.info("Skipping deleting the physical file on the storage volume (will be done outside the command)");
-                /* We no longer attempt to delete the physical file from inside the command,
-                 * since commands are executed as (potentially nested) transactions,
-                 * and it is prudent to assume that this database transaction may
-                 * be reversed in the end. Meaning if we delete the file here,
-                 * we are at risk of the database entry not getting deleted,
-                 * leaving a "ghost" DataFile with no associated physical file
-                 * on the storage medium.
-                 * The physical file delete must happen outside the transaction,
-                 * once the database delete has been confirmed.
-                 */
-                /*
-                logger.log(Level.FINE, "Storage identifier for the file: {0}", doomed.getStorageIdentifier());
-                StorageIO<DataFile> storageIO = null;
-
-                try {
-                    storageIO = doomed.getStorageIO();
-                } catch (IOException ioex) {
-                    throw new CommandExecutionException("Failed to initialize physical access driver.", ioex, this);
-                }
-
-                if (storageIO != null) {
-
-                    // First, delete all the derivative files:
-                    // We may have a few extra files associated with this object - 
-                    // preserved original that was used in the tabular data ingest, 
-                    // cached R data frames, image thumbnails, etc.
-                    // We need to delete these too; failures however are less 
-                    // important with these. If we fail to delete any of these 
-                    // auxiliary files, we'll just leave an error message in the 
-                    // log file and proceed deleting the database object.
-                    try {
-                        storageIO.open();
-                    } catch (IOException ioex) {
-                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error calling storageIO.open() while deleting DataFile {0}", doomed.getStorageIdentifier());
-                    }
-                    // Previously, storageIO.open() and storageIO.deleteAllAuxObjects() were in the same try/catch block
-                    // but this was preventing the auxillary objects from being deleted when the main file isn't present
-                    // on disk/storage. The call to open() was throwing an IOException so the deleteAllAuxObjects() method
-                    // never fired. Now we have them in separate try/catch blocks to go ahead and delete the auxillary
-                    // objects even if the main file can't be opened.
-                    try {
-                        storageIO.deleteAllAuxObjects();
-                    } catch (IOException ioex) {
-                        Logger.getLogger(DeleteDataFileCommand.class.getName()).log(Level.SEVERE, "Error calling storageIO.deleteAllAuxObjects() while deleting DataFile {0}", doomed.getStorageIdentifier());
-                    }
-
-                    // We only want to attempt to delete the main physical file
-                    // if it actually exists, on the filesystem or whereever it 
-                    // is actually stored by its StorageIO:
-                    boolean physicalFileExists = false;
-
-                    try {
-                        physicalFileExists = storageIO.exists();
-                    } catch (IOException ioex) {
-                        // We'll assume that an exception here means that the file does not
-                        // exist; so we can skip trying to delete it. 
-                        physicalFileExists = false;
-                    }
-
-                    
-                    if (physicalFileExists) {
-                        try {
-                            storageIO.delete();
-                        } catch (IOException ex) {
-                            // This we will treat as a fatal condition:
-                            throw new CommandExecutionException("Error deleting physical file object while deleting DataFile " + doomed.getId() + " from the database.", ex, this);
-                        }
-                    }
-
-                    logger.log(Level.FINE, "Successfully deleted physical storage object (file) for the DataFile {0}", doomed.getId());
-                    // Destroy the storageIO object - we will need to purge the 
-                    // DataFile from the database (below), so we don't want to have any
-                    // objects in this transaction that reference it:
-                    storageIO = null;
-                    
-                }
-                */
             }
         }
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
@@ -213,9 +136,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
-        }
-        for (FileMetadata fileMetadata : doomed.getFileMetadatas()) {
-            fileMetadata.setVersion(new Long(0));
         }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);

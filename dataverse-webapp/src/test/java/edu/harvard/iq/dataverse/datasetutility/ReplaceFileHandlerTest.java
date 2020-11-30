@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datafile.file.ReplaceFileHandler;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -22,9 +23,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -48,17 +51,23 @@ public class ReplaceFileHandlerTest {
     @Mock
     private DataverseRequestServiceBean dataverseRequestServiceBean;
 
-    private Dataset testDataset;
-
     @BeforeEach
     public void setUp() {
-        testDataset = new Dataset();
 
         when(dataverseRequestServiceBean.getDataverseRequest()).thenReturn(new DataverseRequest(new AuthenticatedUser(), new IPv4Address(111)));
         when(ingestService.saveAndAddFilesToDataset(any(DatasetVersion.class), any(), any(DataAccess.class)))
                 .thenReturn(Lists.newArrayList(new DataFile()));
 
         replaceFileHandler = new ReplaceFileHandler(ingestService, dataFileServiceBean, ejbDataverseEngine, dataverseRequestServiceBean);
+        
+        when(ejbDataverseEngine.submit(any(UpdateDatasetVersionCommand.class))).then(new Answer<Dataset>() {
+
+            @Override
+            public Dataset answer(InvocationOnMock invocation) throws Throwable {
+                UpdateDatasetVersionCommand command = invocation.getArgument(0);
+                return (Dataset) command.getAffectedDvObjects().values().iterator().next();
+            }
+        });
     }
 
     @Test

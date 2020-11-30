@@ -31,11 +31,7 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{EditDatafilesPage.init}" />
                     <f:viewAction
-                            action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}"
-                            if="#{!(param.mode == 'SINGLE')}"/>
-                    <f:viewAction
-                            action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, bundle['file.editFiles'])}"
-                            if="#{(param.mode == 'SINGLE')  }"/>
+                            action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.uploadFiles'] : bundle['file.editFiles']))}" />
                 </f:metadata>
                 <h:form id="datasetForm">
 

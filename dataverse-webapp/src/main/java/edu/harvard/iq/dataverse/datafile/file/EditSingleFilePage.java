@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.datafile.file;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -21,21 +21,18 @@ import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+
 import javax.faces.view.ViewScoped;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 @ViewScoped
 @Named("EditSingleFilePage")
@@ -47,7 +44,6 @@ public class EditSingleFilePage implements java.io.Serializable {
     private DatasetService datasetService;
     private DataFileServiceBean datafileService;
     private PermissionServiceBean permissionService;
-    private DataverseSession session;
     private SettingsServiceBean settingsService;
     private DataverseRequestServiceBean dvRequestService;
     private PermissionsWrapper permissionsWrapper;
@@ -57,24 +53,14 @@ public class EditSingleFilePage implements java.io.Serializable {
 
     private Dataset dataset = new Dataset();
     private String editedFileIdString = null;
-    private Long selectedFileId;
     private FileMetadata fileMetadata;
-
-    // although we operate only one edited file metadata, we still need list of file metadata
-    // to handle p:dataTable display (and possibly engine command usage)
-    private List<FileMetadata> fileMetadatas;
 
     private Long ownerId;
     private Long versionId;
     private DatasetVersion workingVersion;
-    private boolean datasetUpdateRequired = false;
-    private boolean tabularDataTagsUpdated = false;
 
     private String persistentId;
     private String versionString = "";
-
-
-    private DataFile singleFile = null;
 
     // -------------------- CONSTRUCTORS --------------------
     @Deprecated
@@ -84,7 +70,7 @@ public class EditSingleFilePage implements java.io.Serializable {
     @Inject
     public EditSingleFilePage(DatasetDao datasetDao, DatasetService datasetService,
                               DataFileServiceBean datafileService, PermissionServiceBean permissionService,
-                              DataverseSession session, SettingsServiceBean settingsService,
+                              SettingsServiceBean settingsService,
                               DataverseRequestServiceBean dvRequestService, PermissionsWrapper permissionsWrapper,
                               FileDownloadHelper fileDownloadHelper, ProvPopupFragmentBean provPopupFragmentBean,
                               SingleFileFacade singleFileFacade) {
@@ -92,7 +78,6 @@ public class EditSingleFilePage implements java.io.Serializable {
         this.datasetDao = datasetDao;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
-        this.session = session;
         this.settingsService = settingsService;
         this.dvRequestService = dvRequestService;
         this.permissionsWrapper = permissionsWrapper;
@@ -104,22 +89,20 @@ public class EditSingleFilePage implements java.io.Serializable {
     // -------------------- GETTERS --------------------
 
     public DataFile getSingleFile() {
-        return singleFile;
+        return fileMetadata.getDataFile();
     }
 
     public String getSelectedFileIds() {
         return editedFileIdString;
     }
 
+    /**
+     * Returns list of metadata - always with single element.
+     * although we operate only on one edited file metadata, we still need list of file metadata
+     * to handle p:dataTable display (and possibly engine command usage)
+     */
     public List<FileMetadata> getFileMetadatas() {
-
-        if (fileMetadata != null) {
-            logger.fine("Returning file metadata.");
-        } else {
-            logger.fine("File metadata hasn't been initialized yet.");
-        }
-
-        return fileMetadatas;
+        return Lists.newArrayList(fileMetadata);
     }
 
     public FileMetadata getFileMetadata() {
@@ -185,10 +168,6 @@ public class EditSingleFilePage implements java.io.Serializable {
 
 
         workingVersion = dataset.getEditVersion();
-        if (workingVersion == null || !workingVersion.isDraft()) {
-            // Sorry, we couldn't find/obtain a draft version for this dataset!
-            return permissionsWrapper.notFound();
-        }
 
         // Check if they have permission to modify this dataset:
 
@@ -199,28 +178,13 @@ public class EditSingleFilePage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
-        if (StringUtils.isNotEmpty(editedFileIdString)) {
-            try {
-                Long fileId = Long.parseLong(editedFileIdString);
-                singleFile = datafileService.find(fileId);
-                selectedFileId = fileId;
-            } catch (NumberFormatException nfe) {
-                // do nothing...
-                logger.warning("Couldn't parse editedFileIdString =" + editedFileIdString + " to Long");
-                JsfHelper.addErrorMessage("File id is not a number!", "");
-                return "";
-            }
-        }
-
-        if (singleFile == null) {
-            logger.fine("No numeric file ids supplied to the page, in the edit mode. Redirecting to the 404 page.");
-            // If no valid file IDs specified, send them to the 404 page...
+        long selectedFileId = NumberUtils.toLong(editedFileIdString);
+        if (selectedFileId == 0) {
             return permissionsWrapper.notFound();
         }
-
         logger.fine("The page is called with " + selectedFileId + " file id.");
 
-        populateFileMetadatas();
+        populateFileMetadata(selectedFileId);
 
         // if no filemetadatas can be found for the specified file ids
         // and version id - send them to the "not found" page.
@@ -240,12 +204,6 @@ public class EditSingleFilePage implements java.io.Serializable {
     }
 
     public String save() {
-
-        if (!datasetUpdateRequired) {
-            return returnToFileLandingPage();
-        }
-
-        updateEntityWithUpdatedFile();
 
         Try<Dataset> updateFileOperation = singleFileFacade.saveFileChanges(fileMetadata, provPopupFragmentBean.getProvenanceUpdates())
                 .onFailure(ex -> populateDatasetUpdateFailureMessage());
@@ -298,8 +256,6 @@ public class EditSingleFilePage implements java.io.Serializable {
             successMessage = successMessage.replace("{0}", fileMetadata.getLabel());
             JsfHelper.addFlashSuccessMessage(successMessage);
         }
-
-        datasetUpdateRequired = true;
     }
 
     public void deleteDatasetLogoAndUseThisDataFileAsThumbnailInstead() {
@@ -324,15 +280,6 @@ public class EditSingleFilePage implements java.io.Serializable {
         selectedFileMetadataTags.forEach(selectedFile::addCategoryByName);
 
         setTagsForTabularData(selectedDataFileTags, selectedFile);
-        datasetUpdateRequired = true;
-    }
-
-    public void handleDescriptionChange(final AjaxBehaviorEvent event) {
-        datasetUpdateRequired = true;
-    }
-
-    public void handleNameChange(final AjaxBehaviorEvent event) {
-        datasetUpdateRequired = true;
     }
 
     // -------------------- PRIVATE ---------------------
@@ -340,12 +287,6 @@ public class EditSingleFilePage implements java.io.Serializable {
     private void populateDatasetUpdateFailureMessage() {
 
         JsfHelper.addErrorMessage(getBundleString("dataset.message.filesFailure"), "");
-    }
-
-    private void updateEntityWithUpdatedFile() {
-        workingVersion.getFileMetadatas().stream()
-                .filter(fmd -> fmd.getDataFile().getStorageIdentifier().equals(fileMetadata.getDataFile().getStorageIdentifier()))
-                .forEach(fmd -> fmd = fileMetadata);
     }
 
     private String returnToFileLandingPage() {
@@ -368,42 +309,17 @@ public class EditSingleFilePage implements java.io.Serializable {
         });
     }
 
-    private void populateFileMetadatas() {
-
-        Long datasetVersionId = workingVersion.getId();
-
-        if (datasetVersionId != null) {
-            // The version has a database id - this is an existing version,
-            // that had been saved previously. So we can look up the file metadatas
-            // by the file and version ids:
-            logger.fine("attempting to retrieve file metadata for version id " + datasetVersionId + " and file id " + selectedFileId);
-            FileMetadata fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(datasetVersionId, selectedFileId);
-            if (fileMetadata != null) {
-                logger.fine("Success!");
+    private void populateFileMetadata(long selectedFileId) {
+        for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
+            if (selectedFileId == fileMetadata.getDataFile().getId()) {
+                logger.fine("Success! - found the file id " + selectedFileId + " in the edit version.");
                 this.fileMetadata = fileMetadata;
-            } else {
-                logger.fine("Failed to find file metadata.");
-            }
-        } else {
-            logger.fine("Brand new edit version - no database id.");
-            for (FileMetadata fileMetadata : workingVersion.getFileMetadatas()) {
-
-                if (selectedFileId.equals(fileMetadata.getDataFile().getId())) {
-                    logger.fine("Success! - found the file id " + selectedFileId + " in the brand new edit version.");
-                    this.fileMetadata = fileMetadata;
-                    break;
-                }
+                break;
             }
         }
-        fileMetadatas = new ArrayList<>();
-        fileMetadatas.add(fileMetadata);
     }
 
     // -------------------- SETTERS --------------------
-
-    public void setSingleFile(DataFile singleFile) {
-        this.singleFile = singleFile;
-    }
 
     public void setSelectedFileIds(String selectedFileIds) {
         editedFileIdString = selectedFileIds;

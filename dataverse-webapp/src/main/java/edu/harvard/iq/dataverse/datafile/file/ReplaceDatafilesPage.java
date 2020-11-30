@@ -368,6 +368,10 @@ public class ReplaceDatafilesPage implements Serializable {
 
     }
 
+    public Long getMaxFileUploadSizeInBytes() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private String checkPermissions(Dataset dataset, DataFile fileToBeReplaced) {

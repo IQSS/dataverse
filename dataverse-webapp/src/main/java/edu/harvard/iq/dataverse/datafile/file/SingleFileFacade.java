@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.datafile.file;
 
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.datafile.file.exception.ProvenanceChangeException;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -25,9 +22,6 @@ public class SingleFileFacade {
 
     private FileMetadataService fileMetadataService;
     private SettingsServiceBean settingsService;
-    private EjbDataverseEngine commandEngine;
-    private DataverseRequestServiceBean dvRequestService;
-    private GenericDao genericDao;
     private DatasetVersionServiceBean datasetVersionService;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -38,13 +32,9 @@ public class SingleFileFacade {
 
     @Inject
     public SingleFileFacade(FileMetadataService fileMetadataService, SettingsServiceBean settingsService,
-                            EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService,
-                            GenericDao genericDao, DatasetVersionServiceBean datasetVersionService) {
+                            DatasetVersionServiceBean datasetVersionService) {
         this.fileMetadataService = fileMetadataService;
         this.settingsService = settingsService;
-        this.commandEngine = commandEngine;
-        this.dvRequestService = dvRequestService;
-        this.genericDao = genericDao;
         this.datasetVersionService = datasetVersionService;
     }
 

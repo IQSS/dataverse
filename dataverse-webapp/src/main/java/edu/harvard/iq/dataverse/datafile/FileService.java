@@ -96,10 +96,10 @@ public class FileService {
             datasetFileOwner.setThumbnailFile(null);
         }
 
-        Dataset updatedDataset = updateDatasetVersion(Lists.newArrayList(fileToDelete), datasetFileOwner);
+        Dataset updatedDataset = updateDatasetVersion(Lists.newArrayList(fileToDelete.getDataFile()), datasetFileOwner);
 
         if (!fileToDelete.getDataFile().isReleased()) {
-            deleteFilePhysically(fileToDelete);
+            deleteFilePhysically(fileToDelete.getDataFile());
         }
 
         return updatedDataset;
@@ -142,7 +142,7 @@ public class FileService {
 
     // -------------------- PRIVATE --------------------
 
-    private Dataset updateDatasetVersion(List<FileMetadata> filesToDelete, Dataset datasetFileOwner) {
+    private Dataset updateDatasetVersion(List<DataFile> filesToDelete, Dataset datasetFileOwner) {
         return Try.of(() -> commandEngine.submit(new UpdateDatasetVersionCommand(datasetFileOwner, dvRequestService.getDataverseRequest(),
                                                                                  filesToDelete)))
                 .getOrElseThrow(throwable -> new UpdateDatasetException("Dataset Update failed with dataset id: " + datasetFileOwner.getId(), throwable));
@@ -152,15 +152,15 @@ public class FileService {
         return thumbnailFile.getDataFile().equals(datasetFileOwner.getThumbnailFile());
     }
 
-    private void deleteFilePhysically(FileMetadata fileToDelete) {
-        String fileStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete.getDataFile());
+    private void deleteFilePhysically(DataFile fileToDelete) {
+        String fileStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
 
         if (fileStorageLocation != null) {
-            Try.run(() -> dataFileService.finalizeFileDelete(fileToDelete.getDataFile().getId(), fileStorageLocation, new DataAccess()))
+            Try.run(() -> dataFileService.finalizeFileDelete(fileToDelete.getId(), fileStorageLocation, new DataAccess()))
                     .onFailure(throwable -> logger.warn("Failed to delete the physical file associated with the deleted datafile id="
-                                                                   + fileToDelete.getDataFile().getId() + ", storage location: " + fileStorageLocation));
+                                                                   + fileToDelete.getId() + ", storage location: " + fileStorageLocation));
         } else {
-            throw new IllegalStateException("DataFile with id: " + fileToDelete.getDataFile().getId() + " doesn't have storage location");
+            throw new IllegalStateException("DataFile with id: " + fileToDelete.getId() + " doesn't have storage location");
         }
     }
     

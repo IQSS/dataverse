@@ -640,21 +640,6 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    @Deprecated
-    public String registerDataset() {
-        try {
-            UpdateDatasetVersionCommand cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest());
-            cmd.setValidateLenient(true);
-            dataset = commandEngine.submit(cmd);
-        } catch (CommandException ex) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.registration.failed"), " - " + ex.toString()));
-            logger.severe(ex.getMessage());
-        }
-        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.registered"), BundleUtil.getStringFromBundle("dataset.registered.msg"));
-        FacesContext.getCurrentInstance().addMessage(null, message);
-        return returnToDatasetOnly();
-    }
-
     public String updateCurrentVersion() {
         /*
          * Note: The code here mirrors that in the
