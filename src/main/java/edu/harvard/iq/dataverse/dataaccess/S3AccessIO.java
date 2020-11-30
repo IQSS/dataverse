@@ -1116,9 +1116,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 catch(Exception e) {
                     logger.info(" ==================== Read the exception ================== ");
                     e.printStackTrace();
-                    BasicAWSCredentials creds = new BasicAWSCredentials("14e4f8b986874272894d527a16c06473", "f7b28fbec4984588b0da7d0288ce67f6");
-                    s3CB.withCredentials(new AWSStaticCredentialsProvider(creds));
-                    s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl.trim(), s3CERegion.trim()));
+                    //BasicAWSCredentials creds = new BasicAWSCredentials("14e4f8b986874272894d527a16c06473", "f7b28fbec4984588b0da7d0288ce67f6");
+                    //s3CB.withCredentials(new AWSStaticCredentialsProvider(creds));
+                    //s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl.trim(), s3CERegion.trim()));
                     logger.info(" ==================== Read the exception ================== ");
                 }
             }
