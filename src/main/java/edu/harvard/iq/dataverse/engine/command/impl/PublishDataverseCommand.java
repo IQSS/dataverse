@@ -12,14 +12,15 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.search.IndexResponse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 @RequiredPermissions(Permission.PublishDataverse)
 public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
+    private static final Logger logger = Logger.getLogger(PublishDataverseCommand.class.getName());
 
     private final Dataverse dataverse;
 
@@ -43,7 +44,14 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         // Perform any optional validation steps, if defined:
-        validateDataverseMetadataExternally(dataverse);
+        if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
+            String executable = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript, "");
+            boolean result = validateDataverseMetadataExternally(dataverse, executable);
+            
+            if (!result) {
+                throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " cannot be published because it has failed an external metadata validation test.", this);
+            }
+        }
         
         //Before setting dataverse to released send notifications to users with download file
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);

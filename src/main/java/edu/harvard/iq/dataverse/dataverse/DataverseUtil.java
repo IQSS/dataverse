@@ -4,7 +4,12 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.File;
+import java.io.IOException;
+
 import java.util.logging.Logger;
+import opennlp.tools.util.StringUtil;
+import org.apache.commons.io.FileUtils;
 
 public class DataverseUtil {
 
@@ -18,12 +23,39 @@ public class DataverseUtil {
         return user.getDisplayInfo().getTitle() + " " + BundleUtil.getStringFromBundle("dataverse");
     }
     
-    public static boolean validateDataverseMetadataExternally(Dataverse dv) {
-        String jsonString = json(dv).build().toString(); 
+    public static boolean validateDataverseMetadataExternally(Dataverse dv, String executable) {
+        String jsonMetadata; 
         
-        logger.info("dataverse as json: "+jsonString);
+        try {
+            jsonMetadata = json(dv).build().toString();
+        } catch (Exception ex) {
+            logger.warning("Failed to export dataverse metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            return false; 
+        }
+        
+        if (StringUtil.isEmpty(jsonMetadata)) {
+            logger.warning("Failed to export dataverse metadata as json.");
+            return false; 
+        }
        
-        return false;
+        // save the metadata in a temp file: 
+        
+        try {
+            File tempFile = File.createTempFile("dataverseMetadataCheck", ".tmp");
+            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+                        
+            // run the external executable: 
+            String[] params = { executable, tempFile.getAbsolutePath() };
+            Process p = Runtime.getRuntime().exec(params);
+            p.waitFor();
+            
+            return p.exitValue() == 0;
+
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Failed run the external executable.");
+            return false; 
+        }
+        
     }
 
 }

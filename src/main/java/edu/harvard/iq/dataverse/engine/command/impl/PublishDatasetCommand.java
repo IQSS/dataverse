@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import static java.util.stream.Collectors.joining;
 import static edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult.Status;
+import static edu.harvard.iq.dataverse.dataset.DatasetUtil.validateDatasetMetadataExternally;
+
 
 /**
  * Kick-off a dataset publication process. The process may complete immediately, 
@@ -84,6 +86,16 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // major, non-first release
             theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+        }
+        
+        // Perform any optional validation steps, if defined:
+        if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
+            String executable = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript, "");
+            boolean result = validateDatasetMetadataExternally(theDataset, executable);
+            
+            if (!result) {
+                throw new IllegalCommandException("This dataset cannot be published because it has failed an external metadata validation test.", this);
+            }
         }
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);

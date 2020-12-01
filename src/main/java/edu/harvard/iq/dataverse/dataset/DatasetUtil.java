@@ -33,6 +33,9 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
+import edu.harvard.iq.dataverse.util.StringUtil;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import org.apache.commons.io.FileUtils;
 
 public class DatasetUtil {
 
@@ -474,5 +477,40 @@ public class DatasetUtil {
             }
         }
         return FileSizeChecker.bytesToHumanReadable(bytes);
+    }
+    
+    public static boolean validateDatasetMetadataExternally(Dataset ds, String executable) {
+        String jsonMetadata; 
+        
+        try {
+            jsonMetadata = json(ds).build().toString();
+        } catch (Exception ex) {
+            logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
+            return false; 
+        }
+        
+        if (StringUtil.isEmpty(jsonMetadata)) {
+            logger.warning("Failed to export dataset metadata as json.");
+            return false; 
+        }
+       
+        // save the metadata in a temp file: 
+        
+        try {
+            File tempFile = File.createTempFile("dataverseMetadataCheck", ".tmp");
+            FileUtils.writeStringToFile(tempFile, jsonMetadata);
+                        
+            // run the external executable: 
+            String[] params = { executable, tempFile.getAbsolutePath() };
+            Process p = Runtime.getRuntime().exec(params);
+            p.waitFor(); 
+            
+            return p.exitValue() == 0;
+ 
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Failed run the external executable.");
+            return false; 
+        }
+        
     }
 }

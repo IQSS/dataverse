@@ -81,7 +81,6 @@ public class OpenAireExporterTest {
      * Test of exportDataset method, of class OpenAireExporter.
      */
     @Test
-    @Ignore
     public void testValidateExportDataset() throws Exception {
         System.out.println("validateExportDataset");
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
