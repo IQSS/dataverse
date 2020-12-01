@@ -281,6 +281,11 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakartaee-api.version}</version>
