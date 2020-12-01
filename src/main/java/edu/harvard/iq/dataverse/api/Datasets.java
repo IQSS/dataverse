@@ -78,6 +78,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -135,6 +136,7 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
@@ -639,7 +641,9 @@ public class Datasets extends AbstractApiBean {
 
 		} catch (WrappedResponse ex) {
 			return ex.getResponse();
-
+		} catch (JsonParsingException jpe) {
+		    logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
 		}
 	}
     
