@@ -98,7 +98,7 @@ public class JSONLDUtil {
 			ds.setModificationTime(Timestamp.valueOf(dateTime));
 		}
 		try {
-			logger.fine("Output dsv: " + new OREMap(dsv, false, OREMap.TRANSFER).getOREMap().toString());
+			logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
