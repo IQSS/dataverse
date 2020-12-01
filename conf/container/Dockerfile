@@ -28,7 +28,7 @@ RUN mkdir -p ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_D
 
 # Install prerequisites
 RUN apt-get -qq update && \
-    apt-get -qqy install postgresql-client jq imagemagick curl wget unzip && \
+    apt-get -qqy install jq imagemagick curl wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
 # Install esh template engine from Github

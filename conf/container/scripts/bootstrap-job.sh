@@ -19,11 +19,7 @@ DATAVERSE_URL=${DATAVERSE_URL:-"http://${DATAVERSE_SERVICE_HOST}:${DATAVERSE_SER
 # option to override.
 SOLR_K8S_HOST=${SOLR_K8S_HOST:-"solr"}
 
-# Check postgres and API key secrets are available
-if [ ! -s "${SECRETS_DIR}/db/password" ]; then
-  echo "No database password present. Failing."
-  exit 126
-fi
+# Check API key secret is available
 if [ ! -s "${SECRETS_DIR}/api/key" ]; then
   echo "No API key present. Failing."
   exit 126
@@ -34,13 +30,6 @@ if [ -s "${SECRETS_DIR}/admin/password" ]; then
   echo "Loading admin password from secret file."
   ADMIN_PASSWORD=`cat ${SECRETS_DIR}/admin/password`
 fi
-
-# Drop the Postgres credentials into .pgpass
-echo "${POSTGRES_SERVER}:*:*:${POSTGRES_USER}:`cat ${SECRETS_DIR}/db/password`" > ${HOME_DIR}/.pgpass
-chmod 0600 ${HOME_DIR}/.pgpass
-
-# 1.) Load SQL data
-psql -h ${POSTGRES_SERVER} -U ${POSTGRES_USER} ${POSTGRES_DATABASE} < ${DEPLOY_DIR}/dataverse/supplements/reference_data.sql
 
 # 2) Initialize common data structures to make Dataverse usable
 cd ${DEPLOY_DIR}/dataverse/supplements
