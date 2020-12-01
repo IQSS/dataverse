@@ -139,7 +139,7 @@ public class JSONLDUtil {
 			}
 			fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
 		}
-		TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+		TermsOfUseAndAccess terms = dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
 
 		for (String key : jsonld.keySet()) {
 			if (!key.equals("@context")) {
