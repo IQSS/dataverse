@@ -36,8 +36,7 @@ RUN wget --no-verbose -O esh https://raw.githubusercontent.com/jirutka/esh/v0.3.
     echo 'fe030e23fc1383780d08128eecf322257cec743b esh' | sha1sum -c - && \
     chmod +x esh && mv esh /usr/local/bin
 
-# Install PostgreSQL JDBC driver in AppServer
-# TODO: remove this once upstream includes the Postgres Client lib in the WAR.
+# Install JRebel library (for development use)
 USER payara
 RUN wget --no-verbose -O "${HOME_DIR}/jrebel.zip" http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
     unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}"
