@@ -9,8 +9,8 @@ import javax.sql.DataSource;
 @Singleton
 @DataSourceDefinition(
     name = "java:app/jdbc/dataverse",
-    // Using PGXADataSource instead of deprecated PGPoolingDataSource
-    className = "org.postgresql.xa.PGXADataSource",
+    // Note that PGPoolingDataSource is deprecated. PGXADataSource breaks ingest.
+    className = "org.postgresql.ds.PGPoolingDataSource",
     user = "${MPCONFIG=dataverse.db.user}",
     password = "${MPCONFIG=dataverse.db.password}",
     serverName = "${MPCONFIG=dataverse.db.host}",
