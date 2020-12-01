@@ -615,7 +615,7 @@ public class Datasets extends AbstractApiBean {
 	@Path("{id}/versions/{versionId}/metadata")
 	@Consumes("application/json-ld")
 	public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id,
-			@PathParam("versionId") String versionId) {
+			@PathParam("versionId") String versionId, @QueryParam("replace") boolean replaceTerms) {
 
 		if (!":draft".equals(versionId)) {
 			return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
@@ -625,7 +625,7 @@ public class Datasets extends AbstractApiBean {
 			DataverseRequest req = createDataverseRequest(findUserOrDie());
 			DatasetVersion dsv = ds.getEditVersion();
 			boolean updateDraft = ds.getLatestVersion().isDraft();
-			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, true);
+			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms);
 			
 			DatasetVersion managedVersion;
 			if (updateDraft) {
