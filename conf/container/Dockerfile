@@ -13,7 +13,6 @@ ENV DATA_DIR=/data\
     SECRETS_DIR=/secrets\
     DUMPS_DIR=/dumps\
     DOMAIN_DIR=${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}\
-    PGDRIVER_PKG=https://jdbc.postgresql.org/download/postgresql-42.2.12.jar\
     JREBEL_LIB=${HOME_DIR}/jrebel/lib/libjrebel64.so\
     # Make heap dumps on OOM appear in DUMPS_DIR
     JVM_ARGS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${ENV=DUMPS_DIR}"\
@@ -40,9 +39,6 @@ RUN wget --no-verbose -O esh https://raw.githubusercontent.com/jirutka/esh/v0.3.
 # Install PostgreSQL JDBC driver in AppServer
 # TODO: remove this once upstream includes the Postgres Client lib in the WAR.
 USER payara
-RUN wget --no-verbose -O postgresql.jar ${PGDRIVER_PKG} && \
-    mv postgresql.jar ${PAYARA_DIR}/glassfish/lib
-
 RUN wget --no-verbose -O "${HOME_DIR}/jrebel.zip" http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
     unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}"
 
