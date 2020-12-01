@@ -9,8 +9,9 @@ import javax.sql.DataSource;
 @Singleton
 @DataSourceDefinition(
     name = "java:app/jdbc/dataverse",
-    // Note that PGPoolingDataSource is deprecated. PGXADataSource breaks ingest.
-    className = "org.postgresql.ds.PGPoolingDataSource",
+    // App server provides its own pooling, so go with simple data source class.
+    // PGXADataSource is unnecessary (no distributed transactions) and breaks ingest.
+    className = "org.postgresql.ds.PGSimpleDataSource",
     user = "${MPCONFIG=dataverse.db.user}",
     password = "${MPCONFIG=dataverse.db.password}",
     serverName = "${MPCONFIG=dataverse.db.host}",
