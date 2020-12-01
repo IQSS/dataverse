@@ -175,6 +175,7 @@
     <!-- Download Options -->
     
     <!-- Request Access Options -->
+    <p:outputPanel id="requestButtons">
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest}">
         <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}">
@@ -182,7 +183,7 @@
                                                                     and !requestAccessPopupRequired}"
                         process="@this"
                         actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
-                        update="@this"
+                        update="@this,@([id$=requestButtons])"                       
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
             </p:commandLink>
@@ -205,6 +206,7 @@
             </p:commandLink>
         </li>
     </ui:fragment>
+    </p:outputPanel>    
     <!-- END: Request Access Options -->
     
     <!-- Explore Options -->
