@@ -48,8 +48,8 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
         Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id");
         query.setParameter("dataverseId", dataverseId);
         for (Object o : query.getResultList()) {
-            DataverseLinkingDataverse convterted = (DataverseLinkingDataverse) o;
-            retList.add(convterted.getLinkingDataverse());
+            DataverseLinkingDataverse converted = (DataverseLinkingDataverse) o;
+            retList.add(converted.getLinkingDataverse());
         }
         return retList;
     }
@@ -63,22 +63,18 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     }
     
     public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
-        DataverseLinkingDataverse foundDataverseLinkingDataverse = null;
         try {
-            foundDataverseLinkingDataverse = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataverse.id = :dataverseId", DataverseLinkingDataverse.class)
-                    .setParameter("dataverseId", dataverseId)
-                    .setParameter("linkingDataverseId", linkingDataverseId)
-                    .getSingleResult();
+            return (DataverseLinkingDataverse) em.createNamedQuery("DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseId")
+                .setParameter("dataverseId", dataverseId)
+                .setParameter("linkingDataverseId", linkingDataverseId)
+                .getSingleResult();
         } catch (javax.persistence.NoResultException e) {
             logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
+            return null;
         }
-        return foundDataverseLinkingDataverse;
     }
 
     public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
-        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataverse.id = :dataverseToLinkTo", DataverseLinkingDataverse.class);
-        typedQuery.setParameter("dataverseId", definitionPoint.getId());
-        typedQuery.setParameter("dataverseToLinkTo", dataverseToLinkTo.getId());
-        return !typedQuery.getResultList().isEmpty();
+        return findDataverseLinkingDataverse(dataverseToLinkTo.getId(), definitionPoint.getId()) != null;
     }
 }
