@@ -16,6 +16,7 @@ import javax.json.JsonReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import static junit.framework.Assert.assertEquals;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -80,6 +81,7 @@ public class OpenAireExporterTest {
      * Test of exportDataset method, of class OpenAireExporter.
      */
     @Test
+    @Ignore
     public void testValidateExportDataset() throws Exception {
         System.out.println("validateExportDataset");
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");

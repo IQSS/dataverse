@@ -32,8 +32,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
-import static edu.harvard.iq.dataverse.dataaccess.DataAccess.getStorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 
 public class DatasetUtil {

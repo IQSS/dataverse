@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import static edu.harvard.iq.dataverse.dataverse.DataverseUtil.validateDataverseMetadataExternally;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -41,6 +42,9 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
             }
         }
 
+        // Perform any optional validation steps, if defined:
+        validateDataverseMetadataExternally(dataverse);
+        
         //Before setting dataverse to released send notifications to users with download file
         List<RoleAssignment> ras = ctxt.roles().directRoleAssignments(dataverse);
         for (RoleAssignment ra : ras) {

@@ -1061,5 +1061,25 @@ public class SystemConfig {
 		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
-
+        
+    public boolean isExternalDataverseValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public boolean isExternalDatasetValidationEnabled() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript) != null;
+        // alternatively, we can also check if the script specified exists, 
+        // and is executable. -- ?
+    }
+    
+    public String getDataverseValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript);
+    }
+    
+    public String getDatasetValidationExecutable() {
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
+    }
+    
 }
