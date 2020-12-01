@@ -126,4 +126,4 @@ ln -s ${DEPLOY_DIR}/dataverse/supplements/jhoveConfig.xsd ${PAYARA_DIR}/glassfis
 sed -i ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf -e "s:/usr/local/glassfish4/glassfish/domains/domain1:${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}:g"
 
 # 6. Disable phone home. Always.
-echo "disable-phome-home" >> ${PREBOOT_COMMANDS}
+echo "disable-phone-home" >> ${PREBOOT_COMMANDS}
