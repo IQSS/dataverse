@@ -28,7 +28,20 @@ import javax.sql.DataSource;
     minPoolSize = 10,
     // HINT: Payara DataSourceDefinitionDeployer default value = 32
     // HINT: Harvard Dataverse is fine for a while with 64
-    maxPoolSize = 100)
+    maxPoolSize = 100,
+    properties = {
+        "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required}",
+        "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method}",
+        "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name}",
+        "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname}",
+        "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds}",
+        "fish.payara.connection-leak-reclaim=${MPCONFIG=dataverse.db.connection-leak-reclaim}",
+        "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds}",
+        "fish.payara.statement-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-leak-timeout-in-seconds}",
+        "fish.payara.statement-leak-reclaim=${MPCONFIG=dataverse.db.statement-leak-reclaim}",
+        "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds}",
+        "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls}"
+    })
 public class DataSourceProducer {
     
     @Resource(lookup="java:app/jdbc/dataverse")
