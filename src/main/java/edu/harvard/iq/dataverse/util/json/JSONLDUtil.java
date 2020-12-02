@@ -197,56 +197,56 @@ public class JSONLDUtil {
 							dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
 							dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
 						}
-					} else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())&&(append || terms.getLicense().equals(TermsOfUseAndAccess.License.NONE))) {
+					} else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())&&(!append || terms.getLicense().equals(TermsOfUseAndAccess.License.NONE))) {
 						if (jsonld.getString(JsonLDTerm.schemaOrg("license").getUrl())
 								.equals("https://creativecommons.org/publicdomain/zero/1.0/")) {
 							terms.setLicense(TermsOfUseAndAccess.defaultLicense);
 						} else {
 							terms.setLicense(TermsOfUseAndAccess.License.NONE);
 						}
-					} else if (key.equals(JsonLDTerm.termsOfUse.getUrl())&&(append || StringUtils.isBlank(terms.getTermsOfUse()))) {
+					} else if (key.equals(JsonLDTerm.termsOfUse.getUrl())&&(!append || StringUtils.isBlank(terms.getTermsOfUse()))) {
 						terms.setTermsOfUse(jsonld.getString(JsonLDTerm.termsOfUse.getUrl()));
-					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getUrl())&&(append || StringUtils.isBlank(terms.getConfidentialityDeclaration()))) {
+					} else if (key.equals(JsonLDTerm.confidentialityDeclaration.getUrl())&&(!append || StringUtils.isBlank(terms.getConfidentialityDeclaration()))) {
 						terms.setConfidentialityDeclaration(
 								jsonld.getString(JsonLDTerm.confidentialityDeclaration.getUrl()));
-					} else if (key.equals(JsonLDTerm.specialPermissions.getUrl())&&(append || StringUtils.isBlank(terms.getSpecialPermissions()))) {
+					} else if (key.equals(JsonLDTerm.specialPermissions.getUrl())&&(!append || StringUtils.isBlank(terms.getSpecialPermissions()))) {
 						terms.setSpecialPermissions(jsonld.getString(JsonLDTerm.specialPermissions.getUrl()));
-					} else if (key.equals(JsonLDTerm.restrictions.getUrl())&&(append || StringUtils.isBlank(terms.getRestrictions()))) {
+					} else if (key.equals(JsonLDTerm.restrictions.getUrl())&&(!append || StringUtils.isBlank(terms.getRestrictions()))) {
 						terms.setRestrictions(jsonld.getString(JsonLDTerm.restrictions.getUrl()));
-					} else if (key.equals(JsonLDTerm.citationRequirements.getUrl())&&(append || StringUtils.isBlank(terms.getCitationRequirements()))) {
+					} else if (key.equals(JsonLDTerm.citationRequirements.getUrl())&&(!append || StringUtils.isBlank(terms.getCitationRequirements()))) {
 						terms.setCitationRequirements(jsonld.getString(JsonLDTerm.citationRequirements.getUrl()));
-					} else if (key.equals(JsonLDTerm.depositorRequirements.getUrl())&&(append || StringUtils.isBlank(terms.getDepositorRequirements()))) {
+					} else if (key.equals(JsonLDTerm.depositorRequirements.getUrl())&&(!append || StringUtils.isBlank(terms.getDepositorRequirements()))) {
 						terms.setDepositorRequirements(
 								jsonld.getString(JsonLDTerm.depositorRequirements.getUrl()));
-					} else if (key.equals(JsonLDTerm.conditions.getUrl())&&(append || StringUtils.isBlank(terms.getConditions()))) {
+					} else if (key.equals(JsonLDTerm.conditions.getUrl())&&(!append || StringUtils.isBlank(terms.getConditions()))) {
 						terms.setConditions(jsonld.getString(JsonLDTerm.conditions.getUrl()));
-					} else if (key.equals(JsonLDTerm.disclaimer.getUrl())&&(append || StringUtils.isBlank(terms.getDisclaimer()))) {
+					} else if (key.equals(JsonLDTerm.disclaimer.getUrl())&&(!append || StringUtils.isBlank(terms.getDisclaimer()))) {
 						terms.setDisclaimer(jsonld.getString(JsonLDTerm.disclaimer.getUrl()));
 					} else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
 						JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
-						if (fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getUrl())&&(append || StringUtils.isBlank(terms.getTermsOfAccess()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.termsOfAccess.getUrl())&&(!append || StringUtils.isBlank(terms.getTermsOfAccess()))) {
 							terms.setTermsOfAccess(fAccessObject.getString(JsonLDTerm.termsOfAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getUrl())&&(append || !terms.isFileAccessRequest())) {
+						if (fAccessObject.containsKey(JsonLDTerm.fileRequestAccess.getUrl())&&(!append || !terms.isFileAccessRequest())) {
 							terms.setFileAccessRequest(fAccessObject.getBoolean(JsonLDTerm.fileRequestAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getUrl())&&(append || StringUtils.isBlank(terms.getDataAccessPlace()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.dataAccessPlace.getUrl())&&(!append || StringUtils.isBlank(terms.getDataAccessPlace()))) {
 							terms.setDataAccessPlace(fAccessObject.getString(JsonLDTerm.dataAccessPlace.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.originalArchive.getUrl())&&(append || StringUtils.isBlank(terms.getOriginalArchive()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.originalArchive.getUrl())&&(!append || StringUtils.isBlank(terms.getOriginalArchive()))) {
 							terms.setOriginalArchive(fAccessObject.getString(JsonLDTerm.originalArchive.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getUrl())&&(append || StringUtils.isBlank(terms.getAvailabilityStatus()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.availabilityStatus.getUrl())&&(!append || StringUtils.isBlank(terms.getAvailabilityStatus()))) {
 							terms.setAvailabilityStatus(
 									fAccessObject.getString(JsonLDTerm.availabilityStatus.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.contactForAccess.getUrl())&&(append || StringUtils.isBlank(terms.getContactForAccess()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.contactForAccess.getUrl())&&(!append || StringUtils.isBlank(terms.getContactForAccess()))) {
 							terms.setContactForAccess(fAccessObject.getString(JsonLDTerm.contactForAccess.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getUrl())&&(append || StringUtils.isBlank(terms.getSizeOfCollection()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.sizeOfCollection.getUrl())&&(!append || StringUtils.isBlank(terms.getSizeOfCollection()))) {
 							terms.setSizeOfCollection(fAccessObject.getString(JsonLDTerm.sizeOfCollection.getUrl()));
 						}
-						if (fAccessObject.containsKey(JsonLDTerm.studyCompletion.getUrl())&&(append || StringUtils.isBlank(terms.getStudyCompletion()))) {
+						if (fAccessObject.containsKey(JsonLDTerm.studyCompletion.getUrl())&&(!append || StringUtils.isBlank(terms.getStudyCompletion()))) {
 							terms.setStudyCompletion(fAccessObject.getString(JsonLDTerm.studyCompletion.getUrl()));
 						}
 					} else {
