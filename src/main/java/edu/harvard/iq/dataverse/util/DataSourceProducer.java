@@ -36,9 +36,13 @@ import javax.sql.DataSource;
     
     // "The number of seconds that a physical connection should remain unused in the pool before the connection is closed for a connection pool. "
     // Payara DataSourceDefinitionDeployer default value = 300 (seconds)
-    maxIdleTime = 300,
+    maxIdleTime = 300)
     
     // These are documented at https://docs.payara.fish/community/docs/5.2020.6/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
+    //
+    // All these vars cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
+    // See also https://github.com/payara/Payara/issues/5024
+    /*
     properties = {
         "fish.payara.pool-resize-quantity=${MPCONFIG=dataverse.db.pool-resize-quantity}",
         "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required}",
@@ -53,6 +57,7 @@ import javax.sql.DataSource;
         "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds}",
         "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls}"
     })
+    */
 public class DataSourceProducer {
     
     @Resource(lookup="java:app/jdbc/dataverse")
