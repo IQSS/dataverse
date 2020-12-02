@@ -19,8 +19,16 @@ import javax.sql.DataSource;
     user = "${MPCONFIG=dataverse.db.user}",
     password = "${MPCONFIG=dataverse.db.password}",
     url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host}:${MPCONFIG=dataverse.db.port}/${MPCONFIG=dataverse.db.name}",
+    //
+    // If we ever need to change these pool settings, we need to remove this class and create the resource
+    // from web.xml. We can use MicroProfile Config in there for these values, impossible to do in the annotation.
+    //
+    // See also https://blog.payara.fish/an-intro-to-connection-pools-in-payara-server-5
+    // Payara DataSourceDefinitionDeployer default value = 8
     minPoolSize = 10,
-    maxPoolSize = 200)
+    // HINT: Payara DataSourceDefinitionDeployer default value = 32
+    // HINT: Harvard Dataverse is fine for a while with 64
+    maxPoolSize = 100)
 public class DataSourceProducer {
     
     @Resource(lookup="java:app/jdbc/dataverse")
