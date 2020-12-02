@@ -152,8 +152,8 @@ public class JSONLDUtil {
 					DatasetField dsf = null;
 					if (fieldByTypeMap.containsKey(dsft)) {
 						dsf = fieldByTypeMap.get(dsft);
-						// If there's an existing field, we use it with append and remove it for !append
-						if (!append) {
+						// If there's an existing field, we use it with append and remove it for !append unless it's multiple
+						if (!append && !dsft.isAllowMultiples()) {
 							dsfl.remove(dsf);
 						}
 					}
@@ -256,8 +256,8 @@ public class JSONLDUtil {
 							DatasetField dsf = null;
 							if (fieldByTypeMap.containsKey(dsft)) {
 								dsf = fieldByTypeMap.get(dsft);
-								// If there's an existing field, we use it with append and remove it for !append
-								if (!append) {
+								// If there's an existing field, we use it with append and remove it for !append (except if multiple, which is not the default)
+								if (!append && !dsft.isAllowMultiples()) {
 									dsfl.remove(dsf);
 								}
 							}
