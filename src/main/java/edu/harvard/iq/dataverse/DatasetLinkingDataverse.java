@@ -26,6 +26,10 @@ import javax.persistence.TemporalType;
     @Index(columnList = "linkingDataverse_id")
 })
 @NamedQueries({
+    @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetId",
+               query = "select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id"),
+    @NamedQuery(name = "DatasetLinkingDataverse.findByLinkingDataverseId",
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId order by o.id"),    
     @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",
                query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataset.id = :datasetId"),
     @NamedQuery(name = "DatasetLinkingDataverse.findIdsByLinkingDataverseId",

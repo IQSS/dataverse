@@ -31,10 +31,9 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     public List<Dataset> findLinkedDatasets(Long dataverseId) {
         List<Dataset> datasets = new ArrayList<>();
-        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId", DatasetLinkingDataverse.class);
-        typedQuery.setParameter("dataverseId", dataverseId);
-        List<DatasetLinkingDataverse> datasetLinkingDataverses = typedQuery.getResultList();
-        for (DatasetLinkingDataverse datasetLinkingDataverse : datasetLinkingDataverses) {
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByLinkingDataverseId", DatasetLinkingDataverse.class)
+            .setParameter("linkingDataverseId", dataverseId);
+        for (DatasetLinkingDataverse datasetLinkingDataverse : typedQuery.getResultList()) {
             datasets.add(datasetLinkingDataverse.getDataset());
         }
         return datasets;
@@ -42,11 +41,10 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
 
     public List<Dataverse> findLinkingDataverses(Long datasetId) {
         List<Dataverse> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id");
-        query.setParameter("datasetId", datasetId);
-        for (Object o : query.getResultList()) {
-            DatasetLinkingDataverse converted = (DatasetLinkingDataverse) o;
-            retList.add(converted.getLinkingDataverse());
+        TypedQuery<DatasetLinkingDataverse> typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findByDatasetId", DatasetLinkingDataverse.class)
+            .setParameter("datasetId", datasetId);
+        for (DatasetLinkingDataverse datasetLinkingDataverse : typedQuery.getResultList()) {
+            retList.add(datasetLinkingDataverse.getLinkingDataverse());
         }
         return retList;
     }
@@ -61,7 +59,7 @@ public class DatasetLinkingServiceBean implements java.io.Serializable {
     
     public DatasetLinkingDataverse findDatasetLinkingDataverse(Long datasetId, Long linkingDataverseId) {
         try {
-            return (DatasetLinkingDataverse) em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId")
+            return em.createNamedQuery("DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",DatasetLinkingDataverse.class)
                 .setParameter("datasetId", datasetId)
                 .setParameter("linkingDataverseId", linkingDataverseId)
                 .getSingleResult();            

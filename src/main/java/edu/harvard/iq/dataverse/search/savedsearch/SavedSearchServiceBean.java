@@ -173,12 +173,12 @@ public class SavedSearchServiceBean {
         SolrQueryResponse queryResponse = findHits(savedSearch);
         
         // get linked objects and add to a list
-        TypedQuery<Long> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findIdsByLinkingDataverseId", Long.class);
-        typedQuery.setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
+        TypedQuery<Long> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
+            .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
         List alreadyLinkedObjectIds = typedQuery.getResultList();
         
-        typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findIdsByLinkingDataverseId", Long.class);
-        typedQuery.setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
+        typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
+            .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
         alreadyLinkedObjectIds.addAll(typedQuery.getResultList());
         
         for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
