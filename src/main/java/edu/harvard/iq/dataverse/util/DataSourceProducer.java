@@ -14,7 +14,6 @@ import javax.sql.DataSource;
     className = "org.postgresql.ds.PGSimpleDataSource",
     user = "${MPCONFIG=dataverse.db.user}",
     password = "${MPCONFIG=dataverse.db.password}",
-    serverName = "${MPCONFIG=dataverse.db.host}",
     url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host}:${MPCONFIG=dataverse.db.port}/${MPCONFIG=dataverse.db.name}",
     minPoolSize = 10,
     maxPoolSize = 200)
