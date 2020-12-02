@@ -175,9 +175,9 @@
     <!-- Download Options -->
     
     <!-- Request Access Options -->
-    
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest}">
+        <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
         <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}">
             <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
                                                                     and !requestAccessPopupRequired}"
@@ -207,7 +207,6 @@
             </p:commandLink>
         </li>
     </ui:fragment>
-  
     <!-- END: Request Access Options -->
     
     <!-- Explore Options -->
