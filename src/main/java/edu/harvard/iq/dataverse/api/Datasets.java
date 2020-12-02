@@ -142,6 +142,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -617,7 +618,7 @@ public class Datasets extends AbstractApiBean {
 	@Path("{id}/versions/{versionId}/metadata")
 	@Consumes("application/json-ld")
 	public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id,
-			@PathParam("versionId") String versionId, @QueryParam("replace") boolean replaceTerms) {
+			@PathParam("versionId") String versionId, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
 		if (!":draft".equals(versionId)) {
 			return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
