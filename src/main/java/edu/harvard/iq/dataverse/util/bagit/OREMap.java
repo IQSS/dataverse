@@ -341,7 +341,7 @@ public class OREMap {
                 namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
                         + "#";
             }
-            JsonLDNamespace blockNamespace = new JsonLDNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
+            JsonLDNamespace blockNamespace = JsonLDNamespace.defineNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
             return new JsonLDTerm(blockNamespace, dsft.getTitle());
         }
     }
@@ -357,7 +357,7 @@ public class OREMap {
                         + dfType.getMetadataBlock().getName() + "/";
             }
             subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
+            JsonLDNamespace fieldNamespace = JsonLDNamespace.defineNamespace(dfType.getName(), subFieldNamespaceUri);
             return new JsonLDTerm(fieldNamespace, dsft.getTitle());
         }
     }

@@ -452,25 +452,21 @@ public class JSONLDUtil {
     private static void populateContext(MetadataBlockServiceBean metadataBlockSvc) {
         if (localContext.isEmpty()) {
 
-            // Add namespaces corresponding to core terms
-            localContext.put(JsonLDNamespace.dcterms.getPrefix(), JsonLDNamespace.dcterms.getUrl());
-            localContext.put(JsonLDNamespace.dvcore.getPrefix(), JsonLDNamespace.dvcore.getUrl());
-            localContext.put(JsonLDNamespace.schema.getPrefix(), JsonLDNamespace.schema.getUrl());
-
             List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
 
             for (MetadataBlock mdb : mdbList) {
                 boolean blockHasUri = mdb.getNamespaceUri() != null;
                 if (blockHasUri) {
-                    localContext.putIfAbsent(mdb.getName(), mdb.getNamespaceUri());
-
+                    JsonLDNamespace.defineNamespace(mdb.getName(), mdb.getNamespaceUri());
                 }
                 for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                    if (dsft.getUri() != null) {
+                    if ((dsft.getUri() != null) && !JsonLDNamespace.isInNamespace(dsft.getUri())) {
+                        //Add term if uri exists and it's not in one of the namespaces already defined
                         localContext.putIfAbsent(dsft.getName(), dsft.getUri());
                     }
                 }
             }
+            JsonLDNamespace.addNamespacesToContext(localContext);
             logger.fine("LocalContext keys: " + String.join(", ", localContext.keySet()));
         }
     }
