@@ -1082,6 +1082,16 @@ public class SystemConfig {
         return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
     }
     
+    public String getDataverseValidationFailureMsg() {
+        String defaultMessage = "This dataverse cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidationFailureMsg, defaultMessage);
+    }
+    
+    public String getDatasetValidationFailureMsg() {
+        String defaultMessage = "This dataset cannot be published because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidationFailureMsg, defaultMessage);
+    }
+    
     public boolean isExternalValidationAdminOverrideEnabled() {
         return "true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.ExternalValidationAdminOverride));
     }

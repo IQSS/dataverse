@@ -96,7 +96,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 boolean result = validateDatasetMetadataExternally(theDataset, executable);
             
                 if (!result) {
-                    throw new IllegalCommandException("This dataset cannot be published because it has failed an external metadata validation test.", this);
+                    String rejectionMessage = ctxt.systemConfig().getDatasetValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
                 }
             } 
         }

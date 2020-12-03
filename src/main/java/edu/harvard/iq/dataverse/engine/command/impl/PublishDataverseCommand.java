@@ -51,7 +51,8 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
                 boolean result = validateDataverseMetadataExternally(dataverse, executable);
             
                 if (!result) {
-                    throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " cannot be published because it has failed an external metadata validation test.", this);
+                    String rejectionMessage = ctxt.systemConfig().getDataverseValidationFailureMsg();
+                    throw new IllegalCommandException(rejectionMessage, this);
                 }
             }
         }
