@@ -443,7 +443,10 @@ public class SettingsServiceBean {
          * check for spam, etc. 
          */
         DataverseMetadataValidatorScript,
-        DatasetMetadataValidatorScript
+        DatasetMetadataValidatorScript,
+        DataverseMetadataValidationFailureMsg,
+        DatasetMetadataValidationFailureMsg,
+        ExternalValidationAdminOverride
         ;
 
         @Override

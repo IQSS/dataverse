@@ -45,11 +45,14 @@ public class PublishDataverseCommand extends AbstractCommand<Dataverse> {
 
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDataverseValidationEnabled()) {
-            String executable = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidatorScript, "");
-            boolean result = validateDataverseMetadataExternally(dataverse, executable);
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDataverseValidationExecutable();
+                boolean result = validateDataverseMetadataExternally(dataverse, executable);
             
-            if (!result) {
-                throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " cannot be published because it has failed an external metadata validation test.", this);
+                if (!result) {
+                    throw new IllegalCommandException("Dataverse " + dataverse.getAlias() + " cannot be published because it has failed an external metadata validation test.", this);
+                }
             }
         }
         

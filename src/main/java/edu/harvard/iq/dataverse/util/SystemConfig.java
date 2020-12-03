@@ -1082,4 +1082,8 @@ public class SystemConfig {
         return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript);
     }
     
+    public boolean isExternalValidationAdminOverrideEnabled() {
+        return "true".equalsIgnoreCase(settingsService.getValueForKey(SettingsServiceBean.Key.ExternalValidationAdminOverride));
+    }
+    
 }

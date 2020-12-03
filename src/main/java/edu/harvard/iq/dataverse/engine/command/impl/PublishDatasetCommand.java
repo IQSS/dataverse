@@ -90,12 +90,15 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
-            String executable = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidatorScript, "");
-            boolean result = validateDatasetMetadataExternally(theDataset, executable);
+            // For admins, an override of the external validation step may be enabled: 
+            if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
+                String executable = ctxt.systemConfig().getDatasetValidationExecutable();
+                boolean result = validateDatasetMetadataExternally(theDataset, executable);
             
-            if (!result) {
-                throw new IllegalCommandException("This dataset cannot be published because it has failed an external metadata validation test.", this);
-            }
+                if (!result) {
+                    throw new IllegalCommandException("This dataset cannot be published because it has failed an external metadata validation test.", this);
+                }
+            } 
         }
         
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
