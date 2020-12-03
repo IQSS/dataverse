@@ -179,21 +179,11 @@
                              and fileMetadata.dataFile.owner.fileAccessRequest}">
         <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
         <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}">
-            <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
-                                                                    and !requestAccessPopupRequired}"
-                        process="@this"
-                        actionListener="#{fileDownloadHelper.requestAccess(fileMetadata.dataFile)}"
-                        update="@this,@([id$=requestButtonNoPopup])"    
-                        id="requestButtonNoPopup"
-                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
-            </p:commandLink>
-            <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated 
-                                                                    and requestAccessPopupRequired}"
-                        process="@this"
-                        actionListener="#{fileDownloadHelper.addFileForRequestAccess(fileMetadata.dataFile)}"
-                        onclick="PF('requestAccessPopup').show()"
-                        id="requestAccessPopupLink"
+
+            <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"                         
+                        actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
+                        update="@([id$=requestAccessConsolidated])" 
+                        id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 
                 <!-- TODO fix disabled styling span vs a -->
