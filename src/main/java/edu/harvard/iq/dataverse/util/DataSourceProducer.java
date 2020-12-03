@@ -37,27 +37,17 @@ import javax.sql.DataSource;
     // "The number of seconds that a physical connection should remain unused in the pool before the connection is closed for a connection pool. "
     // Payara DataSourceDefinitionDeployer default value = 300 (seconds)
     maxIdleTime = 300)
-    
-    // These are documented at https://docs.payara.fish/community/docs/5.2020.6/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
+    // It's possible to add additional properties like this...
     //
-    // All these vars cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
+    //properties = {
+    //    "fish.payara.log-jdbc-calls=true"
+    //})
+    //
+    // ... but at this time we don't think we need any. The full list
+    // of properties can be found at https://docs.payara.fish/community/docs/5.2020.6/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
+    //
+    // All these properties cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
     // See also https://github.com/payara/Payara/issues/5024
-    /*
-    properties = {
-        "fish.payara.pool-resize-quantity=${MPCONFIG=dataverse.db.pool-resize-quantity}",
-        "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required}",
-        "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method}",
-        "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name}",
-        "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname}",
-        "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds}",
-        "fish.payara.connection-leak-reclaim=${MPCONFIG=dataverse.db.connection-leak-reclaim}",
-        "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds}",
-        "fish.payara.statement-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-leak-timeout-in-seconds}",
-        "fish.payara.statement-leak-reclaim=${MPCONFIG=dataverse.db.statement-leak-reclaim}",
-        "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds}",
-        "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls}"
-    })
-    */
 public class DataSourceProducer {
     
     @Resource(lookup="java:app/jdbc/dataverse")
