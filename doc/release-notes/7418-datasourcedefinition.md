@@ -1,4 +1,6 @@
-## Easier Configuration of Database Connections
+## Release Highlights
+
+### Easier Configuration of Database Connections
 
 Dataverse now being able to use up-to-date Java technologies, transforms
 the way how to configure the connection to your PostgreSQL database.
@@ -11,6 +13,15 @@ Using MicroProfile Config API (#7000, #7418), you can much more easily specify c
 details. For an overview of supported options, please see the
 [installation guide](https://guides.dataverse.org/en/5.3/installation/config.html#jvm-options).
 
+## Notes for Dataverse Installation Administrators
+
+### New JVM Options
+
+- dataverse.db.name
+- dataverse.db.user
+- dataverse.db.password
+- dataverse.db.host
+- dataverse.db.port
 
 <!-- ## Update to Payara Platform 5.2020.6 -->
 <!-- ... -->
