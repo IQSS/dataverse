@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import edu.harvard.iq.dataverse.DataFile;
 
 public class JsonLDNamespace {
 
@@ -20,9 +23,15 @@ public class JsonLDNamespace {
 	private static List<JsonLDNamespace> namespaces = new ArrayList<JsonLDNamespace>(Arrays.asList(dvcore, dcterms, ore, schema));
 	
 	public static JsonLDNamespace defineNamespace(String prefix, String url) {
+	    
 	    JsonLDNamespace ns = new JsonLDNamespace(prefix, url);
-	    namespaces.add(ns);
-	    return ns;
+	    int i = namespaces.indexOf(ns);
+	    if(i>=0) {
+	        return namespaces.get(i);
+	    } else {
+	      namespaces.add(ns);
+	      return ns;
+	    }
 	}
 	
 	public static void deleteNamespace(JsonLDNamespace ns) {
@@ -56,5 +65,14 @@ public class JsonLDNamespace {
 	public String getUrl() {
 		return url;
 	}
+	
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof JsonLDNamespace)) {
+            return false;
+        }
+        JsonLDNamespace other = (JsonLDNamespace) object;
+        return (other.getPrefix().equals(getPrefix()) && other.getUrl().equals(getUrl()));
+    }
 
 }
