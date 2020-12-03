@@ -931,7 +931,10 @@ public class DataversePage implements java.io.Serializable {
 
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Unexpected Exception calling  publish dataverse command", ex);
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.failure"));
+                String failureMessage = ex.getMessage() == null 
+                        ? BundleUtil.getStringFromBundle("dataverse.publish.failure")
+                        : ex.getMessage();
+                JsfHelper.addErrorMessage(failureMessage);
 
             }
         } else {
