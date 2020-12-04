@@ -34,7 +34,7 @@
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
-        <testcontainers.version>1.13.0</testcontainers.version>
+        <testcontainers.version>1.15.0</testcontainers.version>
         <microbean-mpconfig.version>0.4.1</microbean-mpconfig.version>
         <mockito.version>2.28.2</mockito.version>
         <flyway.version>5.2.4</flyway.version>
