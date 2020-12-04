@@ -75,7 +75,7 @@ public class JSONLDUtil {
         return contextBuilder.build();
     }
 
-    public static Dataset updateDatasetFromJsonLD(Dataset ds, String jsonLDBody,
+    public static Dataset updateDatasetMDFromJsonLD(Dataset ds, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
 
         DatasetVersion dsv = new DatasetVersion();
@@ -90,7 +90,7 @@ public class JSONLDUtil {
                     + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
         }
 
-        dsv = updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
+        dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
         dsv.setDataset(ds);
 
         List<DatasetVersion> versions = new ArrayList<>(1);
@@ -111,10 +111,10 @@ public class JSONLDUtil {
         return ds;
     }
 
-    public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, String jsonLDBody,
+    public static DatasetVersion updateDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        return updateDatasetVersionFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
+        return updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
     }
 
     /**
@@ -129,7 +129,7 @@ public class JSONLDUtil {
      *                         value(s) for fields found in the json-ld.
      * @return
      */
-    public static DatasetVersion updateDatasetVersionFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
+    public static DatasetVersion updateDatasetVersionMDFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
 
         populateFieldTypeMap(metadataBlockSvc);
@@ -294,6 +294,104 @@ public class JSONLDUtil {
 
         return dsv;
     }
+    /**
+     * 
+     * @param dsv
+     * @param jsonLDBody
+     * @param metadataBlockService
+     * @param datasetFieldSvc
+     * @param b
+     * @param c
+     * @return
+     */
+    public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
+            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+
+        JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
+        //All terms are now URIs
+        //Setup dsftMap - URI to datasetFieldType map
+        populateFieldTypeMap(metadataBlockSvc);
+
+
+        //Another map - from datasetFieldType to an existing field in the dataset
+        List<DatasetField> dsfl = dsv.getDatasetFields();
+        Map<DatasetFieldType, DatasetField> fieldByTypeMap = new HashMap<DatasetFieldType, DatasetField>();
+        for (DatasetField dsf : dsfl) {
+            if (fieldByTypeMap.containsKey(dsf.getDatasetFieldType())) {
+                // May have multiple values per field, but not multiple fields of one type?
+                logger.warning("Multiple fields of type " + dsf.getDatasetFieldType().getName());
+            }
+            fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
+        }
+        
+        TermsOfUseAndAccess terms = dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
+
+        //Iterate through input json
+        for (String key : jsonld.keySet()) {
+            //Skip context (shouldn't be present with decontextualize used above)
+            if (!key.equals("@context")) {
+                if (dsftMap.containsKey(key)) {
+                    //THere's a field type with theis URI
+                    DatasetFieldType dsft = dsftMap.get(key);
+                    DatasetField dsf = null;
+                    if (fieldByTypeMap.containsKey(dsft)) {
+                        //There's a field of this type
+                        dsf = fieldByTypeMap.get(dsft);
+
+                        // Todo - normalize object vs. array
+                        JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
+
+                        DatasetField dsf2 = getReplacementField(dsf, valArray);
+                        if(dsf2 == null) {
+                            //Exact match - remove the field
+                            dsfl.remove(dsf);
+                        } else if(!dsf2.equals(dsf)) {
+                            //Partial match - some values of a multivalue field match, so keep the remaining values
+                            dsfl.remove(dsf);
+                            dsfl.add(dsf2);
+                        }
+                    }
+                } else {
+                    // Internal/non-metadatablock terms
+                    if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                        if(jsonld.getString(key).equals(TermsOfUseAndAccess.CC0_URI)) {
+                            setSemTerm(terms, key, TermsOfUseAndAccess.License.NONE);
+                        } else {
+                            throw new BadRequestException(
+                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                        }
+                    } else if (datasetTerms.contains(key)) {
+                        if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
+                            throw new BadRequestException(
+                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                        }
+                    } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
+                        JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
+                        for (String fileKey : fAccessObject.keySet()) {
+                            if (datafileTerms.contains(fileKey)) {
+                                if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
+                                    throw new BadRequestException(
+                                            "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                                }
+                            }
+                        }
+                    } else {
+                        throw new BadRequestException(
+                                "Term: " + key + " not found.");
+                                    }
+                    
+                    dsv.setTermsOfUseAndAccess(terms);
+                }
+            }
+        }
+        dsv.setDatasetFields(dsfl);
+        return dsv;
+    }
+    
+    private static DatasetField getReplacementField(DatasetField dsf, JsonArray valArray) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     private static void addField(DatasetField dsf, JsonArray valArray, DatasetFieldType dsft,
             DatasetFieldServiceBean datasetFieldSvc, boolean append) {
@@ -449,7 +547,7 @@ public class JSONLDUtil {
         }
     }
 
-    private static void populateContext(MetadataBlockServiceBean metadataBlockSvc) {
+    public static void populateContext(MetadataBlockServiceBean metadataBlockSvc) {
         if (localContext.isEmpty()) {
 
             List<MetadataBlock> mdbList = metadataBlockSvc.listMetadataBlocks();
@@ -673,7 +771,7 @@ public class JSONLDUtil {
                 terms.setLicense(TermsOfUseAndAccess.defaultLicense);
             } else {
                 throw new BadRequestException("The only allowed value for " + JsonLDTerm.schemaOrg("license").getUrl()
-                        + " is " + "https://creativecommons.org/publicdomain/zero/1.0/");
+                        + " is " + TermsOfUseAndAccess.CC0_URI);
             }
             break;
         case "https://dataverse.org/schema/core#termsOfUse":
@@ -729,4 +827,112 @@ public class JSONLDUtil {
             break;
         }
     }
+
+    private static boolean deleteIfSemTermMatches(TermsOfUseAndAccess terms, String semterm, JsonValue jsonValue) {
+        boolean foundTerm=false;
+        switch (semterm) {
+        
+        case "https://dataverse.org/schema/core#termsOfUse":
+            if(terms.getTermsOfUse().equals(jsonValue.toString())) {
+                terms.setTermsOfAccess(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#confidentialityDeclaration":
+            if(terms.getConfidentialityDeclaration().equals(jsonValue.toString())) {
+                terms.setConfidentialityDeclaration(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#specialPermissions":
+            if(terms.getSpecialPermissions().equals(jsonValue.toString())) {
+                terms.setSpecialPermissions(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#restrictions":
+            if(terms.getRestrictions().equals(jsonValue.toString())) {
+                terms.setRestrictions(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#citationRequirements":
+            if(terms.getCitationRequirements().equals(jsonValue.toString())) {
+                terms.setCitationRequirements(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#depositorRequirements":
+            if(terms.getDepositorRequirements().equals(jsonValue.toString())) {
+                terms.setDepositorRequirements(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#conditions":
+            if(terms.getConditions().equals(jsonValue.toString())) {
+                terms.setConditions(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#disclaimer":
+            if(terms.getDisclaimer().equals(jsonValue.toString())) {
+                terms.setDisclaimer(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#termsOfAccess":
+            if(terms.getTermsOfAccess().equals(jsonValue.toString())) {
+                terms.setTermsOfAccess(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#fileRequestAccess":
+            if(terms.isFileAccessRequest() && (jsonValue.equals(JsonValue.TRUE))) {
+                terms.setFileAccessRequest(false);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#dataAccessPlace":
+            if(terms.getDataAccessPlace().equals(jsonValue.toString())) {
+                terms.setDataAccessPlace(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#originalArchive":
+            if(terms.getOriginalArchive().equals(jsonValue.toString())) {
+                terms.setOriginalArchive(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#availabilityStatus":
+            if(terms.getAvailabilityStatus().equals(jsonValue.toString())) {
+                terms.setAvailabilityStatus(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#contactForAccess":
+            if(terms.getContactForAccess().equals(jsonValue.toString())) {
+                terms.setContactForAccess(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#sizeOfCollection":
+            if(terms.getSizeOfCollection().equals(jsonValue.toString())) {
+                terms.setSizeOfCollection(null);
+                foundTerm=true;
+            }
+            break;
+        case "https://dataverse.org/schema/core#studyCompletion":
+            if(terms.getStudyCompletion().equals(jsonValue.toString())) {
+                terms.setStudyCompletion(null);
+                foundTerm=true;
+            }
+            break;
+        default:
+            logger.warning("deleteIfSemTermMatches called for " + semterm);
+            break;
+        }
+        return foundTerm; 
+    }
+
 }

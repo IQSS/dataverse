@@ -102,6 +102,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
@@ -613,22 +614,80 @@ public class Datasets extends AbstractApiBean {
             
         }
     }
+  
+    @GET
+    @Path("{id}/versions/{versionid}/metadata")
+    @Produces("application/json-ld")
+    public Response getVersionMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId) {
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = ds.getEditVersion();
+            OREMap ore = new OREMap(dsv,
+                    settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
+            return ok(JSONLDUtil.prettyPrint(ore.getOREMap(true)));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        } catch (Exception jpe) {
+            logger.log(Level.SEVERE, "Error getting jsonld metadata for dsv: ", jpe.getLocalizedMessage());
+            return error(Response.Status.INTERNAL_SERVER_ERROR, jpe.getLocalizedMessage());
+        }
+    }
+
+    @GET
+    @Path("{id}/metadata")
+    @Produces("application/json-ld")
+    public Response getVersionMetadata(@PathParam("id") String id) {
+        return getVersionMetadata(id, ":draft");
+    }
+            
+    @PUT
+    @Path("{id}/metadata")
+    @Consumes("application/json-ld")
+    public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id,
+            @PathParam("versionId") String versionId, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+
+        if (!":draft".equals(versionId)) {
+            return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
+        }
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = ds.getEditVersion();
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
+            
+            DatasetVersion managedVersion;
+            if (updateDraft) {
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                managedVersion = managedDataset.getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            }
+            String info = updateDraft ? "Version Updated" : "Version Created";
+            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+        }
+    }
     
-	@PUT
-	@Path("{id}/versions/{versionId}/metadata")
+	@DELETE
+	@Path("{id}/metadata")
 	@Consumes("application/json-ld")
-	public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id,
+	public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id,
 			@PathParam("versionId") String versionId, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
-		if (!":draft".equals(versionId)) {
-			return error(Response.Status.BAD_REQUEST, "Only the :draft version can be updated");
-		}
 		try {
 			Dataset ds = findDatasetOrDie(id);
 			DataverseRequest req = createDataverseRequest(findUserOrDie());
 			DatasetVersion dsv = ds.getEditVersion();
 			boolean updateDraft = ds.getLatestVersion().isDraft();
-			dsv = JSONLDUtil.updateDatasetVersionFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
+			dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
 			
 			DatasetVersion managedVersion;
 			if (updateDraft) {
