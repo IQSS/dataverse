@@ -301,7 +301,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             }
 
             workflowExecutionFacade.start(
-                workflow.get(), new WorkflowContext(PostPublishDataset, dataset.getId(), datasetVersion.getMinorVersionNumber(), datasetVersion.getVersionNumber(), createDataverseRequest(findUserOrDie()), true));
+                workflow.get(), new WorkflowContext(PostPublishDataset, dataset.getId(), datasetVersion.getVersionNumber(), datasetVersion.getMinorVersionNumber(), createDataverseRequest(findUserOrDie()), true));
         }
         return ok("Datasets processed");
     }
