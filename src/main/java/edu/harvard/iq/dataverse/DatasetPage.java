@@ -2375,11 +2375,8 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    private boolean bulkUpdateCheckVersion(){
-        return workingVersion.isReleased();
-    }
     
-    private void refreshSelectedFiles(){
+    private void refreshSelectedFiles(List<FileMetadata> filesToRefresh){
         if (readOnly) {
             dataset = datasetService.find(dataset.getId());
         }
@@ -2389,7 +2386,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
         workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(requestAccess);
         List <FileMetadata> newSelectedFiles = new ArrayList<>();
-        for (FileMetadata fmd : selectedFiles){
+        for (FileMetadata fmd : filesToRefresh){
             for (FileMetadata fmdn: workingVersion.getFileMetadatas()){
                 if (fmd.getDataFile().equals(fmdn.getDataFile())){
                     newSelectedFiles.add(fmdn);
@@ -2397,9 +2394,9 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        selectedFiles.clear();
+        filesToRefresh.clear();
         for (FileMetadata fmdn : newSelectedFiles ){
-            selectedFiles.add(fmdn);
+            filesToRefresh.add(fmdn);
         }
         readOnly = false;
     }
@@ -3243,62 +3240,8 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }
-
-    List<FileMetadata> previouslyRestrictedFiles = null;
     
-    public boolean isShowAccessPopup() {
-        
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-
-            if (fmd.isRestricted()) {
-            
-                if (editMode == EditMode.CREATE) {
-                    // if this is a brand new file, it's definitely not 
-                    // of a previously restricted kind!
-                    return true; 
-                }
-            
-                if (previouslyRestrictedFiles != null) {
-                    // We've already checked whether we are in the CREATE mode, 
-                    // above; and that means we can safely assume this filemetadata
-                    // has an existing db id. So it is safe to use the .contains()
-                    // method below:
-                    if (!previouslyRestrictedFiles.contains(fmd)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-    
-    public String testSelectedFilesForRestrict(){
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        if (selectedFiles.isEmpty()) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");           
-            return "";
-        } else {           
-            boolean validSelection = true;
-            for (FileMetadata fmd : selectedFiles) {
-                if (fmd.isRestricted() == true) {
-                    validSelection = false;
-                    break;
-                }
-            }
-            if (!validSelection) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-                return "";
-            }                       
-            testSelectedFilesForMapData();
-            PrimeFaces.current().executeScript("PF('accessPopup').show()");
-            return "";
-        }        
-    }
-    
-    public String restrictFiles(boolean restricted) throws CommandException{
+    public String restrictFiles(boolean restricted) throws CommandException{        
         if (fileMetadataForAction != null) {
             return restrictFile(restricted);
         }
@@ -3306,9 +3249,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private String restrictFile(boolean restricted) throws CommandException {
-        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
-        save();        
-        return  returnToDraftVersion(); 
+        List<FileMetadata> fileAsList = new ArrayList();
+        fileAsList.add(fileMetadataForAction);
+       
+        restrictFiles(fileAsList, restricted);   
+        return save();        
     };    
        
     private String restrictSelectedFiles(boolean restricted) throws CommandException{        
@@ -3338,24 +3283,20 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        if (editMode != EditMode.CREATE) {
-            if (bulkUpdateCheckVersion()) {
-                refreshSelectedFiles();
-            }
-            restrictFiles(this.getSelectedFiles(), restricted);
-        }
-        
-        save();
-        return  returnToDraftVersion();
+        restrictFiles(this.getSelectedFiles(), restricted);
+        return save();
     }
     
     private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
+
+        // todo: this seems to be have been added to get around an optmistic lock; it may be worth investigating
+        // if there's a better way to handle
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
+
         Command<Void> cmd;
-        previouslyRestrictedFiles = new ArrayList<>();
         for (FileMetadata fmd : filesToRestrict) {
-            if(fmd.isRestricted()) {
-                previouslyRestrictedFiles.add(fmd);
-            }
             if (restricted  != fmd.isRestricted()) {
                 cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
                 commandEngine.submit(cmd);
@@ -3387,21 +3328,24 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     private String  deleteFile(){
-        deleteFiles(Collections.singletonList(fileMetadataForAction));
+        List<FileMetadata> fileAsList = new ArrayList();
+        fileAsList.add(fileMetadataForAction);
+        
+        deleteFiles(fileAsList);
         return save();       
     }     
     
     private String  deleteSelectedFiles(){
         bulkFileDeleteInProgress = true;
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles(); 
-        }
         deleteFiles(selectedFiles);
         return save();       
     }   
     
     private void deleteFiles(List<FileMetadata> filesToDelete) {
-
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
+        
         for (FileMetadata markedForDelete : filesToDelete) {
             
             if (markedForDelete.getId() != null) {
@@ -4598,9 +4542,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void refreshTagsPopUp(){
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles();           
-        }  
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
         updateFileCounts();
         refreshCategoriesByName();
         refreshTabFileTagsByName();
@@ -4781,8 +4725,8 @@ public class DatasetPage implements java.io.Serializable {
         // page with the FileMetadata.setCategoriesByName() method. 
         // So here we only need to take care of the new, custom category
         // name, if entered: 
-        if (bulkUpdateCheckVersion()) {
-            refreshSelectedFiles();
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (selectedFiles != null && selectedFiles.size() > 0) {

@@ -692,41 +692,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }*/
     
-    List<FileMetadata> previouslyRestrictedFiles = null;
-    
-    public boolean isShowAccessPopup() {
-        for (FileMetadata fmd : this.fileMetadatas) {
-            if (fmd.isRestricted()) {
-            
-                if (fmd.getDataFile().getId() == null) {
-                    // if this is a brand new file, it's definitely not 
-                    // of a previously restricted kind!
-                    return true; 
-                }
-            
-                if (previouslyRestrictedFiles != null) {
-                    boolean contains = false;
-                    for (FileMetadata fmp : previouslyRestrictedFiles) {
-                        // OK, we've already checked if it's a brand new file - 
-                        // above. So we can safely assume that this datafile
-                        // has a valid db id... so it is safe to use the 
-                        // equals() method:
-                        if (fmp.getDataFile().equals(fmd.getDataFile())) {
-                            contains = true;
-                            break;
-                        }
-                    }
-                    if (!contains) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
-    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-     
+         
     //This function was reverted to its pre-commands state as the current command
     //requires editDataset privlidges. If a non-admin user with only createDataset privlidges
     //attempts to restrict a datafile before the dataset is created, the operation
@@ -737,20 +703,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         //First make sure they've even selected file(s) to restrict.... 
         if (this.getSelectedFiles().isEmpty()) {
             if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrictEditFilesPage').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
             } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrictEditFilesPage').show()");
+                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
             }
             return;
-        }
-
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determining whether to show the access popup
-        previouslyRestrictedFiles = new ArrayList<>();
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (fmd.isRestricted()) {
-                previouslyRestrictedFiles.add(fmd);
-            }
         }
         
         String fileNames = null;
@@ -777,43 +734,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // a draft here - it must be a draft, if we've gotten this
                 // far. But just in case. -- L.A. 4.2.1
                   fmd.getDataFile().setRestricted(restricted);              
-            }
-        }
-        if (fileNames != null) {
-            String successMessage = getBundleString("file.restricted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }
-    } 
-
-    public void restrictFilesDP(boolean restricted) {
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
-        if (previouslyRestrictedFiles == null) {
-            previouslyRestrictedFiles = new ArrayList<>();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
-            }
-        }        
-        
-        String fileNames = null;       
-        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-            for (FileMetadata fmd : this.getSelectedFiles()) {
-                if (restricted && !fmw.isRestricted()) {
-                // collect the names of the newly-restrticted files, 
-                    // to show in the success message:
-                    if (fileNames == null) {
-                        fileNames = fmd.getLabel();
-                    } else {
-                        fileNames = fileNames.concat(", " + fmd.getLabel());
-                    }
-                }
-                if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                    fmw.setRestricted(restricted);
-                }
             }
         }
         if (fileNames != null) {
@@ -1011,10 +931,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-    public String saveWithTermsOfUse() {
-        logger.fine("saving terms of use, and the dataset version");
-        return save();
-    }
     
     
     /**

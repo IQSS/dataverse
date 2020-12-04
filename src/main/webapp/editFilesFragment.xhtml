@@ -316,7 +316,6 @@
                                      emptyMessage="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}">
                             <f:facet name="header">
                                 <div jsf:id="filesHeaderBlock" class="row">
-                                    <h:inputHidden id="showAccessPopup" value="#{EditDatafilesPage.showAccessPopup}"/>
                                     <div id="filesHeaderCount" class="col-xs-6 text-left">
                                         <!-- Files Count -->
                                         <h:outputFormat value="#{datasetPage ? bundle['file.count.shown'] : bundle['file.count.shown']}" styleClass="highlightBold" rendered="#{!empty EditDatafilesPage.fileMetadatas}">
@@ -416,17 +415,22 @@
                                         </button>
                                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                                <p:commandLink  onclick="checkFilesSelected();" > 
+                                                <p:commandLink  onclick="if (!testFilesSelectedForDelete()) return false;" 
+                                                                oncomplete="PF('editDeleteFileConfirmation').show();">                                                  
                                                     <h:outputText value="#{bundle['file.delete']}"/> 
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.restrictFiles(true)}">
+                                                <p:commandLink  onclick="if (!testFilesSelectedForRestriction()) return false;" 
+                                                                oncomplete="PF('editFileAccessPopup').show();">                                                               
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink update="filesTable,:messagePanel" oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" actionListener="#{EditDatafilesPage.restrictFiles(false)}">
+                                                <p:commandLink  onclick="if (!testFilesSelectedForUnRestriction()) return false;"
+                                                                actionListener="#{EditDatafilesPage.restrictFiles(false)}"
+                                                                update="filesTable,:messagePanel" 
+                                                                oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" >
                                                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                                                 </p:commandLink>
                                             </li>
@@ -570,24 +574,15 @@
         </div>
     </p:dialog>
     
-    <p:dialog id="selectFilesForDeleteFragment" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDeleteFragment" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
-        <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForDeleteFragment').hide();bind_bsui_components();" type="button">                              
-                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>
-    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="editDeleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editDeleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}"/>
-            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
+            <button class="btn btn-link" onclick="PF('editDeleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -619,8 +614,12 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editFileAccessPopup').hide()" update=":datasetForm,:messagePanel" oncomplete="javascript:bind_bsui_components();" action="#{EditDatafilesPage.saveWithTermsOfUse()}"/>
-            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" type="button">                              
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" 
+                             onclick="PF('editFileAccessPopup').hide()" 
+                             action="#{EditDatafilesPage.restrictFiles(true)}"
+                             update="filesTable,:messagePanel"
+                             oncomplete="javascript:bind_bsui_components();" />
+            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide();" oncomplete="javascript:bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -944,14 +943,6 @@
             $('button[id$="updateEditDataFilesButtonsForDelete"]').trigger('click');
             $('button[id$="allDeletesFinished"]').trigger('click');
         }
-        function checkFilesSelected() {
-            var count = PF('filesTable').getSelectedRowsCount();
-            if (count > 0) {
-                PF('deleteFileConfirmation').show();
-            } else {
-                PF('selectFilesForDeleteFragment').show();              
-            }
-        }
         function openDropboxChooser() {
             options = {
                 // Required. Called when a user selects an item in the Chooser.
@@ -968,6 +959,27 @@
                 multiselect: "#{datasetPage || EditDatafilesPage.allowMultipleFileUpload()}",
             };
             Dropbox.choose(options);
+        }
+        
+        function testFilesSelected(popup) {
+            var count = PF('filesTable').getSelectedRowsCount();
+            if (count == 0) {
+                PF(popup).show();
+            } else {
+                return true;
+            }                        
+        }
+
+        function testFilesSelectedForRestriction() {
+            return testFilesSelected("selectFilesForRestrict");
+        }
+
+        function testFilesSelectedForUnRestriction() {
+            return testFilesSelected("selectFilesForUnRestrict");
+        }                    
+
+        function testFilesSelectedForDelete() {
+            return testFilesSelected("selectFilesForDelete");    
         }
         //]]>
     </script>

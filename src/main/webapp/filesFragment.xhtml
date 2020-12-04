@@ -109,7 +109,6 @@
                             <f:passThroughAttribute name="aria-labelledby" value="searchLabel"/>
                         </p:inputText>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
