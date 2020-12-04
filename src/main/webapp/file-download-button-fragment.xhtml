@@ -175,14 +175,16 @@
     <!-- Download Options -->
     
     <!-- Request Access Options -->
+    <!-- Output panel makes the "Request Access" button label pull left Access Requested looks OK -->
+    <p:outputPanel layout="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'block' : 'inline'}" id="requestPanel">
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and fileMetadata.dataFile.owner.fileAccessRequest}">
+                             and fileMetadata.dataFile.owner.fileAccessRequest}" >
         <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
         <li class="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}">
 
             <p:commandLink styleClass="btn-request" rendered="#{fileDownloadHelper.session.user.authenticated}"                         
                         actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
-                        update="@([id$=requestAccessConsolidated])" 
+                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])" 
                         id="requestAccessConsolidated"
                         disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
                 
@@ -197,6 +199,7 @@
             </p:commandLink>
         </li>
     </ui:fragment>
+    </p:outputPanel>
     <!-- END: Request Access Options -->
     
     <!-- Explore Options -->
