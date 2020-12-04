@@ -735,7 +735,7 @@ function reinitializePrimefacesComponentsJS() {
         }
     }
 
-    if (PrimeFaces.widgrt.BlockUI) {
+    if (PrimeFaces.widget.BlockUI) {
         var originalBlockUIRender = PrimeFaces.widget.Paginator.prototype.render;
         var originalBlockUIShow = PrimeFaces.widget.Paginator.prototype.show;
         var originalBlockUIHide = PrimeFaces.widget.Paginator.prototype.hide;
