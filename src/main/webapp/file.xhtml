@@ -473,7 +473,7 @@
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
                                 <div id="previewPresentation" class="embed-responsive embed-responsive-16by9" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.isPreviewAllowed(FilePage.fileMetadata)}">
-                                    <iframe role="presentation" title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
+                                    <iframe role="presentation" allowfullscreen=true title="#{bundle['file.previewTab.presentation']}" src="#{FilePage.preview(FilePage.selectedTool)}"></iframe>
                                 </div>
                                 </ui:fragment>
                             </p:tab>
