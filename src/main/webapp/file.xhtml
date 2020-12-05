@@ -407,7 +407,7 @@
                                         </button>
                                         <ul class="dropdown-menu  pull-right text-left" role="menu">
                                             <ui:repeat value="#{FilePage.toolsWithPreviews}" var="tool">
-                                                <li>
+                                                <li class="#{FilePage.getSelectedTool().equals(tool) ? 'active':''}">
                                                     <h:commandLink action="#{FilePage.setSelectedTool(tool)}">
                                                         <h:outputText value="#{tool.getDisplayNameLang()}"/>
                                                     </h:commandLink>
