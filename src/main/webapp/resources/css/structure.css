@@ -66,7 +66,7 @@ body .ui-widget .ui-widget-content :not(.ui-dialog-titlebar, .ui-dialog-content)
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {width:100%; z-index:-1; height:60px; color:#808080;}
+#footer {width:100%; z-index:-1; height:60px; color:#808080;position:relative;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -1330,4 +1330,9 @@ progress::-webkit-progress-bar {
 
 progress::-webkit-progress-value {
   background-color:green;
+}
+#selectTool .dropdown-menu .active a {
+  background-color: #4b74ff;
+  background-image: none;
+}
 }
