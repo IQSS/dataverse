@@ -832,7 +832,7 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{DatasetPage.editMode == 'CREATE' or empty DatasetPage.editMode }">                    
+                    <ui:fragment rendered="#{empty DatasetPage.editMode}">                    
                         <ui:include src="file-edit-popup-fragment.xhtml">
                               <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
                               <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>                        
@@ -1672,33 +1672,13 @@
                         }
                     }
                                       
-                    function testFilesSelected(popup) {
+                    function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
-                            PF(popup).show();
+                            PF('selectFiles').show();
                         } else {
                             return true;
                         }                        
-                    }
- 
-                    function testFilesSelectedForTags() {
-                        return testFilesSelected("selectFilesForEditTags");
-                    }
-
-                    function testFilesSelectedForRestriction() {
-                        return testFilesSelected("selectFilesForRestrict");
-                    }
-                    
-                    function testFilesSelectedForUnRestriction() {
-                        return testFilesSelected("selectFilesForUnRestrict");
-                    }                    
-                    
-                    function testFilesSelectedForDelete() {
-                        return testFilesSelected("selectFilesForDelete");
-                    }
-                    
-                    function testFilesSelectedForEditMetadata() {
-                        return testFilesSelected("selectFilesForEditMetadata");
                     }
                     
                     function updateTemplate() {

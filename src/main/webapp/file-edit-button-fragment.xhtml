@@ -35,7 +35,7 @@
 
     <!-- Edit Options -->
     <li>
-        <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForEditMetadata()))
+        <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
                        oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;mode=SINGLE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
                        action="#{bean[editFileAction]()}">
@@ -47,7 +47,7 @@
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
                 <p:commandLink  update="@([id$=accessPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForRestriction()))
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 oncomplete="PF('accessPopup').show()">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
@@ -58,7 +58,7 @@
         <ui:fragment rendered="#{fileMetadata == null or fileMetadata.restricted}">
             <li>
                 <p:commandLink  
-                    onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForUnRestriction()))
+                    onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                 return false;" 
                     action="#{bean[unrestrictFileAction](false)}">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
@@ -90,7 +90,7 @@
     <ui:fragment rendered="#{fileMetadata==null}">    
         <li>
             <p:commandLink      update="@([id$=fileTagsPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForTags()))
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 oncomplete="PF('fileTagsPopup').show();"
                                 action="#{bean[refreshTagsPopoupAction]()}">            
@@ -113,7 +113,7 @@
 
     <li>
         <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
-                       onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForDelete()))
+                       onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                    return false;" 
                        oncomplete="PF('deleteFileConfirmation').show();">
             <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />                

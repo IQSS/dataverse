@@ -434,8 +434,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         if (version == null) {
             return permissionsWrapper.notFound();
-        }
-
+        }   
+        
         workingVersion = version; 
         dataset = version.getDataset();
         mode = FileEditMode.CREATE;
@@ -486,13 +486,17 @@ public class EditDatafilesPage implements java.io.Serializable {
                        
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
+        termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
+        fileAccessRequest = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
+        
+        //todo: can we remove this??
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
-        
+        //todo check this earlier??
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
@@ -649,66 +653,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         this.versionString = versionString;
     }
     
-    /*
-    public void toggleSelectedFiles(){
-        this.selectedFiles = new ArrayList<>();
-        if(this.selectAllFiles){
-            if (mode == FileEditMode.CREATE) {
-                for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                    this.selectedFiles.add(fmd);
-                }
-            } else {
-                for (FileMetadata fmd : fileMetadatas) {
-                    this.selectedFiles.add(fmd);
-                }
-            }
-        }
-    }
-    */
-    /*
-    public String getSelectedFilesIdsString() {        
-        String downloadIdString = "";
-        for (FileMetadata fmd : this.selectedFiles){
-            if (!StringUtil.isEmpty(downloadIdString)) {
-                downloadIdString += ",";
-            }
-            downloadIdString += fmd.getDataFile().getId();
-        }
-        return downloadIdString;
-      
-    }
-*/
-    /*
-    public void updateFileCounts(){
-        
-        setSelectedUnrestrictedFiles(new ArrayList<FileMetadata>());
-        setSelectedRestrictedFiles(new ArrayList<FileMetadata>());
-        for (FileMetadata fmd : this.selectedFiles){
-            if(fmd.isRestricted()){
-                getSelectedRestrictedFiles().add(fmd);
-            } else {
-                getSelectedUnrestrictedFiles().add(fmd);
-            }
-        }
-    }*/
-    
-         
-    //This function was reverted to its pre-commands state as the current command
-    //requires editDataset privlidges. If a non-admin user with only createDataset privlidges
-    //attempts to restrict a datafile before the dataset is created, the operation
-    //fails silently. This is because they are only granted editDataset permissions
-    //for that scope after the creation is completed.  -Matthew 4.7.1
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
         
-        //First make sure they've even selected file(s) to restrict.... 
-        if (this.getSelectedFiles().isEmpty()) {
-            if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-            } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
-            }
-            return;
-        }
+        termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
+        fileAccessRequest = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
         
         String fileNames = null;
         
@@ -723,11 +671,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
             fmd.setRestricted(restricted);
-            
-//            Command cmd;
-//            cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-//            commandEngine.submit(cmd);
-            
                                   
             if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
                 // We do not really need to check that the working version is 
@@ -3052,4 +2995,13 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }       
     }    
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
+    
+    public void resetTerms() {        
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+
+    }
 }

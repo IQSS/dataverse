@@ -1936,6 +1936,8 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
+            clone = workingVersion.cloneDatasetVersion();
+            
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -2466,7 +2468,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
+        //clone = workingVersion.cloneDatasetVersion();
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
@@ -3241,49 +3243,16 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    public String restrictFiles(boolean restricted) throws CommandException{        
+    public String restrictFiles(boolean restricted) throws CommandException {
+        List filesToRestrict = new ArrayList();
+        
         if (fileMetadataForAction != null) {
-            return restrictFile(restricted);
-        }
-        return restrictSelectedFiles(restricted);
-    }
-    
-    private String restrictFile(boolean restricted) throws CommandException {
-        List<FileMetadata> fileAsList = new ArrayList();
-        fileAsList.add(fileMetadataForAction);
-       
-        restrictFiles(fileAsList, restricted);   
-        return save();        
-    };    
-       
-    private String restrictSelectedFiles(boolean restricted) throws CommandException{        
-        if (selectedFiles.isEmpty()) {
-            if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-            } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
-            }
-            return "";
+            filesToRestrict.add(fileMetadataForAction);
         } else {
-            boolean validSelection = true;
-            for (FileMetadata fmd : selectedFiles) {
-                if (fmd.isRestricted() == restricted) {
-                    validSelection = false;
-                    break;
-                }
-            }
-            if (!validSelection) {
-                if (restricted) {
-                    PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-                }
-                if (!restricted) {
-                    PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
-                }
-                return "";
-            }
+            filesToRestrict = this.getSelectedFiles();
         }
         
-        restrictFiles(this.getSelectedFiles(), restricted);
+        restrictFiles(filesToRestrict, restricted);
         return save();
     }
     
@@ -3292,7 +3261,7 @@ public class DatasetPage implements java.io.Serializable {
         // todo: this seems to be have been added to get around an optmistic lock; it may be worth investigating
         // if there's a better way to handle
         if (workingVersion.isReleased()) {
-            refreshSelectedFiles(selectedFiles);
+            refreshSelectedFiles(filesToRestrict);
         }
 
         Command<Void> cmd;
@@ -3321,29 +3290,22 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFiles() throws CommandException{
-        if (fileMetadataForAction != null) {
-            return deleteFile();
-        }
-        return deleteSelectedFiles();
-    }
-    
-    private String  deleteFile(){
-        List<FileMetadata> fileAsList = new ArrayList();
-        fileAsList.add(fileMetadataForAction);
+        List filesToDelete = new ArrayList();
         
-        deleteFiles(fileAsList);
-        return save();       
-    }     
-    
-    private String  deleteSelectedFiles(){
-        bulkFileDeleteInProgress = true;
-        deleteFiles(selectedFiles);
-        return save();       
-    }   
-    
+        if (fileMetadataForAction != null) {
+            filesToDelete.add(fileMetadataForAction);
+        } else {
+            bulkFileDeleteInProgress = true;
+            filesToDelete = this.getSelectedFiles();
+        }
+        
+        deleteFiles(filesToDelete);
+        return save();
+    }
+        
     private void deleteFiles(List<FileMetadata> filesToDelete) {
         if (workingVersion.isReleased()) {
-            refreshSelectedFiles(selectedFiles);
+            refreshSelectedFiles(filesToDelete);
         }
         
         for (FileMetadata markedForDelete : filesToDelete) {
@@ -5612,5 +5574,10 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
         this.fileMetadataForAction = fileMetadataForAction;
     }
+    
+    public void resetTerms() {        
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(clone.getTermsOfUseAndAccess().getTermsOfAccess());
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(clone.getTermsOfUseAndAccess().isFileAccessRequest());
+    }  
 
 }

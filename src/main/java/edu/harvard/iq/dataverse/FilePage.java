@@ -197,7 +197,7 @@ public class FilePage implements java.io.Serializable {
                     return permissionsWrapper.notFound();
                 }
             }
-
+            
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
@@ -208,6 +208,9 @@ public class FilePage implements java.io.Serializable {
             if (!authorized) {
                 return permissionsWrapper.notAuthorized();
             }
+            
+            termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
+            fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
@@ -1023,5 +1026,13 @@ public class FilePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorMessage"), BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorDetail"));
         }
     }
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
+    
+    public void resetTerms() {        
+        fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+    }    
 
 }

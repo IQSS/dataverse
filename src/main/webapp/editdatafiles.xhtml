@@ -86,45 +86,10 @@
                             </p:outputPanel>
                         </div>
                     </ui:fragment>
-                    <!-- END: Create/Save Dataset Button Panel -->
-                    <p:dialog id="selectFilesForRestrict" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('selectFilesForRestrict').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('selectFilesForRestrict').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('selectFilesForDelete').hide();bind_bsui_components();" type="button">                              
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>                    
+                    <!-- END: Create/Save Dataset Button Panel -->      
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
-
-                <script>
-                    //<![CDATA[
-                    function clickSave(){
-                        $('button[id$="datasetSave"]').trigger('click');
-                    }
-                    //]]>
-                </script>
             </ui:define>
         </ui:composition>
     </h:body>

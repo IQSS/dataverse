@@ -415,19 +415,19 @@
                                         </button>
                                         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
-                                                <p:commandLink  onclick="if (!testFilesSelectedForDelete()) return false;" 
+                                                <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
                                                                 oncomplete="PF('editDeleteFileConfirmation').show();">                                                  
                                                     <h:outputText value="#{bundle['file.delete']}"/> 
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink  onclick="if (!testFilesSelectedForRestriction()) return false;" 
+                                                <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
                                                                 oncomplete="PF('editFileAccessPopup').show();">                                                               
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink  onclick="if (!testFilesSelectedForUnRestriction()) return false;"
+                                                <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
                                                                 actionListener="#{EditDatafilesPage.restrictFiles(false)}"
                                                                 update="filesTable,:messagePanel" 
                                                                 oncomplete="javascript:toggle_dropdown();javascript:bind_bsui_components();" >
@@ -574,7 +574,7 @@
         </div>
     </p:dialog>
     
-    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="editDeleteFileConfirmation" modal="true">
+    <p:dialog id="editDeleteFileConfirmation" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="editDeleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
@@ -619,9 +619,11 @@
                              action="#{EditDatafilesPage.restrictFiles(true)}"
                              update="filesTable,:messagePanel"
                              oncomplete="javascript:bind_bsui_components();" />
-            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide();" oncomplete="javascript:bind_bsui_components();" type="button">                              
-                #{bundle.cancel}
-            </button>
+            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" 
+                             onclick="PF('editFileAccessPopup').hide()" 
+                             action="#{EditDatafilesPage.resetTerms()}"
+                             update="editFileAccessPopup"
+                             oncomplete="javascript:bind_bsui_components();" />     
         </div>
     </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">
@@ -924,7 +926,17 @@
             <p:commandButton styleClass="btn btn-default" id="editFileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('editFileTagsPopup').hide();javascript:bind_bsui_components();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.saveFileTagsAndCategories()}"/>
             <p:commandButton styleClass="btn btn-link" id="editFileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('editFileTagsPopup').hide();PF('blockFileForm').hide();" oncomplete="javascript:bind_bsui_components();" update=":datasetForm:filesTable" actionListener="#{EditDatafilesPage.clearFileMetadataSelectedForTagsPopup()}"/>
         </div>
-    </p:dialog>
+    </p:dialog>     
+    <!-- Simple Popup For Select Files-->
+    <p:dialog id="selectFiles2" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFiles2" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFiles']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('selectFiles2').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>       
     <script src="/resources/js/dropins.js" id="dropboxjs" data-app-key="#{EditDatafilesPage.dropBoxKey}"/>
     <script>
         //<![CDATA[
@@ -961,25 +973,13 @@
             Dropbox.choose(options);
         }
         
-        function testFilesSelected(popup) {
+        function testFilesSelected2() {
             var count = PF('filesTable').getSelectedRowsCount();
             if (count == 0) {
-                PF(popup).show();
+                PF("selectFiles2").show();
             } else {
                 return true;
             }                        
-        }
-
-        function testFilesSelectedForRestriction() {
-            return testFilesSelected("selectFilesForRestrict");
-        }
-
-        function testFilesSelectedForUnRestriction() {
-            return testFilesSelected("selectFilesForUnRestrict");
-        }                    
-
-        function testFilesSelectedForDelete() {
-            return testFilesSelected("selectFilesForDelete");    
         }
         //]]>
     </script>
