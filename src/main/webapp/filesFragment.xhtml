@@ -459,6 +459,7 @@
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <ui:include src="file-edit-button-fragment.xhtml">
+                            <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
@@ -639,6 +640,7 @@
                             <!-- TO-DO NEW FILE-LEVEL EDIT OPTIONS... RENDER LOGIC, LINKS, DISABLED LOGIC -->
                             <!-- Edit Options -->
                             <ui:include src="file-edit-button-fragment.xhtml">
+                                <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                                 <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                                 <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                                 <ui:param name="isDraftReplacementFile" value="#{false}"/>

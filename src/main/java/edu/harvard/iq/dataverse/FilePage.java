@@ -376,9 +376,9 @@ public class FilePage implements java.io.Serializable {
     
     public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
-        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
-        Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
         
         Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
@@ -389,9 +389,6 @@ public class FilePage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
-        
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
         
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
@@ -1029,10 +1026,20 @@ public class FilePage implements java.io.Serializable {
     
     private String termsOfAccess;
     private boolean fileAccessRequest;
-    
-    public void resetTerms() {        
-        fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
-    }    
 
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }  
 }

@@ -486,8 +486,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                        
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
-        termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
-        fileAccessRequest = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
         
         //todo: can we remove this??
         if (workingVersion == null || !workingVersion.isDraft()) {
@@ -655,8 +653,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
         
-        termsOfAccess = workingVersion.getTermsOfUseAndAccess().getTermsOfAccess();
-        fileAccessRequest = workingVersion.getTermsOfUseAndAccess().isFileAccessRequest();
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
         
         String fileNames = null;
         
@@ -2998,10 +2996,20 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     private String termsOfAccess;
     private boolean fileAccessRequest;
-    
-    public void resetTerms() {        
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
 
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
     }
 }

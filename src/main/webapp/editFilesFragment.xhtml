@@ -421,9 +421,12 @@
                                                 </p:commandLink>
                                             </li>
                                             <li>
-                                                <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
+                                                <p:commandLink  onclick="if (!testFilesSelected2()) return false;"
+                                                                update="@([id$=editFileAccessPopup])" 
                                                                 oncomplete="PF('editFileAccessPopup').show();">                                                               
                                                     <h:outputText value="#{bundle['file.restrict']}"/>
+                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.termsOfAccess}" value="#{version.termsOfUseAndAccess.termsOfAccess}" />
+                                                    <f:setPropertyActionListener target="#{EditDatafilesPage.fileAccessRequest}" value="#{version.termsOfUseAndAccess.fileAccessRequest}" />                        
                                                 </p:commandLink>
                                             </li>
                                             <li>
@@ -597,8 +600,8 @@
                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:inputTextarea styleClass="form-control" rendered="#{!empty version.termsOfUseAndAccess}"
-                                     value="#{version.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5"/>
+                    <p:inputTextarea styleClass="form-control"
+                                     value="#{EditDatafilesPage.termsOfAccess}" autoResize="false" rows="5"/>
                 </div>
             </div>
             <div class="form-group">
@@ -608,8 +611,8 @@
                           data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:selectBooleanCheckbox id="editFileRequestAccess" rendered="#{!empty version.termsOfUseAndAccess}"
-                                             itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" value="#{version.termsOfUseAndAccess.fileAccessRequest}"/>
+                    <p:selectBooleanCheckbox id="editFileRequestAccess" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}" 
+                                             value="#{EditDatafilesPage.fileAccessRequest}"/>
                 </div>
             </div>
         </div>
@@ -619,11 +622,9 @@
                              action="#{EditDatafilesPage.restrictFiles(true)}"
                              update="filesTable,:messagePanel"
                              oncomplete="javascript:bind_bsui_components();" />
-            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" 
-                             onclick="PF('editFileAccessPopup').hide()" 
-                             action="#{EditDatafilesPage.resetTerms()}"
-                             update="editFileAccessPopup"
-                             oncomplete="javascript:bind_bsui_components();" />     
+            <button class="btn btn-link" onclick="PF('editFileAccessPopup').hide()" type="button">                              
+                #{bundle.cancel}
+            </button>               
         </div>
     </p:dialog>
     <p:dialog id="fileAdvancedOptions" styleClass="dialog-submenu smallPopUp" header="#{bundle['file.advancedIngestOptions']}" widgetVar="fileAdvancedOptions" modal="true">

@@ -28,7 +28,7 @@
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:inputTextarea id="termsAccessInput" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
+                    <p:inputTextarea id="termsAccessInput" value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
                 </div>
             </div>
             <div class="form-group">
@@ -39,7 +39,7 @@
                 </label>
                 <div class="col-sm-9">
                     <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                             value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
+                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar"/>
                 </div>
             </div>
         </div>
@@ -48,11 +48,9 @@
                              onclick="PF('accessPopup').hide();" 
                              action="#{bean[restrictFileAction](true)}"
                              update=":messagePanel" />
-            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" 
-                             onclick="PF('accessPopup').hide()" 
-                             action="#{bean.resetTerms()}"
-                             update="accessPopup"
-                             oncomplete="javascript:bind_bsui_components();" />    
+            <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
+                #{bundle.cancel}
+            </button>               
         </div>
     </p:dialog>  
 

@@ -1936,8 +1936,6 @@ public class DatasetPage implements java.io.Serializable {
             // init the citation
             displayCitation = dataset.getCitation(true, workingVersion);
             
-            clone = workingVersion.cloneDatasetVersion();
-            
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -2468,7 +2466,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getEditVersion();
-        //clone = workingVersion.cloneDatasetVersion();
+        clone = workingVersion.cloneDatasetVersion();
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
@@ -3263,6 +3261,9 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion.isReleased()) {
             refreshSelectedFiles(filesToRestrict);
         }
+        
+        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
 
         Command<Void> cmd;
         for (FileMetadata fmd : filesToRestrict) {
@@ -5575,9 +5576,22 @@ public class DatasetPage implements java.io.Serializable {
         this.fileMetadataForAction = fileMetadataForAction;
     }
     
-    public void resetTerms() {        
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(clone.getTermsOfUseAndAccess().getTermsOfAccess());
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(clone.getTermsOfUseAndAccess().isFileAccessRequest());
-    }  
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
 
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
 }

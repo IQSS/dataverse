@@ -18,7 +18,8 @@
     
     This can be used for a single, specific file (passing "fileMetadata") or a group of selected files.
     
-    Parameters:        
+    Parameters:
+    dataserVersion - the datasetversion object to associate with this view
     fileMetadata - for single file, the fileMetadata object of that file
     fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected file)
     isDraftReplacementFile - for single file, if the file is a draft and already replacing a past file 
@@ -46,12 +47,14 @@
     <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
-                <p:commandLink  update="@([id$=accessPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
+                <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
+                                update="@([id$=accessPopup])"            
                                 oncomplete="PF('accessPopup').show()">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
-                    <h:outputText value="#{bundle['file.restrict']}"/>
+                    <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
+                    <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
+                    <h:outputText value="#{bundle['file.restrict']}"/>                                                                
                 </p:commandLink>
             </li>
         </ui:fragment>
