@@ -653,8 +653,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
         
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+        if (restricted) { // get values from access popup
+            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
+        }
         
         String fileNames = null;
         

@@ -3262,8 +3262,11 @@ public class DatasetPage implements java.io.Serializable {
             refreshSelectedFiles(filesToRestrict);
         }
         
-        workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+        if (restricted) { // get values from access popup
+            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);  
+        }
+              
 
         Command<Void> cmd;
         for (FileMetadata fmd : filesToRestrict) {

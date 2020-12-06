@@ -209,8 +209,8 @@ public class FilePage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized();
             }
             
-            termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
-            fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
+            //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
+            //fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
@@ -377,8 +377,10 @@ public class FilePage implements java.io.Serializable {
     public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
         editDataset = this.file.getOwner();
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+        if (restricted) { // get values from access popup
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+        }
         
         Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
