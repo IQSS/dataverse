@@ -18,23 +18,36 @@ public final class AliasConfigSource implements ConfigSource {
     private static final Logger logger = Logger.getLogger(AliasConfigSource.class.getName());
     
     private final ConcurrentHashMap<String, String> aliases = new ConcurrentHashMap<>();
-    private final String ALIASES_PROP_FILE = "aliases-config.properties";
+    private final String ALIASES_PROP_FILE = "META-INF/microprofile-aliases.properties";
     
     public AliasConfigSource() {
         try {
-            // get resource from classpath
-            ClassLoader classLoader = this.getClass().getClassLoader();
-            URL aliasesResource = classLoader.getResource(ALIASES_PROP_FILE);
-            
-            // load properties from file resource (parsing included)
-            Properties aliasProps = new Properties();
-            aliasProps.load(aliasesResource.openStream());
-    
+            // read properties from class path file
+            Properties aliasProps = readAliases(ALIASES_PROP_FILE);
             // store in our aliases map
-            aliasProps.forEach((key, value) -> aliases.put(key.toString(), value.toString()));
+            importAliases(aliasProps);
         } catch (IOException e) {
             logger.info("Could not read from "+ALIASES_PROP_FILE+". Skipping MPCONFIG alias setup.");
         }
+    }
+    
+    Properties readAliases(String filePath) throws IOException {
+        // get resource from classpath
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        URL aliasesResource = classLoader.getResource(filePath);
+    
+        // load properties from file resource (parsing included)
+        Properties aliasProps = new Properties();
+        try {
+            aliasProps.load(aliasesResource.openStream());
+        } catch (NullPointerException e) {
+            throw new IOException(e.getMessage());
+        }
+        return aliasProps;
+    }
+    
+    void importAliases(Properties aliasProps) {
+        aliasProps.forEach((key, value) -> aliases.put(key.toString(), value.toString()));
     }
     
     @Override
