@@ -73,6 +73,6 @@ public final class AliasConfigSource implements ConfigSource {
     
     @Override
     public String getName() {
-        return null;
+        return "Alias";
     }
 }
