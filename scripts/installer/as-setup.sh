@@ -73,7 +73,7 @@ function preliminary_setup()
   ./asadmin $ASADMIN_OPTS create-jvm-options "-XX\:+DisableExplicitGC"
 
   # alias passwords
-  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "db_password_alias ${DB_PASS}"
+  for alias in "rserve_password_alias ${RSERVE_PASS}" "doi_password_alias ${DOI_PASSWORD}" "dataverse.db.password ${DB_PASS}"
   do
       set -- $alias
       echo "AS_ADMIN_ALIASPASSWORD=$2" > /tmp/$1.txt
@@ -130,17 +130,11 @@ function final_setup(){
         ./asadmin $ASADMIN_OPTS delete-jvm-options -Xmx512m
         ./asadmin $ASADMIN_OPTS create-jvm-options "-Xmx${MEM_HEAP_SIZE}m"
 
-
-        ./asadmin $ASADMIN_OPTS create-jdbc-connection-pool --restype javax.sql.DataSource \
-                                        --datasourceclassname org.postgresql.ds.PGPoolingDataSource \
-                                        --property create=true:User=$DB_USER:PortNumber=$DB_PORT:databaseName=$DB_NAME:ServerName=$DB_HOST \
-                                        dvnDbPool
-
-       ./asadmin $ASADMIN_OPTS set resources.jdbc-connection-pool.dvnDbPool.property.password='${ALIAS=db_password_alias}'
-
-        ###
-        # Create data sources
-        ./asadmin $ASADMIN_OPTS create-jdbc-resource --connectionpoolid dvnDbPool jdbc/VDCNetDS
+         # Set up the database connection properties
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.user=${DB_USER}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.host=${DB_HOST}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.port=${DB_PORT}"
+        ./asadmin $ASADMIN_OPTS create-system-properties "dataverse.db.name=${DB_NAME}"
 
         ./asadmin $ASADMIN_OPTS create-jvm-options "\-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
 
