@@ -73,7 +73,7 @@ public final class AliasConfigSource implements ConfigSource {
     @Override
     public String getValue(String key) {
         String value = null;
-        if (this.aliases.contains(key)) {
+        if (this.aliases.containsKey(key)) {
             String oldKey = this.aliases.get(key);
             value = ConfigProvider.getConfig().getOptionalValue(oldKey, String.class).orElse(null);
             
