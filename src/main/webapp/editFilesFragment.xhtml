@@ -579,15 +579,15 @@
             </button>
         </div>
     </p:dialog>
-    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
+    <p:dialog id="deleteFileConfirmDialog" styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="editDeleteFileConfirmation" modal="true">
         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
         <ui:fragment rendered="#{EditDatafilesPage.dataset.released}">
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('editDeleteFileConfirmation').hide()" oncomplete="window.scrollTo(0, 0);deleteFinished();bind_bsui_components();"
                              update=":#{p:resolveClientId('datasetForm:filesTable', view)},:messagePanel,:#{p:resolveClientId('datasetForm:fileUpload', view)},uploadMessage" action="#{EditDatafilesPage.deleteFiles()}"/>
-            <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
+            <button class="btn btn-link" onclick="PF('editDeleteFileConfirmation').hide();bind_bsui_components();" type="button">                              
                 #{bundle.cancel}
             </button>
         </div>
@@ -947,7 +947,7 @@
         function checkFilesSelected() {
             var count = PF('filesTable').getSelectedRowsCount();
             if (count > 0) {
-                PF('deleteFileConfirmation').show();
+                PF('editDeleteFileConfirmation').show();
             } else {
                 PF('selectFilesForDeleteFragment').show();              
             }
