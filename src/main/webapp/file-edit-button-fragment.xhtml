@@ -50,7 +50,7 @@
                 <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 update="@([id$=accessPopup])"            
-                                oncomplete="PF('accessPopup').show()">
+                                oncomplete="PF('accessPopup').show();bind_bsui_components();">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
                     <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
