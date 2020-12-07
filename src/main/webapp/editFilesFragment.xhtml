@@ -592,6 +592,9 @@
     </p:dialog>
     <p:dialog id="editFileAccessPopup" header="#{bundle['dataset.access.accessHeader']}" widgetVar="editFileAccessPopup" modal="true">
         <p:focus context="editFileAccessPopup"/>
+        <p class="help-block">
+            #{bundle['dataset.access.description']}
+        </p>        
         <div class="form-horizontal">
             <div class="form-group">
                 <label for="metadata_TermsAccess" class="col-sm-3 control-label">
