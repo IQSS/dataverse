@@ -478,26 +478,24 @@ public class EditDatafilesPage implements java.io.Serializable {
             // that the dataset id is mandatory... But 404 will do for now.
             return permissionsWrapper.notFound();
         }
-        
-
-
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-                       
+                               
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
         
-        //todo: can we remove this??
+        //TODO: review if we we need this check; 
+        // as getEditVersion should either return the exisiting draft or create a new one      
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
-        //todo check this earlier??
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
+        
+        clone = workingVersion.cloneDatasetVersion();   
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
         //  Is this a file replacement operation?
