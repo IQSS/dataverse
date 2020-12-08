@@ -14,12 +14,14 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class DbSettingConfigSource implements ConfigSource {
     
-    static final String PREFIX = "dataverse.settings.fromdb";
-    static final ConcurrentHashMap<String, String> propertiesCache = new ConcurrentHashMap<>();
-    static Instant lastUpdate;
+    private static final Logger logger = Logger.getLogger(DbSettingConfigSource.class.getName());
+    private static final String PREFIX = "dataverse.settings.fromdb";
+    private static final ConcurrentHashMap<String, String> propertiesCache = new ConcurrentHashMap<>();
+    private static Instant lastUpdate;
     
     DataSource dataSource;
     
@@ -28,7 +30,7 @@ public class DbSettingConfigSource implements ConfigSource {
             dataSource = (DataSource) new InitialContext().lookup("java:app/jdbc/dataverse");
             updateProperties();
         } catch (final NamingException e) {
-            throw new IllegalStateException(e);
+            logger.warning("Could not setup MPCONFIG dataverse setting config source as no DB connection could be found.");
         }
     }
     
@@ -39,6 +41,9 @@ public class DbSettingConfigSource implements ConfigSource {
     }
     
     public void updateProperties() {
+        // When the DataSource is unavailable (no db connection / ...), do not update to avoid NPEs
+        if (dataSource == null)
+            return;
         // Do brutal JDBC retrieval over the wire, to be available right from the start of app deployment.
         // Injecting the EntityManager or the SettingsServiceBean is hard, as MPCONFIG sources are POJOs.
         // We would need to be a Startup-Singleton, but this means no values for early retrieval...
