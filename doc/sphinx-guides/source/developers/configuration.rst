@@ -20,6 +20,7 @@ Developers have accessed the simple properties via
 1. ``System.getProperty(...)`` for JVM system property settings
 2. ``SettingsServiceBean.get(...)`` for database settings and
 3. ``SystemConfig.xxx()`` for specially treated settings, maybe mixed from 1 and 2 and other sources.
+4. ``SettingsWrapper``, reading from 2 and 3 for use in frontend pages based on JSF
 
 As of Dataverse 5.3, we start to streamline our efforts into using a more consistent approach, also bringing joy and
 happiness to all the system administrators out there. This will be done by adopting the use of
