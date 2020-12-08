@@ -18,7 +18,7 @@ COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-7.7.2dv.tgz 
-RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2020.2.zip ; ln -s /opt/payara5 /opt/glassfish4
+RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2020.6.zip ; ln -s /opt/payara5 /opt/glassfish4
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 COPY domain-restmonitor.xml /opt/payara5/glassfish/domains/domain1/config/domain.xml
