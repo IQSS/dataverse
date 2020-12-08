@@ -64,32 +64,13 @@ fi
 #       EE 8 code annotations or at least glassfish-resources.xml
 # NOTE: postboot commands is not multi-line capable, thus spaghetti needed.
 
-# JMS
-echo "INFO: Defining JMS resources."
-cat >> ${DV_POSTBOOT} << 'EOF'
-delete-connector-connection-pool --cascade=true jms/__defaultConnectionFactory-Connection-Pool
-create-connector-connection-pool --steadypoolsize=1 --maxpoolsize=250 --poolresize=2 --maxwait=60000 --raname=jmsra --connectiondefinition=javax.jms.QueueConnectionFactory jms/IngestQueueConnectionFactoryPool
-create-connector-resource --poolname=jms/IngestQueueConnectionFactoryPool jms/IngestQueueConnectionFactory
-create-admin-object --restype=javax.jms.Queue --raname=jmsra --property=Name=DataverseIngest jms/DataverseIngest
-EOF
-
-# JDBC
-echo "INFO: Defining JDBC resources."
-echo "create-jdbc-connection-pool --restype=javax.sql.DataSource --datasourceclassname=org.postgresql.ds.PGPoolingDataSource --property=create=true:User=${POSTGRES_USER}:PortNumber=${POSTGRES_PORT}:databaseName=${POSTGRES_DATABASE}:ServerName=${POSTGRES_SERVER} dvnDbPool" >> ${DV_POSTBOOT}
-echo 'set resources.jdbc-connection-pool.dvnDbPool.property.password=${ALIAS=db_password_alias}' >> ${DV_POSTBOOT}
-echo "create-jdbc-resource --connectionpoolid=dvnDbPool jdbc/VDCNetDS" >> ${DV_POSTBOOT}
-
 # JavaMail
 echo "INFO: Defining JavaMail."
 echo "create-javamail-resource --mailhost=${MAIL_SERVER} --mailuser=dataversenotify --fromaddress=${MAIL_FROMADDRESS} mail/notifyMailSession" >> ${DV_POSTBOOT}
 
 echo "INFO: defining miscellaneous configuration options."
-# Timer data source
-echo "set configs.config.server-config.ejb-container.ejb-timer-service.timer-datasource=jdbc/VDCNetDS" >> ${DV_POSTBOOT}
 # AJP connector
 echo "create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector" >> ${DV_POSTBOOT}
-# Disable logging for grizzly SSL problems -- commented out as this is not GF 4.1
-# echo "set-log-levels org.glassfish.grizzly.http.server.util.RequestUtils=SEVERE" >> ${DV_POSTBOOT}
 # COMET support
 echo "set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true" >> ${DV_POSTBOOT}
 # SAX parser options
@@ -118,12 +99,6 @@ echo "DEBUG: postboot contains the following commands:"
 echo "--------------------------------------------------"
 cat ${POSTBOOT_COMMANDS}
 echo "--------------------------------------------------"
-
-# 5. Symlink the jHove configuration
-echo "INFO: Symlinking and editing jHove configuration."
-ln -s ${DEPLOY_DIR}/dataverse/supplements/jhove.conf ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf
-ln -s ${DEPLOY_DIR}/dataverse/supplements/jhoveConfig.xsd ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhoveConfig.xsd
-sed -i ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf -e "s:/usr/local/glassfish4/glassfish/domains/domain1:${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}:g"
 
 # 6. Disable phone home. Always.
 echo "disable-phone-home" >> ${PREBOOT_COMMANDS}
