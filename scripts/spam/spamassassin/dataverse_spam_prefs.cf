@@ -1,0 +1,94 @@
+#
+# comment_spam_prefs.cf
+#
+# SpamAssassin user preferences file tuned for blog comment and wiki spam
+# See 'perldoc Mail::SpamAssassin::Conf' for details of what can be tweaked.
+# This has been tested with SpamAssassin 2.64 and still needs testing with
+# SA 3.x.
+#
+# This the original file that came with Text::SpamAssassin v1.2. It hasn't
+# been tested or updated for 2.0. Contributions are very welcome.
+#
+
+# How many hits before a mail is considered spam.
+required_hits	5
+
+# Turn off bayes unless you really know what you are doing.
+use_bayes		0
+
+# experiment with providing a long list and specifically excluding Indonesian?
+ok_languages en
+
+# Add your own customised scores for some tests below.  The default scores are
+# read from the installed spamassassin rules files, but you can override them
+# here.  To see the list of tests and their default scores, go to
+# http://spamassassin.org/tests.html .
+#
+# score SYMBOLIC_TEST_NAME n.nn
+
+# Speakers of Asian languages, like Chinese, Japanese and Korean, will almost
+# definitely want to uncomment the following lines.  They will switch off some
+# rules that detect 8-bit characters, which commonly trigger on mails using CJK
+# character sets, or that assume a western-style charset is in use. 
+# 
+# score HEADER_8BITS		0
+# score HTML_COMMENT_8BITS	0
+# score SUBJ_FULL_OF_8BITS	0
+# score UPPERCASE_25_50		0
+# score UPPERCASE_50_75		0
+# score UPPERCASE_75_100	0
+
+# Adjust the following scores as appropriate:
+
+# percent HTML - what should these be?
+score HTML_00_10		0
+score HTML_10_20		0
+score HTML_20_30		0
+score HTML_30_40		0
+score HTML_40_50		0
+score HTML_50_60		0
+score HTML_60_70		0
+score HTML_70_80		0
+score HTML_80_90		0
+score HTML_90_100		0
+
+# Do you even allow HTML in comments?
+score HTML_MESSAGE		0
+score MIME_HTML_ONLY	0
+
+# No idea why these are firing on test cases; tags look properly
+# balanced
+
+score HTML_TAG_BALANCE_BODY	0
+score HTML_TAG_BALANCE_HTML	0
+
+# I use loopback for a lot of default IP addresses; RFCI is not so
+# useful here.
+
+score DNS_FROM_RFCI_DSN		0
+
+# TURN OFF DUL TESTS! You actually ***EXPECT*** blog comments to come
+# from dynamic ranges.
+
+score RCVD_IN_NJABL_DUL 0
+score RCVD_IN_SORBS_DUL 0
+score RCVD_IN_MAPS_DUL 0
+
+score UNWANTED_LANGUAGE_BODY 3.0
+score NUMERIC_HTTP_ADDR 3.0
+score NORMAL_HTTP_TO_IP 3.0
+score FREE_PORN 3.0
+
+# specific "casino" and "poker" test (STRONG):
+body CASINO_POKER                  /\b(casino|poker)/i
+describe CASINO_POKER              Possible online casino spam; will be triggered by a presence of either word
+score CASINO_POKER 2.5
+
+# Blacklisted URLs (spamhaus, URIBL):
+score URIBL_SBL 3.000
+score URIBL_CSS 3.000
+score URIBL_DBL_SPAM 3.000
+score URIBL_DBL_PHISH 3.000
+score URIBL_DBL_MALWARE 3.000
+score URIBL_DBL_BOTNETCC 3.000
+# (any point in using others, from 25_uribl.cf?)
