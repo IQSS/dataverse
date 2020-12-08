@@ -32,6 +32,12 @@ public class DbSettingConfigSource implements ConfigSource {
         }
     }
     
+    // Test usage (no JNDI context)
+    public DbSettingConfigSource(DataSource ds) {
+        dataSource = ds;
+        updateProperties();
+    }
+    
     public void updateProperties() {
         // Do brutal JDBC retrieval over the wire, to be available right from the start of app deployment.
         // Injecting the EntityManager or the SettingsServiceBean is hard, as MPCONFIG sources are POJOs.
@@ -42,7 +48,7 @@ public class DbSettingConfigSource implements ConfigSource {
             final ResultSet props = query.executeQuery();
         
             while (props.next()) {
-                propertiesCache.put(PREFIX+"."+props.getString(0), props.getString(1));
+                propertiesCache.put(PREFIX+"."+props.getString(1), props.getString(2));
             }
             lastUpdate = Instant.now();
         
@@ -70,7 +76,7 @@ public class DbSettingConfigSource implements ConfigSource {
     
     @Override
     public int getOrdinal() {
-        return 0;
+        return 50;
     }
     
     @Override
