@@ -575,38 +575,36 @@
                 </span>
             </div>
             <!-- END: FILE LEVEL MSGs -->
-
-            <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
+                       
+            <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}" jsf:rendered="#{showAccessFileButtonGroup}">
                 <!-- Access File - Download, Explore, Compute -->
-                <div class="btn-group" rendered="#{showAccessFileButtonGroup}">
+                <div class="btn-group" jsf:rendered="#{showAccessFileButtonGroup}">
 
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
 
-                <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
-                    <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
-                        href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                        <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
-                    </a>
-                </ui:fragment>
-                    <a type="button" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
+                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
+                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+                        </a>
+                    </ui:fragment>
+                    <a type="button" style="padding:6px 8px;" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
                        title="#{bundle['file.accessBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu pull-right text-left">
                         <!-- Explore/Download/Request Button Block -->
-                        <ui:fragment rendered="#{true}">
-                            <ui:include src="file-download-button-fragment.xhtml">
-                                <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                                <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                                <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
-                                <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
-                                <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
-                                <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                                <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
-                                <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                            </ui:include>
-                        </ui:fragment>
+                        <ui:include src="file-download-button-fragment.xhtml">
+                            <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                            <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
+                            <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
+                            <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
+                            <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
+                            <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
+                            <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                        </ui:include>
                         <!-- END: Explore/Download/Request Button Block -->
 
                         <!-- Data Access for Rsync Download -->
@@ -652,6 +650,30 @@
                         </ul>
                     </div>
                 </ui:fragment>
+                <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
+                                                        and DatasetPage.sessionUserAuthenticated 
+                                                        and DatasetPage.canUpdateDataset()}">
+                    <!-- Kebab / Edit / File Options Dropdown -->
+                    <a type="button" style="padding:6px 8px;" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
+                       disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                       title="#{bundle['file.optionsBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu multi-level pull-right text-left">
+                        <li class="dropdown-header">#{bundle['file.optionsBtn.header.edit']} <span class="glyphicon glyphicon-pencil"/></li>                           
+                        <!-- TO-DO NEW FILE-LEVEL EDIT OPTIONS... RENDER LOGIC, LINKS, DISABLED LOGIC -->
+                        <!-- Edit Options -->
+                        <ui:include src="file-edit-button-fragment.xhtml">
+                            <ui:param name="fileMetadata" value="#{fileMetadata}"/>
+                            <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
+                            <ui:param name="isDraftReplacementFile" value="#{false}"/>
+                            <ui:param name="hasPackageFile" value="#{fileMetadata.dataFile.filePackage}"/>                                
+                            <ui:param name="configureTools" value="#{DatasetPage.getConfigureToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                            <ui:param name="bean" value="#{DatasetPage}"/>
+                            <ui:param name="unrestrictFileAction" value="restrictFiles"/>
+                        </ui:include>
+                    </ul>
+                </div>
                 <!-- END: File Options -->
 
             </div>
