@@ -3,7 +3,7 @@ SpamAssassin-based spam detection script(s), HOWTO
 You need to install spamassassin (and all its dependencies).
 On a RedHat-like box `yum install spamassassin` will likely  do. 
 
-Make sure SpamAssassin TextCat plugin is loaded (this is for detecting the language and similar text manipulation; it's normally not enabled in SA distributions by default), by adding `loadplugin Mail::SpamAssassin::Plugin::TextCat` to `loadplugin Mail::SpamAssassin::Plugin::TextCat`.
+Make sure SpamAssassin TextCat plugin is loaded (this is for detecting the language and similar text manipulation; it's normally not enabled in SA distributions by default), by adding `loadplugin Mail::SpamAssassin::Plugin::TextCat` to `/etc/mail/spamassassin/init.pre`.
 
 You most likely want to enable auto-updates for SpamAssassin. See the documentation. 
 
