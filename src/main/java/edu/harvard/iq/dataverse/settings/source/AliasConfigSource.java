@@ -13,6 +13,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+/**
+ * Enable using an old name for a new config name.
+ * Usages will be logged and this source will ALWAYS stand back if the new name is used anywhere.
+ *
+ * By using a DbSettingConfigSource value (dataverse.settings.fromdb.XXX) as old name, we can
+ * alias a new name to an old db setting, enabling backward compatibility.
+ */
 public final class AliasConfigSource implements ConfigSource {
     
     private static final Logger logger = Logger.getLogger(AliasConfigSource.class.getName());

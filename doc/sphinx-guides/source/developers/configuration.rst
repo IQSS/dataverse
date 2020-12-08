@@ -70,11 +70,28 @@ supporting the old way of setting them.
   Starting with ``dataverse`` makes it perfectly clear that this is a setting meant for this application, which is
   important when using environment variables, system properties or other MPCONFIG sources.
 - Replace ``System.getProperty()`` calls with either injected configs or retrieve programmatically if more complex
-  handling is necessary.
-- When moving a database setting (``:ExampleSetting``), configure an alias
-  ``dataverse.my.example.setting=dataverse.settings.fromdb.ExampleSetting`` in
-  ``src/main/resources/META-INF/microprofile-aliases.properties``. This will enable backward compatibility.
-- When moving an old key to a new (especially when doing so with a former JVM system property setting), you should
-  add an alias to ``src/main/resources/META-INF/microprofile-aliases.properties`` to enable backward compatibility.
-  The format is always like ``dataverse.<scope/....>.newname...=old.property.name``.
+  handling is necessary. If you rename the property, you should provide an alias. See below.
+- Database settings need to be refactored in multiple steps. First you need to change the code retrieving it to use
+  MicroProfile Config API instead (just like above). Then you should provide an alias to retain backward compatibility.
+  See below.
 
+Moving or Replacing a JVM Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When moving an old key to a new (especially when doing so with a former JVM system property setting), you should
+add an alias to ``src/main/resources/META-INF/microprofile-aliases.properties`` to enable backward compatibility.
+The format is always like ``dataverse.<scope/....>.newname...=old.property.name``.
+
+Details can be found in ``edu.harvard.iq.dataverse.settings.source.AliasConfigSource``
+
+Aliasing Database Setting
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When moving a database setting (``:ExampleSetting``), configure an alias
+ ``dataverse.my.example.setting=dataverse.settings.fromdb.ExampleSetting`` in
+``src/main/resources/META-INF/microprofile-aliases.properties``. This will enable backward compatibility.
+
+A database setting with an i18n attribute using *lang* will have available language codes appended to the name.
+Example: ``dataverse.settings.fromdb.ExampleI18nSetting.en``, ``dataverse.settings.fromdb.ExampleI18nSetting.de``
+
+More details in ``edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource``

@@ -11,6 +11,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+/**
+ * A caching wrapper around SettingServiceBean to provide database settings to MicroProfile Config API.
+ * Please be aware that this class relies on dependency injection during the application startup.
+ * Values will not be available before and a severe message will be logged to allow monitoring (potential race conditions)
+ * The settings will be cached for at least one minute, avoiding unnecessary database calls.
+ */
 public class DbSettingConfigSource implements ConfigSource {
     
     private static final Logger logger = Logger.getLogger(DbSettingConfigSource.class.getCanonicalName());
@@ -28,6 +34,9 @@ public class DbSettingConfigSource implements ConfigSource {
        updateProperties();
     }
     
+    /**
+     * Retrieve settings from the database via service and update cache.
+     */
     public static void updateProperties() {
         // skip if the service has not been injected yet
         if (settingsSvc == null)
