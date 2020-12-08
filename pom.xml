@@ -702,6 +702,7 @@
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
                     <include>**/*.properties</include>
+                    <include>**/services/*</include>
                 </includes>
             </resource>
         </resources>
