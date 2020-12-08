@@ -53,6 +53,11 @@ COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
 COPY --chown=payara:payara maven/supplements ${DEPLOY_DIR}/dataverse/supplements/
 
+# Create symlinks for jHove
+RUN ln -s ${DEPLOY_DIR}/dataverse/supplements/jhove.conf ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf && \
+    ln -s ${DEPLOY_DIR}/dataverse/supplements/jhoveConfig.xsd ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhoveConfig.xsd && \
+    sed -i ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf -e "s:/usr/local/payara5/glassfish/domains/domain1:${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}:g"
+
 # Copy init and application scripts
 COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
 RUN chmod +x ${SCRIPT_DIR}/*
