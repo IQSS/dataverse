@@ -9,9 +9,11 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class DbSettingConfigSource implements ConfigSource {
     
+    private static final Logger logger = Logger.getLogger(DbSettingConfigSource.class.getCanonicalName());
     private static final ConcurrentHashMap<String, String> properties = new ConcurrentHashMap<>();
     private static Instant lastUpdate;
     private static SettingsServiceBean settingsSvc;
@@ -57,6 +59,10 @@ public class DbSettingConfigSource implements ConfigSource {
     
     @Override
     public String getValue(String key) {
+        // log usages for which this has been designed, but not yet ready to serve...
+        if (settingsSvc == null && key.startsWith(PREFIX)) {
+            logger.severe("MPCONFIG DbSettingConfigSource not ready yet, but requested for '"+key+"'.");
+        }
         return getProperties().getOrDefault(key, null);
     }
     
