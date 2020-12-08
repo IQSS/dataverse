@@ -2,7 +2,9 @@
   "displayName": "Dynamic Dataset Tool",
   "description": "Dazzles! Dizzying!",
   "scope": "dataset",
-  "type": "explore",
+  "types": [
+    "explore"
+  ],
   "toolUrl": "https://dynamicdatasettool.com/v2",
   "toolParameters": {
     "queryParameters": [

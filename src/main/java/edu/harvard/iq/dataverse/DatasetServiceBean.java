@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean;
+import edu.harvard.iq.dataverse.api.util.FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -41,6 +43,8 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -48,6 +52,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -94,6 +100,9 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     SystemConfig systemConfig;
+    
+    @Inject
+    FailedPIDResolutionLoggingServiceBean fprLogService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -225,9 +234,20 @@ public class DatasetServiceBean implements java.io.Serializable {
         if (retVal != null){
             return retVal;
         } else {
-            //try to find with alternative PID
-            return (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
-        }        
+            // try to find with alternative PID
+            retVal = (Dataset) dvObjectService.findByGlobalId(globalId, "Dataset", true);
+            if (retVal == null) {
+                try {
+
+                    HttpServletRequest httpRequest = ((javax.servlet.http.HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+                    FailedPIDResolutionLoggingServiceBean.FailedPIDResolutionEntry entry = new FailedPIDResolutionEntry(globalId, httpRequest.getRequestURI(), httpRequest.getMethod(), new DataverseRequest(null, httpRequest).getSourceAddress());
+                    fprLogService.logEntry(entry);
+                } catch (NullPointerException npe) {
+                    // Do nothing - this is an API call with no FacesContext
+                }
+            }
+            return retVal;
+        }
     }
     
     /**

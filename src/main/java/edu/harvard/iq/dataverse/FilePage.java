@@ -89,6 +89,10 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
     private Long datasetVersionId;
+    /**
+     * Have the terms been met so that the Preview tab can show the preview?
+     */
+    private boolean termsMet;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -272,7 +276,8 @@ public class FilePage implements java.io.Serializable {
     }
     
     private List<ExternalTool> addMapLayerAndSortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
+
         if(!retList.isEmpty()){
             retList.forEach((et) -> {
                 et.setWorldMapTool(false);
@@ -704,7 +709,15 @@ public class FilePage implements java.io.Serializable {
     public void setDatasetVersionsForTab(List<DatasetVersion> datasetVersionsForTab) {
         this.datasetVersionsForTab = datasetVersionsForTab;
     }
-    
+
+    public boolean isTermsMet() {
+        return termsMet;
+    }
+
+    public void setTermsMet(boolean termsMet) {
+        this.termsMet = termsMet;
+    }
+
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
@@ -1011,7 +1024,7 @@ public class FilePage implements java.io.Serializable {
             // Always allow preview for PrivateUrlUser
             return true;
         } else {
-            return isPubliclyDownloadable();
+            return FileUtil.isPreviewAllowed(fileMetadata);
         }
     }
 
@@ -1246,5 +1259,14 @@ public class FilePage implements java.io.Serializable {
             return o1.getDisplayName().toUpperCase().compareTo(o2.getDisplayName().toUpperCase());
         }
     };
+
+    public void showPreview(GuestbookResponse guestbookResponse) {
+        boolean response = fileDownloadHelper.writeGuestbookAndShowPreview(guestbookResponse);
+        if (response == true) {
+            termsMet = true;
+        } else {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorMessage"), BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorDetail"));
+        }
+    }
 
 }
