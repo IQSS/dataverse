@@ -190,6 +190,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         });
         
         theDataset = ctxt.em().merge(theDataset);
+        //Many commands call getDataset (e.g. notifyUsersDatasetPublishStatus), even when they have a Dataset param, so this need to be updated after any merge
+        setDataset(theDataset);
         
         if ( theDataset != null ) {
             // Success! - send notification: 
