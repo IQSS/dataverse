@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -295,6 +296,17 @@ public class FileDownloadHelper implements java.io.Serializable {
         //Called from download button fragment via either dataset page or file page
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
+    }
+    
+    public void handleCommandLinkClick(FileMetadata fmd){
+        
+        if (FileUtil.isDownloadPopupRequired(fmd.getDatasetVersion())){
+            addFileForRequestAccess(fmd.getDataFile());
+            PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+        } else {
+            requestAccess(fmd.getDataFile());
+        }
+
     }
 
      public void requestAccessMultiple(List<DataFile> files) {

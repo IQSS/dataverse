@@ -3,7 +3,7 @@ Native API
 
 Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
-.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts running in web browsers. These endpoints are marked with a *CORS* badge.
 
 .. note:: Bash environment variables shown below. The idea is that you can "export" these environment variables before copying and pasting the commands that use them. For example, you can set ``$SERVER_URL`` by running ``export SERVER_URL="https://demo.dataverse.org"`` in your Bash shell. To check if the environment variable was set properly, you can "echo" it (e.g. ``echo $SERVER_URL``). See also :ref:`curl-examples-and-environment-variables`.
 
@@ -1176,7 +1176,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"} https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB"
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
 
@@ -2664,6 +2664,48 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+  
+Manage Banner Messages
+~~~~~~~~~~~~~~~~~~~~~~
+
+Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
+
+- A banner message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of banner message is useful for situations such as upcoming maintenance windows and other downtime.
+- A banner message where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These banner messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user, that user will not see the message again. This type of banner message is useful for situations where a message needs to communicated once, such as a minor terms of use update or an update about a new workflow in your Dataverse installation. 
+
+Note that HTML can be included in banner messages.
+
+Add a Banner Message::
+
+  curl -H "Content-type:application/json" -X POST http://$SERVER/api/admin/bannerMessage --upload-file messages.json
+  
+Where ``messages.json`` looks like this::
+
+  {
+    "dismissibleByUser": "true",
+    "messageTexts": [
+    {
+      "lang": "en",
+      "message": "Dismissible Banner Message added via API"
+    },
+    {
+      "lang": "fr",
+      "message": "Message de bannière ajouté via l'API"
+    }
+    ]
+  }
+     
+Get a list of active Banner Messages::
+
+  curl  -X GET http://$SERVER/api/admin/bannerMessage
+  
+Delete a Banner Message by its id::
+
+  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id   
+  
+Deactivate a Banner Message by its id (allows you to hide a message while retaining information about which users have dismissed the banner)::
+
+  curl  -X PUT http://$SERVER/api/admin/bannerMessage/$id/deactivate    
 
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

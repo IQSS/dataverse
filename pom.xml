@@ -26,7 +26,8 @@
         <skipUnitTests>false</skipUnitTests>
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2020.2</payara.version>
+        <payara.version>5.2020.6</payara.version>
+        <postgresql.version>42.2.18</postgresql.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
@@ -262,6 +263,11 @@
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -689,6 +695,7 @@
                     <include>**/*.xml</include>
                     <include>**/firstNames/*.*</include>
                     <include>**/*.xsl</include>
+                    <include>**/*.properties</include>
                 </includes>
             </resource>
         </resources>

@@ -218,10 +218,6 @@ public class SettingsServiceBean {
         */
         ThumbnailSizeLimitImage,
         ThumbnailSizeLimitPDF,
-        /* status message that will appear on the home page */
-        StatusMessageHeader,
-        /* full text of status message, to appear in popup */
-        StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */

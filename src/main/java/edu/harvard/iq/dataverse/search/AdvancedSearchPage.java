@@ -58,6 +58,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String fileFieldVariableName;
     private String fileFieldVariableLabel;
     private String fileFieldFullText;
+    private String fileFieldFileTags;
 
     public void init() {
 
@@ -176,6 +177,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         }
         if (StringUtils.isNotBlank(fileFieldFullText)) {
             queryStrings.add(constructQuery(SearchFields.FULL_TEXT, fileFieldFullText));
+        }
+
+        if (StringUtils.isNotBlank(fileFieldFileTags)) {
+            queryStrings.add(constructQuery(SearchFields.FILE_TAG_SEARCHABLE, fileFieldFileTags));
         }
 
         return constructQuery(queryStrings, true);
@@ -329,6 +334,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setFileFieldFullText(String fileFieldFullText) {
         this.fileFieldFullText = fileFieldFullText;
+    }
+
+    public String getFileFieldFileTags() {
+        return fileFieldFileTags;
+    }
+
+    public void setFileFieldFileTags(String fileFieldFileTags) {
+        this.fileFieldFileTags = fileFieldFileTags;
     }
 
 }

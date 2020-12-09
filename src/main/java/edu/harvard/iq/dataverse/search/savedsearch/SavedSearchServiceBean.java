@@ -2,10 +2,8 @@ package edu.harvard.iq.dataverse.search.savedsearch;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
-import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
-import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
@@ -22,6 +20,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,10 +48,6 @@ public class SavedSearchServiceBean {
     SearchServiceBean searchService;
     @EJB
     DvObjectServiceBean dvObjectService;
-    @EJB
-    DatasetLinkingServiceBean datasetLinkingService;
-    @EJB
-    DataverseLinkingServiceBean dataverseLinkingService;
     @EJB
     EjbDataverseEngine commandEngine;
     @EJB
@@ -129,7 +124,7 @@ public class SavedSearchServiceBean {
     }
     
     
-    @Schedule(dayOfWeek="0", hour="0",minute="30")
+    @Schedule(dayOfWeek="0", hour="0", minute="30", persistent = false)
     public void makeLinksForAllSavedSearchesTimer() {
         if (systemConfig.isTimerServer()) {
             logger.info("Linking saved searches");
@@ -137,7 +132,7 @@ public class SavedSearchServiceBean {
                 JsonObjectBuilder makeLinksForAllSavedSearches = makeLinksForAllSavedSearches(false);
             } catch (SearchException | CommandException ex) {
                 Logger.getLogger(SavedSearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }       
         }
     }
 
@@ -170,10 +165,22 @@ public class SavedSearchServiceBean {
      * more structured that a simple String.
      */
     public JsonObjectBuilder makeLinksForSingleSavedSearch(DataverseRequest dvReq, SavedSearch savedSearch, boolean debugFlag) throws SearchException, CommandException {
+        logger.info("SAVED SEARCH (" + savedSearch.getId() + ") START search and link process");
+        Date start = new Date();
         JsonObjectBuilder response = Json.createObjectBuilder();
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
         SolrQueryResponse queryResponse = findHits(savedSearch);
+        
+        // get linked objects and add to a list
+        TypedQuery<Long> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
+            .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
+        List alreadyLinkedObjectIds = typedQuery.getResultList();
+        
+        typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
+            .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
+        alreadyLinkedObjectIds.addAll(typedQuery.getResultList());
+        
         for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
 
             JsonObjectBuilder hitInfo = Json.createObjectBuilder();
@@ -190,7 +197,7 @@ public class SavedSearchServiceBean {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
                 if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because dataverse id " + dataverseToLinkTo.getId() + " would link to itself.");
-                } else if (alreadyLinkedToTheDataverse(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                } else if (alreadyLinkedToTheDataverse(alreadyLinkedObjectIds, dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataverse " + dataverseToLinkTo.getId() + ".");
                 } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
@@ -200,7 +207,7 @@ public class SavedSearchServiceBean {
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
                 Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
-                if (alreadyLinkedToTheDataset(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                if (alreadyLinkedToTheDataset(alreadyLinkedObjectIds, datasetToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint() + " already links to dataset " + datasetToLinkTo + ".");
                 } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     // already there from normal search/browse
@@ -212,6 +219,7 @@ public class SavedSearchServiceBean {
                 }
                 else {
                     DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(dvReq, savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    alreadyLinkedObjectIds.add(datasetToLinkTo.getId()); // because search results could produce two hits (published and draft)
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
@@ -228,6 +236,9 @@ public class SavedSearchServiceBean {
         }
         savedSearchArrayBuilder.add(info);
         response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
+        
+        Date end = new Date();
+        logger.info("SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (end.getTime() - start.getTime()));
         return response;
     }
 
@@ -278,12 +289,12 @@ public class SavedSearchServiceBean {
         return filterQueriesArrayBuilder;
     }
 
-    private boolean alreadyLinkedToTheDataverse(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
-        return dataverseLinkingService.alreadyLinked(definitionPoint, dataverseToLinkTo);
+    private boolean alreadyLinkedToTheDataverse(List<Long> alreadyLinkedObjectIds, Dataverse dataverseToLinkTo) {
+        return alreadyLinkedObjectIds.contains(dataverseToLinkTo.getId());
     }
 
-    private boolean alreadyLinkedToTheDataset(Dataverse definitionPoint, Dataset linkToThisDataset) {
-        return datasetLinkingService.alreadyLinked(definitionPoint, linkToThisDataset);
+    private boolean alreadyLinkedToTheDataset(List<Long> alreadyLinkedObjectIds, Dataset linkToThisDataset) {
+        return alreadyLinkedObjectIds.contains(linkToThisDataset.getId());
     }
 
     private static boolean wouldResultInLinkingToItself(Dataverse savedSearchDefinitionPoint, Dataverse dataverseToLinkTo) {
