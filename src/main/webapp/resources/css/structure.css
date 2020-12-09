@@ -555,7 +555,7 @@ form[id$='facetType'] > div.clearfix a.facetTypeLink {display:block; float:left;
 form[id$='facetType'] > div.clearfix a.facetTypeLink span {padding:4px 0px;}
 
 form[id$='facetCategoryForm'] {margin-top:1em;}
-div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;}
+div[id$='facetCategoryList'] ul, div[id$='facetCategoryList'] li, div[id$='facetCategoryList'] div {margin:0; padding:0; list-style: none; border:0;padding-left: 2px;}
 div[id$='facetCategoryList'] > div > ul > li {border-bottom:1px solid #DDD; margin-bottom:.5em;}
 /*div[id$='facetCategoryList'] > div > ul > li:last-child {border-bottom:0; margin-bottom:0;}*/
 div[id$='facetCategoryList'] div li div {padding:4px 0px;}
