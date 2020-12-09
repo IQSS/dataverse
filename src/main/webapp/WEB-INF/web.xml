@@ -50,7 +50,7 @@
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
-        <param-value>102400</param-value>
+        <param-value>${MPCONFIG=dataverse.webxml.faces.buffer-size}</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
