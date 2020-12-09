@@ -191,13 +191,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         });
         
         theDataset = ctxt.em().merge(theDataset);
-        //Many commands call getDataset (e.g. notifyUsersDatasetPublishStatus), even when they have a Dataset param, so this need to be updated after any merge
         setDataset(theDataset);
-        
-        if ( theDataset != null ) {
-            // Success! - send notification: 
-            notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
-        }
         
         // Finally, unlock the dataset:
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
@@ -221,7 +215,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-        
+        try {
+            // Success! - send notification:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+        } catch (Exception e) {
+            logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
+        }
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
