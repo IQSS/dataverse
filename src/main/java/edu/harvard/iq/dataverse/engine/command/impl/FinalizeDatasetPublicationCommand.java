@@ -189,9 +189,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         });
         
-        Dataset readyDataset = ctxt.em().merge(theDataset);
+        theDataset = ctxt.em().merge(theDataset);
         
-        if ( readyDataset != null ) {
+        if ( theDataset != null ) {
             // Success! - send notification: 
             notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
         }
@@ -206,7 +206,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
 
         
-        return readyDataset;
+        return theDataset;
     }
     
     @Override
