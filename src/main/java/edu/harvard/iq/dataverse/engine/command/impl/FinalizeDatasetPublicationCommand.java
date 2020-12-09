@@ -179,8 +179,9 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
-        final Dataset ds = ctxt.em().merge(theDataset);
+        theDataset = ctxt.em().merge(theDataset);
         
+        final Dataset ds = theDataset;
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
                 ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
