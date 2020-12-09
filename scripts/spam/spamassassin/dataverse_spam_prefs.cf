@@ -16,7 +16,6 @@ required_hits	5
 # Turn off bayes unless you really know what you are doing.
 use_bayes		0
 
-# experiment with providing a long list and specifically excluding Indonesian?
 ok_languages en
 
 # Add your own customised scores for some tests below.  The default scores are
@@ -76,19 +75,83 @@ score RCVD_IN_MAPS_DUL 0
 
 score UNWANTED_LANGUAGE_BODY 3.0
 score NUMERIC_HTTP_ADDR 3.0
-score NORMAL_HTTP_TO_IP 3.0
+# not sure if there's any point in giving points for both "normal" and "numeric"??
+#score NORMAL_HTTP_TO_IP 3.0
+# anything that looks like adult content:
 score FREE_PORN 3.0
+score LIVE_PORN 6.0 
 
-# specific "casino" and "poker" test (STRONG):
+# Any particularly common spam phrases, and even words should go here:
+# Be extra careful with standalone words! It's not impossible for a legitimate dataverse
+# description to contaion the word "casino" or "poker". So neither should result in enough
+# points to result in the death sentence on its own. 
+
 body CASINO_POKER                  /\b(casino|poker)/i
-describe CASINO_POKER              Possible online casino spam; will be triggered by a presence of either word
-score CASINO_POKER 2.5
+describe CASINO_POKER              Possible casino spam; will be triggered by a presence of either word
+score CASINO_POKER 3.0
 
-# Blacklisted URLs (spamhaus, URIBL):
-score URIBL_SBL 3.000
-score URIBL_CSS 3.000
-score URIBL_DBL_SPAM 3.000
-score URIBL_DBL_PHISH 3.000
-score URIBL_DBL_MALWARE 3.000
-score URIBL_DBL_BOTNETCC 3.000
-# (any point in using others, from 25_uribl.cf?)
+body CASINO1                  /\bslots?\s+online/i
+describe CASINO1              Possible/likely casino spam 
+score CASINO1 6.0
+
+body CASINO2                  /\b(agen|free|online)\s+(?:poker|casino)/i
+describe CASINO2              Possible/likely casino spam 
+score CASINO2 6.0
+
+body CASINO3                  /\b(free|online)\s+(?:games|slot)/i
+describe CASINO3              Possible/likely casino spam 
+score CASINO3 3.0
+
+
+# The real spam killer stuff! - the blacklisted IPs in the 
+# URLs encountered; using the Mail::SpamAssassin::Plugin::URIDNSBL plugin. 
+
+# These black list services (Spamhaus, etc.) are included with the SpamAssassin distibution, 
+# and configured in 25_uribl.cf. 
+# However, instead of relying on the configuration there, we are going to use simplified, 
+# less granular rules for the plugin (we'll rely on "uridnsbl" line instead of "uridnssub"). 
+# We don't need to give them any benefit of the doubt; if this address is (black)listed in 
+# any capacity, we want to treat it as suspect. 
+
+# Spamhaus: 
+
+uridnsbl        URIBL_DV_SBL        zen.spamhaus.org.       A
+body            URIBL_DV_SBL        eval:check_uridnsbl('URIBL_SBL')
+describe        URIBL_DV_SBL        Contains an URL's NS IP listed in the Spamhaus SBL blocklist
+tflags          URIBL_DV_SBL        net
+reuse           URIBL_DV_SBL
+
+# We want each of these to be a death sentence by itself:
+score URIBL_DV_SBL 6.000
+score URIBL_SBL 6.000
+
+# SURBL:
+
+urirhsbl        URIBL_DV_SURBL  multi.surbl.org.        A
+body            URIBL_DV_SURBL  eval:check_uridnsbl('URIBL_WS_SURBL')
+describe        URIBL_DV_SURBL  Contains an URL listed in the WS SURBL blocklist
+tflags          URIBL_DV_SURBL  net
+reuse           URIBL_DV_SURBL
+
+score URIBL_DV_SURBL 6.000
+
+# URIBL
+
+urirhsbl        URIBL_DV_BLACK     multi.uribl.com.        A
+body            URIBL_DV_BLACK     eval:check_uridnsbl('URIBL_BLACK')
+describe        URIBL_DV_BLACK     Contains an URL listed in the URIBL blacklist
+tflags          URIBL_DV_BLACK     net
+reuse           URIBL_DV_BLACK
+
+score URIBL_DV_BLACK 6.000
+
+# This black list DNS service is not included with the default SpamAssassin configuration; 
+# but it appears to recognize some spam IPs that other black lists don't. 
+
+uridnsbl        URIBL_SPFBL       dnsbl.spfbl.net.       A
+body            URIBL_SPFBL       eval:check_uridnsbl('URIBL_SBFBL')
+describe        URIBL_SPFBL       Contains an URL's NS IP listed in the SPFBL blocklist          
+tflags          URIBL_SPFBL       net                                                                   
+reuse           URIBL_SPFBL                                                                             
+
+score URIBL_SPFBL 6.000
