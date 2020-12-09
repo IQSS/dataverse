@@ -88,7 +88,7 @@ Aliasing Database Setting
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When moving a database setting (``:ExampleSetting``), configure an alias
- ``dataverse.my.example.setting=dataverse.settings.fromdb.ExampleSetting`` in
+``dataverse.my.example.setting=dataverse.settings.fromdb.ExampleSetting`` in
 ``src/main/resources/META-INF/microprofile-aliases.properties``. This will enable backward compatibility.
 
 A database setting with an i18n attribute using *lang* will have available language codes appended to the name.
