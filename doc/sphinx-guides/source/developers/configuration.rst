@@ -1,6 +1,9 @@
 Consuming Configuration
 =======================
 
+.. contents:: |toctitle|
+	:local:
+
 Dataverse uses different types of configuration:
 
 1. JVM system properties
