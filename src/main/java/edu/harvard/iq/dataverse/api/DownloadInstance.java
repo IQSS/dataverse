@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.api;
 
 //import java.io.ByteArrayOutputStream;
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
@@ -46,6 +47,12 @@ public class DownloadInstance {
     private DownloadInfo downloadInfo = null;
     private String conversionParam = null;
     private String conversionParamValue = null;
+    
+    // This download instance is for an auxiliary file associated with 
+    // the DataFile. Unlike "conversions" (above) this is used for files
+    // that Dataverse has no way of producing/deriving from the parent Datafile
+    // itself, that have to be deposited externally.  
+    private AuxiliaryFile auxiliaryFile = null; 
     
     private EjbDataverseEngine command;
 
@@ -208,6 +215,14 @@ public class DownloadInstance {
 
     public void setDataverseRequestService(DataverseRequestServiceBean dataverseRequestService) {
         this.dataverseRequestService = dataverseRequestService;
+    }
+    
+    public AuxiliaryFile getAuxiliaryFile() {
+        return auxiliaryFile;
+    }
+    
+    public void setAuxiliaryFile(AuxiliaryFile auxiliaryFile) {
+        this.auxiliaryFile = auxiliaryFile;
     }
     
 }
