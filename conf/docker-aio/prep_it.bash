@@ -10,7 +10,7 @@ n_wait=5
 cd conf/docker-aio
 ./0prep_deps.sh
 ./1prep.sh
-docker build -t dv0 -f c7.dockerfile .
+docker build -t dv0 -f c8.dockerfile .
 # cleanup from previous runs if necessary
 docker rm -f dv
 # start container

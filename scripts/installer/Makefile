@@ -1,9 +1,7 @@
 INSTALLER_ZIP_DIR=dvinstall
 DISTRIBUTION_WAR_FILE=${INSTALLER_ZIP_DIR}/dataverse.war
 GLASSFISH_SETUP_SCRIPT=${INSTALLER_ZIP_DIR}/as-setup.sh
-POSTGRES_DRIVERS=${INSTALLER_ZIP_DIR}/pgdriver
 API_SCRIPTS=${INSTALLER_ZIP_DIR}/setup-datasetfields.sh ${INSTALLER_ZIP_DIR}/setup-users.sh ${INSTALLER_ZIP_DIR}/setup-builtin-roles.sh ${INSTALLER_ZIP_DIR}/setup-dvs.sh ${INSTALLER_ZIP_DIR}/data ${INSTALLER_ZIP_DIR}/setup-identity-providers.sh  ${INSTALLER_ZIP_DIR}/setup-all.sh ${INSTALLER_ZIP_DIR}/post-install-api-block.sh
-DB_SCRIPT=${INSTALLER_ZIP_DIR}/reference_data.sql
 JHOVE_CONFIG=${INSTALLER_ZIP_DIR}/jhove.conf
 JHOVE_SCHEMA=${INSTALLER_ZIP_DIR}/jhoveConfig.xsd
 SOLR_SCHEMA=${INSTALLER_ZIP_DIR}/schema.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_fields.xml ${INSTALLER_ZIP_DIR}/schema_dv_mdb_copies.xml ${INSTALLER_ZIP_DIR}/updateSchemaMDB.sh
@@ -16,9 +14,9 @@ installer:	dvinstall.zip
 clean: 
 	/bin/rm -rf ${INSTALLER_ZIP_DIR} dvinstall.zip
 
-dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
+dvinstall.zip:	${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo making installer...
-	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${POSTGRES_DRIVERS} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${DB_SCRIPT} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
+	zip -r dvinstall.zip ${GLASSFISH_SETUP_SCRIPT} ${JSF_PATCH_DIR} ${DISTRIBUTION_WAR_FILE} ${API_SCRIPTS} ${JHOVE_CONFIG} ${JHOVE_SCHEMA} ${SOLR_SCHEMA} ${SOLR_CONFIG} ${PYTHON_FILES} ${INSTALL_SCRIPT}
 	@echo 
 	@echo "Done!"
 
@@ -46,18 +44,9 @@ ${GLASSFISH_SETUP_SCRIPT}:	as-setup.sh ${INSTALLER_ZIP_DIR}
 	@echo copying glassfish setup
 	/bin/cp as-setup.sh ${INSTALLER_ZIP_DIR}
 
-${POSTGRES_DRIVERS}:	 pgdriver/postgresql-42.2.12.jar
-	mkdir -p ${POSTGRES_DRIVERS}
-	@echo copying postgres driver
-	/bin/cp pgdriver/postgresql-42.2.12.jar ${POSTGRES_DRIVERS}
-
 ${API_SCRIPTS}:	../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
 	@echo copying api scripts
 	/bin/cp -R ../api/setup-datasetfields.sh ../api/setup-users.sh ../api/setup-dvs.sh ../api/setup-identity-providers.sh ../api/setup-all.sh ../api/post-install-api-block.sh ../api/setup-builtin-roles.sh ../api/data ${INSTALLER_ZIP_DIR}
-
-${DB_SCRIPT}:	../database/reference_data.sql ${INSTALLER_ZIP_DIR}
-	@echo copying reference data sql script
-	/bin/cp ../database/reference_data.sql ${INSTALLER_ZIP_DIR}
 
 ${JHOVE_CONFIG}:	../../conf/jhove/jhove.conf ${INSTALLER_ZIP_DIR}
 	@echo copying jhove config file
