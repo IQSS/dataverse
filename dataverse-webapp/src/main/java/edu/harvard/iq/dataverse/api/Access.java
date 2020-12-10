@@ -363,8 +363,8 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
-        return tabularDatafileMetadataDDI(fileId, exclude, include, header, response);
+    public String tabularDatafileMetadata(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @QueryParam("key") String apiToken, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+        return tabularDatafileMetadataDDI(fileId, exclude, include, apiToken, header, response);
     }
 
     /*
@@ -374,7 +374,7 @@ public class Access extends AbstractApiBean {
     @Path("datafile/{fileId}/metadata/ddi")
     @GET
     @Produces({"text/xml"})
-    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String tabularDatafileMetadataDDI(@PathParam("fileId") String fileId, @QueryParam("exclude") String exclude, @QueryParam("include") String include, @QueryParam("key") String apiToken, @Context HttpHeaders header, @Context HttpServletResponse response) throws NotFoundException, ServiceUnavailableException /*, PermissionDeniedException, AuthorizationRequiredException*/ {
         String retValue = "";
 
         DataFile dataFile;
@@ -388,6 +388,18 @@ public class Access extends AbstractApiBean {
         if(embargoAccessService.isRestrictedByEmbargo(dataFile.getOwner())) {
             throw new ForbiddenException();
         }
+
+        if (dataFile.isHarvested()) {
+            String errorMessage = "Datafile " + fileId + " is a harvested file that cannot be accessed in this Dataverse";
+            throw new NotFoundException(errorMessage);
+        }
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = header.getHeaderString(API_KEY_HEADER);
+        }
+
+        // This will throw a ForbiddenException if access isn't authorized: 
+        checkAuthorization(dataFile, apiToken);
 
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
 
