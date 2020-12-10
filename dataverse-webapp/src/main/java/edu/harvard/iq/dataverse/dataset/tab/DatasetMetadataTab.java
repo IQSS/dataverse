@@ -90,14 +90,6 @@ public class DatasetMetadataTab implements Serializable {
     }
 
     /**
-     * Updates the dataset lock state.
-     */
-    public boolean updateDatasetLockState(boolean isDatasetLocked) {
-        this.isDatasetLocked = isDatasetLocked;
-        return isDatasetLocked;
-    }
-
-    /**
      * Extracts exporters display name and redirect url.
      */
     public List<Tuple2<String, String>> getExportersDisplayNameAndURL() {

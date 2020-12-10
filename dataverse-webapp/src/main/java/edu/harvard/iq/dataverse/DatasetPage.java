@@ -694,62 +694,6 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-
-    public void refresh(ActionEvent e) {
-        refresh();
-    }
-
-    public void refresh() {
-        logger.fine("refreshing");
-
-        //dataset = datasetDao.find(dataset.getId());
-        dataset = null;
-
-        logger.fine("refreshing working version");
-
-        DatasetVersionServiceBean.RetrieveDatasetVersionResponse retrieveDatasetVersionResponse = null;
-
-        if (persistentId != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByPersistentId(persistentId, version);
-            dataset = datasetDao.findByGlobalId(persistentId);
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-        } else if (versionId != null) {
-            retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionByVersionId(versionId);
-        } else if (dataset.getId() != null) {
-            //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), version);
-            dataset = datasetDao.find(dataset.getId());
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
-        }
-
-        if (retrieveDatasetVersionResponse == null) {
-            // TODO:
-            // should probably redirect to the 404 page, if we can't find
-            // this version anymore.
-            // -- L.A. 4.2.3
-            return;
-        }
-        this.workingVersion = retrieveDatasetVersionResponse.getDatasetVersion();
-
-        if (this.workingVersion == null) {
-            // TODO:
-            // same as the above
-
-            return;
-        }
-
-
-        if (dataset == null) {
-            // this would be the case if we were retrieving the version by
-            // the versionId, above.
-            this.dataset = this.workingVersion.getDataset();
-        }
-
-        displayCitation = dataset.getCitation(true, workingVersion);
-        stateChanged = false;
-        metadataTab.updateDatasetLockState(isLocked());
-        datasetFilesTab.refresh();
-    }
-
     public String deleteDataset() {
 
         DestroyDatasetCommand cmd;

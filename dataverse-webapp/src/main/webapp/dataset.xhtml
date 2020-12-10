@@ -657,9 +657,6 @@
                         <p:remoteCommand name="refreshAllLocksCommand" process="@this"
                                          update=":#{p:resolveClientId('datasetForm:pageRefreshFragment', view)}"
                                          actionListener="#{DatasetPage.refreshAllLocks()}"/>
-                        <p:remoteCommand name="refreshAllCommand" process="@this"
-                                         update=":datasetForm:topDatasetBlockFragment,:datasetForm:tabView:filesTable,:messagePanel"
-                                         actionListener="#{DatasetPage.refresh}"/>
 
                         <p:remoteCommand name="showDatasetUnlockedInfo"
                                          actionListener="#{DatasetPage.showDatasetUnlockedInfo()}"/>

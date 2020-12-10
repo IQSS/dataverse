@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -146,7 +145,6 @@ public class DatasetFilesTab implements Serializable {
     
     private boolean downloadOriginal = false;
 
-    private Boolean downloadButtonAvailable = null;
 
     private List<String> categoriesByName;
 
@@ -158,6 +156,9 @@ public class DatasetFilesTab implements Serializable {
     private Boolean lockedFromEditsVar;
     private boolean lockedDueToDcmUpload;
 
+    private boolean fileAccessRequestMultiButtonRequired;
+    private boolean fileAccessRequestMultiSignUpButtonRequired;
+    private boolean downloadButtonAvailable;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -230,6 +231,8 @@ public class DatasetFilesTab implements Serializable {
         exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE);
         
         guestbookResponseDialog.initForDatasetVersion(workingVersion);
+        
+        updateMultipleFileOptionFlags();
     }
 
     public boolean isFilesTabDisplayable() {
@@ -294,14 +297,15 @@ public class DatasetFilesTab implements Serializable {
         return lockedDueToDcmUpload;
     }
 
+    public boolean isFileAccessRequestMultiButtonRequired() {
+        return fileAccessRequestMultiButtonRequired;
+    }
+
+    public boolean isFileAccessRequestMultiSignUpButtonRequired() {
+        return fileAccessRequestMultiSignUpButtonRequired;
+    }
 
     // -------------------- LOGIC --------------------
-
-    public void refresh() {
-        fileMetadatasSearch = getAccessibleFilesMetadata();
-        lockedFromDownloadVar = null;
-        lockedFromEditsVar = null;
-    }
 
     public void refreshPaginator() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -443,23 +447,19 @@ public class DatasetFilesTab implements Serializable {
         return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
     }
 
-    public boolean isFileAccessRequestMultiButtonRequired() {
-        
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!this.fileDownloadHelper.canUserDownloadFile(fmd)) {
-                return session.getUser().isAuthenticated();
-            }
-        }
-        return false;
-    }
+    public void updateMultipleFileOptionFlags () {
+        boolean versionContainsNonDownloadableFiles = workingVersion.getFileMetadatas().stream()
+                    .anyMatch(fm -> !fileDownloadHelper.canUserDownloadFile(fm));
 
-    public boolean isFileAccessRequestMultiSignUpButtonRequired() {
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (!this.fileDownloadHelper.canUserDownloadFile(fmd)) {
-                return !session.getUser().isAuthenticated();
-            }
+        boolean versionContainsDownloadableFiles = workingVersion.getFileMetadatas().stream()
+                    .anyMatch(fm -> fileDownloadHelper.canUserDownloadFile(fm));
+        
+        if (versionContainsNonDownloadableFiles) {
+            fileAccessRequestMultiButtonRequired = session.getUser().isAuthenticated();
+            fileAccessRequestMultiSignUpButtonRequired = session.getUser().isAuthenticated();
         }
-        return false;
+        
+        downloadButtonAvailable = versionContainsDownloadableFiles;
     }
 
     public String requestAccessMultipleFiles() {
@@ -539,19 +539,7 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public boolean isDownloadButtonAvailable() {
-
-        if (downloadButtonAvailable != null) {
-            return downloadButtonAvailable;
-        }
-
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (this.fileDownloadHelper.canUserDownloadFile(fmd)) {
-                downloadButtonAvailable = true;
-                return true;
-            }
-        }
-        downloadButtonAvailable = false;
-        return false;
+        return downloadButtonAvailable;
     }
 
     public void refreshTagsPopUp() {
