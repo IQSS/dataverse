@@ -1,0 +1,7 @@
+#!/bin/sh
+
+DV_SA_INSTALL_DIRECTORY=/usr/local/dataverse-admin/spam; export DV_SA_INSTALL_DIRECTORY
+
+${DV_SA_INSTALL_DIRECTORY}/dataverse-spam-validator.pl dataverse $1
+
+exit $?

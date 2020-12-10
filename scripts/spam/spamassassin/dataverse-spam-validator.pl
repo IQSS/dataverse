@@ -2,8 +2,9 @@
 use Text::SpamAssassin;
 use JSON; 
 
-# adjust the path of the .cf file below: 
-$SPAM_DETECTION_RULES = "dataverse_spam_prefs.cf";
+$DV_SA_INSTALL_DIRECTORY = $ENV{'DV_SA_INSTALL_DIRECTORY'}; 
+$DV_SA_INSTALL_DIRECTORY = "." unless $DV_SA_INSTALL_DIRECTORY; 
+$SPAM_DETECTION_RULES = $DV_SA_INSTALL_DIRECTORY . "/dataverse_spam_prefs.cf";
 
 unless ( -f $SPAM_DETECTION_RULES )
 {
@@ -16,6 +17,8 @@ unless ( -f $SPAM_DETECTION_RULES )
     # users that their dataverses are being rejected on account of being spam"; 
 }
 
+$USAGE = "usage: ./dataverse-spam-validator.pl [-v] <(dataverse|dataset)> <dv_metadata.json>\n";
+
 # command line options: 
 while ( $ARGV[0] =~/^\-/ )
 {
@@ -27,16 +30,25 @@ while ( $ARGV[0] =~/^\-/ )
     }
     else 
     {
-	print STDERR "usage: ./dataverse-spam-validator.pl [-v] <dv_metadata.json>\n";
+	print STDERR $USAGE; 
 	exit 0; 
     }
+}
+
+$dtype = shift @ARGV; 
+
+unless ( $dtype =~/^data(verse|set)$/ )
+{
+    print STDERR $USAGE; 
+    exit 0; 
 }
 
 $infile = shift @ARGV; 
 
 unless ( -f $infile )
 {
-    die "usage: ./dataverse-spam-validator.pl [-v] <dv_metadata.json>\n";
+    print STDERR $USAGE;
+    exit 0; 
 }
 
 open INF, $infile; 
@@ -52,34 +64,79 @@ close INF;
 $json = JSON->new->allow_nonref;
 
 # parse and process json input:
+# (catch any parsing exception and exit cleanly; 
+# again, we don't want any false positives.
+
+$test_subject = ""; 
+$test_textbody = ""; 
+
 eval {
     $jsonref = $json->decode( $jsoninput );
+
+    if ( $dtype eq "dataverse" )
+    {
+	$dvname = $jsonref->{name};
+	$dvdescription = $jsonref->{description}; 
+
+	print "dataverse name: " . $dvname . "\n" if $verbose;
+	print "dataverse description: " . $dvdescription . "\n" if $verbose; 
+
+	# The description of the dataverse is the main body of text on which we run SpamAssassin: 
+	$test_textbody = $dvdescription; 
+	# ... and we'll use the name of the dataverse as the subject header:
+	$test_subject = $dvname; 
+    }
+    else # dataset
+    {
+	$metadatafields = $jsonref->{datasetVersion}->{metadataBlocks}->{citation}->{fields}; 
+
+	for $field (@$metadatafields)
+	{
+	    $ftype = $field->{typeName}; 
+	    if ( $ftype eq "title" )
+	    {
+		$dstitle = $field->{value};
+		print "title: " . $dstitle . "\n" if $verbose;
+	    }
+	    elsif ( $ftype eq "dsDescription" )
+	    {
+		# dsDescription is a compound field:
+		# (and multiple values are allowed!)
+		$subfields = $field->{value}; 
+	    
+		for $sfield (@$subfields)
+		{
+		    # dsDescriptionValue is a required subfield... 
+		    # so we can expect it to be populated:
+		    $dsdescription .= $sfield->{dsDescriptionValue}->{value};
+		    print "description: " . $dsdescription . "\n" if $verbose;
+		}
+	    }
+	    # Any other dataset metadata fields we want to subject to this check? 
+	}
+	$test_textbody = $dsdescription; 
+	$test_subject = $dstitle; 
+    }
 };
+# catch any exceptions:
 if ($@) {
     print STDERR "failed to parse json input: " . $@ . "\n";
     exit 0; 
 }
 
-$dvname = $jsonref->{name};
-$dvdescription = $jsonref->{description}; 
-
-
-print "dataverse name: " . $dvname . "\n" if $verbose;
-print "dataverse description: " . $dvdescription . "\n" if $verbose; 
-
 # create Text::SpamAssassin object: 
  
 my $sa = Text::SpamAssassin->new(
     sa_options => {
-	userprefs_filename => 'dataverse_spam_prefs.cf',
+	userprefs_filename => $SPAM_DETECTION_RULES,
     },
     );
  
-# The description of the dataverse is the main body of text on which we run SpamAssassin: 
-$sa->set_html($dvdescription);
-# ... and we'll use the name of the dataverse as the subject header:
-$sa->set_header("Subject", $dvname);
+$sa->set_text($test_textbody);
+$sa->set_header("Subject", $test_subject);
  
+# ... and run the check:
+
 my $result = $sa->analyze;
 print "result: $result->{verdict}\n" if $verbose;
 print "score: $result->{score}\n" if $verbose; 
