@@ -228,6 +228,7 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <ui:include src="file-edit-button-fragment.xhtml">
+                                                            <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
                                                             <ui:param name="isDraftReplacementFile" value="#{FilePage.draftReplacementFile}"/>
                                                             <ui:param name="configureTools" value="#{FilePage.configureTools}"/>

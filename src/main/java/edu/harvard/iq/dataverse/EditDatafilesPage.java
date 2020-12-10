@@ -510,21 +510,21 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
-        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
-        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();
-                       
-        workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
+        //TODO: review if we we need this check; 
+        // as getEditVersion should either return the exisiting draft or create a new one      
         if (workingVersion == null || !workingVersion.isDraft()) {
             // Sorry, we couldn't find/obtain a draft version for this dataset!
             return permissionsWrapper.notFound();
         }
         
         // Check if they have permission to modify this dataset: 
-        
         if (!permissionService.on(dataset).has(Permission.EditDataset)) {
             return permissionsWrapper.notAuthorized();
         }
+        
+        clone = workingVersion.cloneDatasetVersion();   
+        this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
+        this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
         // -------------------------------------------
         //  Is this a file replacement operation?
@@ -765,23 +765,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     //files won't be changed (restricted=true and file restricted or restricted false and file unrestricted).
     public void restrictFiles(boolean restricted) throws UnsupportedOperationException{
         
-        //First make sure they've even selected file(s) to restrict.... 
-        if (this.getSelectedFiles().isEmpty()) {
-            if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrictEditFilesPage').show()");
-            } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrictEditFilesPage').show()");
-            }
-            return;
-        }
-
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determining whether to show the access popup
-        previouslyRestrictedFiles = new ArrayList<>();
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (fmd.isRestricted()) {
-                previouslyRestrictedFiles.add(fmd);
-            }
+        if (restricted) { // get values from access popup
+            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);
         }
         
         String fileNames = null;
@@ -797,11 +783,6 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             }
             fmd.setRestricted(restricted);
-            
-//            Command cmd;
-//            cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
-//            commandEngine.submit(cmd);
-            
                                   
             if (workingVersion.isDraft() && !fmd.getDataFile().isReleased()) {
                 // We do not really need to check that the working version is 
@@ -812,43 +793,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         if (fileNames != null) {
             String successMessage = restricted ? getBundleString("file.restricted.success"): getBundleString("file.unrestricted.success");
-            logger.fine(successMessage);
-            successMessage = successMessage.replace("{0}", fileNames);
-            JsfHelper.addFlashMessage(successMessage);    
-        }
-    } 
-
-    public void restrictFilesDP(boolean restricted) {
-        // since we are restricted files, first set the previously restricted file list, so we can compare for
-        // determinin whether to show the access popup
-        if (previouslyRestrictedFiles == null) {
-            previouslyRestrictedFiles = new ArrayList<>();
-            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                if (fmd.isRestricted()) {
-                    previouslyRestrictedFiles.add(fmd);
-                }
-            }
-        }        
-        
-        String fileNames = null;       
-        for (FileMetadata fmw : workingVersion.getFileMetadatas()) {
-            for (FileMetadata fmd : this.getSelectedFiles()) {
-                if (restricted && !fmw.isRestricted()) {
-                // collect the names of the newly-restrticted files, 
-                    // to show in the success message:
-                    if (fileNames == null) {
-                        fileNames = fmd.getLabel();
-                    } else {
-                        fileNames = fileNames.concat(", " + fmd.getLabel());
-                    }
-                }
-                if (fmd.getDataFile().equals(fmw.getDataFile())) {
-                    fmw.setRestricted(restricted);
-                }
-            }
-        }
-        if (fileNames != null) {
-            String successMessage = getBundleString("file.restricted.success");
             logger.fine(successMessage);
             successMessage = successMessage.replace("{0}", fileNames);
             JsfHelper.addFlashMessage(successMessage);    
@@ -1023,12 +967,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
 
-    public String saveWithTermsOfUse() {
-        logger.fine("saving terms of use, and the dataset version");
-        return save();
-    }
-    
-    
     /**
      * Save for File Replace operations
      * @return
@@ -3280,5 +3218,24 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setHypothesisGroupSelection(String hypothesisGroupSelection) {
         this.hypothesisGroupSelection = hypothesisGroupSelection;
+    }
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
+
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
     }
 }
