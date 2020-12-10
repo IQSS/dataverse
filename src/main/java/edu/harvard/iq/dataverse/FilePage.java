@@ -197,7 +197,7 @@ public class FilePage implements java.io.Serializable {
                     return permissionsWrapper.notFound();
                 }
             }
-
+            
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
@@ -208,6 +208,9 @@ public class FilePage implements java.io.Serializable {
             if (!authorized) {
                 return permissionsWrapper.notAuthorized();
             }
+            
+            //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
+            //fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
@@ -373,9 +376,11 @@ public class FilePage implements java.io.Serializable {
     
     public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
-        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
-        Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
+        if (restricted) { // get values from access popup
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+        }
         
         Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
@@ -386,9 +391,6 @@ public class FilePage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
-        
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
         
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
@@ -1023,5 +1025,23 @@ public class FilePage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorMessage"), BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorDetail"));
         }
     }
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
 
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }  
 }

@@ -193,6 +193,9 @@ public class DataFile extends DvObject implements Comparable {
     private List<DataTable> dataTables;
     
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private List<AuxiliaryFile> auxiliaryFiles;
+   
+    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
     
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -280,6 +283,14 @@ public class DataFile extends DvObject implements Comparable {
 
     public void setDuplicateFilename(String duplicateFilename) {
         this.duplicateFilename = duplicateFilename;
+    }
+
+    public List<AuxiliaryFile> getAuxiliaryFiles() {
+        return auxiliaryFiles;
+    }
+
+    public void setAuxiliaryFiles(List<AuxiliaryFile> auxiliaryFiles) {
+        this.auxiliaryFiles = auxiliaryFiles;
     }
     
     
