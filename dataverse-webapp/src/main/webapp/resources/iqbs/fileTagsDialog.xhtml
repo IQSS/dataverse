@@ -50,7 +50,7 @@
                 <div jsf:id="fileTagsMenuDSsectionLabel" class="col-sm-4 control-label section-title">
                     #{bundle['file.editTagsDialog.select']}
                 </div>
-                <div class="col-sm-8">
+                <div id="selectFileTagsPanel" class="col-sm-8">
                     <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
                                           widgetVar="fileTagsMenuDS"
                                           value="#{FileTagModal.selectedFileMetadataTags}" label="#{bundle.select}"
