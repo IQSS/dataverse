@@ -570,7 +570,9 @@ public class SettingsServiceBean {
          */
         AntivirusScannerSocketAddress,
         AntivirusScannerSocketPort,
-        AntivirusScannerSocketTimeout
+        AntivirusScannerSocketTimeout,
+
+        FilesIntegrityCheckTimerExpression
         ;
 
 

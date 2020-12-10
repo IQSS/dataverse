@@ -25,6 +25,8 @@ import edu.harvard.iq.dataverse.consent.api.ConsentApiService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datafile.FileService;
+import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
@@ -86,7 +88,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,9 @@ public class Admin extends AbstractApiBean {
     // Make the session available
     @Inject
     DataverseSession session;
+
+    @EJB
+    FileService fileServiceBean;
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -1037,6 +1041,26 @@ public class Admin extends AbstractApiBean {
 
         ingestService.fixMissingOriginalSizes(affectedFileIds);
         return ok(info);
+    }
+
+    @Path("datafiles/integrity/check")
+    @GET
+    public Response checkDatafilesIntegrity() {
+        try {
+            AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
+            if (!authenticatedUser.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Only superusers can check integrity");
+            }
+    
+            JsonObjectBuilder info = Json.createObjectBuilder();
+    
+            FilesIntegrityReport report = fileServiceBean.checkFilesIntegrity();
+            info.add("message", report.getSummaryInfo());
+
+            return ok(info);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
     }
 
     /**

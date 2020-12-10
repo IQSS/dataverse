@@ -8,6 +8,8 @@ package edu.harvard.iq.dataverse.timer;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.datafile.FileService;
+import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
@@ -16,21 +18,28 @@ import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
+import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -75,6 +84,10 @@ public class DataverseTimerServiceBean implements Serializable {
     OAISetServiceBean oaiSetService;
     @EJB
     SystemConfig systemConfig;
+    @Inject
+    SettingsServiceBean settingsService;
+    @EJB
+    FileService fileService;
 
 
     // The init method that wipes and recreates all the timers on startup
@@ -93,6 +106,8 @@ public class DataverseTimerServiceBean implements Serializable {
             createMotherTimer();
             // And the export timer (there is only one)
             createExportTimer();
+            
+            createIntegrityCheckTimer();
 
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
@@ -181,6 +196,10 @@ public class DataverseTimerServiceBean implements Serializable {
             } catch (Throwable e) {
                 logException(e, logger);
             }
+        } else if (timer.getInfo() instanceof FilesIntegrityCheckTimerInfo) {
+            FilesIntegrityReport report = fileService.checkFilesIntegrity();
+
+            logger.info(report.getSummaryInfo());
         }
 
     }
@@ -323,6 +342,26 @@ public class DataverseTimerServiceBean implements Serializable {
 
     public void removeExportTimer() {
         /* Not yet implemented. The DVN 3 implementation can be used as a model */
+    }
+
+    public void createIntegrityCheckTimer() {
+        String cronExpression = settingsService.getValueForKey(SettingsServiceBean.Key.FilesIntegrityCheckTimerExpression);
+        if (StringUtils.isNotBlank(cronExpression)) {
+            final String[] parts = cronExpression.split(" ");
+            if (parts.length == 5) {
+                ScheduleExpression expression = new ScheduleExpression()
+                    .minute(parts[0])
+                    .hour(parts[1])
+                    .dayOfMonth(parts[2])
+                    .month(parts[3])
+                    .dayOfWeek(parts[4]);
+                TimerConfig timerConfig = new TimerConfig();
+                timerConfig.setInfo(new FilesIntegrityCheckTimerInfo());
+                timerService.createCalendarTimer(expression, timerConfig);
+            } else {
+                logger.log(Level.SEVERE, "Invalid expression for files integrity check timer: " + cronExpression);
+            }
+        }
     }
 
     /* Utility methods: */
