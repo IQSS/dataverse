@@ -623,11 +623,6 @@
                 </span>
             </div>
             <!-- END: FILE LEVEL MSGs -->
-<<<<<<< HEAD
-
-=======
-                       
->>>>>>> refs/remotes/IQSS/develop
             <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}" jsf:rendered="#{showAccessFileButtonGroup}">
                 <!-- Access File - Download, Explore, Compute -->
                 <div class="btn-group" jsf:rendered="#{showAccessFileButtonGroup}">
@@ -635,7 +630,6 @@
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
 
-<<<<<<< HEAD
                 <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                     <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{DatasetPage.getPreviewToolsForDataFile(fileMetadata.dataFile.id).get(0).getDisplayNameLang()}"
                         href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
@@ -643,34 +637,11 @@
                     </a>
                 </ui:fragment>
                     <a type="button" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
-=======
-                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
-                        <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
-                            href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
-                            <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
-                        </a>
-                    </ui:fragment>
-                    <a type="button" style="padding:6px 8px;" class="btn-access-file btn btn-link bootstrap-button-tooltip dropdown-toggle" 
->>>>>>> refs/remotes/IQSS/develop
                        title="#{bundle['file.accessBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle['file.accessBtn']}</span><span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu pull-right text-left">
                         <!-- Explore/Download/Request Button Block -->
-<<<<<<< HEAD
-                        <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) or DatasetPage.downloadPopupRequired}">
-                            <ui:include src="file-download-button-fragment.xhtml">
-                                <ui:param name="fileMetadata" value="#{fileMetadata}"/>
-                                <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                                <ui:param name="requestAccessPopupRequired" value="#{DatasetPage.requestAccessPopupRequired}"/>
-                                <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}"/>
-                                <ui:param name="guestbookResponseService" value="#{DatasetPage.guestbookResponseService}"/>
-                                <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
-                                <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
-                                <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
-                            </ui:include>
-                        </ui:fragment>
-=======
                         <ui:include src="file-download-button-fragment.xhtml">
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
@@ -681,7 +652,6 @@
                             <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
                             <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
                         </ui:include>
->>>>>>> refs/remotes/IQSS/develop
                         <!-- END: Explore/Download/Request Button Block -->
 
                         <!-- Data Access for Rsync Download -->
