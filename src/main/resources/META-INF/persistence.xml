@@ -3,7 +3,7 @@
     <persistence-unit name="VDCNet-ejbPU" transaction-type="JTA">
         <!-- provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider-->
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>java:app/jdbc/dataverse</jta-data-source>
+        <jta-data-source>jdbc/VDCNetDS</jta-data-source>
         <properties>
             <!--property name="toplink.logging.level" value="FINE"/-->
 	    <!-- disabling weaving, as an experiment: - L.A. -->
