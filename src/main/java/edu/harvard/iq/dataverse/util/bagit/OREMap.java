@@ -135,9 +135,9 @@ public class OREMap {
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
