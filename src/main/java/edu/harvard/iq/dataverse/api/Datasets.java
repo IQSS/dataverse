@@ -616,21 +616,22 @@ public class Datasets extends AbstractApiBean {
     }
   
     @GET
-    @Path("{id}/versions/{versionid}/metadata")
+    @Path("{id}/versions/{versionId}/metadata")
     @Produces("application/json-ld")
-    public Response getVersionMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId) {
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
-            Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
-            DatasetVersion dsv = ds.getEditVersion();
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(id), uriInfo, headers);
             OREMap ore = new OREMap(dsv,
                     settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
-            return ok(JSONLDUtil.prettyPrint(ore.getOREMap(true)));
+            return ok(ore.getOREMapBuilder(true));
 
         } catch (WrappedResponse ex) {
+            ex.printStackTrace();
             return ex.getResponse();
         } catch (Exception jpe) {
             logger.log(Level.SEVERE, "Error getting jsonld metadata for dsv: ", jpe.getLocalizedMessage());
+            jpe.printStackTrace();
             return error(Response.Status.INTERNAL_SERVER_ERROR, jpe.getLocalizedMessage());
         }
     }
@@ -638,8 +639,8 @@ public class Datasets extends AbstractApiBean {
     @GET
     @Path("{id}/metadata")
     @Produces("application/json-ld")
-    public Response getVersionMetadata(@PathParam("id") String id) {
-        return getVersionMetadata(id, ":draft");
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
     }
             
     @PUT
@@ -672,19 +673,18 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
-	@DELETE
-	@Path("{id}/metadata")
+	@PUT
+	@Path("{id}/metadata/delete")
 	@Consumes("application/json-ld")
-	public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id,
-			@PathParam("versionId") String versionId, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
-
+	public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
+        logger.info("In delteMetadata");
 		try {
 			Dataset ds = findDatasetOrDie(id);
 			DataverseRequest req = createDataverseRequest(findUserOrDie());
 			DatasetVersion dsv = ds.getEditVersion();
 			boolean updateDraft = ds.getLatestVersion().isDraft();
 			dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
-			
+			logger.info("Updating ver");
 			DatasetVersion managedVersion;
 			if (updateDraft) {
 				Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -696,9 +696,11 @@ public class Datasets extends AbstractApiBean {
 			return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
 
 		} catch (WrappedResponse ex) {
+		    ex.printStackTrace();
 			return ex.getResponse();
 		} catch (JsonParsingException jpe) {
 		    logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+		    jpe.printStackTrace();
             return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
 		}
 	}

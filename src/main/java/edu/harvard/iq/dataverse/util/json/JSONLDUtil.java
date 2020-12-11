@@ -158,6 +158,7 @@ public class JSONLDUtil {
                         // unless it's multiple
                         if (!append && !dsft.isAllowMultiples()) {
                             dsfl.remove(dsf);
+                            dsf=null;
                         }
                     }
                     if (dsf == null) {
@@ -306,7 +307,7 @@ public class JSONLDUtil {
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
-
+logger.info("deleteDatasetVersionMD");
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         //All terms are now URIs
         //Setup dsftMap - URI to datasetFieldType map
@@ -340,12 +341,12 @@ public class JSONLDUtil {
 
                         // Todo - normalize object vs. array
                         JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
-
+logger.info("Deleting: " + key + " : " + valArray.toString());
                         DatasetField dsf2 = getReplacementField(dsf, valArray);
                         if(dsf2 == null) {
                             //Exact match - remove the field
                             dsfl.remove(dsf);
-                        } else if(!dsf2.equals(dsf)) {
+                        } else {
                             //Partial match - some values of a multivalue field match, so keep the remaining values
                             dsfl.remove(dsf);
                             dsfl.add(dsf2);
@@ -388,6 +389,12 @@ public class JSONLDUtil {
         return dsv;
     }
     
+    /**
+     * 
+     * @param dsf
+     * @param valArray
+     * @return null if exact match, otherwise return a field without the value to be deleted
+     */
     private static DatasetField getReplacementField(DatasetField dsf, JsonArray valArray) {
         // TODO Auto-generated method stub
         return null;
