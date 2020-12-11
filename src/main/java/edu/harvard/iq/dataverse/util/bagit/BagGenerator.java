@@ -826,7 +826,7 @@ public class BagGenerator {
         } else {
             info.append(
                     // FixMe - handle description having subfields better
-                    WordUtils.wrap(getSingleValue(aggregation.getAsJsonObject(descriptionTerm.getLabel()),
+                    WordUtils.wrap(getSingleValue(aggregation.get(descriptionTerm.getLabel()),
                             descriptionTextTerm.getLabel()), 78, CRLF + " ", true));
 
             info.append(CRLF);
@@ -872,22 +872,24 @@ public class BagGenerator {
      *            - the key to find a value(s) for
      * @return - a single string
      */
-    String getSingleValue(JsonObject jsonObject, String key) {
+    String getSingleValue(JsonElement jsonElement, String key) {
         String val = "";
-        if (jsonObject.get(key).isJsonPrimitive()) {
+        if(jsonElement.isJsonObject()) {
+            JsonObject jsonObject=jsonElement.getAsJsonObject();
             val = jsonObject.get(key).getAsString();
-        } else if (jsonObject.get(key).isJsonArray()) {
-            Iterator<JsonElement> iter = jsonObject.getAsJsonArray(key).iterator();
+        } else if (jsonElement.isJsonArray()) {
+            
+            Iterator<JsonElement> iter = jsonElement.getAsJsonArray().iterator();
             ArrayList<String> stringArray = new ArrayList<String>();
             while (iter.hasNext()) {
-                stringArray.add(iter.next().getAsString());
+                stringArray.add(iter.next().getAsJsonObject().getAsJsonPrimitive(key).getAsString());
             }
             if (stringArray.size() > 1) {
                 val = StringUtils.join((String[]) stringArray.toArray(), ",");
             } else {
                 val = stringArray.get(0);
             }
-            logger.warning("Multiple values found for: " + key + ": " + val);
+            logger.fine("Multiple values found for: " + key + ": " + val);
         }
         return val;
     }
