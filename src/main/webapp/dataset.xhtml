@@ -80,6 +80,7 @@
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
+                   <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('link', DatasetPage.getSignpostingLinkHeader())}" />
                     <f:viewParam name="id" value="#{DatasetPage.id}"/>
                     <o:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
                     <f:viewParam name="version" value="#{DatasetPage.version}"/>
