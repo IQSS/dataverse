@@ -51,8 +51,12 @@ public class OREMap {
     public JsonObject getOREMap() throws Exception {
         return getOREMap(false);
     }
-
+    
     public JsonObject getOREMap(boolean aggregationOnly) throws Exception {
+        return getOREMapBuilder(aggregationOnly).build();
+    }
+    
+    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
 
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
@@ -250,10 +254,10 @@ public class OREMap {
             contextBuilder.add(e.getKey(), e.getValue());
         }
         if (aggregationOnly) {
-            return aggBuilder.add("@context", contextBuilder.build()).build();
+            return aggBuilder.add("@context", contextBuilder.build());
         } else {
             // Now create the overall map object with it's metadata
-            JsonObject oremap = Json.createObjectBuilder()
+            JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
                     .add(JsonLDTerm.dcTerms("creator").getLabel(), BundleUtil.getStringFromBundle("institution.name"))
                     .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
@@ -267,8 +271,8 @@ public class OREMap {
                             aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
                                     .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
                     // and finally add the context
-                    .add("@context", contextBuilder.build()).build();
-            return oremap;
+                    .add("@context", contextBuilder.build());
+            return oremapBuilder;
         }
     }
 
