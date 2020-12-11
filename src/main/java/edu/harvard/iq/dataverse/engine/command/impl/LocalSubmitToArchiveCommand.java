@@ -84,6 +84,7 @@ public class LocalSubmitToArchiveCommand extends AbstractSubmitToArchiveCommand 
             }
         }  catch (Exception e) {
             logger.warning(e.getLocalizedMessage() + "here");
+            e.printStackTrace();
         }
         return WorkflowStepResult.OK;
     }
