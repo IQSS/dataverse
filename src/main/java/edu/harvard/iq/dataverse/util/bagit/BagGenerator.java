@@ -884,7 +884,7 @@ public class BagGenerator {
                 stringArray.add(iter.next().getAsJsonObject().getAsJsonPrimitive(key).getAsString());
             }
             if (stringArray.size() > 1) {
-                val = StringUtils.join((String[]) stringArray.toArray(), ",");
+                val = StringUtils.join(stringArray.toArray(), ",");
             } else {
                 val = stringArray.get(0);
             }
