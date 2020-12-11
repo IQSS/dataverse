@@ -54,10 +54,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,6 +80,8 @@ import javax.inject.Named;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+
+import javax.json.*;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -5596,5 +5596,77 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    public Map<String, CVM> getCVMConf(){
+        Map <String, CVM> cvmMap = new HashMap<>();
+        String cvmSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVMConf);
+        if (cvmSetting == null || cvmSetting.isEmpty())
+            return cvmMap;
+
+        JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVMConf)));
+        JsonArray cvmConfJsonArray = jsonReader.readArray();
+        jsonReader.close();
+        if (cvmConfJsonArray != null) {
+            for (JsonObject jo : cvmConfJsonArray.getValuesAs(JsonObject.class)) {
+                JsonArray v = jo.getJsonArray("vocabs");
+                List<String> vs = new ArrayList<>();
+                for (JsonString elm: v.getValuesAs(JsonString.class)){
+                    vs.add(elm.getString());
+                }
+                JsonArray k = jo.getJsonArray("vocab-codes");
+                List<String> ks = new ArrayList<>();
+                for (JsonString elm: k.getValuesAs(JsonString.class)){
+                    ks.add(elm.getString());
+                }
+                String cvmLang = BundleUtil.getDefaultLocale().getLanguage();//default
+                if (jo.containsKey("language"))
+                    cvmLang = jo.getString("language"); // in case of "language":"", "&lang=" will be send to the middleware
+                boolean cvmReadonly = false;
+                if (jo.containsKey("readonly") && jo.getString("readonly").toLowerCase().equals("true"))
+                    cvmReadonly = true;
+                String cvmProtocol = "skosmos";//default
+                if (jo.containsKey("protocol"))
+                    cvmProtocol = jo.getString("protocol");
+                CVM CVm = new CVM(jo.getString("cvm-url"), cvmLang, cvmProtocol, cvmReadonly, vs, ks);
+                cvmMap.put(jo.getString("vocab-name"), CVm);
+
+            }
+        }
+        return cvmMap;
+    }
+    public class CVM {
+        String cvmUrl;
+        String language;
+        String protocol;
+        boolean readonly;
+        List<String> vocabs;
+        List<String> keys;
+        public CVM(String cvmUrl, String language, String protocol, boolean readonly, List<String> vocabs, List<String> keys){
+            this.cvmUrl = cvmUrl;
+            this.language = language;
+            this.protocol = protocol;
+            this.readonly = readonly;
+            this.vocabs = vocabs;
+            this.keys = keys;
+        }
+
+        public String getCvmUrl() {
+            return cvmUrl;
+        }
+        public String getLanguage() {
+            return language;
+        }
+        public String getProtocol() { return protocol; }
+
+        public boolean isReadonly() {
+            return readonly;
+        }
+        public List<String> getVocabs() {
+            return vocabs;
+        }
+        public List<String> getKeys() {
+            return keys;
+        }
     }
 }

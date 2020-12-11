@@ -197,7 +197,13 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
-        
+
+        /**
+         * Key for Setting of Controlled Vocabulary Manager
+         */
+
+        CVMConf,
+
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).

@@ -679,7 +679,12 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
-
+    protected Response okLinkset( JsonArrayBuilder bld ) {
+        return Response.ok( Json.createObjectBuilder()
+                .add("linkset", bld).build() )
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
             .add("status", STATUS_OK)
