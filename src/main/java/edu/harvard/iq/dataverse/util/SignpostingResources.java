@@ -23,10 +23,9 @@ public class SignpostingResources {
         this.workingDatasetVersion = workingDatasetVersion;
     }
 
-    public String getLinks(){
+    private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
         String identifierSchema = "";
-        List<DatasetAuthor> dal = workingDatasetVersion.getDatasetAuthors();
-        for (DatasetAuthor da:dal){
+        for (DatasetAuthor da:datasetAuthors){
              /*
                 else if author has VIAF
                     Link: <http://viaf.org/viaf/:id/>; rel="author"
@@ -43,6 +42,12 @@ public class SignpostingResources {
 
             }
         }
+        return identifierSchema;
+    }
+
+    public String getLinks(){
+        String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
+
         Dataset ds = workingDatasetVersion.getDataset();
         String citeAs = "<" + ds.getPersistentURL() + "> ; rel=\"cite-as\"";
         String describedby = ""; //not only crosscite.
@@ -58,7 +63,6 @@ public class SignpostingResources {
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
             //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             lic = ", <https://creativecommons.org/licenses/by/4.0/> ; rel=\"license\"";
-            //http://creativecommons.org/licenses/by/4.0
         }
 
         String linkset = ", <" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
@@ -68,25 +72,33 @@ public class SignpostingResources {
         return citeAs + type + identifierSchema + lic + linkset + describedby;
     }
 
-
-    public JsonArrayBuilder getJsonLinkset() {
-        Dataset ds = workingDatasetVersion.getDataset();
-//        String pid =  ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
-//        String anchor = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + pid;
-        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
-        List<DatasetAuthor> dal = workingDatasetVersion.getDatasetAuthors();
+    private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors){
         JsonArrayBuilder authors = Json.createArrayBuilder();
-        for (DatasetAuthor da:dal){
+        for (DatasetAuthor da:datasetAuthors){
              /*
                 else if author has VIAF
                     Link: <http://viaf.org/viaf/:id/>; rel="author"
                 else if author has ISNI
                     Link: <http://www.isni.org/:id>; rel="author"
              */
-            if (da.getIdType().equals("ORCID")){
-                authors.add(jsonObjectBuilder().add("href", "https://orcid.org/" + da.getIdValue() ));
+            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
+                if (da.getIdType().equals("ORCID"))
+                    authors.add(jsonObjectBuilder().add("href", "https://orcid.org/" + da.getIdValue()));
+                else if (da.getIdType().equals("ISNI"))
+                    authors.add(jsonObjectBuilder().add("href","https://isni.org/isni/" + da.getIdValue()));
+                else if (da.getIdType().equals("ScopusID"))
+                    authors.add(jsonObjectBuilder().add("href","https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue()));
             }
         }
+        return authors;
+    }
+
+    public JsonArrayBuilder getJsonLinkset() {
+        Dataset ds = workingDatasetVersion.getDataset();
+//        String pid =  ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
+//        String anchor = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + pid;
+        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
+        JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
 
         JsonArrayBuilder items = Json.createArrayBuilder();
         List<DataFile> dfs = ds.getFiles();
@@ -101,7 +113,6 @@ public class SignpostingResources {
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
             //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             lic = "https://creativecommons.org/licenses/by/4.0/";
-            //http://creativecommons.org/licenses/by/4.0
         }
         JsonArrayBuilder jab = Json.createArrayBuilder();
         jab.add(jsonObjectBuilder().add("href", "https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
