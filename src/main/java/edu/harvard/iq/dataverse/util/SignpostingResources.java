@@ -24,7 +24,7 @@ public class SignpostingResources {
     }
 
     public String getLinks(){
-        String orchid = "";
+        String identifierSchema = "";
         List<DatasetAuthor> dal = workingDatasetVersion.getDatasetAuthors();
         for (DatasetAuthor da:dal){
              /*
@@ -33,8 +33,14 @@ public class SignpostingResources {
                 else if author has ISNI
                     Link: <http://www.isni.org/:id>; rel="author"
              */
-            if (da.getIdType().equals("ORCID")){
-                orchid += ", <https://orcid.org/" + da.getIdValue() + "> ; rel=\"author\"";
+            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
+                if (da.getIdType().equals("ORCID"))
+                    identifierSchema += ", <https://orcid.org/" + da.getIdValue() + "> ; rel=\"author\"";
+                else if (da.getIdType().equals("ISNI"))
+                    identifierSchema += ", <https://isni.org/isni/" + da.getIdValue() + "> ; rel=\"author\"";
+                else if (da.getIdType().equals("ScopusID"))
+                    identifierSchema += ", <https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue() + "> ; rel=\"author\"";
+
             }
         }
         Dataset ds = workingDatasetVersion.getDataset();
@@ -59,7 +65,7 @@ public class SignpostingResources {
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
                 + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\" ; type=\"application/linkset+json\"";
 
-        return citeAs + type + orchid + lic + linkset + describedby;
+        return citeAs + type + identifierSchema + lic + linkset + describedby;
     }
 
 
