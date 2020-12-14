@@ -794,7 +794,7 @@
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
                         <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
-                                         onclick="PF('blockDatasetForm').show(); return false;"
+                                         onclick="PF('blockDatasetForm').show();"
                                          update=":datasetForm,:messagePanel"
                                          onerror="javascript:editTimedOut(xhr);"
                                          oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
