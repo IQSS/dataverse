@@ -483,7 +483,7 @@ public class DatasetUtil {
         String jsonMetadata; 
         
         try {
-            jsonMetadata = json(ds).build().toString();
+            jsonMetadata = json(ds).add("datasetVersion", json(ds.getLatestVersion())).build().toString();
         } catch (Exception ex) {
             logger.warning("Failed to export dataset metadata as json; "+ex.getMessage() == null ? "" : ex.getMessage());
             return false; 
@@ -497,7 +497,7 @@ public class DatasetUtil {
         // save the metadata in a temp file: 
         
         try {
-            File tempFile = File.createTempFile("dataverseMetadataCheck", ".tmp");
+            File tempFile = File.createTempFile("datasetMetadataCheck", ".tmp");
             FileUtils.writeStringToFile(tempFile, jsonMetadata);
                         
             // run the external executable: 
