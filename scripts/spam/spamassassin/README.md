@@ -20,11 +20,11 @@ Configure external validation via the API:
 
 For dataverses:
 
-`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataverse-spam-valiator' http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript`
+`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataverse-spam-validator' http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript`
 
 and/or for datasets:
 
-`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataset-spam-valiator' http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript`
+`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataset-spam-validator' http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript`
 
 Configure custom rejection messages and/or the admin override, as needed. For example:
 
