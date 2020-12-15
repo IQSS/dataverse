@@ -510,6 +510,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
+        workingVersion = dataset.getEditVersion();
+        
         //TODO: review if we we need this check; 
         // as getEditVersion should either return the exisiting draft or create a new one      
         if (workingVersion == null || !workingVersion.isDraft()) {
