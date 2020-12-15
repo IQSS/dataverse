@@ -22,6 +22,7 @@ Developer Guide
    dependencies
    debugging
    coding-style
+   configuration
    deployment
    containers
    making-releases
