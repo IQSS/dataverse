@@ -12,15 +12,38 @@ You will need the following additional modules:
 perl-JSON (`yum install perl-JSON`);
 Text::SpamAssassin (get it here: https://metacpan.org/pod/Text::SpamAssassin).
 
-Install the dataverse validation script (`dataverse-spam-valiator.pl`)
+Install the dataverse validation scripts (`dataverse-spam-validator.pl`, and the wrapper scripts `dataverse-spam-validator` and `dataset-spam-validator`)
 and the rules file (`dataverse_spam_prefs.cf`) somewhere; for example,
-`/usr/local/etc`. Edit the script to specify the path of the rules files,
-so that the script can find it. (Alternatively, install the rules file
-as ~/.spamassassin/user_prefs, for the user who will be running the script). 
+`/usr/local/dataverse-admin/spam`. The directory above is used in the curl examples below. If installed in a different directory, adjust the commands, and edit the wrapper scripts to reflect that.
 
 Configure external validation via the API:
 
-`curl -X PUT -d '/usr/local/etc/dataverse-spam-valiator.pl' http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript`
+For dataverses:
 
-Configure the custom rejection message and/or the admin override, as needed.
+`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataverse-spam-valiator' http://localhost:8080/api/admin/settings/:DataverseMetadataValidatorScript`
+
+and/or for datasets:
+
+`curl -X PUT -d '/usr/local/dataverse-admin/spam/dataset-spam-valiator' http://localhost:8080/api/admin/settings/:DatasetMetadataValidatorScript`
+
+Configure custom rejection messages and/or the admin override, as needed. For example:
+
+`curl -X PUT -d 'Uhm, this looks like spam. But nice try...' http://localhost:8080/api/admin/settings/:DataverseMetadataValidationFailureMsg`
+
+(note that the "If you think this is in error, contact support at ..." will be automatically added to the custom message by the dataverse or dataset page).
+
+
+`curl -X PUT -d true http://localhost:8080/api/admin/settings/:ExternalValidationAdminOverride`
+
+When the override is enabled, the external check will be skipped for admin users.
+
+The actual spam checking magic is defined in the rules file (dataverse_spam_prefs.cf). It can be tinkered with/fine-tuned by specifying what tests to perform and/or the penalities assigned for every detected violation. See the SpamAssassin documentation for how it all works. 
+
+
+
+
+DataverseMetadataValidationFailureMsg,
+        DatasetMetadataValidationFailureMsg,
+        ExternalValidationAdminOverride
+
 

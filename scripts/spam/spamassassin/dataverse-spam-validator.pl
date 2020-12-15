@@ -1,10 +1,11 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl -w
 use Text::SpamAssassin;
 use JSON; 
+use strict; 
 
-$DV_SA_INSTALL_DIRECTORY = $ENV{'DV_SA_INSTALL_DIRECTORY'}; 
+my $DV_SA_INSTALL_DIRECTORY = $ENV{'DV_SA_INSTALL_DIRECTORY'}; 
 $DV_SA_INSTALL_DIRECTORY = "." unless $DV_SA_INSTALL_DIRECTORY; 
-$SPAM_DETECTION_RULES = $DV_SA_INSTALL_DIRECTORY . "/dataverse_spam_prefs.cf";
+my $SPAM_DETECTION_RULES = $DV_SA_INSTALL_DIRECTORY . "/dataverse_spam_prefs.cf";
 
 unless ( -f $SPAM_DETECTION_RULES )
 {
@@ -17,12 +18,14 @@ unless ( -f $SPAM_DETECTION_RULES )
     # users that their dataverses are being rejected on account of being spam"; 
 }
 
-$USAGE = "usage: ./dataverse-spam-validator.pl [-v] <(dataverse|dataset)> <dv_metadata.json>\n";
+my $USAGE = "usage: ./dataverse-spam-validator.pl [-v] <(dataverse|dataset)> <dv_metadata.json>\n";
+
+my $verbose; 
 
 # command line options: 
 while ( $ARGV[0] =~/^\-/ )
 {
-    $option = shift @ARGV; 
+    my $option = shift @ARGV; 
     # the only option recognized so far is "-v" ("verbose"):
     if ( $option eq "-v" )
     {
@@ -35,7 +38,7 @@ while ( $ARGV[0] =~/^\-/ )
     }
 }
 
-$dtype = shift @ARGV; 
+my $dtype = shift @ARGV; 
 
 unless ( $dtype =~/^data(verse|set)$/ )
 {
@@ -43,7 +46,7 @@ unless ( $dtype =~/^data(verse|set)$/ )
     exit 0; 
 }
 
-$infile = shift @ARGV; 
+my $infile = shift @ARGV; 
 
 unless ( -f $infile )
 {
@@ -52,6 +55,7 @@ unless ( -f $infile )
 }
 
 open INF, $infile; 
+my $jsoninput = ""; 
 
 while (<INF>)
 {
@@ -61,22 +65,22 @@ while (<INF>)
 close INF; 
 
 # create json handling object: 
-$json = JSON->new->allow_nonref;
+my $json = JSON->new->allow_nonref;
 
 # parse and process json input:
 # (catch any parsing exception and exit cleanly; 
 # again, we don't want any false positives.
 
-$test_subject = ""; 
-$test_textbody = ""; 
+my $test_subject = ""; 
+my $test_textbody = ""; 
 
 eval {
-    $jsonref = $json->decode( $jsoninput );
+    my $jsonref = $json->decode( $jsoninput );
 
     if ( $dtype eq "dataverse" )
     {
-	$dvname = $jsonref->{name};
-	$dvdescription = $jsonref->{description}; 
+	my $dvname = $jsonref->{name};
+	my $dvdescription = $jsonref->{description}; 
 
 	print "dataverse name: " . $dvname . "\n" if $verbose;
 	print "dataverse description: " . $dvdescription . "\n" if $verbose; 
@@ -88,11 +92,15 @@ eval {
     }
     else # dataset
     {
-	$metadatafields = $jsonref->{datasetVersion}->{metadataBlocks}->{citation}->{fields}; 
+	my $dstitle = "";
+	my $dsdescription = ""; 
 
-	for $field (@$metadatafields)
+	my $metadatafields = $jsonref->{datasetVersion}->{metadataBlocks}->{citation}->{fields}; 
+
+	for my $field (@$metadatafields)
 	{
-	    $ftype = $field->{typeName}; 
+	    my $ftype = $field->{typeName}; 
+
 	    if ( $ftype eq "title" )
 	    {
 		$dstitle = $field->{value};
@@ -102,9 +110,9 @@ eval {
 	    {
 		# dsDescription is a compound field:
 		# (and multiple values are allowed!)
-		$subfields = $field->{value}; 
+		my $subfields = $field->{value}; 
 	    
-		for $sfield (@$subfields)
+		for my $sfield (@$subfields)
 		{
 		    # dsDescriptionValue is a required subfield... 
 		    # so we can expect it to be populated:
