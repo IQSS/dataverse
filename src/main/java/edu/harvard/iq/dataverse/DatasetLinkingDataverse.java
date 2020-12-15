@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -22,6 +24,16 @@ import javax.persistence.TemporalType;
 @Table(indexes = {
         @Index(columnList = "dataset_id"),
     @Index(columnList = "linkingDataverse_id")
+})
+@NamedQueries({
+    @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetId",
+               query = "select object(o) from DatasetLinkingDataverse as o where o.dataset.id =:datasetId order by o.id"),
+    @NamedQuery(name = "DatasetLinkingDataverse.findByLinkingDataverseId",
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId order by o.id"),    
+    @NamedQuery(name = "DatasetLinkingDataverse.findByDatasetIdAndLinkingDataverseId",
+               query = "SELECT OBJECT(o) FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId AND o.dataset.id = :datasetId"),
+    @NamedQuery(name = "DatasetLinkingDataverse.findIdsByLinkingDataverseId",
+               query = "SELECT o.dataset.id FROM DatasetLinkingDataverse AS o WHERE o.linkingDataverse.id = :linkingDataverseId")
 })
 public class DatasetLinkingDataverse implements Serializable {
     private static final long serialVersionUID = 1L;

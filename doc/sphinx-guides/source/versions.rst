@@ -6,8 +6,9 @@ Dataverse Documentation Versions
 
 This list provides a way to refer to the documentation for previous versions of Dataverse. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- 5.2
+- 5.3
 
+- `5.2 </en/5.2/>`__
 - `5.1.1 </en/5.1.1/>`__
 - `5.1 </en/5.1/>`__
 - `5.0 </en/5.0/>`__
