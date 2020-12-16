@@ -44,6 +44,8 @@
             <p:inputText value="#{dsfv.valueForEdit}" id="cv_url_#{valCount.index+1}" tabindex="#{block.index+1}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
+        <script src="#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getJsUrl()}">
+        </script>
         <script>
                 $(document).ready(function() {
                     var jsonResult = {};
@@ -66,38 +68,23 @@
                           selectedVocab = $(this).val();
                         });
 
-                   $("#akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}").find("input[name*='cv_term_']").autocomplete({
-                        source: function(request, response) {
-                            $.ajax({
-                                url: cvmReqUrl + '&amp;vocab=' + selectedVocab,
-                                dataType: "json",
-                                data: { query: request.term},
-                                success: function(data) {
-                                    var results = data.results;
-                                    var queries = [];
-                                    var array = [];
-                                    $.each(results, function(i, item) {
-                                            queries.push(item.prefLabel);
-                                        array.push({
-                                            query: item.prefLabel,
-                                            url: item.uri
-                                        });
-                                     });
-                                    jsonResult = $.parseJSON(JSON.stringify(array));
-                                    response(queries.sort());
-                                }
-                            });
-                        },
-                        minLength: 2,
-                        select: function(event, ui) {
-                            $.each(jsonResult, function(i, v) {
-                                 if (v.query.search(new RegExp(ui.item.value)) != -1) {
-                                     $("#akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").find("input[name*='cv_url_']").val(v.url);
-                                    return;
-                                }
-                            });
-                         }
-                    });
+                    var mapquery = "#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapQuery()}";
+                    var mapid = "#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapId()}";
+                    var mapping = { query: mapquery,  id: mapid };
+                    $("#akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}").find("input[name*='cv_term_']").autocomplete(
+                    {
+                          source: function( request, response ) {
+                            cv = { 'cvmReqUrl' : cvmReqUrl, 'selectedVocab': selectedVocab, 'term': request.term };
+                        autointerface(cvmProtocol, request, response, cv, mapping);
+                          },
+                          minLength: 2,
+                          select: function(event, ui) {
+                               $.each(ui, function(i, v) {
+                               $("#akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").find("input[name*='cv_url_']").val(v.id);
+                               }
+                             )}
+                        }
+                    );
                  });
             </script>
         <style type="text/css">

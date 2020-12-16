@@ -5622,7 +5622,14 @@ public class DatasetPage implements java.io.Serializable {
                 String cvmProtocol = "skosmos";//default
                 if (jo.containsKey("protocol"))
                     cvmProtocol = jo.getString("protocol");
-                CVM CVm = new CVM(jo.getString("cvm-url"), cvmLang, cvmProtocol, cvmReadonly, vs, ks);
+                String mapId = "uri" ;//default
+                if (jo.containsKey("map-id"))
+                    mapId = jo.getString("map-id");
+                String mapQuery = "prefLabel" ;//default
+                if (jo.containsKey("map-query"))
+                    mapQuery = jo.getString("map-query");
+                CVM CVm = new CVM(jo.getString("cvm-url"), cvmLang, cvmProtocol, cvmReadonly, vs, ks
+                                    , jo.getString("js-url"), mapId, mapQuery);
                 cvmMap.put(jo.getString("vocab-name"), CVm);
 
             }
@@ -5633,16 +5640,23 @@ public class DatasetPage implements java.io.Serializable {
         String cvmUrl;
         String language;
         String protocol;
+        String jsUrl;
+        String mapId;
+        String mapQuery;
         boolean readonly;
         List<String> vocabs;
         List<String> keys;
-        public CVM(String cvmUrl, String language, String protocol, boolean readonly, List<String> vocabs, List<String> keys){
+        public CVM(String cvmUrl, String language, String protocol, boolean readonly, List<String> vocabs, List<String> keys
+                    , String jsUrl, String mapId, String mapQuery){
             this.cvmUrl = cvmUrl;
             this.language = language;
             this.protocol = protocol;
             this.readonly = readonly;
             this.vocabs = vocabs;
             this.keys = keys;
+            this.jsUrl = jsUrl;
+            this.mapId = mapId;
+            this.mapQuery = mapQuery;
         }
 
         public String getCvmUrl() {
@@ -5652,7 +5666,6 @@ public class DatasetPage implements java.io.Serializable {
             return language;
         }
         public String getProtocol() { return protocol; }
-
         public boolean isReadonly() {
             return readonly;
         }
@@ -5661,6 +5674,18 @@ public class DatasetPage implements java.io.Serializable {
         }
         public List<String> getKeys() {
             return keys;
+        }
+
+        public String getJsUrl() {
+            return jsUrl;
+        }
+
+        public String getMapId() {
+            return mapId;
+        }
+
+        public String getMapQuery() {
+            return mapQuery;
         }
     }
     public String getSignpostingLinkHeader(){
