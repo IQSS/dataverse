@@ -12,9 +12,9 @@ You will need the following additional modules:
 perl-JSON (`yum install perl-JSON`);
 Text::SpamAssassin (get it here: https://metacpan.org/pod/Text::SpamAssassin).
 
-Install the dataverse validation scripts (`dataverse-spam-validator.pl`, and the wrapper scripts `dataverse-spam-validator` and `dataset-spam-validator`)
-and the rules file (`dataverse_spam_prefs.cf`) somewhere; for example,
-`/usr/local/dataverse-admin/spam`. The directory above is used in the curl examples below. If installed in a different directory, adjust the commands, and edit the wrapper scripts to reflect that.
+Install the dataverse validation scripts (`dataverse-spam-validator.pl`, and the wrapper scripts `dataverse-spam-validator` and `dataset-spam-validator`) somewhere; for example,
+`/usr/local/dataverse-admin/spam`. Note that the rules file (`dataverse_spam_prefs.cf`; maintained separately, outside of the main github source tree) needs to be installed in tehe same directory.
+The directory above is used in the curl examples below. If installed in a different directory, adjust the commands, and edit the wrapper scripts to reflect that.
 
 Configure external validation via the API:
 
