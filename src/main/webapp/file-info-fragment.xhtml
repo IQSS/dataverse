@@ -55,8 +55,9 @@
                     <div class="checksum-block" style="word-break: break-all;" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
                         <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
                                       jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"
-                                      title="Click to copy: #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
-                        <span class="glyphicon glyphicon-copy"></span>
+                                      title="#{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
+                        <!-- TO-DO Click to copy #7312 #6685 #5210 -->
+                        <!-- <span class="glyphicon glyphicon-copy"></span> -->
                     </div>
                     <!-- UNF + Variables, Obsersvations -->
                     <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
