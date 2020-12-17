@@ -1087,6 +1087,11 @@ public class SystemConfig {
         return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataValidationFailureMsg, defaultMessage);
     }
     
+    public String getDataverseUpdateValidationFailureMsg() {
+        String defaultMessage = "This dataverse cannot be updated because it has failed an external metadata validation test.";
+        return settingsService.getValueForKey(SettingsServiceBean.Key.DataverseMetadataUpdateValidationFailureMsg, defaultMessage);
+    }
+    
     public String getDatasetValidationFailureMsg() {
         String defaultMessage = "This dataset cannot be published because it has failed an external metadata validation test.";
         return settingsService.getValueForKey(SettingsServiceBean.Key.DatasetMetadataValidationFailureMsg, defaultMessage);
